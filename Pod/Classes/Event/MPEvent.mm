@@ -44,9 +44,6 @@ using namespace mParticle;
 }
 
 - (instancetype)initWithName:(NSString *)name type:(MPEventType)type {
-    NSAssert(name != nil && name.length > 0 , @"'name' cannot be nil or empty.");
-    NSAssert(name.length <= LIMIT_NAME, @"'name' is longer than 255 characters.");
-    
     self = [super init];
     if (!self) {
         return nil;
@@ -195,9 +192,6 @@ using namespace mParticle;
 }
 
 - (void)setName:(NSString *)name {
-    NSAssert(name != nil && name.length > 0 , @"'name' cannot be nil or empty.");
-    NSAssert(name.length <= LIMIT_NAME, @"'name' is longer than 255 characters.");
-
     if (!name || name.length == 0) {
         MPLogError(@"'name' cannot be nil or empty.")
         return;
@@ -247,9 +241,6 @@ using namespace mParticle;
 
 #pragma mark Public methods
 - (void)addCustomFlag:(NSString *)customFlag withKey:(NSString *)key {
-    NSAssert(!MPIsNull(customFlag), @"'customFlag' cannot be nil or null.");
-    NSAssert(!MPIsNull(key), @"'key' cannot be nil or null.");
-    
     if (MPIsNull(customFlag)) {
         MPLogError(@"'customFlag' cannot be nil or null.");
         return;
@@ -264,9 +255,6 @@ using namespace mParticle;
 }
 
 - (void)addCustomFlags:(NSArray *)customFlags withKey:(NSString *)key {
-    NSAssert(!MPIsNull(customFlags), @"'customFlags' cannot be nil or null.");
-    NSAssert(!MPIsNull(key), @"'key' cannot be nil or null.");
-    
     if (MPIsNull(customFlags)) {
         MPLogError(@"'customFlags' cannot be nil or null.");
         return;

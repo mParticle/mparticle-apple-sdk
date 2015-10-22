@@ -67,8 +67,6 @@ static NSTimeInterval requestTimeout = 30.0;
 
 #pragma mark Private methods
 - (NSString *)hmacSha256Encode:(NSString *const)message key:(NSString *const)key {
-    NSAssert(message && key, @"message and key are required.");
-    
     if (!message || !key) {
         return nil;
     }
@@ -106,8 +104,6 @@ static NSTimeInterval requestTimeout = 30.0;
 
 #pragma mark Public class methods
 + (MPURLRequestBuilder *)newBuilderWithURL:(NSURL *)url {
-    NSAssert(url != nil, @"\n****\n  URL cannot be nil. Check if the URL is well formed and if all parameters are correct.\n****\n");
-    
     if (!url) {
         return nil;
     }
@@ -119,9 +115,6 @@ static NSTimeInterval requestTimeout = 30.0;
 }
 
 + (MPURLRequestBuilder *)newBuilderWithURL:(NSURL *)url message:(NSString *)message httpMethod:(NSString *)httpMethod {
-    NSAssert(url != nil, @"\n****\n  URL cannot be nil. Check if the URL is well formed and if all parameters are correct.\n****\n");
-    NSAssert(httpMethod != nil, @"HTTP method must be defined.");
-
     if (!url) {
         return nil;
     }

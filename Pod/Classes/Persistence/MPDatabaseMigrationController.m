@@ -557,6 +557,55 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
+- (void)migrateConsumerInfoFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
+    const char *selectStatement, *insertStatement;
+    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    NSInteger oldVersionValue = [oldVersion integerValue];
+    
+    if (oldVersionValue < 22) {
+        return;
+    }
+    
+    // Consumer Info
+    selectStatement = "SELECT _id, mpid, unique_identifier FROM consumer_info";
+    insertStatement = "INSERT INTO consumer_info (_id, mpid, unique_identifier) VALUES (?, ?, ?)";
+    
+    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
+    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    
+    while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
+        sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
+        sqlite3_bind_int(insertStatementHandle, 2, sqlite3_column_int(selectStatementHandle, 1)); // mpid
+        sqlite3_bind_text(insertStatementHandle, 3, (const char *)sqlite3_column_text(selectStatementHandle, 2), -1, SQLITE_TRANSIENT); // unique_identifier
+        
+        sqlite3_step(insertStatementHandle);
+    }
+    
+    sqlite3_finalize(selectStatementHandle);
+    sqlite3_finalize(insertStatementHandle);
+    
+    // Cookies
+    selectStatement = "SELECT _id, consumer_info_id, content, domain, expiration, name FROM cookies";
+    insertStatement = "INSERT INTO cookies (_id, consumer_info_id, content, domain, expiration, name) VALUES (?, ?, ?, ?, ?, ?)";
+    
+    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
+    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    
+    while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
+        sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
+        sqlite3_bind_int(insertStatementHandle, 2, sqlite3_column_int(selectStatementHandle, 1)); // consumer_info_id
+        sqlite3_bind_text(insertStatementHandle, 3, (const char *)sqlite3_column_text(selectStatementHandle, 2), -1, SQLITE_TRANSIENT); // content
+        sqlite3_bind_text(insertStatementHandle, 4, (const char *)sqlite3_column_text(selectStatementHandle, 3), -1, SQLITE_TRANSIENT); // domain
+        sqlite3_bind_text(insertStatementHandle, 5, (const char *)sqlite3_column_text(selectStatementHandle, 4), -1, SQLITE_TRANSIENT); // expiration
+        sqlite3_bind_text(insertStatementHandle, 6, (const char *)sqlite3_column_text(selectStatementHandle, 5), -1, SQLITE_TRANSIENT); // name
+        
+        sqlite3_step(insertStatementHandle);
+    }
+    
+    sqlite3_finalize(selectStatementHandle);
+    sqlite3_finalize(insertStatementHandle);
+}
+
 #pragma mark Public methods
 - (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion {
     dispatch_sync(dbQueue, ^{
@@ -596,7 +645,8 @@
         [self migrateRemoteNotificationsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateProductBagsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        
+        [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+
         sqlite3_close(oldmParticleDB);
         [fileManager removeItemAtPath:dbPath error:nil];
         sqlite3_close(mParticleDB);

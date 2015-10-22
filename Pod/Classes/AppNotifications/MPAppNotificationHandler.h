@@ -27,6 +27,7 @@
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error;
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo;
+- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options;
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
 - (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode;
 

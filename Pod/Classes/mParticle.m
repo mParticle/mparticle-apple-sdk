@@ -44,6 +44,7 @@
 #import "MPKitExecStatus.h"
 #import "MPKitAbstract.h"
 #import "MPAppNotificationHandler.h"
+#import "MPLocationManager.h"
 
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"
@@ -231,11 +232,11 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark - Public accessors and methods
 - (BOOL)backgroundLocationTracking {
-    return [MPStateMachine sharedInstance].backgroundLocationTracking;
+    return [MPStateMachine sharedInstance].locationManager.backgroundLocationTracking;
 }
 
 - (void)setBackgroundLocationTracking:(BOOL)backgroundLocationTracking {
-    [MPStateMachine sharedInstance].backgroundLocationTracking = backgroundLocationTracking;
+    [MPStateMachine sharedInstance].locationManager.backgroundLocationTracking = backgroundLocationTracking;
 }
 
 - (MPBags *)bags {
@@ -284,11 +285,11 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (CLLocation *)location {
-    return self.backendController.location;
+    return [MPStateMachine sharedInstance].locationManager.location;
 }
 
 - (void)setLocation:(CLLocation *)location {
-    self.backendController.location = location;
+    [MPStateMachine sharedInstance].locationManager.location = location;
     MPLogDebug(@"Set location %@", location);
     
     // Forwarding calls to kits
@@ -531,6 +532,14 @@ NSString *const kMPStateKey = @"state";
     }
     
     [[MPAppNotificationHandler sharedInstance] openURL:url sourceApplication:sourceApplication annotation:annotation];
+}
+
+- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
+    if (_proxiedAppDelegate || [[[UIDevice currentDevice] systemVersion] floatValue] < 9.0) {
+        return;
+    }
+    
+    [[MPAppNotificationHandler sharedInstance] openURL:url options:options];
 }
 
 #pragma mark Basic tracking

@@ -31,6 +31,7 @@
 #import "MPPersistenceController.h"
 #import "MPBags.h"
 #include "MessageTypeName.h"
+#import "MPLocationManager.h"
 
 using namespace mParticle;
 
@@ -81,7 +82,6 @@ static BOOL runningInBackground = NO;
     _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
     _backgrounded = NO;
     _consoleLogging = MPConsoleLoggingAutoDetect;
-    _backgroundLocationTracking = YES;
     lastestSDKWarningShown = NO;
     _dataRamped = NO;
     _installationType = MPInstallationTypeAutodetect;

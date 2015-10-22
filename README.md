@@ -35,7 +35,7 @@ pod 'mParticle-iOS-SDK/BranchMetrics'
 pod 'mParticle-iOS-SDK/Localytics'
 ```
 
-In the case above, only the [Appboy](https://www.appboy.com), [Branch Metrics](https://branch.io), and [Localytics](http://www.localytics.com) kits would be integrated, all others kits would be left out.
+In the case above, only the [Appboy](https://www.appboy.com), [Branch Metrics](https://branch.io), and [Localytics](http://www.localytics.com) kits would be integrated, all other kits would be left out.
 
 If you do not need to build the mParticle SDK with any kit 3rd party kits, and utilize only the server-to-server integrations, you can do it by configuring your Podfile with the following statement:
 

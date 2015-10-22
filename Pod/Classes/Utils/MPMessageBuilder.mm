@@ -32,10 +32,18 @@
 #import "MPLogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #include "MessageTypeName.h"
+#import "MPLocationManager.h"
 
 using namespace mParticle;
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
+NSString *const kMPHorizontalAccuracyKey = @"acc";
+NSString *const kMPLatitudeKey = @"lat";
+NSString *const kMPLongitudeKey = @"lng";
+NSString *const kMPVerticalAccuracyKey = @"vacc";
+NSString *const kMPRequestedAccuracy = @"racc";
+NSString *const kMPDistanceFilter = @"mdst";
+NSString *const kMPIsForegroung = @"fg";
 
 @interface MPMessageBuilder() {
     NSMutableDictionary *messageDictionary;
@@ -196,7 +204,7 @@ NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 
 - (MPMessageBuilder *)withLocation:(CLLocation *)location {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    if ([MPStateMachine runningInBackground] && !stateMachine.backgroundLocationTracking) {
+    if ([MPStateMachine runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
         return self;
     }
 
@@ -204,11 +212,15 @@ NSString *const launchInfoStringFormat = @"%@%@%@=%@";
     BOOL isOptOutMessage = messageTypeValue == MPMessageTypeOptOut;
 
     if (location && [CLLocationManager authorizationStatus] && [CLLocationManager locationServicesEnabled] && !isCrashReport && !isOptOutMessage) {
-        messageDictionary[kMPLocationKey] = @{kMPLocationAccuracyKey:@(location.horizontalAccuracy),
+        messageDictionary[kMPLocationKey] = @{kMPHorizontalAccuracyKey:@(location.horizontalAccuracy),
+                                              kMPVerticalAccuracyKey:@(location.verticalAccuracy),
                                               kMPLatitudeKey:@(location.coordinate.latitude),
-                                              kMPLongitudeKey:@(location.coordinate.longitude)};
+                                              kMPLongitudeKey:@(location.coordinate.longitude),
+                                              kMPRequestedAccuracy:@(stateMachine.locationManager.requestedAccuracy),
+                                              kMPDistanceFilter:@(stateMachine.locationManager.requestedDistanceFilter),
+                                              kMPIsForegroung:@(!stateMachine.backgrounded)};
     }
-    
+
     return self;
 }
 

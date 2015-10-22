@@ -70,9 +70,6 @@
 
 #pragma mark Public methods
 - (void)addProduct:(MPProduct *)product toBag:(NSString *)bagName {
-    NSAssert(!MPIsNull(bagName), @"'bagName' cannot be nil/null.");
-    NSAssert(!MPIsNull(product), @"'product' cannot be nil/null.");
-    
     if (MPIsNull(bagName)) {
         MPLogError(@"'bagName' cannot be nil/null.");
         return;

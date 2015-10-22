@@ -23,6 +23,7 @@
 #import "MPLogger.h"
 
 @interface MPAppDelegateProxy() {
+    SEL applicationOpenURLOptions;
     SEL applicationOpenURLSelector;
     SEL didFailToRegisterForRemoteNotificationSelector;
     SEL didReceiveLocalNotificationSelector;
@@ -39,6 +40,7 @@
 - (instancetype)initWithOriginalAppDelegate:(id)originalAppDelegate {
     _originalAppDelegate = originalAppDelegate;
 
+    applicationOpenURLOptions = @selector(application:openURL:options:);
     applicationOpenURLSelector = @selector(application:openURL:sourceApplication:annotation:);
     didFailToRegisterForRemoteNotificationSelector = @selector(application:didFailToRegisterForRemoteNotificationsWithError:);
     didReceiveLocalNotificationSelector = @selector(application:didReceiveLocalNotification:);
@@ -93,7 +95,8 @@
     if ([_originalAppDelegate respondsToSelector:aSelector]) {
         respondsToSelector = YES;
     } else {
-        respondsToSelector = (aSelector == applicationOpenURLSelector) ||
+        respondsToSelector = (aSelector == applicationOpenURLOptions && [[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0) ||
+                             (aSelector == applicationOpenURLSelector) ||
                              (aSelector == didFailToRegisterForRemoteNotificationSelector) ||
                              (aSelector == didReceiveLocalNotificationSelector) ||
                              (aSelector == didReceiveRemoteNotificationSelector) ||

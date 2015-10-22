@@ -128,6 +128,17 @@
     }
 }
 
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
+    [[MPAppNotificationHandler sharedInstance] openURL:url options:options];
+    
+    id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
+    if ([originalAppDelegate respondsToSelector:_cmd]) {
+        return [originalAppDelegate application:app openURL:url options:options];
+    }
+    
+    return NO;
+}
+
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     [[MPAppNotificationHandler sharedInstance] openURL:url sourceApplication:sourceApplication annotation:annotation];
     

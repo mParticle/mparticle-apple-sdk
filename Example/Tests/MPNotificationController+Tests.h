@@ -1,5 +1,5 @@
 //
-//  MPAppDelegate.m
+//  MPNotificationController+Tests.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,21 +16,15 @@
 //  limitations under the License.
 //
 
-#import "MPAppDelegate.h"
-#import "mParticle.h"
+#import "MPNotificationController.h"
 
-@implementation MPAppDelegate
+@interface MPNotificationController(Tests)
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Starts the mParticle SDK
-    MParticle *mParticle = [MParticle sharedInstance];
-    [mParticle startWithKey:@"Your_App_Key" secret:@"Your_App_Secret"];
-    
-    // Debug log level to the console. The default log level is
-    // MPLogLevelWarning (only warning and error log messages are displayed to the console)
-    mParticle.logLevel = MPLogLevelDebug;
-    
-    return YES;
-}
+- (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
+- (void)handleApplicationDidEnterBackground:(NSNotification *)notification;
+- (void)handleApplicationWillEnterForeground:(NSNotification *)notification;
+- (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
+- (BOOL)isInfluencedOpenByNotification:(MParticleUserNotification *)latestReceivedRemoteNotification;
+- (void)handleRemoteNotificationReceived:(NSNotification *)notification;
 
 @end

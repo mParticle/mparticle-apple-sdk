@@ -173,26 +173,7 @@
 
         defaultValue = [dateFormatter stringFromDate:[NSDate date]];
     } else if ([macroPlaceholder isEqualToString:@"%glsb%"]) {
-        CFUUIDRef uuidRef;
-#ifndef MP_UNIT_TESTING
-        uuidRef = CFUUIDCreate(kCFAllocatorDefault);
-#else
-        int testOption = arc4random_uniform(3);
-        switch (testOption) {
-            case 0: // 87bab465-f904-4354-938b-e2dd2d532441 returns -7814903288795290559
-                uuidRef = CFUUIDCreateFromString(kCFAllocatorDefault, (__bridge CFStringRef)@"87bab465-f904-4354-938b-e2dd2d532441");
-                break;
-                
-            case 1: // d37a5f3c-8a04-4fbe-aaf4-2834cc9ab8f6 returns -6128228985708300042
-                uuidRef = CFUUIDCreateFromString(kCFAllocatorDefault, (__bridge CFStringRef)@"d37a5f3c-8a04-4fbe-aaf4-2834cc9ab8f6");
-                break;
-                
-            default: // 3b0915ff-1b6c-44a9-6774-5b69188f581c returns 7454683790146754588
-                uuidRef = CFUUIDCreateFromString(kCFAllocatorDefault, (__bridge CFStringRef)@"3b0915ff-1b6c-44a9-6774-5b69188f581c");
-                break;
-        }
-#endif
-        
+        CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
         CFUUIDBytes uuidBytes = CFUUIDGetUUIDBytes(uuidRef);
         
         SInt64 lsbBytes[8] = {uuidBytes.byte8, uuidBytes.byte9, uuidBytes.byte10, uuidBytes.byte11,

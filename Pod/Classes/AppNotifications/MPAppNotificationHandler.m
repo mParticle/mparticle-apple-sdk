@@ -162,6 +162,12 @@
     }
 }
 
+- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
+    NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+    
+    [self openURL:url sourceApplication:sourceApplication annotation:nil];
+}
+
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     if (stateMachine.optOut) {

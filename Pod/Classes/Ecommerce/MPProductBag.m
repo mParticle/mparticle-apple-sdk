@@ -28,8 +28,6 @@
 }
 
 - (instancetype)initWithName:(NSString *)name product:(MPProduct *)product {
-    NSAssert(!MPIsNull(name), @"Name cannot be nil/null.");
-
     self = [super init];
     if (!self || MPIsNull(name)) {
         return nil;

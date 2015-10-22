@@ -1,5 +1,5 @@
 //
-//  mParticle-iOS-SDKTests.m
+//  MPURLRequestBuilder+Tests.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,20 +16,10 @@
 //  limitations under the License.
 //
 
-@import XCTest;
+#import "MPURLRequestBuilder.h"
 
-@interface Tests : XCTestCase
+@interface MPURLRequestBuilder(Tests)
 
-@end
-
-@implementation Tests
-
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
+- (NSString *)hmacSha256Encode:(NSString *const)message key:(NSString *const)key;
 
 @end

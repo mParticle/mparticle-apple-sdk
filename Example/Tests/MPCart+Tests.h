@@ -1,5 +1,5 @@
 //
-//  MPAppDelegate.m
+//  MPCart+Tests.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,21 +16,15 @@
 //  limitations under the License.
 //
 
-#import "MPAppDelegate.h"
-#import "mParticle.h"
+@class MPCart;
 
-@implementation MPAppDelegate
+@interface MPCart(Tests)
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-    // Starts the mParticle SDK
-    MParticle *mParticle = [MParticle sharedInstance];
-    [mParticle startWithKey:@"Your_App_Key" secret:@"Your_App_Secret"];
-    
-    // Debug log level to the console. The default log level is
-    // MPLogLevelWarning (only warning and error log messages are displayed to the console)
-    mParticle.logLevel = MPLogLevelDebug;
-    
-    return YES;
-}
+- (void)persistCart;
+- (void)removePersistedCart;
+- (MPCart *)retrieveCart;
+- (void)addProducts:(NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;
+- (NSDictionary *)dictionaryRepresentation;
+- (void)removeProducts:(NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;
 
 @end

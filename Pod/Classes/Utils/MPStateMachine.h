@@ -25,6 +25,7 @@
 @class MPNotificationController;
 @class MPConsumerInfo;
 @class MPBags;
+@class MPLocationManager;
 
 typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
     MPConsoleLoggingAutoDetect = 0,
@@ -43,6 +44,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong) NSString *locationTrackingMode;
 @property (nonatomic, strong) NSString *latestSDKVersion;
 @property (nonatomic, strong) NSDictionary *launchOptions;
+@property (nonatomic, strong) MPLocationManager *locationManager;
 @property (nonatomic, strong) NSDate *minUploadDate;
 @property (nonatomic, strong) NSString *networkPerformanceMeasuringMode;
 @property (nonatomic, strong) NSString *pushNotificationMode;
@@ -61,7 +63,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 @property (nonatomic, unsafe_unretained, readonly) BOOL backgrounded;
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
-@property (nonatomic, unsafe_unretained) BOOL backgroundLocationTracking;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
 
 + (instancetype)sharedInstance;

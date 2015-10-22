@@ -7,4 +7,5 @@ end
 
 target 'mParticle-iOS-SDK_Tests', :exclusive => true do
   pod "mParticle-iOS-SDK", :path => "../"
+  link_with 'Pods-mParticle-iOS-SDK_Tests'
 end

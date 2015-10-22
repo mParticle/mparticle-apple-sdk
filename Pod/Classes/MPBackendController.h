@@ -64,7 +64,6 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 
 @interface MPBackendController : NSObject
 
-@property (nonatomic, strong) CLLocation *location;
 @property (nonatomic, weak) id<MPBackendControllerDelegate> delegate;
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;

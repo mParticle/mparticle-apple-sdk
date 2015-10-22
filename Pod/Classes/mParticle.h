@@ -279,6 +279,15 @@
  */
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
 
+/**
+ Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
+ This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.
+ @param url The URL resource to open
+ @param options The dictionary of launch options
+ @see proxiedAppDelegate
+ */
+- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options;
+
 #pragma mark - Basic Tracking
 /**
  Begins timing an event. There can be many timed events going on at the same time, the only requirement is that each
