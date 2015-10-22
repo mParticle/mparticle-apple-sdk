@@ -1,0 +1,14 @@
+PODS:
+  - mParticle-iOS-SDK (0.1.0)
+
+DEPENDENCIES:
+  - mParticle-iOS-SDK (from `../`)
+
+EXTERNAL SOURCES:
+  mParticle-iOS-SDK:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  mParticle-iOS-SDK: 775caac9bd77f27d3159713c695506830071f613
+
+COCOAPODS: 0.39.0
