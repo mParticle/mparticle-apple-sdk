@@ -1,0 +1,25 @@
+{
+  "name": "mParticle-iOS-SDK",
+  "version": "0.1.0",
+  "summary": "A short description of mParticle-iOS-SDK.",
+  "description": "",
+  "homepage": "https://github.com/<GITHUB_USERNAME>/mParticle-iOS-SDK",
+  "license": "MIT",
+  "authors": {
+    "Dalmo Cirne": "dalmo@mparticle.com"
+  },
+  "source": {
+    "git": "https://github.com/<GITHUB_USERNAME>/mParticle-iOS-SDK.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "7.0"
+  },
+  "requires_arc": true,
+  "source_files": "Pod/Classes/**/*",
+  "resource_bundles": {
+    "mParticle-iOS-SDK": [
+      "Pod/Assets/*.png"
+    ]
+  }
+}
