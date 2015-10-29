@@ -587,7 +587,8 @@ NSString *const kitFileExtension = @"eks";
     
     // Attributes
     if (!event.info) {
-        completionHandlerCopy(nil, YES);
+        kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
+        completionHandlerCopy(kitFilter, YES);
         return;
     }
     
