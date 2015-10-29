@@ -586,36 +586,33 @@ NSString *const kitFileExtension = @"eks";
     }
     
     // Attributes
-    if (!event.info) {
-        kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
-        completionHandlerCopy(kitFilter, YES);
-        return;
-    }
-    
     MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([messageType UTF8String]));
     if (messageTypeCode != MPMessageTypeEvent && messageTypeCode != MPMessageTypeScreenView) {
         messageTypeCode = MPMessageTypeUnknown;
     }
     
     MPEvent *forwardEvent = [event copy];
-    __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.info.count];
     
-    [forwardEvent.info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key];
-        hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                       encoding:NSUTF8StringEncoding];
+    if (event.info) {
+        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.info.count];
         
-        id attributeFilterValue = attributeFilters[hashValue];
-        BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
+        [forwardEvent.info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+            auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key];
+            hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
+                                           encoding:NSUTF8StringEncoding];
+            
+            id attributeFilterValue = attributeFilters[hashValue];
+            BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
+            
+            if (!attributeFilterValue || (attributeFilterValue && !attributeFilterIsFalse)) {
+                filteredAttributes[key] = obj;
+            } else if (attributeFilterValue && attributeFilterIsFalse) {
+                shouldFilter = YES;
+            }
+        }];
         
-        if (!attributeFilterValue || (attributeFilterValue && !attributeFilterIsFalse)) {
-            filteredAttributes[key] = obj;
-        } else if (attributeFilterValue && attributeFilterIsFalse) {
-            shouldFilter = YES;
-        }
-    }];
-    
-    forwardEvent.info = filteredAttributes.count > 0 ? filteredAttributes : nil;
+        forwardEvent.info = filteredAttributes.count > 0 ? filteredAttributes : nil;
+    }
     
     [self projectKit:kit
                event:forwardEvent
