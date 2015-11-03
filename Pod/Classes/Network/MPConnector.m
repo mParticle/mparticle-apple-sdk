@@ -90,12 +90,14 @@ static NSArray *mpFiddlerCertificates = nil;
                                                 delegate:self
                                            delegateQueue:[NSOperationQueue mainQueue]];
     
+    _urlSession.sessionDescription = [[NSUUID UUID] UUIDString];
+    
     return _urlSession;
 }
 
 #pragma mark NSURLSessionDelegate
 - (void)URLSession:(NSURLSession *)session didBecomeInvalidWithError:(NSError *)error {
-    if (![session isEqual:_urlSession]) {
+    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription]) {
         return;
     }
     
@@ -104,7 +106,7 @@ static NSArray *mpFiddlerCertificates = nil;
 
 #pragma mark NSURLSessionTaskDelegate
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
-    if (![session isEqual:_urlSession]) {
+    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription]) {
         return;
     }
     
@@ -167,7 +169,7 @@ static NSArray *mpFiddlerCertificates = nil;
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler {
-    if (![session isEqual:_urlSession] || ![dataTask isEqual:_dataTask]) {
+    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription] || ![_dataTask.currentRequest.URL isEqual:dataTask.currentRequest.URL]) {
         return;
     }
     
@@ -188,7 +190,7 @@ static NSArray *mpFiddlerCertificates = nil;
 }
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveData:(NSData *)data {
-    if (![session isEqual:_urlSession] || ![dataTask isEqual:_dataTask]) {
+    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription] || ![_dataTask.currentRequest.URL isEqual:dataTask.currentRequest.URL]) {
         return;
     }
     
@@ -196,7 +198,7 @@ static NSArray *mpFiddlerCertificates = nil;
 }
 
 - (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didCompleteWithError:(NSError *)error {
-    if (![session isEqual:_urlSession] || ![task isEqual:_dataTask]) {
+    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription] || ![_dataTask.currentRequest.URL isEqual:task.currentRequest.URL]) {
         return;
     }
     

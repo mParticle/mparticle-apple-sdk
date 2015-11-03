@@ -40,7 +40,7 @@
     _dataType = [preferenceDictionary[kMPRemoteConfigCustomModuleDataTypeKey] intValue];
     _moduleId = [moduleId copy];
 
-    NSArray *macroPlaceholders = @[@"%gn%", @"%oaid%", @"%dt%", @"%glsb%"];
+    NSArray *macroPlaceholders = @[@"%gn%", @"%oaid%", @"%dt%", @"%glsb%", @"%g%"];
     NSString *defaultValue = preferenceDictionary[kMPRemoteConfigCustomModuleDefaultKey];
     
     if ([macroPlaceholders containsObject:defaultValue]) {
@@ -188,17 +188,17 @@
         CFRelease(uuidRef);
 
         defaultValue = [@(value) stringValue];
+    } else if ([macroPlaceholder isEqualToString:@"%g%"]) {
+        defaultValue = [[NSUUID UUID] UUIDString];
     }
     
     return defaultValue;
 }
 
 - (NSString *)uuidWithNoDashes {
-    CFUUIDRef UUIDRef = CFUUIDCreate(kCFAllocatorDefault);
-    NSMutableString *uuidString = [NSMutableString stringWithString:(__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, UUIDRef)];
-    CFRelease(UUIDRef);
-    
+    NSMutableString *uuidString = [NSMutableString stringWithString:[[NSUUID UUID] UUIDString]];
     NSRange dashRange = [uuidString rangeOfString:@"-"];
+    
     while (dashRange.location != NSNotFound) {
         [uuidString deleteCharactersInRange:dashRange];
         dashRange = [uuidString rangeOfString:@"-"];
