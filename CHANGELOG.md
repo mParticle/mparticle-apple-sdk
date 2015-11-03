@@ -1,7 +1,8 @@
 # mParticle CHANGELOG
 
-## 5.0.3
+## 5.1.0
 
+* Support to [Crittercism](http://www.crittercism.com) as a kit
 * Validating the authenticity of network requests by alternative means to avoid errors raised by 3rd party SDKs mutating and proxying mParticle's original object performing the request
 
 ## 5.0.2

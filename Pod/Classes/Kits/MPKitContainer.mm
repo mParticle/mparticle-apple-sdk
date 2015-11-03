@@ -57,6 +57,10 @@
     #import "MPKitBranchMetrics.h"
 #endif
 
+#if defined(MP_KIT_CRITTERCISM)
+    #import "MPKitCrittercism.h"
+#endif
+
 #if defined(MP_KIT_COMSCORE)
     #import "MPKitComScore.h"
 #endif
@@ -218,7 +222,8 @@ NSString *const kitFileExtension = @"eks";
                                                   @"logNetworkPerformanceMeasurement:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::NetworkPerformance).c_str() encoding:NSUTF8StringEncoding],
                                                   @"profileChange:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Profile).c_str() encoding:NSUTF8StringEncoding],
                                                   @"setOptOut:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::OptOut).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logCommerceEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding]
+                                                  @"logCommerceEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding],
+                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding]
                                                   };
     
     return methodMessageTypeDictionary;
@@ -245,6 +250,11 @@ NSString *const kitFileExtension = @"eks";
 #if defined(MP_KIT_BRANCHMETRICS)
         case MPKitInstanceBranchMetrics:
             kit = [[MPKitBranchMetrics alloc] initWithConfiguration:configuration startImmediately:NO];
+            break;
+#endif
+#if defined(MP_KIT_CRITTERCISM)
+        case MPKitInstanceCrittercism:
+            kit = [[MPKitCrittercism alloc] initWithConfiguration:configuration];
             break;
 #endif
 #if defined(MP_KIT_COMSCORE)
@@ -1669,6 +1679,9 @@ NSString *const kitFileExtension = @"eks";
 #endif
 #if defined(MP_KIT_BRANCHMETRICS)
                                        @(MPKitInstanceBranchMetrics),
+#endif
+#if defined(MP_KIT_CRITTERCISM)
+                                       @(MPKitInstanceCrittercism),
 #endif
 #if defined(MP_KIT_COMSCORE)
                                        @(MPKitInstanceComScore),

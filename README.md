@@ -55,6 +55,7 @@ With each integration with a partner we strive to implement as many features as 
 * [Appboy](https://www.appboy.com)
 * [Branch Metrics](https://branch.io)
 * [comScore](https://www.comscore.com)
+* [Crittercism](http://www.crittercism.com)
 * [Flurry](https://developer.yahoo.com)
 * [Kahuna](https://www.kahuna.com)
 * [Kochava](https://www.kochava.com)

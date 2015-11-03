@@ -62,6 +62,7 @@
 - (MPKitExecStatus *)beginTimedEvent:(MPEvent *)event;
 - (MPKitExecStatus *)endTimedEvent:(MPEvent *)event;
 // Errors and exceptions
+- (MPKitExecStatus *)leaveBreadcrumb:(MPEvent *)event;
 - (MPKitExecStatus *)logError:(NSString *)message eventInfo:(NSDictionary *)eventInfo;
 - (MPKitExecStatus *)logException:(NSException *)exception;
 // Assorted

@@ -738,6 +738,15 @@ NSString *const kMPStateKey = @"state";
                               
                               if (execStatus == MPExecStatusSuccess) {
                                   MPLogDebug(@"Left breadcrumb: %@", event);
+                                  
+                                  // Forwarding calls to kits
+                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(leaveBreadcrumb:)
+                                                                            event:event
+                                                                      messageType:MPMessageTypeBreadcrumb
+                                                                         userInfo:nil
+                                                                       kitHandler:^(MPKitAbstract *kit, MPEvent *forwardEvent, MPKitExecStatus *__autoreleasing *execStatus) {
+                                                                           *execStatus = [kit leaveBreadcrumb:forwardEvent];
+                                                                       }];
                               } else if (execStatus == MPExecStatusDelayedExecution) {
                                   MPLogWarning(@"Delayed breadcrumb: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                               } else if (execStatus != MPExecStatusContinuedDelayedExecution) {

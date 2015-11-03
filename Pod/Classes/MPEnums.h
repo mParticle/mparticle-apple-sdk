@@ -161,7 +161,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Flurry */
     MPKitInstanceFlurry = 83,
     /** Kit code for Localytics */
-    MPKitInstanceLocalytics = 84
+    MPKitInstanceLocalytics = 84,
+    /** Kit code for Crittercism */
+    MPKitInstanceCrittercism = 86
 };
 
 /// Log Levels

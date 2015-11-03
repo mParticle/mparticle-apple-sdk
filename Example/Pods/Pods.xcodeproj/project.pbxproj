@@ -193,6 +193,8 @@
 		C9C2DD171BD45C9A0002F75A /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD0E1BD45C9A0002F75A /* Security.framework */; };
 		C9C2DD181BD45C9A0002F75A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD0F1BD45C9A0002F75A /* SystemConfiguration.framework */; };
 		C9C2DD191BD45C9A0002F75A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD101BD45C9A0002F75A /* UIKit.framework */; };
+		C9D7E24F1BE96252002EEAE9 /* MPKitCrittercism.h in Headers */ = {isa = PBXBuildFile; fileRef = C9D7E24D1BE96252002EEAE9 /* MPKitCrittercism.h */; };
+		C9D7E2501BE96252002EEAE9 /* MPKitCrittercism.m in Sources */ = {isa = PBXBuildFile; fileRef = C9D7E24E1BE96252002EEAE9 /* MPKitCrittercism.m */; };
 		C9EE9DA31BD7C2570083CD37 /* MPKitAdjust.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9D741BD7C2570083CD37 /* MPKitAdjust.h */; };
 		C9EE9DA41BD7C2570083CD37 /* MPKitAdjust.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9D751BD7C2570083CD37 /* MPKitAdjust.m */; };
 		C9EE9DA51BD7C2570083CD37 /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9D791BD7C2570083CD37 /* MPKitAppboy.h */; };
@@ -477,6 +479,8 @@
 		C9C2DD1A1BD45CA30002F75A /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
 		C9C2DD1C1BD45CA80002F75A /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		C9C2DD1E1BD45CAD0002F75A /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
+		C9D7E24D1BE96252002EEAE9 /* MPKitCrittercism.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitCrittercism.h; sourceTree = "<group>"; };
+		C9D7E24E1BE96252002EEAE9 /* MPKitCrittercism.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitCrittercism.m; sourceTree = "<group>"; };
 		C9EE9D741BD7C2570083CD37 /* MPKitAdjust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAdjust.h; sourceTree = "<group>"; };
 		C9EE9D751BD7C2570083CD37 /* MPKitAdjust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAdjust.m; sourceTree = "<group>"; };
 		C9EE9D791BD7C2570083CD37 /* MPKitAppboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppboy.h; sourceTree = "<group>"; };
@@ -965,6 +969,15 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		C9D7E24C1BE96201002EEAE9 /* Crittercism */ = {
+			isa = PBXGroup;
+			children = (
+				C9D7E24D1BE96252002EEAE9 /* MPKitCrittercism.h */,
+				C9D7E24E1BE96252002EEAE9 /* MPKitCrittercism.m */,
+			);
+			path = Crittercism;
+			sourceTree = "<group>";
+		};
 		C9EE9D721BD7C2570083CD37 /* Kits */ = {
 			isa = PBXGroup;
 			children = (
@@ -972,6 +985,7 @@
 				C9EE9D761BD7C2570083CD37 /* Appboy */,
 				C9EE9D7B1BD7C2570083CD37 /* BranchMetrics */,
 				C9EE9D7E1BD7C2570083CD37 /* comScore */,
+				C9D7E24C1BE96201002EEAE9 /* Crittercism */,
 				C9EE9D811BD7C2570083CD37 /* Flurry */,
 				C9EE9D841BD7C2570083CD37 /* Foresee */,
 				C9EE9D871BD7C2570083CD37 /* Kahuna */,
@@ -1181,6 +1195,7 @@
 				C9C2DC661BD458600002F75A /* MPBags+Internal.h in Headers */,
 				C9C2DC761BD458600002F75A /* MPProductBag.h in Headers */,
 				C9C2DC691BD458600002F75A /* MPCart+Dictionary.h in Headers */,
+				C9D7E24F1BE96252002EEAE9 /* MPKitCrittercism.h in Headers */,
 				C9EE9DBD1BD7C2570083CD37 /* MPKitAbstract.h in Headers */,
 				C9EE9DC11BD7C2570083CD37 /* MPKitContainer.h in Headers */,
 				C9EE9DBF1BD7C2570083CD37 /* MPKitConfiguration.h in Headers */,
@@ -1454,6 +1469,7 @@
 				C9C2DCE81BD458600002F75A /* Hasher.cpp in Sources */,
 				C9C2DCBA1BD458600002F75A /* MPMediaMetadataOCR.m in Sources */,
 				C9EE9DA81BD7C2570083CD37 /* MPKitBranchMetrics.m in Sources */,
+				C9D7E2501BE96252002EEAE9 /* MPKitCrittercism.m in Sources */,
 				C9C2DC611BD458600002F75A /* MPStandaloneMessage.m in Sources */,
 				C9EE9DAC1BD7C2570083CD37 /* MPKitFlurry.mm in Sources */,
 				C9EE9DC21BD7C2570083CD37 /* MPKitContainer.mm in Sources */,
