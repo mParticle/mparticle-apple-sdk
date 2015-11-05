@@ -19,7 +19,6 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPSession.h"
-#import "MPExceptionHandler.h"
 #import "MPConstants.h"
 #import "MPBackendController.h"
 #import "NSURLConnection+mParticle.h"
@@ -52,6 +51,10 @@
 #import "MPMediaMetadataOCR.h"
 #import "MPMediaMetadataTVR.h"
 
+#if defined(MP_CRASH_REPORTER)
+    #import "MPExceptionHandler.h"
+#endif
+
 static NSArray *eventTypeStrings;
 
 NSString *const kMPEventNameLogTransaction = @"Purchase";
@@ -61,7 +64,9 @@ NSString *const kMPMethodName = @"$MethodName";
 NSString *const kMPStateKey = @"state";
 
 @interface MParticle() <MPBackendControllerDelegate> {
+#if defined(MP_CRASH_REPORTER)
     MPExceptionHandler *exceptionHandler;
+#endif
     NSNumber *privateOptOut;
     BOOL isLoggingUncaughtExceptions;
 }
@@ -150,6 +155,7 @@ NSString *const kMPStateKey = @"state";
 #pragma mark KVOs
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([keyPath isEqualToString:@"backendController.session"]) {
+#if defined(MP_CRASH_REPORTER)
         MPSession *session = change[NSKeyValueChangeNewKey];
         
         if (exceptionHandler) {
@@ -161,6 +167,7 @@ NSString *const kMPStateKey = @"state";
         if (isLoggingUncaughtExceptions && ![MPExceptionHandler isHandlingExceptions]) {
             [exceptionHandler beginUncaughtExceptionLogging];
         }
+#endif
     } else {
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
     }
@@ -465,10 +472,12 @@ NSString *const kMPStateKey = @"state";
                                if (strongSelf.configSettings[kMPConfigUploadInterval]) {
                                    strongSelf.uploadInterval = [strongSelf.configSettings[kMPConfigUploadInterval] doubleValue];
                                }
-                               
+
+#if defined(MP_CRASH_REPORTER)
                                if ([strongSelf.configSettings[kMPConfigEnableCrashReporting] boolValue]) {
                                    [strongSelf beginUncaughtExceptionLogging];
                                }
+#endif
                                
                                if ([strongSelf.configSettings[kMPConfigLocationTracking] boolValue]) {
                                    CLLocationAccuracy accuracy = [strongSelf.configSettings[kMPConfigLocationAccuracy] doubleValue];
@@ -684,6 +693,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Error, Exception, and Crash Handling
+#if defined(MP_CRASH_REPORTER)
 - (void)beginUncaughtExceptionLogging {
     if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
         [exceptionHandler beginUncaughtExceptionLogging];
@@ -711,6 +721,7 @@ NSString *const kMPStateKey = @"state";
         });
     }
 }
+#endif
 
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName {
     [self leaveBreadcrumb:breadcrumbName eventInfo:nil];

@@ -61,8 +61,6 @@ With each integration with a partner we strive to implement as many features as 
 * [Kochava](https://www.kochava.com)
 * [Localytics](http://www.localytics.com)
 
-Make sure you have an account with GitHub and have added your ssh-rsa to the list of SSH keys, before trying to install mParticle-iOS-SDK.
-
 ## Initialize the SDK
 
 Call the `startWithKey` method within the application did finish launching delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. 

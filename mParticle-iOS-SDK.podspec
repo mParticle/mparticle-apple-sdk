@@ -113,4 +113,12 @@ Pod::Spec.new do |s|
         ss.prefix_header_contents = "#define MP_KIT_MPARTICLE 1"
         ss.platform               = :ios, '7.0'
     end
+    
+    s.subspec 'CrashReporter' do |ss|
+        ss.dependency 'mParticle-iOS-SDK/Core-SDK'
+        ss.dependency 'mParticle-iOS-SDK/mParticle'
+        ss.dependency 'mParticle-CrashReporter', '~> 1.2'
+        ss.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
+        ss.platform               = :ios, '7.0'
+    end
 end

@@ -357,17 +357,19 @@
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary *)eventInfo;
 
 #pragma mark - Error, Exception, and Crash Handling
+#if defined(MP_CRASH_REPORTER)
 /**
  Enables mParticle exception handling to automatically log events on uncaught exceptions.
  *** Currently unavailable ***
  */
-//- (void)beginUncaughtExceptionLogging;
+- (void)beginUncaughtExceptionLogging;
 
 /**
  Disables mParticle exception handling.
  *** Currently unavailable ***
  */
-//- (void)endUncaughtExceptionLogging;
+- (void)endUncaughtExceptionLogging;
+#endif
 
 /**
  Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.

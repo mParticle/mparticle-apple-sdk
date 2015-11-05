@@ -22,7 +22,6 @@
 #import <dispatch/dispatch.h>
 #import <execinfo.h>
 #import <signal.h>
-//#import "CrashReporter.h"
 #import <sys/sysctl.h>
 #import "MPStateMachine.h"
 #import "MPSession.h"
@@ -38,11 +37,15 @@
 #import "MPLogger.h"
 #import "MPMessageBuilder.h"
 
+#if defined(MP_CRASH_REPORTER)
+    #import "CrashReporter.h"
+    static PLCrashReporter *_crashReporter;
+#endif
+
 NSString *const kMPAppImageBaseAddressKey = @"iba";
 NSString *const kMPAppImageSizeKey = @"is";
 
 static BOOL handlingExceptions;
-//static PLCrashReporter *_crashReporter;
 
 void SignalHandler(int signal);
 //void BeginUncaughtExceptionLogging();
@@ -79,7 +82,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @implementation MPExceptionHandler
 
 + (void)initialize {
-//    _crashReporter = nil;
+#if defined(MP_CRASH_REPORTER)
+    _crashReporter = nil;
+#endif
     handlingExceptions = NO;
 }
 
@@ -269,19 +274,25 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (void)processPendingCrashReport {
-//    if (![PLCrashReporter hasPendingCrashReport]) {
-//        return;
-//    }
+    NSData *crashData = nil;
     
-//    NSError *error;
-    NSData *crashData = nil;//[PLCrashReporter loadPendingCrashReportDataAndReturnError:&error];
+#if defined(MP_CRASH_REPORTER)
+    if (![PLCrashReporter hasPendingCrashReport]) {
+        return;
+    }
+    
+    NSError *error = nil;
+    crashData = [PLCrashReporter loadPendingCrashReportDataAndReturnError:&error];
+#endif
     
     if (crashData) {
-//---
+#if defined(MP_CRASH_REPORTER)
+//--- Do Not Uncomment, for debugging purposes only.
 //        PLCrashReport *report = [[PLCrashReport alloc] initWithData:crashData error:&error];
 //        NSString *reportString = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
 //        NSLog(@"\nCrash report: %@", reportString);
 //---
+#endif
         NSString *base64CrashString = [crashData base64EncodedStringWithOptions:0];
         
         NSMutableDictionary *messageInfo = [@{kMPCrashingSeverity:@"fatal",
@@ -313,29 +324,35 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo];
         MPMessage *message = (MPMessage *)[messageBuilder build];
         [persistence saveMessage:message];
-//    } else {
-//        MPLogError(@"Could not process pending crash report with error: %@", error);
+#if defined(MP_CRASH_REPORTER)
+    } else {
+        MPLogError(@"Could not process pending crash report with error: %@", error);
+#endif
     }
     
-//    [PLCrashReporter purgePendingCrashReport];
+#if defined(MP_CRASH_REPORTER)
+    [PLCrashReporter purgePendingCrashReport];
+#endif
 }
 
 - (void)registerCallback {
     _dyld_register_func_for_add_image(addImageListCallback);
 }
 
-//+ (PLCrashReporter *)crashReporter {
-//    if (_crashReporter) {
-//        return _crashReporter;
-//    }
-//    
-//    PLCrashReporterConfig *crashReporterConfig = [[PLCrashReporterConfig alloc] initWithSignalHandlerType:PLCrashReporterSignalHandlerTypeMach
-//                                                                                    symbolicationStrategy:PLCrashReporterSymbolicationStrategyAll];
-//    
-//    _crashReporter = [[PLCrashReporter alloc] initWithConfiguration:crashReporterConfig];
-//    
-//    return _crashReporter;
-//}
+#if defined(MP_CRASH_REPORTER)
++ (PLCrashReporter *)crashReporter {
+    if (_crashReporter) {
+        return _crashReporter;
+    }
+    
+    PLCrashReporterConfig *crashReporterConfig = [[PLCrashReporterConfig alloc] initWithSignalHandlerType:PLCrashReporterSignalHandlerTypeMach
+                                                                                    symbolicationStrategy:PLCrashReporterSymbolicationStrategyAll];
+    
+    _crashReporter = [[PLCrashReporter alloc] initWithConfiguration:crashReporterConfig];
+    
+    return _crashReporter;
+}
+#endif
 
 #pragma mark Notification handlers
 - (void)handleCrashReportOccurred:(NSNotification *)notification {
@@ -475,13 +492,17 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 + (NSData *)generateLiveExceptionReport {
     NSError *error = nil;
-    NSData *liveExceptionReport = nil;//[[MPExceptionHandler crashReporter] generateLiveReportAndReturnError:&error];
+    NSData *liveExceptionReport = nil;
     
-//---
+#if defined(MP_CRASH_REPORTER)
+    liveExceptionReport = [[MPExceptionHandler crashReporter] generateLiveReportAndReturnError:&error];
+    
+//--- Do Not Uncomment. For debugging purposes only
 //    PLCrashReport *report = [[PLCrashReport alloc] initWithData:liveExceptionReport error:&error];
 //    NSString *reportString = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
 //    NSLog(@"\nLive exception report: %@", reportString);
 //---
+#endif
     
     if (error) {
         return nil;
@@ -503,7 +524,12 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     }
     
     NSError *error = nil;
-    BOOL crashReporterEnabled = NO;//[[MPExceptionHandler crashReporter] enableCrashReporterAndReturnError:&error];
+    BOOL crashReporterEnabled = NO;
+    
+#if defined(MP_CRASH_REPORTER)
+    crashReporterEnabled = [[MPExceptionHandler crashReporter] enableCrashReporterAndReturnError:&error];
+#endif
+    
     if (!crashReporterEnabled) {
         MPLogError(@"Could not enable crash reporter with error: %@", error);
     }
