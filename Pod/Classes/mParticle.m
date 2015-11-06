@@ -693,8 +693,8 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Error, Exception, and Crash Handling
-#if defined(MP_CRASH_REPORTER)
 - (void)beginUncaughtExceptionLogging {
+#if defined(MP_CRASH_REPORTER)
     if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
         [exceptionHandler beginUncaughtExceptionLogging];
         isLoggingUncaughtExceptions = YES;
@@ -706,9 +706,11 @@ NSString *const kMPStateKey = @"state";
             [strongSelf beginUncaughtExceptionLogging];
         });
     }
+#endif
 }
 
 - (void)endUncaughtExceptionLogging {
+#if defined(MP_CRASH_REPORTER)
     if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
         [exceptionHandler endUncaughtExceptionLogging];
         isLoggingUncaughtExceptions = NO;
@@ -720,8 +722,8 @@ NSString *const kMPStateKey = @"state";
             [strongSelf endUncaughtExceptionLogging];
         });
     }
-}
 #endif
+}
 
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName {
     [self leaveBreadcrumb:breadcrumbName eventInfo:nil];

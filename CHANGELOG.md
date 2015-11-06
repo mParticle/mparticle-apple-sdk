@@ -2,8 +2,10 @@
 
 ## 5.1.0
 
-* Support to [Crittercism](http://www.crittercism.com) as a kit
+* Support for [Crittercism](http://www.crittercism.com) as a kit
+* Crash reporter has been implemented as an optional subspec
 * Validating the authenticity of network requests by alternative means to avoid errors raised by 3rd party SDKs mutating and proxying mParticle's original object performing the request
+* Removed legacy semaphores from network connections
 
 ## 5.0.2
 

@@ -38,7 +38,7 @@
 #import "MPMessageBuilder.h"
 
 #if defined(MP_CRASH_REPORTER)
-    #import "CrashReporter.h"
+    #import <mParticle-CrashReporter/CrashReporter.h>
     static PLCrashReporter *_crashReporter;
 #endif
 

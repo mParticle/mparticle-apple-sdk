@@ -31,8 +31,6 @@ static NSArray *mpFiddlerCertificates = nil;
     NSMutableData *receivedData;
     NSDate *requestStartTime;
     NSHTTPURLResponse *httpURLResponse;
-    dispatch_semaphore_t connectionSemaphore;
-    dispatch_time_t semaphoreTimeout;
 }
 
 @property (nonatomic, copy) void (^completionHandler)(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse);
@@ -61,8 +59,6 @@ static NSArray *mpFiddlerCertificates = nil;
     
     _active = NO;
     _characterEncoding = NSUTF8StringEncoding;
-    connectionSemaphore = dispatch_semaphore_create(1);
-    semaphoreTimeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC));
     _connectionId = nil;
     
     [self cleariVars];
@@ -161,7 +157,6 @@ static NSArray *mpFiddlerCertificates = nil;
         if (_active) {
             _active = NO;
             [self cleariVars];
-            dispatch_semaphore_signal(connectionSemaphore);
         }
         
         completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
@@ -243,7 +238,6 @@ static NSArray *mpFiddlerCertificates = nil;
     
     if (_active) {
         _active = NO;
-        dispatch_semaphore_signal(connectionSemaphore);
     }
 }
 
@@ -265,8 +259,6 @@ static NSArray *mpFiddlerCertificates = nil;
     NSMutableURLRequest *asyncURLRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
     
     if (asyncURLRequest) {
-        dispatch_semaphore_wait(connectionSemaphore, semaphoreTimeout);
-        
         _active = YES;
         requestStartTime = [NSDate date];
         self.completionHandler = completionHandler;
@@ -293,8 +285,6 @@ static NSArray *mpFiddlerCertificates = nil;
                                             build];
     
     if (asyncURLRequest) {
-        dispatch_semaphore_wait(connectionSemaphore, semaphoreTimeout);
-        
         _active = YES;
         requestStartTime = [NSDate date];
         self.completionHandler = completionHandler;
@@ -313,8 +303,6 @@ static NSArray *mpFiddlerCertificates = nil;
     if (_active) {
         _active = NO;
         [self cleariVars];
-        
-        dispatch_semaphore_signal(connectionSemaphore);
     }
 }
 

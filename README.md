@@ -45,6 +45,15 @@ If you do not need to build the mParticle SDK with any kit 3rd party kits, and u
 pod 'mParticle-iOS-SDK/mParticle'
 ```
 
+#### Crash Reporter
+
+The crash reporter feature has been implemented as an optional subspec. It is installed by default, however, if you are fine tunning your installation, you can choose to install it or not in your Podfile. 
+
+```ruby
+pod 'mParticle-iOS-SDK/CrashReporter'
+```
+
+
 ### Kits
 
 With each integration with a partner we strive to implement as many features as possible in the server-to-server layer, however some times a deeper integration to work side-by-side with a 3rd party SDK comes with greater benefits to our clients. We use the term **Kit** to describe such integrations.
