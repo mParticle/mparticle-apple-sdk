@@ -160,7 +160,7 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
 }
 
 - (MPKitExecStatus *)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    NSString *eventName = self.defaultEventNames[@(commerceEvent.action)];
+    NSString *eventName = self.defaultEventNames[@(commerceEvent.type)];
     MPKitExecStatus *execStatus;
     
     if (!eventName) {
