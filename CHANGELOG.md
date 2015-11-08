@@ -1,5 +1,10 @@
 # mParticle CHANGELOG
 
+## 5.1.1
+
+* Each commerce event action is dealt with in an action-by-action basis for Kahuna
+* Fixed a bug expanding and forwarding events to kits with no support to eCommerce events
+
 ## 5.1.0
 
 * Support for [Crittercism](http://www.crittercism.com) as a kit

@@ -170,34 +170,30 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
     
     NSDictionary *userAttributes = [commerceEvent userDefinedAttributes];
     MPCommerceEventKind kindOfCommerceEvent = [commerceEvent kind];
-    __block int sumQuantity = 0;
-    int revenueInCents = 0;
-
+    
     switch (kindOfCommerceEvent) {
-        case MPCommerceEventKindProduct: {
-            NSArray *products = [commerceEvent products];
-            
-            for (MPProduct *product in products) {
-                sumQuantity += [product.quantity intValue];
+        case MPCommerceEventKindProduct:
+            if (commerceEvent.action == MPCommerceEventActionPurchase) {
+                NSArray *products = [commerceEvent products];
+                int sumQuantity = 0;
+                
+                for (MPProduct *product in products) {
+                    sumQuantity += [product.quantity intValue];
+                }
+                
+                int revenueInCents = (int)floor([commerceEvent.transactionAttributes.revenue doubleValue] * 100);
+                [KahunaAnalytics trackEvent:eventName withCount:sumQuantity andValue:revenueInCents];
+            } else {
+                [KahunaAnalytics trackEvent:eventName];
             }
-            
-            revenueInCents = (int)floor([commerceEvent.transactionAttributes.revenue doubleValue] * 100);
-        }
             break;
             
-        case MPCommerceEventKindImpression: {
-            NSDictionary *impressions = commerceEvent.impressions;
-            
-            [impressions enumerateKeysAndObjectsUsingBlock:^(NSString *listName, NSSet *productImpressions, BOOL *stop) {
-                [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
-                    sumQuantity += [productImpression.quantity intValue];
-                }];
-            }];
-        }
+        case MPCommerceEventKindImpression:
+            [KahunaAnalytics trackEvent:eventName];
             break;
             
         case MPCommerceEventKindPromotion:
-            sumQuantity = (int)commerceEvent.promotionContainer.promotions.count;
+            [KahunaAnalytics trackEvent:eventName];
             break;
             
         default:
@@ -205,10 +201,7 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
             return execStatus;
             break;
     }
-
     
-    [KahunaAnalytics trackEvent:eventName withCount:sumQuantity andValue:revenueInCents];
-
     if (userAttributes.count > 0) {
         [KahunaAnalytics setUserAttributes:userAttributes];
     }

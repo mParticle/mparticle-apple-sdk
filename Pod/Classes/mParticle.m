@@ -866,7 +866,7 @@ NSString *const kMPStateKey = @"state";
                                                                                               NSArray *expandedInstructions = [kitFilter.forwardCommerceEvent expandedInstructions];
                                                                                               
                                                                                               for (MPCommerceEventInstruction *commerceEventInstruction in expandedInstructions) {
-                                                                                                  [self logEvent:commerceEventInstruction.event];
+                                                                                                  [kit logEvent:commerceEventInstruction.event];
                                                                                               }
                                                                                               
                                                                                               *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kit.kitCode returnCode:MPKitReturnCodeSuccess];
