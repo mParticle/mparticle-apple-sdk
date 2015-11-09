@@ -1,5 +1,9 @@
 # mParticle CHANGELOG
 
+## 5.1.2
+
+* Using asynchronous validation for authenticity of certificates
+
 ## 5.1.1
 
 * Each commerce event action is dealt with in an action-by-action basis for Kahuna

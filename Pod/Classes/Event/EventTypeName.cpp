@@ -21,8 +21,8 @@
 
 namespace mParticle {
     const vector<string> EventTypeName::names = {"Unknown", "Navigation", "Location", "Search", "Transaction", "UserContent", "UserPreference", "Social", "Other", "Media", // 0-9
-                                                 "AddToCart", "RemoveFromCart", "Checkout", "CheckoutOption", "Click", "ViewDetail", "Purchase", "Refund", "PromotionView", "PromotionClick", // 10-19
-                                                 "AddToWishlist", "RemoveFromWishlist", "Impression"}; // 20-22
+                                                 "ProductAddToCart", "ProductRemoveFromCart", "ProductCheckout", "ProductCheckoutOption", "ProductClick", "ProductViewDetail", "ProductPurchase", "ProductRefund", // 10-17
+                                                 "PromotionView", "PromotionClick", "ProductAddToWishlist", "ProductRemoveFromWishlist", "ProductImpression"}; // 18-22
     
     const size_t EventTypeName::count = EventTypeName::names.size();
     

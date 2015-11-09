@@ -112,23 +112,20 @@ static NSArray *mpFiddlerCertificates = nil;
     NSString *protocol = [protectionSpace protocol];
     __block SecTrustRef serverTrust = [protectionSpace serverTrust];
     
-    BOOL trustChallenge = NO;
-    
     if ([autheticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust] &&
         [host rangeOfString:@"mparticle.com"].location != NSNotFound &&
         [protocol isEqualToString:kMPURLScheme] &&
         [protectionSpace receivesCredentialSecurely] &&
         serverTrust)
     {
-        SecTrustResultType trustResult;
-        OSStatus status = SecTrustEvaluate(serverTrust, &trustResult);
-        
-        if (status == errSecSuccess) {
+        SecTrustCallback evaluateResult = ^(SecTrustRef _Nonnull trustRef, SecTrustResultType trustResult) {
+            BOOL trustChallenge = NO;
+            
             if (trustResult == kSecTrustResultUnspecified || trustResult == kSecTrustResultProceed) {
-                CFIndex certificateCount = SecTrustGetCertificateCount(serverTrust);
+                CFIndex certificateCount = SecTrustGetCertificateCount(trustRef);
                 
                 for (CFIndex certIdx = 1; certIdx < certificateCount; ++certIdx) {
-                    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(serverTrust, certIdx);
+                    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(trustRef, certIdx);
                     CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
                     
                     if (certificateDataRef != NULL) {
@@ -147,19 +144,21 @@ static NSArray *mpFiddlerCertificates = nil;
                     }
                 }
             }
-        }
-    }
-    
-    if (trustChallenge) {
-        NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:serverTrust];
-        completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
-    } else {
-        if (_active) {
-            _active = NO;
-            [self cleariVars];
-        }
+            
+            if (trustChallenge) {
+                NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:trustRef];
+                completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
+            } else {
+                if (_active) {
+                    _active = NO;
+                    [self cleariVars];
+                }
+                
+                completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+            }
+        };
         
-        completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+        SecTrustEvaluateAsync(serverTrust, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), evaluateResult);
     }
 }
 
