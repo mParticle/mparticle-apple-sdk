@@ -21,11 +21,11 @@
 
 @interface MPStandaloneUpload : MPDataModelAbstract <NSCopying, MPDataModelProtocol>
 
-@property (nonatomic, strong) NSData *uploadData;
+@property (nonatomic, strong, nonnull) NSData *uploadData;
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t uploadId;
 
-- (instancetype)initWithUploadDictionary:(NSDictionary *)uploadDictionary;
-- (instancetype)initWithUploadId:(int64_t)uploadId UUID:(NSString *)uuid uploadData:(NSData *)uploadData timestamp:(NSTimeInterval)timestamp __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithUploadDictionary:(nonnull NSDictionary *)uploadDictionary;
+- (nonnull instancetype)initWithUploadId:(int64_t)uploadId UUID:(nonnull NSString *)uuid uploadData:(nonnull NSData *)uploadData timestamp:(NSTimeInterval)timestamp;
 
 @end

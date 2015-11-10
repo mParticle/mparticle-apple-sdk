@@ -18,15 +18,7 @@
 
 #import "MPStandaloneMessage.h"
 
-@interface MPStandaloneMessage()
-@property (nonatomic, strong) NSString *messageContent;
-@end
-
 @implementation MPStandaloneMessage
-
-- (instancetype)init {
-    return [self initWithMessageType:@"unknown" messageInfo:nil uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970]];
-}
 
 - (instancetype)initWithMessageId:(int64_t)messageId UUID:(NSString *)uuid messageType:(NSString *)messageType messageData:(NSData *)messageData timestamp:(NSTimeInterval)timestamp uploadStatus:(MPUploadStatus)uploadStatus {
     self = [super init];
@@ -40,9 +32,6 @@
     _timestamp = timestamp;
     _uploadStatus = uploadStatus;
     _messageData = messageData;
-    if (messageData) {
-        _messageContent = [[NSString alloc] initWithData:messageData encoding:NSUTF8StringEncoding];
-    }
     
     return self;
 }
@@ -57,7 +46,9 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"StandaloneMessage\n Id: %lld\n UUID: %@\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.messageType, self.timestamp, self.messageContent];
+    NSString *serializedString = [self serializedString];
+    
+    return [NSString stringWithFormat:@"StandaloneMessage\n Id: %lld\n UUID: %@\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.messageType, self.timestamp, serializedString];
 }
 
 - (BOOL)isEqual:(MPStandaloneMessage *)object {
@@ -86,19 +77,16 @@
     [coder encodeInt64:self.messageId forKey:@"messageId"];
     [coder encodeObject:self.uuid forKey:@"uuid"];
     [coder encodeObject:self.messageType forKey:@"messageType"];
-    [coder encodeObject:self.messageContent forKey:@"messageContent"];
+    [coder encodeObject:self.messageData forKey:@"messageData"];
     [coder encodeDouble:self.timestamp forKey:@"timestamp"];
     [coder encodeInteger:self.uploadStatus forKey:@"uploadStatus"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    NSString *messageContent = [coder decodeObjectForKey:@"messageContent"];
-    NSData *messageData = [messageContent dataUsingEncoding:NSUTF8StringEncoding];
-    
     self = [self initWithMessageId:[coder decodeInt64ForKey:@"messageId"]
                               UUID:[coder decodeObjectForKey:@"uuid"]
                        messageType:[coder decodeObjectForKey:@"messageType"]
-                       messageData:messageData
+                       messageData:[coder decodeObjectForKey:@"messageData"]
                          timestamp:[coder decodeDoubleForKey:@"timestamp"]
                       uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]];
     
@@ -107,12 +95,13 @@
 
 #pragma mark Public methods
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:self.messageData options:0 error:nil];
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:_messageData options:0 error:nil];
     return dictionary;
 }
 
 - (NSString *)serializedString {
-    return self.messageContent;
+    NSString *serializedString = [[NSString alloc] initWithData:_messageData encoding:NSUTF8StringEncoding];
+    return serializedString;
 }
 
 @end

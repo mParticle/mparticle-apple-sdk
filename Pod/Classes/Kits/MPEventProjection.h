@@ -26,9 +26,9 @@ typedef NS_ENUM(NSUInteger, MPProjectionBehaviorSelector) {
 
 @interface MPEventProjection : MPBaseProjection <NSCopying, NSCoding>
 
-@property (nonatomic, strong) NSString *attributeKey;
-@property (nonatomic, strong) NSString *attributeValue;
-@property (nonatomic, strong) NSArray *attributeProjections;
+@property (nonatomic, strong, nullable) NSString *attributeKey;
+@property (nonatomic, strong, nullable) NSString *attributeValue;
+@property (nonatomic, strong, nullable) NSArray *attributeProjections;
 @property (nonatomic, unsafe_unretained) MPProjectionBehaviorSelector behaviorSelector;
 @property (nonatomic, unsafe_unretained) MPEventType eventType;
 @property (nonatomic, unsafe_unretained) MPMessageType messageType;
@@ -37,6 +37,6 @@ typedef NS_ENUM(NSUInteger, MPProjectionBehaviorSelector) {
 @property (nonatomic, unsafe_unretained) BOOL appendAsIs;
 @property (nonatomic, unsafe_unretained) BOOL isDefault;
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration;
+- (nonnull instancetype)initWithConfiguration:(nullable NSDictionary *)configuration;
 
 @end

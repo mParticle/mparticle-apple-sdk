@@ -20,8 +20,8 @@
 
 @interface MPSession : MPDataModelAbstract <NSCopying>
 
-@property (nonatomic, strong) NSMutableDictionary *attributesDictionary;
-@property (nonatomic, strong, readonly) NSNumber *sessionNumber;
+@property (nonatomic, strong, nonnull) NSMutableDictionary *attributesDictionary;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *sessionNumber;
 @property (nonatomic, unsafe_unretained) NSTimeInterval backgroundTime;
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval foregroundTime;
 @property (nonatomic, unsafe_unretained) NSTimeInterval startTime;
@@ -33,18 +33,18 @@
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
 @property (nonatomic, unsafe_unretained, readonly) BOOL persisted;
 
-- (instancetype)initWithStartTime:(NSTimeInterval)timestamp;
+- (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp;
 
-- (instancetype)initWithSessionId:(int64_t)sessionId
-                             UUID:(NSString *)uuid
-                   backgroundTime:(NSTimeInterval)backgroundTime
-                        startTime:(NSTimeInterval)startTime
-                          endTime:(NSTimeInterval)endTime
-                       attributes:(NSMutableDictionary *)attributesDictionary
-                    sessionNumber:(NSNumber *)sessionNumber
-            numberOfInterruptions:(uint)numberOfInterruptions
-                     eventCounter:(uint)eventCounter
-                      suspendTime:(NSTimeInterval)suspendTime __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithSessionId:(int64_t)sessionId
+                                     UUID:(nonnull NSString *)uuid
+                           backgroundTime:(NSTimeInterval)backgroundTime
+                                startTime:(NSTimeInterval)startTime
+                                  endTime:(NSTimeInterval)endTime
+                               attributes:(nullable NSMutableDictionary *)attributesDictionary
+                            sessionNumber:(nullable NSNumber *)sessionNumber
+                    numberOfInterruptions:(uint)numberOfInterruptions
+                             eventCounter:(uint)eventCounter
+                              suspendTime:(NSTimeInterval)suspendTime __attribute__((objc_designated_initializer));
 
 - (void)incrementCounter;
 - (void)suspendSession;

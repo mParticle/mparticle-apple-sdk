@@ -1,5 +1,9 @@
 # mParticle CHANGELOG
 
+## 5.1.3
+
+* Adopted the Objective-C Nullability syntax
+
 ## 5.1.2
 
 * Using asynchronous validation for authenticity of certificates

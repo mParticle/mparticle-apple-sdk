@@ -23,6 +23,6 @@
 @property (nonatomic, unsafe_unretained) MPDataType dataType;
 @property (nonatomic, unsafe_unretained) BOOL required;
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex;
+- (nonnull instancetype)initWithConfiguration:(nullable NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex;
 
 @end

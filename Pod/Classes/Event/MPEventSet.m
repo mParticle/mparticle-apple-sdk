@@ -53,10 +53,6 @@
 
 #pragma mark Public methods
 - (void)addEvent:(MPEvent *)event {
-    if (!event) {
-        return;
-    }
-    
     [eventSet addObject:event];
 }
 
@@ -71,7 +67,7 @@
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
-    if (!eventName || eventSet.count == 0) {
+    if (eventSet.count == 0) {
         return nil;
     }
     
@@ -82,7 +78,7 @@
 }
 
 - (void)removeEvent:(MPEvent *)event {
-    if (!event || eventSet.count == 0) {
+    if (eventSet.count == 0) {
         return;
     }
     

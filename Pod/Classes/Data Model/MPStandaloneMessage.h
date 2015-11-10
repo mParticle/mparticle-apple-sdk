@@ -22,21 +22,21 @@
 
 @interface MPStandaloneMessage : MPDataModelAbstract <NSCopying, NSCoding, MPDataModelProtocol>
 
-@property (nonatomic, strong) NSString *messageType;
-@property (nonatomic, strong) NSData *messageData;
+@property (nonatomic, strong, nonnull) NSString *messageType;
+@property (nonatomic, strong, nonnull) NSData *messageData;
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t messageId;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 
 // Designited initializer for fetching data from the database
-- (instancetype)initWithMessageId:(int64_t)messageId
-                             UUID:(NSString *)uuid
-                      messageType:(NSString *)messageType
-                      messageData:(NSData *)messageData
-                        timestamp:(NSTimeInterval)timestamp
-                     uploadStatus:(MPUploadStatus)uploadStatus __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithMessageId:(int64_t)messageId
+                                     UUID:(nonnull NSString *)uuid
+                              messageType:(nonnull NSString *)messageType
+                              messageData:(nonnull NSData *)messageData
+                                timestamp:(NSTimeInterval)timestamp
+                             uploadStatus:(MPUploadStatus)uploadStatus;
 
 // Designated initializers for creating instances (not fetched from the database)
-- (instancetype)initWithMessageType:(NSString *)messageType messageInfo:(NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(NSString *)uuid timestamp:(NSTimeInterval)timestamp;
+- (nonnull instancetype)initWithMessageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp;
 
 @end

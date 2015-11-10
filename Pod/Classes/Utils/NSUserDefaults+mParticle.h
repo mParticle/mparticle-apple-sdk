@@ -20,10 +20,10 @@
 
 @interface NSUserDefaults(mParticle)
 
-- (id)mpObjectForKey:(NSString *)defaultName;
-- (void)setMPObject:(id)value forKey:(NSString *)defaultName;
-- (void)removeMPObjectForKey:(NSString *)defaultName;
-- (id)objectForKeyedSubscript:(NSString *const)key;
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
+- (nullable id)mpObjectForKey:(nonnull NSString *)defaultName;
+- (void)setMPObject:(nullable id)value forKey:(nonnull NSString *)defaultName;
+- (void)removeMPObjectForKey:(nonnull NSString *)defaultName;
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
+- (void)setObject:(nullable id)obj forKeyedSubscript:(nonnull NSString *)key;
 
 @end

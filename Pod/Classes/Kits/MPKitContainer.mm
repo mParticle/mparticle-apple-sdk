@@ -1700,7 +1700,7 @@ NSString *const kitFileExtension = @"eks";
 #endif
                                        ];
     
-    return supportedKits.count > 0 ? supportedKits : nil;
+    return supportedKits;
 }
 
 #pragma mark Forward methods

@@ -20,6 +20,6 @@
 
 @interface MPBags(Internal)
 
-- (NSDictionary *)dictionaryRepresentation;
+- (nullable NSDictionary *)dictionaryRepresentation;
 
 @end

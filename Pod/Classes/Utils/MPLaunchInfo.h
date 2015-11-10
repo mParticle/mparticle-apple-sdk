@@ -20,10 +20,10 @@
 
 @interface MPLaunchInfo : NSObject
 
-@property (nonatomic, strong, readonly) NSURL *url;
-@property (nonatomic, strong, readonly) NSString *sourceApplication;
-@property (nonatomic, strong, readonly) id annotation;
+@property (nonatomic, strong, readonly, nonnull) NSURL *url;
+@property (nonatomic, strong, readonly, nonnull) NSString *sourceApplication;
+@property (nonatomic, strong, readonly, nullable) id annotation;
 
-- (instancetype)initWithURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+- (nonnull instancetype)initWithURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
 
 @end

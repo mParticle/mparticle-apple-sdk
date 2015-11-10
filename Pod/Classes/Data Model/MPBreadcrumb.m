@@ -26,10 +26,6 @@
 
 @implementation MPBreadcrumb
 
-- (instancetype)init {
-    return [self initWithSessionUUID:nil breadcrumbId:0 UUID:[[NSUUID UUID] UUIDString] breadcrumbData:nil sessionNumber:nil timestamp:[[NSDate date] timeIntervalSince1970]];
-}
-
 - (instancetype)initWithSessionUUID:(NSString *)sessionUUID breadcrumbId:(int64_t)breadcrumbId UUID:(NSString *)uuid breadcrumbData:(NSData *)breadcrumbData sessionNumber:(NSNumber *)sessionNumber timestamp:(NSTimeInterval)timestamp {
     self = [super init];
     if (!self) {

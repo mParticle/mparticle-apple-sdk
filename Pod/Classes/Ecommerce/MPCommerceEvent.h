@@ -66,12 +66,12 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 /**
  Checkout option string describing what the options are.
  */
-@property (nonatomic, strong) NSString *checkoutOptions;
+@property (nonatomic, strong, nullable) NSString *checkoutOptions;
 
 /**
  The currency used in the commerce event.
  */
-@property (nonatomic, strong) NSString *currency;
+@property (nonatomic, strong, nullable) NSString *currency;
 
 /**
  A dictionary containing list names as keys and arrays of products impressed under that list name
@@ -80,41 +80,41 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  {"listName1":[product1, product2]}
  </code></pre>
  */
-@property (nonatomic, strong, readonly) NSDictionary *impressions;
+@property (nonatomic, strong, readonly, nullable) NSDictionary *impressions;
 
 /**
  List of products being applied <i>action</i>
  */
-@property (nonatomic, strong, readonly) NSArray *products;
+@property (nonatomic, strong, readonly, nullable) NSArray *products;
 
 /**
  A promotion container describing a promotion action and its respective products.
  
  @see MPPromotionContainer
  */
-@property (nonatomic, strong) MPPromotionContainer *promotionContainer;
+@property (nonatomic, strong, nullable) MPPromotionContainer *promotionContainer;
 
 /**
  Describes a product action list for this commerce event transaction.
  */
-@property (nonatomic, strong) NSString *productListName;
+@property (nonatomic, strong, nullable) NSString *productListName;
 
 /**
  Describes a product list source for this commerce event transaction.
  */
-@property (nonatomic, strong) NSString *productListSource;
+@property (nonatomic, strong, nullable) NSString *productListSource;
 
 /**
  The label describing the screen on which the commerce event transaction occurred
  */
-@property (nonatomic, strong) NSString *screenName;
+@property (nonatomic, strong, nullable) NSString *screenName;
 
 /**
  The attributes of the transaction, such as: transactionId, tax, affiliation, shipping, etc.
  
  @see MPTransactionAttributes
  */
-@property (nonatomic, strong) MPTransactionAttributes *transactionAttributes;
+@property (nonatomic, strong, nullable) MPTransactionAttributes *transactionAttributes;
 
 /**
  A value from the <b>MPCommerceEventAction</b> enum describing the commerce event action.
@@ -139,7 +139,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  
  @see MPCommerceEventAction
  */
-- (instancetype)initWithAction:(MPCommerceEventAction)action product:(MPProduct *)product;
+- (nonnull instancetype)initWithAction:(MPCommerceEventAction)action product:(nullable MPProduct *)product;
 
 /**
  Initializes an instance of MPCommerceEvent with a list name for a product impression.
@@ -147,7 +147,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  @param listName A string under which the product was listed for this impression
  @param product An instance of MPProduct
  */
-- (instancetype)initWithImpressionName:(NSString *)listName product:(MPProduct *)product;
+- (nonnull instancetype)initWithImpressionName:(nullable NSString *)listName product:(nullable MPProduct *)product;
 
 /**
  Initializes an instance of MPCommerceEvent with a promotion container (promotion for products).
@@ -156,7 +156,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  
  @see MPPromotionContainer
  */
-- (instancetype)initWithPromotionContainer:(MPPromotionContainer *)promotionContainer;
+- (nonnull instancetype)initWithPromotionContainer:(nullable MPPromotionContainer *)promotionContainer;
 
 /**
  Adds the representation of a product impression under a given list name.
@@ -164,21 +164,21 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  @param product An instance of MPProduct
  @param listName A string under which the product was listed for this impression
  */
-- (void)addImpression:(MPProduct *)product listName:(NSString *)listName;
+- (void)addImpression:(nonnull MPProduct *)product listName:(nonnull NSString *)listName;
 
 /**
  Adds a product to the list of products to have <i>action</i> applied to.
  
  @param product An instance of MPProduct
  */
-- (void)addProduct:(MPProduct *)product;
+- (void)addProduct:(nonnull MPProduct *)product;
 
 /**
  Removes a product to the list of products to have <i>action</i> applied to.
  
  @param product An instance of MPProduct
  */
-- (void)removeProduct:(MPProduct *)product;
+- (void)removeProduct:(nonnull MPProduct *)product;
 
 /**
  Associates a custom dictionary of key/value pairs to the commerce event.
@@ -207,13 +207,13 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 
  @param customAttributes A dictionary containing the custom key/value pairs.
  */
-- (void)setCustomAttributes:(NSDictionary *)customAttributes;
+- (void)setCustomAttributes:(nullable NSDictionary *)customAttributes;
 
 /**
  Returns an array with all keys in the custom attributes dictionary
  @returns An array with all keys in the custom attributes dictionary
  */
-- (NSArray *)allKeys;
+- (nullable NSArray *)allKeys;
 
 /**
  Number of entries in the custom attributes dictionary
@@ -221,16 +221,16 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  */
 - (NSUInteger)count;
 
-- (id)objectForKeyedSubscript:(NSString *const)key;
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
+- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
 
 @end
 
-extern NSString *const kMPCEInstructionsKey;
-extern NSString *const kMPExpCECheckoutOptions;
-extern NSString *const kMPExpCECurrency;
-extern NSString *const kMPExpCEProductListName;
-extern NSString *const kMPExpCEProductListSource;
-extern NSString *const kMPExpCECheckoutStep;
-extern NSString *const kMPExpCEProductImpressionList;
-extern NSString *const kMPExpCEProductCount;
+extern NSString * _Nonnull const kMPCEInstructionsKey;
+extern NSString * _Nonnull const kMPExpCECheckoutOptions;
+extern NSString * _Nonnull const kMPExpCECurrency;
+extern NSString * _Nonnull const kMPExpCEProductListName;
+extern NSString * _Nonnull const kMPExpCEProductListSource;
+extern NSString * _Nonnull const kMPExpCECheckoutStep;
+extern NSString * _Nonnull const kMPExpCEProductImpressionList;
+extern NSString * _Nonnull const kMPExpCEProductCount;

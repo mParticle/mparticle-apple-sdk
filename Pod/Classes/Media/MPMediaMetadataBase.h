@@ -23,11 +23,11 @@
     NSMutableDictionary *_objectDictionary;
 }
 
-@property (nonatomic, strong) NSMutableDictionary *objectDictionary;
+@property (nonatomic, strong, nonnull) NSMutableDictionary *objectDictionary;
 
-- (id)objectForKeyedSubscript:(NSString *const)key;
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
-- (NSArray *)allKeys;
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
+- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
+- (nullable NSArray *)allKeys;
 - (NSUInteger)count;
 
 @end

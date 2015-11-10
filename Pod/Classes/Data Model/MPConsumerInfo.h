@@ -20,21 +20,21 @@
 
 #pragma mark - MPCookie
 
-extern NSString *const kMPCKContent;
-extern NSString *const kMPCKDomain;
-extern NSString *const kMPCKExpiration;
+extern NSString * _Nonnull const kMPCKContent;
+extern NSString * _Nonnull const kMPCKDomain;
+extern NSString * _Nonnull const kMPCKExpiration;
 
 @interface MPCookie : NSObject <NSCoding>
 
 @property (nonatomic, unsafe_unretained) int64_t cookieId;
-@property (nonatomic, strong) NSString *content;
-@property (nonatomic, strong) NSString *domain;
-@property (nonatomic, strong) NSString *expiration;
-@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong, nullable) NSString *content;
+@property (nonatomic, strong, nullable) NSString *domain;
+@property (nonatomic, strong, nullable) NSString *expiration;
+@property (nonatomic, strong, nonnull) NSString *name;
 @property (nonatomic, unsafe_unretained, readonly) BOOL expired;
 
-- (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration;
-- (NSDictionary *)dictionaryRepresentation;
+- (nonnull instancetype)initWithName:(nonnull NSString *)name configuration:(nonnull NSDictionary *)configuration;
+- (nullable NSDictionary *)dictionaryRepresentation;
 
 @end
 
@@ -43,11 +43,11 @@ extern NSString *const kMPCKExpiration;
 @interface MPConsumerInfo : NSObject <NSCoding>
 
 @property (nonatomic, unsafe_unretained) int64_t consumerInfoId;
-@property (nonatomic, strong) NSArray *cookies;
-@property (nonatomic, strong) NSNumber *mpId;
-@property (nonatomic, strong) NSString *uniqueIdentifier;
+@property (nonatomic, strong, nullable) NSArray *cookies;
+@property (nonatomic, strong, nonnull) NSNumber *mpId;
+@property (nonatomic, strong, nullable) NSString *uniqueIdentifier;
 
-- (NSDictionary *)cookiesDictionaryRepresentation;
-- (void)updateWithConfiguration:(NSDictionary *)configuration;
+- (nullable NSDictionary *)cookiesDictionaryRepresentation;
+- (void)updateWithConfiguration:(nonnull NSDictionary *)configuration;
 
 @end

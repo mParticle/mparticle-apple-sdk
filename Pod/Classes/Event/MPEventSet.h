@@ -24,12 +24,12 @@
 
 @property (nonatomic, unsafe_unretained, readonly) NSUInteger count;
 
-- (instancetype)initWithCapacity:(NSUInteger)capacity __attribute__((objc_designated_initializer));
-- (void)addEvent:(MPEvent *)event;
-- (BOOL)containsEvent:(MPEvent *)event;
-- (BOOL)containsEventWithName:(NSString *)eventName;
-- (MPEvent *)eventWithName:(NSString *)eventName;
-- (void)removeEvent:(MPEvent *)event;
-- (void)removeEventWithName:(NSString *)eventName;
+- (nonnull instancetype)initWithCapacity:(NSUInteger)capacity __attribute__((objc_designated_initializer));
+- (void)addEvent:(nonnull MPEvent *)event;
+- (BOOL)containsEvent:(nonnull MPEvent *)event;
+- (BOOL)containsEventWithName:(nonnull NSString *)eventName;
+- (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
+- (void)removeEvent:(nonnull MPEvent *)event;
+- (void)removeEventWithName:(nonnull NSString *)eventName;
 
 @end

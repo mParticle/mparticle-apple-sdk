@@ -35,27 +35,27 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 
 @interface MPStateMachine : NSObject
 
-@property (nonatomic, strong) NSString *apiKey __attribute__((const));
-@property (nonatomic, strong) MPBags *bags;
-@property (nonatomic, strong) MPConsumerInfo *consumerInfo;
+@property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
+@property (nonatomic, strong, nonnull) MPBags *bags;
+@property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 @property (nonatomic, weak) MPSession *currentSession;
-@property (nonatomic, strong) NSArray *customModules;
-@property (nonatomic, strong) NSString *exceptionHandlingMode;
-@property (nonatomic, strong) NSString *locationTrackingMode;
-@property (nonatomic, strong) NSString *latestSDKVersion;
-@property (nonatomic, strong) NSDictionary *launchOptions;
-@property (nonatomic, strong) MPLocationManager *locationManager;
-@property (nonatomic, strong) NSDate *minUploadDate;
-@property (nonatomic, strong) NSString *networkPerformanceMeasuringMode;
-@property (nonatomic, strong) NSString *pushNotificationMode;
-@property (nonatomic, strong) NSString *secret __attribute__((const));
-@property (nonatomic, strong) NSDate *startTime;
-@property (nonatomic, strong) MPLaunchInfo *launchInfo;
-@property (nonatomic, strong, readonly) NSString *deviceTokenType;
-@property (nonatomic, strong, readonly) NSNumber *firstSeenInstallation;
-@property (nonatomic, strong, readonly) NSDate *launchDate;
-@property (nonatomic, strong, readonly) NSArray *triggerEventTypes;
-@property (nonatomic, strong, readonly) NSArray *triggerMessageTypes;
+@property (nonatomic, strong, nullable) NSArray *customModules;
+@property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
+@property (nonatomic, strong, nullable) NSString *locationTrackingMode;
+@property (nonatomic, strong, nullable) NSString *latestSDKVersion;
+@property (nonatomic, strong, nullable) NSDictionary *launchOptions;
+@property (nonatomic, strong, nullable) MPLocationManager *locationManager;
+@property (nonatomic, strong, nonnull) NSDate *minUploadDate;
+@property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;
+@property (nonatomic, strong, nullable) NSString *pushNotificationMode;
+@property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
+@property (nonatomic, strong, nonnull) NSDate *startTime;
+@property (nonatomic, strong, nullable) MPLaunchInfo *launchInfo;
+@property (nonatomic, strong, readonly, nullable) NSString *deviceTokenType;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *firstSeenInstallation;
+@property (nonatomic, strong, readonly, nullable) NSDate *launchDate;
+@property (nonatomic, strong, readonly, nullable) NSArray *triggerEventTypes;
+@property (nonatomic, strong, readonly, nullable) NSArray *triggerMessageTypes;
 @property (nonatomic, unsafe_unretained) MPConsoleLogging consoleLogging;
 @property (nonatomic, unsafe_unretained) MPLogLevel logLevel;
 @property (nonatomic, unsafe_unretained) MPInstallationType installationType;
@@ -65,14 +65,14 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
 
-+ (instancetype)sharedInstance;
++ (nonnull instancetype)sharedInstance;
 + (MPEnvironment)environment;
 + (void)setEnvironment:(MPEnvironment)environment;
-+ (NSString *)provisioningProfileString;
++ (nullable NSString *)provisioningProfileString;
 + (BOOL)runningInBackground;
 + (void)setRunningInBackground:(BOOL)background;
-- (void)configureCustomModules:(NSArray *)customModuleSettings;
-- (void)configureRampPercentage:(NSNumber *)rampPercentage;
-- (void)configureTriggers:(NSDictionary *)triggerDictionary;
+- (void)configureCustomModules:(nullable NSArray *)customModuleSettings;
+- (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
+- (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
 
 @end

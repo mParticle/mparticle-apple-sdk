@@ -104,10 +104,6 @@ NSString *const kMPIsForegroung = @"fg";
 }
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (!commerceEvent) {
-        return nil;
-    }
-    
     self = [self initWithMessageType:messageType session:session];
     if (!self) {
         return nil;
@@ -154,10 +150,6 @@ NSString *const kMPIsForegroung = @"fg";
 
 #pragma mark Public class methods
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (!commerceEvent) {
-        return nil;
-    }
-    
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session commerceEvent:commerceEvent];
     return messageBuilder;
 }

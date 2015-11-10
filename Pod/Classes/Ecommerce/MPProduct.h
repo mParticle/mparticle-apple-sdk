@@ -43,37 +43,37 @@
 /**
  The product brand
  */
-@property (nonatomic, strong) NSString *brand;
+@property (nonatomic, strong, nullable) NSString *brand;
 
 /**
  A category to which the product belongs
  */
-@property (nonatomic, strong) NSString *category;
+@property (nonatomic, strong, nullable) NSString *category;
 
 /**
  The coupon associated with the product
  */
-@property (nonatomic, strong) NSString *couponCode;
+@property (nonatomic, strong, nullable) NSString *couponCode;
 
 /**
  The name of the product
  */
-@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong, nonnull) NSString *name;
 
 /**
  The price of a product. If product is free or price is non-applicable use nil. Default value is nil
  */
-@property (nonatomic, strong) NSNumber *price;
+@property (nonatomic, strong, nullable) NSNumber *price;
 
 /**
  SKU of a product. This is the product id
  */
-@property (nonatomic, strong) NSString *sku;
+@property (nonatomic, strong, nonnull) NSString *sku;
 
 /**
  The variant of the product
  */
-@property (nonatomic, strong) NSString *variant;
+@property (nonatomic, strong, nullable) NSString *variant;
 
 /**
  The prosition of the product on the screen or impression list
@@ -83,7 +83,7 @@
 /**
  The quantity of the product. Default value is 1
  */
-@property (nonatomic, strong) NSNumber *quantity;
+@property (nonatomic, strong, nonnull) NSNumber *quantity;
 
 /**
  Initializes an instance of MPProduct.
@@ -103,13 +103,13 @@
  MPProduct *product = [[MPProduct alloc] initWithName:&#64;"Product Name" sku:&#64;"s1k2u3" quantity:&#64;1 price:&#64;1.23];
  </code></pre>
  */
-- (instancetype)initWithName:(NSString *)name sku:(NSString *)sku quantity:(NSNumber *)quantity price:(NSNumber *)price;
+- (nonnull instancetype)initWithName:(nonnull NSString *)name sku:(nonnull NSString *)sku quantity:(nonnull NSNumber *)quantity price:(nullable NSNumber *)price;
 
 /**
  Returns an array with all keys in the MPProduct dictionary
  @returns An array with all dictionary keys
  */
-- (NSArray *)allKeys;
+- (nonnull NSArray *)allKeys;
 
 /**
  Number of entries in the MPProduct dictionary
@@ -117,27 +117,27 @@
  */
 - (NSUInteger)count;
 
-- (id)objectForKeyedSubscript:(NSString *const)key;
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
+- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
 
 #pragma mark Deprecated and/or Unavailable
 /**
  An entity with which the transaction should be affiliated (e.g. a particular store). If nil, mParticle will use an empty string
  @deprecated use MPTransactionAttributes.affiliation instead
  */
-@property (nonatomic, strong) NSString *affiliation __attribute__((deprecated("use MPTransactionAttributes.affiliation instead")));
+@property (nonatomic, strong, nullable) NSString *affiliation __attribute__((deprecated("use MPTransactionAttributes.affiliation instead")));
 
 /**
  The currency of a transaction. If not specified, mParticle will use "USD"
  @deprecated use MPCommerceEvent.currency instead
  */
-@property (nonatomic, strong) NSString *currency __attribute__((deprecated("use MPCommerceEvent.currency instead")));
+@property (nonatomic, strong, nullable) NSString *currency __attribute__((deprecated("use MPCommerceEvent.currency instead")));
 
 /**
  A unique ID representing the transaction. This ID should not collide with other transaction IDs. If not specified, mParticle will generate a random id with 20 characters
  @deprecated use MPTransactionAttributes.transactionId instead
  */
-@property (nonatomic, strong) NSString *transactionId __attribute__((deprecated("use MPTransactionAttributes.transactionId instead")));
+@property (nonatomic, strong, nullable) NSString *transactionId __attribute__((deprecated("use MPTransactionAttributes.transactionId instead")));
 
 /**
  @deprecated use MPTransactionAttributes.revenue instead
@@ -171,37 +171,37 @@
 /**
  @deprecated use initWithName:sku:quantity:price: instead
  */
-- (instancetype)initWithName:(NSString *)name category:(NSString *)category quantity:(NSInteger)quantity totalAmount:(double)totalAmount __attribute__((deprecated("use initWithName:sku:quantity:price: instead")));
+- (nonnull instancetype)initWithName:(nonnull NSString *)name category:(nullable NSString *)category quantity:(NSInteger)quantity totalAmount:(double)totalAmount __attribute__((deprecated("use initWithName:sku:quantity:price: instead")));
 
 /**
  @deprecated use initWithName:sku:quantity:price: instead
  */
-- (instancetype)initWithName:(NSString *)name category:(NSString *)category quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount __attribute__((unavailable("use initWithName:sku:quantity:price: instead")));
+- (nonnull instancetype)initWithName:(nonnull NSString *)name category:(nullable NSString *)category quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount __attribute__((unavailable("use initWithName:sku:quantity:price: instead")));
 
 @end
 
 // Internal
-extern NSString *const kMPProductName;
-extern NSString *const kMPProductSKU;
-extern NSString *const kMPProductUnitPrice;
-extern NSString *const kMPProductQuantity;
-extern NSString *const kMPProductRevenue;
-extern NSString *const kMPProductCategory;
-extern NSString *const kMPProductTotalAmount;
-extern NSString *const kMPProductTransactionId;
-extern NSString *const kMPProductAffiliation;
-extern NSString *const kMPProductCurrency;
-extern NSString *const kMPProductTax;
-extern NSString *const kMPProductShipping;
+extern NSString * _Nonnull const kMPProductName;
+extern NSString * _Nonnull const kMPProductSKU;
+extern NSString * _Nonnull const kMPProductUnitPrice;
+extern NSString * _Nonnull const kMPProductQuantity;
+extern NSString * _Nonnull const kMPProductRevenue;
+extern NSString * _Nonnull const kMPProductCategory;
+extern NSString * _Nonnull const kMPProductTotalAmount;
+extern NSString * _Nonnull const kMPProductTransactionId;
+extern NSString * _Nonnull const kMPProductAffiliation;
+extern NSString * _Nonnull const kMPProductCurrency;
+extern NSString * _Nonnull const kMPProductTax;
+extern NSString * _Nonnull const kMPProductShipping;
 
 // Expanded
-extern NSString *const kMPExpProductBrand;
-extern NSString *const kMPExpProductName;
-extern NSString *const kMPExpProductSKU;
-extern NSString *const kMPExpProductUnitPrice;
-extern NSString *const kMPExpProductQuantity;
-extern NSString *const kMPExpProductCategory;
-extern NSString *const kMPExpProductCouponCode;
-extern NSString *const kMPExpProductVariant;
-extern NSString *const kMPExpProductPosition;
-extern NSString *const kMPExpProductTotalAmount;
+extern NSString * _Nonnull const kMPExpProductBrand;
+extern NSString * _Nonnull const kMPExpProductName;
+extern NSString * _Nonnull const kMPExpProductSKU;
+extern NSString * _Nonnull const kMPExpProductUnitPrice;
+extern NSString * _Nonnull const kMPExpProductQuantity;
+extern NSString * _Nonnull const kMPExpProductCategory;
+extern NSString * _Nonnull const kMPExpProductCouponCode;
+extern NSString * _Nonnull const kMPExpProductVariant;
+extern NSString * _Nonnull const kMPExpProductPosition;
+extern NSString * _Nonnull const kMPExpProductTotalAmount;

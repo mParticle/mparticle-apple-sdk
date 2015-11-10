@@ -98,8 +98,7 @@
 		C9C2DCAC1BD458600002F75A /* MPEventSet.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBD71BD458600002F75A /* MPEventSet.m */; };
 		C9C2DCAD1BD458600002F75A /* MParticleReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBDA1BD458600002F75A /* MParticleReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCAE1BD458600002F75A /* MParticleReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBDB1BD458600002F75A /* MParticleReachability.m */; };
-		C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBDD1BD458600002F75A /* MPLogger.h */; };
-		C9C2DCB01BD458600002F75A /* MPLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBDE1BD458600002F75A /* MPLogger.m */; };
+		C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBDD1BD458600002F75A /* MPLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCB11BD458600002F75A /* MediaControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBE01BD458600002F75A /* MediaControl.cpp */; };
 		C9C2DCB21BD458600002F75A /* MediaControl.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBE11BD458600002F75A /* MediaControl.h */; };
 		C9C2DCB31BD458600002F75A /* MPMediaMetadataBase.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBE21BD458600002F75A /* MPMediaMetadataBase.h */; };
@@ -175,7 +174,7 @@
 		C9C2DCFB1BD458600002F75A /* MPStateMachine.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC301BD458600002F75A /* MPStateMachine.mm */; };
 		C9C2DCFC1BD458600002F75A /* MPUploadBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC311BD458600002F75A /* MPUploadBuilder.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCFD1BD458600002F75A /* MPUploadBuilder.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC321BD458600002F75A /* MPUploadBuilder.mm */; };
-		C9C2DCFE1BD458600002F75A /* NSDictionary+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC331BD458600002F75A /* NSDictionary+MPCaseInsensitive.h */; };
+		C9C2DCFE1BD458600002F75A /* NSDictionary+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC331BD458600002F75A /* NSDictionary+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCFF1BD458600002F75A /* NSDictionary+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC341BD458600002F75A /* NSDictionary+MPCaseInsensitive.m */; };
 		C9C2DD001BD458600002F75A /* NSString+MPPercentEscape.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC351BD458600002F75A /* NSString+MPPercentEscape.h */; };
 		C9C2DD011BD458600002F75A /* NSString+MPPercentEscape.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC361BD458600002F75A /* NSString+MPPercentEscape.m */; };
@@ -382,7 +381,6 @@
 		C9C2DBDA1BD458600002F75A /* MParticleReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleReachability.h; sourceTree = "<group>"; };
 		C9C2DBDB1BD458600002F75A /* MParticleReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleReachability.m; sourceTree = "<group>"; };
 		C9C2DBDD1BD458600002F75A /* MPLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLogger.h; sourceTree = "<group>"; };
-		C9C2DBDE1BD458600002F75A /* MPLogger.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLogger.m; sourceTree = "<group>"; };
 		C9C2DBE01BD458600002F75A /* MediaControl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MediaControl.cpp; sourceTree = "<group>"; };
 		C9C2DBE11BD458600002F75A /* MediaControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MediaControl.h; sourceTree = "<group>"; };
 		C9C2DBE21BD458600002F75A /* MPMediaMetadataBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMediaMetadataBase.h; sourceTree = "<group>"; };
@@ -850,7 +848,6 @@
 			isa = PBXGroup;
 			children = (
 				C9C2DBDD1BD458600002F75A /* MPLogger.h */,
-				C9C2DBDE1BD458600002F75A /* MPLogger.m */,
 			);
 			path = Logger;
 			sourceTree = "<group>";
@@ -1186,6 +1183,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */,
 				C9C2DCC61BD458600002F75A /* MPBackendController.h in Headers */,
 				C9C2DCDD1BD458600002F75A /* MPNotificationController.h in Headers */,
 				C9C2DCC21BD458600002F75A /* MPMediaTrackContainer.h in Headers */,
@@ -1264,7 +1262,6 @@
 				C9C2DCA31BD458600002F75A /* EventTypeName.h in Headers */,
 				C9EE9DB31BD7C2570083CD37 /* MPKochavaSpatialCoordinate.h in Headers */,
 				C9EE9DB51BD7C2570083CD37 /* MPKitLocalytics.h in Headers */,
-				C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */,
 				C9C2DCEE1BD458600002F75A /* MPDateFormatter.h in Headers */,
 				C9C2DCB51BD458600002F75A /* MPMediaMetadataDigitalAudio.h in Headers */,
 				C9EE9DA91BD7C2570083CD37 /* MPKitComScore.h in Headers */,
@@ -1481,7 +1478,6 @@
 				C9C2DCC11BD458600002F75A /* MPMediaTrack.m in Sources */,
 				C9C2DC571BD458600002F75A /* MPSegment.m in Sources */,
 				C9C2DCBD1BD458600002F75A /* MPMediaMetadataTVR.m in Sources */,
-				C9C2DCB01BD458600002F75A /* MPLogger.m in Sources */,
 				C9C2DCFF1BD458600002F75A /* NSDictionary+MPCaseInsensitive.m in Sources */,
 				C9C2DCD81BD458600002F75A /* MPURLRequestBuilder.m in Sources */,
 				C9C2DCC31BD458600002F75A /* MPMediaTrackContainer.m in Sources */,

@@ -20,34 +20,34 @@
 
 @class CTCarrier;
 
-extern NSString *const kMPDeviceInformationKey;
+extern NSString * _Nonnull const kMPDeviceInformationKey;
 
 
 @interface MPDevice : NSObject <NSCopying>
 
-@property (nonatomic, strong, readonly) NSString *advertiserId;
-@property (nonatomic, strong, readonly) NSString *architecture;
-@property (nonatomic, strong, readonly) NSString *brand;
-@property (nonatomic, strong, readonly) CTCarrier *carrier;
-@property (nonatomic, strong, readonly) NSString *country;
-@property (nonatomic, strong, readonly) NSString *deviceIdentifier;
-@property (nonatomic, strong, readonly) NSString *language;
-@property (nonatomic, strong, readonly) NSNumber *limitAdTracking;
-@property (nonatomic, strong, readonly) NSString *manufacturer __attribute__((const));
-@property (nonatomic, strong, readonly) NSString *model;
-@property (nonatomic, strong, readonly) NSString *name;
-@property (nonatomic, strong, readonly) NSString *platform __attribute__((const));
-@property (nonatomic, strong, readonly) NSString *product;
-@property (nonatomic, strong, readonly) NSData *pushNotificationToken;
-@property (nonatomic, strong, readonly) NSString *operatingSystem;
-@property (nonatomic, strong, readonly) NSString *timezoneOffset;
-@property (nonatomic, strong, readonly) NSString *timezoneDescription;
-@property (nonatomic, strong, readonly) NSString *vendorId;
-@property (nonatomic, strong, readonly) NSString *radioAccessTechnology;
+@property (nonatomic, strong, readonly, nullable) NSString *advertiserId;
+@property (nonatomic, strong, readonly, nonnull) NSString *architecture;
+@property (nonatomic, strong, readonly, nonnull) NSString *brand;
+@property (nonatomic, strong, readonly, nullable) CTCarrier *carrier;
+@property (nonatomic, strong, readonly, nullable) NSString *country;
+@property (nonatomic, strong, readonly, nonnull) NSString *deviceIdentifier;
+@property (nonatomic, strong, readonly, nullable) NSString *language;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *limitAdTracking;
+@property (nonatomic, strong, readonly, nonnull) NSString *manufacturer __attribute__((const));
+@property (nonatomic, strong, readonly, nonnull) NSString *model;
+@property (nonatomic, strong, readonly, nullable) NSString *name;
+@property (nonatomic, strong, readonly, nonnull) NSString *platform __attribute__((const));
+@property (nonatomic, strong, readonly, nullable) NSString *product;
+@property (nonatomic, strong, readonly, nullable) NSData *pushNotificationToken;
+@property (nonatomic, strong, readonly, nullable) NSString *operatingSystem;
+@property (nonatomic, strong, readonly, nonnull) NSString *timezoneOffset;
+@property (nonatomic, strong, readonly, nullable) NSString *timezoneDescription;
+@property (nonatomic, strong, readonly, nullable) NSString *vendorId;
+@property (nonatomic, strong, readonly, nonnull) NSString *radioAccessTechnology;
 @property (nonatomic, unsafe_unretained, readonly) CGSize screenSize;
 @property (nonatomic, unsafe_unretained, readonly, getter = isTablet) BOOL tablet;
 
-+ (NSDictionary *)jailbrokenInfo;
-- (NSDictionary *)dictionaryRepresentation;
++ (nonnull NSDictionary *)jailbrokenInfo;
+- (nonnull NSDictionary *)dictionaryRepresentation;
 
 @end

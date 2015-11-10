@@ -49,10 +49,6 @@
 }
 
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
-    if (obj == nil) {
-        return;
-    }
-    
     [self.objectDictionary setObject:obj forKey:key];
 }
 

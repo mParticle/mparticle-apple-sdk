@@ -22,11 +22,11 @@
 
 @interface MPProductBag : NSObject
 
-@property (nonatomic, strong) NSString *name;
-@property (nonatomic, strong) NSMutableArray *products;
+@property (nonatomic, strong, nonnull) NSString *name;
+@property (nonatomic, strong, nullable) NSMutableArray *products;
 
-- (instancetype)initWithName:(NSString *)name;
-- (instancetype)initWithName:(NSString *)name product:(MPProduct *)product;
-- (NSDictionary *)dictionaryRepresentation;
+- (nonnull instancetype)initWithName:(nonnull NSString *)name;
+- (nonnull instancetype)initWithName:(nonnull NSString *)name product:(nullable MPProduct *)product;
+- (nonnull NSDictionary *)dictionaryRepresentation;
 
 @end

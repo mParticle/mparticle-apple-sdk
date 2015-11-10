@@ -26,12 +26,12 @@
 /**
  The list of user segment ids
  */
-@property (nonatomic, strong, readonly) NSArray *segmentsIds;
+@property (nonatomic, strong, readonly, nullable) NSArray *segmentsIds;
 
 /**
  Contains the date the user segment will expire. If nil, it means the user segment doesn't expire
  */
-@property (nonatomic, strong, readonly) NSDate *expiration;
+@property (nonatomic, strong, readonly, nullable) NSDate *expiration;
 
 /**
  Flag indicating whether the user segment is expired or not
@@ -41,7 +41,7 @@
 /**
  Returns a string with a comma separated list of user segment ids. The same user segment ids in the segmentsIds property
  */
-- (NSString *)commaSeparatedSegments;
+- (nullable NSString *)commaSeparatedSegments;
 
 @end
 
@@ -51,5 +51,5 @@
  @param userSegments An array of MPUserSegment objects
  @param error Contains nil or an error object
  */
-typedef void(^MPUserSegmentsHandler)(MPUserSegments *userSegments, NSError *error);
+typedef void(^MPUserSegmentsHandler)(MPUserSegments * _Nullable userSegments, NSError * _Nullable error);
 

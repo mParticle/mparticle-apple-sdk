@@ -223,20 +223,20 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
  @discussion You can register to receive this notification using NSNotificationCenter. This notification contains a userInfo dictionary, you can
  access the respective session id by using the mParticleSessionId constant.
  */
-extern NSString *const mParticleSessionDidBeginNotification;
+extern NSString * _Nonnull const mParticleSessionDidBeginNotification;
 
 /** Posted right before the current session ends.
  
  @discussion You can register to receive this notification using NSNotificationCenter. This notification contains a userInfo dictionary, you can
  access the respective session id by using the mParticleSessionId constant.
  */
-extern NSString *const mParticleSessionDidEndNotification;
+extern NSString * _Nonnull const mParticleSessionDidEndNotification;
 
 /** This constant is used as key for the userInfo dictionary in the
  mParticleSessionDidBeginNotification and mParticleSessionDidEndNotification notifications. The value
  of this key is the id of the session.
  */
-extern NSString *const mParticleSessionId;
+extern NSString * _Nonnull const mParticleSessionId;
 
 /**
  Set of constants that can be used to specify certain attributes of a user. 
@@ -256,16 +256,16 @@ extern NSString *const mParticleSessionId;
  @param mParticleUserAttributeLastName Setting the last name as user attribute
  @see setUserAttribute:value:
  */
-extern NSString *const mParticleUserAttributeMobileNumber;
-extern NSString *const mParticleUserAttributeGender;
-extern NSString *const mParticleUserAttributeAge;
-extern NSString *const mParticleUserAttributeCountry;
-extern NSString *const mParticleUserAttributeZip;
-extern NSString *const mParticleUserAttributeCity;
-extern NSString *const mParticleUserAttributeState;
-extern NSString *const mParticleUserAttributeAddress;
-extern NSString *const mParticleUserAttributeFirstName;
-extern NSString *const mParticleUserAttributeLastName;
+extern NSString * _Nonnull const mParticleUserAttributeMobileNumber;
+extern NSString * _Nonnull const mParticleUserAttributeGender;
+extern NSString * _Nonnull const mParticleUserAttributeAge;
+extern NSString * _Nonnull const mParticleUserAttributeCountry;
+extern NSString * _Nonnull const mParticleUserAttributeZip;
+extern NSString * _Nonnull const mParticleUserAttributeCity;
+extern NSString * _Nonnull const mParticleUserAttributeState;
+extern NSString * _Nonnull const mParticleUserAttributeAddress;
+extern NSString * _Nonnull const mParticleUserAttributeFirstName;
+extern NSString * _Nonnull const mParticleUserAttributeLastName;
 
 /** Posted immediately after a kit becomes available to be used.
  
@@ -275,8 +275,8 @@ extern NSString *const mParticleUserAttributeLastName;
  @see MPKitInstance
  @see mParticleKitInstanceKey
  */
-extern NSString *const mParticleKitDidBecomeActiveNotification;
-extern NSString *const mParticleEmbeddedSDKDidBecomeActiveNotification;
+extern NSString * _Nonnull const mParticleKitDidBecomeActiveNotification;
+extern NSString * _Nonnull const mParticleEmbeddedSDKDidBecomeActiveNotification;
 
 /** Posted immediately after a kit becomes unavailable to be used.
  
@@ -287,8 +287,8 @@ extern NSString *const mParticleEmbeddedSDKDidBecomeActiveNotification;
  @see MPKitInstance
  @see mParticleKitInstanceKey
  */
-extern NSString *const mParticleKitDidBecomeInactiveNotification;
-extern NSString *const mParticleEmbeddedSDKDidBecomeInactiveNotification;
+extern NSString * _Nonnull const mParticleKitDidBecomeInactiveNotification;
+extern NSString * _Nonnull const mParticleEmbeddedSDKDidBecomeInactiveNotification;
 
 /**
  Constant used to extract the respective kit instance number from userInfo dictionary in a
@@ -296,7 +296,7 @@ extern NSString *const mParticleEmbeddedSDKDidBecomeInactiveNotification;
  @see mParticleKitDidBecomeActiveNotification
  @see mParticleKitDidBecomeInactiveNotification
  */
-extern NSString *const mParticleKitInstanceKey;
-extern NSString *const mParticleEmbeddedSDKInstanceKey;
+extern NSString * _Nonnull const mParticleKitInstanceKey;
+extern NSString * _Nonnull const mParticleEmbeddedSDKInstanceKey;
 
 #endif

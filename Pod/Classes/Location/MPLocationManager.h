@@ -22,15 +22,15 @@
 
 @interface MPLocationManager : NSObject <CLLocationManagerDelegate>
 
-@property (nonatomic, strong) CLLocation *location;
-@property (nonatomic, strong) CLLocationManager *locationManager;
+@property (nonatomic, strong, nullable) CLLocation *location;
+@property (nonatomic, strong, nullable) CLLocationManager *locationManager;
 @property (nonatomic, unsafe_unretained, readonly) MPLocationAuthorizationRequest authorizationRequest;
 @property (nonatomic, unsafe_unretained, readonly) CLLocationAccuracy requestedAccuracy;
 @property (nonatomic, unsafe_unretained, readonly) CLLocationDistance requestedDistanceFilter;
 @property (nonatomic, unsafe_unretained) BOOL backgroundLocationTracking;
 
 + (BOOL)trackingLocation;
-- (instancetype)initWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
+- (nullable instancetype)initWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (void)endLocationTracking;
 
 @end

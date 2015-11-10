@@ -24,21 +24,21 @@
 
 @interface MPMessage : MPDataModelAbstract <NSCopying, NSCoding, MPDataModelProtocol>
 
-@property (nonatomic, strong, readonly) NSString *messageType;
-@property (nonatomic, strong, readonly) NSData *messageData;
+@property (nonatomic, strong, readonly, nonnull) NSString *messageType;
+@property (nonatomic, strong, readonly, nonnull) NSData *messageData;
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t messageId;
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 
-- (instancetype)initWithSessionId:(int64_t)sessionId
-                        messageId:(int64_t)messageId
-                             UUID:(NSString *)uuid
-                      messageType:(NSString *)messageType
-                      messageData:(NSData *)messageData
-                        timestamp:(NSTimeInterval)timestamp
-                     uploadStatus:(MPUploadStatus)uploadStatus;
+- (nonnull instancetype)initWithSessionId:(int64_t)sessionId
+                                messageId:(int64_t)messageId
+                                     UUID:(nonnull NSString *)uuid
+                              messageType:(nonnull NSString *)messageType
+                              messageData:(nonnull NSData *)messageData
+                                timestamp:(NSTimeInterval)timestamp
+                             uploadStatus:(MPUploadStatus)uploadStatus;
 
-- (instancetype)initWithSession:(MPSession *)session messageType:(NSString *)messageType messageInfo:(NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(NSString *)uuid timestamp:(NSTimeInterval)timestamp;
+- (nonnull instancetype)initWithSession:(nonnull MPSession *)session messageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp;
 
 @end

@@ -22,12 +22,12 @@
 
 @interface MPSessionHistory : NSObject <MPDataModelProtocol>
 
-@property (nonatomic, strong) NSDictionary *userAttributes;
-@property (nonatomic, strong) NSArray *userIdentities;
-@property (nonatomic, strong) MPSession *session;
-@property (nonatomic, strong) NSArray *uploads;
-@property (nonatomic, strong, readonly) NSArray *uploadIds;
+@property (nonatomic, strong, nullable) NSDictionary *userAttributes;
+@property (nonatomic, strong, nullable) NSArray *userIdentities;
+@property (nonatomic, strong, nonnull) MPSession *session;
+@property (nonatomic, strong, nullable) NSArray *uploads;
+@property (nonatomic, strong, readonly, nullable) NSArray *uploadIds;
 
-- (instancetype)initWithSession:(MPSession *)session uploads:(NSArray *)uploads __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithSession:(nonnull MPSession *)session uploads:(nonnull NSArray *)uploads;
 
 @end

@@ -23,12 +23,12 @@
 
 @property (nonatomic, unsafe_unretained, readonly) MPUserNotificationRunningMode runningMode;
 
-+ (instancetype)sharedInstance;
-- (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error;
-- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
-- (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo;
-- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options;
-- (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
-- (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode;
++ (nonnull instancetype)sharedInstance;
+- (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)error;
+- (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
+- (void)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
+- (void)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
+- (void)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
+- (void)receivedUserNotification:(nonnull NSDictionary *)userInfo actionIdentifier:(nullable NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode;
 
 @end

@@ -68,7 +68,6 @@
 using namespace mParticle;
 
 const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 1000;
-const NSInteger kInvalidKey = 100;
 const NSInteger kInvalidValue = 101;
 const NSInteger kEmptyValueAttribute = 102;
 const NSInteger kExceededNumberOfAttributesLimit = 103;
@@ -117,10 +116,6 @@ static BOOL appBackgrounded = NO;
     execStatusDescriptions = @[@"Success", @"Fail", @"Missing Parameter", @"Feature Disabled Remotely", @"Feature Enabled Remotely", @"User Opted Out of Tracking", @"Data Already Being Fetched",
                                @"Invalid Data Type", @"Data is Being Uploaded", @"Server is Busy", @"Item Not Found", @"Feature is Disabled in Settings", @"Delayed Execution",
                                @"Continued Delayed Execution", @"SDK Has Not Been Started Yet", @"There is no network connectivity"];
-}
-
-- (instancetype)init {
-    return [self initWithDelegate:nil];
 }
 
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
@@ -1526,15 +1521,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)beginTimedEvent:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    NSAssert(event != nil, @"event cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Timed events cannot begin prior to starting the mParticle SDK.\n****\n");
 
-    if (!event) {
-        completionHandler(event, MPExecStatusMissingParam);
-        return;
-    }
-    
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(event, MPExecStatusFail);
         return;
@@ -1572,22 +1560,6 @@ static BOOL appBackgrounded = NO;
 
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
-    
-    if (!key) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];
-        }
-        
-        return NO;
-    }
-    
-    if (!value) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidValue userInfo:nil];
-        }
-        
-        return NO;
-    }
     
     if ([value isKindOfClass:[NSString class]]) {
         if ([value isEqualToString:@""]) {
@@ -1784,15 +1756,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)leaveBreadcrumb:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    NSAssert(event != nil, @"event cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Breadcrumbs cannot be left prior to starting the mParticle SDK.\n****\n");
 
-    if (!event) {
-        completionHandler(event, MPExecStatusMissingParam);
-        return;
-    }
-    
     event.messageType = MPMessageTypeBreadcrumb;
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
@@ -1838,14 +1803,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent attempt:(NSUInteger)attempt completionHandler:(void (^)(MPCommerceEvent *commerceEvent, MPExecStatus execStatus))completionHandler {
-    NSAssert(commerceEvent != nil, @"'commerceEvent' cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Commerce Events cannot be logged prior to starting the mParticle SDK.\n****\n");
-    
-    if (!commerceEvent) {
-        completionHandler(commerceEvent, MPExecStatusMissingParam);
-        return;
-    }
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(commerceEvent, MPExecStatusFail);
@@ -1911,7 +1869,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler {
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Errors or exceptions cannot be logged prior to starting the mParticle SDK.\n****\n");
 
     NSString *execMessage = exception ? exception.name : message;
@@ -2007,14 +1964,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logEvent:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    NSAssert(event != nil, @"'event' cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Events cannot be logged prior to starting the mParticle SDK.\n****\n");
-    
-    if (!event) {
-        completionHandler(event, MPExecStatusMissingParam);
-        return;
-    }
     
     event.messageType = MPMessageTypeEvent;
     
@@ -2066,17 +2016,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {
-    NSAssert(networkPerformance != nil, @"networkPerformance cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Network performance measurement cannot be logged prior to starting the mParticle SDK.\n****\n");
 
-    if (!networkPerformance) {
-        if (completionHandler) {
-            completionHandler(networkPerformance, MPExecStatusMissingParam);
-        }
-        
-        return;
-    }
-    
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         if (completionHandler) {
             completionHandler(networkPerformance, MPExecStatusFail);
@@ -2125,15 +2066,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logScreen:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
-    NSAssert(event != nil, @"event cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Screens cannot be logged prior to starting the mParticle SDK.\n****\n");
 
-    if (!event) {
-        completionHandler(event, MPExecStatusMissingParam);
-        return;
-    }
-    
     event.messageType = MPMessageTypeScreenView;
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
@@ -2188,8 +2122,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^)(MPProfileChange profile, MPExecStatus execStatus))completionHandler {
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
-
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(profile, MPExecStatusFail);
         return;
@@ -2243,7 +2175,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)setOptOut:(BOOL)optOutStatus attempt:(NSUInteger)attempt completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting opt out cannot happen prior to starting the mParticle SDK.\n****\n");
 
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
@@ -2641,15 +2572,8 @@ static BOOL appBackgrounded = NO;
 
 #pragma mark Public media traking methods
 - (void)beginPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(mediaTrack != nil, @"mediaTrack cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot play prior to starting the mParticle SDK.\n****\n");
 
-    if (!mediaTrack) {
-        completionHandler(mediaTrack, MPExecStatusMissingParam);
-        return;
-    }
-    
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(mediaTrack, MPExecStatusFail);
         return;
@@ -2705,26 +2629,13 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPExecStatus)discardMediaTrack:(MPMediaTrack *)mediaTrack {
-    NSAssert(mediaTrack != nil, @"mediaTrack cannot be nil.");
-    
-    if (!mediaTrack) {
-        return MPExecStatusMissingParam;
-    }
-    
     [self.mediaTrackContainer removeTrack:mediaTrack];
     
     return MPExecStatusSuccess;
 }
 
 - (void)endPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(mediaTrack != nil, @"mediaTrack cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot end prior to starting the mParticle SDK.\n****\n");
-    
-    if (!mediaTrack) {
-        completionHandler(mediaTrack, MPExecStatusMissingParam);
-        return;
-    }
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(mediaTrack, MPExecStatusFail);
@@ -2777,15 +2688,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(mediaTrack != nil, @"mediaTrack cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot log metadata prior to starting the mParticle SDK.\n****\n");
 
-    if (!mediaTrack) {
-        completionHandler(mediaTrack, MPExecStatusMissingParam);
-        return;
-    }
-    
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(mediaTrack, MPExecStatusFail);
         return;
@@ -2833,15 +2737,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)logTimedMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(mediaTrack != nil, @"mediaTrack cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot log timed metadata prior to starting the mParticle SDK.\n****\n");
 
-    if (!mediaTrack) {
-        completionHandler(mediaTrack, MPExecStatusMissingParam);
-        return;
-    }
-    
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(mediaTrack, MPExecStatusFail);
         return;
@@ -2894,22 +2791,13 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPMediaTrack *)mediaTrackWithChannel:(NSString *)channel {
-    NSAssert(channel != nil, @"channel cannot be nil.");
-    
     MPMediaTrack *mediaTrack = [self.mediaTrackContainer trackWithChannel:channel];
     return mediaTrack;
 }
 
 - (void)updatePlaybackPosition:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(mediaTrack != nil, @"mediaTrack cannot be nil.");
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot update playback position prior to starting the mParticle SDK.\n****\n");
 
-    if (!mediaTrack) {
-        completionHandler(mediaTrack, MPExecStatusMissingParam);
-        return;
-    }
-    
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         completionHandler(mediaTrack, MPExecStatusFail);
         return;

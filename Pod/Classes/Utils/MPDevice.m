@@ -200,11 +200,9 @@ int main(int argc, char *argv[]);
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     _deviceIdentifier = userDefaults[kMPDeviceIdentifierKey];
     if (!_deviceIdentifier) {
-        CFUUIDRef UDIDRef = CFUUIDCreate(kCFAllocatorDefault);
-        _deviceIdentifier = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, UDIDRef);
-        CFRelease(UDIDRef);
-        
+        _deviceIdentifier = [[NSUUID UUID] UUIDString];
         userDefaults[kMPDeviceIdentifierKey] = _deviceIdentifier;
+        
         dispatch_async(dispatch_get_main_queue(), ^{
             [userDefaults synchronize];
         });

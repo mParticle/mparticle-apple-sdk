@@ -27,8 +27,8 @@
 
 @interface MPCart()
 
-@property (nonatomic, strong, readonly) NSString *cartFile;
-@property (nonatomic, strong) NSMutableArray *productsList;
+@property (nonatomic, strong, readonly, nullable) NSString *cartFile;
+@property (nonatomic, strong, nonnull) NSMutableArray *productsList;
 
 @end
 

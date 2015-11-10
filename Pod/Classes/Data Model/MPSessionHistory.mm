@@ -35,11 +35,6 @@ using namespace std;
 
 @implementation MPSessionHistory
 
-- (id)init {
-    self = [self initWithSession:nil uploads:nil];
-    return self;
-}
-
 - (instancetype)initWithSession:(MPSession *)session uploads:(NSArray *)uploads {
     self = [super init];
     if (!self || !session || !uploads) {

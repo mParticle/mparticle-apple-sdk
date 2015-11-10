@@ -22,8 +22,6 @@
 
 @interface MPCommand()
 
-@property (nonatomic, strong) NSString *headerContent;
-@property (nonatomic, strong) NSDictionary *headerDictionary;
 @property (nonatomic, strong) NSString *postContent;
 
 @end
@@ -31,14 +29,10 @@
 
 @implementation MPCommand
 
-- (instancetype)init {
-    return [self initWithSessionId:0 commandId:0 UUID:[[NSUUID UUID] UUIDString] url:nil httpMethod:nil headerData:nil postData:nil timestamp:[[NSDate date] timeIntervalSince1970]];
-}
-
 - (instancetype)initWithSession:(MPSession *)session commandDictionary:(NSDictionary *)commandDictionary {
-    NSDictionary *headerDictionary = commandDictionary[kMPHTTPHeadersKey];
-    if (!headerDictionary) {
-        return nil;
+    NSData *headerData = nil;
+    if (commandDictionary[kMPHTTPHeadersKey]) {
+        headerData = [NSJSONSerialization dataWithJSONObject:commandDictionary[kMPHTTPHeadersKey] options:0 error:nil];
     }
     
     NSData *postData = nil;
@@ -60,7 +54,7 @@
                               UUID:[self newUUID]
                                url:[NSURL URLWithString:urlString]
                         httpMethod:commandDictionary[kMPResponseMethodKey]
-                        headerData:[NSJSONSerialization dataWithJSONObject:headerDictionary options:0 error:nil]
+                        headerData:headerData
                           postData:postData
                          timestamp:[[NSDate date] timeIntervalSince1970]];
 }
@@ -76,12 +70,7 @@
     _uuid = uuid;
     _url = url;
     _httpMethod = httpMethod;
-    
     _headerData = headerData;
-    if (headerData) {
-        _headerDictionary = [NSJSONSerialization JSONObjectWithData:headerData options:0 error:nil];
-        _headerContent = [[NSString alloc] initWithData:headerData encoding:NSUTF8StringEncoding];
-    }
     
     _postData = postData;
     if (_postData) {
@@ -94,17 +83,15 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Command\n Id: %lld\n UUID: %@\n url: %@\n Header: %@\n Content: %@\n timestamp: %.0f\n", self.commandId, self.uuid, self.url, self.headerDictionary, self.postContent, self.timestamp];
+    NSDictionary *headerDictionary = nil;
+    if (_headerData) {
+        headerDictionary = [NSJSONSerialization JSONObjectWithData:_headerData options:0 error:nil];
+    }
+    
+    return [NSString stringWithFormat:@"Command\n Id: %lld\n UUID: %@\n url: %@\n Header: %@\n Content: %@\n timestamp: %.0f\n", self.commandId, self.uuid, self.url, headerDictionary, self.postContent, self.timestamp];
 }
 
 - (BOOL)isEqual:(MPCommand *)object {
-//    unsigned int numberOfProperties;
-//    class_copyPropertyList([self class], &numberOfProperties);
-//    
-//    if (numberOfProperties != 10) {
-//        return NO;
-//    }
-    
     BOOL isEqual = _sessionId == object.sessionId &&
                    _commandId == object.commandId &&
                    _timestamp == object.timestamp &&
@@ -135,15 +122,18 @@
     [coder encodeObject:self.uuid forKey:@"uuid"];
     [coder encodeObject:[self.url absoluteString] forKey:@"url"];
     [coder encodeObject:self.httpMethod forKey:@"httpMethod"];
-    [coder encodeObject:self.headerContent forKey:@"headerContent"];
-    [coder encodeObject:self.postContent forKey:@"postContent"];
     [coder encodeDouble:self.timestamp forKey:@"timestamp"];
+    
+    if (_headerData) {
+        [coder encodeObject:_headerData forKey:@"headerData"];
+    }
+    
+    if (_postContent) {
+        [coder encodeObject:_postContent forKey:@"postContent"];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    NSString *headerContent = [coder decodeObjectForKey:@"headerContent"];
-    NSData *headerData = [headerContent dataUsingEncoding:NSUTF8StringEncoding];
-    
     NSString *postContent = [coder decodeObjectForKey:@"postContent"];
     NSData *postData = postContent ? [postContent dataUsingEncoding:NSUTF8StringEncoding] : nil;
     
@@ -152,7 +142,7 @@
                               UUID:[coder decodeObjectForKey:@"uuid"]
                                url:[NSURL URLWithString:[coder decodeObjectForKey:@"url"]]
                         httpMethod:[coder decodeObjectForKey:@"httpMethod"]
-                        headerData:headerData
+                        headerData:[coder decodeObjectForKey:@"headerData"]
                           postData:postData
                          timestamp:[coder decodeDoubleForKey:@"timestamp"]];
     

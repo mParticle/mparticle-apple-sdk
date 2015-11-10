@@ -23,6 +23,6 @@
 #pragma mark - MPResponseEvents
 @interface MPResponseEvents : NSObject
 
-+ (void)parseConfiguration:(NSDictionary *)configuration session:(MPSession *)session;
++ (void)parseConfiguration:(nonnull NSDictionary *)configuration session:(nullable MPSession *)session;
 
 @end

@@ -78,8 +78,11 @@
 
 #pragma mark NSCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeObject:self.customModuleId forKey:@"customModuleId"];
-    [coder encodeObject:self.preferences forKey:@"preferences"];
+    [coder encodeObject:_customModuleId forKey:@"customModuleId"];
+    
+    if (_preferences) {
+        [coder encodeObject:_preferences forKey:@"preferences"];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {

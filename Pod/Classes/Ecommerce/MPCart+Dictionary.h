@@ -18,8 +18,8 @@
 
 @interface MPCart(Dictionary)
 
-- (void)addProducts:(NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;
-- (NSDictionary *)dictionaryRepresentation;
-- (void)removeProducts:(NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;
+- (void)addProducts:(nonnull NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;
+- (nullable NSDictionary *)dictionaryRepresentation;
+- (void)removeProducts:(nonnull NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;
 
 @end

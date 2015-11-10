@@ -23,17 +23,17 @@
 
 @interface MPKitFilter : NSObject
 
-@property (nonatomic, strong, readonly) NSArray *appliedProjections;
-@property (nonatomic, strong, readonly) NSDictionary *filteredAttributes;
-@property (nonatomic, strong, readonly) MPCommerceEvent *forwardCommerceEvent;
-@property (nonatomic, strong, readonly) MPEvent *forwardEvent;
+@property (nonatomic, strong, readonly, nullable) NSArray *appliedProjections;
+@property (nonatomic, strong, readonly, nullable) NSDictionary *filteredAttributes;
+@property (nonatomic, strong, readonly, nullable) MPCommerceEvent *forwardCommerceEvent;
+@property (nonatomic, strong, readonly, nullable) MPEvent *forwardEvent;
 @property (nonatomic, readonly) BOOL shouldFilter;
 
-- (instancetype)initWithFilter:(BOOL)shouldFilter;
-- (instancetype)initWithFilter:(BOOL)shouldFilter filteredAttributes:(NSDictionary *)filteredAttributes;
-- (instancetype)initWithEvent:(MPEvent *)event shouldFilter:(BOOL)shouldFilter;
-- (instancetype)initWithEvent:(MPEvent *)event shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray *)appliedProjections;
-- (instancetype)initWithCommerceEvent:(MPCommerceEvent *)commerceEvent shouldFilter:(BOOL)shouldFilter;
-- (instancetype)initWithCommerceEvent:(MPCommerceEvent *)commerceEvent shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray *)appliedProjections;
+- (nonnull instancetype)initWithFilter:(BOOL)shouldFilter;
+- (nonnull instancetype)initWithFilter:(BOOL)shouldFilter filteredAttributes:(nullable NSDictionary *)filteredAttributes;
+- (nonnull instancetype)initWithEvent:(nonnull MPEvent *)event shouldFilter:(BOOL)shouldFilter;
+- (nonnull instancetype)initWithEvent:(nonnull MPEvent *)event shouldFilter:(BOOL)shouldFilter appliedProjections:(nullable NSArray *)appliedProjections;
+- (nonnull instancetype)initWithCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent shouldFilter:(BOOL)shouldFilter;
+- (nonnull instancetype)initWithCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent shouldFilter:(BOOL)shouldFilter appliedProjections:(nullable NSArray *)appliedProjections;
 
 @end

@@ -19,7 +19,7 @@ Your job is to build an awesome app experience that consumers love. You also nee
 
 #### All Kits
 
-mParticle-iOS-SDK is available through [CocoaPods](http://cocoapods.org). To install it, simply add the following statement to your Podfile:
+mParticle-iOS-SDK is available through [CocoaPods](https://cocoapods.org/?q=mparticle). To install it, simply add the following statement to your Podfile:
 
 ```ruby
 pod 'mParticle-iOS-SDK', '~> 5'

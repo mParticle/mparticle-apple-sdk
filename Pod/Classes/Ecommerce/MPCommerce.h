@@ -60,12 +60,12 @@
  
  @see MPCart
  */
-@property (nonatomic, weak, readonly) MPCart *cart;
+@property (nonatomic, strong, readonly, nonnull) MPCart *cart;
 
 /**
  The currency used in the commerce event.
  */
-@property (nonatomic, strong) NSString *currency;
+@property (nonatomic, strong, nullable) NSString *currency;
 
 /**
  Logs a checkout commerce event with the products contained in the shopping cart.
@@ -78,7 +78,7 @@
  @param options A string describing what the options are
  @param step The step number, within the chain of commerce event transactions, corresponding to the checkout
  */
-- (void)checkoutWithOptions:(NSString *)options step:(NSInteger)step;
+- (void)checkoutWithOptions:(nullable NSString *)options step:(NSInteger)step;
 
 /**
  Clears the contents of the shopping cart. 
@@ -95,7 +95,7 @@
  
  @see MPTransactionAttributes
  */
-- (void)purchaseWithTransactionAttributes:(MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart;
+- (void)purchaseWithTransactionAttributes:(nonnull MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart;
 
 /**
  Logs a <i>refund</i> commerce event with the products contained in the shopping cart.
@@ -105,6 +105,6 @@
  
  @see MPTransactionAttributes
  */
-- (void)refundTransactionAttributes:(MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart;
+- (void)refundTransactionAttributes:(nonnull MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart;
 
 @end

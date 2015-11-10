@@ -69,14 +69,14 @@
  
  @see MPBags
  */
-@property (nonatomic, strong, readonly) MPBags *bags;
+@property (nonatomic, strong, readonly, nonnull) MPBags *bags;
 
 /**
  This property is an instance of MPCommerce. It is used to execute transactional operations on the shopping cart.
  @see MPCommerce
  @see MPCart
  */
-@property (nonatomic, strong, readonly) MPCommerce *commerce;
+@property (nonatomic, strong, readonly, nonnull) MPCommerce *commerce;
 
 /**
  Forwards setting/resetting the debug mode for third party kits.
@@ -106,7 +106,7 @@
  Gets/Sets the current location of the active session.
  @see beginLocationTracking:minDistance:
  */
-@property (nonatomic, strong) CLLocation *location;
+@property (nonatomic, strong, nonnull) CLLocation *location;
 
 /**
  Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
@@ -138,7 +138,7 @@
  Gets/Sets the push notification token for the application.
  @see registerForPushNotificationWithTypes:
  */
-@property (nonatomic, strong) NSData *pushNotificationToken;
+@property (nonatomic, strong, nullable) NSData *pushNotificationToken;
 
 /**
  Gets/Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval.
@@ -149,7 +149,7 @@
  Unique identifier for this app running on this device. This unique identifier is synchronized with the mParticle servers.
  @retuns A string containing the unique identifier or nil, if communication with the server could not yet be established.
  */
-@property (nonatomic, strong, readonly) NSString *uniqueIdentifier;
+@property (nonatomic, strong, readonly, nullable) NSString *uniqueIdentifier;
 
 /**
  Gets/Sets the interval to upload data to mParticle servers.
@@ -159,7 +159,7 @@
 /**
  mParticle SDK version
  */
-@property (nonatomic, strong, readonly) NSString *version;
+@property (nonatomic, strong, readonly, nonnull) NSString *version;
 
 #pragma mark - Initialization
 
@@ -167,7 +167,7 @@
  Returns the shared instance object.
  @returns the Singleton instance of the MParticle class.
  */
-+ (instancetype)sharedInstance;
++ (nonnull instancetype)sharedInstance;
 
 /**
  Starts the API with the api_key and api_secret saved in MParticleConfig.plist.  If you
@@ -186,7 +186,7 @@
  @param secret The API secret for your account
  @see startWithKey:secret:installationType:environment:
  */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret;
 
 /**
  Starts the API with your API key and a secret and installation type.
@@ -202,7 +202,7 @@
  @see MPInstallationType
  @see MPEnvironment
  */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment;
 
 /**
  Starts the API with your API key and a secret and installation type.
@@ -220,7 +220,7 @@
  @see MPInstallationType
  @see MPEnvironment
  */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate;
 
 #pragma mark - Application notifications
 /**
@@ -228,28 +228,28 @@
  @param notification A local notification received by the app
  @see proxiedAppDelegate
  */
-- (void)didReceiveLocalNotification:(UILocalNotification *)notification;
+- (void)didReceiveLocalNotification:(nonnull UILocalNotification *)notification;
 
 /**
  Informs the mParticle SDK a remote notification has been received. This method should be called only if proxiedAppDelegate is disabled.
  @param userInfo A dictionary containing information related to the remote notification
  @see proxiedAppDelegate
  */
-- (void)didReceiveRemoteNotification:(NSDictionary *)userInfo;
+- (void)didReceiveRemoteNotification:(nonnull NSDictionary *)userInfo;
 
 /**
  Informs the mParticle SDK the push notification service could not complete the registration process. This method should be called only if proxiedAppDelegate is disabled.
  @param error An NSError object encapsulating the information why registration did not succeed
  @see proxiedAppDelegate
  */
-- (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error;
+- (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)error;
 
 /**
  Informs the mParticle SDK the app successfully registered with the push notification service. This method should be called only if proxiedAppDelegate is disabled.
  @param deviceToken A token that identifies the device+App to APNS
  @see proxiedAppDelegate
  */
-- (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
+- (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a local notification. 
@@ -258,7 +258,7 @@
  @param notification The local notification object that was triggered
  @see proxiedAppDelegate
  */
-- (void)handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification;
+- (void)handleActionWithIdentifier:(nonnull NSString *)identifier forLocalNotification:(nonnull UILocalNotification *)notification;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
@@ -267,7 +267,7 @@
  @param userInfo A dictionary that contains information related to the remote notification
  @see proxiedAppDelegate
  */
-- (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo;
+- (void)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
 
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
@@ -277,7 +277,7 @@
  @param annotation A property list object supplied by the source app
  @see proxiedAppDelegate
  */
-- (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
+- (void)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
 
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
@@ -286,7 +286,7 @@
  @param options The dictionary of launch options
  @see proxiedAppDelegate
  */
-- (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options;
+- (void)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 
 #pragma mark - Basic Tracking
 /**
@@ -296,7 +296,7 @@
  @param event An instance of MPEvent
  @see MPEvent
  */
-- (void)beginTimedEvent:(MPEvent *)event;
+- (void)beginTimedEvent:(nonnull MPEvent *)event;
 
 /**
  Ends timing an event and logs its data to the mParticle SDK. If you didn't keep a reference to the event
@@ -304,7 +304,7 @@
  @param event An instance of MPEvent
  @see beginTimedEvent:
  */
-- (void)endTimedEvent:(MPEvent *)event;
+- (void)endTimedEvent:(nonnull MPEvent *)event;
 
 /**
  When working with timed events you don't need to keep a reference to the event being timed. You can use this method
@@ -314,7 +314,7 @@
  @returns An instance of MPEvent, if one could be found, or nil.
  @see endTimedEvent:
  */
-- (MPEvent *)eventWithName:(NSString *)eventName;
+- (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
 
 /**
  Logs an event. This is one of the most fundamental method of the SDK. Developers define all the characteristics
@@ -323,7 +323,7 @@
  @param event An instance of MPEvent
  @see MPEvent
  */
-- (void)logEvent:(MPEvent *)event;
+- (void)logEvent:(nonnull MPEvent *)event;
 
 /**
  Logs an event. This is a convenience method for logging simple events; internally it creates an instance of MPEvent
@@ -335,7 +335,7 @@
  booleans, or dates
  @see logEvent:
  */
-- (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary *)eventInfo;
+- (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary *)eventInfo;
 
 /**
  Logs a screen event. Developers define all the characteristics of a screen event (name, attributes, etc) in an
@@ -343,7 +343,7 @@
  @param event An instance of MPEvent
  @see MPEvent
  */
-- (void)logScreenEvent:(MPEvent *)event;
+- (void)logScreenEvent:(nonnull MPEvent *)event;
 
 /**
  Logs a screen event. This is a convenience method for logging simple screen events; internally it creates an instance
@@ -354,7 +354,7 @@
  booleans, or dates
  @see logScreenEvent:
  */
-- (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary *)eventInfo;
+- (void)logScreen:(nonnull NSString *)screenName eventInfo:(nullable NSDictionary *)eventInfo;
 
 #pragma mark - Error, Exception, and Crash Handling
 /**
@@ -373,21 +373,21 @@
  Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.
  @param breadcrumbName The name of the breadcrumb (required not nil)
  */
-- (void)leaveBreadcrumb:(NSString *)breadcrumbName;
+- (void)leaveBreadcrumb:(nonnull NSString *)breadcrumbName;
 
 /**
  Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.
  @param breadcrumbName The name of the breadcrumb (required not nil)
  @param eventInfo A dictionary containing further information about the breadcrumb
  */
-- (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary *)eventInfo;
+- (void)leaveBreadcrumb:(nonnull NSString *)breadcrumbName eventInfo:(nullable NSDictionary *)eventInfo;
 
 /**
  Logs an error with a message.
  @param message The name of the error to be tracked (required not nil)
  @see logError:eventInfo:
  */
-- (void)logError:(NSString *)message;
+- (void)logError:(nonnull NSString *)message;
 
 /**
  Logs an error with a message and an attributes dictionary. The eventInfo is limited to
@@ -395,21 +395,21 @@
  @param message The name of the error event (required not nil)
  @param eventInfo A dictionary containing further information about the error
  */
-- (void)logError:(NSString *)message eventInfo:(NSDictionary *)eventInfo;
+- (void)logError:(nonnull NSString *)message eventInfo:(nullable NSDictionary *)eventInfo;
 
 /**
  Logs an exception.
  @param exception The exception which occured
  @see logException:topmostContext:
  */
-- (void)logException:(NSException *)exception;
+- (void)logException:(nonnull NSException *)exception;
 
 /**
  Logs an exception and a context.
  @param exception The exception which occured
  @param topmostContext The topmost context of the app, typically the topmost view controller
  */
-- (void)logException:(NSException *)exception topmostContext:(id)topmostContext;
+- (void)logException:(nonnull NSException *)exception topmostContext:(nullable id)topmostContext;
 
 #pragma mark - eCommerce Transactions
 /**
@@ -417,14 +417,14 @@
  @param commerceEvent An instance of MPCommerceEvent
  @see MPCommerceEvent
  */
-- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
+- (void)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 
 /**
  Increases the LTV (LifeTime Value) amount of a user.
  @param increaseAmount The amount to be added to LTV
  @param eventName The name of the event (Optional). If not applicable, pass nil
  */
-- (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName;
+- (void)logLTVIncrease:(double)increaseAmount eventName:(nonnull NSString *)eventName;
 
 /**
  Increases the LTV (LifeTime Value) amount of a user.
@@ -432,7 +432,7 @@
  @param eventName The name of the event (Optional). If not applicable, pass nil
  @param eventInfo A dictionary containing further information about the LTV
  */
-- (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(NSDictionary *)eventInfo;
+- (void)logLTVIncrease:(double)increaseAmount eventName:(nonnull NSString *)eventName eventInfo:(nullable NSDictionary *)eventInfo;
 
 #pragma mark - Kits
 /**
@@ -443,7 +443,7 @@
  @param kitInstance The enum representing the kit to be retrieved
  @returns The internal instance of the kit, or nil, if the kit is not active
  */
-- (id const)kitInstance:(MPKitInstance)kitInstance;
+- (nullable id const)kitInstance:(MPKitInstance)kitInstance;
 
 /**
  Returns whether a kit is active or not. You can retrieve if a kit has been already initialized and
@@ -499,7 +499,7 @@
  Excludes a URL from network performance measurement. You can call this method multiple times, passing a URL at a time.
  @param url A URL to be removed from measurements
  */
-- (void)excludeURLFromNetworkPerformanceMeasuring:(NSURL *)url;
+- (void)excludeURLFromNetworkPerformanceMeasuring:(nonnull NSURL *)url;
 
 /**
  Allows you to log a network performance measurement independently from the mParticle SDK measurement. In case you use sockets or other
@@ -511,14 +511,14 @@
  @param bytesSent The number of bytes sent
  @param bytesReceived The number of bytes received
  */
-- (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived;
+- (void)logNetworkPerformance:(nonnull NSString *)urlString httpMethod:(nonnull NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived;
 
 /**
  By default mParticle SDK will remove the query part of all URLs. Use this method to add an exception to the default
  behavior and include the query compoment of any URL containing queryString. You can call this method multiple times, passing a query string at a time.
  @param queryString A string with the query component to be included and reported in network performance measurement.
  */
-- (void)preserveQueryMeasuringNetworkPerformance:(NSString *)queryString;
+- (void)preserveQueryMeasuringNetworkPerformance:(nonnull NSString *)queryString;
 
 /**
  Resets all network performance measurement filters and URL exclusions.
@@ -535,7 +535,7 @@
  @param value The increment amount
  @returns The new value amount or nil, in case of failure
  */
-- (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value;
+- (nullable NSNumber *)incrementSessionAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 
 /**
  Set a single session attribute. The property will be combined with any existing attributes.
@@ -544,7 +544,7 @@
  @param key The attribute key
  @param value The attribute value
  */
-- (void)setSessionAttribute:(NSString *)key value:(id)value;
+- (void)setSessionAttribute:(nonnull NSString *)key value:(nonnull id)value;
 
 /**
  Force uploads queued messages to mParticle.
@@ -558,7 +558,7 @@
  @returns A string with the URL to the survey
  @see MPSurveyProvider
  */
-- (NSString *)surveyURL:(MPSurveyProvider)surveyProvider;
+- (nullable NSString *)surveyURL:(MPSurveyProvider)surveyProvider;
 
 #pragma mark - User Identity
 /**
@@ -570,7 +570,7 @@
  @param value The increment amount
  @returns The new value amount or nil, in case of failure
  */
-- (NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value;
+- (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 
 /**
  Logs a user out.
@@ -584,27 +584,27 @@
  @param key The user attribute key
  @param value The user attribute value
  */
-- (void)setUserAttribute:(NSString *)key value:(id)value;
+- (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value;
 
 /**
  Sets User/Customer Identity
  @param identityString A string representing the user identity
  @param identityType The user identity type
  */
-- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType;
+- (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
 
 /**
  Sets a single user tag or attribute.  The property will be combined with any existing attributes.
  There is a 100 count limit to user attributes.
  @param tag The user tag/attribute
  */
-- (void)setUserTag:(NSString *)tag;
+- (void)setUserTag:(nonnull NSString *)tag;
 
 /**
  Removes a single user attribute.
  @param key The user attribute key
  */
-- (void)removeUserAttribute:(NSString *)key;
+- (void)removeUserAttribute:(nonnull NSString *)key;
 
 #pragma mark - User Segments
 /**
@@ -616,26 +616,26 @@
  @param completionHandler A block to be called when the results are available. The user segments array is passed to this block
  @returns An array of MPUserSegments objects in the completion handler
  */
-- (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler;
+- (void)userSegments:(NSTimeInterval)timeout endpointId:(nonnull NSString *)endpointId completionHandler:(nonnull MPUserSegmentsHandler)completionHandler;
 
 #pragma mark - Web Views
 /**
  Updates isIOS flag to true in JS API via given webview.
  @param webView The web view to be initialized
  */
-- (void)initializeWebView:(UIWebView *)webView;
+- (void)initializeWebView:(nonnull UIWebView *)webView;
 
 /**
  Verifies if the url is mParticle sdk url i.e mp-sdk://
  @param requestUrl The request URL
  */
-- (BOOL)isMParticleWebViewSdkUrl:(NSURL *)requestUrl;
+- (BOOL)isMParticleWebViewSdkUrl:(nonnull NSURL *)requestUrl;
 
 /**
  Process log event from hybrid apps that are using iOS UIWebView control.
  @param requestUrl The request URL
  */
-- (void)processWebViewLogEvent:(NSURL *)requestUrl;
+- (void)processWebViewLogEvent:(nonnull NSURL *)requestUrl;
 
 #pragma mark - Deprecated and/or Unavailable
 /**
@@ -655,38 +655,38 @@
  @deprecated use startWithKey:secret:installationType: instead
  @see environment property
  */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret sandboxMode:(BOOL)sandboxMode installationType:(MPInstallationType)installationType __attribute__((unavailable("use startWithKey:secret:installationType:environment: instead")));
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType __attribute__((unavailable("use startWithKey:secret:installationType:environment: instead.")));
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret sandboxMode:(BOOL)sandboxMode installationType:(MPInstallationType)installationType __attribute__((unavailable("use startWithKey:secret:installationType:environment: instead")));
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret installationType:(MPInstallationType)installationType __attribute__((unavailable("use startWithKey:secret:installationType:environment: instead.")));
 
 /**
  @deprecated
  @see logEvent:
  */
-- (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType __attribute__((unavailable("use logEvent: instead")));
-- (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary *)eventInfo eventLength:(NSTimeInterval)eventLength __attribute__((unavailable("use logEvent: instead")));
-- (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary *)eventInfo eventLength:(NSTimeInterval)eventLength category:(NSString *)category __attribute__((unavailable("use logEvent: instead")));
+- (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType __attribute__((unavailable("use logEvent: instead")));
+- (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary *)eventInfo eventLength:(NSTimeInterval)eventLength __attribute__((unavailable("use logEvent: instead")));
+- (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary *)eventInfo eventLength:(NSTimeInterval)eventLength category:(nullable NSString *)category __attribute__((unavailable("use logEvent: instead")));
 
 /**
  @deprecated
  @see logScreenEvent:
  */
-- (void)logScreen:(NSString *)screenName __attribute__((unavailable("use logScreenEvent: instead")));
+- (void)logScreen:(nonnull NSString *)screenName __attribute__((unavailable("use logScreenEvent: instead")));
 
 /**
  @deprecated
  @see logCommerceEvent:
  */
-- (void)logTransaction:(MPProduct *)product __attribute__((unavailable("use logCommerceEvent: instead")));
-- (void)logTransaction:(NSString *)productName affiliation:(NSString *)affiliation sku:(NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount __attribute__((unavailable("use logCommerceEvent: instead")));
-- (void)logTransaction:(NSString *)productName affiliation:(NSString *)affiliation sku:(NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(NSString *)transactionId __attribute__((unavailable("use logCommerceEvent: instead")));
-- (void)logTransaction:(NSString *)productName affiliation:(NSString *)affiliation sku:(NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(NSString *)transactionId productCategory:(NSString *)productCategory __attribute__((unavailable("use logCommerceEvent: instead")));
-- (void)logTransaction:(NSString *)productName affiliation:(NSString *)affiliation sku:(NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(NSString *)transactionId productCategory:(NSString *)productCategory currencyCode:(NSString *)currencyCode __attribute__((unavailable("use logCommerceEvent: instead")));
+- (void)logTransaction:(nonnull MPProduct *)product __attribute__((unavailable("use logCommerceEvent: instead")));
+- (void)logTransaction:(nonnull NSString *)productName affiliation:(nullable NSString *)affiliation sku:(nonnull NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount __attribute__((unavailable("use logCommerceEvent: instead")));
+- (void)logTransaction:(nonnull NSString *)productName affiliation:(nullable NSString *)affiliation sku:(nonnull NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(nullable NSString *)transactionId __attribute__((unavailable("use logCommerceEvent: instead")));
+- (void)logTransaction:(nonnull NSString *)productName affiliation:(nullable NSString *)affiliation sku:(nonnull NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(nullable NSString *)transactionId productCategory:(nullable NSString *)productCategory __attribute__((unavailable("use logCommerceEvent: instead")));
+- (void)logTransaction:(nonnull NSString *)productName affiliation:(nullable NSString *)affiliation sku:(nonnull NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(nullable NSString *)transactionId productCategory:(nullable NSString *)productCategory currencyCode:(nullable NSString *)currencyCode __attribute__((unavailable("use logCommerceEvent: instead")));
 
 /**
  @deprecated
  @see logCommerceEvent:
  */
-- (void)logProductEvent:(MPProductEvent)productEvent product:(MPProduct *)product __attribute__((unavailable("use logCommerceEvent: instead")));
+- (void)logProductEvent:(MPProductEvent)productEvent product:(nonnull MPProduct *)product __attribute__((unavailable("use logCommerceEvent: instead")));
 
 /**
  @deprecated

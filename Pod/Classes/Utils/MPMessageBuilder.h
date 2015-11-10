@@ -27,21 +27,21 @@
 
 @interface MPMessageBuilder : NSObject
 
-@property (nonatomic, strong, readonly) NSString *messageType;
-@property (nonatomic, strong, readonly) MPSession *session;
-@property (nonatomic, strong, readonly) NSDictionary *messageInfo;
+@property (nonatomic, strong, readonly, nonnull) NSString *messageType;
+@property (nonatomic, strong, readonly, nullable) MPSession *session;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary *messageInfo;
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval timestamp;
 
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent;
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary *)messageInfo;
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session mediaTrack:(MPMediaTrack *)mediaTrack mediaAction:(MPMediaAction)mediaAction;
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session;
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent;
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary *)messageInfo;
-- (MPMessageBuilder *)withLaunchInfo:(NSDictionary *)launchInfo;
-- (MPMessageBuilder *)withLocation:(CLLocation *)location;
-- (MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;
-- (MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(MPSession *)previousSession;
-- (MPDataModelAbstract *)build;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary *)messageInfo;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session mediaTrack:(nonnull MPMediaTrack *)mediaTrack mediaAction:(MPMediaAction)mediaAction;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary *)messageInfo;
+- (nonnull MPMessageBuilder *)withLaunchInfo:(nonnull NSDictionary *)launchInfo;
+- (nonnull MPMessageBuilder *)withLocation:(nonnull CLLocation *)location;
+- (nonnull MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;
+- (nonnull MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
+- (nonnull MPDataModelAbstract *)build;
 
 @end

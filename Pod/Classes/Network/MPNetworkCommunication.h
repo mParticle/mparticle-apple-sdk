@@ -25,9 +25,9 @@
 @class MPStandaloneUpload;
 @class MPSessionHistory;
 
-extern NSString *const kMPURLScheme;
-extern NSString *const kMPURLHost;
-extern NSString *const kMPURLHostConfig;
+extern NSString * _Nonnull const kMPURLScheme;
+extern NSString * _Nonnull const kMPURLHost;
+extern NSString * _Nonnull const kMPURLHostConfig;
 
 typedef NS_ENUM(NSInteger, MPNetworkResponseAction) {
     MPNetworkResponseActionNone = 0,
@@ -40,23 +40,23 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorDelayedSegemnts
 };
 
-typedef void(^MPCommandsCompletionHandler)(BOOL success, MPCommand *command, BOOL finished);
-typedef void(^MPSegmentResponseHandler)(BOOL success, NSArray *segments, NSTimeInterval elapsedTime, NSError *error);
-typedef void(^MPUploadsCompletionHandler)(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished);
-typedef void(^MPStandaloneCommandsCompletionHandler)(BOOL success, MPStandaloneCommand *standaloneCommand, BOOL finished);
-typedef void(^MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload *standaloneUpload, NSDictionary *responseDictionary, BOOL finished);
+typedef void(^ _Nonnull MPCommandsCompletionHandler)(BOOL success, MPCommand * _Nullable command, BOOL finished);
+typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
+typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nullable upload, NSDictionary * _Nullable responseDictionary, BOOL finished);
+typedef void(^ _Nonnull MPStandaloneCommandsCompletionHandler)(BOOL success, MPStandaloneCommand * _Nullable standaloneCommand, BOOL finished);
+typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload * _Nullable standaloneUpload, NSDictionary * _Nullable responseDictionary, BOOL finished);
 
 @interface MPNetworkCommunication : NSObject
 
 @property (nonatomic, unsafe_unretained, readonly) BOOL inUse;
 @property (nonatomic, unsafe_unretained, readonly) BOOL retrievingSegments;
 
-- (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary))completionHandler;
+- (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary))completionHandler;
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
-- (void)sendCommands:(NSArray *)standaloneCommands index:(NSUInteger)index completionHandler:(MPCommandsCompletionHandler)completionHandler;
-- (void)sendStandaloneCommands:(NSArray *)commands index:(NSUInteger)index completionHandler:(MPStandaloneCommandsCompletionHandler)completionHandler;
-- (void)standaloneUploads:(NSArray *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler;
-- (void)upload:(NSArray *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
-- (void)uploadSessionHistory:(MPSessionHistory *)sessionHistory completionHandler:(void(^)(BOOL success))completionHandler;
+- (void)sendCommands:(nullable NSArray *)standaloneCommands index:(NSUInteger)index completionHandler:(MPCommandsCompletionHandler)completionHandler;
+- (void)sendStandaloneCommands:(nullable NSArray *)commands index:(NSUInteger)index completionHandler:(MPStandaloneCommandsCompletionHandler)completionHandler;
+- (void)standaloneUploads:(nonnull NSArray *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler;
+- (void)upload:(nonnull NSArray *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
+- (void)uploadSessionHistory:(nonnull MPSessionHistory *)sessionHistory completionHandler:(void(^ _Nonnull)(BOOL success))completionHandler;
 
 @end

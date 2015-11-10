@@ -20,15 +20,7 @@
 #import "MPSession.h"
 #import "MPConstants.h"
 
-@interface MPUpload()
-@property (nonatomic, strong) NSDictionary *uploadContent;
-@end
-
 @implementation MPUpload
-
-- (instancetype)init {
-    return [self initWithSessionId:0 uploadId:0 UUID:[[NSUUID UUID] UUIDString] uploadData:nil timestamp:[[NSDate date] timeIntervalSince1970]];
-}
 
 - (instancetype)initWithSession:(MPSession *)session uploadDictionary:(NSDictionary *)uploadDictionary {
     NSData *uploadData = [NSJSONSerialization dataWithJSONObject:uploadDictionary options:0 error:nil];
@@ -51,25 +43,17 @@
     _uuid = uuid;
     _timestamp = timestamp;
     _uploadData = uploadData;
-    if (uploadData) {
-        _uploadContent = [NSJSONSerialization JSONObjectWithData:uploadData options:0 error:nil];
-    }
     
     return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, self.uploadContent, self.timestamp];
+    NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
+    
+    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp];
 }
 
 - (BOOL)isEqual:(MPUpload *)object {
-//    unsigned int numberOfProperties;
-//    class_copyPropertyList([self class], &numberOfProperties);
-//    
-//    if (numberOfProperties != 5) {
-//        return NO;
-//    }
-    
     BOOL isEqual = _sessionId == object.sessionId &&
                    _uploadId == object.uploadId &&
                    _timestamp == object.timestamp &&
@@ -91,11 +75,12 @@
 
 #pragma mark Public methods
 - (NSDictionary *)dictionaryRepresentation {
-    return self.uploadContent;
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:_uploadData options:0 error:nil];
+    return dictionary;
 }
 
 - (NSString *)serializedString {
-    NSString *serializedString = [[NSString alloc] initWithData:self.uploadData encoding:NSUTF8StringEncoding];
+    NSString *serializedString = [[NSString alloc] initWithData:_uploadData encoding:NSUTF8StringEncoding];
     return serializedString;
 }
 

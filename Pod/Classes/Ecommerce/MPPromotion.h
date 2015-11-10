@@ -59,22 +59,22 @@ typedef NS_ENUM(NSUInteger, MPPromotionAction) {
 /**
  Description for the promotion creative.
  */
-@property (nonatomic, strong) NSString *creative;
+@property (nonatomic, strong, nullable) NSString *creative;
 
 /**
  Promotion name.
  */
-@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong, nullable) NSString *name;
 
 /**
  Promotion display position.
  */
-@property (nonatomic, strong) NSString *position;
+@property (nonatomic, strong, nullable) NSString *position;
 
 /**
  Promotion identifier.
  */
-@property (nonatomic, strong) NSString *promotionId;
+@property (nonatomic, strong, nullable) NSString *promotionId;
 
 @end
 
@@ -116,7 +116,7 @@ typedef NS_ENUM(NSUInteger, MPPromotionAction) {
 /**
  List of promotions under an <i>action</i>
  */
-@property (nonatomic, strong, readonly) NSArray *promotions;
+@property (nonatomic, strong, readonly, nullable) NSArray *promotions;
 
 /**
  A value from the <b>MPPromotionAction</b> enum describing the promotion action.
@@ -131,13 +131,13 @@ typedef NS_ENUM(NSUInteger, MPPromotionAction) {
  
  @see MPPromotionAction
  */
-- (instancetype)initWithAction:(MPPromotionAction)action promotion:(MPPromotion *)promotion;
+- (nonnull instancetype)initWithAction:(MPPromotionAction)action promotion:(nullable MPPromotion *)promotion;
 
 /**
  Adds a promotion to the list of promotions to have <i>action</i> applied to.
  
  @param promotion An instance of MPPromotion
  */
-- (void)addPromotion:(MPPromotion *)promotion;
+- (void)addPromotion:(nonnull MPPromotion *)promotion;
 
 @end

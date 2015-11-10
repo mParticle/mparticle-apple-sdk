@@ -43,17 +43,17 @@ typedef NS_ENUM(NSUInteger, MPMediaStationType) {
 /**
  Station identifier. Should include Call letters and Band
  */
-@property (nonatomic, strong) NSString *assetId;
+@property (nonatomic, strong, nonnull) NSString *assetId;
 
 /**
  Source of the data. Set as "cms" for Digital Audio
  */
-@property (nonatomic, strong, readonly) NSString *dataSource;
+@property (nonatomic, strong, readonly, nonnull) NSString *dataSource;
 
 /**
  Name of the provider
  */
-@property (nonatomic, strong) NSString *provider;
+@property (nonatomic, strong, nullable) NSString *provider;
 
 /**
  Station type.
@@ -64,7 +64,7 @@ typedef NS_ENUM(NSUInteger, MPMediaStationType) {
 /**
  Type of content. Set as "radio" for Digital Audio
  */
-@property (nonatomic, strong, readonly) NSString *type;
+@property (nonatomic, strong, readonly, nonnull) NSString *type;
 
 /**
  Designated initialiser.
@@ -73,13 +73,13 @@ typedef NS_ENUM(NSUInteger, MPMediaStationType) {
  @param stationType Station type (see MPMediaStationType)
  @returns An instance of MPMediaMetadataDigitalAudio, or nil if it could not be created
  */
-- (instancetype)initWithAssetId:(NSString *)assetId provider:(NSString *)provider stationType:(MPMediaStationType)stationType __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithAssetId:(nullable NSString *)assetId provider:(nullable NSString *)provider stationType:(MPMediaStationType)stationType __attribute__((objc_designated_initializer));
 
 /**
  Returns an array with all keys in the dictionary
  @returns An array with all dictionary keys
  */
-- (NSArray *)allKeys;
+- (nullable NSArray *)allKeys;
 
 /**
  Number of entries in the dictionary
@@ -87,7 +87,7 @@ typedef NS_ENUM(NSUInteger, MPMediaStationType) {
  */
 - (NSUInteger)count;
 
-- (id)objectForKeyedSubscript:(NSString *const)key;
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key;
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
+- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
 
 @end

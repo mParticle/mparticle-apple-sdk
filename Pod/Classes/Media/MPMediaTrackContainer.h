@@ -24,14 +24,14 @@
 
 @property (nonatomic, unsafe_unretained, readonly) NSUInteger count;
 
-- (instancetype)initWithCapacity:(NSUInteger)capacity;
-- (void)addTrack:(MPMediaTrack *)mediaTrack;
-- (NSArray *)allMediaTracks;
-- (BOOL)containsTrack:(MPMediaTrack *)mediaTrack;
-- (BOOL)containsTrackWithChannel:(NSString *)channel;
+- (nonnull instancetype)initWithCapacity:(NSUInteger)capacity;
+- (void)addTrack:(nonnull MPMediaTrack *)mediaTrack;
+- (nullable NSArray *)allMediaTracks;
+- (BOOL)containsTrack:(nonnull MPMediaTrack *)mediaTrack;
+- (BOOL)containsTrackWithChannel:(nonnull NSString *)channel;
 - (void)pruneMediaTracks;
-- (MPMediaTrack *)trackWithChannel:(NSString *)channel;
-- (void)removeTrack:(MPMediaTrack *)mediaTrack;
-- (void)removeTrackWithChannel:(NSString *)channel;
+- (nullable MPMediaTrack *)trackWithChannel:(nonnull NSString *)channel;
+- (void)removeTrack:(nonnull MPMediaTrack *)mediaTrack;
+- (void)removeTrackWithChannel:(nonnull NSString *)channel;
 
 @end

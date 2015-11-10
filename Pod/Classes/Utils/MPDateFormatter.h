@@ -20,7 +20,7 @@
 
 @interface MPDateFormatter : NSObject
 
-+ (NSDate *)dateFromStringRFC3339:(NSString *)dateString;
-+ (NSString *)stringFromDateRFC3339:(NSDate *)date;
++ (nullable NSDate *)dateFromStringRFC3339:(nonnull NSString *)dateString;
++ (nullable NSString *)stringFromDateRFC3339:(nonnull NSDate *)date;
 
 @end

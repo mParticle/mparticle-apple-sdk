@@ -56,34 +56,34 @@
 /**
  A string describing the affiliation.
  */
-@property (nonatomic, strong) NSString *affiliation;
+@property (nonatomic, strong, nullable) NSString *affiliation;
 
 /**
  The coupon code string.
  */
-@property (nonatomic, strong) NSString *couponCode;
+@property (nonatomic, strong, nullable) NSString *couponCode;
 
 /**
  The shipping amount of the commerce event transaction.
  */
-@property (nonatomic, strong) NSNumber *shipping;
+@property (nonatomic, strong, nullable) NSNumber *shipping;
 
 /**
  The tax amount of the commerce event transaction.
  */
-@property (nonatomic, strong) NSNumber *tax;
+@property (nonatomic, strong, nullable) NSNumber *tax;
 
 /**
  The revenue amount of the commerce event transaction. It usually is the <b>sum(products x quantities) + tax + shipping</b>.
  However it may contain other values not listed in the formula, it will vary per company.
  */
-@property (nonatomic, strong) NSNumber *revenue;
+@property (nonatomic, strong, nullable) NSNumber *revenue;
 
 /**
  The unique identifier for the commerce event transaction.
  */
-@property (nonatomic, strong) NSString *transactionId;
+@property (nonatomic, strong, nullable) NSString *transactionId;
 
 @end
 
-extern NSString *const kMPExpTATransactionId;
+extern NSString * _Nonnull const kMPExpTATransactionId;

@@ -71,9 +71,8 @@ NSString *const kMPStateKey = @"state";
     BOOL isLoggingUncaughtExceptions;
 }
 
-@property (nonatomic, strong) MPBackendController *backendController;
-@property (nonatomic, strong) NSMutableDictionary *configSettings;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
 
 @end
 

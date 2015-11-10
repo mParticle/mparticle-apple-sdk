@@ -21,7 +21,6 @@
 
 @interface MPMessage()
 
-@property (nonatomic, strong) NSString *messageContent;
 @property (nonatomic, strong) NSData *messageData;
 @property (nonatomic, strong) NSString *messageType;
 
@@ -58,7 +57,9 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Message\n Id: %lld\n UUID: %@\n Session: %lld\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.sessionId, self.messageType, self.timestamp, self.messageContent];
+    NSString *serializedString = [self serializedString];
+    
+    return [NSString stringWithFormat:@"Message\n Id: %lld\n UUID: %@\n Session: %lld\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.sessionId, self.messageType, self.timestamp, serializedString];
 }
 
 - (BOOL)isEqual:(MPMessage *)object {
@@ -96,17 +97,11 @@
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    NSData *messageData = [coder decodeObjectForKey:@"messageData"];
-    if (!messageData) {
-        NSString *messageContent = [coder decodeObjectForKey:@"messageContent"];
-        messageData = [messageContent dataUsingEncoding:NSUTF8StringEncoding];
-    }
-    
     self = [self initWithSessionId:[coder decodeInt64ForKey:@"sessionId"]
                          messageId:[coder decodeInt64ForKey:@"messageId"]
                               UUID:[coder decodeObjectForKey:@"uuid"]
                        messageType:[coder decodeObjectForKey:@"messageType"]
-                       messageData:messageData
+                       messageData:[coder decodeObjectForKey:@"messageData"]
                          timestamp:[coder decodeDoubleForKey:@"timestamp"]
                       uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]];
 
@@ -114,22 +109,14 @@
 }
 
 #pragma mark Public methods
-- (NSString *)messageContent {
-    if (_messageContent) {
-        return _messageContent;
-    }
-    
-    _messageContent = [[NSString alloc] initWithData:_messageData encoding:NSUTF8StringEncoding];
-    return _messageContent;
-}
-
 - (NSDictionary *)dictionaryRepresentation {
     NSDictionary * dictionaryRepresentation = [NSJSONSerialization JSONObjectWithData:_messageData options:0 error:nil];
     return dictionaryRepresentation;
 }
 
 - (NSString *)serializedString {
-    return self.messageContent;
+    NSString *serializedString = [[NSString alloc] initWithData:_messageData encoding:NSUTF8StringEncoding];
+    return serializedString;
 }
 
 @end

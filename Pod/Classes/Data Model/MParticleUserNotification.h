@@ -45,33 +45,33 @@ typedef NS_ENUM(NSInteger, MPUserNotificationRunningMode) {
     MPUserNotificationRunningModeForeground
 };
 
-extern NSString *const kMPUserNotificationApsKey;
-extern NSString *const kMPUserNotificationAlertKey;
-extern NSString *const kMPUserNotificationBodyKey;
-extern NSString *const kMPUserNotificationContentAvailableKey;
-extern NSString *const kMPUserNotificationCommandKey;
-extern NSString *const kMPUserNotificationCampaignIdKey;
-extern NSString *const kMPUserNotificationContentIdKey;
-extern NSString *const kMPUserNotificationExpirationKey;
-extern NSString *const kMPUserNotificationLocalDeliveryTimeKey;
-extern NSString *const kMPUserNotificationDeferredApsKey;
-extern NSString *const kMPUserNotificationUniqueIdKey;
-extern NSString *const kMPUserNotificationCategoryKey;
+extern NSString * _Nonnull const kMPUserNotificationApsKey;
+extern NSString * _Nonnull const kMPUserNotificationAlertKey;
+extern NSString * _Nonnull const kMPUserNotificationBodyKey;
+extern NSString * _Nonnull const kMPUserNotificationContentAvailableKey;
+extern NSString * _Nonnull const kMPUserNotificationCommandKey;
+extern NSString * _Nonnull const kMPUserNotificationCampaignIdKey;
+extern NSString * _Nonnull const kMPUserNotificationContentIdKey;
+extern NSString * _Nonnull const kMPUserNotificationExpirationKey;
+extern NSString * _Nonnull const kMPUserNotificationLocalDeliveryTimeKey;
+extern NSString * _Nonnull const kMPUserNotificationDeferredApsKey;
+extern NSString * _Nonnull const kMPUserNotificationUniqueIdKey;
+extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 
 @interface MParticleUserNotification : MPDataModelAbstract <NSCoding>
 
-@property (nonatomic, strong) NSString *actionIdentifier;
-@property (nonatomic, strong) NSString *actionTitle;
-@property (nonatomic, strong) NSDictionary *deferredPayload;
-@property (nonatomic, strong) NSString *type;
-@property (nonatomic, strong, readonly) NSNumber *campaignId;
-@property (nonatomic, strong, readonly) NSString *categoryIdentifier;
-@property (nonatomic, strong, readonly) NSNumber *contentId;
-@property (nonatomic, strong, readonly) NSDate *localAlertDate;
-@property (nonatomic, strong, readonly) NSString *redactedUserNotificationString;
-@property (nonatomic, strong, readonly) NSDate *receiptTime;
-@property (nonatomic, strong, readonly) NSString *state;
-@property (nonatomic, strong, readonly) NSNumber *uniqueIdentifier;
+@property (nonatomic, strong, nullable) NSString *actionIdentifier;
+@property (nonatomic, strong, nullable) NSString *actionTitle;
+@property (nonatomic, strong, nullable) NSDictionary *deferredPayload;
+@property (nonatomic, strong, nonnull) NSString *type;
+@property (nonatomic, strong, readonly, nullable) NSNumber *campaignId;
+@property (nonatomic, strong, readonly, nullable) NSString *categoryIdentifier;
+@property (nonatomic, strong, readonly, nullable) NSNumber *contentId;
+@property (nonatomic, strong, readonly, nullable) NSDate *localAlertDate;
+@property (nonatomic, strong, readonly, nullable) NSString *redactedUserNotificationString;
+@property (nonatomic, strong, readonly, nonnull) NSDate *receiptTime;
+@property (nonatomic, strong, readonly, nonnull) NSString *state;
+@property (nonatomic, strong, readonly, nullable) NSNumber *uniqueIdentifier;
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval campaignExpiration;
 @property (nonatomic, unsafe_unretained, readwrite) int64_t userNotificationId;
 @property (nonatomic, unsafe_unretained, readwrite) MPUserNotificationBehavior behavior;
@@ -82,6 +82,6 @@ extern NSString *const kMPUserNotificationCategoryKey;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL hasBeenUsedInInfluencedOpen;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL shouldPersist;
 
-- (instancetype)initWithDictionary:(NSDictionary *)notificationDictionary actionIdentifier:(NSString *)actionIdentifier state:(NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode runningMode:(MPUserNotificationRunningMode)runningMode;
+- (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)notificationDictionary actionIdentifier:(nullable NSString *)actionIdentifier state:(nonnull NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode runningMode:(MPUserNotificationRunningMode)runningMode;
 
 @end

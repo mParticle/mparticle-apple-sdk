@@ -18,21 +18,21 @@
 
 #import <Foundation/Foundation.h>
 
-extern NSString *const kMPStateInformationKey;
+extern NSString * _Nonnull const kMPStateInformationKey;
 
 @interface MPCurrentState : NSObject
 
-@property (nonatomic, strong, readonly) NSNumber *applicationMemory;
-@property (nonatomic, strong, readonly) NSNumber *batteryLevel;
-@property (nonatomic, strong, readonly) NSDictionary *cpuUsageInfo;
-@property (nonatomic, strong, readonly) NSString *dataConnectionStatus;
-@property (nonatomic, strong, readonly) NSNumber *deviceOrientation;
-@property (nonatomic, strong, readonly) NSDictionary *diskSpaceInfo;
-@property (nonatomic, strong, readonly) NSNumber *gpsState;
-@property (nonatomic, strong, readonly) NSNumber *statusBarOrientation;
-@property (nonatomic, strong, readonly) NSDictionary *systemMemoryInfo;
-@property (nonatomic, strong, readonly) NSNumber *timeSinceStart;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *applicationMemory;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *batteryLevel;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary *cpuUsageInfo;
+@property (nonatomic, strong, readonly, nonnull) NSString *dataConnectionStatus;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *deviceOrientation;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary *diskSpaceInfo;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *gpsState;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *statusBarOrientation;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary *systemMemoryInfo;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *timeSinceStart;
 
-- (NSDictionary *)dictionaryRepresentation;
+- (nonnull NSDictionary *)dictionaryRepresentation;
 
 @end

@@ -27,18 +27,18 @@
 
 @interface MPKitContainer : NSObject
 
-@property (nonatomic, strong) NSMutableArray *kits;
+@property (nonatomic, strong, nullable) NSMutableArray *kits;
 
-+ (MPKitContainer *)sharedInstance;
-- (NSArray *)activeKits;
-- (void)configureKits:(NSArray *)kitsConfiguration;
-- (NSArray *)supportedKits;
++ (nonnull MPKitContainer *)sharedInstance;
+- (nullable NSArray *)activeKits;
+- (void)configureKits:(nullable NSArray *)kitsConfiguration;
+- (nonnull NSArray *)supportedKits;
 
-- (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(MPKitAbstract *kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler;
-- (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(MPKitAbstract *kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler;
-- (void)forwardSDKCall:(SEL)selector userAttributeKey:(NSString *)key value:(id)value kitHandler:(void (^)(MPKitAbstract *kit))kitHandler;
-- (void)forwardSDKCall:(SEL)selector userAttributes:(NSDictionary *)userAttributes kitHandler:(void (^)(MPKitAbstract *kit, NSDictionary *forwardAttributes))kitHandler;
-- (void)forwardSDKCall:(SEL)selector userIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^)(MPKitAbstract *kit))kitHandler;
-- (void)forwardSDKCall:(SEL)selector errorMessage:(NSString *)errorMessage exception:(NSException *)exception eventInfo:(NSDictionary *)eventInfo kitHandler:(void (^)(MPKitAbstract *kit, MPKitExecStatus **execStatus))kitHandler;
+- (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPEvent *)event messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector userAttributeKey:(nonnull NSString *)key value:(nullable id)value kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit, NSDictionary * _Nullable forwardAttributes))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector errorMessage:(nullable NSString *)errorMessage exception:(nullable NSException *)exception eventInfo:(nullable NSDictionary *)eventInfo kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 
 @end

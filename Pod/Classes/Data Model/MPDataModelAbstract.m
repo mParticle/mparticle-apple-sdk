@@ -35,10 +35,6 @@
 
 #pragma mark Public methods
 - (NSString *)newUUID {
-//    CFUUIDRef UUIDRef = CFUUIDCreate(kCFAllocatorDefault);
-//    NSString *UUDDString = (__bridge_transfer NSString *)CFUUIDCreateString(kCFAllocatorDefault, UUIDRef);
-//    CFRelease(UUIDRef);
-    
     NSString *UUDDString = [[NSUUID UUID] UUIDString];
     return UUDDString;
 }

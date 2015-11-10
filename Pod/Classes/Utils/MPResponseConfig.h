@@ -20,8 +20,8 @@
 
 @interface MPResponseConfig : NSObject
 
-@property (nonatomic, strong, readonly) NSNumber *influencedOpenTimer;
+@property (nonatomic, strong, readonly, nullable) NSNumber *influencedOpenTimer;
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configurationDictionary __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configurationDictionary;
 
 @end

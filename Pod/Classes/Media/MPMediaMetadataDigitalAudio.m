@@ -18,6 +18,7 @@
 
 #import "MPMediaMetadataDigitalAudio.h"
 #import "MPConstants.h"
+#import "MPLogger.h"
 
 #define kMPDAAssetKey @"assetid"
 #define kMPDADataSourceKey @"dataSrc"

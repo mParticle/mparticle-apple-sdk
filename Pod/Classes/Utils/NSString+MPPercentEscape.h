@@ -20,7 +20,7 @@
 
 @interface NSString(MPPercentEscape)
 
-+ (NSString *)percentEscapeString:(NSString *)stringToEscape;
-- (NSString *)percentEscape;
++ (nonnull NSString *)percentEscapeString:(nonnull NSString *)stringToEscape;
+- (nonnull NSString *)percentEscape;
 
 @end

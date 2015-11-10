@@ -50,14 +50,14 @@
  @param product An instance of MPProduct
  @param bagName The name of the bag
  */
-- (void)addProduct:(MPProduct *)product toBag:(NSString *)bagName;
+- (void)addProduct:(nonnull MPProduct *)product toBag:(nonnull NSString *)bagName;
 
 /**
  Removes a product from a bag. If the bag does not contain the product or if the bag does not exist, this method has no effect.
  @param product An instance of MPProduct
  @param bagName The name of the bag
  */
-- (void)removeProduct:(MPProduct *)product fromBag:(NSString *)bagName;
+- (void)removeProduct:(nonnull MPProduct *)product fromBag:(nonnull NSString *)bagName;
 
 /**
  Returns a dictionary containing bag names as keys and corresponding arrays of products as values.
@@ -74,7 +74,7 @@
  
  @returns A dictionary with bags and products.
  */
-- (NSDictionary *)productBags;
+- (nullable NSDictionary *)productBags;
 
 /**
  Removes all product bags together with its respective products.
@@ -85,6 +85,6 @@
  Removes a product bag. If the bag does not exist, this method has no effect.
  @param bagName The name of the bag
  */
-- (void)removeProductBag:(NSString *)bagName;
+- (void)removeProductBag:(nonnull NSString *)bagName;
 
 @end

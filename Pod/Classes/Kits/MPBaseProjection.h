@@ -50,13 +50,13 @@ typedef NS_ENUM(NSUInteger, MPProjectionPropertyKind) {
     NSUInteger _projectionId;
 }
 
-@property (nonatomic, strong) NSString *name;
-@property (nonatomic, strong) NSString *projectedName;
+@property (nonatomic, strong, nonnull) NSString *name;
+@property (nonatomic, strong, nullable) NSString *projectedName;
 @property (nonatomic, unsafe_unretained) MPProjectionMatchType matchType;
 @property (nonatomic, unsafe_unretained, readonly) MPProjectionType projectionType;
 @property (nonatomic, unsafe_unretained, readonly) MPProjectionPropertyKind propertyKind;
 @property (nonatomic, unsafe_unretained, readonly) NSUInteger projectionId;
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex;
+- (nonnull instancetype)initWithConfiguration:(nullable NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex;
 
 @end

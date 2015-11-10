@@ -48,7 +48,7 @@
  Returns the shared instance object.
  @returns the Singleton instance of the MPClass class.
  */
-+ (instancetype)sharedInstance;
++ (nonnull instancetype)sharedInstance;
 
 /**
  Adds a product to the shopping cart. 
@@ -73,7 +73,7 @@
  @see MPCommerceEvent
  @see mParticle
  */
-- (void)addProduct:(MPProduct *)product;
+- (void)addProduct:(nonnull MPProduct *)product;
 
 /**
  Empties the shopping cart. Removes all its contents and respective persisted data.
@@ -98,7 +98,7 @@
  Returns the collection of products in the shoppint cart.
  @returns An array with products in the shoppint cart or nil if the cart is empty.
  */
-- (NSArray *)products;
+- (nullable NSArray *)products;
 
 /**
  Removes a product from the shopping cart.
@@ -125,6 +125,6 @@
  @see MPCommerceEvent
  @see mParticle
  */
-- (void)removeProduct:(MPProduct *)product;
+- (void)removeProduct:(nonnull MPProduct *)product;
 
 @end

@@ -25,10 +25,6 @@
 
 @implementation MPResponseConfig
 
-- (instancetype)init {
-    return [self initWithConfiguration:nil];
-}
-
 - (instancetype)initWithConfiguration:(NSDictionary *)configurationDictionary {
     self = [super init];
     if (!self || MPIsNull(configurationDictionary)) {

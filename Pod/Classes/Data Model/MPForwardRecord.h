@@ -25,12 +25,12 @@
 @interface MPForwardRecord : NSObject
 
 @property (nonatomic, unsafe_unretained) uint64_t forwardRecordId;
-@property (nonatomic, strong) NSMutableDictionary *dataDictionary;
+@property (nonatomic, strong, nonnull) NSMutableDictionary *dataDictionary;
 
-- (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data;
-- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus;
-- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
-- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(id)originalEvent;
-- (NSData *)dataRepresentation;
+- (nonnull instancetype)initWithId:(int64_t)forwardRecordId data:(nonnull NSData *)data;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable id)originalEvent;
+- (nullable NSData *)dataRepresentation;
 
 @end

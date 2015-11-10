@@ -20,10 +20,10 @@
 
 @interface MPDatabaseMigrationController : NSObject
 
-@property (nonatomic, readonly) NSArray *databaseVersions;
+@property (nonatomic, readonly, nonnull) NSArray *databaseVersions;
 
-- (instancetype)initWithDatabaseVersions:(NSArray *)databaseVersions;
-- (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion;
-- (NSNumber *)needsMigration;
+- (nonnull instancetype)initWithDatabaseVersions:(nonnull NSArray *)databaseVersions;
+- (void)migrateDatabaseFromVersion:(nonnull NSNumber *)oldVersion;
+- (nullable NSNumber *)needsMigration;
 
 @end

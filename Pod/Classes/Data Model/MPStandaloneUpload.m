@@ -19,15 +19,7 @@
 #import "MPStandaloneUpload.h"
 #import "MPConstants.h"
 
-@interface MPStandaloneUpload()
-@property (nonatomic, strong) NSDictionary *uploadContent;
-@end
-
 @implementation MPStandaloneUpload
-
-- (instancetype)init {
-    return [self initWithUploadId:0 UUID:[[NSUUID UUID] UUIDString] uploadData:nil timestamp:[[NSDate date] timeIntervalSince1970]];
-}
 
 - (instancetype)initWithUploadDictionary:(NSDictionary *)uploadDictionary {
     NSData *uploadData = [NSJSONSerialization dataWithJSONObject:uploadDictionary options:0 error:nil];
@@ -48,15 +40,14 @@
     _uuid = uuid;
     _timestamp = timestamp;
     _uploadData = uploadData;
-    if (uploadData) {
-        _uploadContent = [NSJSONSerialization JSONObjectWithData:uploadData options:0 error:nil];
-    }
     
     return self;
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, self.uploadContent, self.timestamp];
+    NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
+    
+    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp];
 }
 
 - (BOOL)isEqual:(MPStandaloneUpload *)object {
@@ -86,11 +77,12 @@
 
 #pragma mark Public methods
 - (NSDictionary *)dictionaryRepresentation {
-    return self.uploadContent;
+    NSDictionary *dictionary = [NSJSONSerialization JSONObjectWithData:_uploadData options:0 error:nil];
+    return dictionary;
 }
 
 - (NSString *)serializedString {
-    NSString *serializedString = [[NSString alloc] initWithData:self.uploadData encoding:NSUTF8StringEncoding];
+    NSString *serializedString = [[NSString alloc] initWithData:_uploadData encoding:NSUTF8StringEncoding];
     return serializedString;
 }
 

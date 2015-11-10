@@ -49,25 +49,25 @@ typedef NS_ENUM(NSUInteger, MPMediaTrackQuality) {
  Contains HLS timed metadata used to log information. Internally this property is exactly the same as timedMetadata.
  This parameter accepts a NSString or a NSDictionary containing the "info" key with a corresponding value
  */
-@property (nonatomic, strong) id id3;
+@property (nonatomic, strong, nullable) id id3;
 
 /**
  Contains CMS metadata used to log information. This parameter accepts a NSDictionary
  or an instance of one of the MPMediaMetadata (Digital Audio, DPR, OCR, or TVR) classes.
  */
-@property (nonatomic, strong) id metadata;
+@property (nonatomic, strong, nullable) id metadata;
 
 /**
  Contains HLS timed metadata used to log information (ID3). This parameter accepts a NSString or
  a NSDictionary containing the "info" key with a corresponding value.
  */
-@property (nonatomic, strong) id timedMetadata;
+@property (nonatomic, strong, nullable) id timedMetadata;
 
 /**
  Channel name of the media track. During initialization channel must be a valid string. It cannot be
  nil, NULL, NSNull, or empty string.
  */
-@property (nonatomic, strong, readonly) NSString *channel;
+@property (nonatomic, strong, readonly, nonnull) NSString *channel;
 
 /**
  Current playback position.
@@ -107,6 +107,6 @@ typedef NS_ENUM(NSUInteger, MPMediaTrackQuality) {
  @param channel The media track channel
  @returns An instance of MPMediaTrack, or nil if the object could not be created or an invalid channel name was passed as parameter
  */
-- (instancetype)initWithChannel:(NSString *)channel;
+- (nullable instancetype)initWithChannel:(nonnull NSString *)channel;
 
 @end

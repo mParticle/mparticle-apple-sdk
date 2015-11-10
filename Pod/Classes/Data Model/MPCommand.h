@@ -22,15 +22,15 @@
 
 @interface MPCommand : MPDataModelAbstract <NSCopying, NSCoding>
 
-@property (nonatomic, strong) NSURL *url;
-@property (nonatomic, strong) NSString *httpMethod;
-@property (nonatomic, strong) NSData *headerData;
-@property (nonatomic, strong) NSData *postData;
+@property (nonatomic, strong, nonnull) NSURL *url;
+@property (nonatomic, strong, nonnull) NSString *httpMethod;
+@property (nonatomic, strong, nullable) NSData *headerData;
+@property (nonatomic, strong, nullable) NSData *postData;
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t commandId;
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
 
-- (instancetype)initWithSession:(MPSession *)session commandDictionary:(NSDictionary *)commandDictionary;
-- (instancetype)initWithSessionId:(int64_t)sessionId commandId:(int64_t)commandId UUID:(NSString *)uuid url:(NSURL *)url httpMethod:(NSString *)httpMethod headerData:(NSData *)headerData postData:(NSData *)postData timestamp:(NSTimeInterval)timestamp __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithSession:(nonnull MPSession *)session commandDictionary:(nonnull NSDictionary *)commandDictionary;
+- (nonnull instancetype)initWithSessionId:(int64_t)sessionId commandId:(int64_t)commandId UUID:(nonnull NSString *)uuid url:(nonnull NSURL *)url httpMethod:(nonnull NSString *)httpMethod headerData:(nullable NSData *)headerData postData:(nullable NSData *)postData timestamp:(NSTimeInterval)timestamp;
 
 @end

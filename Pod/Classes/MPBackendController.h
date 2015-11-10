@@ -69,47 +69,47 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 @property (nonatomic, unsafe_unretained, readonly) MPInitializationStatus initializationStatus;
 
-- (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithDelegate:(nonnull id<MPBackendControllerDelegate>)delegate;
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (MPExecStatus)endLocationTracking;
-- (void)beginSession:(void (^)(MPSession *session, MPSession *previousSession, MPExecStatus execStatus))completionHandler;
+- (void)beginSession:(void (^ _Nullable)(MPSession * _Nullable session, MPSession * _Nullable previousSession, MPExecStatus execStatus))completionHandler;
 - (void)endSession;
-- (void)beginTimedEvent:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler;
-- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
-- (MPEvent *)eventWithName:(NSString *)eventName;
-- (NSString *)execStatusDescription:(MPExecStatus)execStatus;
-- (MPExecStatus)fetchSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(void (^)(NSArray *segments, NSTimeInterval elapsedTime, NSError *error))completionHandler;
-- (NSNumber *)incrementSessionAttribute:(MPSession *)session key:(NSString *)key byValue:(NSNumber *)value;
-- (NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value;
-- (void)leaveBreadcrumb:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler;
-- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent attempt:(NSUInteger)attempt completionHandler:(void (^)(MPCommerceEvent *commerceEvent, MPExecStatus execStatus))completionHandler;
-- (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler;
-- (void)logEvent:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler;
-- (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler;
-- (void)logScreen:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler;
-- (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^)(MPProfileChange profile, MPExecStatus execStatus))completionHandler;
-- (void)setOptOut:(BOOL)optOutStatus attempt:(NSUInteger)attempt completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler;
-- (MPExecStatus)setSessionAttribute:(MPSession *)session key:(NSString *)key value:(id)value;
-- (void)setUserAttribute:(NSString *)key value:(id)value attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler;
-- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate completionHandler:(dispatch_block_t)completionHandler;
+- (void)beginTimedEvent:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
+- (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
+- (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
+- (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
+- (MPExecStatus)fetchSegments:(NSTimeInterval)timeout endpointId:(nullable NSString *)endpointId completionHandler:(void (^ _Nonnull)(NSArray * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error))completionHandler;
+- (nullable NSNumber *)incrementSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
+- (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
+- (void)leaveBreadcrumb:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
+- (void)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPCommerceEvent * _Nonnull commerceEvent, MPExecStatus execStatus))completionHandler;
+- (void)logError:(nullable NSString *)message exception:(nullable NSException *)exception topmostContext:(nullable id)topmostContext eventInfo:(nullable NSDictionary *)eventInfo attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus))completionHandler;
+- (void)logEvent:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
+- (void)logNetworkPerformanceMeasurement:(nonnull MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(MPNetworkPerformance * _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
+- (void)logScreen:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
+- (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPProfileChange profile, MPExecStatus execStatus))completionHandler;
+- (void)setOptOut:(BOOL)optOutStatus attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
+- (MPExecStatus)setSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key value:(nonnull id)value;
+- (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus))completionHandler;
+- (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)resetTimer;
 - (MPExecStatus)upload;
 // Media Tracking
-- (void)beginPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler;
-- (MPExecStatus)discardMediaTrack:(MPMediaTrack *)mediaTrack;
-- (void)endPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler;
-- (void)logMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler;
-- (void)logTimedMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler;
-- (NSArray *)mediaTracks;
-- (MPMediaTrack *)mediaTrackWithChannel:(NSString *)channel;
-- (void)updatePlaybackPosition:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler;
+- (void)beginPlaying:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
+- (MPExecStatus)discardMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
+- (void)endPlaying:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
+- (void)logMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
+- (void)logTimedMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
+- (nullable NSArray *)mediaTracks;
+- (nullable MPMediaTrack *)mediaTrackWithChannel:(nonnull NSString *)channel;
+- (void)updatePlaybackPosition:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
 
 @end
 
 @protocol MPBackendControllerDelegate <NSObject>
 - (void)forwardLogInstall;
 - (void)forwardLogUpdate;
-- (void)sessionDidBegin:(MPSession *)session;
-- (void)sessionDidEnd:(MPSession *)session;
+- (void)sessionDidBegin:(nonnull MPSession *)session;
+- (void)sessionDidEnd:(nonnull MPSession *)session;
 @end

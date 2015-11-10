@@ -28,12 +28,12 @@
 /**
  Category is a string with a developer/company defined category of the event.
  */
-@property (nonatomic, strong) NSString *category;
+@property (nonatomic, strong, nullable) NSString *category;
 
 /**
  Custom flags are a collection of attributes which by default are not forwarded to kits.
  */
-@property (nonatomic, strong, readonly) NSDictionary *customFlags;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary *customFlags;
 
 /**
  The duration, in milliseconds, of an event. This property can be set by a developer, or
@@ -41,37 +41,37 @@
  methods.
  @see beginTiming
  */
-@property (nonatomic, strong) NSNumber *duration;
+@property (nonatomic, strong, nullable) NSNumber *duration;
 
 /**
  If using the beginTiming/endTiming methods, this property contains the time the
  event ended. Otherwise it is nil.
  */
-@property (nonatomic, strong) NSDate *endTime;
+@property (nonatomic, strong, nullable) NSDate *endTime;
 
 /**
  A dictionary containing further information about the event. The number of entries is 
  limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values 
  can be strings (up to 255 characters), numbers, booleans, or dates
  */
-@property (nonatomic, strong) NSDictionary *info;
+@property (nonatomic, strong, nullable) NSDictionary *info;
 
 /**
  The name of the event to be logged (required not nil). The event name must not contain
  more than 255 characters.
  */
-@property (nonatomic, strong) NSString *name;
+@property (nonatomic, strong, nonnull) NSString *name;
 
 /**
  If using the beginTiming/endTiming methods, this property contains the time the
  event started. Otherwise it is nil.
  */
-@property (nonatomic, strong) NSDate *startTime;
+@property (nonatomic, strong, nullable) NSDate *startTime;
 
 /**
  String representation of the event type to be logged.
  */
-@property (nonatomic, strong, readonly) NSString *typeName;
+@property (nonatomic, strong, readonly, nonnull) NSString *typeName;
 
 /**
  An enum value that indicates the type of event to be logged. If logging a screen event, this 
@@ -87,20 +87,20 @@
  @param type An enum value that indicates the type of event to be logged.
  @returns An instance of MPEvent or nil, if it could not be initialized.
  */
-- (instancetype)initWithName:(NSString *)name type:(MPEventType)type __attribute__((objc_designated_initializer));
+- (nullable instancetype)initWithName:(nonnull NSString *)name type:(MPEventType)type __attribute__((objc_designated_initializer));
 
 /**
  Adds a custom flag associated with a key to the event.
  @param customFlag A string attribute
  @param key The key associated with the custom flag.
  */
-- (void)addCustomFlag:(NSString *)customFlag withKey:(NSString *)key;
+- (void)addCustomFlag:(nonnull NSString *)customFlag withKey:(nonnull NSString *)key;
 
 /**
  Adds an array of custom flags associated with a key to the event.
  @param customFlags An array of string attributes
  @param key The key associated with the custom flags.
  */
-- (void)addCustomFlags:(NSArray *)customFlags withKey:(NSString *)key;
+- (void)addCustomFlags:(nonnull NSArray *)customFlags withKey:(nonnull NSString *)key;
 
 @end

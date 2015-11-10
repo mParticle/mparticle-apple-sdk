@@ -31,10 +31,6 @@
 
 @implementation MPStandaloneCommand
 
-- (instancetype)init {
-    return [self initWithCommandId:0 UUID:[self newUUID] url:nil httpMethod:nil headerData:nil postData:nil timestamp:[[NSDate date] timeIntervalSince1970]];
-}
-
 - (instancetype)initWithCommandDictionary:(NSDictionary *)commandDictionary {
     NSDictionary *headerDictionary = commandDictionary[kMPHTTPHeadersKey];
     if (!headerDictionary) {

@@ -20,13 +20,13 @@
 
 @interface MPKitConfiguration : NSObject
 
-@property (nonatomic, strong, readonly) NSNumber *configurationHash;
-@property (nonatomic, strong) NSDictionary *configuration;
-@property (nonatomic, strong) NSDictionary *filters;
-@property (nonatomic, strong, readonly) NSDictionary *bracketConfiguration;
-@property (nonatomic, strong, readonly) NSArray *configuredMessageTypeProjections;
-@property (nonatomic, strong, readonly) NSArray *defaultProjections;
-@property (nonatomic, strong, readonly) NSArray *projections;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *configurationHash;
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nullable) NSDictionary *filters;
+@property (nonatomic, strong, readonly, nullable) NSDictionary *bracketConfiguration;
+@property (nonatomic, strong, readonly, nullable) NSArray *configuredMessageTypeProjections;
+@property (nonatomic, strong, readonly, nullable) NSArray *defaultProjections;
+@property (nonatomic, strong, readonly, nullable) NSArray *projections;
 
 @property (nonatomic, weak, readonly) NSDictionary *eventTypeFilters;
 @property (nonatomic, weak, readonly) NSDictionary *eventNameFilters;
@@ -40,7 +40,7 @@
 @property (nonatomic, weak, readonly) NSDictionary *commerceEventEntityTypeFilters;
 @property (nonatomic, weak, readonly) NSDictionary *commerceEventAppFamilyAttributeFilters;
 
-- (instancetype)initWithDictionary:(NSDictionary *)configurationDictionary;
-- (void)updateConfiguration:(NSDictionary *)configurationDictionary;
+- (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)configurationDictionary;
+- (void)updateConfiguration:(nonnull NSDictionary *)configurationDictionary;
 
 @end

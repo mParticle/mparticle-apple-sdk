@@ -41,8 +41,6 @@
 }
 
 - (void)setAnnotation:(id)annotation {
-    [self willChangeValueForKey:@"annotation"];
-    
     BOOL (^shouldIncludeObject)(id) = ^(id obj) {
         BOOL shouldInclude = NO;
         if ([obj isKindOfClass:[NSString class]]) {
@@ -86,8 +84,6 @@
     } else {
         _annotation = nil;
     }
-    
-    [self didChangeValueForKey:@"annotation"];
 }
 
 - (void)setUrl:(NSURL *)url {

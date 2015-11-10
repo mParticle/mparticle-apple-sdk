@@ -61,10 +61,6 @@
     [[MPCart sharedInstance] clear];
 }
 
-- (NSArray *)products {
-    return [[MPCart sharedInstance] products];
-}
-
 - (void)purchaseWithTransactionAttributes:(MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart {
     NSAssert(transactionAttributes.transactionId, @"'transactionId' is required for purchases.");
     NSArray *products = [[MPCart sharedInstance] products];

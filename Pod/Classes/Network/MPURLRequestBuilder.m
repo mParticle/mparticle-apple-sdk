@@ -46,13 +46,9 @@ static NSTimeInterval requestTimeout = 30.0;
     RFC1123DateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
 }
 
-- (instancetype)init {
-    return [self initWithURL:nil];
-}
-
 - (instancetype)initWithURL:(NSURL *)url {
     self = [super init];
-    if (!self || !url) {
+    if (!self) {
         return nil;
     }
     
@@ -104,10 +100,6 @@ static NSTimeInterval requestTimeout = 30.0;
 
 #pragma mark Public class methods
 + (MPURLRequestBuilder *)newBuilderWithURL:(NSURL *)url {
-    if (!url) {
-        return nil;
-    }
-    
     MPURLRequestBuilder *urlRequestBuilder = [[MPURLRequestBuilder alloc] initWithURL:url];
     urlRequestBuilder->SDKURLRequest = NO;
     
@@ -115,10 +107,6 @@ static NSTimeInterval requestTimeout = 30.0;
 }
 
 + (MPURLRequestBuilder *)newBuilderWithURL:(NSURL *)url message:(NSString *)message httpMethod:(NSString *)httpMethod {
-    if (!url) {
-        return nil;
-    }
-
     MPURLRequestBuilder *urlRequestBuilder = [[MPURLRequestBuilder alloc] initWithURL:url];
     [urlRequestBuilder withHttpMethod:httpMethod];
     urlRequestBuilder.message = message;

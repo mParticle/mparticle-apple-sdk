@@ -20,14 +20,14 @@
 
 @interface MPStandaloneCommand : MPDataModelAbstract <NSCopying, NSCoding>
 
-@property (nonatomic, strong) NSURL *url;
-@property (nonatomic, strong) NSString *httpMethod;
-@property (nonatomic, strong) NSData *headerData;
-@property (nonatomic, strong) NSData *postData;
+@property (nonatomic, strong, nonnull) NSURL *url;
+@property (nonatomic, strong, nonnull) NSString *httpMethod;
+@property (nonatomic, strong, nullable) NSData *headerData;
+@property (nonatomic, strong, nullable) NSData *postData;
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t commandId;
 
-- (instancetype)initWithCommandDictionary:(NSDictionary *)commandDictionary;
-- (instancetype)initWithCommandId:(int64_t)commandId UUID:(NSString *)uuid url:(NSURL *)url httpMethod:(NSString *)httpMethod headerData:(NSData *)headerData postData:(NSData *)postData timestamp:(NSTimeInterval)timestamp __attribute__((objc_designated_initializer));
+- (nonnull instancetype)initWithCommandDictionary:(nonnull NSDictionary *)commandDictionary;
+- (nonnull instancetype)initWithCommandId:(int64_t)commandId UUID:(nonnull NSString *)uuid url:(nonnull NSURL *)url httpMethod:(nonnull NSString *)httpMethod headerData:(nullable NSData *)headerData postData:(nullable NSData *)postData timestamp:(NSTimeInterval)timestamp;
 
 @end

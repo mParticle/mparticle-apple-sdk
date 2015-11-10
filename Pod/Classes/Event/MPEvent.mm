@@ -28,7 +28,7 @@ using namespace mParticle;
 
 @interface MPEvent()
 
-@property (nonatomic, strong) NSMutableDictionary *customFlagsDictionary;
+@property (nonatomic, strong, nonnull) NSMutableDictionary *customFlagsDictionary;
 @property (nonatomic, unsafe_unretained) MPMessageType messageType;
 
 @end
@@ -40,7 +40,8 @@ using namespace mParticle;
 @synthesize typeName = _typeName;
 
 - (instancetype)init {
-    return [self initWithName:nil type:MPEventTypeOther];
+    MPLogError(@"%@ should NOT be initialized using the standard initializer.", [self class]);
+    return [self initWithName:@"<<Event With No Name>>" type:MPEventTypeOther];
 }
 
 - (instancetype)initWithName:(NSString *)name type:(MPEventType)type {
@@ -192,7 +193,7 @@ using namespace mParticle;
 }
 
 - (void)setName:(NSString *)name {
-    if (!name || name.length == 0) {
+    if (name.length == 0) {
         MPLogError(@"'name' cannot be nil or empty.")
         return;
     }

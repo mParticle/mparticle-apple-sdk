@@ -20,8 +20,8 @@
 
 @interface NSDictionary(MPCaseInsensitive)
 
-- (NSString *)caseInsensitiveKey:(NSString *)key;
-- (id)valueForCaseInsensitiveKey:(NSString *)key;
-- (NSDictionary *)transformValuesToString;
+- (nullable NSString *)caseInsensitiveKey:(nonnull NSString *)key;
+- (nullable id)valueForCaseInsensitiveKey:(nonnull NSString *)key;
+- (nonnull NSDictionary *)transformValuesToString;
 
 @end

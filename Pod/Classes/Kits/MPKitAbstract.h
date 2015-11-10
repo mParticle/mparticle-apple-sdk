@@ -31,53 +31,53 @@
 @protocol MPKitInstanceProtocol <NSObject>
 @optional
 // Application
-- (MPKitExecStatus *)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation;
-- (MPKitExecStatus *)failedToRegisterForUserNotifications:(NSError *)error;
-- (MPKitExecStatus *)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo;
-- (MPKitExecStatus *)receivedUserNotification:(NSDictionary *)userInfo;
-- (MPKitExecStatus *)setDeviceToken:(NSData *)deviceToken;
+- (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
+- (nonnull MPKitExecStatus *)failedToRegisterForUserNotifications:(nullable NSError *)error;
+- (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
+- (nonnull MPKitExecStatus *)receivedUserNotification:(nonnull NSDictionary *)userInfo;
+- (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken;
 // Location tracking
-- (MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
-- (MPKitExecStatus *)endLocationTracking;
-- (MPKitExecStatus *)setLocation:(CLLocation *)location;
+- (nonnull MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
+- (nonnull MPKitExecStatus *)endLocationTracking;
+- (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location;
 // Session management
-- (MPKitExecStatus *)beginSession;
-- (MPKitExecStatus *)endSession;
+- (nonnull MPKitExecStatus *)beginSession;
+- (nonnull MPKitExecStatus *)endSession;
 // User attributes and identities
-- (MPKitExecStatus *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value;
-- (MPKitExecStatus *)removeUserAttribute:(NSString *)key;
-- (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value;
-- (MPKitExecStatus *)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType;
-- (MPKitExecStatus *)setUserTag:(NSString *)tag;
+- (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
+- (nonnull MPKitExecStatus *)removeUserAttribute:(nonnull NSString *)key;
+- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nullable NSString *)value;
+- (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
+- (nonnull MPKitExecStatus *)setUserTag:(nonnull NSString *)tag;
 // e-Commerce
-- (MPKitExecStatus *)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
-- (MPKitExecStatus *)logLTVIncrease:(double)increaseAmount event:(MPEvent *)event;
+- (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
+- (nonnull MPKitExecStatus *)logLTVIncrease:(double)increaseAmount event:(nonnull MPEvent *)event;
 // Events
-- (MPKitExecStatus *)logEvent:(MPEvent *)event;
-- (MPKitExecStatus *)logInstall;
-- (MPKitExecStatus *)logout;
-- (MPKitExecStatus *)logScreen:(MPEvent *)event;
-- (MPKitExecStatus *)logUpdate;
+- (nonnull MPKitExecStatus *)logEvent:(nonnull MPEvent *)event;
+- (nonnull MPKitExecStatus *)logInstall;
+- (nonnull MPKitExecStatus *)logout;
+- (nonnull MPKitExecStatus *)logScreen:(nonnull MPEvent *)event;
+- (nonnull MPKitExecStatus *)logUpdate;
 // Timed events
-- (MPKitExecStatus *)beginTimedEvent:(MPEvent *)event;
-- (MPKitExecStatus *)endTimedEvent:(MPEvent *)event;
+- (nonnull MPKitExecStatus *)beginTimedEvent:(nonnull MPEvent *)event;
+- (nonnull MPKitExecStatus *)endTimedEvent:(nonnull MPEvent *)event;
 // Errors and exceptions
-- (MPKitExecStatus *)leaveBreadcrumb:(MPEvent *)event;
-- (MPKitExecStatus *)logError:(NSString *)message eventInfo:(NSDictionary *)eventInfo;
-- (MPKitExecStatus *)logException:(NSException *)exception;
+- (nonnull MPKitExecStatus *)leaveBreadcrumb:(nonnull MPEvent *)event;
+- (nonnull MPKitExecStatus *)logError:(nullable NSString *)message eventInfo:(nullable NSDictionary *)eventInfo;
+- (nonnull MPKitExecStatus *)logException:(nonnull NSException *)exception;
 // Assorted
-- (MPKitExecStatus *)setDebugMode:(BOOL)debugMode;
-- (MPKitExecStatus *)setKitAttribute:(NSString *)key value:(id)value;
-- (MPKitExecStatus *)setOptOut:(BOOL)optOut;
+- (nonnull MPKitExecStatus *)setDebugMode:(BOOL)debugMode;
+- (nonnull MPKitExecStatus *)setKitAttribute:(nonnull NSString *)key value:(nullable id)value;
+- (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
 - (void)start;
-- (NSString *)surveyURLWithUserAttributes:(NSDictionary *)userAttributes;
+- (nullable NSString *)surveyURLWithUserAttributes:(nonnull NSDictionary *)userAttributes;
 - (void)synchronize;
 // Media tracking
-- (MPKitExecStatus *)beginPlaying:(MPMediaTrack *)mediaTrack;
-- (MPKitExecStatus *)endPlaying:(MPMediaTrack *)mediaTrack;
-- (MPKitExecStatus *)logMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack;
-- (MPKitExecStatus *)logTimedMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack;
-- (MPKitExecStatus *)updatePlaybackPosition:(MPMediaTrack *)mediaTrack;
+- (nonnull MPKitExecStatus *)beginPlaying:(nonnull MPMediaTrack *)mediaTrack;
+- (nonnull MPKitExecStatus *)endPlaying:(nonnull MPMediaTrack *)mediaTrack;
+- (nonnull MPKitExecStatus *)logMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
+- (nonnull MPKitExecStatus *)logTimedMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
+- (nonnull MPKitExecStatus *)updatePlaybackPosition:(nonnull MPMediaTrack *)mediaTrack;
 
 @end
 
@@ -94,20 +94,20 @@
 }
 
 @property (nonatomic, unsafe_unretained) BOOL active;
-@property (nonatomic, strong) NSDictionary *configuration;
-@property (nonatomic, strong) NSNumber *kitCode;
-@property (nonatomic, strong) NSDictionary *userAttributes;
-@property (nonatomic, strong) NSArray *userIdentities;
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
+@property (nonatomic, strong, nullable) NSDictionary *userAttributes;
+@property (nonatomic, strong, nullable) NSArray *userIdentities;
 @property (nonatomic, unsafe_unretained) BOOL forwardedEvents;
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately __attribute__((objc_requires_super));
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration __attribute__((objc_requires_super));
-- (BOOL)canExecuteSelector:(SEL)selector __attribute__((objc_requires_super));
-- (id const)kitInstance;
-- (NSDictionary *)parsedEventInfo:(NSDictionary *)eventInfo;
-- (NSString *)stringRepresentation:(id)value;
-- (void)setBracketConfiguration:(NSDictionary *)bracketConfiguration __attribute__((objc_requires_super));
-- (void)setConfiguration:(NSDictionary *)configuration __attribute__((objc_requires_super));
+- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately __attribute__((objc_requires_super));
+- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration __attribute__((objc_requires_super));
+- (BOOL)canExecuteSelector:(nonnull SEL)selector __attribute__((objc_requires_super));
+- (nullable id const)kitInstance;
+- (nullable NSDictionary *)parsedEventInfo:(nullable NSDictionary *)eventInfo;
+- (nullable NSString *)stringRepresentation:(nullable id)value;
+- (void)setBracketConfiguration:(nullable NSDictionary *)bracketConfiguration __attribute__((objc_requires_super));
+- (void)setConfiguration:(nonnull NSDictionary *)configuration __attribute__((objc_requires_super));
 - (BOOL)started;
 
 @end
