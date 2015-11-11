@@ -193,10 +193,19 @@ NSString *const kitFileExtension = @"eks";
             
             for (NSString *fileName in directoryContents) {
                 NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
-                MPKitConfiguration *kitConfiguration = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-                self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
                 
-                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
+                @try {
+                    id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
+                    
+                    if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
+                        MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
+                        self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
+                        [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
+                    }
+                } @catch (NSException *exception) {
+                    [fileManager removeItemAtPath:kitPath error:nil];
+                    [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+                }
             }
         }
     }

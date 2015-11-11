@@ -25,7 +25,7 @@ mParticle-iOS-SDK is available through [CocoaPods](https://cocoapods.org/?q=mpar
 pod 'mParticle-iOS-SDK', '~> 5'
 ```
 
-**Note:** Configuring you Podfile with the statement above will include _all_ available kit integrations. If you want to integrate only a subset of kits, you can specify which ones in your Podfile using the pattern `pod 'mParticle-iOS-SDK/<kit>'`, as we can see in the sample configuration below:
+**Note:** Configuring you Podfile with the statement above will include _all_ available kit integrations, with the exception of one (See more in **Crash Reporter**). You can choose to integrate only a subset of kits by specifying which ones in your Podfile using the pattern `pod 'mParticle-iOS-SDK/<kit>'`, as we can see in the sample configuration below:
 
 #### Choose and Pick Kits
 
@@ -52,6 +52,8 @@ The crash reporter feature has been implemented as an optional subspec. It is in
 ```ruby
 pod 'mParticle-iOS-SDK/CrashReporter'
 ```
+
+**Note:** The Crash Reporter subspec and the Crittercism kit are mutually exclusive subspecs. If your app needs to use the Crittercism kit, it must not include the _CrashReporter_ subspec in your Podfile.
 
 
 ### Kits

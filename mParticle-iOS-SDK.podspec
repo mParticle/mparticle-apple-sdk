@@ -22,6 +22,7 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticles"
     s.requires_arc      = true
     s.platform          = :ios, '7.0'
+    s.default_subspecs  = 'mParticle', 'CrashReporter', 'Adjust', 'Appboy', 'BranchMetrics', 'comScore', 'Flurry', 'Kahuna', 'Kochava', 'Localytics'
 
     s.subspec 'Core-SDK' do |ss|
         ss.public_header_files = 'Pod/Classes/mParticle.h', 'Pod/Classes/MPEnums.h', 'Pod/Classes/MPUserSegments.h', \
