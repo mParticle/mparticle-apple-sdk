@@ -68,6 +68,7 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     frameworkAvailable = YES;
     started = YES;
     self.forwardedEvents = YES;
+    self.active = YES;
 
     [self setupWithConfiguration:configuration];
     

@@ -22,7 +22,14 @@
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
 
+@interface MPKitConfiguration()
+@property (nonatomic, strong) NSDictionary *configurationDictionary;
+@end
+
+
 @implementation MPKitConfiguration
+
+@synthesize configurationDictionary = _configurationDictionary;
 
 - (instancetype)initWithDictionary:(NSDictionary *)configurationDictionary {
     self = [super init];
@@ -30,11 +37,57 @@
         return nil;
     }
     
+    _configurationDictionary = configurationDictionary;
     [self updateConfiguration:configurationDictionary];
     
     return self;
 }
 
+#pragma mark NSCoding
+- (void)encodeWithCoder:(NSCoder *)coder {
+    [coder encodeObject:self.configurationDictionary forKey:@"configurationDictionary"];
+}
+
+- (id)initWithCoder:(NSCoder *)coder {
+    NSDictionary *configurationDictionary = [coder decodeObjectForKey:@"configurationDictionary"];
+    
+    self = [self initWithDictionary:configurationDictionary];
+    if (!self) {
+        return nil;
+    }
+    
+    return self;
+}
+
+#pragma mark NSCopying
+- (id)copyWithZone:(NSZone *)zone {
+    MPKitConfiguration *copyObject = [[MPKitConfiguration alloc] initWithDictionary:_configurationDictionary];
+
+    return copyObject;
+}
+
+#pragma mark Public accessors
+- (void)setFilters:(NSDictionary *)filters {
+    if (_filters && [_filters isEqualToDictionary:filters]) {
+        return;
+    }
+    
+    _filters = filters;
+    
+    _eventTypeFilters = _filters[@"et"];
+    _eventNameFilters = _filters[@"ec"];
+    _eventAttributeFilters = _filters[@"ea"];
+    _messageTypeFilters = _filters[@"mt"];
+    _screenNameFilters = _filters[@"svec"];
+    _screenAttributeFilters = _filters[@"svea"];
+    _userIdentityFilters = _filters[@"uid"];
+    _userAttributeFilters = _filters[@"ua"];
+    _commerceEventAttributeFilters = _filters[@"cea"];
+    _commerceEventEntityTypeFilters = _filters[@"ent"];
+    _commerceEventAppFamilyAttributeFilters = _filters[@"afa"];
+}
+
+#pragma mark Public methods
 - (void)updateConfiguration:(NSDictionary *)configurationDictionary {
     NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:0 error:nil];
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
@@ -56,6 +109,8 @@
     
     // Kit instance
     _bracketConfiguration = configurationDictionary[@"bk"];
+    
+    _kitCode = configurationDictionary[@"id"];
 }
 
 - (void)configureProjections:(NSArray *)projections {
@@ -95,26 +150,6 @@
     _configuredMessageTypeProjections = [NSArray arrayWithObjects:&configuredMessageTypeProjectionsVector[0] count:configuredMessageTypeProjectionsVector.size()];
     _defaultProjections = [NSArray arrayWithObjects:&defaultProjectionsVector[0] count:defaultProjectionsVector.size()];
     _projections = !projectionsVector.empty() ? [NSArray arrayWithObjects:&projectionsVector[0] count:projectionsVector.size()] : nil;
-}
-
-- (void)setFilters:(NSDictionary *)filters {
-    if (_filters && [_filters isEqualToDictionary:filters]) {
-        return;
-    }
-    
-    _filters = filters;
-
-    _eventTypeFilters = _filters[@"et"];
-    _eventNameFilters = _filters[@"ec"];
-    _eventAttributeFilters = _filters[@"ea"];
-    _messageTypeFilters = _filters[@"mt"];
-    _screenNameFilters = _filters[@"svec"];
-    _screenAttributeFilters = _filters[@"svea"];
-    _userIdentityFilters = _filters[@"uid"];
-    _userAttributeFilters = _filters[@"ua"];
-    _commerceEventAttributeFilters = _filters[@"cea"];
-    _commerceEventEntityTypeFilters = _filters[@"ent"];
-    _commerceEventAppFamilyAttributeFilters = _filters[@"afa"];
 }
 
 @end

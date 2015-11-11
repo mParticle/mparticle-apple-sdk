@@ -52,7 +52,8 @@
     frameworkAvailable = YES;
     started = YES;
     self.forwardedEvents = YES;
-    
+    self.active = YES;
+
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceCrittercism),
                                    mParticleEmbeddedSDKInstanceKey:@(MPKitInstanceCrittercism)};

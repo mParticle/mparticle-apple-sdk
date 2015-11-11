@@ -144,6 +144,54 @@ NSString *const MPKitBracketHighKey = @"hi";
     return nil;
 }
 
+- (NSString *)kitName {
+    NSString *kitName = nil;
+    
+    switch ((MPKitInstance)[_kitCode integerValue]) {
+        case MPKitInstanceAppboy:
+            kitName = @"Appboy";
+            break;
+            
+        case MPKitInstanceKochava:
+            kitName = @"Kochava";
+            break;
+            
+        case MPKitInstanceKahuna:
+            kitName = @"Kahuna";
+            break;
+            
+        case MPKitInstanceComScore:
+            kitName = @"comScore";
+            break;
+            
+        case MPKitInstanceForesee:
+            kitName = @"Foresee";
+            break;
+            
+        case MPKitInstanceAdjust:
+            kitName = @"Adjust";
+            break;
+            
+        case MPKitInstanceBranchMetrics:
+            kitName = @"Branch Metrics";
+            break;
+            
+        case MPKitInstanceFlurry:
+            kitName = @"Flurry";
+            break;
+            
+        case MPKitInstanceLocalytics:
+            kitName = @"Localytics";
+            break;
+            
+        case MPKitInstanceCrittercism:
+            kitName = @"Crittercism";
+            break;
+    }
+    
+    return kitName;
+}
+
 - (NSDictionary *)parsedEventInfo:(NSDictionary *)eventInfo {
     if (!eventInfo || eventInfo.count == 0) {
         return nil;

@@ -193,12 +193,10 @@ NSString *const kitFileExtension = @"eks";
             
             for (NSString *fileName in directoryContents) {
                 NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+                MPKitConfiguration *kitConfiguration = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
+                self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
                 
-                MPKitAbstract *kit = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-                
-                if (kit) {
-                    [self emplaceKit:kit];
-                }
+                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
             }
         }
     }
@@ -286,7 +284,10 @@ NSString *const kitFileExtension = @"eks";
             break;
     }
     
-    [self emplaceKit:kit];
+    if (kit) {
+        kit.kitCode = kitCode;
+        [self emplaceKit:kit];
+    }
     
     return kit;
 }
@@ -1621,7 +1622,7 @@ NSString *const kitFileExtension = @"eks";
                 [fileManager removeItemAtPath:kitPath error:nil];
             }
             
-            [NSKeyedArchiver archiveRootObject:kit toFile:kitPath];
+            [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
         }
         
         if (!removeKits.empty()) {
@@ -1735,7 +1736,7 @@ NSString *const kitFileExtension = @"eks";
                           
                           [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                           
-                          MPLogDebug(@"Forwarded logCommerceEvent call to kit code: %@", kit.kitCode);
+                          MPLogDebug(@"Forwarded logCommerceEvent call to kit: %@", [kit kitName]);
                       }
                   }
               }];
@@ -1777,7 +1778,7 @@ NSString *const kitFileExtension = @"eks";
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded %@ call to kit code: %@", NSStringFromSelector(selector), kit.kitCode);
+                    MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
                 }
             }
         };
@@ -1808,7 +1809,7 @@ NSString *const kitFileExtension = @"eks";
             if (!kitFilter.shouldFilter && [kit canExecuteSelector:selector]) {
                 kitHandler(kit);
                 
-                MPLogDebug(@"Forwarded user attribute key: %@ value: %@ to kit code: %@", key, value, kit.kitCode);
+                MPLogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, [kit kitName]);
             }
         }
     }
@@ -1824,7 +1825,7 @@ NSString *const kitFileExtension = @"eks";
             if ([kit canExecuteSelector:selector]) {
                 kitHandler(kit, kitFilter.filteredAttributes);
                 
-                MPLogDebug(@"Forwarded user attributes to kit code: %@", kit.kitCode);
+                MPLogDebug(@"Forwarded user attributes to kit: %@", [kit kitName]);
             }
         }
     }
@@ -1840,7 +1841,7 @@ NSString *const kitFileExtension = @"eks";
             if (!kitFilter.shouldFilter && [kit canExecuteSelector:selector]) {
                 kitHandler(kit);
                 
-                MPLogDebug(@"Forwarded setting user identity: %@ to kit code: %@", identityString, kit.kitCode);
+                MPLogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, [kit kitName]);
             }
         }
     }
@@ -1858,7 +1859,7 @@ NSString *const kitFileExtension = @"eks";
                 
                 kitHandler(kit, &execStatus);
                 
-                MPLogDebug(@"Forwarded %@ call to kit code: %@", NSStringFromSelector(selector), kit.kitCode);
+                MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
             }
         }
     }

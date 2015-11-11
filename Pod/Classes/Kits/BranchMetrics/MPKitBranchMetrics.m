@@ -73,6 +73,10 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
         branchInstance = [Branch getInstance:branchKey];
         
         [branchInstance initSessionWithLaunchOptions:self.launchOptions isReferrable:YES andRegisterDeepLinkHandler:^(NSDictionary *params, NSError *error) {
+            started = YES;
+            self.forwardedEvents = YES;
+            self.active = YES;
+
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSMutableDictionary *userInfo = [@{mParticleKitInstanceKey:@(MPKitInstanceBranchMetrics),
                                                    mParticleEmbeddedSDKInstanceKey:@(MPKitInstanceBranchMetrics),
@@ -95,9 +99,6 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
                                                                   userInfo:userInfo];
             });
         }];
-        
-        started = YES;
-        self.forwardedEvents = YES;
     });
 }
 

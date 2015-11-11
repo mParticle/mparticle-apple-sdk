@@ -216,7 +216,8 @@ static KochavaTracker *kochavaTracker = nil;
             strongSelf->frameworkAvailable = YES;
             strongSelf->started = YES;
             strongSelf.forwardedEvents = YES;
-            
+            strongSelf.active = YES;
+
             if ([configuration[kvUseCustomerId] boolValue] || [configuration[kvIncludeOtherUserIds] boolValue]) {
                 [strongSelf synchronize];
             }

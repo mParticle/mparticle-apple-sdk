@@ -104,6 +104,7 @@
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration __attribute__((objc_requires_super));
 - (BOOL)canExecuteSelector:(nonnull SEL)selector __attribute__((objc_requires_super));
 - (nullable id const)kitInstance;
+- (nullable NSString *)kitName;
 - (nullable NSDictionary *)parsedEventInfo:(nullable NSDictionary *)eventInfo;
 - (nullable NSString *)stringRepresentation:(nullable id)value;
 - (void)setBracketConfiguration:(nullable NSDictionary *)bracketConfiguration __attribute__((objc_requires_super));
