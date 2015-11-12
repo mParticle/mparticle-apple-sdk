@@ -47,7 +47,7 @@ Pod::Spec.new do |s|
     s.subspec 'Appboy' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.dependency 'mParticle-iOS-SDK/mParticle'
-        ss.dependency 'Appboy-iOS-SDK', '~> 2.16'
+        ss.dependency 'Appboy-iOS-SDK', '~> 2.17'
         ss.prefix_header_contents = "#define MP_KIT_APPBOY 1"
         ss.platform               = :ios, '7.0'
     end
