@@ -1543,13 +1543,13 @@ NSString *const kitFileExtension = @"eks";
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+    NSArray *supportedKits = [self supportedKits];
+    NSArray *activeKits = [self activeKits];
 
     // Adds all currently configured kits to a list
     vector<NSNumber *> removeKits;
-    if (self.kits.count > 0) {
-        for (kit in self.kits) {
-            removeKits.push_back(kit.kitCode);
-        }
+    for (kit in activeKits) {
+        removeKits.push_back(kit.kitCode);
     }
     
     // Configure kits according to server instructions
@@ -1558,80 +1558,88 @@ NSString *const kitFileExtension = @"eks";
         BOOL shouldPersistKit = YES;
         
         NSNumber *kitCode = kitConfigurationDictionary[@"id"];
-        predicate = [NSPredicate predicateWithFormat:@"kitCode == %@", kitCode];
-        kit = [[self.kits filteredArrayUsingPredicate:predicate] firstObject];
         
-        if (kit) {
-            NSData *kitConfigData = [NSJSONSerialization dataWithJSONObject:kitConfigurationDictionary options:0 error:nil];
-            NSString *kitConfigString = [[NSString alloc] initWithData:kitConfigData encoding:NSUTF8StringEncoding];
-            NSNumber *configurationHash = @(mParticle::Hasher::hashFromString([kitConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
-            
-            kitConfiguration = self.kitConfigurations[kitCode];
-            shouldPersistKit = !(kitConfiguration && [kitConfiguration.configurationHash isEqualToNumber:configurationHash]);
-            if (shouldPersistKit) {
-                [kitConfiguration updateConfiguration:kitConfigurationDictionary];
-                kit.configuration = kitConfiguration.configuration;
-                [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
-            }
-        } else {
-            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-            self.kitConfigurations[kitCode] = kitConfiguration;
-            
-            kit = [self startKit:kitCode configuration:kitConfiguration.configuration];
+        predicate = [NSPredicate predicateWithFormat:@"SELF == %@", kitCode];
+        BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
+
+        if (isKitSupported) {
+            predicate = [NSPredicate predicateWithFormat:@"kitCode == %@", kitCode];
+            kit = [[self.kits filteredArrayUsingPredicate:predicate] firstObject];
             
             if (kit) {
-                if (![kit started]) {
-                    if ([kit respondsToSelector:@selector(setLaunchOptions:)]) {
-                        [kit performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+                NSData *kitConfigData = [NSJSONSerialization dataWithJSONObject:kitConfigurationDictionary options:0 error:nil];
+                NSString *kitConfigString = [[NSString alloc] initWithData:kitConfigData encoding:NSUTF8StringEncoding];
+                NSNumber *configurationHash = @(mParticle::Hasher::hashFromString([kitConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
+                
+                kitConfiguration = self.kitConfigurations[kitCode];
+                shouldPersistKit = !(kitConfiguration && [kitConfiguration.configurationHash isEqualToNumber:configurationHash]);
+                if (shouldPersistKit) {
+                    [kitConfiguration updateConfiguration:kitConfigurationDictionary];
+                    kit.configuration = kitConfiguration.configuration;
+                    [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
+                }
+            } else {
+                kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+                self.kitConfigurations[kitCode] = kitConfiguration;
+                
+                kit = [self startKit:kitCode configuration:kitConfiguration.configuration];
+                
+                if (kit) {
+                    if (![kit started]) {
+                        if ([kit respondsToSelector:@selector(setLaunchOptions:)]) {
+                            [kit performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+                        }
+                        
+                        if ([kit respondsToSelector:@selector(start)]) {
+                            [kit start];
+                        }
                     }
                     
-                    if ([kit respondsToSelector:@selector(start)]) {
-                        [kit start];
+                    [self emplaceKit:kit];
+                }
+                
+                [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
+            }
+            
+            if (kit) {
+                if (userAttributes && [kit respondsToSelector:@selector(setUserAttribute:value:)]) {
+                    NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
+                    NSString *key;
+                    id value;
+                    Class NSStringClass = [NSString class];
+                    
+                    while ((key = [attributeEnumerator nextObject])) {
+                        value = userAttributes[key];
+                        value = [value isKindOfClass:NSStringClass] ? (NSString *)value : [value stringValue];
+                        [kit setUserAttribute:key value:value];
                     }
                 }
                 
-                [self emplaceKit:kit];
+                if (userIdentities && [kit respondsToSelector:@selector(setUserIdentity:identityType:)]) {
+                    for (NSDictionary *userIdentity in userIdentities) {
+                        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
+                        NSString *identityString = userIdentity[kMPUserIdentityIdKey];
+                        
+                        [kit setUserIdentity:identityString identityType:identityType];
+                    }
+                }
             }
             
-            [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
-        }
-        
-        if (kit) {
-            if (userAttributes && [kit respondsToSelector:@selector(setUserAttribute:value:)]) {
-                NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
-                NSString *key;
-                id value;
-                Class NSStringClass = [NSString class];
+            if (shouldPersistKit) {
+                if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+                    [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+                }
                 
-                while ((key = [attributeEnumerator nextObject])) {
-                    value = userAttributes[key];
-                    value = [value isKindOfClass:NSStringClass] ? (NSString *)value : [value stringValue];
-                    [kit setUserAttribute:key value:value];
+                kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
+                
+                if ([fileManager fileExistsAtPath:kitPath]) {
+                    [fileManager removeItemAtPath:kitPath error:nil];
                 }
+                
+                [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
             }
-            
-            if (userIdentities && [kit respondsToSelector:@selector(setUserIdentity:identityType:)]) {
-                for (NSDictionary *userIdentity in userIdentities) {
-                    MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                    NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                    
-                    [kit setUserIdentity:identityString identityType:identityType];
-                }
-            }
-        }
-
-        if (shouldPersistKit) {
-            if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-                [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-            }
-            
-            kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
-            
-            if ([fileManager fileExistsAtPath:kitPath]) {
-                [fileManager removeItemAtPath:kitPath error:nil];
-            }
-            
-            [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
+        } else {
+            MPLogWarning(@"SDK is trying to configure the %@ kit, however it is not currently configured in your Podfile.", [MPKitAbstract nameForKit:kitCode]);
         }
         
         if (!removeKits.empty()) {

@@ -1,4 +1,4 @@
-# mParticle CHANGELOG
+# mParticle iOS SDK CHANGELOG
 
 ## 5.1.3
 

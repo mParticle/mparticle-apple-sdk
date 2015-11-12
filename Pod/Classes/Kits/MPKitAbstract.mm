@@ -140,14 +140,10 @@ NSString *const MPKitBracketHighKey = @"hi";
 }
 
 #pragma mark Public methods
-- (id const)kitInstance {
-    return nil;
-}
-
-- (NSString *)kitName {
++ (nullable NSString *)nameForKit:(nonnull NSNumber *)kitCode {
     NSString *kitName = nil;
     
-    switch ((MPKitInstance)[_kitCode integerValue]) {
+    switch ((MPKitInstance)[kitCode integerValue]) {
         case MPKitInstanceAppboy:
             kitName = @"Appboy";
             break;
@@ -189,6 +185,15 @@ NSString *const MPKitBracketHighKey = @"hi";
             break;
     }
     
+    return kitName;
+}
+
+- (id const)kitInstance {
+    return nil;
+}
+
+- (NSString *)kitName {
+    NSString *kitName = [MPKitAbstract nameForKit:_kitCode];
     return kitName;
 }
 

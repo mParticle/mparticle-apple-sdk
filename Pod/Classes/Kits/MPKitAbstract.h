@@ -100,6 +100,7 @@
 @property (nonatomic, strong, nullable) NSArray *userIdentities;
 @property (nonatomic, unsafe_unretained) BOOL forwardedEvents;
 
++ (nullable NSString *)nameForKit:(nonnull NSNumber *)kitCode;
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately __attribute__((objc_requires_super));
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration __attribute__((objc_requires_super));
 - (BOOL)canExecuteSelector:(nonnull SEL)selector __attribute__((objc_requires_super));

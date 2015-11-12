@@ -109,7 +109,7 @@
                 
                 [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                 
-                MPLogDebug(@"Forwarded fail to register for remote notification call to kit code: %@", execStatus.kitCode);
+                MPLogDebug(@"Forwarded fail to register for remote notification call to kit: %@", [MPKitAbstract nameForKit:execStatus.kitCode]);
             }
         }
     }
@@ -139,7 +139,7 @@
                 
                 [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                 
-                MPLogDebug(@"Forwarded remote notification registration call to kit code: %@", execStatus.kitCode);
+                MPLogDebug(@"Forwarded remote notification registration call to kit: %@", [MPKitAbstract nameForKit:execStatus.kitCode]);
             }
         }
     }
@@ -235,7 +235,7 @@
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded push notifications call to kit code: %@", execStatus.kitCode);
+                    MPLogDebug(@"Forwarded push notifications call to kit: %@", [MPKitAbstract nameForKit:execStatus.kitCode]);
                 }
             }
         }
