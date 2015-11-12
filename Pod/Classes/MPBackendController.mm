@@ -68,6 +68,7 @@
 using namespace mParticle;
 
 const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 1000;
+const NSInteger kInvalidKey = 100;
 const NSInteger kInvalidValue = 101;
 const NSInteger kEmptyValueAttribute = 102;
 const NSInteger kExceededNumberOfAttributesLimit = 103;
@@ -1560,6 +1561,22 @@ static BOOL appBackgrounded = NO;
 
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
+    
+    if (!key) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];
+        }
+        
+        return NO;
+    }
+    
+    if (!value) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidValue userInfo:nil];
+        }
+        
+        return NO;
+    }
     
     if ([value isKindOfClass:[NSString class]]) {
         if ([value isEqualToString:@""]) {

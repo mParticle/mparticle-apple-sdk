@@ -372,9 +372,9 @@
     
     NSArray *standaloneUploads = [persistence fetchStandaloneUploads];
     
-    //    for (MPStandaloneUpload *stAlnUpld in standaloneUploads) {
-    //        [persistence deleteStandaloneUpload:stAlnUpld];
-    //    }
+    for (MPStandaloneUpload *stAlnUpld in standaloneUploads) {
+        [persistence deleteStandaloneUpload:stAlnUpld];
+    }
     
     XCTAssertEqual(standaloneUploads.count, 1, @"There should have been only 1 fetched stand-alone upload.");
     

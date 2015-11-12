@@ -171,11 +171,12 @@
 }
 
 - (void)testInvalidURLs {
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:nil];
+    NSURL *url = nil;
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:url];
     
     XCTAssertNil(urlRequestBuilder, @"Retuning a request builder from an invalid URL.");
     
-    urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:nil message:nil httpMethod:@"GET"];
+    urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:@"GET"];
     
     XCTAssertNil(urlRequestBuilder, @"Retuning a request builder from an invalid URL.");
     

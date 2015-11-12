@@ -43,13 +43,16 @@
     
     [eventSet addEvent:event];
     XCTAssertEqual(eventSet.count, 1, @"There should be 1 stored event.");
-    [eventSet addEvent:nil];
+    
+    MPEvent *nilEvent = nil;
+    [eventSet addEvent:nilEvent];
     XCTAssertEqual(eventSet.count, 1, @"There should be 1 stored event.");
     
     event = [[MPEvent alloc] initWithName:@"T-Rex Trainer" type:MPEventTypeSearch];
     [eventSet addEvent:event];
     
-    [eventSet removeEventWithName:nil];
+    NSString *nilString = nil;
+    [eventSet removeEventWithName:nilString];
     XCTAssertEqual(eventSet.count, 2, @"There should be 2 stored event.");
     
     BOOL containsEvent = [eventSet containsEvent:event];

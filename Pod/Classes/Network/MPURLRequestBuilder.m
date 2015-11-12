@@ -48,7 +48,7 @@ static NSTimeInterval requestTimeout = 30.0;
 
 - (instancetype)initWithURL:(NSURL *)url {
     self = [super init];
-    if (!self) {
+    if (!self || !url) {
         return nil;
     }
     
@@ -101,7 +101,10 @@ static NSTimeInterval requestTimeout = 30.0;
 #pragma mark Public class methods
 + (MPURLRequestBuilder *)newBuilderWithURL:(NSURL *)url {
     MPURLRequestBuilder *urlRequestBuilder = [[MPURLRequestBuilder alloc] initWithURL:url];
-    urlRequestBuilder->SDKURLRequest = NO;
+    
+    if (urlRequestBuilder) {
+        urlRequestBuilder->SDKURLRequest = NO;
+    }
     
     return urlRequestBuilder;
 }
@@ -110,7 +113,10 @@ static NSTimeInterval requestTimeout = 30.0;
     MPURLRequestBuilder *urlRequestBuilder = [[MPURLRequestBuilder alloc] initWithURL:url];
     [urlRequestBuilder withHttpMethod:httpMethod];
     urlRequestBuilder.message = message;
-    urlRequestBuilder->SDKURLRequest = YES;
+    
+    if (urlRequestBuilder) {
+        urlRequestBuilder->SDKURLRequest = YES;
+    }
     
     return urlRequestBuilder;
 }
