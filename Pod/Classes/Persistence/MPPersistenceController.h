@@ -69,6 +69,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray *)fetchBreadcrumbs;
 - (void)fetchCommandsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray * _Nullable commands))completionHandler;
 - (nullable MPConsumerInfo *)fetchConsumerInfo;
+- (void)fetchConsumerInfo:(void (^ _Nonnull)(MPConsumerInfo * _Nullable consumerInfo))completionHandler;
 - (nullable NSArray *)fetchCookies;
 - (nullable NSArray *)fetchDisplayedLocalUserNotifications;
 - (nullable NSArray *)fetchDisplayedRemoteUserNotifications;

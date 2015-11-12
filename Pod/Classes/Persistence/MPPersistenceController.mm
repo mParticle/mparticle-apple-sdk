@@ -110,7 +110,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         [self closeDatabase];
         
         [migrationController migrateDatabaseFromVersion:migrateVersion];
-
+        
         if (isDatabaseOpen) {
             [self openDatabase];
         }
@@ -132,6 +132,23 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
 }
 
 #pragma mark Private methods
+- (void)deleteCookie:(MPCookie *)cookie {
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM cookies WHERE _id = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 0, cookie.cookieId);
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPLogError(@"Error while deleting cookie: %s", sqlite3_errmsg(mParticleDB));
+        }
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+}
+
 - (void)deleteCookies {
     dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
@@ -162,60 +179,58 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
 }
 
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
+    sqlite3_stmt *preparedStatement;
+    
+    vector<string> fields;
+    vector<string> params;
+    
+    if (cookie.content) {
+        fields.push_back("content");
+        params.push_back("'" + string([cookie.content UTF8String]) + "'");
+    }
+    
+    if (cookie.domain) {
+        fields.push_back("domain");
+        params.push_back("'" + string([cookie.domain UTF8String]) + "'");
+    }
+    
+    if (cookie.expiration) {
+        fields.push_back("expiration");
+        params.push_back("'" + string([cookie.expiration UTF8String]) + "'");
+    }
+    
+    fields.push_back("name");
+    params.push_back("'" + string([cookie.name cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
+    
+    string sqlStatement = "INSERT INTO cookies (consumer_info_id";
+    for (auto field : fields) {
+        sqlStatement += ", " + field;
+    }
+    
+    sqlStatement += ") VALUES (?";
+    
+    for (auto param : params) {
+        sqlStatement += ", " + param;
+    }
+    
+    sqlStatement += ")";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, consumerInfo.consumerInfoId);
         
-        vector<string> fields;
-        vector<string> params;
-        
-        if (cookie.content) {
-            fields.push_back("content");
-            params.push_back("'" + string([cookie.content UTF8String]) + "'");
-        }
-        
-        if (cookie.domain) {
-            fields.push_back("domain");
-            params.push_back("'" + string([cookie.domain UTF8String]) + "'");
-        }
-        
-        if (cookie.expiration) {
-            fields.push_back("expiration");
-            params.push_back("'" + string([cookie.expiration UTF8String]) + "'");
-        }
-        
-        fields.push_back("name");
-        params.push_back("'" + string([cookie.name cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
-        
-        string sqlStatement = "INSERT INTO cookies (consumer_info_id";
-        for (auto field : fields) {
-            sqlStatement += ", " + field;
-        }
-        
-        sqlStatement += ") VALUES (?";
-        
-        for (auto param : params) {
-            sqlStatement += ", " + param;
-        }
-        
-        sqlStatement += ")";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, consumerInfo.consumerInfoId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing cookie: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            cookie.cookieId = sqlite3_last_insert_rowid(mParticleDB);
-            
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPLogError(@"Error while storing cookie: %s", sqlite3_errmsg(mParticleDB));
             sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        cookie.cookieId = sqlite3_last_insert_rowid(mParticleDB);
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)setupDatabase:(void (^)())completionHandler {
@@ -250,11 +265,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         if (userDatabaseVersion == latestDatabaseVersion) {
             sqlite3_close(mParticleDB);
             mParticleDB = NULL;
-
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 completionHandler();
             });
-
+            
             return;
         }
         
@@ -421,36 +436,34 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return;
     }
     
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "UPDATE cookies SET ";
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "UPDATE cookies SET ";
+    
+    if (cookie.content) {
+        sqlStatement += "content = '" + string([cookie.content UTF8String]) + "'";
+    }
+    
+    if (cookie.domain) {
+        sqlStatement += ", domain = '" + string([cookie.domain UTF8String]) + "'";
+    }
+    
+    if (cookie.expiration) {
+        sqlStatement += ", expiration = '" + string([cookie.expiration UTF8String]) + "'";
+    }
+    
+    sqlStatement += " WHERE _id = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, cookie.cookieId);
         
-        if (cookie.content) {
-            sqlStatement += "content = '" + string([cookie.content UTF8String]) + "'";
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPLogError(@"Error while updating cookie: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        if (cookie.domain) {
-            sqlStatement += ", domain = '" + string([cookie.domain UTF8String]) + "'";
-        }
-        
-        if (cookie.expiration) {
-            sqlStatement += ", expiration = '" + string([cookie.expiration UTF8String]) + "'";
-        }
-        
-        sqlStatement += " WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, cookie.cookieId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while updating cookie: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (MPDatabaseState)verifyDatabaseState {
@@ -467,7 +480,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
                 string integrityString = string((const char *)sqlite3_column_text(preparedStatement, 0));
                 databaseState = integrityString == "ok" ? MPDatabaseStateOK : MPDatabaseStateCorrupted;
             }
-
+            
             if (databaseState == MPDatabaseStateCorrupted) {
                 MPLogError(@"Database is corrupted.");
             }
@@ -478,7 +491,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         MPLogError(@"Verifying database state - exception %@.", [exception reason]);
         return MPDatabaseStateCorrupted;
     }
-
+    
     return databaseState;
 }
 
@@ -655,25 +668,6 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)deleteCookie:(MPCookie *)cookie {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM cookies WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 0, cookie.cookieId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting cookie: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
 - (void)deleteExpiredUserNotifications {
     dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
@@ -843,7 +837,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         // Delete messages
         sqlite3_stmt *preparedStatement;
         string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
-
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
@@ -855,7 +849,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlite3_finalize(preparedStatement);
-
+        
         // Delete session
         sqlStatement = "DELETE FROM sessions WHERE _id = ?";
         
@@ -941,7 +935,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, standaloneMessage.messageId);
-
+            
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPLogError(@"Error while deleting stand-alone message: %s", sqlite3_errmsg(mParticleDB));
             }
@@ -1030,9 +1024,9 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, uuid, url, method, headers_data, post_data, timestamp FROM commands WHERE session_id = ? ORDER BY _id";
-
+        
         vector<MPCommand *> commandsVector;
-
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
@@ -1053,7 +1047,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlite3_finalize(preparedStatement);
-
+        
         __block NSArray *commands = nil;
         if (!commandsVector.empty()) {
             commands = [NSArray arrayWithObjects:&commandsVector[0] count:commandsVector.size()];
@@ -1095,6 +1089,37 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     return consumerInfo;
 }
 
+- (void)fetchConsumerInfo:(void (^)(MPConsumerInfo *consumerInfo))completionHandler {
+    NSArray *cookies = [self fetchCookies];
+    
+    dispatch_async(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT _id, mpid, unique_identifier FROM consumer_info";
+        MPConsumerInfo *consumerInfo = nil;
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                consumerInfo = [[MPConsumerInfo alloc] init];
+                consumerInfo.consumerInfoId = int64Value(preparedStatement, 0);
+                consumerInfo.mpId = @(int64Value(preparedStatement, 1));
+                
+                unsigned char *columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
+                if (columnText != NULL) {
+                    consumerInfo.uniqueIdentifier = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
+                }
+                
+                consumerInfo.cookies = cookies;
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completionHandler(consumerInfo);
+        });
+    });
+}
+
 - (NSArray *)fetchCookies {
     __block vector<MPCookie *> cookiesVector;
     
@@ -1111,7 +1136,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
                 if (columnText != NULL) {
                     cookie.content = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
                 }
-
+                
                 columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
                 if (columnText != NULL) {
                     cookie.domain = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
@@ -1329,11 +1354,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         sqlite3_finalize(preparedStatement);
     });
-
+    
     if (messagesVector.empty()) {
         return nil;
     }
-
+    
     NSArray *messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
     return messages;
 }
@@ -1657,7 +1682,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length FROM sessions ORDER BY _id";
         
         __block NSMutableArray *sessions = nil;
-
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sessions = [[NSMutableArray alloc] initWithCapacity:1];
             
@@ -1702,7 +1727,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         sqlStatement += "ORDER BY _id";
         
         vector<MPMessage *> messagesVector;
-
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
@@ -1723,7 +1748,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlite3_finalize(preparedStatement);
-
+        
         __block NSArray *messages = nil;
         if (!messagesVector.empty()) {
             messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
@@ -1823,7 +1848,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlite3_finalize(preparedStatement);
-
+        
         __block NSArray *userNotifications = nil;
         if (!userNotificationsVector.empty()) {
             userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
@@ -2060,7 +2085,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
             
             sqlite3_clear_bindings(preparedStatement);
         }
-
+        
         sqlite3_finalize(preparedStatement);
         
         // Prunes breadcrumbs
@@ -2117,7 +2142,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
 }
 
 - (void)saveConsumerInfo:(MPConsumerInfo *)consumerInfo {
-    dispatch_barrier_sync(dbQueue, ^{
+    dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         
         vector<string> fields;
@@ -2127,7 +2152,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
             fields.push_back("unique_identifier");
             params.push_back("'" + string([consumerInfo.uniqueIdentifier UTF8String]) + "'");
         }
-
+        
         string sqlStatement = "INSERT INTO consumer_info (mpid";
         for (auto field : fields) {
             sqlStatement += ", " + field;
@@ -2140,7 +2165,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlStatement += ")";
-
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId integerValue]);
             
@@ -2155,13 +2180,13 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
             
             sqlite3_clear_bindings(preparedStatement);
         }
-    });
-    
-    for (MPCookie *cookie in consumerInfo.cookies) {
-        if (!cookie.expired) {
-            [self saveCookie:cookie forConsumerInfo:consumerInfo];
+        
+        for (MPCookie *cookie in consumerInfo.cookies) {
+            if (!cookie.expired) {
+                [self saveCookie:cookie forConsumerInfo:consumerInfo];
+            }
         }
-    }
+    });
 }
 
 - (void)saveForwardRecord:(MPForwardRecord *)forwardRecord {
@@ -2338,7 +2363,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
             
             NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
             sqlite3_bind_blob(preparedStatement, 5, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-
+            
             sqlite3_bind_int64(preparedStatement, 6, [session.sessionNumber integerValue]);
             sqlite3_bind_int(preparedStatement, 7, session.numberOfInterruptions);
             sqlite3_bind_int(preparedStatement, 8, session.eventCounter);
@@ -2583,7 +2608,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
 }
 
 - (void)updateConsumerInfo:(MPConsumerInfo *)consumerInfo {
-    dispatch_barrier_sync(dbQueue, ^{
+    dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         string sqlStatement = "UPDATE consumer_info SET mpid = ? ";
         
@@ -2592,7 +2617,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlStatement += " WHERE _id = ?";
-
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId integerValue]);
             sqlite3_bind_int64(preparedStatement, 2, consumerInfo.consumerInfoId);
@@ -2605,21 +2630,21 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         }
         
         sqlite3_finalize(preparedStatement);
-    });
-    
-    for (MPCookie *cookie in consumerInfo.cookies) {
-        if (cookie.expired) {
-            if (cookie.cookieId != 0) {
-                [self deleteCookie:cookie];
-            }
-        } else {
-            if (cookie.cookieId == 0) {
-                [self saveCookie:cookie forConsumerInfo:consumerInfo];
+        
+        for (MPCookie *cookie in consumerInfo.cookies) {
+            if (cookie.expired) {
+                if (cookie.cookieId != 0) {
+                    [self deleteCookie:cookie];
+                }
             } else {
-                [self updateCookie:cookie];
+                if (cookie.cookieId == 0) {
+                    [self saveCookie:cookie forConsumerInfo:consumerInfo];
+                } else {
+                    [self updateCookie:cookie];
+                }
             }
         }
-    }
+    });
 }
 
 - (void)updateSession:(MPSession *)session {
