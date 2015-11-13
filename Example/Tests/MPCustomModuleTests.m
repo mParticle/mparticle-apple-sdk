@@ -23,9 +23,88 @@
 
 @interface MPCustomModuleTests : XCTestCase
 
+@property (nonatomic, strong) NSString *customMudulesString;
+@property (nonatomic, strong) NSDictionary *customModuleConfiguration;
+
 @end
 
 @implementation MPCustomModuleTests
+
+- (NSString *)customMudulesString {
+    if (_customMudulesString) {
+        return _customMudulesString;
+    }
+    
+    _customMudulesString = @"{\"cms\":[\
+                                        { \
+                                            \"id\": 11, \
+                                            \"pr\": [ \
+                                                   { \
+                                                       \"f\": \"NSUserDefaults\", \
+                                                       \"m\": 0, \
+                                                       \"ps\": [ \
+                                                              { \
+                                                                  \"k\": \"APP_MEASUREMENT_VISITOR_ID\", \
+                                                                  \"t\": 1, \
+                                                                  \"n\": \"vid\", \
+                                                                  \"d\": \"%gn%\" \
+                                                              }, \
+                                                              { \
+                                                                  \"k\": \"ADOBEMOBILE_STOREDDEFAULTS_AID\", \
+                                                                  \"t\": 1, \
+                                                                  \"n\": \"aid\", \
+                                                                  \"d\": \"%oaid%\" \
+                                                              }, \
+                                                              { \
+                                                                  \"k\": \"GLSB\", \
+                                                                  \"t\": 1, \
+                                                                  \"n\": \"aid\", \
+                                                                  \"d\": \"%glsb%\" \
+                                                              }, \
+                                                              { \
+                                                                  \"k\": \"ADB_LIFETIME_VALUE\", \
+                                                                  \"t\": 1, \
+                                                                  \"n\": \"ltv\", \
+                                                                  \"d\": \"0\" \
+                                                              }, \
+                                                              { \
+                                                                  \"k\": \"OMCK1\", \
+                                                                  \"t\": 1, \
+                                                                  \"n\": \"id\", \
+                                                                  \"d\": \"%dt%\" \
+                                                              }, \
+                                                              { \
+                                                                  \"k\": \"OMCK6\", \
+                                                                  \"t\": 2, \
+                                                                  \"n\": \"l\", \
+                                                                  \"d\": \"0\" \
+                                                              }, \
+                                                              { \
+                                                                  \"k\": \"OMCK5\", \
+                                                                  \"t\": 1, \
+                                                                  \"n\": \"lud\", \
+                                                                  \"d\": \"%dt%\" \
+                                                              } \
+                                                              ] \
+                                                   } \
+                                                   ] \
+                                        }]}";
+    
+    return _customMudulesString;
+}
+
+- (NSDictionary *)customModuleConfiguration {
+    if (_customModuleConfiguration) {
+        return _customModuleConfiguration;
+    }
+    
+    NSData *customModuleData = [self.customMudulesString dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *customModuleJSONDictionary = [NSJSONSerialization JSONObjectWithData:customModuleData options:0 error:nil];
+    NSArray *customModules = customModuleJSONDictionary[kMPRemoteConfigCustomModuleSettingsKey];
+    _customModuleConfiguration = [customModules lastObject];
+    
+    return _customModuleConfiguration;
+}
 
 - (void)setUp {
     [super setUp];
@@ -35,67 +114,23 @@
     [super tearDown];
 }
 
-- (void)testCustomModule {
-    NSString *customMudulesString = @"{\"cms\":[\
-                                    { \
-                                        \"id\": 11, \
-                                        \"pr\": [ \
-                                               { \
-                                                   \"f\": \"NSUserDefaults\", \
-                                                   \"m\": 0, \
-                                                   \"ps\": [ \
-                                                          { \
-                                                              \"k\": \"APP_MEASUREMENT_VISITOR_ID\", \
-                                                              \"t\": 1, \
-                                                              \"n\": \"vid\", \
-                                                              \"d\": \"%gn%\" \
-                                                          }, \
-                                                          { \
-                                                              \"k\": \"ADOBEMOBILE_STOREDDEFAULTS_AID\", \
-                                                              \"t\": 1, \
-                                                              \"n\": \"aid\", \
-                                                              \"d\": \"%oaid%\" \
-                                                          }, \
-                                                          { \
-                                                              \"k\": \"GLSB\", \
-                                                              \"t\": 1, \
-                                                              \"n\": \"aid\", \
-                                                              \"d\": \"%glsb%\" \
-                                                          }, \
-                                                          { \
-                                                              \"k\": \"ADB_LIFETIME_VALUE\", \
-                                                              \"t\": 1, \
-                                                              \"n\": \"ltv\", \
-                                                              \"d\": \"0\" \
-                                                          }, \
-                                                          { \
-                                                              \"k\": \"OMCK1\", \
-                                                              \"t\": 1, \
-                                                              \"n\": \"id\", \
-                                                              \"d\": \"%dt%\" \
-                                                          }, \
-                                                          { \
-                                                              \"k\": \"OMCK6\", \
-                                                              \"t\": 2, \
-                                                              \"n\": \"l\", \
-                                                              \"d\": \"0\" \
-                                                          }, \
-                                                          { \
-                                                              \"k\": \"OMCK5\", \
-                                                              \"t\": 1, \
-                                                              \"n\": \"lud\", \
-                                                              \"d\": \"%dt%\" \
-                                                          } \
-                                                          ] \
-                                               } \
-                                               ] \
-                                    }]}";
+- (void)testConfiguration {
+    NSData *customModuleData = [self.customMudulesString dataUsingEncoding:NSUTF8StringEncoding];
+    XCTAssertNotNil(customModuleData, @"Should not have been nil.");
     
-    NSData *customModuleData = [customMudulesString dataUsingEncoding:NSUTF8StringEncoding];
-    NSDictionary *customModuleJSONDictionary = [NSJSONSerialization JSONObjectWithData:customModuleData options:0 error:nil];
+    NSError *error = nil;
+    NSDictionary *customModuleJSONDictionary = [NSJSONSerialization JSONObjectWithData:customModuleData options:0 error:&error];
+    XCTAssertNil(error, @"Should have been nil.");
+    XCTAssertNotNil(customModuleJSONDictionary, @"Should not have been nil.");
+    
     NSArray *customModules = customModuleJSONDictionary[kMPRemoteConfigCustomModuleSettingsKey];
-    NSDictionary *customModuleDictionary = [customModules lastObject];
+    XCTAssertNotNil(customModules, @"Missing key.");
     
+    NSDictionary *customModuleDictionary = [customModules lastObject];
+    XCTAssertNotNil(customModuleDictionary, @"Missing configuration.");
+}
+
+- (void)testCustomModule {
     NSDate *referenceDate = [NSDate date];
     NSDate *futureReferenceDate = [referenceDate dateByAddingTimeInterval:2];
     NSDate *preferenceDate;
@@ -107,7 +142,7 @@
 
     sleep(1);
     
-    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleDictionary];
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
     XCTAssertNotNil(customModule.customModuleId, @"Custom module id is not being set.");
     XCTAssertGreaterThan(customModule.preferences.count, 0, @"Custom module preferences are not being created.");
     
@@ -133,6 +168,36 @@
             XCTAssertLessThanOrEqual([[preference.defaultValue substringWithRange:NSMakeRange(17, 1)] integerValue], 4, @"OAID's seventeenth digit is too large.");
         }
     }
+}
+
+- (void)testCustomModuleSerialization {
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    
+    NSData *customModuleData = [NSKeyedArchiver archivedDataWithRootObject:customModule];
+    XCTAssertNotNil(customModuleData, @"Should not have been nil.");
+    
+    MPCustomModule *deserializedCustomModule = [NSKeyedUnarchiver unarchiveObjectWithData:customModuleData];
+    XCTAssertNotNil(deserializedCustomModule, @"Should not have been nil.");
+    XCTAssertEqualObjects(customModule, deserializedCustomModule, @"Should have been equal.");
+}
+
+- (void)testEquality {
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    XCTAssertNotNil(customModule, @"Should not have been nil.");
+    XCTAssertNotEqualObjects(customModule, nil, @"Should have been different.");
+    XCTAssertNotEqualObjects(customModule, [NSNull null], @"Should have been different.");
+}
+
+- (void)testDictionaryRepresentation {
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
+    NSDictionary *customModuleDictionary = [customModule dictionaryRepresentation];
+    XCTAssertNotNil(customModuleDictionary, @"Should not have been nil.");
+    XCTAssertNotNil(customModuleDictionary[@"aid"], @"Should not have been nil.");
+    XCTAssertNotNil(customModuleDictionary[@"id"], @"Should not have been nil.");
+    XCTAssertNotNil(customModuleDictionary[@"l"], @"Should not have been nil.");
+    XCTAssertNotNil(customModuleDictionary[@"ltv"], @"Should not have been nil.");
+    XCTAssertNotNil(customModuleDictionary[@"lud"], @"Should not have been nil.");
+    XCTAssertNotNil(customModuleDictionary[@"vid"], @"Should not have been nil.");
 }
 
 @end

@@ -384,6 +384,10 @@ NSString *const kitFileExtension = @"eks";
         [self initializeKits];
     }
     
+    if (!_kits) {
+        _kits = [[NSMutableArray alloc] initWithCapacity:1];
+    }
+    
     return _kits;
 }
 

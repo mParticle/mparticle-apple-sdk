@@ -39,6 +39,8 @@
 		C9AF88851BDFF749000DBCDD /* ZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88841BDFF749000DBCDD /* ZipTests.mm */; };
 		C9AF88881BE001A4000DBCDD /* MPBackendControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88871BE001A4000DBCDD /* MPBackendControllerTests.mm */; };
 		C9AF888B1BE00782000DBCDD /* MPNotificationControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF888A1BE00782000DBCDD /* MPNotificationControllerTests.m */; };
+		C9F5D5C51BF63A87003513FF /* MPAppNotificationHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F5D5C41BF63A87003513FF /* MPAppNotificationHandlerTests.m */; };
+		C9F5D5C71BF65471003513FF /* MPLaunchInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F5D5C61BF65471003513FF /* MPLaunchInfoTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +102,8 @@
 		C9AF88871BE001A4000DBCDD /* MPBackendControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPBackendControllerTests.mm; sourceTree = "<group>"; };
 		C9AF88891BE0076A000DBCDD /* MPNotificationController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNotificationController+Tests.h"; sourceTree = "<group>"; };
 		C9AF888A1BE00782000DBCDD /* MPNotificationControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNotificationControllerTests.m; sourceTree = "<group>"; };
+		C9F5D5C41BF63A87003513FF /* MPAppNotificationHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppNotificationHandlerTests.m; sourceTree = "<group>"; };
+		C9F5D5C61BF65471003513FF /* MPLaunchInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLaunchInfoTests.m; sourceTree = "<group>"; };
 		EDBA9AF33EFF0E1F77BE1058 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 		F18FF7DD89ADA797A7AC2594 /* Pods-mParticle-iOS-SDK_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticle-iOS-SDK_Example.release.xcconfig"; path = "Pods/Target Support Files/Pods-mParticle-iOS-SDK_Example/Pods-mParticle-iOS-SDK_Example.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -207,6 +211,7 @@
 				6003F5B6195388D20070C39A /* Supporting Files */,
 				C977E6861BDECEA700FE1805 /* BracketTests.mm */,
 				C977E6881BDED03800FE1805 /* HasherTests.mm */,
+				C9F5D5C41BF63A87003513FF /* MPAppNotificationHandlerTests.m */,
 				C9AF88861BE0016C000DBCDD /* MPBackendController+Tests.h */,
 				C9AF88871BE001A4000DBCDD /* MPBackendControllerTests.mm */,
 				C977E67F1BDEC35700FE1805 /* MPCart+Tests.h */,
@@ -217,6 +222,7 @@
 				C9AF88751BDFC6F2000DBCDD /* MPEventSetTests.m */,
 				C9AF88711BDFC431000DBCDD /* MPEventTests.mm */,
 				C9AF88771BDFC753000DBCDD /* MPForwardRecordTests.m */,
+				C9F5D5C61BF65471003513FF /* MPLaunchInfoTests.m */,
 				C9AF88791BDFD0CF000DBCDD /* MPMessageBuilderTests.m */,
 				C9AF88831BDFF3B8000DBCDD /* MPNetworkCommunication+Tests.h */,
 				C9AF88891BE0076A000DBCDD /* MPNotificationController+Tests.h */,
@@ -466,9 +472,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9F5D5C51BF63A87003513FF /* MPAppNotificationHandlerTests.m in Sources */,
 				C9AF88851BDFF749000DBCDD /* ZipTests.mm in Sources */,
 				C9AF88881BE001A4000DBCDD /* MPBackendControllerTests.mm in Sources */,
 				C977E6871BDECEA700FE1805 /* BracketTests.mm in Sources */,
+				C9F5D5C71BF65471003513FF /* MPLaunchInfoTests.m in Sources */,
 				C9AF887C1BDFD27B000DBCDD /* MPProductBagTests.m in Sources */,
 				C9AF88761BDFC6F2000DBCDD /* MPEventSetTests.m in Sources */,
 				C977E6891BDED03800FE1805 /* HasherTests.mm in Sources */,

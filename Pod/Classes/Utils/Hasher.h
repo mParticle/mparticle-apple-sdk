@@ -26,7 +26,7 @@
 using namespace std;
 
 namespace mParticle {
-    class Hasher {
+    class Hasher final {
         
     public:
         static int hashFromString(const string &stringToHash);

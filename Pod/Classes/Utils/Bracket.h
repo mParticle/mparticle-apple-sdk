@@ -25,7 +25,7 @@
 using namespace std;
 
 namespace mParticle {
-    class Bracket {
+    class Bracket final {
         
     public:
         int64_t mpId = 0;

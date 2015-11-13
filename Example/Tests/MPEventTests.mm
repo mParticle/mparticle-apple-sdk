@@ -96,7 +96,9 @@
 - (void)testInvalidNames {
     NSString *longName = @"The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.";
     
-    MPEvent *event = [[MPEvent alloc] initWithName:nil type:MPEventTypeOther];
+    NSString *nilName = nil;
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:nilName type:MPEventTypeOther];
     XCTAssertNil(event, @"Event cannot be created with a nil name.");
     
     event = [[MPEvent alloc] initWithName:longName type:MPEventTypeOther];
@@ -106,7 +108,7 @@
     XCTAssertNil(event, @"Event cannot be created with an empty name.");
     
     event = [[MPEvent alloc] initWithName:@"Dino" type:MPEventTypeOther];
-    event.name = nil;
+    event.name = nilName;
     XCTAssertEqualObjects(event.name, @"Dino", @"Cannot set a nil name.");
     
     event.name = @"";
@@ -189,14 +191,16 @@
 
 - (void)testCustomFlags {
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Jogging" type:MPEventTypeTransaction];
+    NSArray *nilArray = nil;
+    NSString *nilKey = nil;
     
-    [event addCustomFlags:nil withKey:@"key"];
+    [event addCustomFlags:nilArray withKey:@"key"];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
     [event addCustomFlags:(NSArray *)[NSNull null] withKey:@"key"];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
-    [event addCustomFlags:@[@"Flag 1"] withKey:nil];
+    [event addCustomFlags:@[@"Flag 1"] withKey:nilKey];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
     [event addCustomFlags:@[@"Flag 1"] withKey:(NSString *)[NSNull null]];

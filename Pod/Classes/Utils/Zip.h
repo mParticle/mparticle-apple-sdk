@@ -21,11 +21,12 @@
 
 #include <stdio.h>
 #include <tuple>
+#include <memory>
 
 using namespace std;
 
 namespace mParticle {
-    class Zip {
+    class Zip final {
     public:
         static tuple<unsigned char *, unsigned int> compress(const unsigned char *data, unsigned int length);
         static tuple<unsigned char *, unsigned int> expand(const unsigned char *data, unsigned int length);

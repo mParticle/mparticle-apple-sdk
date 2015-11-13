@@ -78,7 +78,8 @@
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:nil];
+    NSDictionary *nilDictionary = nil;
+    [consumerInfo updateWithConfiguration:nilDictionary];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];

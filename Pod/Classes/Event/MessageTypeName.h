@@ -45,7 +45,7 @@ namespace mParticle {
         CommerceEvent = 16
     };
     
-    class MessageTypeName {
+    class MessageTypeName final {
         static const vector<string> names;
         
     public:

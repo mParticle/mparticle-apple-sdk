@@ -17,6 +17,7 @@
 //
 
 #import "MPLaunchInfo.h"
+#import "MPConstants.h"
 
 @interface MPLaunchInfo() {
     NSString *sourceApp;
@@ -29,7 +30,7 @@
 
 - (instancetype)initWithURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     self = [super init];
-    if (!self) {
+    if (!self || MPIsNull(url) || MPIsNull(sourceApplication)) {
         return nil;
     }
     
@@ -87,8 +88,6 @@
 }
 
 - (void)setUrl:(NSURL *)url {
-    [self willChangeValueForKey:@"url"];
-    
     _url = url;
     
     if (sourceApp) {
@@ -103,8 +102,6 @@
     } else {
         _sourceApplication = nil;
     }
-    
-    [self didChangeValueForKey:@"url"];
 }
 
 @end

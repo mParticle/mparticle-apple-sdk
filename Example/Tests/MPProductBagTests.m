@@ -41,7 +41,8 @@
     XCTAssertNotNil(productBag, @"Instance should not have been nil.");
     XCTAssertEqual(productBag.products.count, 0, @"Incorrect count.");
     
-    productBag = [[MPProductBag alloc] initWithName:nil];
+    NSString *nilName = nil;
+    productBag = [[MPProductBag alloc] initWithName:nilName];
     XCTAssertNil(productBag, @"Instance should have been nil.");
     
     productBag = [[MPProductBag alloc] initWithName:(NSString *)[NSNull null]];
@@ -103,11 +104,14 @@
     [bags addProduct:product1 toBag:@"bag1"];
     XCTAssertEqual(bags.productBags.count, 1, @"Incorrect count.");
     
-    [bags addProduct:nil toBag:@"bag2"];
+    MPProduct *nilProduct = nil;
+    NSString *nilBag = nil;
+    
+    [bags addProduct:nilProduct toBag:@"bag2"];
     [bags addProduct:(MPProduct *)[NSNull null] toBag:@"bag2"];
-    [bags addProduct:product1 toBag:nil];
+    [bags addProduct:product1 toBag:nilBag];
     [bags addProduct:product1 toBag:(NSString *)[NSNull null]];
-    [bags addProduct:nil toBag:nil];
+    [bags addProduct:nilProduct toBag:nilBag];
     [bags addProduct:(MPProduct *)[NSNull null] toBag:(NSString *)[NSNull null]];
     XCTAssertEqual(bags.productBags.count, 1, @"Incorrect count.");
     
@@ -122,11 +126,11 @@
     XCTAssertNotNil(products, @"Should not have been nil.");
     XCTAssertEqual(products.count, 1, @"Incorrect count.");
     
-    [bags removeProduct:nil fromBag:@"bag1"];
+    [bags removeProduct:nilProduct fromBag:@"bag1"];
     [bags removeProduct:(MPProduct *)[NSNull null] fromBag:@"bag1"];
-    [bags removeProduct:product2 fromBag:nil];
+    [bags removeProduct:product2 fromBag:nilBag];
     [bags removeProduct:product2 fromBag:(NSString *)[NSNull null]];
-    [bags removeProduct:nil fromBag:nil];
+    [bags removeProduct:nilProduct fromBag:nilBag];
     [bags removeProduct:(MPProduct *)[NSNull null] fromBag:(NSString *)[NSNull null]];
     products = bags.productBags[@"bag1"];
     XCTAssertNotNil(products, @"Should not have been nil.");

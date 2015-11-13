@@ -25,6 +25,7 @@
 #import "MPEvent.h"
 #import "MPKitExecStatus.h"
 #import "MPKitContainer.h"
+#import "MPKitFilter.h"
 
 @interface MPForwardRecordTests : XCTestCase
 
@@ -78,6 +79,34 @@
     XCTAssertEqualObjects(forwardRecord.dataDictionary[@"s"], expectedDataDictionary[@"s"], @"Does not match.");
     XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"], @"Does not match.");
     XCTAssertEqual(forwardRecord.dataDictionary.count, 4, @"Does not match.");
+}
+
+- (void)testWithOriginalEvent {
+    NSDictionary *expectedDataDictionary = @{
+                                             @"dt":@"e",
+                                             @"mid":@(MPKitInstanceLocalytics),
+                                             @"et":@"Other",
+                                             @"n":@"Original"
+                                             };
+    
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLocalytics) returnCode:MPKitReturnCodeSuccess];
+    
+    MPEvent *originalEvent = [[MPEvent alloc] initWithName:@"Original" type:MPEventTypeOther];
+    
+    MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:originalEvent shouldFilter:NO];
+    XCTAssertNil(kitFilter.forwardCommerceEvent, @"Should have been nil.");
+    XCTAssertEqualObjects(originalEvent, kitFilter.forwardEvent, @"Should have been equal.");
+    
+    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeEvent
+                                                                       execStatus:execStatus
+                                                                        kitFilter:kitFilter
+                                                                    originalEvent:originalEvent];
+    
+    XCTAssertNotNil(forwardRecord, @"Should not have been nil.");
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"dt"], expectedDataDictionary[@"dt"], @"Does not match.");
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"], @"Does not match.");
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"et"], expectedDataDictionary[@"et"], @"Does not match.");
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"n"], expectedDataDictionary[@"n"], @"Does not match.");
 }
 
 @end

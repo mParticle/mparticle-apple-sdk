@@ -26,18 +26,18 @@ namespace mParticle {
     
     tuple<unsigned char *, unsigned int> Zip::compress(const unsigned char *data, unsigned int length) {
         tuple<unsigned char *, unsigned int> compressedData = {nullptr, 0};
-
+        
         if (length == 0) {
             return {nullptr, 0};
         }
         
-        z_stream strm;
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
-        strm.opaque = Z_NULL;
-        strm.total_out = 0;
-        strm.next_in = (Bytef *)data;
-        strm.avail_in = length;
+        z_stream stream;
+        stream.zalloc = Z_NULL;
+        stream.zfree = Z_NULL;
+        stream.opaque = Z_NULL;
+        stream.total_out = 0;
+        stream.next_in = (Bytef *)data;
+        stream.avail_in = length;
         
         // Compresssion Levels:
         //  Z_NO_COMPRESSION
@@ -45,7 +45,7 @@ namespace mParticle {
         //  Z_BEST_COMPRESSION
         //  Z_DEFAULT_COMPRESSION
         
-        if (deflateInit2(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, (15+16), 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+        if (deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, (15+16), 8, Z_DEFAULT_STRATEGY) != Z_OK) {
             return {nullptr, 0};
         }
         
@@ -54,7 +54,7 @@ namespace mParticle {
         get<0>(compressedData) = new unsigned char[bufferSize];
         
         do {
-            if (strm.total_out >= bufferSize) {
+            if (stream.total_out >= bufferSize) {
                 unsigned int previousBufferSize = bufferSize;
                 unsigned char *previousData = new unsigned char[previousBufferSize];
                 memmove(previousData, get<0>(compressedData), previousBufferSize);
@@ -67,15 +67,15 @@ namespace mParticle {
                 delete [] previousData;
             }
             
-            strm.next_out = get<0>(compressedData) + strm.total_out;
-            strm.avail_out = (uInt)(bufferSize - strm.total_out);
+            stream.next_out = get<0>(compressedData) + stream.total_out;
+            stream.avail_out = (uInt)(bufferSize - stream.total_out);
             
-            deflate(&strm, Z_FINISH);
-        } while (strm.avail_out == 0);
+            deflate(&stream, Z_FINISH);
+        } while (stream.avail_out == 0);
         
-        deflateEnd(&strm);
+        deflateEnd(&stream);
         
-        get<1>(compressedData) = (unsigned int)strm.total_out;
+        get<1>(compressedData) = (unsigned int)stream.total_out;
         
         return compressedData;
     }
@@ -87,14 +87,14 @@ namespace mParticle {
             return {nullptr, 0};
         }
         
-        z_stream strm;
-        strm.next_in = (Bytef *)data;
-        strm.avail_in = length;
-        strm.total_out = 0;
-        strm.zalloc = Z_NULL;
-        strm.zfree = Z_NULL;
+        z_stream stream;
+        stream.next_in = (Bytef *)data;
+        stream.avail_in = length;
+        stream.total_out = 0;
+        stream.zalloc = Z_NULL;
+        stream.zfree = Z_NULL;
         
-        if (inflateInit2(&strm, (15+32)) != Z_OK) {
+        if (inflateInit2(&stream, (15+32)) != Z_OK) {
             return {nullptr, 0};
         }
         
@@ -106,7 +106,7 @@ namespace mParticle {
         bool done = false;
         while (!done) {
             // Make sure we have enough room and reset the lengths.
-            if (strm.total_out >= bufferSize) {
+            if (stream.total_out >= bufferSize) {
                 unsigned long previousBufferSize = bufferSize;
                 unsigned char *previousData = new unsigned char[previousBufferSize];
                 memmove(previousData, get<0>(expandedData), previousBufferSize);
@@ -118,11 +118,11 @@ namespace mParticle {
                 delete [] previousData;
             }
             
-            strm.next_out = get<0>(expandedData) + strm.total_out;
-            strm.avail_out = (uInt)(bufferSize - strm.total_out);
+            stream.next_out = get<0>(expandedData) + stream.total_out;
+            stream.avail_out = (uInt)(bufferSize - stream.total_out);
             
             // Inflate another chunk.
-            int status = inflate(&strm, Z_SYNC_FLUSH);
+            int status = inflate(&stream, Z_SYNC_FLUSH);
             
             if (status == Z_STREAM_END) {
                 done = true;
@@ -131,12 +131,12 @@ namespace mParticle {
             }
         }
         
-        if (inflateEnd(&strm) != Z_OK) {
+        if (inflateEnd(&stream) != Z_OK) {
             return {nullptr, 0};
         }
         
         if (done) {
-            get<1>(expandedData) = (unsigned int)strm.total_out;
+            get<1>(expandedData) = (unsigned int)stream.total_out;
             return expandedData;
         } else {
             return {nullptr, 0};

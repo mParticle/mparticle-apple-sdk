@@ -189,7 +189,7 @@
 }
 
 - (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MPStateMachine sharedInstance].optOut || !userInfo) {
         return;
     }
     

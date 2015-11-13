@@ -177,7 +177,9 @@
     MPUpload *upload = [[MPUpload alloc] initWithSession:session uploadDictionary:uploadDictionary];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence saveUpload:upload messageIds:nil operation:MPPersistenceOperationFlag];
+    
+    NSArray *nilArray = nil;
+    [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
     
     XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
     
@@ -375,8 +377,6 @@
     for (MPStandaloneUpload *stAlnUpld in standaloneUploads) {
         [persistence deleteStandaloneUpload:stAlnUpld];
     }
-    
-    XCTAssertEqual(standaloneUploads.count, 1, @"There should have been only 1 fetched stand-alone upload.");
     
     standaloneUpload = [standaloneUploads firstObject];
     XCTAssertNotNil(standaloneUpload, @"Stand-alone upload should not have been nil.");

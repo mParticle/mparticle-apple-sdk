@@ -5,6 +5,7 @@
 * Adopted the Objective-C Nullability syntax
 * Serializing kit configurations rather than kit instances
 * Defined default subspecs
+* New and updated unit tests
 
 ## 5.1.2
 

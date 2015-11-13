@@ -146,9 +146,11 @@
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
     
+    MPMediaTrack *nilTrack = nil;
+    
     messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                          session:self.session
-                                                      mediaTrack:nil
+                                                      mediaTrack:nilTrack
                                                      mediaAction:MPMediaActionPlay];
     
     XCTAssertNil(messageBuilder, @"Message builder should have been nil.");

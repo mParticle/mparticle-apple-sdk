@@ -73,7 +73,7 @@ namespace mParticle {
         Impression
     };
     
-    class EventTypeName {
+    class EventTypeName final {
         static const vector<string> names;
         static const vector<string> hashes;
         

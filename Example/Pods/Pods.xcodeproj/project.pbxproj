@@ -20,7 +20,7 @@
 		C97C612F1BDAA6C20024984E /* MPLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C612D1BDAA6C20024984E /* MPLocationManager.m */; };
 		C9C2DC3B1BD458600002F75A /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB551BD458600002F75A /* MPAppDelegateProxy.h */; };
 		C9C2DC3C1BD458600002F75A /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB561BD458600002F75A /* MPAppDelegateProxy.m */; };
-		C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */; };
+		C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DC3E1BD458600002F75A /* MPAppNotificationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB581BD458600002F75A /* MPAppNotificationHandler.m */; };
 		C9C2DC3F1BD458600002F75A /* MPSurrogateAppDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB591BD458600002F75A /* MPSurrogateAppDelegate.h */; };
 		C9C2DC401BD458600002F75A /* MPSurrogateAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB5A1BD458600002F75A /* MPSurrogateAppDelegate.m */; };
@@ -1183,6 +1183,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */,
 				C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */,
 				C9C2DCC61BD458600002F75A /* MPBackendController.h in Headers */,
 				C9C2DCDD1BD458600002F75A /* MPNotificationController.h in Headers */,
@@ -1258,7 +1259,6 @@
 				C9EE9DB71BD7C2570083CD37 /* MPAttributeProjection.h in Headers */,
 				C9C2DCF81BD458600002F75A /* MPResponseEvents.h in Headers */,
 				C9C2DCD51BD458600002F75A /* MPURLConnectionAssociate.h in Headers */,
-				C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */,
 				C9C2DCA31BD458600002F75A /* EventTypeName.h in Headers */,
 				C9EE9DB31BD7C2570083CD37 /* MPKochavaSpatialCoordinate.h in Headers */,
 				C9EE9DB51BD7C2570083CD37 /* MPKitLocalytics.h in Headers */,

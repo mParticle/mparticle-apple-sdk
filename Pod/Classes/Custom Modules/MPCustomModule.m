@@ -64,6 +64,14 @@
     return [NSString stringWithFormat:@"MPCustomModule\n %@", [self dictionaryRepresentation]];
 }
 
+- (BOOL)isEqual:(id)object {
+    if (![object isKindOfClass:[self class]]) {
+        return NO;
+    }
+    
+    return [[self dictionaryRepresentation] isEqualToDictionary:[(MPCustomModule *)object dictionaryRepresentation]];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPCustomModule *copyObject = [[[self class] alloc] init];
