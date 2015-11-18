@@ -27,12 +27,12 @@
 
 @interface MPKitContainer : NSObject
 
-@property (nonatomic, strong, nullable) NSMutableArray *kits;
+@property (nonatomic, strong, nullable) NSMutableArray<__kindof MPKitAbstract *> *kits;
 
 + (nonnull MPKitContainer *)sharedInstance;
-- (nullable NSArray *)activeKits;
-- (void)configureKits:(nullable NSArray *)kitsConfiguration;
-- (nonnull NSArray *)supportedKits;
+- (nullable NSArray<__kindof MPKitAbstract *> *)activeKits;
+- (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
+- (nonnull NSArray<NSNumber *> *)supportedKits;
 
 - (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPEvent *)event messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo kitHandler:(void (^ _Nonnull)(MPKitAbstract * _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;

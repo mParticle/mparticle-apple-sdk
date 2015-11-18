@@ -23,18 +23,19 @@
 #import "MPBags.h"
 #import "MPBags+Internal.h"
 #import "MPForwardRecord.h"
+#import "MPDataModelAbstract.h"
 
 using namespace std;
 
 @interface MPUploadBuilder() {
-    NSMutableDictionary *uploadDictionary;
+    NSMutableDictionary<NSString *, id> *uploadDictionary;
 }
 
 @end
 
 @implementation MPUploadBuilder
 
-- (instancetype)initWithSession:(MPSession *)session messages:(NSArray *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+- (instancetype)initWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     NSAssert(messages, @"Messages cannot be nil.");
     
     self = [super init];
@@ -115,12 +116,12 @@ using namespace std;
 }
 
 #pragma mark Public class methods
-+ (MPUploadBuilder *)newBuilderWithMessages:(NSArray *)messages uploadInterval:(NSTimeInterval)uploadInterval {
++ (MPUploadBuilder *)newBuilderWithMessages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
-+ (MPUploadBuilder *)newBuilderWithSession:(MPSession *)session messages:(NSArray *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
++ (MPUploadBuilder *)newBuilderWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:session messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
     return uploadBuilder;
 }
@@ -151,8 +152,8 @@ using namespace std;
     }
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray  *forwardRecords = [persistence fetchForwardRecords];
-    NSMutableArray *forwardRecordsIds = nil;
+    NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
+    NSMutableArray<NSNumber *> *forwardRecordsIds = nil;
     
     if (forwardRecords) {
         NSUInteger numberOfRecords = forwardRecords.count;
@@ -176,7 +177,7 @@ using namespace std;
 #endif
 
     if (_session) { // MPUpload
-        [persistence fetchUserNotificationCampaignHistory:^(NSArray *userNotificationCampaignHistory) {
+        [persistence fetchUserNotificationCampaignHistory:^(NSArray<MParticleUserNotification *> *userNotificationCampaignHistory) {
             if (userNotificationCampaignHistory) {
                 NSMutableDictionary *userNotificationCampaignHistoryDictionary = [[NSMutableDictionary alloc] initWithCapacity:userNotificationCampaignHistory.count];
                 
@@ -196,9 +197,7 @@ using namespace std;
             
             completionHandler(upload);
             
-            if (forwardRecordsIds.count > 0) {
-                [persistence deleteForwardRecodsIds:forwardRecordsIds];
-            }
+            [persistence deleteForwardRecodsIds:forwardRecordsIds];
         }];
     } else { // MPStandaloneUpload
         MPStandaloneUpload *standaloneUpload = [[MPStandaloneUpload alloc] initWithUploadDictionary:uploadDictionary];
@@ -207,7 +206,7 @@ using namespace std;
     }
 }
 
-- (MPUploadBuilder *)withUserAttributes:(NSDictionary *)userAttributes deletedUserAttributes:(NSSet *)deletedUserAttributes {
+- (MPUploadBuilder *)withUserAttributes:(NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(NSSet<NSString *> *)deletedUserAttributes {
     NSUInteger numberOfUserAttributes = userAttributes.count;
     
     if (numberOfUserAttributes > 0) {
@@ -232,7 +231,7 @@ using namespace std;
     return self;
 }
 
-- (MPUploadBuilder *)withUserIdentities:(NSArray *)userIdentities {
+- (MPUploadBuilder *)withUserIdentities:(NSArray<NSDictionary<NSString *, id> *> *)userIdentities {
     if (userIdentities.count > 0) {
         uploadDictionary[kMPUserIdentityArrayKey] = userIdentities;
     }

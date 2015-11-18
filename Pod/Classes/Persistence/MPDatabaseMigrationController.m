@@ -25,13 +25,13 @@
     NSArray *migratedSessions;
 }
 
-@property (nonatomic, strong) NSArray *databaseVersions;
+@property (nonatomic, strong) NSArray<NSNumber *> *databaseVersions;
 
 @end
 
 @implementation MPDatabaseMigrationController
 
-- (instancetype)initWithDatabaseVersions:(NSArray *)databaseVersions {
+- (instancetype)initWithDatabaseVersions:(NSArray<NSNumber *> *)databaseVersions {
     self = [super init];
     if (self) {
         dbQueue = dispatch_queue_create("com.mParticle.migrationQueue", DISPATCH_QUEUE_SERIAL);

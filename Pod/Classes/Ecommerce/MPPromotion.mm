@@ -43,8 +43,8 @@ static NSArray *actionNames;
 #pragma mark - MPPromotion
 @interface MPPromotion()
 
-@property (nonatomic, strong) NSMutableDictionary *attributes;
-@property (nonatomic, strong) NSMutableDictionary *beautifiedAttributes;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *attributes;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, NSString *> *beautifiedAttributes;
 
 @end
 
@@ -77,7 +77,7 @@ static NSArray *actionNames;
 }
 
 #pragma mark Private accessors
-- (NSMutableDictionary *)attributes {
+- (NSMutableDictionary<NSString *, NSString *> *)attributes {
     if (_attributes) {
         return _attributes;
     }
@@ -86,7 +86,7 @@ static NSArray *actionNames;
     return _attributes;
 }
 
-- (NSMutableDictionary *)beautifiedAttributes {
+- (NSMutableDictionary<NSString *, NSString *> *)beautifiedAttributes {
     if (_beautifiedAttributes) {
         return _beautifiedAttributes;
     }
@@ -124,7 +124,7 @@ static NSArray *actionNames;
         return nil;
     }
     
-    NSDictionary *dictionary = [coder decodeObjectForKey:@"attributes"];
+    NSDictionary<NSString *, NSString *> *dictionary = [coder decodeObjectForKey:@"attributes"];
     if (dictionary.count > 0) {
         self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
@@ -138,24 +138,12 @@ static NSArray *actionNames;
 }
 
 #pragma mark MPPromotion+Dictionary
-- (NSDictionary *)dictionaryRepresentation {
-    NSDictionary *dictionary = nil;
-    
-    if (_attributes.count > 0) {
-        dictionary = [_attributes transformValuesToString];
-    }
-    
-    return dictionary;
+- (NSDictionary<NSString *, NSString *> *)dictionaryRepresentation {
+    return _attributes;
 }
 
-- (NSDictionary *)beautifiedDictionaryRepresentation {
-    NSDictionary *dictionary = nil;
-    
-    if (_beautifiedAttributes.count > 0) {
-        dictionary = [_beautifiedAttributes transformValuesToString];
-    }
-    
-    return dictionary;
+- (NSDictionary<NSString *, NSString *> *)beautifiedDictionaryRepresentation {
+    return _beautifiedAttributes;
 }
 
 - (MPPromotion *)copyMatchingHashedProperties:(NSDictionary *)hashedMap {
@@ -236,7 +224,7 @@ static NSArray *actionNames;
 #pragma mark - MPPromotionContainer
 @interface MPPromotionContainer()
 
-@property (nonatomic, strong) NSMutableArray *promotionsArray;
+@property (nonatomic, strong) NSMutableArray<MPPromotion *> *promotionsArray;
 
 @end
 
@@ -368,14 +356,14 @@ static NSArray *actionNames;
     }
 }
 
-- (void)setPromotions:(NSArray *)promotions {
+- (void)setPromotions:(NSArray<MPPromotion *> *)promotions {
     self.promotionsArray = promotions ? [[NSMutableArray alloc] initWithArray:promotions] : nil;
 }
 
 - (MPPromotionContainer *)copyMatchingHashedProperties:(NSDictionary *)hashedMap {
     MPPromotionContainer *copyPromotionContainer = [self copy];
     
-    __block NSMutableArray *promotions = [[NSMutableArray alloc] init];
+    __block NSMutableArray<MPPromotion *> *promotions = [[NSMutableArray alloc] init];
     [_promotionsArray enumerateObjectsUsingBlock:^(MPPromotion *promotion, NSUInteger idx, BOOL *stop) {
         MPPromotion *filteredPromotion = [promotion copyMatchingHashedProperties:hashedMap];
         
@@ -390,7 +378,7 @@ static NSArray *actionNames;
 }
 
 #pragma mark Public accessors
-- (NSArray *)promotions {
+- (NSArray<MPPromotion *> *)promotions {
     return _promotionsArray.count > 0 ? (NSArray *)_promotionsArray : nil;
 }
 

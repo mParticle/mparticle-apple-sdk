@@ -157,7 +157,7 @@ static NSTimeInterval requestTimeout = 30.0;
     if (SDKURLRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
         MPKitContainer *kitContainer = [MPKitContainer sharedInstance];
-        NSArray *supportedKits = [kitContainer supportedKits];
+        NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
         NSString *contentType = nil;
         NSString *kits = nil;
         NSString *relativePath = [_url relativePath];
@@ -177,7 +177,7 @@ static NSTimeInterval requestTimeout = 30.0;
                 kits = nil;
             }
             
-            NSArray *activeKits = [kitContainer activeKits];
+            NSArray<__kindof MPKitAbstract *> *activeKits = [kitContainer activeKits];
             if (activeKits) {
                 kits = [activeKits componentsJoinedByString:@","];
             }

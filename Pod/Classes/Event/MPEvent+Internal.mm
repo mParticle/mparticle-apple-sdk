@@ -54,11 +54,11 @@ NSString *const kMPEventCustomFlags = @"flags";
     return eventDictionary;
 }
 
-- (NSDictionary *)dictionaryRepresentation {
-    NSMutableDictionary *eventDictionary = [@{kMPEventNameKey:self.name,
-                                              kMPEventTypeKey:self.typeName,
-                                              kMPEventCounterKey:@([MPStateMachine sharedInstance].currentSession.eventCounter)}
-                                            mutableCopy];
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *eventDictionary = [@{kMPEventNameKey:self.name,
+                                                              kMPEventTypeKey:self.typeName,
+                                                              kMPEventCounterKey:@([MPStateMachine sharedInstance].currentSession.eventCounter)}
+                                                            mutableCopy];
     
     NSDictionary *info = self.info;
     NSString *category = self.category;

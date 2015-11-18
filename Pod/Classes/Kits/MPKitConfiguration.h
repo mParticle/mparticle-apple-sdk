@@ -18,15 +18,17 @@
 
 #import <Foundation/Foundation.h>
 
+@class MPEventProjection;
+
 @interface MPKitConfiguration : NSObject <NSCoding, NSCopying>
 
 @property (nonatomic, strong, readonly, nonnull) NSNumber *configurationHash;
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
 @property (nonatomic, strong, nullable) NSDictionary *filters;
 @property (nonatomic, strong, readonly, nullable) NSDictionary *bracketConfiguration;
-@property (nonatomic, strong, readonly, nullable) NSArray *configuredMessageTypeProjections;
-@property (nonatomic, strong, readonly, nullable) NSArray *defaultProjections;
-@property (nonatomic, strong, readonly, nullable) NSArray *projections;
+@property (nonatomic, strong, readonly, nullable) NSArray<NSNumber *> *configuredMessageTypeProjections;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *defaultProjections;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *projections;
 @property (nonatomic, strong, readonly, nullable) NSNumber *kitCode;
 
 @property (nonatomic, weak, readonly) NSDictionary *eventTypeFilters;

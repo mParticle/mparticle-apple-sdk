@@ -33,7 +33,7 @@
 
 #pragma mark Public methods
 - (void)checkout {
-    NSArray *products = [[MPCart sharedInstance] products];
+    NSArray<MPProduct *> *products = [[MPCart sharedInstance] products];
     if (products.count == 0) {
         return;
     }
@@ -50,7 +50,7 @@
     commerceEvent.checkoutOptions = options;
     commerceEvent.checkoutStep = step;
     
-    NSArray *products = [[MPCart sharedInstance] products];
+    NSArray<MPProduct *> *products = [[MPCart sharedInstance] products];
     [commerceEvent addProducts:products];
     commerceEvent.currency = self.currency;
 
@@ -63,7 +63,7 @@
 
 - (void)purchaseWithTransactionAttributes:(MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart {
     NSAssert(transactionAttributes.transactionId, @"'transactionId' is required for purchases.");
-    NSArray *products = [[MPCart sharedInstance] products];
+    NSArray<MPProduct *> *products = [[MPCart sharedInstance] products];
     NSAssert(!MPIsNull(products), @"Cannot purchase a cart with no products.");
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase];
@@ -80,7 +80,7 @@
 
 - (void)refundTransactionAttributes:(MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart {
     NSAssert(transactionAttributes.transactionId, @"'transactionId' is required for refunds.");
-    NSArray *products = [[MPCart sharedInstance] products];
+    NSArray<MPProduct *> *products = [[MPCart sharedInstance] products];
     NSAssert(!MPIsNull(products), @"Cannot refund a cart with no products.");
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase];

@@ -48,7 +48,7 @@
     NSError *error = [NSError errorWithDomain:@"com.mParticle" code:123 userInfo:@{@"some":@"error"}];
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    NSArray *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     error = nil;
@@ -65,7 +65,7 @@
     NSData *deviceToken = [@"<1234 5678>" dataUsingEncoding:NSUTF8StringEncoding];
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    NSArray *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     deviceToken = nil;
@@ -86,7 +86,7 @@
     notificationDictionary = nil;
     [appNotificationHandler handleActionWithIdentifier:actionIdentifier forRemoteNotification:notificationDictionary];
     
-    NSArray *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 

@@ -17,6 +17,7 @@
 //
 
 #import "MPEnums.h"
+#import "MPCommerceEventInstruction.h"
 
 typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
     MPCommerceEventKindUnknown = 0,
@@ -31,21 +32,21 @@ typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
 - (instancetype)initWithAction:(MPCommerceEventAction)action;
 - (NSString *)actionNameForAction:(MPCommerceEventAction)action;
 - (MPCommerceEventAction)actionWithName:(NSString *)actionName;
-- (void)addProducts:(NSArray *)products;
+- (void)addProducts:(NSArray<MPProduct *> *)products;
 - (NSDictionary *)dictionaryRepresentation;
-- (NSArray *)expandedInstructions;
-- (NSArray *const)addedProducts;
+- (NSArray<MPCommerceEventInstruction *> *)expandedInstructions;
+- (NSArray<MPProduct *> *const)addedProducts;
 - (MPCommerceEventKind)kind;
-- (void)removeProducts:(NSArray *)products;
-- (NSArray *const)removedProducts;
+- (void)removeProducts:(NSArray<MPProduct *> *)products;
+- (NSArray<MPProduct *> *const)removedProducts;
 - (void)resetLatestProducts;
 - (MPEventType)type;
 - (NSMutableDictionary *)beautifiedAttributes;
 - (void)setBeautifiedAttributes:(NSMutableDictionary *)beautifiedAttributes;
 - (NSMutableDictionary *)userDefinedAttributes;
 - (void)setUserDefinedAttributes:(NSMutableDictionary *)userDefinedAttributes;
-- (void)setImpressions:(NSDictionary *)impressions;
-- (void)setProducts:(NSArray *)products;
-- (NSMutableDictionary *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap;
+- (void)setImpressions:(NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions;
+- (void)setProducts:(NSArray<MPProduct *> *)products;
+- (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap;
 
 @end

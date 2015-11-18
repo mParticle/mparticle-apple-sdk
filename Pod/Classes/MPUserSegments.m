@@ -59,7 +59,7 @@
 #pragma mark MPUserSegments+Setters category
 @implementation MPUserSegments(Setters)
 
-- (instancetype)initWithSegments:(NSArray *)segments {
+- (nonnull instancetype)initWithSegments:(nullable NSArray<MPSegment *> *)segments {
     self = [super init];
     if (!self) {
         return nil;

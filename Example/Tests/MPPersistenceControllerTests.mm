@@ -101,7 +101,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Session test"];
     
-    [persistence fetchSessions:^(NSMutableArray *sessions) {
+    [persistence fetchSessions:^(NSMutableArray<MPSession *> *sessions) {
         MPSession *fetchedSession = [sessions lastObject];
         XCTAssertEqualObjects(session, fetchedSession, @"Session and fetchedSession are not equal.");
         
@@ -137,7 +137,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
     
     [persistence fetchMessagesForUploadingInSession:session
-                                  completionHandler:^(NSArray *messages) {
+                                  completionHandler:^(NSArray<MPMessage *> *messages) {
                                       MPMessage *fetchedMessage = [messages lastObject];
                                       
                                       XCTAssertEqualObjects(message, fetchedMessage, @"Message and fetchedMessage are not equal.");
@@ -186,7 +186,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload test"];
     
     [persistence fetchUploadsInSession:session
-                     completionHandler:^(NSArray *uploads) {
+                     completionHandler:^(NSArray<MPUpload *> *uploads) {
                          MPUpload *fetchedUpload = [uploads lastObject];
                          
                          XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
@@ -230,7 +230,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Command test"];
     
     [persistence fetchCommandsInSession:session
-                      completionHandler:^(NSArray *commands) {
+                      completionHandler:^(NSArray<MPCommand *> *commands) {
                           MPCommand *fetchedCommand = [commands lastObject];
                           
                           XCTAssertEqualObjects(command, fetchedCommand, @"Command and fetchedCommand are not equal.");
@@ -301,7 +301,7 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
     
-    NSArray *standaloneMessages = [persistence fetchStandaloneMessages];
+    NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];
     XCTAssertEqual(standaloneMessages.count, 1, @"There should have been only 1 fetched stand-alone message.");
     
     MPStandaloneMessage *standaloneMessage = [standaloneMessages firstObject];
@@ -348,7 +348,7 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
     
-    NSArray *persistedMessages = [persistence fetchStandaloneMessages];
+    NSArray<MPStandaloneMessage *> *persistedMessages = [persistence fetchStandaloneMessages];
     NSUInteger numberOfMessages = persistedMessages.count;
     NSMutableArray *standaloneMessages = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
     NSMutableArray *preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
@@ -372,7 +372,7 @@
     NSArray *fetchedStandaloneMessages = [persistence fetchStandaloneMessages];
     XCTAssertNil(fetchedStandaloneMessages, @"Stand-alone messages should had been deleted.");
     
-    NSArray *standaloneUploads = [persistence fetchStandaloneUploads];
+    NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
     
     for (MPStandaloneUpload *stAlnUpld in standaloneUploads) {
         [persistence deleteStandaloneUpload:stAlnUpld];
@@ -432,7 +432,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Remote notification test"];
     
-    [persistence fetchUserNotificationCampaignHistory:^(NSArray *userNotificationCampaignHistory) {
+    [persistence fetchUserNotificationCampaignHistory:^(NSArray<MParticleUserNotification *> *userNotificationCampaignHistory) {
         MParticleUserNotification *fetchedRemoteNotification = [userNotificationCampaignHistory lastObject];
         XCTAssertNotNil(fetchedRemoteNotification, @"Fetched remote notification should not have been nil.");
         XCTAssertTrue(fetchedRemoteNotification.hasBeenUsedInInfluencedOpen, @"Should have been marked as used in influenced open.");
@@ -466,7 +466,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expired remote notification test"];
     
-    [persistence fetchUserNotificationCampaignHistory:^(NSArray *userNotificationCampaignHistory) {
+    [persistence fetchUserNotificationCampaignHistory:^(NSArray<MParticleUserNotification *> *userNotificationCampaignHistory) {
         MParticleUserNotification *fetchedRemoteNotification = [userNotificationCampaignHistory lastObject];
         XCTAssertNil(fetchedRemoteNotification, @"Fetched remote notification should have been nil.");
         

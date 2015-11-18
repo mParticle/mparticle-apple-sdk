@@ -24,15 +24,15 @@ extern NSString * _Nonnull const kMPStateInformationKey;
 
 @property (nonatomic, strong, readonly, nonnull) NSNumber *applicationMemory;
 @property (nonatomic, strong, readonly, nonnull) NSNumber *batteryLevel;
-@property (nonatomic, strong, readonly, nonnull) NSDictionary *cpuUsageInfo;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, NSString *> *cpuUsageInfo;
 @property (nonatomic, strong, readonly, nonnull) NSString *dataConnectionStatus;
 @property (nonatomic, strong, readonly, nonnull) NSNumber *deviceOrientation;
-@property (nonatomic, strong, readonly, nonnull) NSDictionary *diskSpaceInfo;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, id> *diskSpaceInfo;
 @property (nonatomic, strong, readonly, nonnull) NSNumber *gpsState;
 @property (nonatomic, strong, readonly, nonnull) NSNumber *statusBarOrientation;
-@property (nonatomic, strong, readonly, nonnull) NSDictionary *systemMemoryInfo;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, NSNumber *> *systemMemoryInfo;
 @property (nonatomic, strong, readonly, nonnull) NSNumber *timeSinceStart;
 
-- (nonnull NSDictionary *)dictionaryRepresentation;
+- (nonnull NSDictionary<NSString *, id> *)dictionaryRepresentation;
 
 @end

@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.1.4
+
+* Adopted Lightweight Generics
+
 ## 5.1.3
 
 * Adopted the Objective-C Nullability syntax

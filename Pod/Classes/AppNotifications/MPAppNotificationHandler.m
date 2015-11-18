@@ -93,7 +93,7 @@
     [MPNotificationController setDeviceToken:nil];
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
-    NSArray *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
     NSNumber *lastKit = nil;
     
     for (MPKitAbstract *kit in activeKits) {
@@ -123,7 +123,7 @@
     [MPNotificationController setDeviceToken:deviceToken];
     
     SEL deviceTokenSelector = @selector(setDeviceToken:);
-    NSArray *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
     NSNumber *lastKit = nil;
     
     for (MPKitAbstract *kit in activeKits) {
@@ -153,7 +153,7 @@
     [self receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
-    NSArray *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         if ([kit respondsToSelector:handleActionWithIdentifierSelector]) {
@@ -178,7 +178,7 @@
                                               sourceApplication:sourceApplication
                                                      annotation:annotation];
     
-    NSArray *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
     SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
     
     for (MPKitAbstract *kit in activeKits) {
@@ -220,7 +220,7 @@
     
     if (!actionIdentifier) {
         SEL receivedNotificationSelector = @selector(receivedUserNotification:);
-        NSArray *activeKits = [[MPKitContainer sharedInstance] activeKits];
+        NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
         NSNumber *lastKit = nil;
         
         for (MPKitAbstract *kit in activeKits) {

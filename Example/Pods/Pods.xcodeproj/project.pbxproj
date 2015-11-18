@@ -94,8 +94,6 @@
 		C9C2DCA81BD458600002F75A /* MPEvent+MessageType.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBD31BD458600002F75A /* MPEvent+MessageType.h */; };
 		C9C2DCA91BD458600002F75A /* MPEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBD41BD458600002F75A /* MPEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCAA1BD458600002F75A /* MPEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBD51BD458600002F75A /* MPEvent.mm */; };
-		C9C2DCAB1BD458600002F75A /* MPEventSet.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBD61BD458600002F75A /* MPEventSet.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C9C2DCAC1BD458600002F75A /* MPEventSet.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBD71BD458600002F75A /* MPEventSet.m */; };
 		C9C2DCAD1BD458600002F75A /* MParticleReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBDA1BD458600002F75A /* MParticleReachability.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCAE1BD458600002F75A /* MParticleReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBDB1BD458600002F75A /* MParticleReachability.m */; };
 		C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBDD1BD458600002F75A /* MPLogger.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -376,8 +374,6 @@
 		C9C2DBD31BD458600002F75A /* MPEvent+MessageType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPEvent+MessageType.h"; sourceTree = "<group>"; };
 		C9C2DBD41BD458600002F75A /* MPEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEvent.h; sourceTree = "<group>"; };
 		C9C2DBD51BD458600002F75A /* MPEvent.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEvent.mm; sourceTree = "<group>"; };
-		C9C2DBD61BD458600002F75A /* MPEventSet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEventSet.h; sourceTree = "<group>"; };
-		C9C2DBD71BD458600002F75A /* MPEventSet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEventSet.m; sourceTree = "<group>"; };
 		C9C2DBDA1BD458600002F75A /* MParticleReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleReachability.h; sourceTree = "<group>"; };
 		C9C2DBDB1BD458600002F75A /* MParticleReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleReachability.m; sourceTree = "<group>"; };
 		C9C2DBDD1BD458600002F75A /* MPLogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLogger.h; sourceTree = "<group>"; };
@@ -821,8 +817,6 @@
 				C9C2DBD31BD458600002F75A /* MPEvent+MessageType.h */,
 				C9C2DBD41BD458600002F75A /* MPEvent.h */,
 				C9C2DBD51BD458600002F75A /* MPEvent.mm */,
-				C9C2DBD61BD458600002F75A /* MPEventSet.h */,
-				C9C2DBD71BD458600002F75A /* MPEventSet.m */,
 			);
 			path = Event;
 			sourceTree = "<group>";
@@ -1204,7 +1198,6 @@
 				C9C2DCF21BD458600002F75A /* MPLaunchInfo.h in Headers */,
 				C9C2DCFA1BD458600002F75A /* MPStateMachine.h in Headers */,
 				C9C2DCBE1BD458600002F75A /* MPMediaTrack+Internal.h in Headers */,
-				C9C2DCAB1BD458600002F75A /* MPEventSet.h in Headers */,
 				C9C2DCC01BD458600002F75A /* MPMediaTrack.h in Headers */,
 				C9C2DCFC1BD458600002F75A /* MPUploadBuilder.h in Headers */,
 				C9C2DCA61BD458600002F75A /* MPEvent+Internal.h in Headers */,
@@ -1452,7 +1445,6 @@
 				C9C2DC4C1BD458600002F75A /* MPCommand.m in Sources */,
 				C9C2DC721BD458600002F75A /* MPCommerceEventInstruction.m in Sources */,
 				C9C2DC5B1BD458600002F75A /* MPSession.m in Sources */,
-				C9C2DCAC1BD458600002F75A /* MPEventSet.m in Sources */,
 				C9C2DCF11BD458600002F75A /* MPDevice.m in Sources */,
 				C9C2DCB81BD458600002F75A /* MPMediaMetadataDPR.m in Sources */,
 				C9C2DCB11BD458600002F75A /* MediaControl.cpp in Sources */,

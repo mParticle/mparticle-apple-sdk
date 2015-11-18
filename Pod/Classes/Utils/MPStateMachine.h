@@ -26,6 +26,7 @@
 @class MPConsumerInfo;
 @class MPBags;
 @class MPLocationManager;
+@class MPCustomModule;
 
 typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
     MPConsoleLoggingAutoDetect = 0,
@@ -39,7 +40,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, nonnull) MPBags *bags;
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 @property (nonatomic, weak) MPSession *currentSession;
-@property (nonatomic, strong, nullable) NSArray *customModules;
+@property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
 @property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
 @property (nonatomic, strong, nullable) NSString *locationTrackingMode;
 @property (nonatomic, strong, nullable) NSString *latestSDKVersion;
@@ -71,7 +72,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 + (nullable NSString *)provisioningProfileString;
 + (BOOL)runningInBackground;
 + (void)setRunningInBackground:(BOOL)background;
-- (void)configureCustomModules:(nullable NSArray *)customModuleSettings;
+- (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings;
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
 

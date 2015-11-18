@@ -343,12 +343,12 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 #pragma mark Public methods
-- (NSDictionary *)dictionaryRepresentation {
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     if (appInfo) {
         return appInfo;
     }
     
-    NSMutableDictionary *applicationInfo;
+    NSMutableDictionary<NSString *, id> *applicationInfo;
     NSString *auxString;
     
 #ifndef MP_UNIT_TESTING

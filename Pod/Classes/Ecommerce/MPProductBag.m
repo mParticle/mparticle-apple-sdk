@@ -81,7 +81,7 @@
     }
 }
 
-- (NSMutableArray *)products {
+- (nonnull NSMutableArray<MPProduct *> *)products {
     if (_products) {
         return _products;
     }
@@ -91,7 +91,7 @@
 }
 
 #pragma mark Public methods
-- (NSDictionary *)dictionaryRepresentation {
+- (NSDictionary<NSString *, NSDictionary *> *)dictionaryRepresentation {
     NSMutableArray *products = [[NSMutableArray alloc] init];
     for (MPProduct *product in self.products) {
         NSDictionary *productDictionary = [product commerceDictionaryRepresentation];

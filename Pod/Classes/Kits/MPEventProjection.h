@@ -19,6 +19,8 @@
 #import "MPBaseProjection.h"
 #import "MPEnums.h"
 
+@class MPAttributeProjection;
+
 typedef NS_ENUM(NSUInteger, MPProjectionBehaviorSelector) {
     MPProjectionBehaviorSelectorForEach = 0,
     MPProjectionBehaviorSelectorLast
@@ -28,7 +30,7 @@ typedef NS_ENUM(NSUInteger, MPProjectionBehaviorSelector) {
 
 @property (nonatomic, strong, nullable) NSString *attributeKey;
 @property (nonatomic, strong, nullable) NSString *attributeValue;
-@property (nonatomic, strong, nullable) NSArray *attributeProjections;
+@property (nonatomic, strong, nullable) NSArray<MPAttributeProjection *> *attributeProjections;
 @property (nonatomic, unsafe_unretained) MPProjectionBehaviorSelector behaviorSelector;
 @property (nonatomic, unsafe_unretained) MPEventType eventType;
 @property (nonatomic, unsafe_unretained) MPMessageType messageType;

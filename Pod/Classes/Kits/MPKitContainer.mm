@@ -88,7 +88,7 @@ NSString *const kitFileExtension = @"eks";
     BOOL kitsInitialized;
 }
 
-@property (nonatomic, strong) NSMutableDictionary *kitConfigurations;
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
 @end
 
@@ -372,7 +372,7 @@ NSString *const kitFileExtension = @"eks";
 }
 
 #pragma mark Public accessors
-- (NSMutableArray *)kits {
+- (NSMutableArray<__kindof MPKitAbstract *> *)kits {
     if ([MPStateMachine sharedInstance].optOut) {
         _kits = nil;
         return nil;
@@ -391,7 +391,7 @@ NSString *const kitFileExtension = @"eks";
     return _kits;
 }
 
-- (void)setKits:(NSMutableArray *)kits {
+- (void)setKits:(NSMutableArray<__kindof MPKitAbstract *> *)kits {
     if (!kits) {
         kitsInitialized = NO;
     }
@@ -399,7 +399,7 @@ NSString *const kitFileExtension = @"eks";
     _kits = kits;
 }
 
-- (NSMutableDictionary *)kitConfigurations {
+- (NSMutableDictionary<NSNumber *, MPKitConfiguration *> *)kitConfigurations {
     if (_kitConfigurations) {
         return _kitConfigurations;
     }
@@ -533,7 +533,7 @@ NSString *const kitFileExtension = @"eks";
     [self projectKit:kit
        commerceEvent:forwardCommerceEvent
    completionHandler:^(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
-       NSArray *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
+       NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
        
        if (!projectedEvents.empty()) {
            const auto lastProjectedEvent = projectedEvents.back();
@@ -643,7 +643,7 @@ NSString *const kitFileExtension = @"eks";
          messageType:messageTypeCode
    completionHandler:^(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
        __weak auto lastProjectedEvent = projectedEvents.back();
-       NSArray *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
+       NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
        
        for (auto &projectedEvent : projectedEvents) {
            BOOL finished = projectedEvent == lastProjectedEvent;
@@ -959,12 +959,12 @@ NSString *const kitFileExtension = @"eks";
         };
         
         // Block to project a commerce event according to attribute projections
-        NSDictionary * (^projectCommerceEventWithAttributes)(MPCommerceEvent *, NSArray *) = ^(MPCommerceEvent *commerceEvent, NSArray *attributeProjections) {
+        NSDictionary * (^projectCommerceEventWithAttributes)(MPCommerceEvent *, NSArray *) = ^(MPCommerceEvent *commerceEvent, NSArray<MPAttributeProjection *> *attributeProjections) {
             NSMutableDictionary *projectedCommerceEventDictionary = [[NSMutableDictionary alloc] init];
             NSDictionary *sourceDictionary;
             NSDictionary *projectedDictionary;
             NSPredicate *predicate;
-            NSArray *filteredAttributeProjections;
+            NSArray<MPAttributeProjection *> *filteredAttributeProjections;
             
             vector<MPProjectionPropertyKind> propertyKinds = {MPProjectionPropertyKindEventField, MPProjectionPropertyKindEventAttribute};
             
@@ -1003,12 +1003,12 @@ NSString *const kitFileExtension = @"eks";
         };
         
         // Block to project a product according to attribute projections
-        NSDictionary * (^projectProductWithAttributes)(MPProduct *, NSArray *) = ^(MPProduct *product, NSArray *attributeProjections) {
+        NSDictionary * (^projectProductWithAttributes)(MPProduct *, NSArray *) = ^(MPProduct *product, NSArray<MPAttributeProjection *> *attributeProjections) {
             NSMutableDictionary *projectedProductDictionary = [[NSMutableDictionary alloc] init];
             NSDictionary *sourceDictionary;
             NSDictionary *projectedDictionary;
             NSPredicate *predicate;
-            NSArray *filteredAttributeProjections;
+            NSArray<MPAttributeProjection *> *filteredAttributeProjections;
             
             vector<MPProjectionPropertyKind> propertyKinds = {MPProjectionPropertyKindProductField, MPProjectionPropertyKindProductAttribute};
             
@@ -1081,7 +1081,7 @@ NSString *const kitFileExtension = @"eks";
                 
                 // Projecting commerce event fields and attributes
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d || propertyKind == %d", (int)MPProjectionPropertyKindEventField, (int)MPProjectionPropertyKindEventAttribute];
-                NSArray *attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
+                NSArray<MPAttributeProjection *> *attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
                 
                 if (attributeProjections.count > 0) {
                     projectedDictionary = projectCommerceEventWithAttributes(commerceEvent, attributeProjections);
@@ -1261,7 +1261,7 @@ NSString *const kitFileExtension = @"eks";
                 return (NSDictionary *)nil;
             }
             
-            NSMutableArray *attributeProjections = [[NSMutableArray alloc] initWithArray:eventProjection.attributeProjections];
+            NSMutableArray<MPAttributeProjection *> *attributeProjections = [[NSMutableArray alloc] initWithArray:eventProjection.attributeProjections];
             NSUInteger maxCustomParams = eventProjection.maxCustomParameters;
             NSMutableArray *projectedKeys = [[NSMutableArray alloc] init];
             NSMutableArray *nonProjectedKeys = [[NSMutableArray alloc] init];
@@ -1273,7 +1273,7 @@ NSString *const kitFileExtension = @"eks";
             }
             
             __block BOOL doesNotContainRequiredAttribute = NO;
-            __block NSMutableArray *removeAttributeProjections = [[NSMutableArray alloc] init];
+            __block NSMutableArray<MPAttributeProjection *> *removeAttributeProjections = [[NSMutableArray alloc] init];
             
             // Building a map between keys and their respective hashes
             __block std::map<NSString *, int> keyHashMap;
@@ -1521,14 +1521,14 @@ NSString *const kitFileExtension = @"eks";
 }
 
 #pragma mark Public methods
-- (NSArray *)activeKits {
+- (NSArray<__kindof MPKitAbstract *> *)activeKits {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"active == YES"];
-    NSArray *activeKits = [self.kits filteredArrayUsingPredicate:predicate];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self.kits filteredArrayUsingPredicate:predicate];
     
     return activeKits;
 }
 
-- (void)configureKits:(NSArray *)kitConfigurations {
+- (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     if (MPIsNull(kitConfigurations) || stateMachine.optOut) {
@@ -1547,8 +1547,8 @@ NSString *const kitFileExtension = @"eks";
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-    NSArray *supportedKits = [self supportedKits];
-    NSArray *activeKits = [self activeKits];
+    NSArray<NSNumber *> *supportedKits = [self supportedKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
 
     // Adds all currently configured kits to a list
     vector<NSNumber *> removeKits;
@@ -1690,44 +1690,44 @@ NSString *const kitFileExtension = @"eks";
     dispatch_semaphore_signal(kitsSemaphore);
 }
 
-- (NSArray *)supportedKits {
-    NSArray *supportedKits = @[
-                                       @(MPKitInstanceForesee),
+- (nonnull NSArray<NSNumber *> *)supportedKits {
+    NSArray<NSNumber *> *supportedKits = @[
+                                           @(MPKitInstanceForesee),
 #if defined(MP_KIT_ADJUST)
-                                       @(MPKitInstanceAdjust),
+                                           @(MPKitInstanceAdjust),
 #endif
 #if defined(MP_KIT_APPBOY)
-                                       @(MPKitInstanceAppboy),
+                                           @(MPKitInstanceAppboy),
 #endif
 #if defined(MP_KIT_BRANCHMETRICS)
-                                       @(MPKitInstanceBranchMetrics),
+                                           @(MPKitInstanceBranchMetrics),
 #endif
 #if defined(MP_KIT_CRITTERCISM)
-                                       @(MPKitInstanceCrittercism),
+                                           @(MPKitInstanceCrittercism),
 #endif
 #if defined(MP_KIT_COMSCORE)
-                                       @(MPKitInstanceComScore),
+                                           @(MPKitInstanceComScore),
 #endif
 #if defined(MP_KIT_FLURRY)
-                                       @(MPKitInstanceFlurry),
+                                           @(MPKitInstanceFlurry),
 #endif
 #if defined(MP_KIT_KAHUNA)
-                                       @(MPKitInstanceKahuna),
+                                           @(MPKitInstanceKahuna),
 #endif
 #if defined(MP_KIT_KOCHAVA)
-                                       @(MPKitInstanceKochava),
+                                           @(MPKitInstanceKochava),
 #endif
 #if defined(MP_KIT_LOCALYTICS)
-                                       @(MPKitInstanceLocalytics),
+                                           @(MPKitInstanceLocalytics),
 #endif
-                                       ];
+                                           ];
     
     return supportedKits;
 }
 
 #pragma mark Forward methods
 - (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(MPKitAbstract *kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler {
-    NSArray *activeKits = [self activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         __block NSNumber *lastKit = nil;
@@ -1765,7 +1765,7 @@ NSString *const kitFileExtension = @"eks";
 }
 
 - (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(MPKitAbstract *kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler {
-    NSArray *activeKits = [self activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         __block NSNumber *lastKit = nil;
@@ -1821,7 +1821,7 @@ NSString *const kitFileExtension = @"eks";
 }
 
 - (void)forwardSDKCall:(SEL)selector userAttributeKey:(NSString *)key value:(id)value kitHandler:(void (^)(MPKitAbstract *kit))kitHandler {
-    NSArray *activeKits = [self activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         if ([kit respondsToSelector:selector]) {
@@ -1837,7 +1837,7 @@ NSString *const kitFileExtension = @"eks";
 }
 
 - (void)forwardSDKCall:(SEL)selector userAttributes:(NSDictionary *)userAttributes kitHandler:(void (^)(MPKitAbstract *kit, NSDictionary *forwardAttributes))kitHandler {
-    NSArray *activeKits = [self activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         if ([kit respondsToSelector:selector]) {
@@ -1853,7 +1853,7 @@ NSString *const kitFileExtension = @"eks";
 }
 
 - (void)forwardSDKCall:(SEL)selector userIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^)(MPKitAbstract *kit))kitHandler {
-    NSArray *activeKits = [self activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         if ([kit respondsToSelector:selector]) {
@@ -1869,7 +1869,7 @@ NSString *const kitFileExtension = @"eks";
 }
 
 - (void)forwardSDKCall:(SEL)selector errorMessage:(NSString *)errorMessage exception:(NSException *)exception eventInfo:(NSDictionary *)eventInfo kitHandler:(void (^)(MPKitAbstract *kit, MPKitExecStatus **execStatus))kitHandler {
-    NSArray *activeKits = [self activeKits];
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
     
     for (MPKitAbstract *kit in activeKits) {
         if ([kit respondsToSelector:selector]) {

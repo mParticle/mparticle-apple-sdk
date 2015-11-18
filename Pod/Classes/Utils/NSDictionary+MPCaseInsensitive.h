@@ -22,6 +22,6 @@
 
 - (nullable NSString *)caseInsensitiveKey:(nonnull NSString *)key;
 - (nullable id)valueForCaseInsensitiveKey:(nonnull NSString *)key;
-- (nonnull NSDictionary *)transformValuesToString;
+- (nonnull NSDictionary<NSString *, NSString *> *)transformValuesToString;
 
 @end

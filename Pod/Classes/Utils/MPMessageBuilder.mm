@@ -46,7 +46,7 @@ NSString *const kMPDistanceFilter = @"mdst";
 NSString *const kMPIsForegroung = @"fg";
 
 @interface MPMessageBuilder() {
-    NSMutableDictionary *messageDictionary;
+    NSMutableDictionary<NSString *, id> *messageDictionary;
     NSString *uuid;
     MPMessageType messageTypeValue;
 }
@@ -122,7 +122,7 @@ NSString *const kMPIsForegroung = @"fg";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary *)messageInfo {
+- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     self = [self initWithMessageType:messageType session:session];
     if (!self) {
         return nil;
@@ -154,7 +154,7 @@ NSString *const kMPIsForegroung = @"fg";
     return messageBuilder;
 }
 
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary *)messageInfo {
++ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
     return messageBuilder;
 }

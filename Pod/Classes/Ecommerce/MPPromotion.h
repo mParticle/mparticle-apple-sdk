@@ -116,7 +116,7 @@ typedef NS_ENUM(NSUInteger, MPPromotionAction) {
 /**
  List of promotions under an <i>action</i>
  */
-@property (nonatomic, strong, readonly, nullable) NSArray *promotions;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPPromotion *> *promotions;
 
 /**
  A value from the <b>MPPromotionAction</b> enum describing the promotion action.

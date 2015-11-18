@@ -40,7 +40,6 @@
 #import "MPStandaloneUpload.h"
 #import "MPEvent.h"
 #import "MPEvent+Internal.h"
-#import "MPEventSet.h"
 #import "MParticleUserNotification.h"
 #import "MPMediaTrackContainer.h"
 #import "MPMediaTrack.h"
@@ -81,7 +80,7 @@ static BOOL appBackgrounded = NO;
 @interface MPBackendController() <MPNotificationControllerDelegate> {
     MPAppDelegateProxy *appDelegateProxy;
     NSTimer *uploadTimer;
-    NSMutableSet *deletedUserAttributes;
+    NSMutableSet<NSString *> *deletedUserAttributes;
     NSTimer *backgroundTimer;
     __weak MPSession *sessionBeingUploaded;
     dispatch_queue_t backendQueue;
@@ -97,13 +96,13 @@ static BOOL appBackgrounded = NO;
     BOOL resignedActive;
 }
 
-@property (nonatomic, strong) MPEventSet *eventSet;
+@property (nonatomic, strong, nonnull) NSMutableSet<MPEvent *> *eventSet;
 @property (nonatomic, strong) MPMediaTrackContainer *mediaTrackContainer;
 @property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong) MPNotificationController *notificationController;
 @property (nonatomic, strong) MPSession *session;
-@property (nonatomic, strong) NSMutableDictionary *userAttributes;
-@property (nonatomic, strong) NSMutableArray *userIdentities;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *userAttributes;
+@property (nonatomic, strong) NSMutableArray<NSDictionary<NSString *, id> *> *userIdentities;
 
 @end
 
@@ -216,15 +215,12 @@ static BOOL appBackgrounded = NO;
 }
 
 #pragma mark Accessors
-- (MPEventSet *)eventSet {
+- (NSMutableSet<MPEvent *> *)eventSet {
     if (_eventSet) {
         return _eventSet;
     }
-
-    [self willChangeValueForKey:@"eventSet"];
-    _eventSet = [[MPEventSet alloc] initWithCapacity:1];
-    [self didChangeValueForKey:@"eventSet"];
     
+    _eventSet = [[NSMutableSet alloc] initWithCapacity:1];
     return _eventSet;
 }
 
@@ -278,7 +274,7 @@ static BOOL appBackgrounded = NO;
     return _session;
 }
 
-- (NSMutableDictionary *)userAttributes {
+- (NSMutableDictionary<NSString *, id> *)userAttributes {
     if (_userAttributes) {
         return _userAttributes;
     }
@@ -306,7 +302,7 @@ static BOOL appBackgrounded = NO;
     return _userAttributes;
 }
 
-- (NSMutableArray *)userIdentities {
+- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentities {
     if (_userIdentities) {
         return _userIdentities;
     }
@@ -489,7 +485,7 @@ static BOOL appBackgrounded = NO;
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
-    [persistence fetchSessions:^(NSMutableArray *sessions) {
+    [persistence fetchSessions:^(NSMutableArray<MPSession *> *sessions) {
         if (includeCurrentSession) {
             self.session.endTime = [[NSDate date] timeIntervalSince1970];
             [persistence updateSession:self.session];
@@ -653,7 +649,7 @@ static BOOL appBackgrounded = NO;
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         
         [persistence fetchMessagesForUploadingInSession:uploadSession
-                                      completionHandler:^(NSArray *messages) {
+                                      completionHandler:^(NSArray<MPMessage *> *messages) {
                                           if (!messages) {
                                               sessionBeingUploaded = nil;
                                               completionHandlerCopy(uploadSession);
@@ -675,7 +671,7 @@ static BOOL appBackgrounded = NO;
                                               [strongSelf resetUserIdentitiesFirstTimeUseFlag];
                                               
                                               [persistence fetchUploadsInSession:session
-                                                               completionHandler:^(NSArray *uploads) {
+                                                               completionHandler:^(NSArray<MPUpload *> *uploads) {
                                                                    if (!uploads) {
                                                                        sessionBeingUploaded = nil;
                                                                        completionHandlerCopy(uploadSession);
@@ -707,7 +703,7 @@ static BOOL appBackgrounded = NO;
                                                                                   }
                                                                                   
                                                                                   [persistence fetchCommandsInSession:uploadSession
-                                                                                                    completionHandler:^(NSArray *commands) {
+                                                                                                    completionHandler:^(NSArray<MPCommand *> *commands) {
                                                                                                         if (!commands) {
                                                                                                             sessionBeingUploaded = nil;
                                                                                                             completionHandlerCopy(uploadSession);
@@ -814,7 +810,7 @@ static BOOL appBackgrounded = NO;
 
     [persistence fetchUploadedMessagesInSession:session
               excludeNetworkPerformanceMessages:NO
-                              completionHandler:^(NSArray *messages) {
+                              completionHandler:^(NSArray<MPMessage *> *messages) {
                                   if (!messages) {
                                       if (completionHandler) {
                                           completionHandler(NO);
@@ -844,7 +840,7 @@ static BOOL appBackgrounded = NO;
                                       [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                                       
                                       [persistence fetchUploadsInSession:session
-                                                       completionHandler:^(NSArray *uploads) {
+                                                       completionHandler:^(NSArray<MPUpload *> *uploads) {
                                                            MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:session uploads:uploads];
                                                            sessionHistory.userAttributes = self.userAttributes;
                                                            sessionHistory.userIdentities = self.userIdentities;
@@ -892,7 +888,7 @@ static BOOL appBackgrounded = NO;
 
 - (void)uploadStandaloneMessages {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray *standaloneMessages = [persistence fetchStandaloneMessages];
+    NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];
     
     if (!standaloneMessages) {
         return;
@@ -911,7 +907,7 @@ static BOOL appBackgrounded = NO;
         [persistence deleteStandaloneMessageIds:uploadBuilder.preparedMessageIds];
     }];
 
-    NSArray *standaloneUploads = [persistence fetchStandaloneUploads];
+    NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
     if (!standaloneUploads) {
         return;
     }
@@ -943,7 +939,7 @@ static BOOL appBackgrounded = NO;
                                        return;
                                    }
                                    
-                                   NSArray *standaloneCommands = [persistence fetchStandaloneCommands];
+                                   NSArray<MPStandaloneCommand *> *standaloneCommands = [persistence fetchStandaloneCommands];
                                    if (!standaloneCommands) {
                                        return;
                                    }
@@ -1025,7 +1021,7 @@ static BOOL appBackgrounded = NO;
                 if (strongSelf.eventSet.count == 0) {
                     strongSelf->_eventSet = nil;
                 }
-                
+
                 if (strongSelf.mediaTrackContainer.count == 0) {
                     strongSelf->_mediaTrackContainer = nil;
                 }
@@ -1534,7 +1530,7 @@ static BOOL appBackgrounded = NO;
     switch (_initializationStatus) {
         case MPInitializationStatusStarted: {
             [event beginTiming];
-            [self.eventSet addEvent:event];
+            [self.eventSet addObject:event];
             
             execStatus = MPExecStatusSuccess;
         }
@@ -1622,7 +1618,9 @@ static BOOL appBackgrounded = NO;
         return nil;
     }
     
-    MPEvent *event = [self.eventSet eventWithName:eventName];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"name == %@", eventName];
+    MPEvent *event = [[self.eventSet filteredSetUsingPredicate:predicate] anyObject];
+
     return event;
 }
 
@@ -1793,7 +1791,10 @@ static BOOL appBackgrounded = NO;
             
             [self saveMessage:message updateSession:YES];
             
-            [self.eventSet removeEvent:event];
+            if ([self.eventSet containsObject:event]) {
+                [_eventSet removeObject:event];
+            }
+            
             [self.session incrementCounter];
             
             execStatus = MPExecStatusSuccess;
@@ -1917,7 +1918,7 @@ static BOOL appBackgrounded = NO;
                     messageInfo[kMPStackTrace] = [callStack componentsJoinedByString:@"\n"];
                 }
                 
-                NSArray *fetchedbreadcrumbs = [[MPPersistenceController sharedInstance] fetchBreadcrumbs];
+                NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [[MPPersistenceController sharedInstance] fetchBreadcrumbs];
                 if (fetchedbreadcrumbs) {
                     NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];
                     for (MPBreadcrumb *breadcrumb in fetchedbreadcrumbs) {
@@ -1996,7 +1997,7 @@ static BOOL appBackgrounded = NO;
         case MPInitializationStatusStarted: {
             [event endTiming];
             
-            NSDictionary *messageInfo = [event dictionaryRepresentation];
+            NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
             if ([MPLocationManager trackingLocation]) {
@@ -2006,7 +2007,10 @@ static BOOL appBackgrounded = NO;
             
             [self saveMessage:message updateSession:YES];
             
-            [self.eventSet removeEvent:event];
+            if ([self.eventSet containsObject:event]) {
+                [_eventSet removeObject:event];
+            }
+
             [self.session incrementCounter];
             
             execStatus = MPExecStatusSuccess;
@@ -2112,7 +2116,10 @@ static BOOL appBackgrounded = NO;
             
             [self saveMessage:message updateSession:YES];
             
-            [self.eventSet removeEvent:event];
+            if ([self.eventSet containsObject:event]) {
+                [_eventSet removeObject:event];
+            }
+            
             [self.session incrementCounter];
             
             execStatus = MPExecStatusSuccess;

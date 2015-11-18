@@ -25,7 +25,7 @@
 
 @interface MPBags()
 
-@property (nonatomic, strong, nonnull) NSMutableArray *productBagsArray;
+@property (nonatomic, strong, nonnull) NSMutableArray<MPProductBag *> *productBagsArray;
 
 @end
 
@@ -38,7 +38,7 @@
         return _productBagsArray;
     }
     
-    NSArray *productBags = [[MPPersistenceController sharedInstance] fetchProductBags];
+    NSArray<MPProductBag *> *productBags = [[MPPersistenceController sharedInstance] fetchProductBags];
     
     _productBagsArray = productBags ? [[NSMutableArray alloc] initWithArray:productBags] : [[NSMutableArray alloc] initWithCapacity:1];
     return _productBagsArray;
@@ -122,12 +122,12 @@
     }
 }
 
-- (NSDictionary *)productBags {
+- (nullable NSDictionary<NSString *, NSArray<MPProduct *> *> *)productBags {
     if (self.productBagsArray.count == 0) {
         return nil;
     }
     
-    NSMutableDictionary *productBags = [[NSMutableDictionary alloc] initWithCapacity:self.productBagsArray.count];
+    NSMutableDictionary<NSString *, NSArray<MPProduct *> *> *productBags = [[NSMutableDictionary alloc] initWithCapacity:self.productBagsArray.count];
     
     for (MPProductBag *productBag in self.productBagsArray) {
         productBags[productBag.name] = productBag.products;

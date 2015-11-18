@@ -30,7 +30,6 @@
 		C977E68F1BDED4A100FE1805 /* MPCustomModuleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C977E68E1BDED4A100FE1805 /* MPCustomModuleTests.m */; };
 		C9AF88701BDFBF12000DBCDD /* MPPersistenceControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF886F1BDFBF12000DBCDD /* MPPersistenceControllerTests.mm */; };
 		C9AF88721BDFC431000DBCDD /* MPEventTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88711BDFC431000DBCDD /* MPEventTests.mm */; };
-		C9AF88761BDFC6F2000DBCDD /* MPEventSetTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88751BDFC6F2000DBCDD /* MPEventSetTests.m */; };
 		C9AF88781BDFC753000DBCDD /* MPForwardRecordTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88771BDFC753000DBCDD /* MPForwardRecordTests.m */; };
 		C9AF887A1BDFD0CF000DBCDD /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88791BDFD0CF000DBCDD /* MPMessageBuilderTests.m */; };
 		C9AF887C1BDFD27B000DBCDD /* MPProductBagTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF887B1BDFD27B000DBCDD /* MPProductBagTests.m */; };
@@ -89,7 +88,6 @@
 		C977E68E1BDED4A100FE1805 /* MPCustomModuleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomModuleTests.m; sourceTree = "<group>"; };
 		C9AF886F1BDFBF12000DBCDD /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; };
 		C9AF88711BDFC431000DBCDD /* MPEventTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEventTests.mm; sourceTree = "<group>"; };
-		C9AF88751BDFC6F2000DBCDD /* MPEventSetTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEventSetTests.m; sourceTree = "<group>"; };
 		C9AF88771BDFC753000DBCDD /* MPForwardRecordTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardRecordTests.m; sourceTree = "<group>"; };
 		C9AF88791BDFD0CF000DBCDD /* MPMessageBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMessageBuilderTests.m; sourceTree = "<group>"; };
 		C9AF887B1BDFD27B000DBCDD /* MPProductBagTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPProductBagTests.m; sourceTree = "<group>"; };
@@ -219,7 +217,6 @@
 				C977E68A1BDED18800FE1805 /* MPCommerceEventTests.m */,
 				C977E68C1BDED3F000FE1805 /* MPConsumerInfoTests.m */,
 				C977E68E1BDED4A100FE1805 /* MPCustomModuleTests.m */,
-				C9AF88751BDFC6F2000DBCDD /* MPEventSetTests.m */,
 				C9AF88711BDFC431000DBCDD /* MPEventTests.mm */,
 				C9AF88771BDFC753000DBCDD /* MPForwardRecordTests.m */,
 				C9F5D5C61BF65471003513FF /* MPLaunchInfoTests.m */,
@@ -478,7 +475,6 @@
 				C977E6871BDECEA700FE1805 /* BracketTests.mm in Sources */,
 				C9F5D5C71BF65471003513FF /* MPLaunchInfoTests.m in Sources */,
 				C9AF887C1BDFD27B000DBCDD /* MPProductBagTests.m in Sources */,
-				C9AF88761BDFC6F2000DBCDD /* MPEventSetTests.m in Sources */,
 				C977E6891BDED03800FE1805 /* HasherTests.mm in Sources */,
 				C9AF887F1BDFF0C8000DBCDD /* MPStateMachineTests.mm in Sources */,
 				C9AF88781BDFC753000DBCDD /* MPForwardRecordTests.m in Sources */,

@@ -126,8 +126,8 @@ static NSData *deviceToken = nil;
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray *displayedLocalUserNotifications = [persistence fetchDisplayedLocalUserNotificationsSince:referenceDate];
-    NSArray *displayedUserNotifications = [persistence fetchDisplayedRemoteUserNotificationsSince:referenceDate];
+    NSArray<MParticleUserNotification *> *displayedLocalUserNotifications = [persistence fetchDisplayedLocalUserNotificationsSince:referenceDate];
+    NSArray<MParticleUserNotification *> *displayedUserNotifications = [persistence fetchDisplayedRemoteUserNotificationsSince:referenceDate];
     
     if (displayedUserNotifications) {
         if (displayedLocalUserNotifications) {
@@ -278,7 +278,7 @@ static NSData *deviceToken = nil;
     NSDictionary *notificationDictionary = userInfo[kMPUserNotificationDictionaryKey];
     NSString *actionIdentifier = userInfo[kMPUserNotificationActionKey];
     
-    NSArray *displayedUserNotifications = [[MPPersistenceController sharedInstance] fetchDisplayedLocalUserNotifications];
+    NSArray<MParticleUserNotification *> *displayedUserNotifications = [[MPPersistenceController sharedInstance] fetchDisplayedLocalUserNotifications];
 
     MParticleUserNotification *userNotification = [self userNotificationWithDictionary:notificationDictionary
                                                                       actionIdentifier:actionIdentifier
@@ -334,7 +334,7 @@ static NSData *deviceToken = nil;
     NSDictionary *notificationDictionary = userInfo[kMPUserNotificationDictionaryKey];
     NSString *actionIdentifier = userInfo[kMPUserNotificationActionKey];
     
-    NSArray *displayedUserNotifications = [[MPPersistenceController sharedInstance] fetchDisplayedRemoteUserNotifications];
+    NSArray<MParticleUserNotification *> *displayedUserNotifications = [[MPPersistenceController sharedInstance] fetchDisplayedRemoteUserNotifications];
 
     MParticleUserNotification *userNotification = [self userNotificationWithDictionary:notificationDictionary
                                                                       actionIdentifier:actionIdentifier

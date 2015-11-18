@@ -18,15 +18,15 @@
 
 @interface MPProduct(Dictionary)
 
-- (NSDictionary *)commerceDictionaryRepresentation;
-- (NSDictionary *)dictionaryRepresentation;
-- (NSDictionary *)legacyDictionaryRepresentation;
-- (NSDictionary *)beautifiedDictionaryRepresentation;
+- (NSDictionary<NSString *, id> *)commerceDictionaryRepresentation;
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
+- (NSDictionary<NSString *, id> *)legacyDictionaryRepresentation;
+- (NSDictionary<NSString *, id> *)beautifiedDictionaryRepresentation;
 - (void)setTimeAddedToCart:(NSDate *)date;
 - (MPProduct *)copyMatchingHashedProperties:(NSDictionary *)hashedMap;
-- (NSMutableDictionary *)beautifiedAttributes;
-- (void)setBeautifiedAttributes:(NSMutableDictionary *)beautifiedAttributes;
-- (NSMutableDictionary *)userDefinedAttributes;
-- (void)setUserDefinedAttributes:(NSMutableDictionary *)userDefinedAttributes;
+- (NSMutableDictionary<NSString *, id> *)beautifiedAttributes;
+- (void)setBeautifiedAttributes:(NSMutableDictionary<NSString *, id> *)beautifiedAttributes;
+- (NSMutableDictionary<NSString *, id> *)userDefinedAttributes;
+- (void)setUserDefinedAttributes:(NSMutableDictionary<NSString *, id> *)userDefinedAttributes;
 
 @end

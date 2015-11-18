@@ -46,6 +46,6 @@ extern NSString * _Nonnull const kMPApplicationInformationKey;
 + (void)updateLastUseDate:(nonnull NSDate *)date;
 + (void)updateLaunchCountsAndDates;
 + (void)updateStoredVersionAndBuildNumbers;
-- (nonnull NSDictionary *)dictionaryRepresentation;
+- (nonnull NSDictionary<NSString *, id> *)dictionaryRepresentation;
 
 @end

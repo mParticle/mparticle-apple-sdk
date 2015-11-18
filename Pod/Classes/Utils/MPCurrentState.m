@@ -66,7 +66,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     return @(batteryLevel);
 }
 
-- (NSDictionary *)cpuUsageInfo {
+- (NSDictionary<NSString *, NSString *> *)cpuUsageInfo {
     kern_return_t kr;
     task_info_data_t tinfo;
     mach_msg_type_number_t task_info_count;
@@ -117,7 +117,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     }
     
     NSString *totalCPUUsage = [NSString stringWithFormat:@"%.0f", tot_cpu * 100];
-    NSDictionary *cpuUsageInfo = @{kMPStateCPUKey:totalCPUUsage};
+    NSDictionary<NSString *, NSString *> *cpuUsageInfo = @{kMPStateCPUKey:totalCPUUsage};
     
     return cpuUsageInfo;
 }
@@ -146,12 +146,12 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     return @([[UIDevice currentDevice] orientation]);
 }
 
-- (NSDictionary *)diskSpaceInfo {
+- (NSDictionary<NSString *, id> *)diskSpaceInfo {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSDictionary *fileSystemAttributes = [fileManager attributesOfFileSystemForPath:NSHomeDirectory() error:nil];
     
-    NSDictionary *diskSpaceInfo = @{kMPStateTotalDiskSpaceKey:fileSystemAttributes[NSFileSystemSize],
-                                    kMPStateFreeDiskSpaceKey:fileSystemAttributes[NSFileSystemFreeSize]};
+    NSDictionary<NSString *, id> *diskSpaceInfo = @{kMPStateTotalDiskSpaceKey:fileSystemAttributes[NSFileSystemSize],
+                                                    kMPStateFreeDiskSpaceKey:fileSystemAttributes[NSFileSystemFreeSize]};
     
     return diskSpaceInfo;
 }
@@ -165,7 +165,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     return @([[UIApplication sharedApplication] statusBarOrientation]);
 }
 
-- (NSDictionary *)systemMemoryInfo {
+- (NSDictionary<NSString *, NSNumber *> *)systemMemoryInfo {
     vm_size_t pageSize;
     mach_port_t hostPort = mach_host_self();
     mach_msg_type_number_t hostSize = sizeof(vm_statistics_data_t) / sizeof(integer_t);
@@ -177,8 +177,8 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     int64_t freeMemory = (int64_t)vmStat.free_count * (int64_t)pageSize;
     int64_t totalMemory = ((int64_t)vmStat.free_count + (int64_t)vmStat.active_count + (int64_t)vmStat.inactive_count + (int64_t)vmStat.wire_count) * pageSize;
     
-    NSDictionary *systemMemoryInfo = @{kMPStateSystemMemoryAvailableKey:@(freeMemory),
-                                       kMPStateSystemMemoryTotalKey:@(totalMemory)};
+    NSDictionary<NSString *, NSNumber *> *systemMemoryInfo = @{kMPStateSystemMemoryAvailableKey:@(freeMemory),
+                                                               kMPStateSystemMemoryTotalKey:@(totalMemory)};
     
     return systemMemoryInfo;
 }
@@ -190,19 +190,18 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 }
 
 #pragma mark Public instance methods
-- (NSDictionary *)dictionaryRepresentation {
-    NSDictionary *cpuUsageInfo = self.cpuUsageInfo;
-
-    NSMutableDictionary *stateInfo = [@{kMPStateAppMemoryTotalKey:self.applicationMemory,
-                                        kMPStateBatteryLevelKey:self.batteryLevel,
-                                        kMPStateDataConnectionKey:self.dataConnectionStatus,
-                                        kMPStateDeviceOrientationKey:self.deviceOrientation,
-                                        kMPStateFreeDiskSpaceKey:self.diskSpaceInfo[kMPStateFreeDiskSpaceKey],
-                                        kMPStateGPSKey:self.gpsState,
-                                        kMPStateStatusBarOrientationKey:self.statusBarOrientation,
-                                        kMPStateTimeSinceStartKey:self.timeSinceStart}
-                                      mutableCopy];
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *stateInfo = [@{kMPStateAppMemoryTotalKey:self.applicationMemory,
+                                                        kMPStateBatteryLevelKey:self.batteryLevel,
+                                                        kMPStateDataConnectionKey:self.dataConnectionStatus,
+                                                        kMPStateDeviceOrientationKey:self.deviceOrientation,
+                                                        kMPStateFreeDiskSpaceKey:self.diskSpaceInfo[kMPStateFreeDiskSpaceKey],
+                                                        kMPStateGPSKey:self.gpsState,
+                                                        kMPStateStatusBarOrientationKey:self.statusBarOrientation,
+                                                        kMPStateTimeSinceStartKey:self.timeSinceStart}
+                                                      mutableCopy];
     
+    NSDictionary<NSString *, NSString *> *cpuUsageInfo = self.cpuUsageInfo;
     if (cpuUsageInfo) {
         [stateInfo addEntriesFromDictionary:cpuUsageInfo];
     }

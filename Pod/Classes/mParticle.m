@@ -636,7 +636,7 @@ NSString *const kMPStateKey = @"state";
                    }];
 }
 
-- (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary *)eventInfo {
+- (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     MPEvent *event = [self.backendController eventWithName:eventName];
     if (event) {
         event.type = eventType;
@@ -675,7 +675,7 @@ NSString *const kMPStateKey = @"state";
                     }];
 }
 
-- (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary *)eventInfo {
+- (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!screenName) {
         MPLogError(@"Screen name is required.");
         return;
@@ -728,7 +728,7 @@ NSString *const kMPStateKey = @"state";
     [self leaveBreadcrumb:breadcrumbName eventInfo:nil];
 }
 
-- (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary *)eventInfo {
+- (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!breadcrumbName) {
         MPLogError(@"Breadcrumb name is required.");
         return;
@@ -771,7 +771,7 @@ NSString *const kMPStateKey = @"state";
     [self logError:message eventInfo:nil];
 }
 
-- (void)logError:(NSString *)message eventInfo:(NSDictionary *)eventInfo {
+- (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!message) {
         MPLogError(@"'message' is required for %@", NSStringFromSelector(_cmd));
         return;
@@ -888,7 +888,7 @@ NSString *const kMPStateKey = @"state";
     [self logLTVIncrease:increaseAmount eventName:eventName eventInfo:nil];
 }
 
-- (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(NSDictionary *)eventInfo {
+- (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     NSMutableDictionary *eventDictionary = [@{@"$Amount":@(increaseAmount),
                                               kMPMethodName:@"LogLTVIncrease"}
                                             mutableCopy];

@@ -33,11 +33,11 @@
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval timestamp;
 
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary *)messageInfo;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session mediaTrack:(nonnull MPMediaTrack *)mediaTrack mediaAction:(MPMediaAction)mediaAction;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
-- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary *)messageInfo;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 - (nonnull MPMessageBuilder *)withLaunchInfo:(nonnull NSDictionary *)launchInfo;
 - (nonnull MPMessageBuilder *)withLocation:(nonnull CLLocation *)location;
 - (nonnull MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;

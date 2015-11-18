@@ -58,9 +58,9 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 
 @interface MPProduct()
 
-@property (nonatomic, strong) NSMutableDictionary *beautifiedAttributes;
-@property (nonatomic, strong) NSMutableDictionary *objectDictionary;
-@property (nonatomic, strong) NSMutableDictionary *userDefinedAttributes;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *beautifiedAttributes;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *objectDictionary;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *userDefinedAttributes;
 
 @end
 
@@ -130,7 +130,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 }
 
 #pragma mark Private accessors
-- (NSMutableDictionary *)beautifiedAttributes {
+- (NSMutableDictionary<NSString *, id> *)beautifiedAttributes {
     if (_beautifiedAttributes) {
         return _beautifiedAttributes;
     }
@@ -139,7 +139,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return _beautifiedAttributes;
 }
 
-- (NSMutableDictionary *)objectDictionary {
+- (NSMutableDictionary<NSString *, id> *)objectDictionary {
     if (_objectDictionary) {
         return _objectDictionary;
     }
@@ -148,7 +148,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return _objectDictionary;
 }
 
-- (NSMutableDictionary *)userDefinedAttributes {
+- (NSMutableDictionary<NSString *, id> *)userDefinedAttributes {
     if (_userDefinedAttributes) {
         return _userDefinedAttributes;
     }
@@ -261,8 +261,8 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 }
 
 #pragma mark MPProduct+Dictionary
-- (NSDictionary *)commerceDictionaryRepresentation {
-    NSMutableDictionary *commerceDictionary = [[NSMutableDictionary alloc] init];
+- (NSDictionary<NSString *, id> *)commerceDictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *commerceDictionary = [[NSMutableDictionary alloc] init];
     
     if (_userDefinedAttributes) {
         commerceDictionary[@"attrs"] = [_userDefinedAttributes transformValuesToString];
@@ -275,8 +275,8 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return commerceDictionary.count > 0 ? (NSDictionary *)commerceDictionary : nil;
 }
 
-- (NSDictionary *)dictionaryRepresentation {
-    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *dictionary = [[NSMutableDictionary alloc] init];
     
     if (_objectDictionary) {
         [dictionary addEntriesFromDictionary:[_objectDictionary transformValuesToString]];
@@ -289,8 +289,8 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return dictionary.count > 0 ? (NSDictionary *)dictionary : nil;
 }
 
-- (NSDictionary *)beautifiedDictionaryRepresentation {
-    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+- (NSDictionary<NSString *, id> *)beautifiedDictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *dictionary = [[NSMutableDictionary alloc] init];
     
     if (_beautifiedAttributes) {
         [dictionary addEntriesFromDictionary:[_beautifiedAttributes transformValuesToString]];
@@ -303,8 +303,8 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return dictionary.count > 0 ? (NSDictionary *)dictionary : nil;
 }
 
-- (NSDictionary *)legacyDictionaryRepresentation {
-    NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] init];
+- (NSDictionary<NSString *, id> *)legacyDictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *dictionary = [[NSMutableDictionary alloc] init];
     
     if (_userDefinedAttributes) {
         [dictionary addEntriesFromDictionary:_userDefinedAttributes];

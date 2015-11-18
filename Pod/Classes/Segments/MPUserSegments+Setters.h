@@ -20,6 +20,6 @@
 
 @interface MPUserSegments(Setters)
 
-- (instancetype)initWithSegments:(NSArray *)segments;
+- (nonnull instancetype)initWithSegments:(nullable NSArray<MPSegment *> *)segments;
 
 @end

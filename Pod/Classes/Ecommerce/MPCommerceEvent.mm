@@ -73,10 +73,10 @@ static NSArray *actionNames;
 
 @property (nonatomic, strong) NSMutableDictionary *attributes;
 @property (nonatomic, strong) NSMutableDictionary *beautifiedAttributes;
-@property (nonatomic, strong) NSMutableArray *latestAddedProducts;
-@property (nonatomic, strong) NSMutableArray *latestRemovedProducts;
-@property (nonatomic, strong) NSMutableDictionary *productImpressions;
-@property (nonatomic, strong) NSMutableArray *productsList;
+@property (nonatomic, strong) NSMutableArray<MPProduct *> *latestAddedProducts;
+@property (nonatomic, strong) NSMutableArray<MPProduct *> *latestRemovedProducts;
+@property (nonatomic, strong) NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *productImpressions;
+@property (nonatomic, strong) NSMutableArray<MPProduct *> *productsList;
 @property (nonatomic, strong) NSMutableDictionary *userDefinedAttributes;
 
 @end
@@ -184,8 +184,10 @@ static NSArray *actionNames;
     if (_productImpressions.count > 0) {
         [description appendString:@"  Impressions:{\n"];
         
-        [_productImpressions enumerateKeysAndObjectsUsingBlock:^(NSString *key, MPProduct *product, BOOL *stop) {
-            [description appendFormat:@"    %@:%@\n", key, [product dictionaryRepresentation]];
+        [_productImpressions enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSMutableSet *products, BOOL *stop) {
+            for (MPProduct *product in products) {
+                [description appendFormat:@"    %@:%@\n", key, [product dictionaryRepresentation]];
+            }
         }];
         
         [description appendString:@"  }\n"];
@@ -219,7 +221,7 @@ static NSArray *actionNames;
     return _beautifiedAttributes;
 }
 
-- (NSMutableArray *)latestAddedProducts {
+- (NSMutableArray<MPProduct *> *)latestAddedProducts {
     if (_latestAddedProducts) {
         return _latestAddedProducts;
     }
@@ -228,7 +230,7 @@ static NSArray *actionNames;
     return _latestAddedProducts;
 }
 
-- (NSMutableArray *)latestRemovedProducts {
+- (NSMutableArray<MPProduct *> *)latestRemovedProducts {
     if (_latestRemovedProducts) {
         return _latestRemovedProducts;
     }
@@ -420,7 +422,7 @@ static NSArray *actionNames;
     return (MPCommerceEventAction)[actionNames indexOfObject:actionName];
 }
 
-- (void)addProducts:(NSArray *)products {
+- (void)addProducts:(nonnull NSArray<MPProduct *> *)products {
     for (MPProduct *product in products) {
         [self addProduct:product];
     }
@@ -533,7 +535,7 @@ static NSArray *actionNames;
     return dictionary.count > 0 ? (NSDictionary *)dictionary : nil;
 }
 
-- (NSArray *)expandedInstructions {
+- (NSArray<MPCommerceEventInstruction *> *)expandedInstructions {
     __block vector<MPCommerceEventInstruction *> expansionInstructions;
     NSString *eventName;
     __block MPEvent *event;
@@ -664,10 +666,11 @@ static NSArray *actionNames;
             break;
     }
     
-    return [NSArray arrayWithObjects:&expansionInstructions[0] count:expansionInstructions.size()];
+    NSArray<MPCommerceEventInstruction *> *expInstructions = [NSArray arrayWithObjects:&expansionInstructions[0] count:expansionInstructions.size()];
+    return expInstructions;
 }
 
-- (NSArray *const)addedProducts {
+- (NSArray<MPProduct *> *const)addedProducts {
     return commerceEventKind == MPCommerceEventKindProduct ? (NSArray *)_latestAddedProducts : nil;
 }
 
@@ -675,13 +678,13 @@ static NSArray *actionNames;
     return commerceEventKind;
 }
 
-- (void)removeProducts:(NSArray *)products {
+- (void)removeProducts:(NSArray<MPProduct *> *)products {
     for (MPProduct *product in products) {
         [self removeProduct:product];
     }
 }
 
-- (NSArray *const)removedProducts {
+- (NSArray<MPProduct *> *const)removedProducts {
     return commerceEventKind == MPCommerceEventKindProduct ? (NSArray *)_latestRemovedProducts : nil;
 }
 
@@ -698,15 +701,15 @@ static NSArray *actionNames;
     self.productImpressions = impressions ? [[NSMutableDictionary alloc] initWithDictionary:impressions] : nil;
 }
 
-- (void)setProducts:(NSArray *)products {
+- (void)setProducts:(NSArray<MPProduct *> *)products {
     self.productsList = products ? [[NSMutableArray alloc] initWithArray:products] : nil;
 }
 
-- (NSMutableDictionary *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap {
-    __block NSMutableDictionary *copyProductImpressions = [[NSMutableDictionary alloc] init];
+- (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap {
+    __block NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *copyProductImpressions = [[NSMutableDictionary alloc] init];
     
     [_productImpressions enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSMutableSet *listedProducts, BOOL *stop) {
-        __block NSMutableSet *filteredProducts = [[NSMutableSet alloc] init];
+        __block NSMutableSet<MPProduct *> *filteredProducts = [[NSMutableSet alloc] init];
         
         [listedProducts enumerateObjectsUsingBlock:^(MPProduct *product, BOOL *stop) {
             MPProduct *filteredProduct = [product copyMatchingHashedProperties:hashedMap];
@@ -751,11 +754,11 @@ static NSArray *actionNames;
     }
 }
 
-- (NSDictionary *)impressions {
+- (NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions {
     return _productImpressions.count > 0 ? (NSDictionary *)_productImpressions : nil;
 }
 
-- (NSArray *)products {
+- (NSArray<MPProduct *> *)products {
     return _productsList.count > 0 ? (NSArray *)_productsList : nil;
 }
 
@@ -911,7 +914,7 @@ static NSArray *actionNames;
     }
 }
 
-- (void)setCustomAttributes:(NSDictionary *)customAttributes {
+- (void)setCustomAttributes:(NSDictionary<NSString *, NSString *> *)customAttributes {
     if (customAttributes) {
         _userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:customAttributes copyItems:YES];
     } else {

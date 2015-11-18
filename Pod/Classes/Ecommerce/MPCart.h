@@ -98,7 +98,7 @@
  Returns the collection of products in the shoppint cart.
  @returns An array with products in the shoppint cart or nil if the cart is empty.
  */
-- (nullable NSArray *)products;
+- (nullable NSArray<MPProduct *> *)products;
 
 /**
  Removes a product from the shopping cart.

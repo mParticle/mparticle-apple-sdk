@@ -18,6 +18,8 @@
 
 #import <Foundation/Foundation.h>
 
+@class MPSegment;
+
 /**
  This class is returned as response from a user segments call. It contains segment ids, expiration, and a flag indicating whether it is expired.
  */
@@ -26,7 +28,7 @@
 /**
  The list of user segment ids
  */
-@property (nonatomic, strong, readonly, nullable) NSArray *segmentsIds;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPSegment *> *segmentsIds;
 
 /**
  Contains the date the user segment will expire. If nil, it means the user segment doesn't expire

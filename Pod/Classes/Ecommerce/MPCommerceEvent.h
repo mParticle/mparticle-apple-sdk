@@ -80,12 +80,12 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  {"listName1":[product1, product2]}
  </code></pre>
  */
-@property (nonatomic, strong, readonly, nullable) NSDictionary *impressions;
+@property (nonatomic, strong, readonly, nullable) NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *impressions;
 
 /**
  List of products being applied <i>action</i>
  */
-@property (nonatomic, strong, readonly, nullable) NSArray *products;
+@property (nonatomic, strong, readonly, nullable) NSArray<MPProduct *> *products;
 
 /**
  A promotion container describing a promotion action and its respective products.
@@ -207,7 +207,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 
  @param customAttributes A dictionary containing the custom key/value pairs.
  */
-- (void)setCustomAttributes:(nullable NSDictionary *)customAttributes;
+- (void)setCustomAttributes:(nullable NSDictionary<NSString *, NSString *> *)customAttributes;
 
 /**
  Returns an array with all keys in the custom attributes dictionary

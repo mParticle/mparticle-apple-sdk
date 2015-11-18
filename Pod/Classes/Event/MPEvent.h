@@ -33,7 +33,7 @@
 /**
  Custom flags are a collection of attributes which by default are not forwarded to kits.
  */
-@property (nonatomic, strong, readonly, nonnull) NSDictionary *customFlags;
+@property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
 
 /**
  The duration, in milliseconds, of an event. This property can be set by a developer, or
@@ -54,7 +54,7 @@
  limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values 
  can be strings (up to 255 characters), numbers, booleans, or dates
  */
-@property (nonatomic, strong, nullable) NSDictionary *info;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *info;
 
 /**
  The name of the event to be logged (required not nil). The event name must not contain
@@ -101,6 +101,6 @@
  @param customFlags An array of string attributes
  @param key The key associated with the custom flags.
  */
-- (void)addCustomFlags:(nonnull NSArray *)customFlags withKey:(nonnull NSString *)key;
+- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key;
 
 @end

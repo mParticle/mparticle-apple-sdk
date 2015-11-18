@@ -127,7 +127,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 #pragma mark Private methods
 - (MPSession *)crashSession {
     MPSession *crashSession = nil;
-    NSArray *sessions = [[MPPersistenceController sharedInstance] fetchPossibleSessionsFromCrash];
+    NSArray<MPSession *> *sessions = [[MPPersistenceController sharedInstance] fetchPossibleSessionsFromCrash];
     
     for (MPSession *session in sessions) {
         if (![session.sessionNumber isEqualToNumber:_session.sessionNumber]) {
@@ -309,7 +309,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         }
         
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        NSArray *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];
+        NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];
         
         if (fetchedbreadcrumbs) {
             NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];

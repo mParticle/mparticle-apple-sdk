@@ -715,12 +715,12 @@ static BOOL runningInBackground = NO;
 }
 
 #pragma mark Public methods
-- (void)configureCustomModules:(NSArray *)customModuleSettings {
+- (void)configureCustomModules:(NSArray<NSDictionary *> *)customModuleSettings {
     if (MPIsNull(customModuleSettings)) {
         return;
     }
     
-    NSMutableArray *localCustomModules = [[NSMutableArray alloc] initWithCapacity:customModuleSettings.count];
+    NSMutableArray<MPCustomModule *> *localCustomModules = [[NSMutableArray alloc] initWithCapacity:customModuleSettings.count];
     MPCustomModule *customModule;
     for (NSDictionary *customModuleDictionary in customModuleSettings) {
         customModule = [[MPCustomModule alloc] initWithDictionary:customModuleDictionary];

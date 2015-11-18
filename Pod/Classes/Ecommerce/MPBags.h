@@ -74,7 +74,7 @@
  
  @returns A dictionary with bags and products.
  */
-- (nullable NSDictionary *)productBags;
+- (nullable NSDictionary<NSString *, NSArray<MPProduct *> *> *)productBags;
 
 /**
  Removes all product bags together with its respective products.

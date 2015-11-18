@@ -687,7 +687,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)deleteForwardRecodsIds:(NSArray *)forwardRecordsIds {
+- (void)deleteForwardRecodsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds {
     if (MPIsNull(forwardRecordsIds) || forwardRecordsIds.count == 0) {
         return;
     }
@@ -945,7 +945,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)deleteStandaloneMessageIds:(NSArray *)standaloneMessageIds {
+- (void)deleteStandaloneMessageIds:(nonnull NSArray<NSNumber *> *)standaloneMessageIds {
     if (!standaloneMessageIds || standaloneMessageIds.count == 0) {
         return;
     }
@@ -989,7 +989,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (NSArray *)fetchBreadcrumbs {
+- (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs {
     __block vector<MPBreadcrumb *> breadcumbsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1016,11 +1016,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *breadcrumbs = [NSArray arrayWithObjects:&breadcumbsVector[0] count:breadcumbsVector.size()];
+    NSArray<MPBreadcrumb *> *breadcrumbs = [NSArray arrayWithObjects:&breadcumbsVector[0] count:breadcumbsVector.size()];
     return breadcrumbs;
 }
 
-- (void)fetchCommandsInSession:(MPSession *)session completionHandler:(void (^)(NSArray *commands))completionHandler {
+- (void)fetchCommandsInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPCommand *> * _Nullable commands))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, uuid, url, method, headers_data, post_data, timestamp FROM commands WHERE session_id = ? ORDER BY _id";
@@ -1048,7 +1048,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         sqlite3_finalize(preparedStatement);
         
-        __block NSArray *commands = nil;
+        NSArray<MPCommand *> *commands = nil;
         if (!commandsVector.empty()) {
             commands = [NSArray arrayWithObjects:&commandsVector[0] count:commandsVector.size()];
         }
@@ -1060,7 +1060,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
 }
 
 - (MPConsumerInfo *)fetchConsumerInfo {
-    NSArray *cookies = [self fetchCookies];
+    NSArray<MPCookie *> *cookies = [self fetchCookies];
     
     __block MPConsumerInfo *consumerInfo = nil;
     
@@ -1090,7 +1090,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
 }
 
 - (void)fetchConsumerInfo:(void (^)(MPConsumerInfo *consumerInfo))completionHandler {
-    NSArray *cookies = [self fetchCookies];
+    NSArray<MPCookie *> *cookies = [self fetchCookies];
     
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
@@ -1120,7 +1120,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (NSArray *)fetchCookies {
+- (nullable NSArray<MPCookie *> *)fetchCookies {
     __block vector<MPCookie *> cookiesVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1160,11 +1160,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *cookies = [NSArray arrayWithObjects:&cookiesVector[0] count:cookiesVector.size()];
+    NSArray<MPCookie *> *cookies = [NSArray arrayWithObjects:&cookiesVector[0] count:cookiesVector.size()];
     return cookies;
 }
 
-- (NSArray *)fetchDisplayedLocalUserNotifications {
+- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedLocalUserNotifications {
     __block vector<MParticleUserNotification *> userNotificationsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1194,11 +1194,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
     return userNotifications;
 }
 
-- (NSArray *)fetchDisplayedRemoteUserNotifications {
+- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedRemoteUserNotifications {
     __block vector<MParticleUserNotification *> userNotificationsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1227,11 +1227,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
     return userNotifications;
 }
 
-- (NSArray *)fetchDisplayedLocalUserNotificationsSince:(NSTimeInterval)referenceDate {
+- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedLocalUserNotificationsSince:(NSTimeInterval)referenceDate {
     __block vector<MParticleUserNotification *> userNotificationsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1262,11 +1262,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
     return userNotifications;
 }
 
-- (NSArray *)fetchDisplayedRemoteUserNotificationsSince:(NSTimeInterval)referenceDate {
+- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedRemoteUserNotificationsSince:(NSTimeInterval)referenceDate {
     __block vector<MParticleUserNotification *> userNotificationsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1296,11 +1296,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
     return userNotifications;
 }
 
-- (NSArray *)fetchForwardRecords {
+- (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords {
     __block vector<MPForwardRecord *> forwardRecordsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1323,11 +1323,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *forwardRecords = [NSArray arrayWithObjects:&forwardRecordsVector[0] count:forwardRecordsVector.size()];
+    NSArray<MPForwardRecord *> *forwardRecords = [NSArray arrayWithObjects:&forwardRecordsVector[0] count:forwardRecordsVector.size()];
     return forwardRecords;
 }
 
-- (NSArray *)fetchMessagesInSession:(MPSession *)session {
+- (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(MPSession *)session {
     __block vector<MPMessage *> messagesVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1359,11 +1359,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    NSArray<MPMessage *> *messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
     return messages;
 }
 
-- (void)fetchMessagesForUploadingInSession:(MPSession *)session completionHandler:(void (^)(NSArray *messages))completionHandler {
+- (void)fetchMessagesForUploadingInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? AND (upload_status = ? OR upload_status = ?) ORDER BY _id";
@@ -1393,7 +1393,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         sqlite3_finalize(preparedStatement);
         
-        __block NSArray *messages = nil;
+        NSArray<MPMessage *> *messages = nil;
         if (!messagesVector.empty()) {
             messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
         }
@@ -1404,7 +1404,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (NSArray *)fetchPossibleSessionsFromCrash {
+- (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash {
     __block vector<MPSession *> sessionsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1440,7 +1440,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *sessions = [NSArray arrayWithObjects:&sessionsVector[0] count:sessionsVector.size()];
+    NSArray<MPSession *> *sessions = [NSArray arrayWithObjects:&sessionsVector[0] count:sessionsVector.size()];
     return sessions;
 }
 
@@ -1508,7 +1508,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     return productBag;
 }
 
-- (NSArray *)fetchProductBags {
+- (nullable NSArray<MPProductBag *> *)fetchProductBags {
     __block vector<MPProductBag *> productBagsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1543,12 +1543,12 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *productBags = [NSArray arrayWithObjects:&productBagsVector[0] count:productBagsVector.size()];
+    NSArray<MPProductBag *> *productBags = [NSArray arrayWithObjects:&productBagsVector[0] count:productBagsVector.size()];
     return productBags;
 }
 
-- (NSArray *)fetchSegments {
-    __block NSMutableArray *segments = nil;
+- (nullable NSArray<MPSegment *> *)fetchSegments {
+    __block NSMutableArray<MPSegment *> *segments = nil;
     
     dispatch_sync(dbQueue, ^{
         // Block to fetch segment memberships
@@ -1676,12 +1676,12 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     return crashSession;
 }
 
-- (void)fetchSessions:(void (^)(NSMutableArray *sessions))completionHandler {
+- (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length FROM sessions ORDER BY _id";
         
-        __block NSMutableArray *sessions = nil;
+        NSMutableArray<MPSession *> *sessions = nil;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sessions = [[NSMutableArray alloc] initWithCapacity:1];
@@ -1716,7 +1716,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)fetchUploadedMessagesInSession:(MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^)(NSArray *messages))completionHandler {
+- (void)fetchUploadedMessagesInSession:(MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         
@@ -1749,7 +1749,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         sqlite3_finalize(preparedStatement);
         
-        __block NSArray *messages = nil;
+        NSArray<MPMessage *> *messages = nil;
         if (!messagesVector.empty()) {
             messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
         }
@@ -1760,7 +1760,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)fetchUploadsInSession:(MPSession *)session completionHandler:(void (^)(NSArray *uploads))completionHandler {
+- (void)fetchUploadsInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id = ? ORDER BY _id";
@@ -1785,7 +1785,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         sqlite3_finalize(preparedStatement);
         
-        __block NSArray *uploads = nil;
+        NSArray<MPUpload *> *uploads = nil;
         if (!uploadsVector.empty()) {
             uploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
         }
@@ -1796,7 +1796,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)fetchUserNotificationCampaignHistory:(void (^)(NSArray *userNotificationCampaignHistory))completionHandler {
+- (void)fetchUserNotificationCampaignHistory:(void (^ _Nonnull)(NSArray<MParticleUserNotification *> * _Nullable userNotificationCampaignHistory))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, notification_data, campaign_id \
@@ -1849,7 +1849,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         
         sqlite3_finalize(preparedStatement);
         
-        __block NSArray *userNotifications = nil;
+        NSArray<MParticleUserNotification *> *userNotifications = nil;
         if (!userNotificationsVector.empty()) {
             userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
         }
@@ -1860,7 +1860,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (NSArray *)fetchUserNotifications {
+- (nullable NSArray<MParticleUserNotification *> *)fetchUserNotifications {
     __block vector<MParticleUserNotification *> userNotificationsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1887,11 +1887,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
     return userNotifications;
 }
 
-- (NSArray *)fetchStandaloneCommands {
+- (nullable NSArray<MPStandaloneCommand *> *)fetchStandaloneCommands {
     __block vector<MPStandaloneCommand *> commandsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1921,11 +1921,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *standaloneCommands = [NSArray arrayWithObjects:&commandsVector[0] count:commandsVector.size()];
+    NSArray<MPStandaloneCommand *> *standaloneCommands = [NSArray arrayWithObjects:&commandsVector[0] count:commandsVector.size()];
     return standaloneCommands;
 }
 
-- (NSArray *)fetchStandaloneMessages {
+- (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessages {
     __block vector<MPStandaloneMessage *> messagesVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1954,11 +1954,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *standaloneMessages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    NSArray<MPStandaloneMessage *> *standaloneMessages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
     return standaloneMessages;
 }
 
-- (NSArray *)fetchStandaloneMessagesForUploading {
+- (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessagesForUploading {
     __block vector<MPStandaloneMessage *> messagesVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1989,11 +1989,11 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *standaloneMessages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    NSArray<MPStandaloneMessage *> *standaloneMessages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
     return standaloneMessages;
 }
 
-- (NSArray *)fetchStandaloneUploads {
+- (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads {
     __block vector<MPStandaloneUpload *> uploadsVector;
     
     dispatch_sync(dbQueue, ^{
@@ -2020,7 +2020,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
         return nil;
     }
     
-    NSArray *standaloneUploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
+    NSArray<MPStandaloneUpload *> *standaloneUploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
     return standaloneUploads;
 }
 
@@ -2415,7 +2415,7 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
-- (void)saveUpload:(MPUpload *)upload messageIds:(NSArray *)messageIds operation:(MPPersistenceOperation)operation {
+- (void)saveUpload:(MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation {
     dispatch_barrier_sync(dbQueue, ^{
         // Save upload
         sqlite3_stmt *preparedStatement;

@@ -335,7 +335,7 @@
  booleans, or dates
  @see logEvent:
  */
-- (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary *)eventInfo;
+- (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
 /**
  Logs a screen event. Developers define all the characteristics of a screen event (name, attributes, etc) in an
@@ -354,7 +354,7 @@
  booleans, or dates
  @see logScreenEvent:
  */
-- (void)logScreen:(nonnull NSString *)screenName eventInfo:(nullable NSDictionary *)eventInfo;
+- (void)logScreen:(nonnull NSString *)screenName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
 #pragma mark - Error, Exception, and Crash Handling
 /**
@@ -380,7 +380,7 @@
  @param breadcrumbName The name of the breadcrumb (required not nil)
  @param eventInfo A dictionary containing further information about the breadcrumb
  */
-- (void)leaveBreadcrumb:(nonnull NSString *)breadcrumbName eventInfo:(nullable NSDictionary *)eventInfo;
+- (void)leaveBreadcrumb:(nonnull NSString *)breadcrumbName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
 /**
  Logs an error with a message.
@@ -395,7 +395,7 @@
  @param message The name of the error event (required not nil)
  @param eventInfo A dictionary containing further information about the error
  */
-- (void)logError:(nonnull NSString *)message eventInfo:(nullable NSDictionary *)eventInfo;
+- (void)logError:(nonnull NSString *)message eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
 /**
  Logs an exception.
@@ -432,7 +432,7 @@
  @param eventName The name of the event (Optional). If not applicable, pass nil
  @param eventInfo A dictionary containing further information about the LTV
  */
-- (void)logLTVIncrease:(double)increaseAmount eventName:(nonnull NSString *)eventName eventInfo:(nullable NSDictionary *)eventInfo;
+- (void)logLTVIncrease:(double)increaseAmount eventName:(nonnull NSString *)eventName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
 #pragma mark - Kits
 /**

@@ -18,11 +18,11 @@
 
 @interface MPPromotion(Dictionary)
 
-- (NSDictionary *)dictionaryRepresentation;
-- (NSDictionary *)beautifiedDictionaryRepresentation;
+- (NSDictionary<NSString *, NSString *> *)dictionaryRepresentation;
+- (NSDictionary<NSString *, NSString *> *)beautifiedDictionaryRepresentation;
 - (MPPromotion *)copyMatchingHashedProperties:(NSDictionary *)hashedMap;
-- (NSMutableDictionary *)beautifiedAttributes;
-- (void)setBeautifiedAttributes:(NSMutableDictionary *)beautifiedAttributes;
+- (NSMutableDictionary<NSString *, NSString *> *)beautifiedAttributes;
+- (void)setBeautifiedAttributes:(NSMutableDictionary<NSString *, NSString *> *)beautifiedAttributes;
 
 @end
 

@@ -56,9 +56,9 @@
     return value;
 }
 
-- (NSDictionary *)transformValuesToString {
+- (NSDictionary<NSString *, NSString *> *)transformValuesToString {
     NSDictionary *originalDictionary = self;
-    __block NSMutableDictionary *transformedDictionary = [[NSMutableDictionary alloc] initWithCapacity:originalDictionary.count];
+    __block NSMutableDictionary<NSString *, NSString *> *transformedDictionary = [[NSMutableDictionary alloc] initWithCapacity:originalDictionary.count];
     Class NSStringClass = [NSString class];
     Class NSNumberClass = [NSNumber class];
     

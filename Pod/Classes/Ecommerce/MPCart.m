@@ -28,7 +28,7 @@
 @interface MPCart()
 
 @property (nonatomic, strong, readonly, nullable) NSString *cartFile;
-@property (nonatomic, strong, nonnull) NSMutableArray *productsList;
+@property (nonatomic, strong, nonnull) NSMutableArray<MPProduct *> *productsList;
 
 @end
 
@@ -119,7 +119,7 @@
 }
 
 #pragma mark MPCart+Dictionary
-- (void)addProducts:(NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList {
+- (void)addProducts:(NSArray<MPProduct *> *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList {
     if (logEvent) {
         for (MPProduct *product in products) {
             [product setTimeAddedToCart:[NSDate date]];
@@ -135,12 +135,12 @@
     }
 }
 
-- (NSDictionary *)dictionaryRepresentation {
+- (NSDictionary<NSString *, __kindof NSArray *> *)dictionaryRepresentation {
     if (_productsList.count == 0) {
         return nil;
     }
     
-    __block NSMutableArray *cartProducts = [[NSMutableArray alloc] initWithCapacity:_productsList.count];
+    __block NSMutableArray<NSDictionary *> *cartProducts = [[NSMutableArray alloc] initWithCapacity:_productsList.count];
     
     [_productsList enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
         NSDictionary *productDictionary = [product commerceDictionaryRepresentation];
@@ -151,14 +151,14 @@
     }];
     
     if (cartProducts.count > 0) {
-        NSDictionary *dictionary = @{@"pl":cartProducts};
+        NSDictionary<NSString *, __kindof NSArray *> *dictionary = @{@"pl":cartProducts};
         return dictionary;
     } else {
         return nil;
     }
 }
 
-- (void)removeProducts:(NSArray *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList {
+- (void)removeProducts:(NSArray<MPProduct *> *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList {
     if (logEvent) {
         MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionRemoveFromCart];
         [commerceEvent removeProducts:products];
@@ -203,7 +203,7 @@
     [self removePersistedCart];
 }
 
-- (NSArray *)products {
+- (NSArray<MPProduct *> *)products {
     return _productsList.count > 0 ? (NSArray *)_productsList : nil;
 }
 

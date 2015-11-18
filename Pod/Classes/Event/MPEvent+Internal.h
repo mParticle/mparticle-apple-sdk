@@ -23,7 +23,7 @@
 
 - (void)beginTiming;
 - (NSDictionary *)breadcrumbDictionaryRepresentation;
-- (NSDictionary *)dictionaryRepresentation;
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
 - (void)endTiming;
 - (NSDictionary *)screenDictionaryRepresentation;
 

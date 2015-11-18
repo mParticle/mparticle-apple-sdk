@@ -28,7 +28,7 @@ using namespace mParticle;
 
 @interface MPEvent()
 
-@property (nonatomic, strong, nonnull) NSMutableDictionary *customFlagsDictionary;
+@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlagsDictionary;
 @property (nonatomic, unsafe_unretained) MPMessageType messageType;
 
 @end
@@ -255,7 +255,7 @@ using namespace mParticle;
     [self addCustomFlags:@[customFlag] withKey:key];
 }
 
-- (void)addCustomFlags:(NSArray *)customFlags withKey:(NSString *)key {
+- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key {
     if (MPIsNull(customFlags)) {
         MPLogError(@"'customFlags' cannot be nil or null.");
         return;
@@ -266,7 +266,7 @@ using namespace mParticle;
         return;
     }
     
-    NSMutableArray *flags = self.customFlagsDictionary[key];
+    NSMutableArray<NSString *> *flags = self.customFlagsDictionary[key];
     if (!flags) {
         flags = [[NSMutableArray alloc] initWithCapacity:1];
     }
