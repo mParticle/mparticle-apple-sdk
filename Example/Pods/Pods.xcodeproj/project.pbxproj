@@ -1014,26 +1014,10 @@
 		C9EE9D761BD7C2570083CD37 /* Appboy */ = {
 			isa = PBXGroup;
 			children = (
-				C9EE9D771BD7C2570083CD37 /* headers */,
 				C9EE9D791BD7C2570083CD37 /* MPKitAppboy.h */,
 				C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.m */,
 			);
 			path = Appboy;
-			sourceTree = "<group>";
-		};
-		C9EE9D771BD7C2570083CD37 /* headers */ = {
-			isa = PBXGroup;
-			children = (
-				C9EE9D781BD7C2570083CD37 /* AppboyKitLibrary */,
-			);
-			path = headers;
-			sourceTree = "<group>";
-		};
-		C9EE9D781BD7C2570083CD37 /* AppboyKitLibrary */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = AppboyKitLibrary;
 			sourceTree = "<group>";
 		};
 		C9EE9D7B1BD7C2570083CD37 /* BranchMetrics */ = {
@@ -1762,7 +1746,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/mParticle-iOS-SDK/mParticle-iOS-SDK.modulemap";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDK";
 				PRODUCT_NAME = mParticle_iOS_SDK;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1790,7 +1774,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/mParticle-iOS-SDK/mParticle-iOS-SDK.modulemap";
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDK";
 				PRODUCT_NAME = mParticle_iOS_SDK;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1873,7 +1857,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/mParticle-iOS-SDK/mParticle-iOS-SDK.modulemap";
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDK";
 				PRODUCT_NAME = mParticle_iOS_SDK;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;

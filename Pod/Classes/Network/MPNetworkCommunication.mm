@@ -328,7 +328,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                      }
                      
-                     NSMutableArray *segments = nil;
+                     NSMutableArray<MPSegment *> *segments = nil;
                      NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
                      BOOL success = NO;
                      
@@ -422,7 +422,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     });
 }
 
-- (void)sendCommands:(NSArray *)commands index:(NSUInteger)index completionHandler:(MPCommandsCompletionHandler)completionHandler {
+- (void)sendCommands:(NSArray<MPCommand *> *)commands index:(NSUInteger)index completionHandler:(MPCommandsCompletionHandler)completionHandler {
     if (sendingCommands) {
         return;
     }
@@ -543,7 +543,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     }
 }
 
-- (void)standaloneUploads:(NSArray *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler {
+- (void)standaloneUploads:(NSArray<MPStandaloneUpload *> *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler {
     if (standaloneUploading) {
         return;
     }
@@ -639,7 +639,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                   }];
 }
 
-- (void)upload:(NSArray *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler {
+- (void)upload:(NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler {
     if (uploading) {
         return;
     }

@@ -23,6 +23,7 @@
 #import <UIKit/UIKit.h>
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitContainer.h"
+#import "MPKitAbstract.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
@@ -178,8 +179,14 @@ static NSTimeInterval requestTimeout = 30.0;
             }
             
             NSArray<__kindof MPKitAbstract *> *activeKits = [kitContainer activeKits];
-            if (activeKits) {
-                kits = [activeKits componentsJoinedByString:@","];
+            if (activeKits.count > 0) {
+                NSMutableArray<NSNumber *> *activeKitIds = [[NSMutableArray alloc] initWithCapacity:activeKits.count];
+                
+                for (MPKitAbstract *kit in activeKits) {
+                    [activeKitIds addObject:kit.kitCode];
+                }
+                
+                kits = [activeKitIds componentsJoinedByString:@","];
             }
             
             range = [_message rangeOfString:kMPMessageTypeNetworkPerformance];

@@ -29,7 +29,7 @@ NSString *const kMPSegmentMembershipListKey = @"c";
 
 @synthesize expiration = _expiration;
 
-- (instancetype)initWithSegmentId:(NSNumber *)segmentId UUID:(NSString *)uuid name:(NSString *)name memberships:(NSArray *)memberships endpointIds:(NSArray *)endpointIds {
+- (instancetype)initWithSegmentId:(NSNumber *)segmentId UUID:(NSString *)uuid name:(NSString *)name memberships:(NSArray<MPSegmentMembership *> *)memberships endpointIds:(NSArray *)endpointIds {
     self = [super init];
     if (!self) {
         return nil;
@@ -51,7 +51,7 @@ NSString *const kMPSegmentMembershipListKey = @"c";
 
 - (instancetype)initWithDictionary:(NSDictionary *)segmentDictionary {
     NSArray *membershipArray = segmentDictionary[kMPSegmentMembershipListKey];
-    NSMutableArray *memberships = nil;
+    NSMutableArray<MPSegmentMembership *> *memberships = nil;
     int segmentId = [segmentDictionary[kMPSegmentIdKey] intValue];
     if (membershipArray.count > 0) {
         memberships = [[NSMutableArray alloc] initWithCapacity:membershipArray.count];

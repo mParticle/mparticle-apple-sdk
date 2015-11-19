@@ -20,7 +20,7 @@
 #import "MPMediaTrack.h"
 
 @interface MPMediaTrackContainer() {
-    NSMutableSet *trackSet;
+    NSMutableSet<MPMediaTrack *> *trackSet;
     __weak MPMediaTrack *mostRecentMediaTrack;
 }
 
@@ -58,7 +58,7 @@
     mostRecentMediaTrack = mediaTrack;
 }
 
-- (NSArray *)allMediaTracks {
+- (NSArray<MPMediaTrack *> *)allMediaTracks {
     NSArray *allMediaTracks = [trackSet allObjects];
     if (allMediaTracks.count == 0) {
         allMediaTracks = nil;

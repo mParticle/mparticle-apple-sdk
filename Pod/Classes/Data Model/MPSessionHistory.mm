@@ -35,7 +35,7 @@ using namespace std;
 
 @implementation MPSessionHistory
 
-- (instancetype)initWithSession:(MPSession *)session uploads:(NSArray *)uploads {
+- (instancetype)initWithSession:(MPSession *)session uploads:(NSArray<MPUpload *> *)uploads {
     self = [super init];
     if (!self || !session || !uploads) {
         return nil;
@@ -89,7 +89,7 @@ using namespace std;
 }
 
 #pragma mark Public accessors
-- (void)setUploads:(NSArray *)uploads {
+- (void)setUploads:(NSArray<MPUpload *> *)uploads {
     _uploads = uploads;
     
     if (uploads.count == 0) {

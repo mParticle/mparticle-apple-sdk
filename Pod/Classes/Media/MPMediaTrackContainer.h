@@ -26,7 +26,7 @@
 
 - (nonnull instancetype)initWithCapacity:(NSUInteger)capacity;
 - (void)addTrack:(nonnull MPMediaTrack *)mediaTrack;
-- (nullable NSArray *)allMediaTracks;
+- (nullable NSArray<MPMediaTrack *> *)allMediaTracks;
 - (BOOL)containsTrack:(nonnull MPMediaTrack *)mediaTrack;
 - (BOOL)containsTrackWithChannel:(nonnull NSString *)channel;
 - (void)pruneMediaTracks;

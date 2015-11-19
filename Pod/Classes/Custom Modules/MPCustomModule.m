@@ -38,7 +38,7 @@
     _customModuleId = customModuleDictionary[kMPRemoteConfigCustomModuleIdKey];
     
     NSArray *preferences = customModuleDictionary[kMPRemoteConfigCustomModulePreferencesKey];
-    NSMutableArray *localPreferences = [[NSMutableArray alloc] initWithCapacity:preferences.count];
+    NSMutableArray<MPCustomModulePreference *> *localPreferences = [[NSMutableArray alloc] initWithCapacity:preferences.count];
     NSString *location;
     NSArray *preferenceSettings;
     MPCustomModulePreference *preference;
@@ -55,7 +55,7 @@
     if (localPreferences.count == 0) {
         localPreferences = nil;
     }
-    _preferences = [localPreferences copy];
+    _preferences = (NSArray *)localPreferences;
     
     return self;
 }

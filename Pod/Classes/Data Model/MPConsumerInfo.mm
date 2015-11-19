@@ -249,7 +249,7 @@ NSString *const kMPCKExpiration = @"e";
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
-    NSMutableArray *cookies = [[NSMutableArray alloc] init];
+    NSMutableArray<MPCookie *> *cookies = [[NSMutableArray alloc] init];
     NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookies];
     if (fetchedCookies) {
         [cookies addObjectsFromArray:fetchedCookies];

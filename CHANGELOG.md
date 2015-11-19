@@ -3,6 +3,7 @@
 ## 5.1.4
 
 * Adopted Lightweight Generics
+* Fixed a bug reporting active kits
 
 ## 5.1.3
 

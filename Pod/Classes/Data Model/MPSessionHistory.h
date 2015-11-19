@@ -19,15 +19,16 @@
 #import "MPDataModelProtocol.h"
 
 @class MPSession;
+@class MPUpload;
 
 @interface MPSessionHistory : NSObject <MPDataModelProtocol>
 
 @property (nonatomic, strong, nullable) NSDictionary *userAttributes;
 @property (nonatomic, strong, nullable) NSArray *userIdentities;
 @property (nonatomic, strong, nonnull) MPSession *session;
-@property (nonatomic, strong, nullable) NSArray *uploads;
-@property (nonatomic, strong, readonly, nullable) NSArray *uploadIds;
+@property (nonatomic, strong, nullable) NSArray<MPUpload *> *uploads;
+@property (nonatomic, strong, readonly, nullable) NSArray<NSNumber *> *uploadIds;
 
-- (nonnull instancetype)initWithSession:(nonnull MPSession *)session uploads:(nonnull NSArray *)uploads;
+- (nonnull instancetype)initWithSession:(nonnull MPSession *)session uploads:(nonnull NSArray<MPUpload *> *)uploads;
 
 @end
