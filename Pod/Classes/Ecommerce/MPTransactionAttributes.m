@@ -181,7 +181,7 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 }
 
 - (void)setShipping:(NSNumber *)shipping {
-    if (shipping) {
+    if (shipping && [shipping isKindOfClass:[NSNumber class]]) {
         self.attributes[kMPTAShipping] = shipping;
         self.beautifiedAttributes[kMPExpTAShipping] = shipping;
     } else {
@@ -195,7 +195,7 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 }
 
 - (void)setTax:(NSNumber *)tax {
-    if (tax) {
+    if (tax && [tax isKindOfClass:[NSNumber class]]) {
         self.attributes[kMPTATax] = tax;
         self.beautifiedAttributes[kMPExpTATax] = tax;
     } else {
@@ -209,7 +209,7 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 }
 
 - (void)setRevenue:(NSNumber *)revenue {
-    if (revenue) {
+    if (revenue && [revenue isKindOfClass:[NSNumber class]]) {
         self.attributes[kMPTARevenue] = revenue;
         self.beautifiedAttributes[kMPExpTARevenue] = revenue;
     } else {

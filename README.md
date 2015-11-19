@@ -107,25 +107,35 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 
 Remove the statement from your Podfile
 
-`pod 'mParticle', '~> 4'`
+```ruby
+pod 'mParticle', '~> 4'
+```
 
 and replace it with one of the options described above.
 
 The `#import` statements are now simpler, instead of:
 
-`#import <mParticle/mParticle.h>`
+```objective-c
+#import <mParticle/mParticle.h>
+```
 
 use:
 
-`#import <mParticle.h>`
+```objective-c
+#import <mParticle.h>
+```
 
 In case you had the need to directly call methods from a 3rd party provider kit through the mParticle SDK, you no longer need to indirectly import their headers. You can just import them directly as indicated in the provider respective documentation. For example, if you were using:
 
-`#import <mParticle/Appboy/AppboyKit.h>`
+```objective-c
+#import <mParticle/Appboy/AppboyKit.h>
+```
 
 You will now use:
 
-`#import <AppboyKit.h>`
+```objective-c
+#import <AppboyKit.h>
+```
 
 
 ## Documentation

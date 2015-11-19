@@ -454,8 +454,9 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 
 - (void)setPrice:(NSNumber *)price {
     NSAssert(!MPIsNull(price), @"'price' is a required property. Use @0 if the product does not have a price.");
-    
-    if (price) {
+    NSAssert([price isKindOfClass:[NSNumber class]], @"'price' must be a number.");
+
+    if (price && [price isKindOfClass:[NSNumber class]]) {
         self.objectDictionary[kMPProductUnitPrice] = price;
         self.beautifiedAttributes[kMPExpProductUnitPrice] = price;
         [self calculateTotalAmount];
@@ -544,13 +545,16 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 
 - (void)setQuantity:(NSNumber *)quantity {
     NSAssert(!MPIsNull(quantity), @"'quantity' is a required property.");
-    
-    self.objectDictionary[kMPProductQuantity] = quantity;
-    self.beautifiedAttributes[kMPExpProductQuantity] = quantity;
-    [self calculateTotalAmount];
-    
-    if (self.objectDictionary[kMPProductAddedToCart]) {
-        [self setTimeAddedToCart:[NSDate date]];
+    NSAssert([quantity isKindOfClass:[NSNumber class]], @"'quantity' must be a number.");
+
+    if (quantity && [quantity isKindOfClass:[NSNumber class]]) {
+        self.objectDictionary[kMPProductQuantity] = quantity;
+        self.beautifiedAttributes[kMPExpProductQuantity] = quantity;
+        [self calculateTotalAmount];
+        
+        if (self.objectDictionary[kMPProductAddedToCart]) {
+            [self setTimeAddedToCart:[NSDate date]];
+        }
     }
 }
 

@@ -4,6 +4,7 @@
 
 * Adopted Lightweight Generics
 * Fixed a bug reporting active kits
+* Enforcing the data type of eCommerce numeric values
 
 ## 5.1.3
 
