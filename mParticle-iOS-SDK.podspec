@@ -55,7 +55,7 @@ Pod::Spec.new do |s|
     s.subspec 'BranchMetrics' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.dependency 'mParticle-iOS-SDK/mParticle'
-        ss.dependency 'Branch', '0.11.6'
+        ss.dependency 'Branch', '0.11'
         ss.prefix_header_contents = "#define MP_KIT_BRANCHMETRICS 1"
         ss.platform               = :ios, '7.0'
     end

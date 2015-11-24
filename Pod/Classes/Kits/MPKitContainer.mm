@@ -212,6 +212,21 @@ NSString *const kitFileExtension = @"eks";
     
     kitsInitialized = YES;
     [self didChangeValueForKey:@"kits"];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if ([MPStateMachine sharedInstance].logLevel >= MPLogLevelDebug) {
+            NSArray<NSNumber *> *supportedKits = [self supportedKits];
+            NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
+            for (NSNumber *supportedKit in supportedKits) {
+                [listOfKits appendFormat:@"%@, ", [MPKitAbstract nameForKit:supportedKit]];
+            }
+            
+            [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
+            [listOfKits appendString:@"}"];
+            
+            MPLogDebug(@"%@", listOfKits);
+        }
+    });
 }
 
 - (NSDictionary *)methodMessageTypeMapping {
