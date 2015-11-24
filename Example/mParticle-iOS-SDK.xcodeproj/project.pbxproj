@@ -607,7 +607,7 @@
 				GCC_PREFIX_HEADER = "mParticle-iOS-SDK/mParticle-iOS-SDK-Prefix.pch";
 				INFOPLIST_FILE = "mParticle-iOS-SDK/mParticle-iOS-SDK-Info.plist";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.demo.mParticle-iOS-SDK-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;
@@ -626,7 +626,7 @@
 				GCC_PREFIX_HEADER = "mParticle-iOS-SDK/mParticle-iOS-SDK-Prefix.pch";
 				INFOPLIST_FILE = "mParticle-iOS-SDK/mParticle-iOS-SDK-Info.plist";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.demo.mParticle-iOS-SDK-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				WRAPPER_EXTENSION = app;

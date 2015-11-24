@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-iOS-SDK"
-    s.version          = "5.1.4"
+    s.version          = "5.1.5"
     s.summary          = "mParticle iOS SDK."
 
     s.description      = <<-DESC
@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
                          DESC
 
     s.homepage          = "http://www.mparticle.com"
-    s.license           = { :type => 'Apache', :file => 'LICENSE'}
+    s.license           = { :type => 'Apache 2.0', :file => 'LICENSE'}
     s.author            = { "mParticle" => "support@mparticle.com" }
     s.source            = { :git => "https://github.com/mParticle/mParticle-iOS-SDK.git", :tag => s.version.to_s }
     s.documentation_url = "http://docs.mparticle.com"

@@ -85,12 +85,20 @@ static NSTimeInterval requestTimeout = 30.0;
 
 - (NSString *)userAgent {
     static NSString *mpUserAgent = nil;
-    
+
     if (!mpUserAgent) {
 #ifndef MP_UNIT_TESTING
-        UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+        dispatch_block_t getUserAgent = ^{
+            UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+            
+            mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+        };
         
-        mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+        if ([NSThread isMainThread]) {
+            getUserAgent();
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), getUserAgent);
+        }
 #else
         mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Mobile/12F70 mParticle/%@", kMParticleSDKVersion];
 #endif

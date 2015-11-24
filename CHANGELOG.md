@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.1.5
+
+* Replaced NSTimer with dispatch_source_t with a positive results minimizing the use of energy
+
 ## 5.1.4
 
 * Adopted Lightweight Generics

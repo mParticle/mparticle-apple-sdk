@@ -21,7 +21,7 @@
 NSUInteger kMPNumberOfMessageTypes = 17;
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"5.1.4";
+NSString *const kMParticleSDKVersion = @"5.1.5";
 
 // Session Upload Settings
 NSString *const kMPSessionHistoryValue = @"sh";
@@ -257,7 +257,7 @@ const NSTimeInterval TWENTY_FOUR_HOURS = 86400; // database clean up interval
 const NSTimeInterval ONE_HUNDRED_EIGHTY_DAYS = 60 * 60 * 24 * 180; // Old messages purge interval = 60 seconds * 60 minutes * 24 hours * 180 days
 
 // Interval between uploads if not specified
-const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL = 10.0;
+const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL = 20.0;
 const NSTimeInterval DEFAULT_UPLOAD_INTERVAL = 600.0;
 
 // Delay before processing uploads to allow app to get started
