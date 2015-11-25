@@ -179,7 +179,7 @@
 		C9C2DD021BD458600002F75A /* NSUserDefaults+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC371BD458600002F75A /* NSUserDefaults+mParticle.h */; };
 		C9C2DD031BD458600002F75A /* NSUserDefaults+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC381BD458600002F75A /* NSUserDefaults+mParticle.m */; };
 		C9C2DD041BD458600002F75A /* Zip.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC391BD458600002F75A /* Zip.cpp */; };
-		C9C2DD051BD458600002F75A /* Zip.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC3A1BD458600002F75A /* Zip.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9C2DD051BD458600002F75A /* MPZip.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC3A1BD458600002F75A /* MPZip.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DD071BD458D50002F75A /* MPEnums.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DD061BD458D50002F75A /* MPEnums.m */; };
 		C9C2DD111BD45C9A0002F75A /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD081BD45C9A0002F75A /* Accounts.framework */; };
 		C9C2DD121BD45C9A0002F75A /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD091BD45C9A0002F75A /* AdSupport.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
@@ -459,7 +459,7 @@
 		C9C2DC371BD458600002F75A /* NSUserDefaults+mParticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+mParticle.h"; sourceTree = "<group>"; };
 		C9C2DC381BD458600002F75A /* NSUserDefaults+mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+mParticle.m"; sourceTree = "<group>"; };
 		C9C2DC391BD458600002F75A /* Zip.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Zip.cpp; sourceTree = "<group>"; };
-		C9C2DC3A1BD458600002F75A /* Zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Zip.h; sourceTree = "<group>"; };
+		C9C2DC3A1BD458600002F75A /* MPZip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPZip.h; sourceTree = "<group>"; };
 		C9C2DD061BD458D50002F75A /* MPEnums.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEnums.m; sourceTree = "<group>"; };
 		C9C2DD081BD45C9A0002F75A /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/System/Library/Frameworks/Accounts.framework; sourceTree = DEVELOPER_DIR; };
 		C9C2DD091BD45C9A0002F75A /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.0.sdk/System/Library/Frameworks/AdSupport.framework; sourceTree = DEVELOPER_DIR; };
@@ -955,7 +955,7 @@
 				C9C2DC371BD458600002F75A /* NSUserDefaults+mParticle.h */,
 				C9C2DC381BD458600002F75A /* NSUserDefaults+mParticle.m */,
 				C9C2DC391BD458600002F75A /* Zip.cpp */,
-				C9C2DC3A1BD458600002F75A /* Zip.h */,
+				C9C2DC3A1BD458600002F75A /* MPZip.h */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1166,7 +1166,7 @@
 				C9C2DCC61BD458600002F75A /* MPBackendController.h in Headers */,
 				C9C2DCDD1BD458600002F75A /* MPNotificationController.h in Headers */,
 				C9C2DCC21BD458600002F75A /* MPMediaTrackContainer.h in Headers */,
-				C9C2DD051BD458600002F75A /* Zip.h in Headers */,
+				C9C2DD051BD458600002F75A /* MPZip.h in Headers */,
 				C9C2DCD11BD458600002F75A /* MPNetworkCommunication.h in Headers */,
 				C9EE9DC51BD7C2570083CD37 /* MPKitFilter.h in Headers */,
 				C9C2DC661BD458600002F75A /* MPBags+Internal.h in Headers */,

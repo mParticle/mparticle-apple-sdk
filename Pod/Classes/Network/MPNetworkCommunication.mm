@@ -30,7 +30,7 @@
 #import "MPConstants.h"
 #import "MPStandaloneCommand.h"
 #import "MPStandaloneUpload.h"
-#import "Zip.h"
+#import "MPZip.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleReachability.h"
 #import "MPLogger.h"

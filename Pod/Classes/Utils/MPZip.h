@@ -1,5 +1,5 @@
 //
-//  Zip.h
+//  MPZip.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
