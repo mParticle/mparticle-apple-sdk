@@ -17,7 +17,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "Zip.h"
+#import "MPZip.h"
 
 @interface ZipTests : XCTestCase
 

@@ -16,7 +16,7 @@
 //  limitations under the License.
 //
 
-#include "Zip.h"
+#include "MPZip.h"
 #include <string.h>
 #include "zlib.h"
 
