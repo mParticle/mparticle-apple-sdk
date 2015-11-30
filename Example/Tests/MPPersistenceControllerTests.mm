@@ -399,7 +399,7 @@
     XCTAssertEqualObjects(copyStandaloneUpload, standaloneUpload, @"Stand-alone upload is not being copied properly.");
     
     [persistence deleteStandaloneUpload:standaloneUpload];
-    standaloneUpload = [[persistence fetchStandaloneMessages] firstObject];
+    standaloneUpload = [[persistence fetchStandaloneUploads] firstObject];
     XCTAssertNil(standaloneUpload, @"Stand-alone upload should have been deleted.");
 }
 

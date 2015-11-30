@@ -17,7 +17,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "Hasher.h"
+#import "MPHasher.h"
 #import "MPEnums.h"
 #import "MPEvent.h"
 

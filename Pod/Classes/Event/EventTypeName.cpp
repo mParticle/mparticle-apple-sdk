@@ -17,7 +17,7 @@
 //
 
 #include "EventTypeName.h"
-#include "Hasher.h"
+#include "MPHasher.h"
 
 namespace mParticle {
     const vector<string> EventTypeName::names = {"Unknown", "Navigation", "Location", "Search", "Transaction", "UserContent", "UserPreference", "Social", "Other", "Media", // 0-9

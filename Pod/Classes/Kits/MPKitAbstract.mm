@@ -18,7 +18,7 @@
 
 #import "MPKitAbstract.h"
 #import "MPDateFormatter.h"
-#include "Bracket.h"
+#include "MPBracket.h"
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
 #import "NSUserDefaults+mParticle.h"

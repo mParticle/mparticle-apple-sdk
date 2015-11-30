@@ -22,9 +22,6 @@
 #import "MPSession.h"
 #import "EventTypeName.h"
 #import "MPLogger.h"
-#import "Hasher.h"
-
-using namespace mParticle;
 
 @interface MPEvent()
 

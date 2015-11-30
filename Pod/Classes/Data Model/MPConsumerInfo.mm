@@ -18,16 +18,12 @@
 
 #import "MPConsumerInfo.h"
 #import "MPConstants.h"
-#include <vector>
 #import "MPLogger.h"
 #import "NSUserDefaults+mParticle.h"
-#include "Hasher.h"
+#include "MPHasher.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
 #import "NSString+MPPercentEscape.h"
-
-using namespace std;
-using namespace mParticle;
 
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";
@@ -229,7 +225,7 @@ NSString *const kMPCKExpiration = @"e";
         NSString *uuidString = [[NSUUID UUID] UUIDString];
         NSData *uuidData = [uuidString dataUsingEncoding:NSUTF8StringEncoding];
         
-        mpId = Hasher::hashFNV1a((const char *)[uuidData bytes], (int)[uuidData length]);
+        mpId = mParticle::Hasher::hashFNV1a((const char *)[uuidData bytes], (int)[uuidData length]);
     }
     
     NSNumber *generatedMpId;

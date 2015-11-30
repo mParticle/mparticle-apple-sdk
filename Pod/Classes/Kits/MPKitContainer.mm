@@ -23,7 +23,7 @@
 #import "MPKitForesee.h"
 #include "MessageTypeName.h"
 #import "MPStateMachine.h"
-#include "Hasher.h"
+#include "MPHasher.h"
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"

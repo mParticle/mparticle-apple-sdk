@@ -16,7 +16,7 @@
 //  limitations under the License.
 //
 
-#include "Bracket.h"
+#include "MPBracket.h"
 #include <stdlib.h>
 
 namespace mParticle {

@@ -18,11 +18,8 @@
 
 #import "MPPromotion.h"
 #import "MPConstants.h"
-#include "Hasher.h"
+#include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-
-using namespace std;
-using namespace mParticle;
 
 // Internal keys
 NSString *const kMPPMAction = @"an";
@@ -151,7 +148,7 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        NSString *hashedKey = [NSString stringWithCString:Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        NSString *hashedKey = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
         id hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {

@@ -35,7 +35,7 @@
 		C9AF887C1BDFD27B000DBCDD /* MPProductBagTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF887B1BDFD27B000DBCDD /* MPProductBagTests.m */; };
 		C9AF887F1BDFF0C8000DBCDD /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF887E1BDFF0C8000DBCDD /* MPStateMachineTests.mm */; };
 		C9AF88811BDFF2A5000DBCDD /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88801BDFF2A5000DBCDD /* MPURLRequestBuilderTests.m */; };
-		C9AF88851BDFF749000DBCDD /* ZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88841BDFF749000DBCDD /* ZipTests.mm */; };
+		C9AF88851BDFF749000DBCDD /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88841BDFF749000DBCDD /* MPZipTests.mm */; };
 		C9AF88881BE001A4000DBCDD /* MPBackendControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9AF88871BE001A4000DBCDD /* MPBackendControllerTests.mm */; };
 		C9AF888B1BE00782000DBCDD /* MPNotificationControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AF888A1BE00782000DBCDD /* MPNotificationControllerTests.m */; };
 		C9F5D5C51BF63A87003513FF /* MPAppNotificationHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F5D5C41BF63A87003513FF /* MPAppNotificationHandlerTests.m */; };
@@ -95,7 +95,7 @@
 		C9AF88801BDFF2A5000DBCDD /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		C9AF88821BDFF2D1000DBCDD /* MPURLRequestBuilder+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPURLRequestBuilder+Tests.h"; sourceTree = "<group>"; };
 		C9AF88831BDFF3B8000DBCDD /* MPNetworkCommunication+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNetworkCommunication+Tests.h"; sourceTree = "<group>"; };
-		C9AF88841BDFF749000DBCDD /* ZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = ZipTests.mm; sourceTree = "<group>"; };
+		C9AF88841BDFF749000DBCDD /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
 		C9AF88861BE0016C000DBCDD /* MPBackendController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPBackendController+Tests.h"; sourceTree = "<group>"; };
 		C9AF88871BE001A4000DBCDD /* MPBackendControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPBackendControllerTests.mm; sourceTree = "<group>"; };
 		C9AF88891BE0076A000DBCDD /* MPNotificationController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNotificationController+Tests.h"; sourceTree = "<group>"; };
@@ -229,7 +229,7 @@
 				C9AF887E1BDFF0C8000DBCDD /* MPStateMachineTests.mm */,
 				C9AF88821BDFF2D1000DBCDD /* MPURLRequestBuilder+Tests.h */,
 				C9AF88801BDFF2A5000DBCDD /* MPURLRequestBuilderTests.m */,
-				C9AF88841BDFF749000DBCDD /* ZipTests.mm */,
+				C9AF88841BDFF749000DBCDD /* MPZipTests.mm */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -470,7 +470,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9F5D5C51BF63A87003513FF /* MPAppNotificationHandlerTests.m in Sources */,
-				C9AF88851BDFF749000DBCDD /* ZipTests.mm in Sources */,
+				C9AF88851BDFF749000DBCDD /* MPZipTests.mm in Sources */,
 				C9AF88881BE001A4000DBCDD /* MPBackendControllerTests.mm in Sources */,
 				C977E6871BDECEA700FE1805 /* BracketTests.mm in Sources */,
 				C9F5D5C71BF65471003513FF /* MPLaunchInfoTests.m in Sources */,

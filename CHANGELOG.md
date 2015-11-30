@@ -3,6 +3,7 @@
 ## 5.1.5
 
 * Replaced NSTimer with dispatch_source_t with positive results minimizing the use of energy
+* Refactored class files adding the MP prefix
 
 ## 5.1.4
 

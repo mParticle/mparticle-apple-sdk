@@ -25,15 +25,13 @@
 #include <sys/sysctl.h>
 #import "MPNotificationController.h"
 #import "MPDateFormatter.h"
-#import "Hasher.h"
+#import "MPHasher.h"
 #import "MPLogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
 #import "MPBags.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
-
-using namespace mParticle;
 
 NSString *const kCookieDateKey = @"e";
 NSString *const kMinUploadDateKey = @"MinUploadDate";
@@ -744,7 +742,7 @@ static BOOL runningInBackground = NO;
     MPDevice *device = [[MPDevice alloc] init];
     NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
     
-    uint64_t rampHash = Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+    uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
     NSUInteger modRampHash = rampHash % 100;
     
     BOOL dataRamped = modRampHash > [rampPercentage integerValue];
@@ -782,7 +780,7 @@ static BOOL runningInBackground = NO;
         }
     }
     
-    NSString *messageTypeCommerceEventKey = [NSString stringWithCString:MessageTypeName::nameForMessageType(CommerceEvent).c_str() encoding:NSUTF8StringEncoding];
+    NSString *messageTypeCommerceEventKey = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding];
     NSMutableArray *messageTypes = [@[messageTypeCommerceEventKey] mutableCopy];
     NSArray *configMessageTypes = triggerDictionary[kMPRemoteConfigTriggerMessageTypesKey];
     

@@ -21,10 +21,7 @@
 #import "MPProduct.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
-#import "Hasher.h"
 #import "MPLogger.h"
-
-using namespace mParticle;
 
 NSString *const kMPEventCategoryKey = @"$Category";
 NSString *const kMPAttrsEventLengthKey = @"EventLength";

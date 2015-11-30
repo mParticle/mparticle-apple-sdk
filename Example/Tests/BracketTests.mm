@@ -17,7 +17,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "Bracket.h"
+#import "MPBracket.h"
 
 @interface BracketTests : XCTestCase
 

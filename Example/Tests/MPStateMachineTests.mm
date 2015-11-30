@@ -18,7 +18,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPStateMachine.h"
-#import "Hasher.h"
+#import "MPHasher.h"
 #import "MPConsumerInfo.h"
 
 @interface MPStateMachineTests : XCTestCase

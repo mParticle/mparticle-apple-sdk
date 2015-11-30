@@ -16,7 +16,7 @@
 //  limitations under the License.
 //
 
-#include "Hasher.h"
+#include "MPHasher.h"
 #include "EventTypeName.h"
 #include <algorithm>
 

@@ -44,7 +44,7 @@
 #import "MPMediaTrackContainer.h"
 #import "MPMediaTrack.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "Hasher.h"
+#import "MPHasher.h"
 #import "MediaControl.h"
 #import "MPMediaTrack+Internal.h"
 #import "MPUploadBuilder.h"
@@ -63,8 +63,6 @@
 #import "MPLocationManager.h"
 
 #define METHOD_EXEC_MAX_ATTEMPT 10
-
-using namespace mParticle;
 
 const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 1000;
 const NSInteger kInvalidKey = 100;
@@ -555,7 +553,7 @@ static BOOL appBackgrounded = NO;
     
     if ([abstractMessage isKindOfClass:[MPMessage class]]) {
         MPMessage *message = (MPMessage *)abstractMessage;
-        MPMessageType messageTypeCode = (MPMessageType)MessageTypeName::messageTypeForName(string([message.messageType UTF8String]));
+        MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([message.messageType UTF8String]));
         if (messageTypeCode == MPMessageTypeBreadcrumb) {
             [persistence saveBreadcrumb:message session:self.session];
         } else {
@@ -584,7 +582,7 @@ static BOOL appBackgrounded = NO;
                 NSString *eventType = messageDictionary[kMPEventTypeKey];
                 
                 if (!error && eventName && eventType) {
-                    NSString *hashedEvent = [NSString stringWithCString:Hasher::hashEvent([eventName cStringUsingEncoding:NSUTF8StringEncoding], [eventType cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
+                    NSString *hashedEvent = [NSString stringWithCString:mParticle::Hasher::hashEvent([eventName cStringUsingEncoding:NSUTF8StringEncoding], [eventType cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
                                                                encoding:NSUTF8StringEncoding];
                     
                     shouldUpload = [stateMachine.triggerEventTypes containsObject:hashedEvent];
@@ -1948,7 +1946,7 @@ static BOOL appBackgrounded = NO;
                         [breadcrumbs addObject:[breadcrumb dictionaryRepresentation]];
                     }
                     
-                    NSString *messageTypeBreadcrumbKey = [NSString stringWithCString:MessageTypeName::nameForMessageType(Breadcrumb).c_str() encoding:NSUTF8StringEncoding];
+                    NSString *messageTypeBreadcrumbKey = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding];
                     messageInfo[messageTypeBreadcrumbKey] = breadcrumbs;
                     
                     NSNumber *sessionNumber = self.session.sessionNumber;

@@ -30,7 +30,7 @@
 #import "MPConstants.h"
 #import "MPStandaloneCommand.h"
 #import "MPStandaloneUpload.h"
-#import "Zip.h"
+#import "MPZip.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleReachability.h"
 #import "MPLogger.h"
@@ -39,9 +39,6 @@
 #import "MPDataModelAbstract.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPSessionHistory.h"
-
-using namespace mParticle;
-using namespace std;
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const kMPConfigVersion = @"/v3";
@@ -564,7 +561,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     __weak MPNetworkCommunication *weakSelf = self;
     
     NSData *zipUploadData = nil;
-    tuple<unsigned char *, unsigned int> zipData = Zip::compress((const unsigned char *)[standaloneUpload.uploadData bytes], (unsigned int)[standaloneUpload.uploadData length]);
+    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[standaloneUpload.uploadData bytes], (unsigned int)[standaloneUpload.uploadData length]);
     if (get<0>(zipData) != nullptr) {
         zipUploadData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
         delete [] get<0>(zipData);
@@ -670,7 +667,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     NSData *zipUploadData = nil;
-    tuple<unsigned char *, unsigned int> zipData = Zip::compress((const unsigned char *)[upload.uploadData bytes], (unsigned int)[upload.uploadData length]);
+    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[upload.uploadData bytes], (unsigned int)[upload.uploadData length]);
     if (get<0>(zipData) != nullptr) {
         zipUploadData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
         delete [] get<0>(zipData);
@@ -792,7 +789,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     NSData *sessionHistoryData = [NSJSONSerialization dataWithJSONObject:[sessionHistory dictionaryRepresentation] options:0 error:nil];
     
     NSData *zipSessionData = nil;
-    tuple<unsigned char *, unsigned int> zipData = Zip::compress((const unsigned char *)[sessionHistoryData bytes], (unsigned int)[sessionHistoryData length]);
+    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[sessionHistoryData bytes], (unsigned int)[sessionHistoryData length]);
     if (get<0>(zipData) != nullptr) {
         zipSessionData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
         delete [] get<0>(zipData);
