@@ -22,7 +22,7 @@
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import <CoreLocation/CoreLocation.h>
-#include "Hasher.h"
+#include "MPHasher.h"
 #import "Flurry.h"
 
 @implementation MPKitFlurry

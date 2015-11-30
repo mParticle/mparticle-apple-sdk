@@ -1,5 +1,5 @@
 //
-//  Bracket.h
+//  MPBracket.h
 //
 //  Copyright 2015 mParticle, Inc.
 //

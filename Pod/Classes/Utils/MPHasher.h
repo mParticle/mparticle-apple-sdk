@@ -1,5 +1,5 @@
 //
-//  Hasher.h
+//  MPHasher.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
