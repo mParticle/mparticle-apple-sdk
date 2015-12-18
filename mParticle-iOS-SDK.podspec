@@ -5,11 +5,11 @@ Pod::Spec.new do |s|
 
     s.description      = <<-DESC
                          Your job is to build an awesome app experience that consumers love. You also need several tools and services to make data-driven decisions.
-                         Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing, 
-                         monetization, etc. But embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs. From not being 
+                         Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing,
+                         monetization, etc. But embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs. From not being
                          able to move as fast as you want, to bloating and destabilizing your app, to losing control and ownership of your 1st party data.
-                         
-                         mParticle solves all these problems with one lightweight SDK. Implement new partners without changing code or waiting for app store approval. 
+
+                         mParticle solves all these problems with one lightweight SDK. Implement new partners without changing code or waiting for app store approval.
                          Improve stability and security within your app. We enable our clients to spend more time innovating and less time integrating.
                          DESC
 
@@ -109,12 +109,20 @@ Pod::Spec.new do |s|
         ss.platform               = :ios, '7.0'
     end
 
+    s.subspec 'Wootric' do |ss|
+        ss.dependency 'mParticle-iOS-SDK/Core-SDK'
+        ss.dependency 'mParticle-iOS-SDK/mParticle'
+        ss.dependency 'WootricSDK'
+        ss.prefix_header_contents = "#define MP_KIT_WOOTRIC 1"
+        ss.platform               = :ios, '7.0'
+    end
+
     s.subspec 'mParticle' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.prefix_header_contents = "#define MP_KIT_MPARTICLE 1"
         ss.platform               = :ios, '7.0'
     end
-    
+
     s.subspec 'CrashReporter' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.dependency 'mParticle-iOS-SDK/mParticle'

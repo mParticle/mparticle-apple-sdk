@@ -12,6 +12,8 @@
 		68AE6BA5291A3B0D0114D2C9A668EF08 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E4E89230EF59BC255123B67864ACF77 /* Foundation.framework */; };
 		754537C92A4EEDE6322C1C4FF71960B5 /* Pods-mParticle-iOS-SDK_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 52B62D27CF1C45C77DBB6DF0F380ECDD /* Pods-mParticle-iOS-SDK_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9E7DBABA230153710610D133E9EDD738 /* Pods-mParticle-iOS-SDK_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = BDCAD642979696F02696C65FCD92EBD6 /* Pods-mParticle-iOS-SDK_Example-dummy.m */; };
+		B22A21341C24108C007AC783 /* MPKitWootric.h in Headers */ = {isa = PBXBuildFile; fileRef = B22A21321C24108C007AC783 /* MPKitWootric.h */; };
+		B22A21351C24108C007AC783 /* MPKitWootric.m in Sources */ = {isa = PBXBuildFile; fileRef = B22A21331C24108C007AC783 /* MPKitWootric.m */; };
 		B400003358DA6A643228BE19CBCFAD6E /* Pods-mParticle-iOS-SDK_Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = D3B871B63FB561B17867008A964F3ADF /* Pods-mParticle-iOS-SDK_Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9595CB11BD56B33002361BD /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD1A1BD45CA30002F75A /* libc++.tbd */; };
 		C9595CB21BD56B3A002361BD /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD1C1BD45CA80002F75A /* libsqlite3.tbd */; };
@@ -278,6 +280,8 @@
 		975FA525E4418E7CCC91E4CB615E7095 /* mParticle-iOS-SDK-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "mParticle-iOS-SDK-umbrella.h"; sourceTree = "<group>"; };
 		9E2FAE45B2999A10D835CA687A27F61D /* Pods-mParticle-iOS-SDK_Tests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = "sourcecode.module-map"; path = "Pods-mParticle-iOS-SDK_Tests.modulemap"; sourceTree = "<group>"; };
 		A1F05C1F4E4EA867474D3F9D4B24F93A /* Pods-mParticle-iOS-SDK_Tests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-mParticle-iOS-SDK_Tests.debug.xcconfig"; sourceTree = "<group>"; };
+		B22A21321C24108C007AC783 /* MPKitWootric.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitWootric.h; sourceTree = "<group>"; };
+		B22A21331C24108C007AC783 /* MPKitWootric.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitWootric.m; sourceTree = "<group>"; };
 		B7464BC5ECF4162F72537F2847A60AD9 /* Pods-mParticle-iOS-SDK_Example-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-mParticle-iOS-SDK_Example-resources.sh"; sourceTree = "<group>"; };
 		B8C5298A48DACE499E8C1789526837CA /* mParticle-iOS-SDK-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "mParticle-iOS-SDK-prefix.pch"; sourceTree = "<group>"; };
 		BA6428E9F66FD5A23C0A2E06ED26CD2F /* Podfile */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
@@ -648,6 +652,15 @@
 			name = "Targets Support Files";
 			sourceTree = "<group>";
 		};
+		B22A21311C23075E007AC783 /* Wootric */ = {
+			isa = PBXGroup;
+			children = (
+				B22A21321C24108C007AC783 /* MPKitWootric.h */,
+				B22A21331C24108C007AC783 /* MPKitWootric.m */,
+			);
+			path = Wootric;
+			sourceTree = "<group>";
+		};
 		BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -972,6 +985,7 @@
 		C9EE9D721BD7C2570083CD37 /* Kits */ = {
 			isa = PBXGroup;
 			children = (
+				B22A21311C23075E007AC783 /* Wootric */,
 				C9EE9D731BD7C2570083CD37 /* Adjust */,
 				C9EE9D761BD7C2570083CD37 /* Appboy */,
 				C9EE9D7B1BD7C2570083CD37 /* BranchMetrics */,
@@ -1209,6 +1223,7 @@
 				C9C2DC7B1BD458600002F75A /* MPTransactionAttributes+Dictionary.h in Headers */,
 				C9C2DC6E1BD458600002F75A /* MPCommerceEvent+Dictionary.h in Headers */,
 				C9C2DC731BD458600002F75A /* MPProduct+Dictionary.h in Headers */,
+				B22A21341C24108C007AC783 /* MPKitWootric.h in Headers */,
 				C9C2DC781BD458600002F75A /* MPPromotion+Dictionary.h in Headers */,
 				C9C2DCE71BD458600002F75A /* MPBracket.h in Headers */,
 				C9C2DC671BD458600002F75A /* MPBags.h in Headers */,
@@ -1492,6 +1507,7 @@
 				C9C2DCCE1BD458600002F75A /* MPUserSegments.m in Sources */,
 				C9C2DC7D1BD458600002F75A /* MPTransactionAttributes.m in Sources */,
 				C9C2DCDA1BD458600002F75A /* NSURLConnection+mParticle.m in Sources */,
+				B22A21351C24108C007AC783 /* MPKitWootric.m in Sources */,
 				C9C2DC651BD458600002F75A /* MPUpload.m in Sources */,
 				C9EE9DBC1BD7C2570083CD37 /* MPEventProjection.mm in Sources */,
 				C9C2DC551BD458600002F75A /* MPMessage.m in Sources */,
