@@ -23,12 +23,12 @@
 - (NSNumber *)formatWithNonScientificNotation {
     double minThreshold = 1.0E-5;
     double maxThreshold = 1.0E10;
-    double selfValue = [self doubleValue];
+    double selfAbsoluteValue = fabs([self doubleValue]);
     NSNumber *formattedNumber;
     
-    if (selfValue < minThreshold) {
+    if (selfAbsoluteValue < minThreshold) {
         formattedNumber = @0;
-    } else if (selfValue < maxThreshold) {
+    } else if (selfAbsoluteValue < maxThreshold) {
         formattedNumber = self;
     } else {
         NSNumberFormatter *numberFormatter = [[NSNumberFormatter alloc] init];
