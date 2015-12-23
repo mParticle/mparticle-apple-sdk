@@ -20,6 +20,7 @@
 #import "MPConstants.h"
 #include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSNumber+MPFormatter.h"
 
 // Internal
 NSString *const kMPProductBrand = @"br";
@@ -454,8 +455,9 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     NSAssert([price isKindOfClass:[NSNumber class]], @"'price' must be a number.");
 
     if (price && [price isKindOfClass:[NSNumber class]]) {
-        self.objectDictionary[kMPProductUnitPrice] = price;
-        self.beautifiedAttributes[kMPExpProductUnitPrice] = price;
+        NSNumber *formattedPrice = [price formatWithNonScientificNotation];
+        self.objectDictionary[kMPProductUnitPrice] = formattedPrice;
+        self.beautifiedAttributes[kMPExpProductUnitPrice] = formattedPrice;
         [self calculateTotalAmount];
     }
 }

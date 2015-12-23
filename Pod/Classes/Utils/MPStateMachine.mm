@@ -32,6 +32,7 @@
 #import "MPBags.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
+#import "MPKitContainer.h"
 
 NSString *const kCookieDateKey = @"e";
 NSString *const kMinUploadDateKey = @"MinUploadDate";
@@ -188,6 +189,12 @@ static BOOL runningInBackground = NO;
 - (void)setStoredSDKVersion:(NSString *)storedSDKVersion {
     if (self.storedSDKVersion && storedSDKVersion && [_storedSDKVersion isEqualToString:storedSDKVersion]) {
         return;
+    }
+    
+    NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
+    NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
+    if (![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
+        [[MPKitContainer sharedInstance] removeAllKitConfigurations];
     }
     
     _storedSDKVersion = storedSDKVersion;

@@ -1,5 +1,11 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.1.6
+
+* Verifying the boundaries of eCommerce currency values to avoid numbers represented using scientific notation
+* Early detection of kit configuration change when migrating from SDK 4.x to 5.x
+* Reporting the app key in the request header
+
 ## 5.1.5
 
 * Replaced NSTimer with dispatch_source_t with positive results minimizing the use of energy

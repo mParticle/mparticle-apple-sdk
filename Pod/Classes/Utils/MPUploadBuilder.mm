@@ -128,18 +128,19 @@ using namespace std;
 
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPDataModelAbstract *upload))completionHandler {
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    
     uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
     uploadDictionary[kMPmParticleSDKVersionKey] = kMParticleSDKVersion;
     uploadDictionary[kMPMessageIdKey] = [[NSUUID UUID] UUIDString];
     uploadDictionary[kMPTimestampKey] = MPMilliseconds([[NSDate date] timeIntervalSince1970]);
+    uploadDictionary[kMPApplicationKey] = stateMachine.apiKey;
 
     MPApplication *application = [[MPApplication alloc] init];
     uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
     
     MPDevice *device = [[MPDevice alloc] init];
     uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentation];
-    
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSDictionary *cookies = [stateMachine.consumerInfo cookiesDictionaryRepresentation];
     if (cookies) {

@@ -18,6 +18,7 @@
 
 #import "MPTransactionAttributes.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSNumber+MPFormatter.h"
 
 // Internal keys
 NSString *const kMPTAAffiliation = @"ta";
@@ -182,8 +183,9 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 - (void)setShipping:(NSNumber *)shipping {
     if (shipping && [shipping isKindOfClass:[NSNumber class]]) {
-        self.attributes[kMPTAShipping] = shipping;
-        self.beautifiedAttributes[kMPExpTAShipping] = shipping;
+        NSNumber *formattedNumber = [shipping formatWithNonScientificNotation];
+        self.attributes[kMPTAShipping] = formattedNumber;
+        self.beautifiedAttributes[kMPExpTAShipping] = formattedNumber;
     } else {
         [self.attributes removeObjectForKey:kMPTAShipping];
         [self.beautifiedAttributes removeObjectForKey:kMPExpTAShipping];
@@ -196,8 +198,9 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 - (void)setTax:(NSNumber *)tax {
     if (tax && [tax isKindOfClass:[NSNumber class]]) {
-        self.attributes[kMPTATax] = tax;
-        self.beautifiedAttributes[kMPExpTATax] = tax;
+        NSNumber *formattedNumber = [tax formatWithNonScientificNotation];
+        self.attributes[kMPTATax] = formattedNumber;
+        self.beautifiedAttributes[kMPExpTATax] = formattedNumber;
     } else {
         [self.attributes removeObjectForKey:kMPTATax];
         [self.beautifiedAttributes removeObjectForKey:kMPExpTATax];
@@ -210,8 +213,9 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 - (void)setRevenue:(NSNumber *)revenue {
     if (revenue && [revenue isKindOfClass:[NSNumber class]]) {
-        self.attributes[kMPTARevenue] = revenue;
-        self.beautifiedAttributes[kMPExpTARevenue] = revenue;
+        NSNumber *formattedNumber = [revenue formatWithNonScientificNotation];
+        self.attributes[kMPTARevenue] = formattedNumber;
+        self.beautifiedAttributes[kMPExpTARevenue] = formattedNumber;
     } else {
         [self.attributes removeObjectForKey:kMPTARevenue];
         [self.beautifiedAttributes removeObjectForKey:kMPExpTARevenue];

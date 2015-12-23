@@ -651,7 +651,7 @@
 					"MP_UNIT_TESTING=1",
 				);
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mParticle-iOS-SDK_Example.app/mParticle-iOS-SDK_Example";
 				WRAPPER_EXTENSION = xctest;
@@ -676,7 +676,7 @@
 					"MP_UNIT_TESTING=1",
 				);
 				INFOPLIST_FILE = "Tests/Tests-Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.demo.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.demo.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/mParticle-iOS-SDK_Example.app/mParticle-iOS-SDK_Example";
 				WRAPPER_EXTENSION = xctest;

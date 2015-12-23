@@ -203,8 +203,7 @@ NSString *const kitFileExtension = @"eks";
                         [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
                     }
                 } @catch (NSException *exception) {
-                    [fileManager removeItemAtPath:kitPath error:nil];
-                    [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+                    [self removeKitConfigurationAtPath:kitPath];
                 }
             }
         }
@@ -1703,6 +1702,36 @@ NSString *const kitFileExtension = @"eks";
     }
     
     dispatch_semaphore_signal(kitsSemaphore);
+}
+
+- (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    
+    if ([fileManager fileExistsAtPath:kitPath]) {
+        [fileManager removeItemAtPath:kitPath error:nil];
+        [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+    }
+}
+
+- (void)removeAllKitConfigurations {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    
+    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+        NSArray *directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
+        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
+        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
+        
+        if (directoryContents.count > 0) {
+            [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+
+            for (NSString *fileName in directoryContents) {
+                NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+                [fileManager removeItemAtPath:kitPath error:nil];
+            }
+        }
+    }
 }
 
 - (nonnull NSArray<NSNumber *> *)supportedKits {

@@ -13,6 +13,8 @@
 		754537C92A4EEDE6322C1C4FF71960B5 /* Pods-mParticle-iOS-SDK_Tests-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 52B62D27CF1C45C77DBB6DF0F380ECDD /* Pods-mParticle-iOS-SDK_Tests-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		9E7DBABA230153710610D133E9EDD738 /* Pods-mParticle-iOS-SDK_Example-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = BDCAD642979696F02696C65FCD92EBD6 /* Pods-mParticle-iOS-SDK_Example-dummy.m */; };
 		B400003358DA6A643228BE19CBCFAD6E /* Pods-mParticle-iOS-SDK_Example-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = D3B871B63FB561B17867008A964F3ADF /* Pods-mParticle-iOS-SDK_Example-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C950FB9E1C28B5C9002100E3 /* NSNumber+MPFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = C950FB9C1C28B5C9002100E3 /* NSNumber+MPFormatter.h */; };
+		C950FB9F1C28B5C9002100E3 /* NSNumber+MPFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = C950FB9D1C28B5C9002100E3 /* NSNumber+MPFormatter.m */; };
 		C9595CB11BD56B33002361BD /* libc++.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD1A1BD45CA30002F75A /* libc++.tbd */; };
 		C9595CB21BD56B3A002361BD /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD1C1BD45CA80002F75A /* libsqlite3.tbd */; };
 		C9595CB31BD56B40002361BD /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD1E1BD45CAD0002F75A /* libz.tbd */; };
@@ -285,6 +287,8 @@
 		BEF0BF27336CA9EF568692316750FA7E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C0F55083B2C71D4CF6C69B7C0AA4C632 /* Pods-mParticle-iOS-SDK_Example-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-mParticle-iOS-SDK_Example-acknowledgements.plist"; sourceTree = "<group>"; };
 		C3ACB34E8AEAEB77D1E324113B29E094 /* Pods-mParticle-iOS-SDK_Example-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-mParticle-iOS-SDK_Example-acknowledgements.markdown"; sourceTree = "<group>"; };
+		C950FB9C1C28B5C9002100E3 /* NSNumber+MPFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNumber+MPFormatter.h"; sourceTree = "<group>"; };
+		C950FB9D1C28B5C9002100E3 /* NSNumber+MPFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+MPFormatter.m"; sourceTree = "<group>"; };
 		C977E6671BDEC10D00FE1805 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		C977E6691BDEC11F00FE1805 /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/Accounts.framework; sourceTree = DEVELOPER_DIR; };
 		C977E66B1BDEC12C00FE1805 /* libc++.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = "libc++.tbd"; path = "Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/usr/lib/libc++.tbd"; sourceTree = DEVELOPER_DIR; };
@@ -950,6 +954,8 @@
 				C9C2DC321BD458600002F75A /* MPUploadBuilder.mm */,
 				C9C2DC331BD458600002F75A /* NSDictionary+MPCaseInsensitive.h */,
 				C9C2DC341BD458600002F75A /* NSDictionary+MPCaseInsensitive.m */,
+				C950FB9C1C28B5C9002100E3 /* NSNumber+MPFormatter.h */,
+				C950FB9D1C28B5C9002100E3 /* NSNumber+MPFormatter.m */,
 				C9C2DC351BD458600002F75A /* NSString+MPPercentEscape.h */,
 				C9C2DC361BD458600002F75A /* NSString+MPPercentEscape.m */,
 				C9C2DC371BD458600002F75A /* NSUserDefaults+mParticle.h */,
@@ -1162,6 +1168,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */,
+				C950FB9E1C28B5C9002100E3 /* NSNumber+MPFormatter.h in Headers */,
 				C9C2DCAF1BD458600002F75A /* MPLogger.h in Headers */,
 				C9C2DCC61BD458600002F75A /* MPBackendController.h in Headers */,
 				C9C2DC711BD458600002F75A /* MPCommerceEventInstruction.h in Headers */,
@@ -1511,6 +1518,7 @@
 				C9EE9DAA1BD7C2570083CD37 /* MPKitComScore.m in Sources */,
 				C9C2DCC91BD458600002F75A /* MPConstants.m in Sources */,
 				C9EE9DB41BD7C2570083CD37 /* MPKochavaSpatialCoordinate.m in Sources */,
+				C950FB9F1C28B5C9002100E3 /* NSNumber+MPFormatter.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
