@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.1.7
+
+* Broadcast of the session start notification may incur a delay if the SDK is being started
+
 ## 5.1.6
 
 * Verifying the boundaries of eCommerce currency values to avoid numbers represented using scientific notation
