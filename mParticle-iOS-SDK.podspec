@@ -88,7 +88,7 @@ Pod::Spec.new do |s|
     s.subspec 'Kahuna' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.dependency 'mParticle-iOS-SDK/mParticle'
-        ss.dependency 'KahunaSDK', '1.0.571'
+        ss.dependency 'Kahuna', '2.3.1'
         ss.prefix_header_contents = "#define MP_KIT_KAHUNA 1"
         ss.platform               = :ios, '7.0'
     end
