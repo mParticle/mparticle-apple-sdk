@@ -22,7 +22,7 @@
 #import "MPMediaMetadataDPR.h"
 #import "MPMediaMetadataOCR.h"
 #import "MPMediaMetadataTVR.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @implementation MPMediaTrack
 

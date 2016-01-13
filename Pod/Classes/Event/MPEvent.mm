@@ -17,7 +17,7 @@
 //
 
 #import "MPEvent.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "EventTypeName.h"

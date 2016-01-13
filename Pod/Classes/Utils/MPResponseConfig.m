@@ -17,7 +17,7 @@
 //
 
 #import "MPResponseConfig.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import <UIKit/UIKit.h>
 #import "mParticle.h"

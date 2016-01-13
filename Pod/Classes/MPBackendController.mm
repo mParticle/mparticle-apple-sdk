@@ -20,7 +20,7 @@
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
 #import "MPSession.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
 #import "NSUserDefaults+mParticle.h"

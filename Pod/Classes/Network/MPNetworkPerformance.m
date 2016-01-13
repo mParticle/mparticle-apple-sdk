@@ -17,7 +17,7 @@
 //
 
 #import "MPNetworkPerformance.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 NSString *const kMPNetworkPerformanceURLKey = @"url";
 NSString *const kMPNetworkPerformanceTimeElapsedKey = @"te";

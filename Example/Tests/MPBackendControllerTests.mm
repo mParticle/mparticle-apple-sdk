@@ -18,7 +18,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPBackendController+Tests.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPSession.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"

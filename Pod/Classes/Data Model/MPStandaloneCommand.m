@@ -18,7 +18,7 @@
 
 #import "MPStandaloneCommand.h"
 #import <UIKit/UIKit.h>
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPStandaloneCommand()
 

@@ -17,7 +17,7 @@
 //
 
 #import "MPEvent.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPEvent(Internal)
 

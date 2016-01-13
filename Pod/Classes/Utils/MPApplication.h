@@ -16,7 +16,7 @@
 //  limitations under the License.
 //
 
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPEnums.h"
 
 extern NSString * _Nonnull const kMPApplicationInformationKey;

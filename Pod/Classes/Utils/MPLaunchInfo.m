@@ -17,7 +17,7 @@
 //
 
 #import "MPLaunchInfo.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPLaunchInfo() {
     NSString *sourceApp;

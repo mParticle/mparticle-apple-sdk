@@ -18,7 +18,7 @@
 
 #import "MPAppDelegateProxy.h"
 #import "MPStateMachine.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPSurrogateAppDelegate.h"
 #import "MPLogger.h"
 

@@ -17,7 +17,7 @@
 //
 
 #import "MPStandaloneUpload.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @implementation MPStandaloneUpload
 
