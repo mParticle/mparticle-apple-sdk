@@ -1,7 +1,8 @@
 # mParticle iOS SDK CHANGELOG
 
-## 5.1.7
+## 5.2.0
 
+* Support for [Wootric](https://www.wootric.com) as a kit
 * Broadcast of the session start notification may incur a delay if the SDK is being started
 
 ## 5.1.6

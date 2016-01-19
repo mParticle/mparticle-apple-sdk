@@ -163,7 +163,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Localytics */
     MPKitInstanceLocalytics = 84,
     /** Kit code for Crittercism */
-    MPKitInstanceCrittercism = 86
+    MPKitInstanceCrittercism = 86,
+    /** Kit code for Wootric */
+    MPKitInstanceWootric = 90
 };
 
 /// Log Levels
