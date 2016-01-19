@@ -991,7 +991,6 @@
 		C9EE9D721BD7C2570083CD37 /* Kits */ = {
 			isa = PBXGroup;
 			children = (
-				B22A21311C23075E007AC783 /* Wootric */,
 				C9EE9D731BD7C2570083CD37 /* Adjust */,
 				C9EE9D761BD7C2570083CD37 /* Appboy */,
 				C9EE9D7B1BD7C2570083CD37 /* BranchMetrics */,
@@ -1002,6 +1001,7 @@
 				C9EE9D871BD7C2570083CD37 /* Kahuna */,
 				C9EE9D8B1BD7C2570083CD37 /* Kochava */,
 				C9EE9D901BD7C2570083CD37 /* Localytics */,
+				B22A21311C23075E007AC783 /* Wootric */,
 				C9EE9D931BD7C2570083CD37 /* MPAttributeProjection.h */,
 				C9EE9D941BD7C2570083CD37 /* MPAttributeProjection.m */,
 				C9EE9D951BD7C2570083CD37 /* MPBaseProjection.h */,

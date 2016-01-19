@@ -33,7 +33,17 @@
     NSString *clientSecret = configuration[@"clientSecret"];
     NSString *clientId = configuration[@"clientId"];
 
+    BOOL validConfiguration = accountToken != nil && clientSecret != nil && clientId != nil;
+    if (!validConfiguration) {
+        return nil;
+    }
+
     [Wootric configureWithClientID:clientId clientSecret:clientSecret accountToken:accountToken];
+
+    frameworkAvailable = YES;
+    started = YES;
+    self.forwardedEvents = YES;
+    self.active = YES;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceWootric),
@@ -52,35 +62,34 @@
 }
 
 - (MPKitExecStatus *)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    switch (identityType) {
-        case MPUserIdentityCustomerId:
-            [Wootric setEndUserEmail:identityString];
-            break;
-
-        case MPUserIdentityEmail:
-            [Wootric setEndUserEmail:identityString];
-            break;
-
-        default:
-            break;
+    MPKitReturnCode returnCode;
+    
+    if (identityType == MPUserIdentityCustomerId || identityType == MPUserIdentityEmail) {
+        [Wootric setEndUserEmail:identityString];
+        returnCode = MPKitReturnCodeSuccess;
+    } else {
+        returnCode = MPKitReturnCodeUnavailable;
     }
-
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceWootric) returnCode:MPKitReturnCodeSuccess];
+    
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceWootric) returnCode:returnCode];
     return execStatus;
 }
 
 - (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value {
+    MPKitReturnCode returnCode;
+    
     if (value != nil) {
-        NSDictionary *currentProperties = [Wootric endUserProperties];
-        NSMutableDictionary *newProperties = [[NSMutableDictionary alloc] initWithDictionary:currentProperties];
+        NSMutableDictionary *newProperties = [[Wootric endUserProperties] mutableCopy];
         newProperties[key] = value;
         [Wootric setEndUserProperties:newProperties];
+        returnCode = MPKitReturnCodeSuccess;
+    } else {
+        returnCode = MPKitReturnCodeFail;
     }
 
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceWootric) returnCode:MPKitReturnCodeSuccess];
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceWootric) returnCode:returnCode];
     return execStatus;
 }
-
 
 @end
 

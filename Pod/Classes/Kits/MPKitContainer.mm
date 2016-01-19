@@ -81,6 +81,10 @@
     #import "MPKitLocalytics.h"
 #endif
 
+#if defined(MP_KIT_WOOTRIC)
+    #import "MPKitWootric.h"
+#endif
+
 NSString *const kitFileExtension = @"eks";
 
 @interface MPKitContainer() {
@@ -301,6 +305,11 @@ NSString *const kitFileExtension = @"eks";
 #if defined(MP_KIT_LOCALYTICS)
         case MPKitInstanceLocalytics:
             kit = [[MPKitLocalytics alloc] initWithConfiguration:configuration startImmediately:NO];
+            break;
+#endif
+#if defined(MP_KIT_WOOTRIC)
+        case MPKitInstanceWootric:
+            kit = [[MPKitWootric alloc] initWithConfiguration:configuration];
             break;
 #endif
         default:
@@ -1763,6 +1772,9 @@ NSString *const kitFileExtension = @"eks";
 #endif
 #if defined(MP_KIT_LOCALYTICS)
                                            @(MPKitInstanceLocalytics),
+#endif
+#if defined(MP_KIT_WOOTRIC)
+                                           @(MPKitInstanceWootric),
 #endif
                                            ];
     

@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.2.0
+
+* Support for [Wootric](https://www.wootric.com) as a kit
+
 ## 5.1.6
 
 * Verifying the boundaries of eCommerce currency values to avoid numbers represented using scientific notation

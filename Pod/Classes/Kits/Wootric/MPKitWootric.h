@@ -18,6 +18,8 @@
 
 #if defined(MP_KIT_WOOTRIC)
 
+#import "MPKitAbstract.h"
+
 @interface MPKitWootric : MPKitAbstract <MPKitInstanceProtocol>
 
 @end
