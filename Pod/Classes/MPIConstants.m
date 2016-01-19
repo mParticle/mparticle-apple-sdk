@@ -1,5 +1,5 @@
 //
-//  MPConstants.h
+//  MPIConstants.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,7 +16,7 @@
 //  limitations under the License.
 //
 
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 NSUInteger kMPNumberOfMessageTypes = 17;
 

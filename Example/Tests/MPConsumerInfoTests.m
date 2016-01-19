@@ -18,7 +18,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPConsumerInfo.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPConsumerInfoTests : XCTestCase {
     NSDictionary *responseDictionary;

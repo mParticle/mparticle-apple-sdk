@@ -18,7 +18,7 @@
 
 #import "MPExceptionHandler.h"
 #import "MPMessage.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import <dispatch/dispatch.h>
 #import <execinfo.h>
 #import <signal.h>

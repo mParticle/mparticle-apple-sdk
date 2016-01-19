@@ -17,7 +17,7 @@
 //
 
 #import <CoreLocation/CoreLocation.h>
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPMediaTrack+Internal.h"
 
 @class MPSession;

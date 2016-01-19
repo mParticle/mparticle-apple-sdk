@@ -16,7 +16,7 @@
 //  limitations under the License.
 //
 
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 typedef NS_ENUM(NSInteger, MPProjectionMatchType) {
     MPProjectionMatchTypeNotSpecified = -1,

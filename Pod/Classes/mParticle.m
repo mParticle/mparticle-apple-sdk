@@ -19,7 +19,7 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPSession.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPBackendController.h"
 #import "NSURLConnection+mParticle.h"
 #import "NSUserDefaults+mParticle.h"

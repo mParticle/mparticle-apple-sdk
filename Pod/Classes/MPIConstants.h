@@ -1,5 +1,5 @@
 //
-//  MPConstants.h
+//  MPIConstants.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,8 +16,8 @@
 //  limitations under the License.
 //
 
-#ifndef mParticleSDK_MPConstants_h
-#define mParticleSDK_MPConstants_h
+#ifndef mParticleSDK_MPIConstants_h
+#define mParticleSDK_MPIConstants_h
 
 #import <Foundation/Foundation.h>
 

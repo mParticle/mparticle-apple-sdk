@@ -17,7 +17,7 @@
 //
 
 #import "MParticleUserNotification.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"

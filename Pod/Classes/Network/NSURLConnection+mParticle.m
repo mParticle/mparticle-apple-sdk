@@ -19,7 +19,7 @@
 #import "NSURLConnection+mParticle.h"
 #import <objc/runtime.h>
 #import "MPNetworkPerformance.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPURLConnectionAssociate.h"
 
 typedef NS_ENUM(int, MPSwizzledIndex) {

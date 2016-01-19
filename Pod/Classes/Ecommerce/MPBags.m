@@ -21,7 +21,7 @@
 #import "MPProduct.h"
 #import "MPProductBag.h"
 #import "MPPersistenceController.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPBags()
 

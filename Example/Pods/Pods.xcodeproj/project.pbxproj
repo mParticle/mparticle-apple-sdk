@@ -124,8 +124,8 @@
 		C9C2DCC51BD458600002F75A /* mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBF41BD458600002F75A /* mParticle.m */; };
 		C9C2DCC61BD458600002F75A /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBF51BD458600002F75A /* MPBackendController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCC71BD458600002F75A /* MPBackendController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBF61BD458600002F75A /* MPBackendController.mm */; };
-		C9C2DCC81BD458600002F75A /* MPConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBF71BD458600002F75A /* MPConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C9C2DCC91BD458600002F75A /* MPConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBF81BD458600002F75A /* MPConstants.m */; };
+		C9C2DCC81BD458600002F75A /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBF71BD458600002F75A /* MPIConstants.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9C2DCC91BD458600002F75A /* MPIConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBF81BD458600002F75A /* MPIConstants.m */; };
 		C9C2DCCA1BD458600002F75A /* MPEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBF91BD458600002F75A /* MPEnums.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9C2DCCB1BD458600002F75A /* MPExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DBFA1BD458600002F75A /* MPExceptionHandler.h */; };
 		C9C2DCCC1BD458600002F75A /* MPExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DBFB1BD458600002F75A /* MPExceptionHandler.m */; };
@@ -408,8 +408,8 @@
 		C9C2DBF41BD458600002F75A /* mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = mParticle.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C9C2DBF51BD458600002F75A /* MPBackendController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
 		C9C2DBF61BD458600002F75A /* MPBackendController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPBackendController.mm; sourceTree = "<group>"; };
-		C9C2DBF71BD458600002F75A /* MPConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPConstants.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		C9C2DBF81BD458600002F75A /* MPConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPConstants.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		C9C2DBF71BD458600002F75A /* MPIConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPIConstants.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C9C2DBF81BD458600002F75A /* MPIConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPIConstants.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C9C2DBF91BD458600002F75A /* MPEnums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEnums.h; sourceTree = "<group>"; };
 		C9C2DBFA1BD458600002F75A /* MPExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExceptionHandler.h; sourceTree = "<group>"; };
 		C9C2DBFB1BD458600002F75A /* MPExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPExceptionHandler.m; sourceTree = "<group>"; };
@@ -1146,8 +1146,8 @@
 				C9C2DBF41BD458600002F75A /* mParticle.m */,
 				C9C2DBF51BD458600002F75A /* MPBackendController.h */,
 				C9C2DBF61BD458600002F75A /* MPBackendController.mm */,
-				C9C2DBF71BD458600002F75A /* MPConstants.h */,
-				C9C2DBF81BD458600002F75A /* MPConstants.m */,
+				C9C2DBF71BD458600002F75A /* MPIConstants.h */,
+				C9C2DBF81BD458600002F75A /* MPIConstants.m */,
 				C9C2DBF91BD458600002F75A /* MPEnums.h */,
 				C9C2DD061BD458D50002F75A /* MPEnums.m */,
 				C9C2DBFA1BD458600002F75A /* MPExceptionHandler.h */,
@@ -1224,7 +1224,7 @@
 				C9C2DCE11BD458600002F75A /* MPPersistenceController.h in Headers */,
 				C9C2DC431BD458600002F75A /* MPCustomModule.h in Headers */,
 				C9C2DC451BD458600002F75A /* MPCustomModulePreference.h in Headers */,
-				C9C2DCC81BD458600002F75A /* MPConstants.h in Headers */,
+				C9C2DCC81BD458600002F75A /* MPIConstants.h in Headers */,
 				C9C2DC4D1BD458600002F75A /* MPConsumerInfo.h in Headers */,
 				C9C2DCE91BD458600002F75A /* MPHasher.h in Headers */,
 				C9C2DC7B1BD458600002F75A /* MPTransactionAttributes+Dictionary.h in Headers */,
@@ -1532,7 +1532,7 @@
 				C9C2DCDE1BD458600002F75A /* MPNotificationController.m in Sources */,
 				C9EE9DC61BD7C2570083CD37 /* MPKitFilter.m in Sources */,
 				C9EE9DAA1BD7C2570083CD37 /* MPKitComScore.m in Sources */,
-				C9C2DCC91BD458600002F75A /* MPConstants.m in Sources */,
+				C9C2DCC91BD458600002F75A /* MPIConstants.m in Sources */,
 				C9EE9DB41BD7C2570083CD37 /* MPKochavaSpatialCoordinate.m in Sources */,
 				C950FB9F1C28B5C9002100E3 /* NSNumber+MPFormatter.m in Sources */,
 			);

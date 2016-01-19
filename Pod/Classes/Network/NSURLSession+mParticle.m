@@ -19,7 +19,7 @@
 #import "NSURLSession+mParticle.h"
 #import <objc/runtime.h>
 #import "MPNetworkPerformance.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 typedef NS_ENUM(int, MPURLSessionSwizzledIndex) {
     MPURLSessionSwizzledIndexDataTaskWithURL = 0, // Instance methods

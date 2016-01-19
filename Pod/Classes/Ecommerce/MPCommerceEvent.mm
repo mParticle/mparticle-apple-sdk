@@ -24,7 +24,7 @@
 #import "MPPromotion+Dictionary.h"
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPCart.h"
 #import "MPCart+Dictionary.h"
 #import "MPEnums.h"
