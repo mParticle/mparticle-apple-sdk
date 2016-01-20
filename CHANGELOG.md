@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.2.1
+
+* Fixing the location of the Wootric subspec
+
 ## 5.2.0
 
 * Support for [Wootric](https://www.wootric.com) as a kit

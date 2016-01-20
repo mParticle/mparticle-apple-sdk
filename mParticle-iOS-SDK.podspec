@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-iOS-SDK"
-    s.version          = "5.2.0"
+    s.version          = "5.2.1"
     s.summary          = "mParticle iOS SDK."
 
     s.description      = <<-DESC
@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticles"
     s.requires_arc      = true
     s.platform          = :ios, '7.0'
-    s.default_subspecs  = 'mParticle', 'CrashReporter', 'Adjust', 'Appboy', 'BranchMetrics', 'comScore', 'Flurry', 'Kahuna', 'Kochava', 'Localytics'
+    s.default_subspecs  = 'mParticle', 'CrashReporter', 'Adjust', 'Appboy', 'BranchMetrics', 'comScore', 'Flurry', 'Kahuna', 'Kochava', 'Localytics', 'Wootric'
 
     s.subspec 'Core-SDK' do |ss|
         ss.public_header_files = 'Pod/Classes/mParticle.h', 'Pod/Classes/MPEnums.h', 'Pod/Classes/MPUserSegments.h', \
@@ -30,7 +30,7 @@ Pod::Spec.new do |s|
                                  'Pod/Classes/Ecommerce/MPTransactionAttributes.h', 'Pod/Classes/Ecommerce/MPBags.h'
         ss.source_files        = 'Pod/Classes/**/*'
         ss.platform            = :ios, '7.0'
-        ss.frameworks          = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit', 'Wootric'
+        ss.frameworks          = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
         ss.weak_framework      = 'AdSupport', 'iAd'
         ss.libraries           = 'c++', 'sqlite3', 'z'
     end
