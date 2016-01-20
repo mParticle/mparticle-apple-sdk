@@ -17,7 +17,7 @@
 //
 
 #import "MPEvent+Internal.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPProduct.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"

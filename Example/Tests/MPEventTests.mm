@@ -19,7 +19,7 @@
 #import <XCTest/XCTest.h>
 #import "MPEvent.h"
 #import "MPEvent+Internal.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
 

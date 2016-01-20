@@ -18,7 +18,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPMessageBuilder.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPStandaloneMessage.h"

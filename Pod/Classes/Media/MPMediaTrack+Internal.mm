@@ -17,7 +17,7 @@
 //
 
 #import "MPMediaTrack+Internal.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "EventTypeName.h"
 
 NSString *const MPMediaTrackChannelKey = @"chn";

@@ -17,7 +17,7 @@
 //
 
 #import "MPProduct.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSNumber+MPFormatter.h"

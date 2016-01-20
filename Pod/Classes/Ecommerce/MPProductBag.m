@@ -17,7 +17,7 @@
 //
 
 #import "MPProductBag.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 

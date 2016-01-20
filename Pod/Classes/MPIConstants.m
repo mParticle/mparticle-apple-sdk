@@ -1,5 +1,5 @@
 //
-//  MPConstants.h
+//  MPIConstants.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,12 +16,12 @@
 //  limitations under the License.
 //
 
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 NSUInteger kMPNumberOfMessageTypes = 17;
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"5.1.6";
+NSString *const kMParticleSDKVersion = @"5.2.0";
 
 // Session Upload Settings
 NSString *const kMPSessionHistoryValue = @"sh";

@@ -18,7 +18,7 @@
 
 #import "MPNotificationController.h"
 #import <UIKit/UIKit.h>
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPPersistenceController.h"
 

@@ -22,7 +22,7 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPTransactionAttributes.h"
 #import "mParticle.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @implementation MPCommerce
 

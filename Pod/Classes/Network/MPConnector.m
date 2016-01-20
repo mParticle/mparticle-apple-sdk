@@ -18,7 +18,7 @@
 
 #import "MPConnector.h"
 #import <dispatch/dispatch.h>
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPURLRequestBuilder.h"
 #import "MPNetworkCommunication.h"

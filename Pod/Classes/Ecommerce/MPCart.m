@@ -21,7 +21,7 @@
 #import "MPProduct+Dictionary.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "mParticle.h"
 #import "MPLogger.h"
 

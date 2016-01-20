@@ -19,7 +19,7 @@
 #import "MPURLRequestBuilder.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import "MPStateMachine.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import <UIKit/UIKit.h>
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitContainer.h"

@@ -17,7 +17,7 @@
 //
 
 #import "MPDataModelAbstract.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPDataModelProtocol.h"
 
 @interface MPStandaloneMessage : MPDataModelAbstract <NSCopying, NSCoding, MPDataModelProtocol>

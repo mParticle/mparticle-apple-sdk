@@ -12,7 +12,7 @@
 #import "MPSession.h"
 #import "MPUpload.h"
 #import "MPStateMachine.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPPersistenceController.h"
 #import "MPCustomModule.h"

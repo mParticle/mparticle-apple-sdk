@@ -20,7 +20,7 @@
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
 #import "MPSession.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
 #import "NSUserDefaults+mParticle.h"
@@ -382,7 +382,9 @@ static BOOL appBackgrounded = NO;
     [self.delegate sessionDidBegin:session];
     
     __weak MPBackendController *weakSelf = self;
-    dispatch_async(notificationsQueue, ^{
+    double delay = _initializationStatus == MPInitializationStatusStarted ? 0 : 0.1;
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), notificationsQueue, ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification

@@ -30,7 +30,7 @@
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
 #import "MPNotificationController.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 #if !defined(MP_NO_IDFA)
 #import "AdSupport/ASIdentifierManager.h"

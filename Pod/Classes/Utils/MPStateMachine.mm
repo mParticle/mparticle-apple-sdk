@@ -18,7 +18,7 @@
 
 #import "MPStateMachine.h"
 #import "NSUserDefaults+mParticle.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPDevice.h"

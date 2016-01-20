@@ -20,7 +20,7 @@
 #import "MPStateMachine.h"
 #import "MPNotificationController.h"
 #import "MPNotificationController+Tests.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MParticleUserNotification.h"
 
 @interface MPNotificationControllerTests : XCTestCase <MPNotificationControllerDelegate>

@@ -18,7 +18,7 @@
 
 #import "MPKitConfiguration.h"
 #include "MPHasher.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
 

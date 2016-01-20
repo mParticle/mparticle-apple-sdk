@@ -17,7 +17,7 @@
 //
 
 #import "MPBreadcrumb.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPBreadcrumb()
 @property (nonatomic, strong) NSString *content;
