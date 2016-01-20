@@ -18,7 +18,6 @@ Pod::Spec.new do |s|
     s.author            = { "mParticle" => "support@mparticle.com" }
     s.source            = { :git => "https://github.com/mParticle/mParticle-iOS-SDK.git", :tag => s.version.to_s }
     s.documentation_url = "http://docs.mparticle.com"
-    s.docset_url        = "https://static.mparticle.com/sdk/ios/com.mparticle.mParticle-SDK.docset/Contents/Resources/Documents/index.html"
     s.social_media_url  = "https://twitter.com/mparticles"
     s.requires_arc      = true
     s.platform          = :ios, '7.0'
@@ -31,7 +30,7 @@ Pod::Spec.new do |s|
                                  'Pod/Classes/Ecommerce/MPTransactionAttributes.h', 'Pod/Classes/Ecommerce/MPBags.h'
         ss.source_files        = 'Pod/Classes/**/*'
         ss.platform            = :ios, '7.0'
-        ss.frameworks          = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
+        ss.frameworks          = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit', 'Wootric'
         ss.weak_framework      = 'AdSupport', 'iAd'
         ss.libraries           = 'c++', 'sqlite3', 'z'
     end
