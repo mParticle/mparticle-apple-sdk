@@ -17,7 +17,7 @@
 //
 
 #import "MPForwardRecord.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPLogger.h"
 #import "MPKitFilter.h"
 #include "EventTypeName.h"

@@ -1,5 +1,5 @@
 //
-//  MPEvent+Internal.h
+//  MPKitWootric.h
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -16,15 +16,12 @@
 //  limitations under the License.
 //
 
-#import "MPEvent.h"
-#import "MPIConstants.h"
+#if defined(MP_KIT_WOOTRIC)
 
-@interface MPEvent(Internal)
+#import "MPKitAbstract.h"
 
-- (void)beginTiming;
-- (NSDictionary *)breadcrumbDictionaryRepresentation;
-- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
-- (void)endTiming;
-- (NSDictionary *)screenDictionaryRepresentation;
+@interface MPKitWootric : MPKitAbstract <MPKitInstanceProtocol>
 
 @end
+
+#endif

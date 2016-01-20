@@ -19,7 +19,7 @@
 #import <XCTest/XCTest.h>
 #import "MPCustomModule.h"
 #import "MPCustomModulePreference.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @interface MPCustomModuleTests : XCTestCase
 

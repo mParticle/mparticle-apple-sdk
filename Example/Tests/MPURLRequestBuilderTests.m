@@ -20,7 +20,7 @@
 #import "MPURLRequestBuilder.h"
 #import "MPURLRequestBuilder+Tests.h"
 #import "MPStateMachine.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPConsumerInfo.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"

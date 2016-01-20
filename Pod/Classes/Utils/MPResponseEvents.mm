@@ -18,7 +18,7 @@
 
 #import "MPResponseEvents.h"
 #import "MPConsumerInfo.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPCommand.h"
 #import "MPStandaloneCommand.h"
 #import "MPPersistenceController.h"

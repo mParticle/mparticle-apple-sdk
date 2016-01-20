@@ -24,7 +24,7 @@
 #import "MPCommand.h"
 #import "MPSegment.h"
 #import "MPSegmentMembership.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStandaloneMessage.h"
 #import "MPStandaloneUpload.h"
 #import "MPStandaloneCommand.h"

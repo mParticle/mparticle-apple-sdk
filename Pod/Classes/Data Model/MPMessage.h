@@ -17,7 +17,7 @@
 //
 
 #import "MPDataModelAbstract.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPDataModelProtocol.h"
 
 @class MPSession;

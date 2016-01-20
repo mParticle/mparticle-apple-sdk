@@ -17,7 +17,7 @@
 //
 
 #import "MPCustomModule.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPCustomModulePreference.h"
 
 @interface MPCustomModule()

@@ -18,7 +18,7 @@
 
 #import "MPUpload.h"
 #import "MPSession.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 @implementation MPUpload
 

@@ -27,7 +27,7 @@
 #import "MPDevice.h"
 #import "MPApplication.h"
 #import "MPSegment.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 #import "MPStandaloneCommand.h"
 #import "MPStandaloneUpload.h"
 #import "MPZip.h"

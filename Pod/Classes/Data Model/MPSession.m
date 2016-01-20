@@ -17,7 +17,7 @@
 //
 
 #import "MPSession.h"
-#import "MPConstants.h"
+#import "MPIConstants.h"
 
 NSString *const sessionNumberFileName = @"SessionNumber";
 NSString *const sessionUUIDKey = @"sessionId";
