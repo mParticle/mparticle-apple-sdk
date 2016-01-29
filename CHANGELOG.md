@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.2.2
+
+* Fixed an overloaded start method that was overriding the running environment parameter
+
 ## 5.2.1
 
 * Fixing the location of the Wootric subspec

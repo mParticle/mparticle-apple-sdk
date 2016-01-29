@@ -1667,7 +1667,7 @@
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.Pods-mParticle-iOS-SDK-Tests";
 				PRODUCT_NAME = Pods_mParticle_iOS_SDK_Tests;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1698,7 +1698,7 @@
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.Pods-mParticle-iOS-SDK-Example";
 				PRODUCT_NAME = Pods_mParticle_iOS_SDK_Example;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1729,7 +1729,7 @@
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.Pods-mParticle-iOS-SDK-Example";
 				PRODUCT_NAME = Pods_mParticle_iOS_SDK_Example;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1925,7 +1925,7 @@
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.Pods-mParticle-iOS-SDK-Example";
 				PRODUCT_NAME = Pods_mParticle_iOS_SDK_Example;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1956,7 +1956,7 @@
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.Pods-mParticle-iOS-SDK-Tests";
 				PRODUCT_NAME = Pods_mParticle_iOS_SDK_Tests;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -1987,7 +1987,7 @@
 				OTHER_LDFLAGS = "";
 				OTHER_LIBTOOLFLAGS = "";
 				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.Pods-mParticle-iOS-SDK-Tests";
 				PRODUCT_NAME = Pods_mParticle_iOS_SDK_Tests;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
