@@ -27,7 +27,7 @@ pod 'mParticle-iOS-SDK', '~> 5'
 
 **Note:** Configuring you Podfile with the statement above will include _all_ integrations defined in the default subspecs. (See note in [Crash Reporter](#crash-reporter)). You can choose to integrate only a subset of kits by specifying which ones in your Podfile using the pattern `pod 'mParticle-iOS-SDK/<kit>'`, as we can see in the sample configuration below:
 
-#### Choose and Pick Kits
+#### Pick and Choose Kits
 
 ```ruby
 pod 'mParticle-iOS-SDK/Appboy'
@@ -102,6 +102,41 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 }
 ```
 
+
+## Dynamically Loaded and Static Libraries
+
+If you are using a dynamically loaded library installed via CocoaPods, you have probably uncommented `use_frameworks!` in your Podfile. In order to have the mParticle SDK to work is such situation you will need to add the following pre and post statements to your Podfile:
+
+The `pre_install` statement should be added right after `use_frameworks!`, but before any of the targets.
+
+```ruby
+use_frameworks!
+
+pre_install do |pre_i|
+    def pre_i.verify_no_static_framework_transitive_dependencies; end
+end
+
+target 'your_project' do
+...
+```
+
+The `post_install` statement should be added after the last target.
+
+```ruby
+target 'your_project_last_target' do
+...
+end
+
+post_install do |pi|
+    pi.pods_project.targets.each do |target|
+        target.build_configurations.each do |config|
+            if target.name == "mParticle-iOS-SDK"
+                config.build_settings["OTHER_LDFLAGS"]  = '$(inherited) "-ObjC"'
+            end
+        end
+    end
+end
+```
 
 
 ## Migrating From Version 4.x to Version 5.x

@@ -1,5 +1,10 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.2.2
+
+* Updated the podspec and README to allow for the utilization of `use_frameworks!` and the mParticle SDK
+* Fixed an overloaded start method that was overriding the running environment parameter
+
 ## 5.2.1
 
 * Fixing the location of the Wootric subspec

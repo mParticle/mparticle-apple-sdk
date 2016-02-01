@@ -427,7 +427,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment {
-    [self startWithKey:apiKey secret:secret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
+    [self startWithKey:apiKey secret:secret installationType:installationType environment:environment proxyAppDelegate:YES];
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate {
