@@ -98,6 +98,8 @@ Pod::Spec.new do |s|
         ss.dependency 'Kochava'
         ss.prefix_header_contents = "#define MP_KIT_KOCHAVA 1"
         ss.platform               = :ios, '7.0'
+        ss.pod_target_xcconfig    = {'FRAMEWORK_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/Kochava',
+                                     'OTHER_LDFLAGS'          => '$(inherited) -undefined dynamic_lookup'}
     end
 
     s.subspec 'Localytics' do |ss|
