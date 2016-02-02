@@ -53,6 +53,10 @@
     #import "MPKitAppboy.h"
 #endif
 
+#if defined(MP_KIT_APPSFLYER)
+    #import "MPKitAppsFlyer.h"
+#endif
+
 #if defined(MP_KIT_BRANCHMETRICS)
     #import "MPKitBranchMetrics.h"
 #endif
@@ -270,6 +274,11 @@ NSString *const kitFileExtension = @"eks";
 #if defined(MP_KIT_APPBOY)
         case MPKitInstanceAppboy:
             kit = [[MPKitAppboy alloc] initWithConfiguration:configuration startImmediately:NO];
+            break;
+#endif
+#if defined(MP_KIT_APPSFLYER)
+        case MPKitInstanceAppsFlyer:
+            kit = [[MPKitAppsFlyer alloc] initWithConfiguration:configuration];
             break;
 #endif
 #if defined(MP_KIT_BRANCHMETRICS)
@@ -1751,6 +1760,9 @@ NSString *const kitFileExtension = @"eks";
 #endif
 #if defined(MP_KIT_APPBOY)
                                            @(MPKitInstanceAppboy),
+#endif
+#if defined(MP_KIT_APPSFLYER)
+                                           @(MPKitInstanceAppsFlyer),
 #endif
 #if defined(MP_KIT_BRANCHMETRICS)
                                            @(MPKitInstanceBranchMetrics),
