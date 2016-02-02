@@ -256,6 +256,10 @@ static KochavaTracker *kochavaTracker = nil;
 
 - (MPKitExecStatus *)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
     MPKitExecStatus *execStatus = nil;
+    if (!identityString) {
+        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceKochava) returnCode:MPKitReturnCodeRequirementsNotMet];
+        return execStatus;
+    }
     NSDictionary *userIdentityDictionary = @{MPUserIdentityTypeKey:@(identityType),
                                              MPUserIdentityIdKey:identityString};
     
