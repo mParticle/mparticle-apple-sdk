@@ -72,6 +72,7 @@ With each integration with a partner we strive to implement as many features as 
 * [Kochava](https://www.kochava.com)
 * [Localytics](http://www.localytics.com)
 * [Wootric](https://www.wootric.com)
+* [AppsFlyer](https://www.appsflyer.com)
 
 ## Initialize the SDK
 
