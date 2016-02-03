@@ -21,7 +21,7 @@
 #import "MPKitKochava.h"
 #import "MPKochavaSpatialCoordinate.h"
 #import "MPEnums.h"
-#import "TrackAndAd.h"
+#import "MPTrackAndAd.h"
 
 NSString *const kvAppId = @"appId";
 NSString *const kvCurrency = @"currency";
@@ -36,7 +36,7 @@ NSString *const kvEcommerce = @"eCommerce";
 NSString *const MPUserIdentityIdKey = @"i";
 NSString *const MPUserIdentityTypeKey = @"n";
 
-static KochavaTracker *kochavaTracker = nil;
+static MPKochavaTracker *kochavaTracker = nil;
 
 @interface MPKitKochava() {
     BOOL isNewUser;
@@ -48,7 +48,7 @@ static KochavaTracker *kochavaTracker = nil;
 @implementation MPKitKochava
 
 #pragma mark Accessors and private methods
-- (void)kochavaTracker:(void (^)(KochavaTracker *const kochavaTracker))completionHandler {
+- (void)kochavaTracker:(void (^)(MPKochavaTracker *const kochavaTracker))completionHandler {
     static dispatch_once_t kochavaPredicate;
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -77,8 +77,8 @@ static KochavaTracker *kochavaTracker = nil;
                 kochavaInfo[@"isNewUser"] = isNewUser ? @"1" : @"0";
             }
             
-            CFTypeRef kochavaTrackRef = CFRetain((__bridge CFTypeRef)[[KochavaTracker alloc] initKochavaWithParams:kochavaInfo]);
-            kochavaTracker = (__bridge KochavaTracker *)kochavaTrackRef;
+            CFTypeRef kochavaTrackRef = CFRetain((__bridge CFTypeRef)[[NSClassFromString(@"KochavaTracker") alloc] initKochavaWithParams:kochavaInfo]);
+            kochavaTracker = (__bridge MPKochavaTracker *)kochavaTrackRef;
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceKochava),
@@ -123,7 +123,7 @@ static KochavaTracker *kochavaTracker = nil;
     }
     
     if (identityInfo.count > 0) {
-        [self kochavaTracker:^(KochavaTracker *const kochavaTracker) {
+        [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
             [kochavaTracker identityLinkEvent:(NSDictionary *)identityInfo];
         }];
     }
@@ -178,14 +178,14 @@ static KochavaTracker *kochavaTracker = nil;
     }
     
     if (identityInfo.count > 0) {
-        [self kochavaTracker:^(KochavaTracker *const kochavaTracker) {
+        [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
             [kochavaTracker identityLinkEvent:(NSDictionary *)identityInfo];
         }];
     }
 }
 
 - (void)retrieveAttributionWithCompletionHandler:(void(^)(NSDictionary *attribution))completionHandler {
-    [self kochavaTracker:^(KochavaTracker *const kochavaTracker) {
+    [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
         NSDictionary *attribution = [kochavaTracker retrieveAttribution];
         completionHandler(attribution);
     }];
@@ -205,7 +205,7 @@ static KochavaTracker *kochavaTracker = nil;
     isNewUser = NO;
     
     __weak MPKitKochava *weakSelf = self;
-    [self kochavaTracker:^(KochavaTracker *const kochavaTracker) {
+    [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
         __strong MPKitKochava *strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -237,7 +237,7 @@ static KochavaTracker *kochavaTracker = nil;
 
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {
     kitDebugMode = debugMode;
-    [self kochavaTracker:^(KochavaTracker *const kochavaTracker) {
+    [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
         [kochavaTracker enableConsoleLogging:debugMode];
     }];
     
@@ -246,7 +246,7 @@ static KochavaTracker *kochavaTracker = nil;
 }
 
 - (MPKitExecStatus *)setOptOut:(BOOL)optOut {
-    [self kochavaTracker:^(KochavaTracker *const kochavaTracker) {
+    [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
         [kochavaTracker setLimitAdTracking:optOut];
     }];
     

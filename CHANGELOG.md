@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.2.3
+
+* Indirect instantiation of Kochava to allow it to work in the mParticle SDK with dynamically linked frameworks, `use_frameworks!`, bitcode, and static libraries
+
 ## 5.2.2
 
 * Updated the podspec and README to allow for the utilization of `use_frameworks!` and the mParticle SDK
