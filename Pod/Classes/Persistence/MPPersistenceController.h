@@ -51,6 +51,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
 - (void)deleteExpiredUserNotifications;
 - (void)deleteForwardRecodsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
+- (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)deleteMessagesWithNoSession;
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;

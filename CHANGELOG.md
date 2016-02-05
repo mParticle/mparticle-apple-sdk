@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.2.4
+
+* Preventing session history batch being sent when data is ramped
+
 ## 5.2.3
 
 * Indirect instantiation of Kochava to allow it to work in the mParticle SDK with dynamically linked frameworks, `use_frameworks!`, bitcode, and static libraries

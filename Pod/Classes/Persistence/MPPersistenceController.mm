@@ -708,6 +708,32 @@ static NSString *stringValue(sqlite3_stmt *const preparedStatement, const int co
     });
 }
 
+- (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages {
+    if (messages.count == 0) {
+        return;
+    }
+    
+    dispatch_barrier_async(dbQueue, ^{
+        NSMutableArray *messageIds = [[NSMutableArray alloc] initWithCapacity:messages.count];
+        for (MPMessage *message in messages) {
+            [messageIds addObject:@(message.messageId)];
+        }
+        
+        NSString *idsString = [NSString stringWithFormat:@"%@", [messageIds componentsJoinedByString:@","]];
+        NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", idsString];
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = string([sqlString UTF8String]);
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPLogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+}
+
 - (void)deleteMessagesWithNoSession {
     dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;

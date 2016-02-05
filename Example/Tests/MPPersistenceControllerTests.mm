@@ -159,6 +159,38 @@
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECATIONS_TIMEOUT handler:nil];
 }
 
+- (void)testDeleteMessages {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    
+    for (int i = 0; i < 10; ++i) {
+        NSString *key = [NSString stringWithFormat:@"Key%@", @(i)];
+        NSString *value = [NSString stringWithFormat:@"Value%@", @(i)];
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                               session:session
+                                                                           messageInfo:@{key:value}];
+        MPMessage *message = (MPMessage *)[messageBuilder build];
+        [persistence saveMessage:message];
+    }
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
+    
+    [persistence fetchMessagesForUploadingInSession:session
+                                  completionHandler:^(NSArray<MPMessage *> *messages) {
+                                      [persistence deleteMessages:messages];
+                                      
+                                      [persistence fetchMessagesForUploadingInSession:session
+                                                                    completionHandler:^(NSArray *messages) {
+                                                                        XCTAssertNil(messages, @"Should have been nil.");
+                                                                        
+                                                                        [expectation fulfill];
+                                                                    }];
+                                  }];
+    
+    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+}
+
 - (void)testUpload {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
     

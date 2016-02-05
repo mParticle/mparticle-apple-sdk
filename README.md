@@ -22,38 +22,40 @@ Your job is to build an awesome app experience that consumers love. You also nee
 mParticle-iOS-SDK is available through [CocoaPods](https://cocoapods.org/?q=mparticle). To install it, simply add the following statement to your Podfile:
 
 ```ruby
-pod 'mParticle-iOS-SDK', '~> 5'
+target '<Your Target>' do
+    pod 'mParticle-iOS-SDK', '~> 5'
+end
 ```
 
-**Note:** Configuring you Podfile with the statement above will include _all_ integrations defined in the default subspecs. (See note in [Crash Reporter](#crash-reporter)). You can choose to integrate only a subset of kits by specifying which ones in your Podfile using the pattern `pod 'mParticle-iOS-SDK/<kit>'`, as we can see in the sample configuration below:
+> Configuring you Podfile with the statement above will include _all_ integrations defined in the default subspecs. (See note in [Crash Reporter](#crash-reporter)). You can choose to integrate only a subset of kits by specifying which ones in your Podfile using the pattern `pod 'mParticle-iOS-SDK/<kit>'`, as we can see in the sample configuration below:
 
 #### Pick and Choose Kits
 
 ```ruby
-pod 'mParticle-iOS-SDK/Appboy'
-pod 'mParticle-iOS-SDK/BranchMetrics'
-pod 'mParticle-iOS-SDK/Localytics'
+pod 'mParticle-iOS-SDK/Appboy', '~> 5'
+pod 'mParticle-iOS-SDK/BranchMetrics', '~> 5'
+pod 'mParticle-iOS-SDK/Localytics', '~> 5'
 ```
 
-In the case above, only the [Appboy](https://www.appboy.com), [Branch Metrics](https://branch.io), and [Localytics](http://www.localytics.com) kits would be integrated, all other kits would be left out.
+In the case above, only the Appboy, Branch Metrics, and Localytics kits would be integrated, all other kits would be left out.
 
 If you do not need to build the mParticle SDK with any kit 3rd party kits, and utilize only the server-to-server integrations, you can do it by configuring your Podfile with the following statement:
 
 #### mParticle SDK Only
 
 ```ruby
-pod 'mParticle-iOS-SDK/mParticle'
+pod 'mParticle-iOS-SDK/mParticle', '~> 5'
 ```
 
 #### Crash Reporter
 
-The crash reporter feature has been implemented as an optional subspec. It is installed by default, however, if you are fine tunning your installation, you can choose to install it or not in your Podfile. 
+The crash reporter feature has been implemented as an optional subspec. It is installed by default, however, if you are fine tuning your installation, you can choose to install it or not in your Podfile.
 
 ```ruby
-pod 'mParticle-iOS-SDK/CrashReporter'
+pod 'mParticle-iOS-SDK/CrashReporter', '~> 5'
 ```
 
-**Note:** CrashReporter and Crittercism are mutually exclusive subspecs. If your app needs to use the Crittercism kit, it must _not_ include the CrashReporter subspec in your Podfile.
+> CrashReporter and Crittercism are mutually exclusive subspecs. If your app needs to use the Crittercism kit, it must _not_ include the CrashReporter subspec in your Podfile.
 
 
 ### Kits
@@ -76,14 +78,17 @@ With each integration with a partner we strive to implement as many features as 
 
 ## Initialize the SDK
 
-Call the `startWithKey` method within the application did finish launching delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. 
+The mParticle SDK is initialized by calling the `startWithKey` method within the `application:didFinishLaunchingWithOptions:` delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`
 
 #### Swift
 
 ```swift
 func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
+    // Other code goes here, prior to initializing the mParticle SDK
+    // ...
+
     MParticle.sharedInstance().startWithKey("<<<App Key Here>>>", secret:"<<<App Secret Here>>>")
-        
+
     return true
 }
 ```
@@ -94,8 +99,10 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 #import <mParticle.h>
 
 - (BOOL)application:(UIApplication *)application
-        didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
-{
+        didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    // Other code goes here, prior to initializing the mParticle SDK
+    // ...
+
     [[MParticle sharedInstance] startWithKey:@"<<<App Key Here>>>"
                                       secret:@"<<<App Secret Here>>>"];
 
@@ -189,7 +196,14 @@ mParticle, Inc.
 
 ## Usage
 
-To run the example project, clone the repo, and run `pod install` from the Example directory first.
+Clone the repository to your local machine
+
+```bash
+git clone git@github.com:mParticle/mParticle-iOS-SDK.git
+```
+
+Running the iOS sample app is as simple as selecting the **mParticle-iOS-SDK-Example** scheme, build and run.
+
 
 ## License
 

@@ -665,6 +665,7 @@ static BOOL appBackgrounded = NO;
                                                                        }
                                                                        
                                                                        [persistence deleteNetworkPerformanceMessages];
+                                                                       [persistence deleteMessages:messages];
                                                                        return;
                                                                    }
                                                                    
@@ -834,6 +835,16 @@ static BOOL appBackgrounded = NO;
                                                                return;
                                                            }
                                                            
+                                                           if ([MPStateMachine sharedInstance].dataRamped) {
+                                                               for (MPUpload *upload in uploads) {
+                                                                   [persistence deleteUpload:upload];
+                                                               }
+                                                               
+                                                               [persistence deleteNetworkPerformanceMessages];
+                                                               [persistence deleteMessages:messages];
+                                                               return;
+                                                           }
+
                                                            [strongSelf.networkCommunication uploadSessionHistory:sessionHistory
                                                                                                completionHandler:^(BOOL success) {
                                                                                                    void (^deleteUploadIds)(NSArray *uploadIds) = ^(NSArray *uploadIds) {
