@@ -31,6 +31,11 @@
 @property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *projections;
 @property (nonatomic, strong, readonly, nullable) NSNumber *kitCode;
 
+@property (nonatomic, assign) BOOL attributeValueFilteringIsActive;
+@property (nonatomic, assign) BOOL attributeValueFilteringShouldIncludeMatches;
+@property (nonatomic, strong, nullable) NSString *attributeValueFilteringHashedAttribute;
+@property (nonatomic, strong, nullable) NSString *attributeValueFilteringHashedValue;
+
 @property (nonatomic, weak, readonly) NSDictionary *eventTypeFilters;
 @property (nonatomic, weak, readonly) NSDictionary *eventNameFilters;
 @property (nonatomic, weak, readonly) NSDictionary *eventAttributeFilters;

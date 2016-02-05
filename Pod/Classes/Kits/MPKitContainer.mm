@@ -441,12 +441,44 @@ NSString *const kitFileExtension = @"eks";
     return _kitConfigurations;
 }
 
+- (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
+    
+    if (!configuration.attributeValueFilteringIsActive) {
+        return YES;
+    }
+    
+    __block BOOL isMatch = NO;
+    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
+            *stop = YES;
+            if ([obj isKindOfClass:[NSString class]]) {
+                NSString *value = (NSString *)obj;
+                NSString *hashedValue = [NSString stringWithCString:mParticle::Hasher::hashString([[value lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
+                    isMatch = YES;
+                }
+            }
+        }
+    }];
+    
+    BOOL shouldInclude = configuration.attributeValueFilteringShouldIncludeMatches ? isMatch : !isMatch;
+    return shouldInclude;
+}
+
 #pragma mark Filtering methods
 - (void)filterKit:(MPKitAbstract *)kit forCommerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kit.kitCode];
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter;
     void (^completionHandlerCopy)(MPKitFilter *, BOOL finished) = [completionHandler copy];
+    
+    // Attribute value filtering
+    if (![self shouldIncludeEventWithAttributes:commerceEvent.userDefinedAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
+        kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:YES];
+        completionHandlerCopy(kitFilter, YES);
+        return;
+    }
     
     // Event type filter
     __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>([commerceEvent type])).c_str() encoding:NSUTF8StringEncoding];
@@ -592,6 +624,13 @@ NSString *const kitFileExtension = @"eks";
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter;
     void (^completionHandlerCopy)(MPKitFilter *, BOOL) = [completionHandler copy];
+    
+    // Attribute value filtering
+    if (![self shouldIncludeEventWithAttributes:event.info afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
+        kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
+        completionHandlerCopy(kitFilter, YES);
+        return;
+    }
     
     // Event type filter
     __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>(event.type)).c_str() encoding:NSUTF8StringEncoding];

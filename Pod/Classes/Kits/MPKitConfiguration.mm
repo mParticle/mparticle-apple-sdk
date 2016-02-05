@@ -93,6 +93,21 @@
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
     _configurationHash = @(mParticle::Hasher::hashFromString([ekConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
     
+    // Attribute value filtering
+    NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
+    if (attributeValueFiltering) {
+        NSNumber *shouldIncludeMatches = attributeValueFiltering[@"i"];
+        NSNumber *hashedAttribute = attributeValueFiltering[@"a"];
+        NSNumber *hashedValue = attributeValueFiltering[@"v"];
+        
+        if (shouldIncludeMatches && hashedAttribute && hashedValue) {
+            _attributeValueFilteringIsActive = YES;
+            _attributeValueFilteringShouldIncludeMatches = [shouldIncludeMatches boolValue];
+            _attributeValueFilteringHashedAttribute = [NSString stringWithFormat:@"%@", hashedAttribute];
+            _attributeValueFilteringHashedValue = [NSString stringWithFormat:@"%@", hashedValue];
+        }
+    }
+    
     // Configuration
     _configuration = configurationDictionary[@"as"];
     if (_configuration) {
