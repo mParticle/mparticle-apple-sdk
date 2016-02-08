@@ -242,4 +242,39 @@
     }
 }
 
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    if (stateMachine.optOut) {
+        return NO;
+    }
+    
+    stateMachine.launchInfo = nil;
+    
+    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
+    
+    for (MPKitAbstract *kit in activeKits) {
+        if ([kit respondsToSelector:continueUserActivitySelector]) {
+            [kit continueUserActivity:userActivity restorationHandler:restorationHandler];
+        }
+    }
+    return NO;
+}
+
+- (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    if (stateMachine.optOut) {
+        return;
+    }
+    
+    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
+    
+    for (MPKitAbstract *kit in activeKits) {
+        if ([kit respondsToSelector:didUpdateUserActivitySelector]) {
+            [kit didUpdateUserActivity:userActivity];
+        }
+    }
+}
+
 @end

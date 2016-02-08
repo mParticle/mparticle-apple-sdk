@@ -153,4 +153,24 @@
     return NO;
 }
 
+- (BOOL)application:(UIApplication *)application continueUserActivity:(NSUserActivity *)userActivity restorationHandler:(void(^)(NSArray *restorableObjects))restorationHandler {
+    [[MPAppNotificationHandler sharedInstance] continueUserActivity:userActivity restorationHandler:restorationHandler];
+    
+    id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
+    if ([originalAppDelegate respondsToSelector:_cmd]) {
+        return [originalAppDelegate application:application continueUserActivity:userActivity restorationHandler:restorationHandler];
+    }
+    
+    return NO;
+}
+
+- (void)application:(UIApplication *)application didUpdateUserActivity:(NSUserActivity *)userActivity {
+    [[MPAppNotificationHandler sharedInstance] didUpdateUserActivity:userActivity];
+    
+    id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
+    if ([originalAppDelegate respondsToSelector:_cmd]) {
+        [originalAppDelegate application:application didUpdateUserActivity:userActivity];
+    }
+}
+
 @end

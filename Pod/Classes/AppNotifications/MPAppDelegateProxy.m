@@ -23,7 +23,7 @@
 #import "MPLogger.h"
 
 @interface MPAppDelegateProxy() {
-    SEL applicationOpenURLOptions;
+    SEL applicationOpenURLOptionsSelector;
     SEL applicationOpenURLSelector;
     SEL didFailToRegisterForRemoteNotificationSelector;
     SEL didReceiveLocalNotificationSelector;
@@ -31,6 +31,8 @@
     SEL didRegisterForRemoteNotificationSelector;
     SEL handleActionWithIdentifierForLocalNotificationSelector;
     SEL handleActionWithIdentifierForRemoteNotificationSelector;
+    SEL continueUserActivityRestorationHandlerSelector;
+    SEL didUpdateUserActivitySelector;
 }
 
 @end
@@ -40,7 +42,7 @@
 - (instancetype)initWithOriginalAppDelegate:(id)originalAppDelegate {
     _originalAppDelegate = originalAppDelegate;
 
-    applicationOpenURLOptions = @selector(application:openURL:options:);
+    applicationOpenURLOptionsSelector = @selector(application:openURL:options:);
     applicationOpenURLSelector = @selector(application:openURL:sourceApplication:annotation:);
     didFailToRegisterForRemoteNotificationSelector = @selector(application:didFailToRegisterForRemoteNotificationsWithError:);
     didReceiveLocalNotificationSelector = @selector(application:didReceiveLocalNotification:);
@@ -48,6 +50,8 @@
     didRegisterForRemoteNotificationSelector = @selector(application:didRegisterForRemoteNotificationsWithDeviceToken:);
     handleActionWithIdentifierForLocalNotificationSelector = @selector(application:handleActionWithIdentifier:forLocalNotification:completionHandler:);
     handleActionWithIdentifierForRemoteNotificationSelector = @selector(application:handleActionWithIdentifier:forRemoteNotification:completionHandler:);
+    continueUserActivityRestorationHandlerSelector = @selector(application:continueUserActivity:restorationHandler:);
+    didUpdateUserActivitySelector = @selector(application:didUpdateUserActivity:);
     
     return self;
 }
@@ -95,14 +99,16 @@
     if ([_originalAppDelegate respondsToSelector:aSelector]) {
         respondsToSelector = YES;
     } else {
-        respondsToSelector = (aSelector == applicationOpenURLOptions && [[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0) ||
+        respondsToSelector = (aSelector == applicationOpenURLOptionsSelector && [[[UIDevice currentDevice] systemVersion] floatValue] >= 9.0) ||
                              (aSelector == applicationOpenURLSelector) ||
                              (aSelector == didFailToRegisterForRemoteNotificationSelector) ||
                              (aSelector == didReceiveLocalNotificationSelector) ||
                              (aSelector == didReceiveRemoteNotificationSelector) ||
                              (aSelector == didRegisterForRemoteNotificationSelector) ||
                              (aSelector == handleActionWithIdentifierForLocalNotificationSelector) ||
-                             (aSelector == handleActionWithIdentifierForRemoteNotificationSelector);
+                             (aSelector == handleActionWithIdentifierForRemoteNotificationSelector) ||
+                             (aSelector == continueUserActivityRestorationHandlerSelector) ||
+                             (aSelector == didUpdateUserActivitySelector);
     }
     
     return respondsToSelector;
