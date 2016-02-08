@@ -90,6 +90,17 @@ static AppsFlyerTracker *appsFlyerTracker = nil;
     return execStatus;
 }
 
+- (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
+    [[AppsFlyerTracker sharedTracker] continueUserActivity:userActivity restorationHandler:restorationHandler];
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+- (nonnull MPKitExecStatus *)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
+    [[AppsFlyerTracker sharedTracker] didUpdateUserActivity:userActivity];
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+
 - (nonnull MPKitExecStatus *)receivedUserNotification:(nonnull NSDictionary *)userInfo {
     [appsFlyerTracker handlePushNotification:userInfo];
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
