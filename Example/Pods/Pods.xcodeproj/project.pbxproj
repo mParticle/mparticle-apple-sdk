@@ -22,6 +22,8 @@
 		C9595CB31BD56B40002361BD /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = C9C2DD1E1BD45CAD0002F75A /* libz.tbd */; };
 		C97C612E1BDAA6C20024984E /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = C97C612C1BDAA6C20024984E /* MPLocationManager.h */; };
 		C97C612F1BDAA6C20024984E /* MPLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C612D1BDAA6C20024984E /* MPLocationManager.m */; };
+		C9B7290E1C6BE3A400A68583 /* MPKitAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = C9B7290C1C6BE3A400A68583 /* MPKitAppsFlyer.h */; };
+		C9B7290F1C6BE3A400A68583 /* MPKitAppsFlyer.m in Sources */ = {isa = PBXBuildFile; fileRef = C9B7290D1C6BE3A400A68583 /* MPKitAppsFlyer.m */; };
 		C9C2DC3B1BD458600002F75A /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB551BD458600002F75A /* MPAppDelegateProxy.h */; };
 		C9C2DC3C1BD458600002F75A /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB561BD458600002F75A /* MPAppDelegateProxy.m */; };
 		C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -306,6 +308,8 @@
 		C977E67B1BDEC17200FE1805 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/usr/lib/libz.tbd; sourceTree = DEVELOPER_DIR; };
 		C97C612C1BDAA6C20024984E /* MPLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLocationManager.h; sourceTree = "<group>"; };
 		C97C612D1BDAA6C20024984E /* MPLocationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLocationManager.m; sourceTree = "<group>"; };
+		C9B7290C1C6BE3A400A68583 /* MPKitAppsFlyer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppsFlyer.h; sourceTree = "<group>"; };
+		C9B7290D1C6BE3A400A68583 /* MPKitAppsFlyer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAppsFlyer.m; sourceTree = "<group>"; };
 		C9C2DB551BD458600002F75A /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
 		C9C2DB561BD458600002F75A /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppDelegateProxy.m; sourceTree = "<group>"; };
 		C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
@@ -727,6 +731,15 @@
 			path = Location;
 			sourceTree = "<group>";
 		};
+		C9B7290B1C6BE3A400A68583 /* AppsFlyer */ = {
+			isa = PBXGroup;
+			children = (
+				C9B7290C1C6BE3A400A68583 /* MPKitAppsFlyer.h */,
+				C9B7290D1C6BE3A400A68583 /* MPKitAppsFlyer.m */,
+			);
+			path = AppsFlyer;
+			sourceTree = "<group>";
+		};
 		C9C2DB541BD458600002F75A /* AppNotifications */ = {
 			isa = PBXGroup;
 			children = (
@@ -993,6 +1006,7 @@
 			children = (
 				C9EE9D731BD7C2570083CD37 /* Adjust */,
 				C9EE9D761BD7C2570083CD37 /* Appboy */,
+				C9B7290B1C6BE3A400A68583 /* AppsFlyer */,
 				C9EE9D7B1BD7C2570083CD37 /* BranchMetrics */,
 				C9EE9D7E1BD7C2570083CD37 /* comScore */,
 				C9D7E24C1BE96201002EEAE9 /* Crittercism */,
@@ -1239,6 +1253,7 @@
 				C9C2DC741BD458600002F75A /* MPProduct.h in Headers */,
 				C9EE9DA71BD7C2570083CD37 /* MPKitBranchMetrics.h in Headers */,
 				C9C2DC6A1BD458600002F75A /* MPCart.h in Headers */,
+				C9B7290E1C6BE3A400A68583 /* MPKitAppsFlyer.h in Headers */,
 				C9C2DC6C1BD458600002F75A /* MPCommerce.h in Headers */,
 				C9C2DCA91BD458600002F75A /* MPEvent.h in Headers */,
 				C9C2DC6F1BD458600002F75A /* MPCommerceEvent.h in Headers */,
@@ -1526,6 +1541,7 @@
 				E91A772FC62FE0AECA0E04DF281FE60B /* mParticle-iOS-SDK-dummy.m in Sources */,
 				C9C2DCA71BD458600002F75A /* MPEvent+Internal.mm in Sources */,
 				C9C2DCBF1BD458600002F75A /* MPMediaTrack+Internal.mm in Sources */,
+				C9B7290F1C6BE3A400A68583 /* MPKitAppsFlyer.m in Sources */,
 				C9C2DCAA1BD458600002F75A /* MPEvent.mm in Sources */,
 				C9EE9DC41BD7C2570083CD37 /* MPKitExecStatus.m in Sources */,
 				C9C2DCEF1BD458600002F75A /* MPDateFormatter.m in Sources */,
