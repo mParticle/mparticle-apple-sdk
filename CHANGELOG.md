@@ -1,7 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
-## 5.2.4
+## 5.3.0
 
+* Support for [AppsFlyer](https://www.appsflyer.com) as a kit
+* Implementation of filter by event attribute value
 * Preventing session history batch being sent when data is ramped
 
 ## 5.2.3

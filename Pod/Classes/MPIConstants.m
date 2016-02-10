@@ -21,7 +21,7 @@
 NSUInteger kMPNumberOfMessageTypes = 17;
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"5.2.4";
+NSString *const kMParticleSDKVersion = @"5.3.0";
 
 // Session Upload Settings
 NSString *const kMPSessionHistoryValue = @"sh";
