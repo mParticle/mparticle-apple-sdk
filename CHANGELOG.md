@@ -1,4 +1,8 @@
-# mParticle iOS SDK CHANGELOG
+# mParticle Apple SDK CHANGELOG
+
+## 5.4.0 (Alpha)
+
+* Unification of the SDKs
 
 ## 5.3.0
 
