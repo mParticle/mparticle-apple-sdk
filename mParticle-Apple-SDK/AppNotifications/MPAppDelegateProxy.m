@@ -67,7 +67,7 @@
     if ([self.surrogateAppDelegate respondsToSelector:selector]) {
         target = self.surrogateAppDelegate;
     } else if (![_originalAppDelegate respondsToSelector:selector]) {
-        MPLogError(@"App Delagate does not implement selector: %@", NSStringFromSelector(selector));
+        MPLogError(@"App Delegate does not implement selector: %@", NSStringFromSelector(selector));
     }
     
     [anInvocation invokeWithTarget:target];
@@ -79,7 +79,7 @@
     if ([self.surrogateAppDelegate respondsToSelector:aSelector]) {
         target = self.surrogateAppDelegate;
     } else if (![_originalAppDelegate respondsToSelector:aSelector]) {
-        MPLogError(@"App Delagate does not implement selector: %@", NSStringFromSelector(aSelector));
+        MPLogError(@"App Delegate does not implement selector: %@", NSStringFromSelector(aSelector));
     }
     
     return target;

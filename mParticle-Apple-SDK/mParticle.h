@@ -445,18 +445,18 @@
  
  This method is only applicable to kits that allocate themselves as an object instance or a singleton. For the cases
  where kits are implemented with class methods, you can call those class methods directly
- @param kitInstance The enum representing the kit to be retrieved
+ @param kitCode A NSNumber representing the kit to be retrieved
  @returns The internal instance of the kit, or nil, if the kit is not active
  */
-- (nullable id const)kitInstance:(MPKitInstance)kitInstance;
+- (nullable id const)kitInstance:(nonnull NSNumber *)kitCode;
 
 /**
  Returns whether a kit is active or not. You can retrieve if a kit has been already initialized and
  can be used.
- @param kitInstance The enum representing the kit to be checked
+ @param kitCode A NSNumber representing the kit to be checked
  @returns Whether the kit is active or not.
  */
-- (BOOL)isKitActive:(MPKitInstance)kitInstance;
+- (BOOL)isKitActive:(nonnull NSNumber *)kitCode;
 
 #pragma mark - Location
 #if TARGET_OS_IOS == 1

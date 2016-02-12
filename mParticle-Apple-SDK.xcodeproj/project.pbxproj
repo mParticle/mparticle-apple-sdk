@@ -421,6 +421,9 @@
 		C95801441C6117CA00E62148 /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499B71C56B8DF005F11EA /* MPLocationManager.h */; };
 		C95801451C61247900E62148 /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F31C56B8DF005F11EA /* MPNotificationController.h */; };
 		C95801461C61247D00E62148 /* MPNotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.m */; };
+		C97310B51C6E456A0031E702 /* MPKitProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B21C6E456A0031E702 /* MPKitProtocol.h */; };
+		C97310B61C6E456A0031E702 /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B31C6E456A0031E702 /* MPKitRegister.h */; };
+		C97310B71C6E456A0031E702 /* MPKitRegister.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97310B41C6E456A0031E702 /* MPKitRegister.mm */; };
 		DB4924DD1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DE1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DF1C76779E00D473A3 /* MPKitTune.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4924DC1C76779E00D473A3 /* MPKitTune.m */; };
@@ -663,6 +666,9 @@
 		C9049C2F1C56C65E005F11EA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		C9049C311C56C664005F11EA /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		C9049C331C56C68F005F11EA /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/AdSupport.framework; sourceTree = DEVELOPER_DIR; };
+		C97310B21C6E456A0031E702 /* MPKitProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitProtocol.h; sourceTree = "<group>"; };
+		C97310B31C6E456A0031E702 /* MPKitRegister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitRegister.h; sourceTree = "<group>"; };
+		C97310B41C6E456A0031E702 /* MPKitRegister.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitRegister.mm; sourceTree = "<group>"; };
 		C984F85B1C6CE1DD00002F67 /* ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ios.h; sourceTree = "<group>"; };
 		C984F85D1C6CE1DD00002F67 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DB4924DB1C76779E00D473A3 /* MPKitTune.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTune.h; sourceTree = "<group>"; };
@@ -899,6 +905,9 @@
 				C90499AA1C56B8DF005F11EA /* MPKitExecStatus.m */,
 				C90499AB1C56B8DF005F11EA /* MPKitFilter.h */,
 				C90499AC1C56B8DF005F11EA /* MPKitFilter.m */,
+				C97310B21C6E456A0031E702 /* MPKitProtocol.h */,
+				C97310B31C6E456A0031E702 /* MPKitRegister.h */,
+				C97310B41C6E456A0031E702 /* MPKitRegister.mm */,
 			);
 			path = Kits;
 			sourceTree = "<group>";
@@ -1251,6 +1260,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C97310B51C6E456A0031E702 /* MPKitProtocol.h in Headers */,
 				C9049B481C56C362005F11EA /* MPKitAppboy.h in Headers */,
 				C9049B151C56C336005F11EA /* EventTypeName.h in Headers */,
 				C9049B641C56C3B3005F11EA /* MPLocationManager.h in Headers */,
@@ -1281,6 +1291,7 @@
 				C9049BBD1C56C405005F11EA /* MPBracket.h in Headers */,
 				C9049BCE1C56C41A005F11EA /* MPDevice.h in Headers */,
 				C9049ABF1C56C31D005F11EA /* MPStandaloneCommand.h in Headers */,
+				C97310B61C6E456A0031E702 /* MPKitRegister.h in Headers */,
 				C9049AB31C56C31D005F11EA /* MPForwardRecord.h in Headers */,
 				C9049B461C56C35C005F11EA /* MPKitAdjust.h in Headers */,
 				C9049B021C56C32D005F11EA /* MPCommerce.h in Headers */,
@@ -1604,6 +1615,7 @@
 			files = (
 				C9049B291C56C353005F11EA /* MPBaseProjection.m in Sources */,
 				C9049B591C56C38B005F11EA /* MPKochavaSpatialCoordinate.m in Sources */,
+				C97310B71C6E456A0031E702 /* MPKitRegister.mm in Sources */,
 				C9049BC71C56C40F005F11EA /* MPDateFormatter.m in Sources */,
 				C9049B551C56C386005F11EA /* MPKitKahuna.m in Sources */,
 				C9049B2D1C56C353005F11EA /* MPKitAbstract.mm in Sources */,

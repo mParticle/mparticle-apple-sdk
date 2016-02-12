@@ -24,8 +24,8 @@
 #import "MPLogger.h"
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
-#import "MPKitAbstract.h"
 #import <UIKit/UIKit.h>
+#import "MPKitRegister.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -104,12 +104,12 @@
     [MPNotificationController setDeviceToken:nil];
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     NSNumber *lastKit = nil;
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:failedRegistrationSelector]) {
-            MPKitExecStatus *execStatus = [kit failedToRegisterForUserNotifications:error];
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:failedRegistrationSelector]) {
+            MPKitExecStatus *execStatus = [kitRegister.wrapperInstance failedToRegisterForUserNotifications:error];
             
             if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
                 lastKit = execStatus.kitCode;
@@ -120,7 +120,7 @@
                 
                 [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                 
-                MPLogDebug(@"Forwarded fail to register for remote notification call to kit: %@", [MPKitAbstract nameForKit:execStatus.kitCode]);
+                MPLogDebug(@"Forwarded fail to register for remote notification call to kit: %@", kitRegister.name);
             }
         }
     }
@@ -134,12 +134,12 @@
     [MPNotificationController setDeviceToken:deviceToken];
     
     SEL deviceTokenSelector = @selector(setDeviceToken:);
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     NSNumber *lastKit = nil;
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:deviceTokenSelector]) {
-            MPKitExecStatus *execStatus = [kit setDeviceToken:deviceToken];
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:deviceTokenSelector]) {
+            MPKitExecStatus *execStatus = [kitRegister.wrapperInstance setDeviceToken:deviceToken];
             
             if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
                 lastKit = execStatus.kitCode;
@@ -150,7 +150,7 @@
                 
                 [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                 
-                MPLogDebug(@"Forwarded remote notification registration call to kit: %@", [MPKitAbstract nameForKit:execStatus.kitCode]);
+                MPLogDebug(@"Forwarded remote notification registration call to kit: %@", kitRegister.name);
             }
         }
     }
@@ -164,11 +164,11 @@
     [self receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:handleActionWithIdentifierSelector]) {
-            [kit handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:handleActionWithIdentifierSelector]) {
+            [kitRegister.wrapperInstance handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
         }
     }
 }
@@ -205,12 +205,12 @@
     
     if (!actionIdentifier) {
         SEL receivedNotificationSelector = @selector(receivedUserNotification:);
-        NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+        NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
         NSNumber *lastKit = nil;
         
-        for (MPKitAbstract *kit in activeKits) {
-            if ([kit respondsToSelector:receivedNotificationSelector]) {
-                MPKitExecStatus *execStatus = [kit receivedUserNotification:userInfo];
+        for (MPKitRegister *kitRegister in activeKitsRegistry) {
+            if ([kitRegister.wrapperInstance respondsToSelector:receivedNotificationSelector]) {
+                MPKitExecStatus *execStatus = [kitRegister.wrapperInstance receivedUserNotification:userInfo];
                 
                 if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
                     lastKit = execStatus.kitCode;
@@ -220,14 +220,14 @@
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded push notifications call to kit: %@", [MPKitAbstract nameForKit:execStatus.kitCode]);
+                    MPLogDebug(@"Forwarded push notifications call to kit: %@", kitRegister.name);
                 }
             }
         }
     }
 }
 
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^)(NSArray *restorableObjects))restorationHandler {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     if (stateMachine.optOut) {
         return NO;
@@ -235,12 +235,12 @@
     
     stateMachine.launchInfo = nil;
     
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:continueUserActivitySelector]) {
-            [kit continueUserActivity:userActivity restorationHandler:restorationHandler];
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
+            [kitRegister.wrapperInstance continueUserActivity:userActivity restorationHandler:restorationHandler];
         }
     }
     return NO;
@@ -252,12 +252,12 @@
         return;
     }
     
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:didUpdateUserActivitySelector]) {
-            [kit didUpdateUserActivity:userActivity];
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:didUpdateUserActivitySelector]) {
+            [kitRegister.wrapperInstance didUpdateUserActivity:userActivity];
         }
     }
 }
@@ -280,12 +280,12 @@
                                               sourceApplication:sourceApplication
                                                      annotation:annotation];
     
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:openURLSourceAppAnnotationSelector]) {
-            [kit openURL:url sourceApplication:sourceApplication annotation:annotation];
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:openURLSourceAppAnnotationSelector]) {
+            [kitRegister.wrapperInstance openURL:url sourceApplication:sourceApplication annotation:annotation];
         }
     }
 }
