@@ -67,10 +67,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
 }
 
-+ (void)initialize {
-    registedKits = [[NSMutableArray alloc] initWithCapacity:2];
-    kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
-}
 
 - (instancetype)init {
     self = [super init];
@@ -1578,22 +1574,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }
     
     return activeKitsRegistry.count > 0 ? activeKitsRegistry : nil;
-}
-
-- (nullable NSArray<id<MPKitProtocol>> *)activeKits {
-    if (kitsRegistry.count == 0) {
-        return nil;
-    }
-    
-    NSMutableArray <id<MPKitProtocol>> *activeKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
-    
-    for (MPKitRegister *kitRegister in kitsRegistry) {
-        if (kitRegister.active) {
-            [activeKits addObject:kitRegister.wrapperInstance];
-        }
-    }
-    
-    return activeKits.count > 0 ? activeKits : nil;
 }
 
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
