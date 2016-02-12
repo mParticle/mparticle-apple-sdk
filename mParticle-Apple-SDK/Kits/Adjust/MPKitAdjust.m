@@ -19,14 +19,21 @@
 #if defined(MP_KIT_ADJUST)
 
 #import "MPKitAdjust.h"
-#import "MPEnums.h"
 #import "Adjust.h"
+
+@interface MPKitAdjust() {
+    BOOL started;
+}
+
+@end
+
 
 @implementation MPKitAdjust
 
 #pragma mark MPKitInstanceProtocol methods
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -45,10 +52,7 @@
     
     [Adjust appDidLaunch:adjustConfig];
     
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceAdjust),
@@ -66,10 +70,6 @@
     return self;
 }
 
-- (void)setConfiguration:(NSDictionary *)configuration {
-    [super setConfiguration:configuration];
-}
-
 - (MPKitExecStatus *)setOptOut:(BOOL)optOut {
     [Adjust setEnabled:!optOut];
     
@@ -82,6 +82,10 @@
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAdjust) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

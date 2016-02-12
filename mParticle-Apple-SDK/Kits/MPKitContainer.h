@@ -28,14 +28,11 @@
 
 @interface MPKitContainer : NSObject
 
-@property (nonatomic, strong, nullable) NSMutableArray<id<MPKitProtocol>> *kits;
-
 + (void)loadKitRegistrationFile;
 + (void)registerKit:(nonnull MPKitRegister *)kitRegister;
 + (nullable NSSet<MPKitRegister *> *)registeredKits;
 + (nonnull MPKitContainer *)sharedInstance;
 
-- (nullable NSArray<id<MPKitProtocol>> *)activeKits;
 - (nullable NSArray<MPKitRegister *> *)activeKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
 - (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath;

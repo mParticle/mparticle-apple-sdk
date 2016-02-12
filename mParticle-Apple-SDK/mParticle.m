@@ -40,7 +40,6 @@
 #import "MPPersistenceController.h"
 #import "MPEvent+MessageType.h"
 #import "MPKitExecStatus.h"
-#import "MPKitAbstract.h"
 #import "MPAppNotificationHandler.h"
 #import "MPEvent.h"
 #import "MPKitRegister.h"

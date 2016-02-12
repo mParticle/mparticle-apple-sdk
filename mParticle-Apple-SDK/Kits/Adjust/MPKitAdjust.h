@@ -18,9 +18,15 @@
 
 #if defined(MP_KIT_ADJUST)
 
-#import "MPKitAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitExecStatus.h"
+#import "MPKitProtocol.h"
 
-@interface MPKitAdjust : MPKitAbstract <MPKitInstanceProtocol>
+@interface MPKitAdjust : NSObject <MPKitProtocol>
+
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+
+- (BOOL)started;
 
 @end
 

@@ -17,7 +17,6 @@
 //
 
 #import "MPKitContainer.h"
-#import "MPKitAbstract.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
 #import "MPKitForesee.h"
@@ -111,8 +110,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 
 @implementation MPKitContainer
-
-@synthesize kits = _kits;
 
 + (void)initialize {
     registedKits = [[NSMutableArray alloc] initWithCapacity:2];
@@ -382,33 +379,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Public accessors
-- (NSMutableArray<id<MPKitProtocol>> *)kits {
-    if ([MPStateMachine sharedInstance].optOut) {
-        _kits = nil;
-        return nil;
-    }
-    
-    if (_kits) {
-        return _kits;
-    } else if (!kitsInitialized) {
-        [self initializeKits];
-    }
-    
-    if (!_kits) {
-        _kits = [[NSMutableArray alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
-    }
-    
-    return _kits;
-}
-
-- (void)setKits:(NSMutableArray<id<MPKitProtocol>> *)kits {
-    if (!kits) {
-        kitsInitialized = NO;
-    }
-    
-    _kits = kits;
-}
-
 - (NSMutableDictionary<NSNumber *, MPKitConfiguration *> *)kitConfigurations {
     if (_kitConfigurations) {
         return _kitConfigurations;
@@ -420,7 +390,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
-    
     if (!configuration.attributeValueFilteringIsActive) {
         return YES;
     }
@@ -1581,22 +1550,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return activeKitsRegistry.count > 0 ? activeKitsRegistry : nil;
 }
 
-- (nullable NSArray<id<MPKitProtocol>> *)activeKits {
-    if (kitsRegistry.count == 0) {
-        return nil;
-    }
-    
-    NSMutableArray <id<MPKitProtocol>> *activeKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
-    
-    for (MPKitRegister *kitRegister in kitsRegistry) {
-        if (kitRegister.active) {
-            [activeKits addObject:kitRegister.wrapperInstance];
-        }
-    }
-    
-    return activeKits.count > 0 ? activeKits : nil;
-}
-
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
@@ -1608,7 +1561,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     
-    id<MPKitProtocol> kit;
     NSPredicate *predicate;
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
@@ -1622,9 +1574,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     id<MPKitProtocol> kitInstance;
 
     // Adds all currently configured kits to a list
-    vector<NSNumber *> removeKits;
+    vector<NSNumber *> deactivateKits;
     for (kitRegister in activeKitsRegistry) {
-        removeKits.push_back(kitRegister.code);
+        deactivateKits.push_back(kitRegister.code);
     }
     
     // Configure kits according to server instructions
@@ -1715,13 +1667,13 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
                 [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
             }
         } else {
-            MPLogWarning(@"SDK is trying to configure the %@ kit, however it is not currently configured in your Podfile.", [self nameForKitCode:kitCode]);
+            MPLogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the Code SDK.", kitCode);
         }
         
-        if (!removeKits.empty()) {
-            for (size_t i = 0; i < removeKits.size(); ++i) {
-                if ([removeKits.at(i) isEqualToNumber:kitCode]) {
-                    removeKits.erase(removeKits.begin() + i);
+        if (!deactivateKits.empty()) {
+            for (size_t i = 0; i < deactivateKits.size(); ++i) {
+                if ([deactivateKits.at(i) isEqualToNumber:kitCode]) {
+                    deactivateKits.erase(deactivateKits.begin() + i);
                     break;
                 }
             }
@@ -1729,8 +1681,8 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }
     
     // Remove currently configured kits that were not in the instructions from the server
-    if (!removeKits.empty()) {
-        for (vector<NSNumber *>::iterator ekIterator = removeKits.begin(); ekIterator != removeKits.end(); ++ekIterator) {
+    if (!deactivateKits.empty()) {
+        for (vector<NSNumber *>::iterator ekIterator = deactivateKits.begin(); ekIterator != deactivateKits.end(); ++ekIterator) {
             predicate = [NSPredicate predicateWithFormat:@"code == %@", *ekIterator];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
             [kitRegister freeWrapperInstance];
@@ -1753,9 +1705,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
             if ([fileManager fileExistsAtPath:kitPath]) {
                 [fileManager removeItemAtPath:kitPath error:nil];
             }
-            
-            [self.kits removeObject:kit];
-            kit = nil;
         }
     }
     
