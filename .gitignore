@@ -31,6 +31,9 @@ Carthage
 # `pod install` in .travis.yml
 #
 # Pods/
+Example/Pods/
+Example/*.xcworkspace
+Example/Podfile.lock
 
 *.sublime-project
 *.sublime-workspace
