@@ -186,8 +186,6 @@
 		C9049B291C56C353005F11EA /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499A01C56B8DF005F11EA /* MPBaseProjection.m */; };
 		C9049B2A1C56C353005F11EA /* MPEventProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A11C56B8DF005F11EA /* MPEventProjection.h */; };
 		C9049B2B1C56C353005F11EA /* MPEventProjection.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A21C56B8DF005F11EA /* MPEventProjection.mm */; };
-		C9049B2C1C56C353005F11EA /* MPKitAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A31C56B8DF005F11EA /* MPKitAbstract.h */; };
-		C9049B2D1C56C353005F11EA /* MPKitAbstract.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A41C56B8DF005F11EA /* MPKitAbstract.mm */; };
 		C9049B2E1C56C353005F11EA /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A51C56B8DF005F11EA /* MPKitConfiguration.h */; };
 		C9049B2F1C56C353005F11EA /* MPKitConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A61C56B8DF005F11EA /* MPKitConfiguration.mm */; };
 		C9049B301C56C353005F11EA /* MPKitContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A71C56B8DF005F11EA /* MPKitContainer.h */; };
@@ -202,8 +200,6 @@
 		C9049B391C56C354005F11EA /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499A01C56B8DF005F11EA /* MPBaseProjection.m */; };
 		C9049B3A1C56C354005F11EA /* MPEventProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A11C56B8DF005F11EA /* MPEventProjection.h */; };
 		C9049B3B1C56C354005F11EA /* MPEventProjection.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A21C56B8DF005F11EA /* MPEventProjection.mm */; };
-		C9049B3C1C56C354005F11EA /* MPKitAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A31C56B8DF005F11EA /* MPKitAbstract.h */; };
-		C9049B3D1C56C354005F11EA /* MPKitAbstract.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A41C56B8DF005F11EA /* MPKitAbstract.mm */; };
 		C9049B3E1C56C354005F11EA /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A51C56B8DF005F11EA /* MPKitConfiguration.h */; };
 		C9049B3F1C56C354005F11EA /* MPKitConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A61C56B8DF005F11EA /* MPKitConfiguration.mm */; };
 		C9049B401C56C354005F11EA /* MPKitContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A71C56B8DF005F11EA /* MPKitContainer.h */; };
@@ -542,8 +538,6 @@
 		C90499A01C56B8DF005F11EA /* MPBaseProjection.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPBaseProjection.m; sourceTree = "<group>"; };
 		C90499A11C56B8DF005F11EA /* MPEventProjection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPEventProjection.h; sourceTree = "<group>"; };
 		C90499A21C56B8DF005F11EA /* MPEventProjection.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEventProjection.mm; sourceTree = "<group>"; };
-		C90499A31C56B8DF005F11EA /* MPKitAbstract.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitAbstract.h; sourceTree = "<group>"; };
-		C90499A41C56B8DF005F11EA /* MPKitAbstract.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitAbstract.mm; sourceTree = "<group>"; };
 		C90499A51C56B8DF005F11EA /* MPKitConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitConfiguration.h; sourceTree = "<group>"; };
 		C90499A61C56B8DF005F11EA /* MPKitConfiguration.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitConfiguration.mm; sourceTree = "<group>"; };
 		C90499A71C56B8DF005F11EA /* MPKitContainer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitContainer.h; sourceTree = "<group>"; };
@@ -898,8 +892,6 @@
 				C90499A01C56B8DF005F11EA /* MPBaseProjection.m */,
 				C90499A11C56B8DF005F11EA /* MPEventProjection.h */,
 				C90499A21C56B8DF005F11EA /* MPEventProjection.mm */,
-				C90499A31C56B8DF005F11EA /* MPKitAbstract.h */,
-				C90499A41C56B8DF005F11EA /* MPKitAbstract.mm */,
 				C90499A51C56B8DF005F11EA /* MPKitConfiguration.h */,
 				C90499A61C56B8DF005F11EA /* MPKitConfiguration.mm */,
 				C90499A71C56B8DF005F11EA /* MPKitContainer.h */,
@@ -1334,7 +1326,6 @@
 				C9049AB71C56C31D005F11EA /* MPSegment.h in Headers */,
 				C9049A901C56C2EF005F11EA /* MPAppDelegateProxy.h in Headers */,
 				C9049B2A1C56C353005F11EA /* MPEventProjection.h in Headers */,
-				C9049B2C1C56C353005F11EA /* MPKitAbstract.h in Headers */,
 				C9049A841C56C2B2005F11EA /* MPExceptionHandler.h in Headers */,
 				C9049B6E1C56C3C5005F11EA /* MPMediaMetadataDPR.h in Headers */,
 				C9049B041C56C32D005F11EA /* MPCommerceEvent+Dictionary.h in Headers */,
@@ -1459,7 +1450,6 @@
 				C9049B671C56C3BA005F11EA /* MPLogger.h in Headers */,
 				C9049AD41C56C31E005F11EA /* MPSegment.h in Headers */,
 				C9049B7F1C56C3C5005F11EA /* MPMediaMetadataDigitalAudio.h in Headers */,
-				C9049B3C1C56C354005F11EA /* MPKitAbstract.h in Headers */,
 				C9049BE41C56C436005F11EA /* MPResponseConfig.h in Headers */,
 				C9049BA01C56C3D1005F11EA /* MPNetworkPerformance.h in Headers */,
 				C9049ADC1C56C31E005F11EA /* MPStandaloneCommand.h in Headers */,
@@ -1623,7 +1613,6 @@
 				C97310B71C6E456A0031E702 /* MPKitRegister.mm in Sources */,
 				C9049BC71C56C40F005F11EA /* MPDateFormatter.m in Sources */,
 				C9049B551C56C386005F11EA /* MPKitKahuna.m in Sources */,
-				C9049B2D1C56C353005F11EA /* MPKitAbstract.mm in Sources */,
 				C9049B761C56C3C5005F11EA /* MPMediaTrack+Internal.mm in Sources */,
 				C9049AC41C56C31D005F11EA /* MPStandaloneUpload.m in Sources */,
 				C9049BFE1C56C436005F11EA /* MPZip.cpp in Sources */,
@@ -1756,7 +1745,6 @@
 				C9049AE91C56C32C005F11EA /* MPCart.m in Sources */,
 				C9049B391C56C354005F11EA /* MPBaseProjection.m in Sources */,
 				C9049A8F1C56C2B3005F11EA /* MPUserSegments.m in Sources */,
-				C9049B3D1C56C354005F11EA /* MPKitAbstract.mm in Sources */,
 				C9049AF51C56C32C005F11EA /* MPProductBag.m in Sources */,
 				C9049AA31C56C2FF005F11EA /* MPAppboy.m in Sources */,
 				C9049BA51C56C3D1005F11EA /* MPURLRequestBuilder.m in Sources */,

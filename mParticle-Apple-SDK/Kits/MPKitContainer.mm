@@ -41,7 +41,6 @@
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPKitAbstract.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitRegister.h"
 
