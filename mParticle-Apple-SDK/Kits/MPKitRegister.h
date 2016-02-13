@@ -58,8 +58,5 @@
  @returns An instance of a kit register or nil if a kit register could not be instantiated
  */
 - (nullable instancetype)initWithCode:(nonnull NSNumber *)code name:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately __attribute__((objc_designated_initializer));
-- (nullable instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration;
-- (void)freeWrapperInstance;
-- (void)setBracketConfiguration:(nullable NSDictionary *)bracketConfiguration;
 
 @end

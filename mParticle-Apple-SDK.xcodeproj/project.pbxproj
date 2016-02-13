@@ -417,9 +417,12 @@
 		C95801441C6117CA00E62148 /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499B71C56B8DF005F11EA /* MPLocationManager.h */; };
 		C95801451C61247900E62148 /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F31C56B8DF005F11EA /* MPNotificationController.h */; };
 		C95801461C61247D00E62148 /* MPNotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.m */; };
-		C97310B51C6E456A0031E702 /* MPKitProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B21C6E456A0031E702 /* MPKitProtocol.h */; };
-		C97310B61C6E456A0031E702 /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B31C6E456A0031E702 /* MPKitRegister.h */; };
+		C97310B51C6E456A0031E702 /* MPKitProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B21C6E456A0031E702 /* MPKitProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C97310B61C6E456A0031E702 /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B31C6E456A0031E702 /* MPKitRegister.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C97310B71C6E456A0031E702 /* MPKitRegister.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97310B41C6E456A0031E702 /* MPKitRegister.mm */; };
+		C97310B81C6FBA650031E702 /* MPKitProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B21C6E456A0031E702 /* MPKitProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C97310B91C6FBA770031E702 /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B31C6E456A0031E702 /* MPKitRegister.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C97310BA1C6FBA7C0031E702 /* MPKitRegister.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97310B41C6E456A0031E702 /* MPKitRegister.mm */; };
 		DBA191541C6C006100F7E74B /* MPKitAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA191521C6C006100F7E74B /* MPKitAppsFlyer.h */; };
 		DBA191551C6C006100F7E74B /* MPKitAppsFlyer.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA191531C6C006100F7E74B /* MPKitAppsFlyer.m */; };
 /* End PBXBuildFile section */
