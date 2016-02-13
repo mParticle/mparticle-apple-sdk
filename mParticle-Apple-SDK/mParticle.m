@@ -953,9 +953,8 @@ NSString *const kMPStateKey = @"state";
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     MPKitRegister *kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
-    id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
     
-    return kitInstance != nil ? [kitInstance active] : NO;
+    return kitRegister.active;
 }
 
 #pragma mark Location

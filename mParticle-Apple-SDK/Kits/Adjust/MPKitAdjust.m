@@ -45,13 +45,10 @@
         return nil;
     }
     
+    _configuration = configuration;
     NSString *adjEnvironment = [configuration[@"mpEnv"] integerValue] == MPEnvironmentProduction ? ADJEnvironmentProduction : ADJEnvironmentSandbox;
-    
-    ADJConfig *adjustConfig = [ADJConfig configWithAppToken:appToken
-                                                environment:adjEnvironment];
-    
+    ADJConfig *adjustConfig = [ADJConfig configWithAppToken:appToken environment:adjEnvironment];
     [Adjust appDidLaunch:adjustConfig];
-    
     started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{

@@ -18,9 +18,15 @@
 
 #if defined(MP_KIT_KOCHAVA)
 
-#import "MPKitAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitExecStatus.h"
+#import "MPKitProtocol.h"
 
-@interface MPKitKochava : MPKitAbstract <MPKitInstanceProtocol>
+@interface MPKitKochava : NSObject <MPKitProtocol>
+
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userIdentities;
 
 @end
 

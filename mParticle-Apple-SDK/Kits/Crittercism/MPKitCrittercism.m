@@ -31,11 +31,19 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "Crittercism.h"
 
+@interface MPKitCrittercism() {
+    BOOL started;
+}
+
+@end
+
+
 @implementation MPKitCrittercism
 
 #pragma mark MPKitInstanceProtocol methods
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -48,11 +56,9 @@
     }
     
     [Crittercism enableWithAppID:appId];
-    
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+
+    _configuration = configuration;
+    started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceCrittercism),
@@ -158,6 +164,10 @@
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceCrittercism) returnCode:returnCode];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

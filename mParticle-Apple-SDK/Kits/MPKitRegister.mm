@@ -70,7 +70,7 @@ NSString *const MPKitBracketHighKey = @"hi";
 }
 
 - (BOOL)active {
-    BOOL active = _wrapperInstance ? [_wrapperInstance active] : NO;
+    BOOL active = _wrapperInstance ? [_wrapperInstance started] : NO;
     
     if (active && bracket != nullptr) {
         return bracket->shouldForward();

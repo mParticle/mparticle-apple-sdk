@@ -18,11 +18,15 @@
 
 #if defined(MP_KIT_FLURRY)
 
-#import "MPKitAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitExecStatus.h"
+#import "MPKitProtocol.h"
 
-@interface MPKitFlurry : MPKitAbstract <MPKitInstanceProtocol>
+@interface MPKitFlurry : NSObject <MPKitProtocol>
 
-@property (nonatomic, strong) NSDictionary *launchOptions;
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
+@property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 
 @end
 

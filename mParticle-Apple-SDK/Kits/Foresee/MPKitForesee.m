@@ -29,6 +29,7 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     NSString *clientId;
     NSString *surveyId;
     BOOL sendAppVersion;
+    BOOL started;
 }
 
 @end
@@ -39,8 +40,8 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     if (!started || ![self isValidConfiguration:configuration]) {
         return;
     }
-    
-    [super setConfiguration:configuration];
+
+    _configuration = configuration;
     [self setupWithConfiguration:configuration];
 }
 
@@ -55,20 +56,19 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     baseURL = configuration[kMPForeseeBaseURLKey] ? configuration[kMPForeseeBaseURLKey] : @"http://survey.foreseeresults.com/survey/display";
     clientId = configuration[kMPForeseeClientIdKey];
     surveyId = configuration[kMPForeseeSurveyIdKey];
-    sendAppVersion = [[configuration[kMPForeseeSendAppVersionKey] lowercaseString] isEqualToString:@"true"];
+    sendAppVersion = [configuration[kMPForeseeSendAppVersionKey] caseInsensitiveCompare:@"true"] == NSOrderedSame;
 }
 
 #pragma mark MPKitInstanceProtocol methods
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self || ![self isValidConfiguration:configuration]) {
         return nil;
     }
     
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    _configuration = configuration;
+    started = startImmediately;
 
     [self setupWithConfiguration:configuration];
     
@@ -153,6 +153,10 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     }
     
     return surveyURL;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

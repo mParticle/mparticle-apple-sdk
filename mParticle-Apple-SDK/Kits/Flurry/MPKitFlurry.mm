@@ -25,11 +25,19 @@
 #include "MPHasher.h"
 #import "Flurry.h"
 
+@interface MPKitFlurry() {
+    BOOL started;
+}
+
+@end
+
+
 @implementation MPKitFlurry
 
 #pragma mark MPKitInstanceProtocol methods
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super initWithConfiguration:configuration startImmediately:startImmediately];
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -37,8 +45,9 @@
     if (!configuration[@"apiKey"]) {
         return nil;
     }
-    
-    frameworkAvailable = YES;
+
+    _configuration = configuration;
+    started = startImmediately;
 
     if (startImmediately) {
         [self start];
@@ -48,15 +57,13 @@
 }
 
 - (void)start {
-    if ([[self.configuration[@"captureExceptions"] lowercaseString] isEqualToString:@"true"]) {
+    if ([self.configuration[@"captureExceptions"] caseInsensitiveCompare:@"true"] == NSOrderedSame) {
         [Flurry setCrashReportingEnabled:YES];
     }
     
     [Flurry startSession:self.configuration[@"apiKey"] withOptions:self.launchOptions];
     
     started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceFlurry),
@@ -199,6 +206,10 @@
     }
     
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

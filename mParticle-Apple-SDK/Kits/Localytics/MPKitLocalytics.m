@@ -33,6 +33,7 @@
 
 @interface MPKitLocalytics() {
     BOOL multiplyByOneHundred;
+    BOOL started;
 }
 
 @property (nonatomic, strong) NSMutableDictionary *customDimensions;
@@ -53,7 +54,8 @@
 
 #pragma mark MPKitInstanceProtocol methods
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super initWithConfiguration:configuration startImmediately:startImmediately];
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -80,7 +82,8 @@
     
     multiplyByOneHundred = [configuration[@"trackClvAsRawValue"] caseInsensitiveCompare:@"true"] == NSOrderedSame;
 
-    frameworkAvailable = YES;
+    _configuration = configuration;
+    started = startImmediately;
     
     if (startImmediately) {
         [self start];
@@ -276,6 +279,10 @@
 
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceLocalytics) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

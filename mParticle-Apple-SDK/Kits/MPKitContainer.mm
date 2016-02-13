@@ -131,6 +131,11 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
+                           selector:@selector(handleApplicationDidBecomeActive:)
+                               name:UIApplicationDidBecomeActiveNotification
+                             object:nil];
+    
+    [notificationCenter addObserver:self
                            selector:@selector(handleApplicationDidFinishLaunching:)
                                name:UIApplicationDidFinishLaunchingNotification
                              object:nil];
@@ -140,23 +145,37 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 - (void)dealloc {
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+    [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
 }
 
 #pragma mark Notification handlers
+- (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
+    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    SEL didBecomeActiveSelector = @selector(didBecomeActive);
+    
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:didBecomeActiveSelector]) {
+            [kitRegister.wrapperInstance didBecomeActive];
+        }
+    }
+}
+
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.launchOptions = [notification userInfo];
+    SEL launchOptionsSelector = @selector(setLaunchOptions:);
+    SEL startSelector = @selector(start);
     
     for (MPKitRegister *kitRegister in kitsRegistry) {
         id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
         
         if (![kitInstance started]) {
-            if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+            if ([kitInstance respondsToSelector:launchOptionsSelector]) {
+                [kitInstance setLaunchOptions:stateMachine.launchOptions];
             }
             
-            if ([kitInstance respondsToSelector:@selector(start)]) {
+            if ([kitInstance respondsToSelector:startSelector]) {
                 [kitInstance start];
             }
         }
@@ -273,6 +292,18 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     
     [self startKitRegister:kitRegister configuration:configuration];
     
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    if ([kitRegister.wrapperInstance respondsToSelector:@selector(userAttributes)]) {
+        NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
+        [kitRegister.wrapperInstance setUserAttributes:userAttributes];
+    }
+
+    if ([kitRegister.wrapperInstance respondsToSelector:@selector(userIdentities)]) {
+        NSDictionary *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+        [kitRegister.wrapperInstance setUserIdentities:userIdentities];
+    }
+
     return kitRegister.wrapperInstance;
 }
 

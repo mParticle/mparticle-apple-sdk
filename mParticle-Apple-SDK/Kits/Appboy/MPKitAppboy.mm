@@ -36,6 +36,7 @@ NSString *const eabOptions = @"options";
 
 @interface MPKitAppboy() {
     Appboy *appboyInstance;
+    BOOL started;
 }
 
 @end
@@ -45,7 +46,8 @@ NSString *const eabOptions = @"options";
 
 #pragma mark MPKitInstanceProtocol methods
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super initWithConfiguration:configuration startImmediately:startImmediately];
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -54,7 +56,8 @@ NSString *const eabOptions = @"options";
         return nil;
     }
 
-    frameworkAvailable = YES;
+    _configuration = configuration;
+    started = startImmediately;
 
     if (startImmediately) {
         [self start];
@@ -80,8 +83,6 @@ NSString *const eabOptions = @"options";
         appboyInstance = (__bridge Appboy *)appboyRef;
         
         started = YES;
-        self.forwardedEvents = YES;
-        self.active = YES;
 
         dispatch_async(dispatch_get_main_queue(), ^{
             NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceAppboy),
@@ -346,6 +347,10 @@ NSString *const eabOptions = @"options";
     }
     
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

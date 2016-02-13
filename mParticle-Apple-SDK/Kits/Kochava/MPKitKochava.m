@@ -40,6 +40,7 @@ static MPKochavaTracker *kochavaTracker = nil;
 
 @interface MPKitKochava() {
     BOOL isNewUser;
+    BOOL started;
 }
 
 @end
@@ -192,8 +193,9 @@ static MPKochavaTracker *kochavaTracker = nil;
 }
 
 #pragma mark MPKitInstanceProtocol methods
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -213,10 +215,7 @@ static MPKochavaTracker *kochavaTracker = nil;
         }
         
         if (kochavaTracker) {
-            strongSelf->frameworkAvailable = YES;
-            strongSelf->started = YES;
-            strongSelf.forwardedEvents = YES;
-            strongSelf.active = YES;
+            strongSelf->started = startImmediately;
 
             if ([configuration[kvUseCustomerId] boolValue] || [configuration[kvIncludeOtherUserIds] boolValue]) {
                 [strongSelf synchronize];
@@ -231,12 +230,7 @@ static MPKochavaTracker *kochavaTracker = nil;
     return [self started] ? kochavaTracker : nil;
 }
 
-- (void)setConfiguration:(NSDictionary *)configuration {
-    [super setConfiguration:configuration];
-}
-
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {
-    kitDebugMode = debugMode;
     [self kochavaTracker:^(MPKochavaTracker *const kochavaTracker) {
         [kochavaTracker enableConsoleLogging:debugMode];
     }];

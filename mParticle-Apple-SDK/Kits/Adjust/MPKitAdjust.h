@@ -25,8 +25,7 @@
 @interface MPKitAdjust : NSObject <MPKitProtocol>
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
-
-- (BOOL)started;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
 
 @end
 

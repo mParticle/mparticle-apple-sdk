@@ -16,8 +16,13 @@
 //  limitations under the License.
 //
 
-#import "MPKitAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitExecStatus.h"
+#import "MPKitProtocol.h"
 
-@interface MPKitForesee : MPKitAbstract <MPKitInstanceProtocol>
+@interface MPKitForesee : NSObject <MPKitProtocol>
+
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
 
 @end

@@ -36,7 +36,6 @@
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
 - (nonnull NSNumber *)kitCode;
 - (void)setKitCode:(nonnull NSNumber *)kitCode;
-- (BOOL)active;
 - (BOOL)started;
 
 @optional
@@ -45,6 +44,8 @@
 - (nullable id const)providerKitInstance;
 - (nonnull NSDictionary *)configuration;
 - (void)setConfiguration:(nonnull NSDictionary *)configuration;
+- (nullable NSDictionary *)launchOptions;
+- (void)setLaunchOptions:(nullable NSDictionary *)launchOptions;
 
 // Application
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
@@ -54,6 +55,7 @@
 - (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken;
 - (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 - (nonnull MPKitExecStatus *)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
+- (nonnull MPKitExecStatus *)didBecomeActive;
 // Location tracking
 #if TARGET_OS_IOS == 1
 - (nonnull MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
@@ -64,9 +66,13 @@
 - (nonnull MPKitExecStatus *)beginSession;
 - (nonnull MPKitExecStatus *)endSession;
 // User attributes and identities
+- (nullable NSDictionary<NSString *, id> *)userAttributes;
+- (void)setUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes;
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nonnull MPKitExecStatus *)removeUserAttribute:(nonnull NSString *)key;
 - (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nullable NSString *)value;
+- (nullable NSDictionary<NSString *, id> *)userIdentities;
+- (void)setUserIdentities:(nullable NSDictionary<NSString *, id> *)userIdentities;
 - (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
 - (nonnull MPKitExecStatus *)setUserTag:(nonnull NSString *)tag;
 // e-Commerce

@@ -35,7 +35,9 @@ NSString *const khnSendTransactionDataKey = @"sendTransactionData";
 NSString *const khnTransactionName = @"purchase";
 NSString *const khnEventAttributeListKey = @"eventAttributeList";
 
-@interface MPKitKahuna()
+@interface MPKitKahuna() {
+    BOOL started;
+}
 
 @property (nonatomic, strong, readonly) NSMutableDictionary *defaultEventNames;
 @property (nonatomic, unsafe_unretained) BOOL sendTransactions;
@@ -97,14 +99,14 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
         return;
     }
     
-    [super setConfiguration:configuration];
-    
+    _configuration = configuration;
     [self setupWithConfiguration:configuration];
 }
 
 #pragma mark MPKitInstanceProtocol methods
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -118,10 +120,8 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
     [KahunaAnalytics launchWithKey:configuration[khnSecretKey]];
     [KahunaAnalytics setDeepIntegrationMode:false];
     
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    _configuration = configuration;
+    started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceKahuna),
@@ -337,6 +337,10 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceKahuna) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

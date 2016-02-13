@@ -36,7 +36,9 @@ NSString *const ecsAutoUpdateInterval = @"autoUpdateInterval";
 NSString *const escAppName = @"appName";
 NSString *const escProduct = @"product";
 
-@interface MPKitComScore()
+@interface MPKitComScore() {
+    BOOL started;
+}
 
 @property (nonatomic, unsafe_unretained) MPcomScoreProduct product;
 
@@ -75,8 +77,8 @@ NSString *const escProduct = @"product";
     if (!started || ![self isValidConfiguration:configuration]) {
         return;
     }
-    
-    [super setConfiguration:configuration];
+
+    _configuration = configuration;
     
     [self setupWithConfiguration:configuration];
 }
@@ -113,8 +115,9 @@ NSString *const escProduct = @"product";
 }
 
 #pragma mark MPKitInstanceProtocol methods
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self || ![self isValidConfiguration:configuration]) {
         return nil;
     }
@@ -125,10 +128,8 @@ NSString *const escProduct = @"product";
     
     [self setupWithConfiguration:configuration];
 
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    _configuration = configuration;
+    started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceComScore),
@@ -244,6 +245,10 @@ NSString *const escProduct = @"product";
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceComScore) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

@@ -18,9 +18,14 @@
 
 #if defined(MP_KIT_WOOTRIC)
 
-#import "MPKitAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitExecStatus.h"
+#import "MPKitProtocol.h"
 
-@interface MPKitWootric : MPKitAbstract <MPKitInstanceProtocol>
+@interface MPKitWootric : NSObject <MPKitProtocol>
+
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
 
 @end
 

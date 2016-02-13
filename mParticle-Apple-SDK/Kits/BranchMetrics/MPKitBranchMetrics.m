@@ -29,6 +29,7 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
 @interface MPKitBranchMetrics() {
     Branch *branchInstance;
     BOOL forwardScreenViews;
+    BOOL started;
 }
 
 @end
@@ -38,7 +39,8 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
 
 #pragma mark MPKitInstanceProtocol methods
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super initWithConfiguration:configuration startImmediately:startImmediately];
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -52,7 +54,8 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
     }
     
     forwardScreenViews = [configuration[ekBMAForwardScreenViews] boolValue];
-    frameworkAvailable = YES;
+    _configuration = configuration;
+    started = startImmediately;
     
     if (startImmediately) {
         [self start];
@@ -74,8 +77,6 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
         
         [branchInstance initSessionWithLaunchOptions:self.launchOptions isReferrable:YES andRegisterDeepLinkHandler:^(NSDictionary *params, NSError *error) {
             started = YES;
-            self.forwardedEvents = YES;
-            self.active = YES;
 
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSMutableDictionary *userInfo = [@{mParticleKitInstanceKey:@(MPKitInstanceBranchMetrics),
@@ -152,6 +153,10 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceBranchMetrics) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

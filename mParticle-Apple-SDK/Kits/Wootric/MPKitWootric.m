@@ -21,10 +21,18 @@
 #import "MPKitWootric.h"
 #import <WootricSDK/WootricSDK.h>
 
+@interface MPKitWootric() {
+    BOOL started;
+}
+
+@end
+
+
 @implementation MPKitWootric
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -40,10 +48,8 @@
 
     [Wootric configureWithClientID:clientId clientSecret:clientSecret accountToken:accountToken];
 
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    _configuration = configuration;
+    started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceWootric),
@@ -89,6 +95,10 @@
 
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceWootric) returnCode:returnCode];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end

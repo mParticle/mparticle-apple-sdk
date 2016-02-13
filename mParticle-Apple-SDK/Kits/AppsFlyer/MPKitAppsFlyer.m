@@ -32,10 +32,18 @@ NSString *const afDevKey = @"devKey";
 
 static AppsFlyerTracker *appsFlyerTracker = nil;
 
+@interface MPKitAppsFlyer() {
+    BOOL started;
+}
+
+@end
+
+
 @implementation MPKitAppsFlyer
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
@@ -50,17 +58,7 @@ static AppsFlyerTracker *appsFlyerTracker = nil;
     appsFlyerTracker.appleAppID = appleAppId;
     appsFlyerTracker.appsFlyerDevKey = devKey;
     
-    NSNotificationCenter *center = NSNotificationCenter.defaultCenter;
-    [center removeObserver:self];
-    [center addObserver:self
-               selector:@selector(didBecomeActive)
-                   name:UIApplicationDidBecomeActiveNotification
-                 object:nil];
-
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    started = startImmediately;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceAppsFlyer),
@@ -78,10 +76,10 @@ static AppsFlyerTracker *appsFlyerTracker = nil;
     return self;
 }
 
-- (void)didBecomeActive {
-    if (self.started && self.active) {
-        [[AppsFlyerTracker sharedTracker] trackAppLaunch];
-    }
+- (nonnull MPKitExecStatus *)didBecomeActive {
+    [[AppsFlyerTracker sharedTracker] trackAppLaunch];
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
 }
 
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation {
@@ -197,6 +195,10 @@ static AppsFlyerTracker *appsFlyerTracker = nil;
     appsFlyerTracker.deviceTrackingDisabled = optOut;
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (BOOL)started {
+    return started;
 }
 
 @end
