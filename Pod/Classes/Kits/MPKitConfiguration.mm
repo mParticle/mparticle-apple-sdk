@@ -85,6 +85,9 @@
     _commerceEventAttributeFilters = _filters[@"cea"];
     _commerceEventEntityTypeFilters = _filters[@"ent"];
     _commerceEventAppFamilyAttributeFilters = _filters[@"afa"];
+    _addEventAttributeList = _filters[@"eaa"];
+    _removeEventAttributeList = _filters[@"ear"];
+    _singleItemEventAttributeList = _filters[@"eas"];
 }
 
 #pragma mark Public methods
@@ -108,16 +111,29 @@
         }
     }
     
+    // Filters
+    [self setFilters:configurationDictionary[@"hs"]];
+    
     // Configuration
     _configuration = configurationDictionary[@"as"];
     if (_configuration) {
         NSMutableDictionary *configDictionary = [_configuration mutableCopy];
         configDictionary[@"mpEnv"] = @([MPStateMachine environment]);
+        
+        if (_addEventAttributeList) {
+            configDictionary[@"eaa"] = _addEventAttributeList;
+        }
+        
+        if (_removeEventAttributeList) {
+            configDictionary[@"ear"] = _removeEventAttributeList;
+        }
+        
+        if (_singleItemEventAttributeList) {
+            configDictionary[@"eas"] = _singleItemEventAttributeList;
+        }
+        
         _configuration = [configDictionary copy];
     }
-    
-    // Filters
-    [self setFilters:configurationDictionary[@"hs"]];
     
     // Projections
     [self configureProjections:configurationDictionary[@"pr"]];

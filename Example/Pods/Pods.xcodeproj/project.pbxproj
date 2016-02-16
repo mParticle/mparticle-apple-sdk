@@ -201,7 +201,7 @@
 		C9EE9DA31BD7C2570083CD37 /* MPKitAdjust.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9D741BD7C2570083CD37 /* MPKitAdjust.h */; };
 		C9EE9DA41BD7C2570083CD37 /* MPKitAdjust.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9D751BD7C2570083CD37 /* MPKitAdjust.m */; };
 		C9EE9DA51BD7C2570083CD37 /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9D791BD7C2570083CD37 /* MPKitAppboy.h */; };
-		C9EE9DA61BD7C2570083CD37 /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.m */; };
+		C9EE9DA61BD7C2570083CD37 /* MPKitAppboy.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.mm */; };
 		C9EE9DA71BD7C2570083CD37 /* MPKitBranchMetrics.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9D7C1BD7C2570083CD37 /* MPKitBranchMetrics.h */; };
 		C9EE9DA81BD7C2570083CD37 /* MPKitBranchMetrics.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9D7D1BD7C2570083CD37 /* MPKitBranchMetrics.m */; };
 		C9EE9DA91BD7C2570083CD37 /* MPKitComScore.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9D7F1BD7C2570083CD37 /* MPKitComScore.h */; };
@@ -490,7 +490,7 @@
 		C9EE9D741BD7C2570083CD37 /* MPKitAdjust.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAdjust.h; sourceTree = "<group>"; };
 		C9EE9D751BD7C2570083CD37 /* MPKitAdjust.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAdjust.m; sourceTree = "<group>"; };
 		C9EE9D791BD7C2570083CD37 /* MPKitAppboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppboy.h; sourceTree = "<group>"; };
-		C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAppboy.m; sourceTree = "<group>"; };
+		C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitAppboy.mm; sourceTree = "<group>"; };
 		C9EE9D7C1BD7C2570083CD37 /* MPKitBranchMetrics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitBranchMetrics.h; sourceTree = "<group>"; };
 		C9EE9D7D1BD7C2570083CD37 /* MPKitBranchMetrics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitBranchMetrics.m; sourceTree = "<group>"; };
 		C9EE9D7F1BD7C2570083CD37 /* MPKitComScore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitComScore.h; sourceTree = "<group>"; };
@@ -1049,7 +1049,7 @@
 			isa = PBXGroup;
 			children = (
 				C9EE9D791BD7C2570083CD37 /* MPKitAppboy.h */,
-				C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.m */,
+				C9EE9D7A1BD7C2570083CD37 /* MPKitAppboy.mm */,
 			);
 			path = Appboy;
 			sourceTree = "<group>";
@@ -1522,7 +1522,7 @@
 				C9EE9DB81BD7C2570083CD37 /* MPAttributeProjection.m in Sources */,
 				C9C2DCA41BD458600002F75A /* MessageTypeName.cpp in Sources */,
 				C9C2DCFD1BD458600002F75A /* MPUploadBuilder.mm in Sources */,
-				C9EE9DA61BD7C2570083CD37 /* MPKitAppboy.m in Sources */,
+				C9EE9DA61BD7C2570083CD37 /* MPKitAppboy.mm in Sources */,
 				C9C2DC751BD458600002F75A /* MPProduct.mm in Sources */,
 				C9C2DC531BD458600002F75A /* MPForwardRecord.mm in Sources */,
 				C9C2DD011BD458600002F75A /* NSString+MPPercentEscape.m in Sources */,
