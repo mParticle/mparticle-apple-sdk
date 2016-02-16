@@ -47,6 +47,9 @@
 @property (nonatomic, weak, readonly) NSDictionary *commerceEventAttributeFilters;
 @property (nonatomic, weak, readonly) NSDictionary *commerceEventEntityTypeFilters;
 @property (nonatomic, weak, readonly) NSDictionary *commerceEventAppFamilyAttributeFilters;
+@property (nonatomic, weak, readonly) NSDictionary *addEventAttributeList;
+@property (nonatomic, weak, readonly) NSDictionary *removeEventAttributeList;
+@property (nonatomic, weak, readonly) NSDictionary *singleItemEventAttributeList;
 
 - (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)configurationDictionary;
 - (void)updateConfiguration:(nonnull NSDictionary *)configurationDictionary;

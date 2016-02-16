@@ -265,8 +265,9 @@
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
     NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+    id annotation =  options[UIApplicationOpenURLOptionsAnnotationKey];
     
-    [self openURL:url sourceApplication:sourceApplication annotation:nil];
+    [self openURL:url sourceApplication:sourceApplication annotation:annotation];
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
