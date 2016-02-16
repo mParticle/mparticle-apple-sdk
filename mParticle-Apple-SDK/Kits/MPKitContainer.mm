@@ -19,7 +19,6 @@
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
-#import "MPKitForesee.h"
 #include "MessageTypeName.h"
 #import "MPStateMachine.h"
 #include "MPHasher.h"
@@ -43,11 +42,11 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitRegister.h"
+#import "MPKitRegister+Internal.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";
-static NSMutableArray <id<MPKitProtocol>> *registedKits;
 static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 @interface MPKitContainer() {
@@ -63,7 +62,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 @implementation MPKitContainer
 
 + (void)initialize {
-    registedKits = [[NSMutableArray alloc] initWithCapacity:2];
     kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
 }
 
@@ -235,7 +233,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }
     
     __block BOOL isMatch = NO;
-    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
         NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
         if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
             *stop = YES;

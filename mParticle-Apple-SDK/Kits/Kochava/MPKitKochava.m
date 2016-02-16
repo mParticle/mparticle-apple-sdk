@@ -192,6 +192,22 @@ static MPKochavaTracker *kochavaTracker = nil;
     }];
 }
 
+- (void)synchronize {
+    if ([cachedUserIdentities isEqualToArray:self.userIdentities]) {
+        return;
+    }
+    
+    cachedUserIdentities = self.userIdentities;
+    
+    if ([self.configuration[kvUseCustomerId] boolValue]) {
+        [self identityLinkCustomerId];
+    }
+    
+    if ([self.configuration[kvIncludeOtherUserIds] boolValue]) {
+        [self identityLinkOtherUserIds];
+    }
+}
+
 #pragma mark MPKitInstanceProtocol methods
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
     NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
@@ -282,22 +298,6 @@ static MPKochavaTracker *kochavaTracker = nil;
     }
     
     return execStatus;
-}
-
-- (void)synchronize {
-    if ([cachedUserIdentities isEqualToArray:self.userIdentities]) {
-        return;
-    }
-    
-    cachedUserIdentities = self.userIdentities;
-    
-    if ([self.configuration[kvUseCustomerId] boolValue]) {
-        [self identityLinkCustomerId];
-    }
-    
-    if ([self.configuration[kvIncludeOtherUserIds] boolValue]) {
-        [self identityLinkOtherUserIds];
-    }
 }
 
 @end

@@ -33,12 +33,15 @@
 @class MPUserSegments;
 
 @protocol MPKitProtocol <NSObject>
+#pragma mark - Required methods
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
 - (nonnull NSNumber *)kitCode;
 - (void)setKitCode:(nonnull NSNumber *)kitCode;
 - (BOOL)started;
 
+#pragma mark - Optional methods
 @optional
+#pragma mark Kit lifecycle
 - (void)start;
 - (void)deinit;
 - (nullable id const)providerKitInstance;
@@ -47,7 +50,7 @@
 - (nullable NSDictionary *)launchOptions;
 - (void)setLaunchOptions:(nullable NSDictionary *)launchOptions;
 
-// Application
+#pragma mark Application
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
 - (nonnull MPKitExecStatus *)failedToRegisterForUserNotifications:(nullable NSError *)error;
 - (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
@@ -56,16 +59,19 @@
 - (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 - (nonnull MPKitExecStatus *)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
 - (nonnull MPKitExecStatus *)didBecomeActive;
-// Location tracking
+
+#pragma mark Location tracking
 #if TARGET_OS_IOS == 1
 - (nonnull MPKitExecStatus *)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter;
 - (nonnull MPKitExecStatus *)endLocationTracking;
 - (nonnull MPKitExecStatus *)setLocation:(nonnull CLLocation *)location;
 #endif
-// Session management
+
+#pragma mark Session management
 - (nonnull MPKitExecStatus *)beginSession;
 - (nonnull MPKitExecStatus *)endSession;
-// User attributes and identities
+
+#pragma mark User attributes and identities
 - (nullable NSDictionary<NSString *, id> *)userAttributes;
 - (void)setUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes;
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
@@ -75,29 +81,34 @@
 - (void)setUserIdentities:(nullable NSDictionary<NSString *, id> *)userIdentities;
 - (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
 - (nonnull MPKitExecStatus *)setUserTag:(nonnull NSString *)tag;
-// e-Commerce
+
+#pragma mark e-Commerce
 - (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 - (nonnull MPKitExecStatus *)logLTVIncrease:(double)increaseAmount event:(nonnull MPEvent *)event;
-// Events
+
+#pragma mark Events
 - (nonnull MPKitExecStatus *)logEvent:(nonnull MPEvent *)event;
 - (nonnull MPKitExecStatus *)logInstall;
 - (nonnull MPKitExecStatus *)logout;
 - (nonnull MPKitExecStatus *)logScreen:(nonnull MPEvent *)event;
 - (nonnull MPKitExecStatus *)logUpdate;
-// Timed events
+
+#pragma mark Timed events
 - (nonnull MPKitExecStatus *)beginTimedEvent:(nonnull MPEvent *)event;
 - (nonnull MPKitExecStatus *)endTimedEvent:(nonnull MPEvent *)event;
-// Errors and exceptions
+
+#pragma mark Errors and exceptions
 - (nonnull MPKitExecStatus *)leaveBreadcrumb:(nonnull MPEvent *)event;
 - (nonnull MPKitExecStatus *)logError:(nullable NSString *)message eventInfo:(nullable NSDictionary *)eventInfo;
 - (nonnull MPKitExecStatus *)logException:(nonnull NSException *)exception;
-// Assorted
+
+#pragma mark Assorted
 - (nonnull MPKitExecStatus *)setDebugMode:(BOOL)debugMode;
 - (nonnull MPKitExecStatus *)setKitAttribute:(nonnull NSString *)key value:(nullable id)value;
 - (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
 - (nullable NSString *)surveyURLWithUserAttributes:(nonnull NSDictionary *)userAttributes;
-- (void)synchronize;
-// Media tracking
+
+#pragma mark Media tracking
 - (nonnull MPKitExecStatus *)beginPlaying:(nonnull MPMediaTrack *)mediaTrack;
 - (nonnull MPKitExecStatus *)endPlaying:(nonnull MPMediaTrack *)mediaTrack;
 - (nonnull MPKitExecStatus *)logMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
