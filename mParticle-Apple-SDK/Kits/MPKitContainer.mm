@@ -44,54 +44,6 @@
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitRegister.h"
 
-#if defined(MP_KIT_ADJUST)
-    #import "MPKitAdjust.h"
-#endif
-
-#if defined(MP_KIT_APPBOY)
-    #import "MPKitAppboy.h"
-#endif
-
-#if defined(MP_KIT_APPSFLYER)
-    #import "MPKitAppsFlyer.h"
-#endif
-
-#if defined(MP_KIT_BRANCHMETRICS)
-    #import "MPKitBranchMetrics.h"
-#endif
-
-#if defined(MP_KIT_CRITTERCISM)
-    #import "MPKitCrittercism.h"
-#endif
-
-#if defined(MP_KIT_COMSCORE)
-    #import "MPKitComScore.h"
-#endif
-
-#if defined(MP_KIT_FLURRY)
-    #import "MPKitFlurry.h"
-#endif
-
-#if defined(MP_KIT_KAHUNA)
-    #import "MPKitKahuna.h"
-#endif
-
-#if defined(MP_KIT_KOCHAVA)
-    #import "MPKitKochava.h"
-#endif
-
-#if defined(MP_KIT_LOCALYTICS)
-    #import "MPKitLocalytics.h"
-#endif
-
-#if defined(MP_KIT_TUNE)
-    #import "MPKitTune.h"
-#endif
-
-#if defined(MP_KIT_WOOTRIC)
-    #import "MPKitWootric.h"
-#endif
-
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";
@@ -277,6 +229,30 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return kitRegister.name;
 }
 
+- (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
+    if (!configuration.attributeValueFilteringIsActive) {
+        return YES;
+    }
+    
+    __block BOOL isMatch = NO;
+    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
+            *stop = YES;
+            if ([obj isKindOfClass:[NSString class]]) {
+                NSString *value = (NSString *)obj;
+                NSString *hashedValue = [NSString stringWithCString:mParticle::Hasher::hashString([[value lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
+                    isMatch = YES;
+                }
+            }
+        }
+    }];
+    
+    BOOL shouldInclude = configuration.attributeValueFilteringShouldIncludeMatches ? isMatch : !isMatch;
+    return shouldInclude;
+}
+
 - (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(NSDictionary *)configuration {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     MPKitRegister *kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
@@ -417,30 +393,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     _kitConfigurations = [[NSMutableDictionary alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     
     return _kitConfigurations;
-}
-
-- (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
-    if (!configuration.attributeValueFilteringIsActive) {
-        return YES;
-    }
-    
-    __block BOOL isMatch = NO;
-    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-        if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
-            *stop = YES;
-            if ([obj isKindOfClass:[NSString class]]) {
-                NSString *value = (NSString *)obj;
-                NSString *hashedValue = [NSString stringWithCString:mParticle::Hasher::hashString([[value lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-                if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
-                    isMatch = YES;
-                }
-            }
-        }
-    }];
-    
-    BOOL shouldInclude = configuration.attributeValueFilteringShouldIncludeMatches ? isMatch : !isMatch;
-    return shouldInclude;
 }
 
 #pragma mark Filtering methods
@@ -1931,22 +1883,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
                 kitHandler(kitRegister.wrapperInstance, &execStatus);
                 
                 MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
-            }
-        }
-    }
-}
-
-- (void)forwardSDKCall:(SEL)selector kitHandler:(void (^)(MPKitAbstract *kit, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
-    
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:selector]) {
-            if ([kit canExecuteSelector:selector]) {
-                MPKitExecStatus *execStatus = nil;
-                
-                kitHandler(kit, &execStatus);
-                
-                MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
             }
         }
     }
