@@ -24,6 +24,6 @@
 @property (nonatomic, strong, readonly, nonnull) NSString *sourceApplication;
 @property (nonatomic, strong, readonly, nullable) id annotation;
 
-- (nonnull instancetype)initWithURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
+- (nonnull instancetype)initWithURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 
 @end

@@ -4,6 +4,11 @@
 
 * Unification of the SDKs
 
+## 5.3.1
+
+* Determining whether to forward an app delegate call to the old deep-linking method
+* Forwarding event attributes as user attributes to Appboy
+
 ## 5.3.0
 
 * Support for [AppsFlyer](https://www.appsflyer.com) as a kit

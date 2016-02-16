@@ -37,6 +37,6 @@
 
 + (nonnull instancetype)sharedInstance;
 - (void)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
-- (void)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
+- (void)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 
 @end
