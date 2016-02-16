@@ -171,6 +171,14 @@
     if ([originalAppDelegate respondsToSelector:_cmd]) {
         return [originalAppDelegate application:app openURL:url options:options];
     }
+#if TARGET_OS_IOS == 1
+    else if ([originalAppDelegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)]) {
+        NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+        id annotation =  options[UIApplicationOpenURLOptionsAnnotationKey];
+        
+        return [originalAppDelegate application:app openURL:url sourceApplication:sourceApplication annotation:annotation];
+    }
+#endif
     
     return NO;
 }

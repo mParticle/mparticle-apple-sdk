@@ -215,7 +215,7 @@
 		C9049B461C56C35C005F11EA /* MPKitAdjust.h in Headers */ = {isa = PBXBuildFile; fileRef = C904997E1C56B8DE005F11EA /* MPKitAdjust.h */; };
 		C9049B471C56C35C005F11EA /* MPKitAdjust.m in Sources */ = {isa = PBXBuildFile; fileRef = C904997F1C56B8DE005F11EA /* MPKitAdjust.m */; };
 		C9049B481C56C362005F11EA /* MPKitAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499811C56B8DE005F11EA /* MPKitAppboy.h */; };
-		C9049B491C56C362005F11EA /* MPKitAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499821C56B8DF005F11EA /* MPKitAppboy.m */; };
+		C9049B491C56C362005F11EA /* MPKitAppboy.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499821C56B8DF005F11EA /* MPKitAppboy.mm */; };
 		C9049B4A1C56C369005F11EA /* MPKitBranchMetrics.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499841C56B8DF005F11EA /* MPKitBranchMetrics.h */; };
 		C9049B4B1C56C369005F11EA /* MPKitBranchMetrics.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499851C56B8DF005F11EA /* MPKitBranchMetrics.m */; };
 		C9049B4C1C56C36E005F11EA /* MPKitComScore.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499871C56B8DF005F11EA /* MPKitComScore.h */; };
@@ -507,7 +507,7 @@
 		C904997E1C56B8DE005F11EA /* MPKitAdjust.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitAdjust.h; sourceTree = "<group>"; };
 		C904997F1C56B8DE005F11EA /* MPKitAdjust.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPKitAdjust.m; sourceTree = "<group>"; };
 		C90499811C56B8DE005F11EA /* MPKitAppboy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitAppboy.h; sourceTree = "<group>"; };
-		C90499821C56B8DF005F11EA /* MPKitAppboy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPKitAppboy.m; sourceTree = "<group>"; };
+		C90499821C56B8DF005F11EA /* MPKitAppboy.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitAppboy.mm; sourceTree = "<group>"; };
 		C90499841C56B8DF005F11EA /* MPKitBranchMetrics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitBranchMetrics.h; sourceTree = "<group>"; };
 		C90499851C56B8DF005F11EA /* MPKitBranchMetrics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPKitBranchMetrics.m; sourceTree = "<group>"; };
 		C90499871C56B8DF005F11EA /* MPKitComScore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitComScore.h; sourceTree = "<group>"; };
@@ -909,7 +909,7 @@
 			isa = PBXGroup;
 			children = (
 				C90499811C56B8DE005F11EA /* MPKitAppboy.h */,
-				C90499821C56B8DF005F11EA /* MPKitAppboy.m */,
+				C90499821C56B8DF005F11EA /* MPKitAppboy.mm */,
 			);
 			path = Appboy;
 			sourceTree = "<group>";
@@ -1598,7 +1598,7 @@
 				DBA191551C6C006100F7E74B /* MPKitAppsFlyer.m in Sources */,
 				C9049B991C56C3D0005F11EA /* NSURLConnection+mParticle.m in Sources */,
 				C9049A9F1C56C2FE005F11EA /* MPCustomModule.m in Sources */,
-				C9049B491C56C362005F11EA /* MPKitAppboy.m in Sources */,
+				C9049B491C56C362005F11EA /* MPKitAppboy.mm in Sources */,
 				C9049B911C56C3D0005F11EA /* MPNetworkCommunication.mm in Sources */,
 				C9049B5B1C56C391005F11EA /* MPKitLocalytics.m in Sources */,
 				C9049AC01C56C31D005F11EA /* MPStandaloneCommand.m in Sources */,

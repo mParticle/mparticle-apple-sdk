@@ -1,5 +1,5 @@
 //
-//  MPKitAppboy.m
+//  MPKitAppboy.mm
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -175,10 +175,34 @@ NSString *const eabOptions = @"options";
 - (MPKitExecStatus *)logEvent:(MPEvent *)event {
     void (^logCustomEvent)(void) = ^{
         [appboyInstance logCustomEvent:event.name withProperties:event.info];
-
-        [event.info enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSString *value, BOOL *stop) {
-            [appboyInstance.user setCustomAttributeWithKey:key andStringValue:value];
-        }];
+        
+        NSString *eventTypeString = [@(event.type) stringValue];
+        
+        for (NSString *key in event.info) {
+            NSString *eventTypePlusNamePlusKey = [[NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key] lowercaseString];
+            NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([eventTypePlusNamePlusKey cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
+                                                     encoding:NSUTF8StringEncoding];
+            
+            NSDictionary *forwardUserAttributes;
+            
+            // Delete from array
+            forwardUserAttributes = self.configuration[@"ear"];
+            if (forwardUserAttributes[hashValue]) {
+                [appboyInstance.user removeFromCustomAttributeArrayWithKey:forwardUserAttributes[hashValue] value:event.info[key]];
+            }
+            
+            // Add to array
+            forwardUserAttributes = self.configuration[@"eaa"];
+            if (forwardUserAttributes[hashValue]) {
+                [appboyInstance.user addToCustomAttributeArrayWithKey:forwardUserAttributes[hashValue] value:event.info[key]];
+            }
+            
+            // Add key/value pair
+            forwardUserAttributes = self.configuration[@"eas"];
+            if (forwardUserAttributes[hashValue]) {
+                [appboyInstance.user setCustomAttributeWithKey:forwardUserAttributes[hashValue] andStringValue:event.info[key]];
+            }
+        }
     };
     
     if ([NSThread isMainThread]) {
