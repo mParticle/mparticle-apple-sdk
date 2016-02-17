@@ -275,7 +275,7 @@
  @param annotation A property list object supplied by the source app
  @see proxiedAppDelegate
  */
-- (void)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation;
+- (void)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.
