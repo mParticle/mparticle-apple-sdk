@@ -21,7 +21,7 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticles"
     s.requires_arc      = true
     s.platform          = :ios, '7.0'
-    s.default_subspecs  = 'mParticle', 'CrashReporter', 'Adjust', 'Appboy', 'AppsFlyer', 'BranchMetrics', 'comScore', 'Flurry', 'Kahuna', 'Kochava', 'Localytics', 'Wootric'
+    s.default_subspecs  = 'mParticle', 'CrashReporter', 'Adjust', 'Appboy', 'AppsFlyer', 'BranchMetrics', 'comScore', 'Flurry', 'Kahuna', 'Kochava', 'Localytics', 'Tune', 'Wootric'
 
     s.subspec 'Core-SDK' do |ss|
         ss.public_header_files = 'Pod/Classes/mParticle.h', 'Pod/Classes/MPEnums.h', 'Pod/Classes/MPUserSegments.h', \
@@ -113,6 +113,13 @@ Pod::Spec.new do |s|
         ss.dependency 'mParticle-iOS-SDK/mParticle'
         ss.dependency 'Localytics', '~> 3.5'
         ss.prefix_header_contents = "#define MP_KIT_LOCALYTICS 1"
+        ss.platform               = :ios, '7.0'
+    end
+
+    s.subspec 'Tune' do |ss|
+        ss.dependency 'mParticle-iOS-SDK/Core-SDK'
+        ss.dependency 'mParticle-iOS-SDK/mParticle'
+        ss.prefix_header_contents = "#define MP_KIT_TUNE 1"
         ss.platform               = :ios, '7.0'
     end
 
