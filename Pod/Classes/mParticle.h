@@ -434,6 +434,13 @@
  */
 - (void)logLTVIncrease:(double)increaseAmount eventName:(nonnull NSString *)eventName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
+#pragma mark - Deep linking
+/**
+ Checks for deferred deep link information.
+ @param completionHandler A block to be called when deep link checking is finished.
+ */
+- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^_Nonnull)(NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
+
 #pragma mark - Kits
 /**
  Retrieves the internal instance of a kit, so it can be used to invoke methods and properties of that kit directly.
