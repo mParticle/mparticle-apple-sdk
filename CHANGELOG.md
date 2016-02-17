@@ -2,11 +2,13 @@
 
 ## 5.4.0
 
+* Support for [Tune](https://www.tune.com/) as a kit
 * Verifying whether obtained 3rd party custom module values are a supported data type
 
 ## 5.3.2
 
 * Updated the nullability notation for handleActionWithIdentifier
+* Deferring the execution of the code in the ApplicationDidFinishLaunching to the next run-loop as a workaround to a bug in the Sqlite implementation
 
 ## 5.3.1
 
