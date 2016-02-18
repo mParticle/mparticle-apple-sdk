@@ -29,7 +29,7 @@
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)error;
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
-- (void)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
+- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 - (void)receivedUserNotification:(nonnull NSDictionary *)userInfo actionIdentifier:(nullable NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode;
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler;
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;

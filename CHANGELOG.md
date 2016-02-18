@@ -4,6 +4,11 @@
 
 * Unification of the SDKs
 
+## 5.3.2
+
+* Updated the nullability notation for handleActionWithIdentifier
+* Deferring the execution of the code in the ApplicationDidFinishLaunching to the next run-loop as a workaround to a bug in the Sqlite implementation
+
 ## 5.3.1
 
 * Determining whether to forward an app delegate call to the old deep-linking method

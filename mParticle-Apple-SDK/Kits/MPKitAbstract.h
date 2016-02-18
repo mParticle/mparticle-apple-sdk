@@ -36,7 +36,7 @@
 // Application
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 - (nonnull MPKitExecStatus *)failedToRegisterForUserNotifications:(nullable NSError *)error;
-- (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
+- (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 - (nonnull MPKitExecStatus *)receivedUserNotification:(nonnull NSDictionary *)userInfo;
 - (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken;
 - (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler;
