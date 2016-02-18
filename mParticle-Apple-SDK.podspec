@@ -144,6 +144,13 @@ Pod::Spec.new do |s|
         ss.ios.deployment_target      = "8.0"
     end
 
+    s.subspec 'Tune' do |ss|
+        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
+        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
+        ss.ios.prefix_header_contents = "#define MP_KIT_TUNE 1"
+        ss.ios.deployment_target      = "8.0"
+    end
+
     s.subspec 'Wootric' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'

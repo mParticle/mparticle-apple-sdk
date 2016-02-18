@@ -167,7 +167,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Wootric */
     MPKitInstanceWootric = 90,
     /** Kit code for AppsFlyer */
-    MPKitInstanceAppsFlyer = 92
+    MPKitInstanceAppsFlyer = 92,
+    /** Kit code for Tune */
+    MPKitInstanceTune = 32
 };
 
 /// Log Levels
