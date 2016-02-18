@@ -85,6 +85,10 @@
     #import "MPKitLocalytics.h"
 #endif
 
+#if defined(MP_KIT_TUNE)
+    #import "MPKitTune.h"
+#endif
+
 #if defined(MP_KIT_WOOTRIC)
     #import "MPKitWootric.h"
 #endif
@@ -316,6 +320,11 @@ NSString *const kitFileExtension = @"eks";
 #if defined(MP_KIT_LOCALYTICS)
         case MPKitInstanceLocalytics:
             kit = [[MPKitLocalytics alloc] initWithConfiguration:configuration startImmediately:NO];
+            break;
+#endif
+#if defined(MP_KIT_TUNE)
+        case MPKitInstanceTune:
+            kit = [[MPKitTune alloc] initWithConfiguration:configuration];
             break;
 #endif
 #if defined(MP_KIT_WOOTRIC)
@@ -1826,6 +1835,9 @@ NSString *const kitFileExtension = @"eks";
 #if defined(MP_KIT_LOCALYTICS)
                                            @(MPKitInstanceLocalytics),
 #endif
+#if defined(MP_KIT_TUNE)
+                                           @(MPKitTune),
+#endif
 #if defined(MP_KIT_WOOTRIC)
                                            @(MPKitInstanceWootric),
 #endif
@@ -1985,6 +1997,22 @@ NSString *const kitFileExtension = @"eks";
             MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithFilter:NO];
             
             if (!kitFilter.shouldFilter && [kit canExecuteSelector:selector]) {
+                MPKitExecStatus *execStatus = nil;
+                
+                kitHandler(kit, &execStatus);
+                
+                MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
+            }
+        }
+    }
+}
+
+- (void)forwardSDKCall:(SEL)selector kitHandler:(void (^)(MPKitAbstract *kit, MPKitExecStatus **execStatus))kitHandler {
+    NSArray<__kindof MPKitAbstract *> *activeKits = [self activeKits];
+    
+    for (MPKitAbstract *kit in activeKits) {
+        if ([kit respondsToSelector:selector]) {
+            if ([kit canExecuteSelector:selector]) {
                 MPKitExecStatus *execStatus = nil;
                 
                 kitHandler(kit, &execStatus);

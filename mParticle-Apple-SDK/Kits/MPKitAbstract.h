@@ -39,7 +39,7 @@
 - (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 - (nonnull MPKitExecStatus *)receivedUserNotification:(nonnull NSDictionary *)userInfo;
 - (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken;
-- (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler;
+- (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^_Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 - (nonnull MPKitExecStatus *)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
 // Location tracking
 #if TARGET_OS_IOS == 1
@@ -59,6 +59,8 @@
 // e-Commerce
 - (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 - (nonnull MPKitExecStatus *)logLTVIncrease:(double)increaseAmount event:(nonnull MPEvent *)event;
+// Deep linking
+- (nonnull MPKitExecStatus *)checkForDeferredDeepLinkWithCompletionHandler:(void(^_Nonnull)(NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
 // Events
 - (nonnull MPKitExecStatus *)logEvent:(nonnull MPEvent *)event;
 - (nonnull MPKitExecStatus *)logInstall;
