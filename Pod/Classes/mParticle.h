@@ -258,7 +258,7 @@
  @param notification The local notification object that was triggered
  @see proxiedAppDelegate
  */
-- (void)handleActionWithIdentifier:(nonnull NSString *)identifier forLocalNotification:(nonnull UILocalNotification *)notification;
+- (void)handleActionWithIdentifier:(nullable NSString *)identifier forLocalNotification:(nullable UILocalNotification *)notification;
 
 /**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
@@ -267,7 +267,7 @@
  @param userInfo A dictionary that contains information related to the remote notification
  @see proxiedAppDelegate
  */
-- (void)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
+- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 
 /**
  Informs the mParticle SDK the app has been asked to open a resource identified by a URL.

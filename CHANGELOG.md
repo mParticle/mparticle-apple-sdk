@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.3.2
+
+* Updated the nullability notation for handleActionWithIdentifier
+
 ## 5.3.1
 
 * Determining whether to forward an app delegate call to the old deep-linking method
