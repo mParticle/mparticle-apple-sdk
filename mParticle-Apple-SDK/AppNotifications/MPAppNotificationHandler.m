@@ -264,10 +264,21 @@
 #endif
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
-    NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
-    id annotation =  options[UIApplicationOpenURLOptionsAnnotationKey];
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    if (stateMachine.optOut) {
+        return;
+    }
     
-    [self openURL:url sourceApplication:sourceApplication annotation:annotation];
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
+    
+    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    SEL openURLOptionsSelector = @selector(openURL:options:);
+    
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:openURLOptionsSelector]) {
+            [kitRegister.wrapperInstance openURL:url options:options];
+        }
+    }
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {

@@ -26,6 +26,7 @@
 #import "MPProduct.h"
 #import "MPTransactionAttributes.h"
 #import "AppsFlyerTracker.h"
+#import <UIKit/UIKit.h>
 
 NSString *const afAppleAppId = @"appleAppId";
 NSString *const afDevKey = @"devKey";
@@ -78,6 +79,15 @@ static AppsFlyerTracker *appsFlyerTracker = nil;
 
 - (nonnull MPKitExecStatus *)didBecomeActive {
     [[AppsFlyerTracker sharedTracker] trackAppLaunch];
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+
+- (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options {
+    [appsFlyerTracker handleOpenURL:url
+                  sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
+                      withAnnotaion:options[UIApplicationOpenURLOptionsAnnotationKey]];
+    
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }

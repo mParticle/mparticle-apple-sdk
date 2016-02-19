@@ -18,6 +18,7 @@
 
 #import "MPLaunchInfo.h"
 #import "MPIConstants.h"
+#import <UIKit/UIKit.h>
 
 @interface MPLaunchInfo() {
     NSString *sourceApp;
@@ -30,13 +31,40 @@
 
 - (instancetype)initWithURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     self = [super init];
-    if (!self || MPIsNull(url) || MPIsNull(sourceApplication)) {
+    if (!self || MPIsNull(url)) {
         return nil;
     }
     
     sourceApp = sourceApplication;
     self.url = url;
     self.annotation = annotation;
+    
+    NSMutableDictionary *options = [[NSMutableDictionary alloc] initWithCapacity:2];
+    if (_sourceApplication) {
+        options[UIApplicationOpenURLOptionsSourceApplicationKey] = _sourceApplication;
+    }
+    
+    if (_annotation) {
+        options[UIApplicationOpenURLOptionsAnnotationKey] = _annotation;
+    }
+    
+    if (options.count > 0) {
+        _options = [options copy];
+    }
+    
+    return self;
+}
+
+- (nonnull instancetype)initWithURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options {
+    self = [super init];
+    if (!self || MPIsNull(url)) {
+        return nil;
+    }
+    
+    _options = options;
+    sourceApp = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+    self.annotation = options[UIApplicationOpenURLOptionsAnnotationKey];
+    self.url = url;
     
     return self;
 }

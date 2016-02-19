@@ -51,6 +51,7 @@
 - (void)setLaunchOptions:(nullable NSDictionary *)launchOptions;
 
 #pragma mark Application
+- (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 - (nonnull MPKitExecStatus *)failedToRegisterForUserNotifications:(nullable NSError *)error;
 - (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
