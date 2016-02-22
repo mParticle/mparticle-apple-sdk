@@ -176,7 +176,10 @@
         NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
         id annotation =  options[UIApplicationOpenURLOptionsAnnotationKey];
         
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         return [originalAppDelegate application:app openURL:url sourceApplication:sourceApplication annotation:annotation];
+#pragma clang diagnostic pop
     }
 #endif
     
