@@ -42,7 +42,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitRegister.h"
-#import "MPKitRegister+Internal.h"
 #include "MPBracket.h"
 #import "MPConsumerInfo.h"
 
@@ -135,25 +134,55 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Private methods
+- (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
+    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
+    
+    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
+    bracketIterator = brackets.find(kitCode);
+    
+    shared_ptr<mParticle::Bracket> bracket = bracketIterator != brackets.end() ? bracketIterator->second : nullptr;
+    return bracket;
+}
+
 - (void)flushSerializedKits {
     for (MPKitRegister *kitRegister in kitsRegistry) {
-        [kitRegister freeWrapperInstance];
+        [self freeKit:kitRegister.code];
     }
+}
+
+- (void)freeKit:(NSNumber *)kitCode {
+    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
     
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    
-    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        NSArray *directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+    MPKitRegister *kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+
+    if (kitRegister.wrapperInstance) {
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(deinit)]) {
+            [kitRegister.wrapperInstance deinit];
+        }
         
-        for (NSString *fileName in directoryContents) {
-            NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
-            
+        kitRegister.wrapperInstance = nil;
+        
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
+        
+        if ([fileManager fileExistsAtPath:kitPath]) {
             [fileManager removeItemAtPath:kitPath error:nil];
         }
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode,
+                                       mParticleEmbeddedSDKInstanceKey:kitCode};
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
+                                                                object:nil
+                                                              userInfo:userInfo];
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleEmbeddedSDKDidBecomeInactiveNotification
+                                                                object:nil
+                                                              userInfo:userInfo];
+        });
     }
 }
 
@@ -371,16 +400,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     } else {
         brackets[kitCode] = make_shared<mParticle::Bracket>(mpId, low, high);
     }
-}
-
-- (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
-    
-    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
-    bracketIterator = brackets.find(kitCode);
-    
-    shared_ptr<mParticle::Bracket> bracket = bracketIterator != brackets.end() ? bracketIterator->second : nullptr;
-    return bracket;
 }
 
 #pragma mark Public class methods
@@ -1710,26 +1729,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
         for (vector<NSNumber *>::iterator ekIterator = deactivateKits.begin(); ekIterator != deactivateKits.end(); ++ekIterator) {
             predicate = [NSPredicate predicateWithFormat:@"code == %@", *ekIterator];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
-            [kitRegister freeWrapperInstance];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSDictionary *userInfo = @{mParticleKitInstanceKey:*ekIterator,
-                                           mParticleEmbeddedSDKInstanceKey:*ekIterator};
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                                    object:nil
-                                                                  userInfo:userInfo];
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:mParticleEmbeddedSDKDidBecomeInactiveNotification
-                                                                    object:nil
-                                                                  userInfo:userInfo];
-            });
-            
-            kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", *ekIterator, kitFileExtension]];
-            
-            if ([fileManager fileExistsAtPath:kitPath]) {
-                [fileManager removeItemAtPath:kitPath error:nil];
-            }
+            [self freeKit:kitRegister.code];
         }
     }
     

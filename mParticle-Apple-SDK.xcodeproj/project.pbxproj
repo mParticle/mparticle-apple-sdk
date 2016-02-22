@@ -423,8 +423,6 @@
 		C97310B81C6FBA650031E702 /* MPKitProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B21C6E456A0031E702 /* MPKitProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C97310B91C6FBA770031E702 /* MPKitRegister.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310B31C6E456A0031E702 /* MPKitRegister.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C97310BA1C6FBA7C0031E702 /* MPKitRegister.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97310B41C6E456A0031E702 /* MPKitRegister.mm */; };
-		C97310EC1C737CD80031E702 /* MPKitRegister+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310EA1C737CD80031E702 /* MPKitRegister+Internal.h */; };
-		C97310ED1C737CD80031E702 /* MPKitRegister+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C97310EA1C737CD80031E702 /* MPKitRegister+Internal.h */; };
 		DB4924DD1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DE1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DF1C76779E00D473A3 /* MPKitTune.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4924DC1C76779E00D473A3 /* MPKitTune.m */; };
@@ -668,7 +666,6 @@
 		C97310B21C6E456A0031E702 /* MPKitProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitProtocol.h; sourceTree = "<group>"; };
 		C97310B31C6E456A0031E702 /* MPKitRegister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitRegister.h; sourceTree = "<group>"; };
 		C97310B41C6E456A0031E702 /* MPKitRegister.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitRegister.mm; sourceTree = "<group>"; };
-		C97310EA1C737CD80031E702 /* MPKitRegister+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPKitRegister+Internal.h"; sourceTree = "<group>"; };
 		C984F85B1C6CE1DD00002F67 /* ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ios.h; sourceTree = "<group>"; };
 		C984F85D1C6CE1DD00002F67 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		DB4924DB1C76779E00D473A3 /* MPKitTune.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTune.h; sourceTree = "<group>"; };
@@ -906,7 +903,6 @@
 				C97310B21C6E456A0031E702 /* MPKitProtocol.h */,
 				C97310B31C6E456A0031E702 /* MPKitRegister.h */,
 				C97310B41C6E456A0031E702 /* MPKitRegister.mm */,
-				C97310EA1C737CD80031E702 /* MPKitRegister+Internal.h */,
 			);
 			path = Kits;
 			sourceTree = "<group>";
@@ -1340,7 +1336,6 @@
 				C9049BB61C56C3F4005F11EA /* MPUserSegments+Setters.h in Headers */,
 				C9049C061C56C436005F11EA /* NSUserDefaults+mParticle.h in Headers */,
 				C9049AC31C56C31D005F11EA /* MPStandaloneUpload.h in Headers */,
-				C97310EC1C737CD80031E702 /* MPKitRegister+Internal.h in Headers */,
 				C9049A801C56C2A7005F11EA /* MPEnums.h in Headers */,
 				C9049BFC1C56C436005F11EA /* MPUploadBuilder.h in Headers */,
 				C9049B181C56C336005F11EA /* MPEvent+Internal.h in Headers */,
@@ -1472,7 +1467,6 @@
 				C9049AC91C56C31E005F11EA /* MPCommand.h in Headers */,
 				C9049BA81C56C3D1005F11EA /* NSURLSession+mParticle.h in Headers */,
 				C9049B231C56C337005F11EA /* MPEvent+MessageType.h in Headers */,
-				C97310ED1C737CD80031E702 /* MPKitRegister+Internal.h in Headers */,
 				C9049AED1C56C32C005F11EA /* MPCommerceEvent.h in Headers */,
 				C9049B3E1C56C354005F11EA /* MPKitConfiguration.h in Headers */,
 				C9049BD81C56C41A005F11EA /* MPLaunchInfo.h in Headers */,

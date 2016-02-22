@@ -56,14 +56,4 @@
     return self;
 }
 
-- (void)freeWrapperInstance {
-    if ([_wrapperInstance respondsToSelector:@selector(deinit)]) {
-        [_wrapperInstance deinit];
-    }
-    
-    [self willChangeValueForKey:@"instance"];
-    _wrapperInstance = nil;
-    [self didChangeValueForKey:@"instance"];
-}
-
 @end
