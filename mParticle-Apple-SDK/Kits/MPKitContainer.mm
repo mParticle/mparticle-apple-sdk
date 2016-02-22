@@ -43,6 +43,8 @@
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitRegister.h"
 #import "MPKitRegister+Internal.h"
+#include "MPBracket.h"
+#import "MPConsumerInfo.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -51,6 +53,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 @interface MPKitContainer() {
     dispatch_semaphore_t kitsSemaphore;
+    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
     BOOL kitsInitialized;
 }
 
@@ -339,6 +342,45 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }
     
     return value;
+}
+
+- (void)updateBracketsWithConfiguration:(NSDictionary *)configuration kitCode:(NSNumber *)kitCode {
+    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
+    
+    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
+    bracketIterator = brackets.find(kitCode);
+
+    if (!configuration) {
+        if (bracketIterator != brackets.end()) {
+            brackets.erase(bracketIterator);
+        }
+        
+        return;
+    }
+    
+    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    short low = (short)[configuration[@"lo"] integerValue];
+    short high = (short)[configuration[@"hi"] integerValue];
+    
+    shared_ptr<mParticle::Bracket> bracket;
+    if (bracketIterator != brackets.end()) {
+        bracket = bracketIterator->second;
+        bracket->mpId = mpId;
+        bracket->low = low;
+        bracket->high = high;
+    } else {
+        brackets[kitCode] = make_shared<mParticle::Bracket>(mpId, low, high);
+    }
+}
+
+- (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
+    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
+    
+    std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
+    bracketIterator = brackets.find(kitCode);
+    
+    shared_ptr<mParticle::Bracket> bracket = bracketIterator != brackets.end() ? bracketIterator->second : nullptr;
+    return bracket;
 }
 
 #pragma mark Public class methods
@@ -1522,7 +1564,10 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     NSMutableArray <MPKitRegister *> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
     
     for (MPKitRegister *kitRegister in kitsRegistry) {
-        if (kitRegister.active) {
+        BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
+        std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
+        
+        if (active && (bracket == nullptr || (bracket != nullptr && bracket->shouldForward()))) {
             [activeKitsRegistry addObject:kitRegister];
         }
     }
@@ -1583,7 +1628,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
                 shouldPersistKit = !(kitConfiguration && [kitConfiguration.configurationHash isEqualToNumber:configurationHash]);
                 if (shouldPersistKit) {
                     [kitConfiguration updateConfiguration:kitConfigurationDictionary];
-                    [kitRegister setBracketConfiguration:kitConfiguration.bracketConfiguration];
+                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
                     
                     if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
                         [kitInstance setConfiguration:kitConfiguration.configuration];
@@ -1606,7 +1651,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
                     }
                 }
                 
-                [kitRegister setBracketConfiguration:kitConfiguration.bracketConfiguration];
+                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
             }
             
             if (kitInstance) {

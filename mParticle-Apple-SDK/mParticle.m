@@ -940,7 +940,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
+    MPKitRegister *kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     
     return [kitRegister.wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [kitRegister.wrapperInstance providerKitInstance] : nil;
 }
@@ -952,9 +952,9 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
+    MPKitRegister *kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     
-    return kitRegister.active;
+    return kitRegister != nil;
 }
 
 #pragma mark Location

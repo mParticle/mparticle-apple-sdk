@@ -21,6 +21,5 @@
 @interface MPKitRegister(Internal)
 
 - (void)freeWrapperInstance;
-- (void)setBracketConfiguration:(nullable NSDictionary *)bracketConfiguration;
 
 @end

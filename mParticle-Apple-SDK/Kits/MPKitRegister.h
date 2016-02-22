@@ -45,11 +45,6 @@
 @property (nonatomic, strong, nonnull, readonly) NSString *className;
 
 /**
- Indicates whether a 3rd party kit is active or not
- */
-@property (nonatomic, unsafe_unretained, readonly) BOOL active;
-
-/**
  Indicates whether a 3rd party kit should be started immediately or it should wait until launch info such as deep-linking is available, then start
  */
 @property (nonatomic, unsafe_unretained, readonly) BOOL startImmediately;
