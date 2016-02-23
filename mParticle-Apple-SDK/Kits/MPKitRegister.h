@@ -22,7 +22,7 @@
 @interface MPKitRegister : NSObject
 
 /**
- Kit code. Obtained from mParticle and informed to the SDK either via configuration file MParticleConfig.plist or programmatically
+ Kit code. Obtained from mParticle and informed to the Core SDK
  */
 @property (nonatomic, strong, nonnull, readonly) NSNumber *code;
 
@@ -35,7 +35,7 @@
 @property (nonatomic, strong, nullable) id<MPKitProtocol> wrapperInstance;
 
 /**
- Kit name. Obtained from the 3rd party library provider and informed to the SDK either via configuration file MParticleConfig.plist or programmatically
+ Kit name. Obtained from the 3rd party library provider and informed to the Core SDK
  */
 @property (nonatomic, strong, nonnull, readonly) NSString *name;
 
@@ -51,17 +51,15 @@
 
 /**
  Allocates and initializes a register to a 3rd party kit implementation
- @param code Kit code. Obtained from mParticle and informed to the SDK either via configuration file MParticleConfig.plist or programmatically
- @param name Kit name. Obtained from the 3rd party library provider and informed to the SDK either via configuration file MParticleConfig.plist or programmatically
+ @param code Kit code. Obtained from mParticle and informed to the Core SDK
+ @param name Kit name. Obtained from the 3rd party library provider and informed to the Core SDK
  @param className Name of the class implementing the wrapper to forward calls to 3rd party kits
  @param startImmediately Indicates whether a 3rd party kit should be started immediately or it should wait until launch info such as deep-linking is available, then start
  @returns An instance of a kit register or nil if a kit register could not be instantiated
  */
 - (nullable instancetype)initWithCode:(nonnull NSNumber *)code name:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately __attribute__((objc_designated_initializer));
-
-/**
- Convenience initializer. Calls the designated initializer with a configuration dictionary, typically loaded from MParticleConfig.plist
- */
 - (nullable instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration;
+- (void)freeWrapperInstance;
+- (void)setBracketConfiguration:(nullable NSDictionary *)bracketConfiguration;
 
 @end

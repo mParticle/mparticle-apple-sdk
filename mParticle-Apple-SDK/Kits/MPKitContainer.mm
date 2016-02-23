@@ -67,6 +67,11 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
 }
 
++ (void)initialize {
+    registedKits = [[NSMutableArray alloc] initWithCapacity:2];
+    kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
+}
+
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -403,25 +408,6 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Public class methods
-+ (void)loadKitRegistrationFile {
-    NSString *path = [[NSBundle mainBundle] pathForResource:kMPConfigPlist ofType:@"plist"];
-    if (!path) {
-        return;
-    }
-    
-    NSDictionary *configSettings = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
-    NSArray *kitsConfiguration = configSettings[@"kits"];
-    
-    if (kitsConfiguration.count == 0) {
-        return;
-    }
-    
-    for (NSDictionary *kitConfiguration in kitsConfiguration) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithConfiguration:kitConfiguration];
-        [MPKitContainer registerKit:kitRegister];
-    }
-}
-
 + (void)registerKit:(nonnull MPKitRegister *)kitRegister {
     NSAssert(kitRegister != nil, @"Required parameter. It cannot be nil.");
     
@@ -1594,6 +1580,22 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return activeKitsRegistry.count > 0 ? activeKitsRegistry : nil;
 }
 
+- (nullable NSArray<id<MPKitProtocol>> *)activeKits {
+    if (kitsRegistry.count == 0) {
+        return nil;
+    }
+    
+    NSMutableArray <id<MPKitProtocol>> *activeKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
+    
+    for (MPKitRegister *kitRegister in kitsRegistry) {
+        if (kitRegister.active) {
+            [activeKits addObject:kitRegister.wrapperInstance];
+        }
+    }
+    
+    return activeKits.count > 0 ? activeKits : nil;
+}
+
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
@@ -1927,6 +1929,20 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
                 
                 MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
             }
+        }
+    }
+}
+
+- (void)forwardSDKCall:(SEL)selector kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitExecStatus **execStatus))kitHandler {
+    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    
+    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+            MPKitExecStatus *execStatus = nil;
+            
+            kitHandler(kitRegister.wrapperInstance, &execStatus);
+            
+            MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
         }
     }
 }

@@ -21,6 +21,7 @@
 #import "MPKitTune.h"
 #import "MPApplication.h"
 #import "MPDevice.h"
+#import <UIKit/UIKit.h>
 
 NSString *const tnAdvertiserId = @"advertiserId";
 NSString *const tnConversionKey = @"conversionKey";
@@ -39,11 +40,14 @@ NSString *const tnOverridePackageName = @"overridePackageName";
 
 @implementation MPKitTune
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
-    self = [super initWithConfiguration:configuration];
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
+    NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
+    self = [super init];
     if (!self) {
         return nil;
     }
+
+    _configuration = configuration;
     _advertiserId = configuration[tnAdvertiserId];
     _conversionKey = configuration[tnConversionKey];
     BOOL validConfiguration = _advertiserId != nil && _conversionKey != nil;
@@ -60,10 +64,7 @@ NSString *const tnOverridePackageName = @"overridePackageName";
     _sdkVersion = [UIDevice currentDevice].systemVersion;
     _adTrackingEnabled = _identifierForAdvertiser ? [@YES stringValue] : [@NO stringValue];
     
-    frameworkAvailable = YES;
-    started = YES;
-    self.forwardedEvents = YES;
-    self.active = YES;
+    _started = YES;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceTune),
@@ -103,12 +104,13 @@ static NSString* const USER_DEFAULT_KEY_PREFIX = @"_TUNE_";
 }
 
 - (nonnull MPKitExecStatus *)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> *linkInfo, NSError *error))completionHandler {
-    MPKitExecStatus *status = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceTune) returnCode:MPKitReturnCodeSuccess];
-    NSString * const TUNE_KEY_DEEPLINK_CHECKED               = @"mat_deeplink_checked";
+    NSString * const TUNE_KEY_DEEPLINK_CHECKED = @"mat_deeplink_checked";
+    MPKitExecStatus *status;
     
     if (!_advertiserId
         || !_identifierForAdvertiser
         || [[self class] userDefaultValueForKey:TUNE_KEY_DEEPLINK_CHECKED]) {
+        status = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceTune) returnCode:MPKitReturnCodeRequirementsNotMet];
         return status;
     }
     
@@ -187,6 +189,8 @@ static NSString* const USER_DEFAULT_KEY_PREFIX = @"_TUNE_";
             completionHandler(nil, error);
         }
     }] resume];
+    
+    status = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceTune) returnCode:MPKitReturnCodeSuccess];
     return status;
 }
 

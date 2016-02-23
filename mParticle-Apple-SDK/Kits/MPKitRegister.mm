@@ -18,6 +18,18 @@
 
 #import "MPKitRegister.h"
 #import "MPStateMachine.h"
+#import "MPConsumerInfo.h"
+#include "MPBracket.h"
+
+NSString *const MPKitBracketLowKey = @"lo";
+NSString *const MPKitBracketHighKey = @"hi";
+
+@interface MPKitRegister() {
+    shared_ptr<mParticle::Bracket> bracket;
+}
+
+@end
+
 
 @implementation MPKitRegister
 
@@ -43,6 +55,7 @@
     _startImmediately = startImmediately;
     
     _wrapperInstance = nil;
+    bracket = nullptr;
 
     return self;
 }
@@ -54,6 +67,48 @@
     self = [self initWithCode:configuration[@"code"] name:configuration[@"name"] className:configuration[@"className"] startImmediately:startImmediately];
     
     return self;
+}
+
+- (BOOL)active {
+    BOOL active = _wrapperInstance ? [_wrapperInstance active] : NO;
+    
+    if (active && bracket != nullptr) {
+        return bracket->shouldForward();
+    } else {
+        return active;
+    }
+}
+
+- (void)freeWrapperInstance {
+    if ([_wrapperInstance respondsToSelector:@selector(deinit)]) {
+        [_wrapperInstance deinit];
+    }
+    
+    [self willChangeValueForKey:@"instance"];
+    _wrapperInstance = nil;
+    [self didChangeValueForKey:@"instance"];
+}
+
+- (void)setBracketConfiguration:(NSDictionary *)bracketConfiguration {
+    if (!bracketConfiguration) {
+        if (bracket != nullptr) {
+            bracket = nullptr;
+        }
+        
+        return;
+    }
+    
+    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
+    short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
+    
+    if (bracket != nullptr) {
+        bracket->mpId = mpId;
+        bracket->low = low;
+        bracket->high = high;
+    } else {
+        bracket = make_shared<mParticle::Bracket>(mpId, low, high);
+    }
 }
 
 @end

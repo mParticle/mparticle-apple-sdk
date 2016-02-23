@@ -18,9 +18,15 @@
 
 #if defined(MP_KIT_TUNE)
 
-#import "MPKitAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitExecStatus.h"
+#import "MPKitProtocol.h"
 
-@interface MPKitTune : MPKitAbstract <MPKitInstanceProtocol>
+@interface MPKitTune : NSObject <MPKitProtocol>
+
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
+@property (nonatomic, unsafe_unretained, readonly) BOOL started;
 
 @end
 
