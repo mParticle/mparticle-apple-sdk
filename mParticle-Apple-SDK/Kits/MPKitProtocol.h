@@ -16,8 +16,8 @@
 //  limitations under the License.
 //
 
-#ifndef mParticle_OBJC_SDK_MPKitProtocol_h
-#define mParticle_OBJC_SDK_MPKitProtocol_h
+#ifndef mParticle_Apple_SDK_MPKitProtocol_h
+#define mParticle_Apple_SDK_MPKitProtocol_h
 
 #import <Foundation/Foundation.h>
 #import "MPKitExecStatus.h"
@@ -34,21 +34,21 @@
 
 @protocol MPKitProtocol <NSObject>
 #pragma mark - Required methods
+@property (nonatomic, strong, nonnull) NSNumber *kitCode;
+@property (nonatomic, unsafe_unretained, readonly) BOOL started;
+
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
-- (nonnull NSNumber *)kitCode;
-- (void)setKitCode:(nonnull NSNumber *)kitCode;
-- (BOOL)started;
 
 #pragma mark - Optional methods
 @optional
+
+@property (nonatomic, strong, nonnull) NSDictionary *configuration;
+@property (nonatomic, strong, nullable) NSDictionary *launchOptions;
+@property (nonatomic, strong, nullable, readonly) id providerKitInstance;
+
 #pragma mark Kit lifecycle
 - (void)start;
 - (void)deinit;
-- (nullable id const)providerKitInstance;
-- (nonnull NSDictionary *)configuration;
-- (void)setConfiguration:(nonnull NSDictionary *)configuration;
-- (nullable NSDictionary *)launchOptions;
-- (void)setLaunchOptions:(nullable NSDictionary *)launchOptions;
 
 #pragma mark Application
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
@@ -73,13 +73,12 @@
 - (nonnull MPKitExecStatus *)endSession;
 
 #pragma mark User attributes and identities
-- (nullable NSDictionary<NSString *, id> *)userAttributes;
-- (void)setUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userIdentities;
+
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nonnull MPKitExecStatus *)removeUserAttribute:(nonnull NSString *)key;
 - (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nullable NSString *)value;
-- (nullable NSDictionary<NSString *, id> *)userIdentities;
-- (void)setUserIdentities:(nullable NSDictionary<NSString *, id> *)userIdentities;
 - (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
 - (nonnull MPKitExecStatus *)setUserTag:(nonnull NSString *)tag;
 
@@ -115,6 +114,7 @@
 - (nonnull MPKitExecStatus *)logMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
 - (nonnull MPKitExecStatus *)logTimedMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
 - (nonnull MPKitExecStatus *)updatePlaybackPosition:(nonnull MPMediaTrack *)mediaTrack;
+
 @end
 
 #endif
