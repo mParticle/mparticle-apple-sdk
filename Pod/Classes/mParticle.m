@@ -932,7 +932,7 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark - Deep linking
 
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> * linkInfo, NSError *error))completionHandler {
+- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSURL * _Nullable linkURL, NSDictionary<NSString *, NSString *> * linkInfo, NSError *error))completionHandler {
     
     [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(MPKitAbstract * _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
         [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];

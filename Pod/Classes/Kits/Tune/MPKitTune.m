@@ -102,7 +102,7 @@ static NSString* const USER_DEFAULT_KEY_PREFIX = @"_TUNE_";
     [defaults synchronize];
 }
 
-- (nonnull MPKitExecStatus *)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> *linkInfo, NSError *error))completionHandler {
+- (nonnull MPKitExecStatus *)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSURL *linkURL, NSDictionary<NSString *, NSString *> *linkInfo, NSError *error))completionHandler {
     MPKitExecStatus *status = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceTune) returnCode:MPKitReturnCodeSuccess];
     NSString * const TUNE_KEY_DEEPLINK_CHECKED               = @"mat_deeplink_checked";
     
@@ -177,14 +177,13 @@ static NSString* const USER_DEFAULT_KEY_PREFIX = @"_TUNE_";
             if(200 == (int)[(NSHTTPURLResponse*)response statusCode]) {
                 __block NSURL *deepLink = [NSURL URLWithString:link];
                 if (deepLink) {
-                    NSDictionary *info = @{@"deepLink": deepLink};
                     success = YES;
-                    completionHandler(info, nil);
+                    completionHandler(deepLink, nil, nil);
                 }
             }
         }
         if (!success) {
-            completionHandler(nil, error);
+            completionHandler(nil, nil, error);
         }
     }] resume];
     return status;

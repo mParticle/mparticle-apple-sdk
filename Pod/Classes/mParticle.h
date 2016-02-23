@@ -439,7 +439,7 @@
  Checks for deferred deep link information.
  @param completionHandler A block to be called when deep link checking is finished.
  */
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^_Nonnull)(NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
+- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^_Nonnull)(NSURL * _Nullable linkURL, NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
 
 #pragma mark - Kits
 /**

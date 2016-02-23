@@ -1,5 +1,9 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.4.0
+
+* Verifying whether obtained 3rd party custom module values are a supported data type
+
 ## 5.3.2
 
 * Updated the nullability notation for handleActionWithIdentifier
