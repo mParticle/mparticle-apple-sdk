@@ -21,6 +21,7 @@
 #import "MPAppboy.h"
 #import "MPStateMachine.h"
 #import "MPLogger.h"
+#import "MPDateFormatter.h"
 
 @interface MPCustomModulePreference()
 
@@ -251,7 +252,10 @@
                 }
             }
         } else {
-            _value = [userDefaults objectForKey:self.readKey];
+            id storedValue = [userDefaults objectForKey:self.readKey];
+            if (storedValue) {
+                _value = [storedValue isKindOfClass:[NSDate class]] ? [MPDateFormatter stringFromDateRFC3339:storedValue] : storedValue;
+            }
         }
         
         if (!_value && self.dataType != MPDataTypeString) {
