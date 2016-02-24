@@ -506,7 +506,7 @@ static NSArray *actionNames;
                     if (listedProducts.count > 0) {
                         NSMutableArray *productRepresentations = [[NSMutableArray alloc] initWithCapacity:listedProducts.count];
                         for (MPProduct *product in listedProducts) {
-                            NSDictionary *productDictionary = [product dictionaryRepresentation];
+                            NSDictionary *productDictionary = [product commerceDictionaryRepresentation];
                             
                             if (productDictionary) {
                                 [productRepresentations addObject:productDictionary];
