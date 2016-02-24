@@ -73,7 +73,8 @@ With each integration with a partner we strive to implement as many features as 
 * [Flurry](https://developer.yahoo.com)
 * [Kahuna](https://www.kahuna.com)
 * [Kochava](https://www.kochava.com)
-* [Localytics](http://www.localytics.com)
+* [Localytics](https://www.localytics.com)
+* [Tune](https://www.tune.com)
 * [Wootric](https://www.wootric.com)
 
 ## Initialize the SDK

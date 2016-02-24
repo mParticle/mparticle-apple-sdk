@@ -191,6 +191,10 @@ NSString *const MPKitBracketHighKey = @"hi";
         case MPKitInstanceAppsFlyer:
             kitName = @"AppsFlyer";
             break;
+            
+        case MPKitInstanceTune:
+            kitName = @"Tune";
+            break;
     }
     
     return kitName;

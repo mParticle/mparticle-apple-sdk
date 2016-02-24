@@ -234,6 +234,8 @@
 		C9EE9DC41BD7C2570083CD37 /* MPKitExecStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9DA01BD7C2570083CD37 /* MPKitExecStatus.m */; };
 		C9EE9DC51BD7C2570083CD37 /* MPKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = C9EE9DA11BD7C2570083CD37 /* MPKitFilter.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9EE9DC61BD7C2570083CD37 /* MPKitFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = C9EE9DA21BD7C2570083CD37 /* MPKitFilter.m */; };
+		DBD2870B1C73A3740043F7EC /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DBD287091C73A3740043F7EC /* MPKitTune.h */; };
+		DBD2870C1C73A3740043F7EC /* MPKitTune.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD2870A1C73A3740043F7EC /* MPKitTune.m */; };
 		DF0CB80F8AA91E8441CAD24A220633A3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3E4E89230EF59BC255123B67864ACF77 /* Foundation.framework */; };
 		E82E8CC47A0A716CB2A160A7B5FE21F3 /* mParticle-iOS-SDK-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 975FA525E4418E7CCC91E4CB615E7095 /* mParticle-iOS-SDK-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E91A772FC62FE0AECA0E04DF281FE60B /* mParticle-iOS-SDK-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D413A163117D504EDEDF483E55DC02C /* mParticle-iOS-SDK-dummy.m */; };
@@ -525,6 +527,8 @@
 		C9EE9DA21BD7C2570083CD37 /* MPKitFilter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitFilter.m; sourceTree = "<group>"; };
 		D3B871B63FB561B17867008A964F3ADF /* Pods-mParticle-iOS-SDK_Example-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-mParticle-iOS-SDK_Example-umbrella.h"; sourceTree = "<group>"; };
 		D4BDB1AF38EEA5BB0605E5CB2D6585DA /* mParticle-iOS-SDK.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-iOS-SDK.bundle"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DBD287091C73A3740043F7EC /* MPKitTune.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTune.h; sourceTree = "<group>"; };
+		DBD2870A1C73A3740043F7EC /* MPKitTune.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTune.m; sourceTree = "<group>"; };
 		E4F1D16E0222C4DD04A979861BAF1DF7 /* Pods-mParticle-iOS-SDK_Tests-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-mParticle-iOS-SDK_Tests-acknowledgements.markdown"; sourceTree = "<group>"; };
 		E9CB6A6F36A8EA6D5C09479C47755AD0 /* Pods-mParticle-iOS-SDK_Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-mParticle-iOS-SDK_Tests.release.xcconfig"; sourceTree = "<group>"; };
 		F3EA701E7AA35017DD11CDE5D3678508 /* Pods-mParticle-iOS-SDK_Tests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-mParticle-iOS-SDK_Tests-dummy.m"; sourceTree = "<group>"; };
@@ -1015,6 +1019,7 @@
 				C9EE9D871BD7C2570083CD37 /* Kahuna */,
 				C9EE9D8B1BD7C2570083CD37 /* Kochava */,
 				C9EE9D901BD7C2570083CD37 /* Localytics */,
+				DBDE8D731C73697B00E0C74B /* Tune */,
 				B22A21311C23075E007AC783 /* Wootric */,
 				C9EE9D931BD7C2570083CD37 /* MPAttributeProjection.h */,
 				C9EE9D941BD7C2570083CD37 /* MPAttributeProjection.m */,
@@ -1125,6 +1130,15 @@
 				C9EE9D921BD7C2570083CD37 /* MPKitLocalytics.m */,
 			);
 			path = Localytics;
+			sourceTree = "<group>";
+		};
+		DBDE8D731C73697B00E0C74B /* Tune */ = {
+			isa = PBXGroup;
+			children = (
+				DBD287091C73A3740043F7EC /* MPKitTune.h */,
+				DBD2870A1C73A3740043F7EC /* MPKitTune.m */,
+			);
+			path = Tune;
 			sourceTree = "<group>";
 		};
 		EF94E2369907441A38F4CD886755EB0C /* Products */ = {
@@ -1293,6 +1307,7 @@
 				C9C2DCD31BD458600002F75A /* MPNetworkPerformance.h in Headers */,
 				C9C2DCA81BD458600002F75A /* MPEvent+MessageType.h in Headers */,
 				C9C2DCDF1BD458600002F75A /* MPDatabaseMigrationController.h in Headers */,
+				DBD2870B1C73A3740043F7EC /* MPKitTune.h in Headers */,
 				C97C612E1BDAA6C20024984E /* MPLocationManager.h in Headers */,
 				C9C2DC3B1BD458600002F75A /* MPAppDelegateProxy.h in Headers */,
 				C9EE9DBB1BD7C2570083CD37 /* MPEventProjection.h in Headers */,
@@ -1528,6 +1543,7 @@
 				C9C2DD011BD458600002F75A /* NSString+MPPercentEscape.m in Sources */,
 				C9C2DCCE1BD458600002F75A /* MPUserSegments.m in Sources */,
 				C9C2DC7D1BD458600002F75A /* MPTransactionAttributes.m in Sources */,
+				DBD2870C1C73A3740043F7EC /* MPKitTune.m in Sources */,
 				C9C2DCDA1BD458600002F75A /* NSURLConnection+mParticle.m in Sources */,
 				B22A21351C24108C007AC783 /* MPKitWootric.m in Sources */,
 				C9C2DC651BD458600002F75A /* MPUpload.m in Sources */,
