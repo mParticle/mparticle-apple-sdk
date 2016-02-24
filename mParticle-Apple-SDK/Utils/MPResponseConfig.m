@@ -20,6 +20,7 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
+#import "MPKitContainer+Internal.h"
 #import "mParticle.h"
 
 #if TARGET_OS_IOS == 1

@@ -23,6 +23,7 @@
 #import <UIKit/UIKit.h>
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitContainer.h"
+#import "MPKitContainer+Internal.h"
 #import "MPKitRegister.h"
 
 static NSDateFormatter *RFC1123DateFormatter;

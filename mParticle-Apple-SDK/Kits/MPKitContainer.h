@@ -17,13 +17,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MPEnums.h"
-#import "MPKitProtocol.h"
 
-@class MPKitFilter;
-@class MPKitExecStatus;
-@class MPCommerceEvent;
-@class MPEvent;
 @class MPKitRegister;
 
 @interface MPKitContainer : NSObject
@@ -31,19 +25,5 @@
 + (void)registerKit:(nonnull MPKitRegister *)kitRegister;
 + (nullable NSSet<MPKitRegister *> *)registeredKits;
 + (nonnull MPKitContainer *)sharedInstance;
-
-- (nullable NSArray<MPKitRegister *> *)activeKitsRegistry;
-- (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
-- (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath;
-- (void)removeAllKitConfigurations;
-- (nullable NSArray<NSNumber *> *)supportedKits;
-
-- (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPEvent *)event messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector userAttributeKey:(nonnull NSString *)key value:(nullable id)value kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nullable forwardAttributes))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector errorMessage:(nullable NSString *)errorMessage exception:(nullable NSException *)exception eventInfo:(nullable NSDictionary *)eventInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit , MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 
 @end

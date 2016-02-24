@@ -43,6 +43,7 @@
 #import "MPAppNotificationHandler.h"
 #import "MPEvent.h"
 #import "MPKitRegister.h"
+#import "MPKitContainer+Internal.h"
 
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"

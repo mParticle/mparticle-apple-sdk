@@ -23,6 +23,7 @@
 #import "MPPersistenceController.h"
 #import "MPLogger.h"
 #import "MPKitContainer.h"
+#import "MPKitContainer+Internal.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
 #import "MPKitRegister.h"
