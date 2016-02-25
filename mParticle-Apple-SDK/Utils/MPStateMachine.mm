@@ -33,7 +33,6 @@
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
 #import "MPKitContainer.h"
-#import "MPKitContainer+Internal.h"
 #import <UIKit/UIKit.h>
 
 NSString *const kCookieDateKey = @"e";

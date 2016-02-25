@@ -159,7 +159,7 @@
 }
 
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options {
-    [Flurry addSessionOrigin:sourceApplication withDeepLink:[url absoluteString]];
+    [Flurry addSessionOrigin:options[UIApplicationOpenURLOptionsSourceApplicationKey] withDeepLink:[url absoluteString]];
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceFlurry) returnCode:MPKitReturnCodeSuccess];
     return execStatus;

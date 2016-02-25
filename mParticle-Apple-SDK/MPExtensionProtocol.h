@@ -1,5 +1,5 @@
 //
-//  MPKitRegister.h
+//  MPExtensionProtocol.h
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,11 +16,19 @@
 //  limitations under the License.
 //
 
+#ifndef mParticle_Apple_SDK_MPExtensionProtocol_h
+#define mParticle_Apple_SDK_MPExtensionProtocol_h
+
 #import <Foundation/Foundation.h>
 #import "MPKitProtocol.h"
-#import "MPExtensionProtocol.h"
 
-@interface MPKitRegister : NSObject <MPExtensionKitProtocol>
+#pragma mark Extension protocol
+@protocol MPExtensionProtocol <NSObject>
+
+@end
+
+#pragma mark Extension protocol especialization for kits
+@protocol MPExtensionKitProtocol <MPExtensionProtocol>
 
 /**
  Kit code. Obtained from mParticle and informed to the Core SDK
@@ -58,6 +66,8 @@
  @param startImmediately Indicates whether a 3rd party kit should be started immediately or it should wait until launch info such as deep-linking is available, then start
  @returns An instance of a kit register or nil if a kit register could not be instantiated
  */
-- (nullable instancetype)initWithCode:(nonnull NSNumber *)code name:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately __attribute__((objc_designated_initializer));
+- (nullable instancetype)initWithCode:(nonnull NSNumber *)code name:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately;
 
 @end
+
+#endif

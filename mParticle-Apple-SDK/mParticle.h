@@ -28,12 +28,11 @@
 #import "MPTransactionAttributes.h"
 #import "MPBags.h"
 #import <UIKit/UIKit.h>
+#import "MPExtensionProtocol.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
 #endif
-
-@class MPBackendController;
 
 /**
  This is the main class of the mParticle SDK. It interfaces your app with the mParticle API
@@ -51,10 +50,7 @@
  MParticle *mParticle = [MParticle sharedInstance];
  </code></pre>
  */
-@interface MParticle : NSObject {
-@protected
-    MPBackendController *_backendController;
-}
+@interface MParticle : NSObject
 
 #pragma mark Properties
 /**
@@ -354,6 +350,13 @@
  */
 - (void)logScreen:(nonnull NSString *)screenName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
+#pragma mark - Deep linking
+/**
+ Checks for deferred deep link information.
+ @param completionHandler A block to be called when deep link checking is finished.
+ */
+- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^_Nonnull)(NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
+
 #pragma mark - Error, Exception, and Crash Handling
 /**
  Enables mParticle exception handling to automatically log events on uncaught exceptions.
@@ -432,12 +435,14 @@
  */
 - (void)logLTVIncrease:(double)increaseAmount eventName:(nonnull NSString *)eventName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
-#pragma mark - Deep linking
+#pragma mark - Extensions
 /**
- Checks for deferred deep link information.
- @param completionHandler A block to be called when deep link checking is finished.
+ Registers an extension against the code mParticle SDK. Extensions are external code, unknown to the code SDK, which
+ conform to one of more known protocols. They allow the core SDK to function in ways beyond its core functionality.
+ @param extension An instance of a class conforming to a MPExtensionProtocol specialization
+ @see MPExtensionProtocol
  */
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^_Nonnull)(NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
++ (BOOL)registerExtension:(nonnull id<MPExtensionProtocol>)extension;
 
 #pragma mark - Kits
 /**

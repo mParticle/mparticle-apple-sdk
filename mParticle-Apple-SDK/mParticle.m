@@ -42,8 +42,6 @@
 #import "MPKitExecStatus.h"
 #import "MPAppNotificationHandler.h"
 #import "MPEvent.h"
-#import "MPKitRegister.h"
-#import "MPKitContainer+Internal.h"
 
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"
@@ -84,7 +82,6 @@ NSString *const kMPStateKey = @"state";
 #pragma mark - MParticle
 @implementation MParticle
 
-@synthesize backendController = _backendController;
 @synthesize commerce = _commerce;
 @synthesize optOut = _optOut;
 
@@ -686,6 +683,14 @@ NSString *const kMPStateKey = @"state";
     [self logScreenEvent:event];
 }
 
+#pragma mark Deep linking
+- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> * linkInfo, NSError *error))completionHandler {
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
+        [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
+    }];
+}
+
 #pragma mark Error, Exception, and Crash Handling
 - (void)beginUncaughtExceptionLogging {
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
@@ -925,12 +930,20 @@ NSString *const kMPStateKey = @"state";
                    }];
 }
 
-#pragma mark - Deep linking
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> * linkInfo, NSError *error))completionHandler {
+#pragma mark Extensions
++ (BOOL)registerExtension:(nonnull id<MPExtensionProtocol>)extension {
+    NSAssert(extension != nil, @"Required parameter. It cannot be nil.");
+    BOOL registrationSuccessful = NO;
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
-        [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
-    }];
+    if ([extension conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
+        registrationSuccessful = [MPKitContainer registerKit:(id<MPExtensionKitProtocol>)extension];
+        
+        MPLogDebug(@"Registered kit extension: %@", extension);
+    } else {
+        MPLogError(@"Could not register extension: %@", extension);
+    }
+    
+    return registrationSuccessful;
 }
 
 #pragma mark Kits
@@ -941,7 +954,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+    id<MPExtensionKitProtocol> kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     
     return [kitRegister.wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [kitRegister.wrapperInstance providerKitInstance] : nil;
 }
@@ -953,7 +966,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+    id<MPExtensionKitProtocol> kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     
     return kitRegister != nil;
 }

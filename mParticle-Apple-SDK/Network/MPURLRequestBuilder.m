@@ -23,8 +23,7 @@
 #import <UIKit/UIKit.h>
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitContainer.h"
-#import "MPKitContainer+Internal.h"
-#import "MPKitRegister.h"
+#import "MPExtensionProtocol.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
@@ -191,11 +190,11 @@ static NSTimeInterval requestTimeout = 30.0;
                 kits = nil;
             }
             
-            NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+            NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
             if (activeKitsRegistry.count > 0) {
                 NSMutableArray<NSNumber *> *activeKitIds = [[NSMutableArray alloc] initWithCapacity:activeKitsRegistry.count];
                 
-                for (MPKitRegister *kitRegister in activeKitsRegistry) {
+                for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
                     [activeKitIds addObject:kitRegister.code];
                 }
                 

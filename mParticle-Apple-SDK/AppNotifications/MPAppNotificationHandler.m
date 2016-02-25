@@ -23,10 +23,9 @@
 #import "MPPersistenceController.h"
 #import "MPLogger.h"
 #import "MPKitContainer.h"
-#import "MPKitContainer+Internal.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
-#import "MPKitRegister.h"
+#import "MPKitContainer.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -105,10 +104,10 @@
     [MPNotificationController setDeviceToken:nil];
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     NSNumber *lastKit = nil;
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:failedRegistrationSelector]) {
             MPKitExecStatus *execStatus = [kitRegister.wrapperInstance failedToRegisterForUserNotifications:error];
             
@@ -135,10 +134,10 @@
     [MPNotificationController setDeviceToken:deviceToken];
     
     SEL deviceTokenSelector = @selector(setDeviceToken:);
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     NSNumber *lastKit = nil;
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:deviceTokenSelector]) {
             MPKitExecStatus *execStatus = [kitRegister.wrapperInstance setDeviceToken:deviceToken];
             
@@ -165,9 +164,9 @@
     [self receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:handleActionWithIdentifierSelector]) {
             [kitRegister.wrapperInstance handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
         }
@@ -206,10 +205,10 @@
     
     if (!actionIdentifier) {
         SEL receivedNotificationSelector = @selector(receivedUserNotification:);
-        NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
         NSNumber *lastKit = nil;
         
-        for (MPKitRegister *kitRegister in activeKitsRegistry) {
+        for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:receivedNotificationSelector]) {
                 MPKitExecStatus *execStatus = [kitRegister.wrapperInstance receivedUserNotification:userInfo];
                 
@@ -236,10 +235,10 @@
     
     stateMachine.launchInfo = nil;
     
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
             [kitRegister.wrapperInstance continueUserActivity:userActivity restorationHandler:restorationHandler];
         }
@@ -253,10 +252,10 @@
         return;
     }
     
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:didUpdateUserActivitySelector]) {
             [kitRegister.wrapperInstance didUpdateUserActivity:userActivity];
         }
@@ -272,10 +271,10 @@
     
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
     
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL openURLOptionsSelector = @selector(openURL:options:);
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:openURLOptionsSelector]) {
             [kitRegister.wrapperInstance openURL:url options:options];
         }
@@ -292,10 +291,10 @@
                                               sourceApplication:sourceApplication
                                                      annotation:annotation];
     
-    NSArray<MPKitRegister *> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:openURLSourceAppAnnotationSelector]) {
             [kitRegister.wrapperInstance openURL:url sourceApplication:sourceApplication annotation:annotation];
         }

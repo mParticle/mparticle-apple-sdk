@@ -282,8 +282,6 @@ NSString *const khnEventAttributeListKey = @"eventAttributeList";
 }
 
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {
-    kitDebugMode = debugMode;
-    
     [KahunaAnalytics setDebugMode:debugMode];
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceKahuna) returnCode:MPKitReturnCodeSuccess];

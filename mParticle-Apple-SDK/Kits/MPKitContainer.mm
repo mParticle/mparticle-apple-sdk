@@ -41,14 +41,13 @@
 #import "MPProduct+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSUserDefaults+mParticle.h"
-#import "MPKitRegister.h"
 #include "MPBracket.h"
 #import "MPConsumerInfo.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";
-static NSMutableSet <MPKitRegister *> *kitsRegistry;
+static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @interface MPKitContainer() {
     dispatch_semaphore_t kitsSemaphore;
@@ -103,10 +102,10 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 #pragma mark Notification handlers
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     SEL didBecomeActiveSelector = @selector(didBecomeActive);
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:didBecomeActiveSelector]) {
             [kitRegister.wrapperInstance didBecomeActive];
         }
@@ -119,7 +118,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     SEL launchOptionsSelector = @selector(setLaunchOptions:);
     SEL startSelector = @selector(start);
     
-    for (MPKitRegister *kitRegister in kitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
         id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
         
         if (![kitInstance started]) {
@@ -136,7 +135,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 #pragma mark Private methods
 - (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
+    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
     
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
     bracketIterator = brackets.find(kitCode);
@@ -146,16 +145,16 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)flushSerializedKits {
-    for (MPKitRegister *kitRegister in kitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
         [self freeKit:kitRegister.code];
     }
 }
 
 - (void)freeKit:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
+    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
 
     if (kitRegister.wrapperInstance) {
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(deinit)]) {
@@ -256,7 +255,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)kitCode {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     return kitRegister.name;
 }
 
@@ -286,7 +285,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(NSDictionary *)configuration {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    MPKitRegister *kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
     if (!kitRegister) {
         return nil;
@@ -313,7 +312,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return kitRegister.wrapperInstance;
 }
 
-- (void)startKitRegister:(nonnull MPKitRegister *)kitRegister configuration:(nonnull NSDictionary *)configuration {
+- (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull NSDictionary *)configuration {
     kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
     [kitRegister.wrapperInstance setKitCode:kitRegister.code];
 }
@@ -375,7 +374,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration kitCode:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameters. It cannot be nil.");
+    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
     
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
     bracketIterator = brackets.find(kitCode);
@@ -404,13 +403,14 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Public class methods
-+ (void)registerKit:(nonnull MPKitRegister *)kitRegister {
++ (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister {
     NSAssert(kitRegister != nil, @"Required parameter. It cannot be nil.");
     
     [kitsRegistry addObject:kitRegister];
+    return YES;
 }
 
-+ (nullable NSSet<MPKitRegister *> *)registeredKits {
++ (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits {
     return kitsRegistry.count > 0 ? kitsRegistry : nil;
 }
 
@@ -437,7 +437,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Filtering methods
-- (void)filter:(MPKitRegister *)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
+- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter;
@@ -587,7 +587,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }];
 }
 
-- (void)filter:(MPKitRegister *)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
+- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter;
@@ -689,7 +689,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }];
 }
 
-- (MPKitFilter *)filter:(MPKitRegister *)kitRegister forSelector:(SEL)selector {
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forSelector:(SEL)selector {
     MPKitFilter *kitFilter = nil;
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
@@ -707,7 +707,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return kitFilter;
 }
 
-- (MPKitFilter *)filter:(MPKitRegister *)kitRegister forUserAttributes:(NSDictionary *)userAttributes {
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributes:(NSDictionary *)userAttributes {
     if (!userAttributes) {
         return nil;
     }
@@ -735,7 +735,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return kitFilter;
 }
 
-- (MPKitFilter *)filter:(MPKitRegister *)kitRegister forUserAttributeKey:(NSString *)key value:(id)value {
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value {
     if (!key) {
         return nil;
     }
@@ -757,7 +757,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     return kitFilter;
 }
 
-- (MPKitFilter *)filter:(MPKitRegister *)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType {
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType {
     NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)identityType];
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
@@ -774,7 +774,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Projection methods
-- (void)project:(MPKitRegister *)kitRegister commerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
+- (void)project:(id<MPExtensionKitProtocol>)kitRegister commerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (!kitConfiguration.configuredMessageTypeProjections ||
@@ -1265,7 +1265,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     });
 }
 
-- (void)project:(MPKitRegister *)kitRegister event:(MPEvent *const)event messageType:(MPMessageType)messageType completionHandler:(void (^)(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
+- (void)project:(id<MPExtensionKitProtocol>)kitRegister event:(MPEvent *const)event messageType:(MPMessageType)messageType completionHandler:(void (^)(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (!kitConfiguration.configuredMessageTypeProjections ||
@@ -1557,14 +1557,14 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 #pragma mark Public methods
-- (nullable NSArray<MPKitRegister *> *)activeKitsRegistry {
+- (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
     if (kitsRegistry.count == 0) {
         return nil;
     }
     
-    NSMutableArray <MPKitRegister *> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
+    NSMutableArray <id<MPExtensionKitProtocol>> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
     
-    for (MPKitRegister *kitRegister in kitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
         BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
         std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
         
@@ -1595,8 +1595,8 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
-    MPKitRegister *kitRegister;
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+    id<MPExtensionKitProtocol>kitRegister;
     id<MPKitProtocol> kitInstance;
 
     // Adds all currently configured kits to a list
@@ -1754,7 +1754,7 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
     }
     
     NSMutableArray<NSNumber *> *supportedKits = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
-    for (MPKitRegister *kitRegister in kitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
         [supportedKits addObject:kitRegister.code];
     }
     
@@ -1763,9 +1763,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 
 #pragma mark Forward methods
 - (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         __block NSNumber *lastKit = nil;
         
         [self filter:kitRegister forCommerceEvent:commerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
@@ -1797,9 +1797,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         __block NSNumber *lastKit = nil;
         
         void (^forwardWithFilter)(MPKitFilter *const) = ^(MPKitFilter *const kitFilter) {
@@ -1850,9 +1850,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector userAttributeKey:(NSString *)key value:(id)value kitHandler:(void (^)(id<MPKitProtocol> kit))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributeKey:key value:value];
             
@@ -1866,9 +1866,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector userAttributes:(NSDictionary *)userAttributes kitHandler:(void (^)(id<MPKitProtocol> kit, NSDictionary *forwardAttributes))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
             
@@ -1880,9 +1880,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector userIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^)(id<MPKitProtocol> kit))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
             
@@ -1896,9 +1896,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector errorMessage:(NSString *)errorMessage exception:(NSException *)exception eventInfo:(NSDictionary *)eventInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithFilter:NO];
             
@@ -1914,9 +1914,9 @@ static NSMutableSet <MPKitRegister *> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<MPKitRegister *> *activeKitsRegistry = [self activeKitsRegistry];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
-    for (MPKitRegister *kitRegister in activeKitsRegistry) {
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             MPKitExecStatus *execStatus = nil;
             
