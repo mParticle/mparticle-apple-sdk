@@ -280,8 +280,6 @@
 		C9049B951C56C3D0005F11EA /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499EB1C56B8DF005F11EA /* MPURLConnectionAssociate.m */; };
 		C9049B961C56C3D0005F11EA /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499EC1C56B8DF005F11EA /* MPURLRequestBuilder.h */; };
 		C9049B971C56C3D0005F11EA /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499ED1C56B8DF005F11EA /* MPURLRequestBuilder.m */; };
-		C9049B981C56C3D0005F11EA /* NSURLConnection+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499EE1C56B8DF005F11EA /* NSURLConnection+mParticle.h */; };
-		C9049B991C56C3D0005F11EA /* NSURLConnection+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499EF1C56B8DF005F11EA /* NSURLConnection+mParticle.m */; };
 		C9049B9A1C56C3D0005F11EA /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F01C56B8DF005F11EA /* NSURLSession+mParticle.h */; };
 		C9049B9B1C56C3D0005F11EA /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499F11C56B8DF005F11EA /* NSURLSession+mParticle.m */; };
 		C9049B9C1C56C3D1005F11EA /* MPConnector.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499E41C56B8DF005F11EA /* MPConnector.h */; };
@@ -294,8 +292,6 @@
 		C9049BA31C56C3D1005F11EA /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499EB1C56B8DF005F11EA /* MPURLConnectionAssociate.m */; };
 		C9049BA41C56C3D1005F11EA /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499EC1C56B8DF005F11EA /* MPURLRequestBuilder.h */; };
 		C9049BA51C56C3D1005F11EA /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499ED1C56B8DF005F11EA /* MPURLRequestBuilder.m */; };
-		C9049BA61C56C3D1005F11EA /* NSURLConnection+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499EE1C56B8DF005F11EA /* NSURLConnection+mParticle.h */; };
-		C9049BA71C56C3D1005F11EA /* NSURLConnection+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499EF1C56B8DF005F11EA /* NSURLConnection+mParticle.m */; };
 		C9049BA81C56C3D1005F11EA /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F01C56B8DF005F11EA /* NSURLSession+mParticle.h */; };
 		C9049BA91C56C3D1005F11EA /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499F11C56B8DF005F11EA /* NSURLSession+mParticle.m */; };
 		C9049BAE1C56C3ED005F11EA /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F61C56B8DF005F11EA /* MPDatabaseMigrationController.h */; };
@@ -578,8 +574,6 @@
 		C90499EB1C56B8DF005F11EA /* MPURLConnectionAssociate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPURLConnectionAssociate.m; sourceTree = "<group>"; };
 		C90499EC1C56B8DF005F11EA /* MPURLRequestBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPURLRequestBuilder.h; sourceTree = "<group>"; };
 		C90499ED1C56B8DF005F11EA /* MPURLRequestBuilder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilder.m; sourceTree = "<group>"; };
-		C90499EE1C56B8DF005F11EA /* NSURLConnection+mParticle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLConnection+mParticle.h"; sourceTree = "<group>"; };
-		C90499EF1C56B8DF005F11EA /* NSURLConnection+mParticle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLConnection+mParticle.m"; sourceTree = "<group>"; };
 		C90499F01C56B8DF005F11EA /* NSURLSession+mParticle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLSession+mParticle.h"; sourceTree = "<group>"; };
 		C90499F11C56B8DF005F11EA /* NSURLSession+mParticle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLSession+mParticle.m"; sourceTree = "<group>"; };
 		C90499F31C56B8DF005F11EA /* MPNotificationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPNotificationController.h; sourceTree = "<group>"; };
@@ -1063,8 +1057,6 @@
 				C90499EB1C56B8DF005F11EA /* MPURLConnectionAssociate.m */,
 				C90499EC1C56B8DF005F11EA /* MPURLRequestBuilder.h */,
 				C90499ED1C56B8DF005F11EA /* MPURLRequestBuilder.m */,
-				C90499EE1C56B8DF005F11EA /* NSURLConnection+mParticle.h */,
-				C90499EF1C56B8DF005F11EA /* NSURLConnection+mParticle.m */,
 				C90499F01C56B8DF005F11EA /* NSURLSession+mParticle.h */,
 				C90499F11C56B8DF005F11EA /* NSURLSession+mParticle.m */,
 			);
@@ -1332,7 +1324,6 @@
 				C9049B8E1C56C3D0005F11EA /* MPConnector.h in Headers */,
 				C9049AAE1C56C31D005F11EA /* MPConsumerInfo.h in Headers */,
 				C9049C041C56C436005F11EA /* NSString+MPPercentEscape.h in Headers */,
-				C9049B981C56C3D0005F11EA /* NSURLConnection+mParticle.h in Headers */,
 				C9049AB51C56C31D005F11EA /* MPMessage.h in Headers */,
 				C9049D0A1C57FBC6005F11EA /* MPNotificationController.h in Headers */,
 				C9049A7C1C56C29E005F11EA /* MPBackendController.h in Headers */,
@@ -1396,7 +1387,6 @@
 				C9049BC81C56C410005F11EA /* MPCurrentState.h in Headers */,
 				C9049B361C56C354005F11EA /* MPAttributeProjection.h in Headers */,
 				DB4924DE1C76779E00D473A3 /* MPKitTune.h in Headers */,
-				C9049BA61C56C3D1005F11EA /* NSURLConnection+mParticle.h in Headers */,
 				C9049BA21C56C3D1005F11EA /* MPURLConnectionAssociate.h in Headers */,
 				C9049AD61C56C31E005F11EA /* MPSegmentMembership.h in Headers */,
 				C9049BCA1C56C410005F11EA /* MPDateFormatter.h in Headers */,
@@ -1600,7 +1590,6 @@
 				C9049BBC1C56C405005F11EA /* MPBracket.cpp in Sources */,
 				C9049B101C56C32D005F11EA /* MPPromotion.mm in Sources */,
 				DBA191551C6C006100F7E74B /* MPKitAppsFlyer.m in Sources */,
-				C9049B991C56C3D0005F11EA /* NSURLConnection+mParticle.m in Sources */,
 				C9049A9F1C56C2FE005F11EA /* MPCustomModule.m in Sources */,
 				C9049B491C56C362005F11EA /* MPKitAppboy.mm in Sources */,
 				C9049B911C56C3D0005F11EA /* MPNetworkCommunication.mm in Sources */,
@@ -1693,7 +1682,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9049BA71C56C3D1005F11EA /* NSURLConnection+mParticle.m in Sources */,
 				C9049AE11C56C31E005F11EA /* MPStandaloneUpload.m in Sources */,
 				C9049AD91C56C31E005F11EA /* MPSession.m in Sources */,
 				C9049BD91C56C41A005F11EA /* MPLaunchInfo.m in Sources */,

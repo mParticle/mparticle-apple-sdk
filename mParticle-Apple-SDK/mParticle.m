@@ -51,7 +51,6 @@
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
-    #import "NSURLConnection+mParticle.h"
 
     #if defined(MP_CRASH_REPORTER)
         #import "MPExceptionHandler.h"
@@ -193,10 +192,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
-#if TARGET_OS_IOS == 1
-    [NSURLConnection freeResources];
-#endif
-    
     [NSURLSession freeResources];
 }
 
@@ -299,13 +294,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (BOOL)measuringNetworkPerformance {
-    BOOL networkMethodsSwizzled = [NSURLSession methodsSwizzled];
-    
-#if TARGET_OS_IOS == 1
-    networkMethodsSwizzled = networkMethodsSwizzled || [NSURLConnection methodsSwizzled];
-#endif
-    
-    return networkMethodsSwizzled;
+    return [NSURLSession methodsSwizzled];
 }
 
 - (BOOL)optOut {
@@ -1187,9 +1176,6 @@ NSString *const kMPStateKey = @"state";
             return;
         }
         
-#if TARGET_OS_IOS == 1
-        [NSURLConnection swizzleMethods];
-#endif
         [NSURLSession swizzleMethods];
     } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
         __weak MParticle *weakSelf = self;
@@ -1206,9 +1192,6 @@ NSString *const kMPStateKey = @"state";
             return;
         }
         
-#if TARGET_OS_IOS == 1
-        [NSURLConnection restoreMethods];
-#endif
         [NSURLSession restoreMethods];
     } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
         __weak MParticle *weakSelf = self;
@@ -1220,9 +1203,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)excludeURLFromNetworkPerformanceMeasuring:(NSURL *)url {
-#if TARGET_OS_IOS == 1
-    [NSURLConnection excludeURLFromNetworkPerformanceMeasuring:url];
-#endif
     [NSURLSession excludeURLFromNetworkPerformanceMeasuring:url];
 }
 
@@ -1254,16 +1234,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)preserveQueryMeasuringNetworkPerformance:(NSString *)queryString {
-#if TARGET_OS_IOS == 1
-    [NSURLConnection preserveQueryMeasuringNetworkPerformance:queryString];
-#endif
     [NSURLSession preserveQueryMeasuringNetworkPerformance:queryString];
 }
 
 - (void)resetNetworkPerformanceExclusionsAndFilters {
-#if TARGET_OS_IOS == 1
-    [NSURLConnection resetNetworkPerformanceExclusionsAndFilters];
-#endif
     [NSURLSession resetNetworkPerformanceExclusionsAndFilters];
 }
 
