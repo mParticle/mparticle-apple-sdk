@@ -58,8 +58,6 @@
 		C9049AA91C56C30D005F11EA /* MParticleUserNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993B1C56B8DE005F11EA /* MParticleUserNotification.m */; };
 		C9049AAA1C56C31D005F11EA /* MPBreadcrumb.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993C1C56B8DE005F11EA /* MPBreadcrumb.h */; };
 		C9049AAB1C56C31D005F11EA /* MPBreadcrumb.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993D1C56B8DE005F11EA /* MPBreadcrumb.m */; };
-		C9049AAC1C56C31D005F11EA /* MPCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993E1C56B8DE005F11EA /* MPCommand.h */; };
-		C9049AAD1C56C31D005F11EA /* MPCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993F1C56B8DE005F11EA /* MPCommand.m */; };
 		C9049AAE1C56C31D005F11EA /* MPConsumerInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499401C56B8DE005F11EA /* MPConsumerInfo.h */; };
 		C9049AAF1C56C31D005F11EA /* MPConsumerInfo.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499411C56B8DE005F11EA /* MPConsumerInfo.mm */; };
 		C9049AB01C56C31D005F11EA /* MPDataModelAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499421C56B8DE005F11EA /* MPDataModelAbstract.h */; };
@@ -77,8 +75,6 @@
 		C9049ABC1C56C31D005F11EA /* MPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = C904994E1C56B8DE005F11EA /* MPSession.m */; };
 		C9049ABD1C56C31D005F11EA /* MPSessionHistory.h in Headers */ = {isa = PBXBuildFile; fileRef = C904994F1C56B8DE005F11EA /* MPSessionHistory.h */; };
 		C9049ABE1C56C31D005F11EA /* MPSessionHistory.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499501C56B8DE005F11EA /* MPSessionHistory.mm */; };
-		C9049ABF1C56C31D005F11EA /* MPStandaloneCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499511C56B8DE005F11EA /* MPStandaloneCommand.h */; };
-		C9049AC01C56C31D005F11EA /* MPStandaloneCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499521C56B8DE005F11EA /* MPStandaloneCommand.m */; };
 		C9049AC11C56C31D005F11EA /* MPStandaloneMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499531C56B8DE005F11EA /* MPStandaloneMessage.h */; };
 		C9049AC21C56C31D005F11EA /* MPStandaloneMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499541C56B8DE005F11EA /* MPStandaloneMessage.m */; };
 		C9049AC31C56C31D005F11EA /* MPStandaloneUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499551C56B8DE005F11EA /* MPStandaloneUpload.h */; };
@@ -87,8 +83,6 @@
 		C9049AC61C56C31D005F11EA /* MPUpload.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499581C56B8DE005F11EA /* MPUpload.m */; };
 		C9049AC71C56C31E005F11EA /* MPBreadcrumb.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993C1C56B8DE005F11EA /* MPBreadcrumb.h */; };
 		C9049AC81C56C31E005F11EA /* MPBreadcrumb.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993D1C56B8DE005F11EA /* MPBreadcrumb.m */; };
-		C9049AC91C56C31E005F11EA /* MPCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993E1C56B8DE005F11EA /* MPCommand.h */; };
-		C9049ACA1C56C31E005F11EA /* MPCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993F1C56B8DE005F11EA /* MPCommand.m */; };
 		C9049ACB1C56C31E005F11EA /* MPConsumerInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499401C56B8DE005F11EA /* MPConsumerInfo.h */; };
 		C9049ACC1C56C31E005F11EA /* MPConsumerInfo.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499411C56B8DE005F11EA /* MPConsumerInfo.mm */; };
 		C9049ACD1C56C31E005F11EA /* MPDataModelAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499421C56B8DE005F11EA /* MPDataModelAbstract.h */; };
@@ -106,8 +100,6 @@
 		C9049AD91C56C31E005F11EA /* MPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = C904994E1C56B8DE005F11EA /* MPSession.m */; };
 		C9049ADA1C56C31E005F11EA /* MPSessionHistory.h in Headers */ = {isa = PBXBuildFile; fileRef = C904994F1C56B8DE005F11EA /* MPSessionHistory.h */; };
 		C9049ADB1C56C31E005F11EA /* MPSessionHistory.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499501C56B8DE005F11EA /* MPSessionHistory.mm */; };
-		C9049ADC1C56C31E005F11EA /* MPStandaloneCommand.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499511C56B8DE005F11EA /* MPStandaloneCommand.h */; };
-		C9049ADD1C56C31E005F11EA /* MPStandaloneCommand.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499521C56B8DE005F11EA /* MPStandaloneCommand.m */; };
 		C9049ADE1C56C31E005F11EA /* MPStandaloneMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499531C56B8DE005F11EA /* MPStandaloneMessage.h */; };
 		C9049ADF1C56C31E005F11EA /* MPStandaloneMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499541C56B8DE005F11EA /* MPStandaloneMessage.m */; };
 		C9049AE01C56C31E005F11EA /* MPStandaloneUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499551C56B8DE005F11EA /* MPStandaloneUpload.h */; };
@@ -446,8 +438,6 @@
 		C904993B1C56B8DE005F11EA /* MParticleUserNotification.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleUserNotification.m; sourceTree = "<group>"; };
 		C904993C1C56B8DE005F11EA /* MPBreadcrumb.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPBreadcrumb.h; sourceTree = "<group>"; };
 		C904993D1C56B8DE005F11EA /* MPBreadcrumb.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPBreadcrumb.m; sourceTree = "<group>"; };
-		C904993E1C56B8DE005F11EA /* MPCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPCommand.h; sourceTree = "<group>"; };
-		C904993F1C56B8DE005F11EA /* MPCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPCommand.m; sourceTree = "<group>"; };
 		C90499401C56B8DE005F11EA /* MPConsumerInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConsumerInfo.h; sourceTree = "<group>"; };
 		C90499411C56B8DE005F11EA /* MPConsumerInfo.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPConsumerInfo.mm; sourceTree = "<group>"; };
 		C90499421C56B8DE005F11EA /* MPDataModelAbstract.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPDataModelAbstract.h; sourceTree = "<group>"; };
@@ -465,8 +455,6 @@
 		C904994E1C56B8DE005F11EA /* MPSession.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPSession.m; sourceTree = "<group>"; };
 		C904994F1C56B8DE005F11EA /* MPSessionHistory.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPSessionHistory.h; sourceTree = "<group>"; };
 		C90499501C56B8DE005F11EA /* MPSessionHistory.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPSessionHistory.mm; sourceTree = "<group>"; };
-		C90499511C56B8DE005F11EA /* MPStandaloneCommand.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPStandaloneCommand.h; sourceTree = "<group>"; };
-		C90499521C56B8DE005F11EA /* MPStandaloneCommand.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPStandaloneCommand.m; sourceTree = "<group>"; };
 		C90499531C56B8DE005F11EA /* MPStandaloneMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPStandaloneMessage.h; sourceTree = "<group>"; };
 		C90499541C56B8DE005F11EA /* MPStandaloneMessage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPStandaloneMessage.m; sourceTree = "<group>"; };
 		C90499551C56B8DE005F11EA /* MPStandaloneUpload.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPStandaloneUpload.h; sourceTree = "<group>"; };
@@ -790,8 +778,6 @@
 				C904993B1C56B8DE005F11EA /* MParticleUserNotification.m */,
 				C904993C1C56B8DE005F11EA /* MPBreadcrumb.h */,
 				C904993D1C56B8DE005F11EA /* MPBreadcrumb.m */,
-				C904993E1C56B8DE005F11EA /* MPCommand.h */,
-				C904993F1C56B8DE005F11EA /* MPCommand.m */,
 				C90499401C56B8DE005F11EA /* MPConsumerInfo.h */,
 				C90499411C56B8DE005F11EA /* MPConsumerInfo.mm */,
 				C90499421C56B8DE005F11EA /* MPDataModelAbstract.h */,
@@ -809,8 +795,6 @@
 				C904994E1C56B8DE005F11EA /* MPSession.m */,
 				C904994F1C56B8DE005F11EA /* MPSessionHistory.h */,
 				C90499501C56B8DE005F11EA /* MPSessionHistory.mm */,
-				C90499511C56B8DE005F11EA /* MPStandaloneCommand.h */,
-				C90499521C56B8DE005F11EA /* MPStandaloneCommand.m */,
 				C90499531C56B8DE005F11EA /* MPStandaloneMessage.h */,
 				C90499541C56B8DE005F11EA /* MPStandaloneMessage.m */,
 				C90499551C56B8DE005F11EA /* MPStandaloneUpload.h */,
@@ -1284,7 +1268,6 @@
 				C9049B001C56C32D005F11EA /* MPCart.h in Headers */,
 				C9049BBD1C56C405005F11EA /* MPBracket.h in Headers */,
 				C9049BCE1C56C41A005F11EA /* MPDevice.h in Headers */,
-				C9049ABF1C56C31D005F11EA /* MPStandaloneCommand.h in Headers */,
 				C97310B61C6E456A0031E702 /* MPKitRegister.h in Headers */,
 				C9049AB31C56C31D005F11EA /* MPForwardRecord.h in Headers */,
 				C9049B461C56C35C005F11EA /* MPKitAdjust.h in Headers */,
@@ -1348,7 +1331,6 @@
 				C95801411C61171700E62148 /* MParticleUserNotification.h in Headers */,
 				C9049B8E1C56C3D0005F11EA /* MPConnector.h in Headers */,
 				C9049AAE1C56C31D005F11EA /* MPConsumerInfo.h in Headers */,
-				C9049AAC1C56C31D005F11EA /* MPCommand.h in Headers */,
 				C9049C041C56C436005F11EA /* NSString+MPPercentEscape.h in Headers */,
 				C9049B981C56C3D0005F11EA /* NSURLConnection+mParticle.h in Headers */,
 				C9049AB51C56C31D005F11EA /* MPMessage.h in Headers */,
@@ -1451,7 +1433,6 @@
 				C9049B7F1C56C3C5005F11EA /* MPMediaMetadataDigitalAudio.h in Headers */,
 				C9049BE41C56C436005F11EA /* MPResponseConfig.h in Headers */,
 				C9049BA01C56C3D1005F11EA /* MPNetworkPerformance.h in Headers */,
-				C9049ADC1C56C31E005F11EA /* MPStandaloneCommand.h in Headers */,
 				C9049AE01C56C31E005F11EA /* MPStandaloneUpload.h in Headers */,
 				C9049ACB1C56C31E005F11EA /* MPConsumerInfo.h in Headers */,
 				C9049B401C56C354005F11EA /* MPKitContainer.h in Headers */,
@@ -1463,7 +1444,6 @@
 				C97310B91C6FBA770031E702 /* MPKitRegister.h in Headers */,
 				C9049B441C56C354005F11EA /* MPKitFilter.h in Headers */,
 				C9049AF11C56C32C005F11EA /* MPProduct+Dictionary.h in Headers */,
-				C9049AC91C56C31E005F11EA /* MPCommand.h in Headers */,
 				C9049BA81C56C3D1005F11EA /* NSURLSession+mParticle.h in Headers */,
 				C9049B231C56C337005F11EA /* MPEvent+MessageType.h in Headers */,
 				C9049AED1C56C32C005F11EA /* MPCommerceEvent.h in Headers */,
@@ -1625,7 +1605,6 @@
 				C9049B491C56C362005F11EA /* MPKitAppboy.mm in Sources */,
 				C9049B911C56C3D0005F11EA /* MPNetworkCommunication.mm in Sources */,
 				C9049B5B1C56C391005F11EA /* MPKitLocalytics.m in Sources */,
-				C9049AC01C56C31D005F11EA /* MPStandaloneCommand.m in Sources */,
 				C9049B781C56C3C5005F11EA /* MPMediaTrack.m in Sources */,
 				C9049A721C56C231005F11EA /* mParticle.m in Sources */,
 				C9049B741C56C3C5005F11EA /* MPMediaMetadataTVR.m in Sources */,
@@ -1684,7 +1663,6 @@
 				C9049BF71C56C436005F11EA /* MPResponseConfig.m in Sources */,
 				C9049BD31C56C41A005F11EA /* MPLaunchInfo.m in Sources */,
 				C9049A811C56C2A7005F11EA /* MPEnums.m in Sources */,
-				C9049AAD1C56C31D005F11EA /* MPCommand.m in Sources */,
 				C9049B971C56C3D0005F11EA /* MPURLRequestBuilder.m in Sources */,
 				C9049B0D1C56C32D005F11EA /* MPProductBag.m in Sources */,
 				DB4924DF1C76779E00D473A3 /* MPKitTune.m in Sources */,
@@ -1776,7 +1754,6 @@
 				C9049B611C56C39C005F11EA /* MParticleReachability.m in Sources */,
 				C9049BD51C56C41A005F11EA /* MPDevice.m in Sources */,
 				C9049C361C56C6A5005F11EA /* MPKitForesee.m in Sources */,
-				C9049ADD1C56C31E005F11EA /* MPStandaloneCommand.m in Sources */,
 				C9049B9D1C56C3D1005F11EA /* MPConnector.m in Sources */,
 				C9049BB51C56C3EE005F11EA /* MPPersistenceController.mm in Sources */,
 				C9049AEB1C56C32C005F11EA /* MPCommerce.m in Sources */,
@@ -1799,7 +1776,6 @@
 				C9049AA71C56C2FF005F11EA /* MPCustomModulePreference.m in Sources */,
 				C9049B871C56C3C5005F11EA /* MPMediaMetadataTVR.m in Sources */,
 				C9049BD61C56C41A005F11EA /* MPHasher.cpp in Sources */,
-				C9049ACA1C56C31E005F11EA /* MPCommand.m in Sources */,
 				C9049A7F1C56C2A2005F11EA /* MPBackendController.mm in Sources */,
 				C9049BF11C56C436005F11EA /* NSNumber+MPFormatter.m in Sources */,
 				DB4924E01C76779E00D473A3 /* MPKitTune.m in Sources */,

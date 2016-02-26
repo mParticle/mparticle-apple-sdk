@@ -22,13 +22,11 @@
 #import "UIKit/UIKit.h"
 #import "MPConnector.h"
 #import "MPStateMachine.h"
-#import "MPCommand.h"
 #import "MPUpload.h"
 #import "MPDevice.h"
 #import "MPApplication.h"
 #import "MPSegment.h"
 #import "MPIConstants.h"
-#import "MPStandaloneCommand.h"
 #import "MPStandaloneUpload.h"
 #import "MPZip.h"
 #import "MPURLRequestBuilder.h"
@@ -55,8 +53,6 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 @interface MPNetworkCommunication() {
     BOOL retrievingConfig;
     BOOL retrievingSegments;
-    BOOL sendingCommands;
-    BOOL sendingStandaloneCommands;
     BOOL standaloneUploading;
     BOOL uploading;
     BOOL uploadingSessionHistory;
@@ -81,8 +77,6 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     
     retrievingConfig = NO;
     retrievingSegments = NO;
-    sendingCommands = NO;
-    sendingStandaloneCommands = NO;
     standaloneUploading = NO;
     uploading = NO;
     uploadingSessionHistory = NO;
@@ -172,12 +166,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 #pragma mark Notification handlers
 - (void)handleReachabilityChanged:(NSNotification *)notification {
-    retrievingConfig = retrievingSegments = sendingCommands = sendingStandaloneCommands = standaloneUploading = uploading = uploadingSessionHistory = NO;
+    retrievingConfig = retrievingSegments = standaloneUploading = uploading = uploadingSessionHistory = NO;
 }
 
 #pragma mark Public accessors
 - (BOOL)inUse {
-    return retrievingConfig || retrievingSegments || sendingCommands || sendingStandaloneCommands || standaloneUploading || uploading || uploadingSessionHistory;
+    return retrievingConfig || retrievingSegments || standaloneUploading || uploading || uploadingSessionHistory;
 }
 
 - (BOOL)retrievingSegments {
@@ -417,127 +411,6 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         completionHandler(YES, nil, timeout, error);
         strongSelf->retrievingSegments = NO;
     });
-}
-
-- (void)sendCommands:(NSArray<MPCommand *> *)commands index:(NSUInteger)index completionHandler:(MPCommandsCompletionHandler)completionHandler {
-    if (sendingCommands) {
-        return;
-    }
-    
-    sendingCommands = YES;
-    __weak MPNetworkCommunication *weakSelf = self;
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            __strong MPNetworkCommunication *strongSelf = weakSelf;
-            strongSelf->sendingCommands = NO;
-            
-            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }];
-    
-    MPCommand *command = commands[index];
-    NSURLRequest *urlRequest = [[[[[MPURLRequestBuilder newBuilderWithURL:command.url]
-                                   withHttpMethod:command.httpMethod]
-                                  withHeaderData:command.headerData]
-                                 withPostData:command.postData]
-                                build];
-    
-    if (urlRequest) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        [NSURLConnection sendAsynchronousRequest:urlRequest
-                                           queue:[NSOperationQueue mainQueue]
-                               completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                                   __strong MPNetworkCommunication *strongSelf = weakSelf;
-                                   if (!strongSelf) {
-                                       return;
-                                   }
-                                   
-                                   if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                                       [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                                       backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                                   }
-                                   
-                                   NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-                                   NSInteger responseCode = [httpResponse statusCode];
-                                   MPLogVerbose(@"Command Response Code: %ld", (long)responseCode);
-                                   
-                                   BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-                                   BOOL finished = index == commands.count - 1;
-                                   
-                                   completionHandler(success, command, finished);
-                                   
-                                   strongSelf->sendingCommands = NO;
-                                   if (!finished) {
-                                       [strongSelf sendCommands:commands index:(index + 1) completionHandler:completionHandler];
-                                   }
-                               }];
-#pragma clang diagnostic pop
-    } else {
-        sendingCommands = NO;
-        completionHandler(NO, command, YES);
-    }
-}
-
-- (void)sendStandaloneCommands:(NSArray *)standaloneCommands index:(NSUInteger)index completionHandler:(MPStandaloneCommandsCompletionHandler)completionHandler {
-    if (sendingStandaloneCommands) {
-        return;
-    }
-    
-    sendingStandaloneCommands = YES;
-    
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }];
-    
-    __weak MPNetworkCommunication *weakSelf = self;
-    
-    MPStandaloneCommand *standaloneCommand = standaloneCommands[index];
-    NSURLRequest *urlRequest = [[[[[MPURLRequestBuilder newBuilderWithURL:standaloneCommand.url]
-                                   withHttpMethod:standaloneCommand.httpMethod]
-                                  withHeaderData:standaloneCommand.headerData]
-                                 withPostData:standaloneCommand.postData]
-                                build];
-    
-    if (urlRequest) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        [NSURLConnection sendAsynchronousRequest:urlRequest
-                                           queue:[NSOperationQueue mainQueue]
-                               completionHandler:^(NSURLResponse *response, NSData *data, NSError *connectionError) {
-                                   __strong MPNetworkCommunication *strongSelf = weakSelf;
-                                   
-                                   if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                                       [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                                       backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                                   }
-                                   
-                                   NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
-                                   NSInteger responseCode = [httpResponse statusCode];
-                                   MPLogVerbose(@"Stand-alone Command Response Code: %ld", (long)responseCode);
-                                   
-                                   BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-                                   BOOL finished = index == standaloneCommands.count - 1;
-                                   
-                                   completionHandler(success, standaloneCommand, finished);
-                                   
-                                   strongSelf->sendingStandaloneCommands = NO;
-                                   if (!finished) {
-                                       [strongSelf sendStandaloneCommands:standaloneCommands index:(index + 1) completionHandler:completionHandler];
-                                   }
-                               }];
-#pragma clang diagnostic pop
-    } else {
-        sendingStandaloneCommands = NO;
-        completionHandler(NO, standaloneCommand, YES);
-    }
 }
 
 - (void)standaloneUploads:(NSArray<MPStandaloneUpload *> *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler {

@@ -18,10 +18,8 @@
 
 #import <Foundation/Foundation.h>
 
-@class MPCommand;
 @class MPSession;
 @class MPUpload;
-@class MPStandaloneCommand;
 @class MPStandaloneUpload;
 @class MPSessionHistory;
 @class MPSegment;
@@ -41,10 +39,8 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorDelayedSegemnts
 };
 
-typedef void(^ _Nonnull MPCommandsCompletionHandler)(BOOL success, MPCommand * _Nullable command, BOOL finished);
 typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nullable upload, NSDictionary * _Nullable responseDictionary, BOOL finished);
-typedef void(^ _Nonnull MPStandaloneCommandsCompletionHandler)(BOOL success, MPStandaloneCommand * _Nullable standaloneCommand, BOOL finished);
 typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload * _Nullable standaloneUpload, NSDictionary * _Nullable responseDictionary, BOOL finished);
 
 @interface MPNetworkCommunication : NSObject
@@ -54,8 +50,6 @@ typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPSt
 
 - (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary))completionHandler;
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
-- (void)sendCommands:(nullable NSArray<MPCommand *> *)standaloneCommands index:(NSUInteger)index completionHandler:(MPCommandsCompletionHandler)completionHandler;
-- (void)sendStandaloneCommands:(nullable NSArray *)commands index:(NSUInteger)index completionHandler:(MPStandaloneCommandsCompletionHandler)completionHandler;
 - (void)standaloneUploads:(nonnull NSArray<MPStandaloneUpload *> *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
 - (void)uploadSessionHistory:(nonnull MPSessionHistory *)sessionHistory completionHandler:(void(^ _Nonnull)(BOOL success))completionHandler;

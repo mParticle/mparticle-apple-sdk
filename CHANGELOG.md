@@ -1,8 +1,14 @@
 # mParticle Apple SDK CHANGELOG
 
-## 5.4.0 (Alpha)
+## 5.5.0 (Alpha)
 
-* Unification of the SDKs
+* Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
+* We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
+
+## 5.4.0
+
+* Support for [Tune](https://www.tune.com/) as a kit
+* Verifying whether obtained 3rd party custom module values are a supported data type
 
 ## 5.3.2
 
