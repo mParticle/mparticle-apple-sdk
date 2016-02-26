@@ -26,7 +26,7 @@
 
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;
 @property (nonatomic, strong, nonnull) NSNumber *kitCode;
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userIdentities;
+@property (nonatomic, strong, nullable) NSArray<NSDictionary<NSString *, id> *> *userIdentities;
 
 @end
 

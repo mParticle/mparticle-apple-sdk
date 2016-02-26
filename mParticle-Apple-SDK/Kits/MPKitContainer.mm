@@ -305,7 +305,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 
     if ([kitRegister.wrapperInstance respondsToSelector:@selector(userIdentities)]) {
-        NSDictionary *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+        NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
         [kitRegister.wrapperInstance setUserIdentities:userIdentities];
     }
 

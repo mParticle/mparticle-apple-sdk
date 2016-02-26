@@ -75,7 +75,7 @@
 
 #pragma mark User attributes and identities
 @property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userIdentities;
+@property (nonatomic, strong, nullable) NSArray<NSDictionary<NSString *, id> *> *userIdentities;
 
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nonnull MPKitExecStatus *)removeUserAttribute:(nonnull NSString *)key;
