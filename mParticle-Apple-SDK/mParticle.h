@@ -94,7 +94,7 @@
 /**
  The environment property returns the running SDK environment: Development or Production.
  @see MPEnvironment
- @see startWithKey:secret:installationType:environment:
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 @property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment;
 
@@ -114,11 +114,12 @@
 
 /**
  Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.
+ The default value is NO (opt-in of event tracking)
  */
 @property (nonatomic, unsafe_unretained, readwrite) BOOL optOut;
 
 /**
- A flag indicating whether the mParticle SDK has proxied the App Delegate and is handling
+ A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
  application notifications automatically.
  @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
@@ -133,7 +134,8 @@
 #endif
 
 /**
- Gets/Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval.
+ Gets/Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or
+ when more than 1000 events are logged.
  */
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
 
@@ -145,11 +147,14 @@
 
 /**
  Gets/Sets the interval to upload data to mParticle servers.
+ 
+ Batches of data are sent periodically to the mParticle servers at the rate defined by the uploadInterval. Batches are also uploaded
+ when the application is sent to the background or before they are terminated.
  */
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 
 /**
- mParticle SDK version
+ mParticle Apple SDK version
  */
 @property (nonatomic, strong, readonly, nonnull) NSString *version;
 
@@ -165,7 +170,7 @@
  Starts the API with the api_key and api_secret saved in MParticleConfig.plist.  If you
  use startAPI instead of startAPIWithKey:secret: your API key and secret must
  be added to these parameters in the MParticleConfig.plist.
- @see startWithKey:secret:installationType:environment:
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 - (void)start;
 
@@ -176,7 +181,7 @@
  will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
  @param apiKey The API key for your account
  @param secret The API secret for your account
- @see startWithKey:secret:installationType:environment:
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret;
 
@@ -193,6 +198,7 @@
         the environment to production.
  @see MPInstallationType
  @see MPEnvironment
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment;
 
@@ -325,8 +331,8 @@
  @param eventName The name of the event to be logged (required not nil.) The string cannot be longer than 255 characters
  @param eventType An enum value that indicates the type of event to be logged
  @param eventInfo A dictionary containing further information about the event. This dictionary is limited to 100 key
- value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 255 characters), numbers,
- booleans, or dates
+                  value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 255 characters), 
+                  numbers, booleans, or dates
  @see logEvent:
  */
 - (void)logEvent:(nonnull NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
@@ -360,13 +366,11 @@
 #pragma mark - Error, Exception, and Crash Handling
 /**
  Enables mParticle exception handling to automatically log events on uncaught exceptions.
- *** Currently unavailable ***
  */
 - (void)beginUncaughtExceptionLogging;
 
 /**
- Disables mParticle exception handling.
- *** Currently unavailable ***
+ Disables mParticle automatic exception handling.
  */
 - (void)endUncaughtExceptionLogging;
 
