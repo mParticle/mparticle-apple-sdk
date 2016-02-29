@@ -4,6 +4,7 @@
 
 * Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
 * The mParticle Apple SDK is now a dynamically loaded library and requires iOS 8.0 as minimum deployment target
+* Updated Kahuna kit
 
 ## 5.4.0
 

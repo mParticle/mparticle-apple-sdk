@@ -941,7 +941,7 @@ NSString *const kMPStateKey = @"state";
         return NO;
     }
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"sdk == %@", @(kitInstance)];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"kitCode == %@", @(kitInstance)];
     MPKitAbstract *kit = [[[MPKitContainer sharedInstance].kits filteredArrayUsingPredicate:predicate] firstObject];
     
     return kit != nil ? [kit started] : NO;
