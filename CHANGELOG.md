@@ -1,9 +1,13 @@
 # mParticle Apple SDK CHANGELOG
 
-## 5.5.0 (Alpha)
+## 5.6.0
+
+* We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
+
+## 5.5.0
 
 * Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
-* We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
+* The mParticle Apple SDK is now a dynamically loaded library and requires iOS 8.0 as minimum deployment target
 
 ## 5.4.0
 

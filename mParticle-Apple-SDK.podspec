@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
-    s.version          = "5.5.0-alpha-3"
+    s.version          = "5.6.0-alpha-1"
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
@@ -123,7 +123,7 @@ Pod::Spec.new do |s|
     s.subspec 'Kahuna' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'KahunaSDK', '1.0.571'
+        ss.ios.dependency 'Kahuna', '~> 2.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_KAHUNA 1"
         ss.ios.deployment_target      = "8.0"
     end
