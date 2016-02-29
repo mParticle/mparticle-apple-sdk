@@ -857,7 +857,7 @@ NSString *const kMPStateKey = @"state";
                                                                                                   [kit logEvent:commerceEventInstruction.event];
                                                                                               }
                                                                                               
-                                                                                              *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kit.kitCode returnCode:MPKitReturnCodeSuccess];
+                                                                                              *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[kit class] kitCode] returnCode:MPKitReturnCodeSuccess];
                                                                                           }
                                                                                       }
                                                                                       

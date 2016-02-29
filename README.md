@@ -25,7 +25,7 @@ mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mparti
 
 ```ruby
 target '<Your Target>' do
-    pod 'mParticle-Apple-SDK', :git => 'git@github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.4.0-alpha-2'
+    pod 'mParticle-Apple-SDK', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.6.0'
 end
 ```
 
@@ -46,7 +46,7 @@ xcodeproj '<Your Xcode Project Name>'
 
 # Contains a list of all pods which are common among the platforms
 def include_common_pods
-    pod 'mParticle-Apple-SDK', :git => 'git@github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.4.0-alpha-2'
+    pod 'mParticle-Apple-SDK', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.6.0'
 end
 
 # iOS app
@@ -73,9 +73,9 @@ end
 If you need or choose to integrate with 3rd party kits embedded in our SDK, you may select a set of kits in your Podfile using the pattern `pod 'mParticle-Apple-SDK/<kit>'`, as we can see in the sample configuration below:
 
 ```ruby
-pod 'mParticle-Apple-SDK/Appboy', :git => 'git@github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.4.0-alpha-2'
-pod 'mParticle-Apple-SDK/BranchMetrics', :git => 'git@github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.4.0-alpha-2'
-pod 'mParticle-Apple-SDK/Localytics', :git => 'git@github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.4.0-alpha-2'
+pod 'mParticle-Apple-SDK/Appboy', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.6.0'
+pod 'mParticle-Apple-SDK/BranchMetrics', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.6.0'
+pod 'mParticle-Apple-SDK/Localytics', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.6.0'
 ```
 
 In the case above, only the Appboy, Branch Metrics, and Localytics kits would be integrated, all other kits would be left out.
@@ -85,7 +85,7 @@ In the case above, only the Appboy, Branch Metrics, and Localytics kits would be
 The crash reporter feature has been implemented as an optional subspec. It is installed by default, however, if you are fine tuning your installation, you can choose to install it or not in your Podfile.
 
 ```ruby
-pod 'mParticle-Apple-SDK/CrashReporter', :git => 'git@github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.4.0-alpha-2'
+pod 'mParticle-Apple-SDK/CrashReporter', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.6.0'
 ```
 
 > CrashReporter and Crittercism are mutually exclusive subspecs. If your app needs to use the Crittercism kit, it must _**not**_ include the CrashReporter subspec in your Podfile.
@@ -196,7 +196,7 @@ A sample project is provided with the mParticle Apple SDK. A multi-platform vide
 Clone the repository to your local machine
 
 ```bash
-git clone git@github.com:mParticle/mParticle-iOS-SDK.git
+git clone https://github.com:mParticle/mParticle-iOS-SDK.git
 git checkout unified
 ```
 

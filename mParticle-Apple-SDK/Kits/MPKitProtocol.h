@@ -34,10 +34,11 @@
 
 @protocol MPKitProtocol <NSObject>
 #pragma mark - Required methods
-@property (nonatomic, strong, nonnull) NSNumber *kitCode;
 @property (nonatomic, unsafe_unretained, readonly) BOOL started;
 
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
+
++ (nonnull NSNumber *)kitCode;
 
 #pragma mark - Optional methods
 @optional

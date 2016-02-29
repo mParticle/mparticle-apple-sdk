@@ -23,12 +23,11 @@
 
 - (instancetype)init {
     id invalidVar = nil;
-    self = [self initWithCode:invalidVar name:invalidVar className:invalidVar startImmediately:NO];
+    self = [self initWithName:invalidVar className:invalidVar startImmediately:NO];
     return nil;
 }
 
-- (nullable instancetype)initWithCode:(nonnull NSNumber *)code name:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately {
-    NSAssert(code != nil, @"Required parameter. It cannot be nil.");
+- (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately {
     NSAssert(name != nil, @"Required parameter. It cannot be nil.");
     NSAssert(className != nil, @"Required parameter. It cannot be nil.");
     
@@ -37,10 +36,10 @@
         return nil;
     }
     
-    _code = code;
     _name = name;
     _className = className;
     _startImmediately = startImmediately;
+    _code = [(id<MPKitProtocol>)NSClassFromString(_className) kitCode];
     
     _wrapperInstance = nil;
 

@@ -21,16 +21,13 @@
 #import "MPKitAdjust.h"
 #import "Adjust.h"
 
-@interface MPKitAdjust() {
-    BOOL started;
-}
-
-@end
-
-
 @implementation MPKitAdjust
 
 #pragma mark MPKitInstanceProtocol methods
++ (NSNumber *)kitCode {
+    return @68;
+}
+
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
     NSAssert(configuration != nil, @"Required parameter. It cannot be nil.");
     self = [super init];
@@ -49,7 +46,7 @@
     NSString *adjEnvironment = [configuration[@"mpEnv"] integerValue] == MPEnvironmentProduction ? ADJEnvironmentProduction : ADJEnvironmentSandbox;
     ADJConfig *adjustConfig = [ADJConfig configWithAppToken:appToken environment:adjEnvironment];
     [Adjust appDidLaunch:adjustConfig];
-    started = startImmediately;
+    _started = startImmediately;
 
     dispatch_async(dispatch_get_main_queue(), ^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:@(MPKitInstanceAdjust),
@@ -79,10 +76,6 @@
     
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAdjust) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
-}
-
-- (BOOL)started {
-    return started;
 }
 
 @end

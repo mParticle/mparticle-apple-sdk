@@ -314,7 +314,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull NSDictionary *)configuration {
     kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
-    [kitRegister.wrapperInstance setKitCode:kitRegister.code];
 }
 
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {

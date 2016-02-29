@@ -52,12 +52,11 @@
 
 /**
  Allocates and initializes a register to a 3rd party kit implementation
- @param code Kit code. Obtained from mParticle and informed to the Core SDK
  @param name Kit name. Obtained from the 3rd party library provider and informed to the Core SDK
  @param className Name of the class implementing the wrapper to forward calls to 3rd party kits
  @param startImmediately Indicates whether a 3rd party kit should be started immediately or it should wait until launch info such as deep-linking is available, then start
  @returns An instance of a kit register or nil if a kit register could not be instantiated
  */
-- (nullable instancetype)initWithCode:(nonnull NSNumber *)code name:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately __attribute__((objc_designated_initializer));
+- (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately __attribute__((objc_designated_initializer));
 
 @end

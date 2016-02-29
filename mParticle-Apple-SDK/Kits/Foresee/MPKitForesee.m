@@ -29,7 +29,6 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     NSString *clientId;
     NSString *surveyId;
     BOOL sendAppVersion;
-    BOOL started;
 }
 
 @end
@@ -37,7 +36,7 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
 @implementation MPKitForesee
 
 - (void)setConfiguration:(NSDictionary *)configuration {
-    if (!started || ![self isValidConfiguration:configuration]) {
+    if (!_started || ![self isValidConfiguration:configuration]) {
         return;
     }
 
@@ -68,7 +67,7 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     }
     
     _configuration = configuration;
-    started = startImmediately;
+    _started = startImmediately;
 
     [self setupWithConfiguration:configuration];
     
@@ -86,6 +85,10 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     });
 
     return self;
+}
+
++ (NSNumber *)kitCode {
+    return @64;
 }
 
 - (NSString *)surveyURLWithUserAttributes:(NSDictionary *)userAttributes {
@@ -153,10 +156,6 @@ NSString *const kMPForeseeSendAppVersionKey = @"sendAppVersion";
     }
     
     return surveyURL;
-}
-
-- (BOOL)started {
-    return started;
 }
 
 @end
