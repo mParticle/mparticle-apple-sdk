@@ -21,7 +21,7 @@
 NSUInteger kMPNumberOfMessageTypes = 17;
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"5.2.1";
+NSString *const kMParticleSDKVersion = @"5.5.0";
 
 // Session Upload Settings
 NSString *const kMPSessionHistoryValue = @"sh";
@@ -250,18 +250,44 @@ NSString *const kMParticleWebViewPathSetSessionAttribute = @"setSessionAttribute
 //
 // Primitive data type constants
 //
-const NSTimeInterval MINIMUM_SESSION_TIMEOUT = 10.0;
-const NSTimeInterval MAXIMUM_SESSION_TIMEOUT = 120.0;
-const NSTimeInterval DEFAULT_SESSION_TIMEOUT = 60.0;
+const NSTimeInterval MINIMUM_SESSION_TIMEOUT =
+#if TARGET_OS_TV == 1
+1.0;
+#else
+10.0;
+#endif
+
+const NSTimeInterval MAXIMUM_SESSION_TIMEOUT =
+#if TARGET_OS_TV == 1
+12.0;
+#else
+120.0;
+#endif
+
+const NSTimeInterval DEFAULT_SESSION_TIMEOUT =
+#if TARGET_OS_TV == 1
+6.0;
+#else
+60.0;
+#endif
+
 const NSTimeInterval TWENTY_FOUR_HOURS = 86400; // database clean up interval
 const NSTimeInterval ONE_HUNDRED_EIGHTY_DAYS = 60 * 60 * 24 * 180; // Old messages purge interval = 60 seconds * 60 minutes * 24 hours * 180 days
 
 // Interval between uploads if not specified
-const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL = 20.0;
-const NSTimeInterval DEFAULT_UPLOAD_INTERVAL = 600.0;
+const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL =
+#if TARGET_OS_TV == 1
+2.0;
+#else
+20.0;
+#endif
 
-// Delay before processing uploads to allow app to get started
-const NSTimeInterval INITIAL_UPLOAD_TIME = 30.0;
+const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
+#if TARGET_OS_TV == 1
+6.0;
+#else
+600.0;
+#endif
 
 const NSUInteger EVENT_LIMIT = 1000; // maximum number of events per session
 

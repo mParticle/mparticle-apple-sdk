@@ -28,12 +28,10 @@
 #import "MPBreadcrumb.h"
 #import "MPExceptionHandler.h"
 #import "MPUpload.h"
-#import "MPCommand.h"
 #import "MPSegment.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPMessageBuilder.h"
-#import "MPStandaloneCommand.h"
 #import "MPStandaloneMessage.h"
 #import "MPStandaloneUpload.h"
 #import "MPEvent.h"
@@ -618,31 +616,8 @@ static BOOL appBackgrounded = NO;
                                                                                       return;
                                                                                   }
                                                                                   
-                                                                                  [persistence fetchCommandsInSession:uploadSession
-                                                                                                    completionHandler:^(NSArray<MPCommand *> *commands) {
-                                                                                                        if (!commands) {
-                                                                                                            sessionBeingUploaded = nil;
-                                                                                                            completionHandlerCopy(uploadSession);
-                                                                                                            return;
-                                                                                                        }
-                                                                                                        
-                                                                                                        [networkCommunication sendCommands:commands
-                                                                                                                                     index:0
-                                                                                                                         completionHandler:^(BOOL success, MPCommand *command, BOOL finished) {
-                                                                                                                             if (!success || !networkCommunication) {
-                                                                                                                                 sessionBeingUploaded = nil;
-                                                                                                                                 completionHandlerCopy(uploadSession);
-                                                                                                                                 return;
-                                                                                                                             }
-                                                                                                                             
-                                                                                                                             [persistence deleteCommand:command];
-                                                                                                                             
-                                                                                                                             if (finished) {
-                                                                                                                                 sessionBeingUploaded = nil;
-                                                                                                                                 completionHandlerCopy(uploadSession);
-                                                                                                                             }
-                                                                                                                         }];
-                                                                                                    }];
+                                                                                  sessionBeingUploaded = nil;
+                                                                                  completionHandlerCopy(uploadSession);
                                                                               }];
                                                                }];
                                           }];
@@ -848,13 +823,9 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    __weak MPBackendController *weakSelf = self;
-    
     [self.networkCommunication standaloneUploads:standaloneUploads
                                            index:0
                                completionHandler:^(BOOL success, MPStandaloneUpload *standaloneUpload, NSDictionary *responseDictionary, BOOL finished) {
-                                   __strong MPBackendController *strongSelf = weakSelf;
-                                   
                                    if (!success) {
                                        return;
                                    }
@@ -862,25 +833,6 @@ static BOOL appBackgrounded = NO;
                                    [MPResponseEvents parseConfiguration:responseDictionary session:nil];
                                    
                                    [persistence deleteStandaloneUpload:standaloneUpload];
-                                   
-                                   if (!finished) {
-                                       return;
-                                   }
-                                   
-                                   NSArray<MPStandaloneCommand *> *standaloneCommands = [persistence fetchStandaloneCommands];
-                                   if (!standaloneCommands) {
-                                       return;
-                                   }
-                                   
-                                   [strongSelf.networkCommunication sendStandaloneCommands:standaloneCommands
-                                                                                     index:0
-                                                                         completionHandler:^(BOOL success, MPStandaloneCommand *standaloneCommand, BOOL finished) {
-                                                                             if (!success) {
-                                                                                 return;
-                                                                             }
-                                                                             
-                                                                             [persistence deleteStandaloneCommand:standaloneCommand];
-                                                                         }];
                                }];
 }
 

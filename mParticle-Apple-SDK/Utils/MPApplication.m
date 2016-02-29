@@ -118,31 +118,42 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSString *)buildUUID {
-//#if !TARGET_IPHONE_SIMULATOR
-//    if (_buildUUID) {
-//        return _buildUUID;
-//    }
-//    
-//    const uint8_t *command = (const uint8_t *)(&_mh_execute_header + 1);
-//    for (uint32_t idx = 0; idx < _mh_execute_header.ncmds; ++idx) {
-//        const struct load_command *load_command = (const struct load_command *)command;
-//        if (load_command->cmd == LC_UUID) {
-//            const struct uuid_command *uuid_command = (const struct uuid_command *)command;
-//            const uint8_t *uuid = uuid_command->uuid;
-//            
-//            _buildUUID = [[NSString stringWithFormat:@"%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
-//                           uuid[0], uuid[1], uuid[2], uuid[3],
-//                           uuid[4], uuid[5], uuid[6], uuid[7],
-//                           uuid[8], uuid[9], uuid[10], uuid[11],
-//                           uuid[12], uuid[13], uuid[14], uuid[15]]
-//                          lowercaseString];
-//            
-//            return _buildUUID;
-//        } else {
-//            command += load_command->cmdsize;
-//        }
-//    }
-//#endif
+#if !TARGET_OS_SIMULATOR
+    if (_buildUUID) {
+        return _buildUUID;
+    }
+    
+    const struct mach_header *machHeader = NULL;
+    uint32_t i;
+    
+    for (i = 0; i < _dyld_image_count(); ++i) {
+        const struct mach_header *header = _dyld_get_image_header(i);
+        
+        if (header->filetype == MH_EXECUTE) {
+            machHeader = header;
+            break;
+        }
+    }
+    
+    if (machHeader == NULL) {
+        return nil;
+    }
+    
+    BOOL is64bit = machHeader->magic == MH_MAGIC_64 || machHeader->magic == MH_CIGAM_64;
+    uintptr_t cursor = (uintptr_t)machHeader + (is64bit ? sizeof(struct mach_header_64) : sizeof(struct mach_header));
+    const struct segment_command *segmentCommand = NULL;
+    for (i = 0; i < machHeader->ncmds; ++i, cursor += segmentCommand->cmdsize) {
+        segmentCommand = (struct segment_command *)cursor;
+        
+        if (segmentCommand->cmd == LC_UUID) {
+            const struct uuid_command *uuidCommand = (const struct uuid_command *)segmentCommand;
+            _buildUUID = [[[NSUUID alloc] initWithUUIDBytes:uuidCommand->uuid] UUIDString];
+            break;
+        }
+    }
+    
+    return _buildUUID;
+#endif
     return @"00000000-0000-0000-0000-000000000000";
 }
 

@@ -98,7 +98,7 @@
 /**
  The environment property returns the running SDK environment: Development or Production.
  @see MPEnvironment
- @see startWithKey:secret:installationType:environment:
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 @property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment;
 
@@ -122,7 +122,7 @@
 @property (nonatomic, unsafe_unretained, readwrite) BOOL optOut;
 
 /**
- A flag indicating whether the mParticle SDK has proxied the App Delegate and is handling
+ A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
  application notifications automatically.
  @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
@@ -149,6 +149,9 @@
 
 /**
  Gets/Sets the interval to upload data to mParticle servers.
+ 
+ Batches of data are sent periodically to the mParticle servers at the rate defined by the uploadInterval. Batches are also uploaded
+ when the application is sent to the background or before they are terminated.
  */
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 
@@ -169,7 +172,7 @@
  Starts the API with the api_key and api_secret saved in MParticleConfig.plist.  If you
  use startAPI instead of startAPIWithKey:secret: your API key and secret must
  be added to these parameters in the MParticleConfig.plist.
- @see startWithKey:secret:installationType:environment:
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 - (void)start;
 
@@ -180,7 +183,7 @@
  will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
  @param apiKey The API key for your account
  @param secret The API secret for your account
- @see startWithKey:secret:installationType:environment:
+ @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret;
 
@@ -357,13 +360,11 @@
 #pragma mark - Error, Exception, and Crash Handling
 /**
  Enables mParticle exception handling to automatically log events on uncaught exceptions.
- *** Currently unavailable ***
  */
 - (void)beginUncaughtExceptionLogging;
 
 /**
- Disables mParticle exception handling.
- *** Currently unavailable ***
+ Disables mParticle automatic exception handling.
  */
 - (void)endUncaughtExceptionLogging;
 

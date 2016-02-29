@@ -19,8 +19,6 @@
 #import "MPResponseEvents.h"
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
-#import "MPCommand.h"
-#import "MPStandaloneCommand.h"
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
 #import "NSUserDefaults+mParticle.h"
@@ -35,30 +33,6 @@
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
 
-    // Commands
-    NSArray *commands = !MPIsNull(configuration[kMPMessagesKey]) ? configuration[kMPMessagesKey] : nil;
-    if (commands) {
-        NSDictionary *commandDictionary;
-        
-        if (session) {
-            for (commandDictionary in commands) {
-                MPCommand *command = [[MPCommand alloc] initWithSession:session commandDictionary:commandDictionary];
-                
-                if (command) {
-                    [persistence saveCommand:command];
-                }
-            }
-        } else {
-            for (commandDictionary in commands) {
-                MPStandaloneCommand *standaloneCommand = [[MPStandaloneCommand alloc] initWithCommandDictionary:commandDictionary];
-                
-                if (standaloneCommand) {
-                    [persistence saveStandaloneCommand:standaloneCommand];
-                }
-            }
-        }
-    }
-    
     // Consumer Information
     if (session) {
         MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;

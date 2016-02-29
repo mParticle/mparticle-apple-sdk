@@ -21,12 +21,10 @@
 #import "sqlite3.h"
 
 @class MPSegment;
-@class MPCommand;
 @class MPMessage;
 @class MPProductBag;
 @class MPSession;
 @class MPUpload;
-@class MPStandaloneCommand;
 @class MPStandaloneMessage;
 @class MPStandaloneUpload;
 @class MPCookie;
@@ -56,7 +54,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (BOOL)closeDatabase;
 - (NSUInteger)countMesssagesForUploadInSession:(nonnull MPSession *)session;
 - (NSUInteger)countStandaloneMessages;
-- (void)deleteCommand:(nonnull MPCommand *)command;
 - (void)deleteConsumerInfo;
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
 - (void)deleteExpiredUserNotifications;
@@ -72,13 +69,11 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteSession:(nonnull MPSession *)session;
 - (void)deleteUpload:(nonnull MPUpload *)upload;
 - (void)deleteUploadId:(int64_t)uploadId;
-- (void)deleteStandaloneCommand:(nonnull MPStandaloneCommand *)standaloneCommand;
 - (void)deleteStandaloneMessage:(nonnull MPStandaloneMessage *)standaloneMessage;
 - (void)deleteStandaloneMessageIds:(nonnull NSArray<NSNumber *> *)standaloneMessageIds;
 - (void)deleteStandaloneUpload:(nonnull MPStandaloneUpload *)standaloneUpload;
 - (void)deleteStandaloneUploadId:(int64_t)standaloneUploadId;
 - (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs;
-- (void)fetchCommandsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPCommand *> * _Nullable commands))completionHandler;
 - (nullable MPConsumerInfo *)fetchConsumerInfo;
 - (void)fetchConsumerInfo:(void (^ _Nonnull)(MPConsumerInfo * _Nullable consumerInfo))completionHandler;
 - (nullable NSArray<MPCookie *> *)fetchCookies;
@@ -95,14 +90,12 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler;
 - (void)fetchUploadedMessagesInSession:(nonnull MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (void)fetchUploadsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
-- (nullable NSArray<MPStandaloneCommand *> *)fetchStandaloneCommands;
 - (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessages;
 - (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessagesForUploading;
 - (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads;
 - (void)purgeMemory;
 - (BOOL)openDatabase;
 - (void)saveBreadcrumb:(nonnull MPMessage *)message session:(nonnull MPSession *)session;
-- (void)saveCommand:(nonnull MPCommand *)command;
 - (void)saveConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)saveForwardRecord:(nonnull MPForwardRecord *)forwardRecord;
 - (void)saveMessage:(nonnull MPMessage *)message;
@@ -110,7 +103,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)saveSegment:(nonnull MPSegment *)segment;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation;
-- (void)saveStandaloneCommand:(nonnull MPStandaloneCommand *)standaloneCommand;
 - (void)saveStandaloneMessage:(nonnull MPStandaloneMessage *)standaloneMessage;
 - (void)saveStandaloneUpload:(nonnull MPStandaloneUpload *)standaloneUpload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
