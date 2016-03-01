@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
-    s.version          = "5.6.0-alpha-1"
+    s.version          = "6.0.0"
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
@@ -61,102 +61,6 @@ Pod::Spec.new do |s|
 
         ss.tvos.frameworks     = 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ss.tvos.weak_framework = 'AdSupport'
-    end
-
-    s.subspec 'Adjust' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Adjust', '~> 4.3'
-        ss.ios.prefix_header_contents = "#define MP_KIT_ADJUST 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Appboy' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Appboy-iOS-SDK', '~> 2.18'
-        ss.ios.prefix_header_contents = "#define MP_KIT_APPBOY 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'AppsFlyer' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'AppsFlyer-SDK', '~> 4.3'
-        ss.ios.prefix_header_contents = "#define MP_KIT_APPSFLYER 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'BranchMetrics' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Branch', '~> 0.11'
-        ss.ios.prefix_header_contents = "#define MP_KIT_BRANCHMETRICS 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'comScore' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'comScore-iOS-SDK', '~> 3.1502.26'
-        ss.ios.prefix_header_contents = "#define MP_KIT_COMSCORE 1"
-        ss.ios.deployment_target      = "8.0"
-        ss.ios.frameworks             = 'AVFoundation', 'CoreMedia', 'MediaPlayer'
-    end
-
-    s.subspec 'Crittercism' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'CrittercismSDK', '5.4.0'
-        ss.ios.prefix_header_contents = "#define MP_KIT_CRITTERCISM 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Flurry' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Flurry-iOS-SDK/FlurrySDK'
-        ss.ios.prefix_header_contents = "#define MP_KIT_FLURRY 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Kahuna' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Kahuna', '~> 2.3'
-        ss.ios.prefix_header_contents = "#define MP_KIT_KAHUNA 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Kochava' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Kochava'
-        ss.ios.prefix_header_contents = "#define MP_KIT_KOCHAVA 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Localytics' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Localytics', '~> 3.5'
-        ss.ios.prefix_header_contents = "#define MP_KIT_LOCALYTICS 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Tune' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.prefix_header_contents = "#define MP_KIT_TUNE 1"
-        ss.ios.deployment_target      = "8.0"
-    end
-
-    s.subspec 'Wootric' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'WootricSDK'
-        ss.ios.prefix_header_contents = "#define MP_KIT_WOOTRIC 1"
-        ss.ios.deployment_target      = "8.0"
     end
 
     s.subspec 'mParticle' do |ss|
