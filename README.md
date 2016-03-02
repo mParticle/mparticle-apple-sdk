@@ -9,7 +9,7 @@
 [![Platform](https://img.shields.io/cocoapods/p/mParticle-Apple-SDK.svg?style=flat)](http://cocoapods.org/pods/mParticle-Apple-SDK)
 -->
 
-Hello! This is the unified mParticle Apple SDK. It currently supports iOS and tvOS, however we plan to continue adding support for more platforms in the future. For the past 3 years we have been working tirelessly on developing each component of our platform; initially we deployed this SDK as iOS only, however we are at a different stage now, and we could not be more excited to be able to share it with you.
+Hello! This is the unified mParticle Apple SDK. It currently supports iOS and tvOS, and we plan to continue adding support for more platforms in the future. For the past 3 years we have been working tirelessly on developing each component of our platform; initially we deployed this SDK as iOS only, however we are at a different stage now, and we could not be more excited to be able to share it with you.
 
 Your job is to build an awesome app experience that consumers love. You also need several tools and services to make data-driven decisions. Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing, monetization, etc. But embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs. From not being able to move as fast as you want, to bloating and destabilizing your app, to losing control and ownership of your 1st party data.
 
@@ -23,7 +23,7 @@ mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mparti
 
 ```ruby
 target '<Your Target>' do
-    pod 'mParticle-Apple-SDK', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.5.0'
+    pod 'mParticle-Apple-SDK', '~> 5'
 end
 ```
 
@@ -44,7 +44,7 @@ xcodeproj '<Your Xcode Project Name>'
 
 # Contains a list of all pods which are common among the platforms
 def include_common_pods
-    pod 'mParticle-Apple-SDK', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.5.0'
+    pod 'mParticle-Apple-SDK', '~> 5'
 end
 
 # iOS app
@@ -71,9 +71,9 @@ end
 If you need or choose to integrate with 3rd party kits embedded in our SDK, you may select a set of kits in your Podfile using the pattern `pod 'mParticle-Apple-SDK/<kit>'`, as we can see in the sample configuration below:
 
 ```ruby
-pod 'mParticle-Apple-SDK/Appboy', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.5.0'
-pod 'mParticle-Apple-SDK/BranchMetrics', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.5.0'
-pod 'mParticle-Apple-SDK/Localytics', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.5.0'
+pod 'mParticle-Apple-SDK/Appboy', '~> 5'
+pod 'mParticle-Apple-SDK/BranchMetrics', '~> 5'
+pod 'mParticle-Apple-SDK/Localytics', '~> 5'
 ```
 
 In the case above, only the Appboy, Branch Metrics, and Localytics kits would be integrated, all other kits would be left out.
@@ -83,7 +83,7 @@ In the case above, only the Appboy, Branch Metrics, and Localytics kits would be
 The crash reporter feature has been implemented as an optional subspec. It is installed by default, however, if you are fine tuning your installation, you can choose to install it or not in your Podfile.
 
 ```ruby
-pod 'mParticle-Apple-SDK/CrashReporter', :git => 'https://github.com:mParticle/mParticle-iOS-SDK.git', :tag => '5.5.0'
+pod 'mParticle-Apple-SDK/CrashReporter', '~> 5'
 ```
 
 > CrashReporter and Crittercism are mutually exclusive subspecs. If your app needs to use the Crittercism kit, it must _**not**_ include the CrashReporter subspec in your Podfile.
@@ -194,8 +194,7 @@ A sample project is provided with the mParticle Apple SDK. A multi-platform vide
 Clone the repository to your local machine
 
 ```bash
-git clone https://github.com:mParticle/mParticle-iOS-SDK.git
-git checkout unified
+git clone https://github.com/mParticle/mparticle-apple-sdk.git
 ```
 
 In order to run either the iOS or tvOS examples you will first install the mParticle Apple SDK via CocoaPods.
@@ -204,6 +203,7 @@ In order to run either the iOS or tvOS examples you will first install the mPart
 2. Run `pod install`
 3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run
 
+> You can read a great blog post about developing a multi-platform app using the mParticle Apple SDK  [here](http://blog.mparticle.com/unified-mparticle-apple-sdk/)
 
 ## Documentation
 
