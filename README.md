@@ -31,7 +31,7 @@ end
 
 > Configuring you Podfile with the statement above will include only the core mParticle SDK.
 
-### Multi-platform Projects
+#### Multi-platform Projects
 
 If your app is targeting iOS and tvOS in the same Xcode project, you will need to configure the `Podfile` differently in order to use the SDK with multiple platforms.
 

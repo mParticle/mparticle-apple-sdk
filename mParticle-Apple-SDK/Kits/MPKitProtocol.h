@@ -20,7 +20,6 @@
 #define mParticle_Apple_SDK_MPKitProtocol_h
 
 #import <Foundation/Foundation.h>
-#import "MPKitExecStatus.h"
 #import "MPEnums.h"
 
 #if TARGET_OS_IOS == 1
@@ -29,8 +28,10 @@
 
 @class MPCommerceEvent;
 @class MPEvent;
+@class MPKitExecStatus;
 @class MPMediaTrack;
 @class MPUserSegments;
+
 
 @protocol MPKitProtocol <NSObject>
 #pragma mark - Required methods
