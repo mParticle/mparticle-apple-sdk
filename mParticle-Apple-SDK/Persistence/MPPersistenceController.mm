@@ -1786,7 +1786,11 @@ const int MaxBreadcrumbs = 50;
         sqlStatement += ")";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId integerValue]);
+            if (sizeof(void *) == 4) { // 32-bit
+                sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId longLongValue]);
+            } else if (sizeof(void *) == 8) { // 64-bit
+                sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId integerValue]);
+            }
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPLogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
@@ -2161,7 +2165,12 @@ const int MaxBreadcrumbs = 50;
         sqlStatement += " WHERE _id = ?";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId integerValue]);
+            if (sizeof(void *) == 4) { // 32-bit
+                sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId longLongValue]);
+            } else if (sizeof(void *) == 8) { // 64-bit
+                sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId integerValue]);
+            }
+            
             sqlite3_bind_int64(preparedStatement, 2, consumerInfo.consumerInfoId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
