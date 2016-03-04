@@ -400,7 +400,7 @@
 		C9049C341C56C68F005F11EA /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9049C331C56C68F005F11EA /* AdSupport.framework */; };
 		C9049C351C56C6A5005F11EA /* MPKitForesee.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499901C56B8DF005F11EA /* MPKitForesee.h */; };
 		C9049C361C56C6A5005F11EA /* MPKitForesee.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499911C56B8DF005F11EA /* MPKitForesee.m */; };
-		C9049D091C57FBC2005F11EA /* MPNotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.m */; };
+		C9049D091C57FBC2005F11EA /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.mm */; };
 		C9049D0A1C57FBC6005F11EA /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F31C56B8DF005F11EA /* MPNotificationController.h */; };
 		C95801401C61170C00E62148 /* MParticleUserNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993B1C56B8DE005F11EA /* MParticleUserNotification.m */; };
 		C95801411C61171700E62148 /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993A1C56B8DE005F11EA /* MParticleUserNotification.h */; };
@@ -408,7 +408,7 @@
 		C95801431C6117C600E62148 /* MPLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499B81C56B8DF005F11EA /* MPLocationManager.m */; };
 		C95801441C6117CA00E62148 /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499B71C56B8DF005F11EA /* MPLocationManager.h */; };
 		C95801451C61247900E62148 /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F31C56B8DF005F11EA /* MPNotificationController.h */; };
-		C95801461C61247D00E62148 /* MPNotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.m */; };
+		C95801461C61247D00E62148 /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.mm */; };
 		DB4924DD1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DE1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DF1C76779E00D473A3 /* MPKitTune.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4924DC1C76779E00D473A3 /* MPKitTune.m */; };
@@ -581,7 +581,7 @@
 		C90499F01C56B8DF005F11EA /* NSURLSession+mParticle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSURLSession+mParticle.h"; sourceTree = "<group>"; };
 		C90499F11C56B8DF005F11EA /* NSURLSession+mParticle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSURLSession+mParticle.m"; sourceTree = "<group>"; };
 		C90499F31C56B8DF005F11EA /* MPNotificationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPNotificationController.h; sourceTree = "<group>"; };
-		C90499F41C56B8DF005F11EA /* MPNotificationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPNotificationController.m; sourceTree = "<group>"; };
+		C90499F41C56B8DF005F11EA /* MPNotificationController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPNotificationController.mm; sourceTree = "<group>"; };
 		C90499F61C56B8DF005F11EA /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
 		C90499F71C56B8DF005F11EA /* MPDatabaseMigrationController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPDatabaseMigrationController.m; sourceTree = "<group>"; };
 		C90499FA1C56B8DF005F11EA /* MPPersistenceController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPPersistenceController.h; sourceTree = "<group>"; };
@@ -1065,7 +1065,7 @@
 			isa = PBXGroup;
 			children = (
 				C90499F31C56B8DF005F11EA /* MPNotificationController.h */,
-				C90499F41C56B8DF005F11EA /* MPNotificationController.m */,
+				C90499F41C56B8DF005F11EA /* MPNotificationController.mm */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -1621,7 +1621,7 @@
 				C9049B931C56C3D0005F11EA /* MPNetworkPerformance.m in Sources */,
 				C9049B5F1C56C39C005F11EA /* MParticleReachability.m in Sources */,
 				C9049B6B1C56C3C5005F11EA /* MPMediaMetadataBase.m in Sources */,
-				C9049D091C57FBC2005F11EA /* MPNotificationController.m in Sources */,
+				C9049D091C57FBC2005F11EA /* MPNotificationController.mm in Sources */,
 				C9049B271C56C353005F11EA /* MPAttributeProjection.m in Sources */,
 				C9049A931C56C2EF005F11EA /* MPAppNotificationHandler.m in Sources */,
 				C9049C011C56C436005F11EA /* NSDictionary+MPCaseInsensitive.m in Sources */,
@@ -1717,7 +1717,7 @@
 				C9049B3F1C56C354005F11EA /* MPKitConfiguration.mm in Sources */,
 				C9049B251C56C337005F11EA /* MPEvent.mm in Sources */,
 				C9049B821C56C3C5005F11EA /* MPMediaMetadataDPR.m in Sources */,
-				C95801461C61247D00E62148 /* MPNotificationController.m in Sources */,
+				C95801461C61247D00E62148 /* MPNotificationController.mm in Sources */,
 				C9049B451C56C354005F11EA /* MPKitFilter.m in Sources */,
 				C9049A8B1C56C2B3005F11EA /* MPExceptionHandler.m in Sources */,
 				C9049AEE1C56C32C005F11EA /* MPCommerceEvent.mm in Sources */,

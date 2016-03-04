@@ -932,20 +932,32 @@ static BOOL appBackgrounded = NO;
         NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
         
         if (pushNotificationDictionary) {
-            astType = kMPASTForegroundKey;
-            userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
-                                                                             actionIdentifier:nil
-                                                                                        state:kMPPushNotificationStateNotRunning];
+            NSError *error = nil;
+            NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:pushNotificationDictionary options:0 error:&error];
             
-            if (userNotification.redactedUserNotificationString) {
-                messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
+            int64_t launchNotificationHash = 0;
+            if (!error && remoteNotificationData.length > 0) {
+                launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
             }
             
-            if (_session) {
-                NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-                NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
-                sessionFinalized = backgroundedTime > self.sessionTimeout;
+            if (launchNotificationHash != 0 && _notificationController.launchNotificationHash != 0 && launchNotificationHash != _notificationController.launchNotificationHash) {
+                astType = kMPASTForegroundKey;
+                userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
+                                                                                 actionIdentifier:nil
+                                                                                            state:kMPPushNotificationStateNotRunning];
+                
+                if (userNotification.redactedUserNotificationString) {
+                    messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
+                }
+                
+                if (_session) {
+                    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+                    NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
+                    sessionFinalized = backgroundedTime > self.sessionTimeout;
+                }
             }
+
+            _notificationController.launchNotificationHash = 0;
         }
         
         if (userNotification) {
