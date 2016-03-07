@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
-    s.ios.deployment_target  = "8.0"
+    s.ios.deployment_target  = "7.0"
     s.tvos.deployment_target = "9.0"
 
     s.subspec 'Core-SDK' do |ss|
@@ -73,6 +73,6 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'mParticle-CrashReporter', '~> 1.2'
         ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 end
