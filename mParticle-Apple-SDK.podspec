@@ -41,7 +41,7 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
-    s.ios.deployment_target  = "8.0"
+    s.ios.deployment_target  = "7.0"
     s.tvos.deployment_target = "9.0"
 
     s.subspec 'Core-SDK' do |ss|
@@ -51,7 +51,6 @@ Pod::Spec.new do |s|
                                  'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes.h', 'mParticle-Apple-SDK/Ecommerce/MPBags.h', \
                                  'mParticle-Apple-SDK/Kits/MPKitProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitRegister.h'
 
-        ss.header_mappings_dir = 'mParticle-Apple-SDK'
         ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files        = 'mParticle-Apple-SDK/**/*'
         ss.libraries           = 'c++', 'sqlite3', 'z'
@@ -68,7 +67,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Adjust', '~> 4.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_ADJUST 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Appboy' do |ss|
@@ -76,7 +75,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Appboy-iOS-SDK', '~> 2'
         ss.ios.prefix_header_contents = "#define MP_KIT_APPBOY 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'AppsFlyer' do |ss|
@@ -84,7 +83,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'AppsFlyer-SDK', '~> 4.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_APPSFLYER 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'BranchMetrics' do |ss|
@@ -92,7 +91,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Branch', '~> 0.11'
         ss.ios.prefix_header_contents = "#define MP_KIT_BRANCHMETRICS 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'comScore' do |ss|
@@ -100,7 +99,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'comScore-iOS-SDK', '~> 3.1502.26'
         ss.ios.prefix_header_contents = "#define MP_KIT_COMSCORE 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
         ss.ios.frameworks             = 'AVFoundation', 'CoreMedia', 'MediaPlayer'
     end
 
@@ -109,7 +108,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'CrittercismSDK', '5.5'
         ss.ios.prefix_header_contents = "#define MP_KIT_CRITTERCISM 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Flurry' do |ss|
@@ -117,7 +116,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Flurry-iOS-SDK/FlurrySDK'
         ss.ios.prefix_header_contents = "#define MP_KIT_FLURRY 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Kahuna' do |ss|
@@ -125,7 +124,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Kahuna', '~> 2.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_KAHUNA 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Kochava' do |ss|
@@ -133,7 +132,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Kochava'
         ss.ios.prefix_header_contents = "#define MP_KIT_KOCHAVA 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Localytics' do |ss|
@@ -141,14 +140,14 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'Localytics', '~> 3.5'
         ss.ios.prefix_header_contents = "#define MP_KIT_LOCALYTICS 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Tune' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.prefix_header_contents = "#define MP_KIT_TUNE 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'Wootric' do |ss|
@@ -156,7 +155,7 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'WootricSDK'
         ss.ios.prefix_header_contents = "#define MP_KIT_WOOTRIC 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 
     s.subspec 'mParticle' do |ss|
@@ -169,6 +168,6 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'mParticle-CrashReporter', '~> 1.2'
         ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
-        ss.ios.deployment_target      = "8.0"
+        ss.ios.deployment_target      = "7.0"
     end
 end
