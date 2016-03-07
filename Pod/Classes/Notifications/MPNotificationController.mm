@@ -1,5 +1,5 @@
 //
-//  MPNotificationController.m
+//  MPNotificationController.mm
 //
 //  Copyright 2015 mParticle, Inc.
 //
@@ -21,6 +21,7 @@
 #import "MPIConstants.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPPersistenceController.h"
+#include "MPHasher.h"
 
 @interface MPNotificationController() {
     BOOL appJustFinishedLaunching;
@@ -48,6 +49,7 @@ static NSData *deviceToken = nil;
     appJustFinishedLaunching = YES;
     backgrounded = YES;
     notificationLaunchedApp = NO;
+    _launchNotificationHash = 0;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -177,7 +179,7 @@ static NSData *deviceToken = nil;
             behavior |= MPUserNotificationBehaviorDirectOpen;
         }
     } else if (!notificationLaunchedApp && !actionIdentifier) {
-        MPUserNotificationCommand command = [notificationDictionary[kMPUserNotificationCommandKey] integerValue];
+        MPUserNotificationCommand command = static_cast<MPUserNotificationCommand>([notificationDictionary[kMPUserNotificationCommandKey] integerValue]);
         
         if (command != MPUserNotificationCommandAlertUserLocalTime) {
             behavior |= MPUserNotificationBehaviorDisplayed;
@@ -208,6 +210,12 @@ static NSData *deviceToken = nil;
     
     if (launchRemoteNotificationDictionary) {
         notificationLaunchedApp = YES;
+        NSError *error = nil;
+        NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:launchRemoteNotificationDictionary options:0 error:&error];
+        
+        if (!error && remoteNotificationData.length > 0) {
+            _launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
+        }
         
         NSDictionary *apsDictionary = launchRemoteNotificationDictionary[kMPUserNotificationApsKey];
         NSNumber *contentAvailable = apsDictionary[kMPUserNotificationContentAvailableKey];
@@ -284,7 +292,7 @@ static NSData *deviceToken = nil;
                                                                       actionIdentifier:actionIdentifier
                                                                                  state:nil
                                                                   userNotificationMode:MPUserNotificationModeLocal
-                                                                           runningMode:[userInfo[kMPUserNotificationRunningModeKey] integerValue]];
+                                                                           runningMode:static_cast<MPUserNotificationRunningMode>([userInfo[kMPUserNotificationRunningModeKey] integerValue])];
     
     MParticleUserNotification *displayedUserNotification = nil;
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
@@ -340,7 +348,7 @@ static NSData *deviceToken = nil;
                                                                       actionIdentifier:actionIdentifier
                                                                                  state:nil
                                                                   userNotificationMode:MPUserNotificationModeRemote
-                                                                           runningMode:[userInfo[kMPUserNotificationRunningModeKey] integerValue]];
+                                                                           runningMode:static_cast<MPUserNotificationRunningMode>([userInfo[kMPUserNotificationRunningModeKey] integerValue])];
     
     MParticleUserNotification *displayedUserNotification = nil;
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];

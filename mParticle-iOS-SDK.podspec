@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-iOS-SDK"
-    s.version          = "5.4.0"
+    s.version          = "5.4.1"
     s.summary          = "mParticle iOS SDK."
 
     s.description      = <<-DESC
@@ -46,7 +46,7 @@ Pod::Spec.new do |s|
     s.subspec 'Appboy' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.dependency 'mParticle-iOS-SDK/mParticle'
-        ss.dependency 'Appboy-iOS-SDK', '~> 2.17'
+        ss.dependency 'Appboy-iOS-SDK', '~> 2.19'
         ss.prefix_header_contents = "#define MP_KIT_APPBOY 1"
         ss.platform               = :ios, '7.0'
     end
@@ -70,7 +70,7 @@ Pod::Spec.new do |s|
     s.subspec 'comScore' do |ss|
         ss.dependency 'mParticle-iOS-SDK/Core-SDK'
         ss.dependency 'mParticle-iOS-SDK/mParticle'
-        ss.dependency 'comScore-iOS-SDK', '~> 3.1502.26'
+        ss.dependency 'ComScore-iOS', '3.1510.23'
         ss.prefix_header_contents = "#define MP_KIT_COMSCORE 1"
         ss.platform               = :ios, '7.0'
         ss.frameworks             = 'AVFoundation', 'CoreMedia', 'MediaPlayer'

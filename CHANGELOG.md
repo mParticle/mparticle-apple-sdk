@@ -1,5 +1,12 @@
 # mParticle iOS SDK CHANGELOG
 
+## 5.4.1
+
+* Custom mapping between mParticle and Appboy user attributes
+* Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
+* Fixed the representation of products in eCommerce impressions
+* Fixed the predicate filtering active kits
+
 ## 5.4.0
 
 * Support for [Tune](https://www.tune.com/) as a kit

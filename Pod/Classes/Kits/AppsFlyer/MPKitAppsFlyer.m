@@ -85,7 +85,7 @@ static AppsFlyerTracker *appsFlyerTracker = nil;
 }
 
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation {
-    [appsFlyerTracker handleOpenURL:url sourceApplication:sourceApplication withAnnotaion:annotation];
+    [appsFlyerTracker handleOpenURL:url sourceApplication:sourceApplication withAnnotation:annotation];
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }

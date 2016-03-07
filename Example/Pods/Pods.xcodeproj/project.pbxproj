@@ -148,7 +148,7 @@
 		C9C2DCDB1BD458600002F75A /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC0B1BD458600002F75A /* NSURLSession+mParticle.h */; };
 		C9C2DCDC1BD458600002F75A /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC0C1BD458600002F75A /* NSURLSession+mParticle.m */; };
 		C9C2DCDD1BD458600002F75A /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC0E1BD458600002F75A /* MPNotificationController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C9C2DCDE1BD458600002F75A /* MPNotificationController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC0F1BD458600002F75A /* MPNotificationController.m */; };
+		C9C2DCDE1BD458600002F75A /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC0F1BD458600002F75A /* MPNotificationController.mm */; };
 		C9C2DCDF1BD458600002F75A /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC111BD458600002F75A /* MPDatabaseMigrationController.h */; };
 		C9C2DCE01BD458600002F75A /* MPDatabaseMigrationController.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DC121BD458600002F75A /* MPDatabaseMigrationController.m */; };
 		C9C2DCE11BD458600002F75A /* MPPersistenceController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DC131BD458600002F75A /* MPPersistenceController.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -436,7 +436,7 @@
 		C9C2DC0B1BD458600002F75A /* NSURLSession+mParticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLSession+mParticle.h"; sourceTree = "<group>"; };
 		C9C2DC0C1BD458600002F75A /* NSURLSession+mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLSession+mParticle.m"; sourceTree = "<group>"; };
 		C9C2DC0E1BD458600002F75A /* MPNotificationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNotificationController.h; sourceTree = "<group>"; };
-		C9C2DC0F1BD458600002F75A /* MPNotificationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNotificationController.m; sourceTree = "<group>"; };
+		C9C2DC0F1BD458600002F75A /* MPNotificationController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPNotificationController.mm; sourceTree = "<group>"; };
 		C9C2DC111BD458600002F75A /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
 		C9C2DC121BD458600002F75A /* MPDatabaseMigrationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDatabaseMigrationController.m; sourceTree = "<group>"; };
 		C9C2DC131BD458600002F75A /* MPPersistenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPersistenceController.h; sourceTree = "<group>"; };
@@ -931,7 +931,7 @@
 			isa = PBXGroup;
 			children = (
 				C9C2DC0E1BD458600002F75A /* MPNotificationController.h */,
-				C9C2DC0F1BD458600002F75A /* MPNotificationController.m */,
+				C9C2DC0F1BD458600002F75A /* MPNotificationController.mm */,
 			);
 			path = Notifications;
 			sourceTree = "<group>";
@@ -1561,7 +1561,7 @@
 				C9C2DCAA1BD458600002F75A /* MPEvent.mm in Sources */,
 				C9EE9DC41BD7C2570083CD37 /* MPKitExecStatus.m in Sources */,
 				C9C2DCEF1BD458600002F75A /* MPDateFormatter.m in Sources */,
-				C9C2DCDE1BD458600002F75A /* MPNotificationController.m in Sources */,
+				C9C2DCDE1BD458600002F75A /* MPNotificationController.mm in Sources */,
 				C9EE9DC61BD7C2570083CD37 /* MPKitFilter.m in Sources */,
 				C9EE9DAA1BD7C2570083CD37 /* MPKitComScore.m in Sources */,
 				C9C2DCC91BD458600002F75A /* MPIConstants.m in Sources */,
@@ -1802,6 +1802,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/mParticle-iOS-SDK/mParticle-iOS-SDK.modulemap";
 				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_CFLAGS = "-ferror-limit=0";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDK";
 				PRODUCT_NAME = mParticle_iOS_SDK;
 				SDKROOT = iphoneos;
@@ -1830,6 +1831,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/mParticle-iOS-SDK/mParticle-iOS-SDK.modulemap";
 				MTL_ENABLE_DEBUG_INFO = YES;
+				OTHER_CFLAGS = "-ferror-limit=0";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDK";
 				PRODUCT_NAME = mParticle_iOS_SDK;
 				SDKROOT = iphoneos;
@@ -1913,6 +1915,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MODULEMAP_FILE = "Target Support Files/mParticle-iOS-SDK/mParticle-iOS-SDK.modulemap";
 				MTL_ENABLE_DEBUG_INFO = YES;
+				OTHER_CFLAGS = "-ferror-limit=0";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDK";
 				PRODUCT_NAME = mParticle_iOS_SDK;
 				SDKROOT = iphoneos;
