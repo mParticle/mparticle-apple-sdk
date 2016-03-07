@@ -290,6 +290,12 @@ NSString *const eabOptions = @"options";
     } else if ([key isEqualToString:mParticleUserAttributeMobileNumber] || [key isEqualToString:@"$MPUserMobile"]) {
         appboyInstance.user.phone = value;
     } else if (value) {
+        if ([value containsString:@"$"]) {
+            NSMutableString *editedValue = [value mutableCopy];
+            [editedValue replaceOccurrencesOfString:@"$" withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, value.length)];
+            value = editedValue;
+        }
+        
         [appboyInstance.user setCustomAttributeWithKey:key andStringValue:value];
     } else {
         [appboyInstance.user unsetCustomAttributeWithKey:key];
