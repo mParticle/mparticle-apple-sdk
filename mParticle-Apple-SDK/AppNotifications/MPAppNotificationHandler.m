@@ -233,14 +233,14 @@
         return NO;
     }
     
-    NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
     BOOL handlingActivity = NO;
     
-    for (MPKitAbstract *kit in activeKits) {
-        if ([kit respondsToSelector:continueUserActivitySelector]) {
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
             handlingActivity = YES;
-            [kit continueUserActivity:userActivity restorationHandler:restorationHandler];
+            [kitRegister.wrapperInstance continueUserActivity:userActivity restorationHandler:restorationHandler];
         }
     }
     
