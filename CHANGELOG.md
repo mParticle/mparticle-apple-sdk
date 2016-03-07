@@ -2,6 +2,7 @@
 
 ## 5.4.1
 
+* Expanded the Branch Metrics kit to handle openURL and continueUserActivity
 * Custom mapping between mParticle and Appboy user attributes
 * Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
 * Fixed the representation of products in eCommerce impressions

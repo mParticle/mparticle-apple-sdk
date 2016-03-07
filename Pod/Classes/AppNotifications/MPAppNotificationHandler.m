@@ -249,17 +249,18 @@
         return NO;
     }
     
-    stateMachine.launchInfo = nil;
-    
     NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
+    BOOL handlingActivity = NO;
     
     for (MPKitAbstract *kit in activeKits) {
         if ([kit respondsToSelector:continueUserActivitySelector]) {
+            handlingActivity = YES;
             [kit continueUserActivity:userActivity restorationHandler:restorationHandler];
         }
     }
-    return NO;
+    
+    return handlingActivity;
 }
 
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
