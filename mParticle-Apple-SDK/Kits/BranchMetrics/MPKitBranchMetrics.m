@@ -102,6 +102,13 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
     });
 }
 
+- (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
+    [branchInstance continueUserActivity:userActivity];
+    
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceBranchMetrics) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+
 - (MPKitExecStatus *)logout {
     [branchInstance logout];
     
@@ -137,6 +144,13 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
     }
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceBranchMetrics) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+
+- (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nonnull NSString *)sourceApplication annotation:(nullable id)annotation {
+    [branchInstance handleDeepLink:url];
+    
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceBranchMetrics) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }
 
