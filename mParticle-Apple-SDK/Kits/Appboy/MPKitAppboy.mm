@@ -29,6 +29,8 @@
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "MPLogger.h"
+#include "MPHasher.h"
 #import "AppboyKit.h"
 
 NSString *const eabAPIKey = @"apiKey";
@@ -217,74 +219,6 @@ NSString *const eabOptions = @"options";
     return execStatus;
 }
 
-- (MPKitExecStatus *)logTransaction:(NSString *)productName affiliation:(NSString *)affiliation sku:(NSString *)sku unitPrice:(double)unitPrice quantity:(NSInteger)quantity revenueAmount:(double)revenueAmount taxAmount:(double)taxAmount shippingAmount:(double)shippingAmount transactionId:(NSString *)transactionId productCategory:(NSString *)productCategory currencyCode:(NSString *)currencyCode {
-    NSString *productId = sku ? sku : productName;
-    
-    NSMutableDictionary *properties = [[NSMutableDictionary alloc] initWithCapacity:1];
-    if (affiliation.length > 0) {
-        properties[kMPProductAffiliation] = affiliation;
-    }
-    
-    if (productName.length > 0) {
-        properties[kMPProductName] = productName;
-    }
-    
-    if (productCategory.length > 0) {
-        properties[kMPProductCategory] = productCategory;
-    }
-    
-    if (transactionId.length > 0) {
-        properties[kMPProductTransactionId] = transactionId;
-    }
-    
-    if (revenueAmount > 0) {
-        properties[kMPProductRevenue] = @(revenueAmount);
-    }
-    
-    if (taxAmount > 0) {
-        properties[kMPProductTax] = @(taxAmount);
-    }
-    
-    if (shippingAmount > 0) {
-        properties[kMPProductShipping] = @(shippingAmount);
-    }
-    
-    [appboyInstance logPurchase:productId
-                     inCurrency:currencyCode
-                        atPrice:[[NSDecimalNumber alloc] initWithDouble:unitPrice]
-                   withQuantity:quantity
-                  andProperties:properties];
-    
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
-    return execStatus;
-}
-
-- (MPKitExecStatus *)logTransaction:(MPProduct *)product {
-    NSString *productId = product.sku ? product.sku : product.name;
-    
-    __block NSMutableDictionary *properties = [[NSMutableDictionary alloc] init];
-    NSDictionary *productDictionary = [product beautifiedDictionaryRepresentation];
-    if (productDictionary) {
-        [properties addEntriesFromDictionary:productDictionary];
-    }
-    
-    NSArray *removeKeys = @[@"ProductSKU", @"CurrencyCode", @"ProductUnitPrice", @"ProductQuantity", @"TransactionAffiliation", @"ProductCategory", @"ProductName",
-                            kMPExpProductSKU, kMPProductCurrency, kMPExpProductUnitPrice, kMPExpProductQuantity, kMPProductAffiliation, kMPExpProductCategory, kMPExpProductName];
-    [properties removeObjectsForKeys:removeKeys];
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [appboyInstance logPurchase:productId
-                     inCurrency:product.currency ? : @"USD"
-                        atPrice:[NSDecimalNumber decimalNumberWithDecimal:[product.price decimalValue]]
-                   withQuantity:[product.quantity integerValue]
-                  andProperties:properties];
-#pragma clang diagnostic pop
-    
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
-    return execStatus;
-}
-
 - (MPKitExecStatus *)receivedUserNotification:(NSDictionary *)userInfo {
     [appboyInstance registerApplication:[UIApplication sharedApplication] didReceiveRemoteNotification:userInfo fetchCompletionHandler:^(UIBackgroundFetchResult fetchResult) {}];
     
@@ -306,14 +240,62 @@ NSString *const eabOptions = @"options";
     return execStatus;
 }
 
+- (MPKitExecStatus *)setOptOut:(BOOL)optOut {
+    MPKitReturnCode returnCode;
+    
+    if (optOut) {
+        [appboyInstance.user setEmailNotificationSubscriptionType:ABKUnsubscribed];
+        returnCode = MPKitReturnCodeSuccess;
+    } else {
+        returnCode = MPKitReturnCodeCannotExecute;
+    }
+    
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:returnCode];
+    return execStatus;
+}
+
 - (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value {
-    if (value) {
+    MPKitExecStatus *execStatus;
+    
+    if ([key isEqualToString:mParticleUserAttributeFirstName]) {
+        appboyInstance.user.firstName = value;
+    } else if ([key isEqualToString:mParticleUserAttributeLastName]) {
+        appboyInstance.user.lastName = value;
+    } else if ([key isEqualToString:mParticleUserAttributeAge]) {
+        NSDate *now = [NSDate date];
+        NSCalendar *calendar = [NSCalendar currentCalendar];
+        NSDateComponents *dateComponents = [calendar components:NSCalendarUnitYear fromDate:now];
+        NSInteger age = 0;
+        
+        @try {
+            age = [value integerValue];
+        } @catch (NSException *exception) {
+            MPLogError(@"Invalid age: %@", value);
+            execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
+            return execStatus;
+        }
+        
+        NSDateComponents *birthComponents = [[NSDateComponents alloc] init];
+        birthComponents.year = dateComponents.year - age;
+        birthComponents.month = 01;
+        birthComponents.day = 01;
+        
+        appboyInstance.user.dateOfBirth = [calendar dateFromComponents:birthComponents];
+    } else if ([key isEqualToString:mParticleUserAttributeCountry]) {
+        appboyInstance.user.country = value;
+    } else if ([key isEqualToString:mParticleUserAttributeCity]) {
+        appboyInstance.user.homeCity = value;
+    } else if ([key isEqualToString:mParticleUserAttributeGender]) {
+        [appboyInstance.user setCustomAttributeWithKey:@"gender" andStringValue:value];
+    } else if ([key isEqualToString:mParticleUserAttributeMobileNumber] || [key isEqualToString:@"$MPUserMobile"]) {
+        appboyInstance.user.phone = value;
+    } else if (value) {
         [appboyInstance.user setCustomAttributeWithKey:key andStringValue:value];
     } else {
         [appboyInstance.user unsetCustomAttributeWithKey:key];
     }
     
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }
 
@@ -337,7 +319,7 @@ NSString *const eabOptions = @"options";
             
         case MPUserIdentityEmail:
             appboyInstance.user.email = identityString;
-        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+            execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
             break;
             
         default:
