@@ -288,11 +288,22 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSNumber *)remoteNotificationTypes {
-    UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
-    NSNumber *notificationTypes = @(userNotificationSettings.types);
+    NSNumber *notificationTypes;
+    UIApplication *app = [UIApplication sharedApplication];
+    
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+        UIUserNotificationSettings *userNotificationSettings = [app currentUserNotificationSettings];
+        notificationTypes = @(userNotificationSettings.types);
+    } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        notificationTypes = @([app enabledRemoteNotificationTypes]);
+#pragma clang diagnostic pop
+    }
     
     return notificationTypes;
 }
+
 #endif
 
 #pragma mark NSCopying
