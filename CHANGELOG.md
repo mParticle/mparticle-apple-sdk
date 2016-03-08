@@ -2,17 +2,18 @@
 
 ## 5.5.0
 
-* Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
-* The mParticle Apple SDK is now a dynamically loaded library and requires iOS 8.0 as minimum deployment target
-* Updated Kahuna kit
+* [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
+* [NEW] The mParticle Apple SDK is now a dynamically loaded library and requires iOS 8.0 as minimum deployment target
+* [NEW] Updated Kahuna kit
 
 ## 5.4.1
 
-* Expanded the Branch Metrics kit to handle openURL and continueUserActivity
-* Custom mapping between mParticle and Appboy user attributes
-* Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
-* Fixed the representation of products in eCommerce impressions
-* Fixed the predicate filtering active kits
+* [NEW] Expanded the Branch Metrics kit to handle openURL and continueUserActivity
+* [NEW] Custom mapping between mParticle and Appboy user attributes
+* [FIX] Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
+* [FIX] Fixed the representation of custom attributes in commerce event product impressions
+* [FIX] Fixed the predicate filtering active kits
+* [FIX] Fixed the formatting of event attributes in `logError`
 
 ## 5.4.0
 
