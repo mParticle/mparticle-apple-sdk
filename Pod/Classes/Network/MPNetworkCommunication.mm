@@ -406,7 +406,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         __strong MPNetworkCommunication *strongSelf = weakSelf;
         
-        if (!strongSelf->retrievingSegments) {
+        if (strongSelf && !strongSelf->retrievingSegments) {
             return;
         }
         
@@ -415,7 +415,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                                          userInfo:@{@"message":@"Segment request timeout."}];
         
         completionHandler(YES, nil, timeout, error);
-        strongSelf->retrievingSegments = NO;
+        
+        if (strongSelf) {
+            strongSelf->retrievingSegments = NO;
+        }
     });
 }
 
@@ -754,7 +757,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
         
         __strong MPNetworkCommunication *strongSelf = weakSelf;
-        strongSelf->uploading = NO;
+        if (strongSelf) {
+            strongSelf->uploading = NO;
+        }
+        
         [connector cancelRequest];
     });
 }
@@ -856,7 +862,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
         
         __strong MPNetworkCommunication *strongSelf = weakSelf;
-        strongSelf->uploadingSessionHistory = NO;
+        if (strongSelf) {
+            strongSelf->uploadingSessionHistory = NO;
+        }
+        
         [connector cancelRequest];
     });
 }
