@@ -627,8 +627,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
         
         __strong MPNetworkCommunication *strongSelf = weakSelf;
-        strongSelf->uploading = NO;
-        [connector cancelRequest];
+        if (strongSelf) {
+            strongSelf->uploading = NO;
+            [connector cancelRequest];
+        }
     });
 }
 
