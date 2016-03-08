@@ -2,11 +2,12 @@
 
 ## 5.4.1
 
-* Expanded the Branch Metrics kit to handle openURL and continueUserActivity
-* Custom mapping between mParticle and Appboy user attributes
-* Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
-* Fixed the representation of products in eCommerce impressions
-* Fixed the predicate filtering active kits
+* [NEW] Expanded the Branch Metrics kit to handle openURL and continueUserActivity
+* [NEW] Custom mapping between mParticle and Appboy user attributes
+* [FIX] Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
+* [FIX] Fixed the representation of custom attributes in commerce event product impressions
+* [FIX] Fixed the predicate filtering active kits
+* [FIX] Fixed the formatting of event attributes in `logError`
 
 ## 5.4.0
 
