@@ -1758,8 +1758,8 @@ static BOOL appBackgrounded = NO;
                 messageInfo[kMPTopmostContext] = [[topmostContext class] description];
             }
             
-            if (eventInfo) {
-                [messageInfo addEntriesFromDictionary:eventInfo];
+            if (eventInfo.count > 0) {
+                messageInfo[kMPAttributesKey] = eventInfo;
             }
             
             NSDictionary *appImageInfo = [MPExceptionHandler appImageInfo];
