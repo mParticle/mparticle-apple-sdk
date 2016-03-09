@@ -1,6 +1,18 @@
 # mParticle iOS SDK CHANGELOG
 
+
+>Upgrade suggestion levels:
+>
+>* **LOW**: An upgrade is not needed unless there are new features you want to use
+>* **MODERATE**: An upgrade is recommended, but it's not urgent
+>* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
+>* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
+
+
+
 ## 5.4.1
+
+>Upgrade suggestion: **HIGH**. If you are using Appboy, Branch Metrics, Localytics, or Impressions in commerce events
 
 * [NEW] Expanded the Branch Metrics kit to handle openURL and continueUserActivity
 * [NEW] Custom mapping between mParticle and Appboy user attributes

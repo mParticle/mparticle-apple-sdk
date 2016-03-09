@@ -200,7 +200,7 @@ mParticle, Inc.
 Clone the repository to your local machine
 
 ```bash
-git clone git@github.com:mParticle/mParticle-iOS-SDK.git
+git clone https://github.com/mParticle/mParticle-iOS-SDK.git
 ```
 
 Running the iOS sample app is as simple as selecting the **mParticle-iOS-SDK-Example** scheme, build and run.
