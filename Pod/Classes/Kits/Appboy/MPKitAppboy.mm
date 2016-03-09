@@ -30,7 +30,6 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPLogger.h"
 #include "MPHasher.h"
 #import "AppboyKit.h"
 
@@ -271,7 +270,7 @@ NSString *const eabOptions = @"options";
         @try {
             age = [value integerValue];
         } @catch (NSException *exception) {
-            MPLogError(@"Invalid age: %@", value);
+            NSLog(@"mParticle -> Invalid age: %@", value);
             execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
             return execStatus;
         }

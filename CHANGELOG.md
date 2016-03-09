@@ -8,6 +8,7 @@
 * [FIX] Fixed the representation of custom attributes in commerce event product impressions
 * [FIX] Fixed the predicate filtering active kits
 * [FIX] Fixed the formatting of event attributes in `logError`
+* [FIX] Correct the expected data type for configuring custom dimensions in Localytics
 
 ## 5.4.0
 

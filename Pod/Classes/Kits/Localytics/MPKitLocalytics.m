@@ -62,8 +62,11 @@
         return nil;
     }
     
-    NSArray *dimensionsMapping = configuration[@"customDimensions"];
-    if (dimensionsMapping) {
+    NSString *customDimensions = configuration[@"customDimensions"];
+    NSError *error = nil;
+    NSArray *dimensionsMapping = [NSJSONSerialization JSONObjectWithData:[customDimensions dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&error];
+    
+    if (dimensionsMapping && !error) {
         for (NSDictionary *dimensionMap in dimensionsMapping) {
             NSRange dimensionRange = [dimensionMap[@"value"] rangeOfString:@"Dimension "];
             
@@ -76,6 +79,8 @@
                 }
             }
         }
+    } else {
+        NSLog(@"mParticle -> Invalid 'customDimensions' configuration.");
     }
     
     multiplyByOneHundred = [configuration[@"trackClvAsRawValue"] caseInsensitiveCompare:@"true"] == NSOrderedSame;
