@@ -1,12 +1,22 @@
 # mParticle Apple SDK CHANGELOG
 
+>Upgrade suggestion levels:
+>* **LOW**: An upgrade is not needed unless there are new features you want to use
+>* **MODERATE**: An upgrade is recommended, but it's not urgent
+>* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
+>* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
+
+
 ## 5.5.0
 
+>Upgrade suggestion: **LOW**. Upgrade if you are planning to release a multi-platform app supporting iOS and tvOS
+
 * [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
-* [NEW] The mParticle Apple SDK is now a dynamically loaded library and requires iOS 8.0 as minimum deployment target
 * [NEW] Updated Kahuna kit
 
 ## 5.4.1
+
+>Upgrade suggestion: **HIGH**. If you are using Appboy, Branch Metrics, Localytics, or Impressions in commerce events
 
 * [NEW] Expanded the Branch Metrics kit to handle openURL and continueUserActivity
 * [NEW] Custom mapping between mParticle and Appboy user attributes
@@ -14,6 +24,7 @@
 * [FIX] Fixed the representation of custom attributes in commerce event product impressions
 * [FIX] Fixed the predicate filtering active kits
 * [FIX] Fixed the formatting of event attributes in `logError`
+* [FIX] Correct the expected data type for configuring custom dimensions in Localytics
 
 ## 5.4.0
 

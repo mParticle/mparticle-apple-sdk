@@ -266,6 +266,14 @@ NSString *const kitFileExtension = @"eks";
     MPKitAbstract *kit = nil;
     MPKitInstance kitInstanceCode = (MPKitInstance)[kitCode integerValue];
     
+    __block NSMutableDictionary *safeConfiguration = [[NSMutableDictionary alloc] initWithCapacity:configuration.count];
+    [configuration enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+        if ((NSNull *)obj != [NSNull null]) {
+            safeConfiguration[key] = obj;
+        }
+    }];
+    configuration = [safeConfiguration copy];
+
     switch (kitInstanceCode) {
         case MPKitInstanceForesee:
             kit = [[MPKitForesee alloc] initWithConfiguration:configuration];

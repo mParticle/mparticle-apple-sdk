@@ -62,19 +62,26 @@
         return nil;
     }
     
-    NSArray *dimensionsMapping = configuration[@"customDimensions"];
-    if (dimensionsMapping) {
-        for (NSDictionary *dimensionMap in dimensionsMapping) {
-            NSRange dimensionRange = [dimensionMap[@"value"] rangeOfString:@"Dimension "];
-            
-            if (dimensionRange.location != NSNotFound) {
-                NSString *key = dimensionMap[@"map"];
-                NSNumber *value = @([[dimensionMap[@"value"] substringFromIndex:NSMaxRange(dimensionRange)] integerValue]);
+    NSString *customDimensions = configuration[@"customDimensions"];
+    if (customDimensions && (NSNull *)customDimensions != [NSNull null] && customDimensions.length > 2) {
+        NSError *error = nil;
+        NSArray *dimensionsMapping = [NSJSONSerialization JSONObjectWithData:[customDimensions dataUsingEncoding:NSUTF8StringEncoding] options:0 error:&error];
+        
+        if (dimensionsMapping && !error) {
+            for (NSDictionary *dimensionMap in dimensionsMapping) {
+                NSRange dimensionRange = [dimensionMap[@"value"] rangeOfString:@"Dimension "];
                 
-                if (key && value) {
-                    self.customDimensions[key] = value;
+                if (dimensionRange.location != NSNotFound) {
+                    NSString *key = dimensionMap[@"map"];
+                    NSNumber *value = @([[dimensionMap[@"value"] substringFromIndex:NSMaxRange(dimensionRange)] integerValue]);
+                    
+                    if (key && value) {
+                        self.customDimensions[key] = value;
+                    }
                 }
             }
+        } else {
+            NSLog(@"mParticle -> Invalid 'customDimensions' configuration.");
         }
     }
     
