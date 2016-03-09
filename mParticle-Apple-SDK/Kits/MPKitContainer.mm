@@ -295,6 +295,14 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return kitRegister.wrapperInstance;
     }
     
+    __block NSMutableDictionary *safeConfiguration = [[NSMutableDictionary alloc] initWithCapacity:configuration.count];
+    [configuration enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+        if ((NSNull *)obj != [NSNull null]) {
+            safeConfiguration[key] = obj;
+        }
+    }];
+    configuration = [safeConfiguration copy];
+    
     [self startKitRegister:kitRegister configuration:configuration];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
