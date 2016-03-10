@@ -203,8 +203,9 @@ In order to run either the iOS or tvOS examples you will first install the mPart
 
 1. Change to the `Example` directory
 2. Run `pod install`
-3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run
+3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run. (In case you want to run on iOS 7, please use the **iOS7_Example** scheme instead)
 
+> You can read a great blog post about developing a multi-platform app using the mParticle Apple SDK  [here](http://blog.mparticle.com/unified-mparticle-apple-sdk/)
 
 ## Documentation
 
