@@ -20,3 +20,10 @@ target :tvApp do
     platform :tvos, '9.0'
     include_common_pods
 end
+
+target :phoneApp_iOS7 do
+    link_with 'iOS7_Example'
+    use_frameworks!
+    platform :ios, '7.0'
+    include_common_pods
+end
