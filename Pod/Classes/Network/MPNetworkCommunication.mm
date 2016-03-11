@@ -163,33 +163,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
             
         case MPNetworkResponseActionThrottle: {
             NSDate *now = [NSDate date];
-            NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-            NSTimeInterval retryAfter = 7200; // Default of 2 hours
-            NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
-            id suggestedRetryAfter = httpHeaders[@"Retry-After"];
-            
-            if (!MPIsNull(suggestedRetryAfter)) {
-                if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
-                    if ([suggestedRetryAfter containsString:@":"]) { // Date
-                        NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
-                        if (retryAfterDate) {
-                            retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
-                            retryAfter = retryAfter > 0 ? retryAfter : 7200;
-                        } else {
-                            MPLogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
-                        }
-                    } else { // Number of seconds
-                        @try {
-                            retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
-                        } @catch (NSException *exception) {
-                            retryAfter = 7200;
-                            MPLogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
-                        }
-                    }
-                } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
-                    retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
-                }
-            }
+            NSTimeInterval retryAfter = 7200; // 2 hours
             
             if ([[MPStateMachine sharedInstance].minUploadDate compare:now] == NSOrderedAscending) {
                 [MPStateMachine sharedInstance].minUploadDate = [now dateByAddingTimeInterval:retryAfter];

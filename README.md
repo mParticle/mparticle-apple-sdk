@@ -37,7 +37,13 @@ pod 'mParticle-iOS-SDK/BranchMetrics', '~> 5'
 pod 'mParticle-iOS-SDK/Localytics', '~> 5'
 ```
 
-In the case above, only the Appboy, Branch Metrics, and Localytics kits would be integrated, all other kits would be left out.
+You can also use the alternative syntax below, which specifies a collection of subspecs and keeps your Podfile cleaner:
+
+```ruby
+pod 'mParticle-iOS-SDK', :subspecs => ['Appboy', 'BranchMetrics', 'Localytics'], '~> 5'
+```
+
+Irrespective of syntax preference, in the case above only the Appboy, Branch Metrics, and Localytics kits would be integrated; all other kits would be left out.
 
 If you do not need to build the mParticle SDK with any kit 3rd party kits, and utilize only the server-to-server integrations, you can do it by configuring your Podfile with the following statement:
 
