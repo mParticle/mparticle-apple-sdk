@@ -19,10 +19,11 @@
 
 * [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
 * [NEW] Updated Kahuna kit
+* [NEW] Conforming to the RFC 6585 HTTP status code 429, `Retry-After` response header
 
 ## 5.4.2
 
->Upgrade suggestion: **LOW**
+>Upgrade suggestion: **LOW**. Upgrade if you are using Kahuna and its delegate methods for push notifications, or if you are adding custom flags to MPEvents
 
 * [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
 * [FIX] Do not forward push information to Kahuna if the app was launched as a result of a user tapping on a push notification, since their SDK is already capturing the contents of the notification. There is no impact on data forwarding/counting/reporting, this just prevents a Kahuna delegate method from being called twice

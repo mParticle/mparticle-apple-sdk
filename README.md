@@ -2,8 +2,6 @@
 
 # mParticle Apple SDK
 
-### <span style="color:red">This is an alpha release</span>
-
 <!---
 [![CI Status](http://img.shields.io/travis/Dalmo Cirne/mParticle-Apple-SDK.svg?style=flat)](https://travis-ci.org/Dalmo Cirne/mParticle-Apple-SDK)
 [![Version](https://img.shields.io/cocoapods/v/mParticle-Apple-SDK.svg?style=flat)](http://cocoapods.org/pods/mParticle-Apple-SDK)
@@ -11,11 +9,12 @@
 [![Platform](https://img.shields.io/cocoapods/p/mParticle-Apple-SDK.svg?style=flat)](http://cocoapods.org/pods/mParticle-Apple-SDK)
 -->
 
-Hello! This is the unified mParticle Apple SDK. It currently supports iOS and tvOS, however we plan to continue adding support for more platforms in the future. For the past 3 years we have been working tirelessly on developing each component of our platform; initially we deployed this SDK as iOS only, however we are at a different stage now, and we could not be more excited to be able to share it with you.
+Hello! This is the unified mParticle Apple SDK. It currently supports iOS and tvOS, and we plan to continue adding support for more platforms in the future. For the past 3 years we have been working tirelessly on developing each component of our platform; initially we deployed this SDK as iOS only, however we are at a different stage now, and we could not be more excited to be able to share it with you.
 
 Your job is to build an awesome app experience that consumers love. You also need several tools and services to make data-driven decisions. Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing, monetization, etc. But embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs. From not being able to move as fast as you want, to bloating and destabilizing your app, to losing control and ownership of your 1st party data.
 
 [mParticle](http://mparticle.com) solves all these problems with one lightweight SDK. Implement new partners without changing code or waiting for app store approval. Improve stability and security within your app. We enable our clients to spend more time innovating and less time integrating.
+
 
 ## Installation
 
@@ -25,7 +24,7 @@ mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mparti
 
 ```ruby
 target '<Your Target>' do
-    pod 'mParticle-Apple-SDK', :git => 'https://github.com/mParticle/mParticle-iOS-SDK.git', :branch => 'extensions'
+    pod 'mParticle-Apple-SDK', '~> 6'
 end
 ```
 
@@ -46,7 +45,7 @@ xcodeproj '<Your Xcode Project Name>'
 
 # Contains a list of all pods which are common among the platforms
 def include_common_pods
-    pod 'mParticle-Apple-SDK', :git => 'https://github.com/mParticle/mParticle-iOS-SDK.git', :branch => 'extensions'
+    pod 'mParticle-Apple-SDK', '~> 6'
 end
 
 # iOS app
@@ -73,19 +72,25 @@ end
 If you need or choose to integrate with 3rd party kits embedded in our SDK, you may select a set of kits in your Podfile using the pattern `pod 'mParticle-Apple-SDK/<kit>'`, as we can see in the sample configuration below:
 
 ```ruby
-pod 'mParticle-Apple-SDK/Appboy', :git => 'https://github.com/mParticle/mParticle-iOS-SDK.git', :branch => 'extensions'
-pod 'mParticle-Apple-SDK/BranchMetrics', :git => 'https://github.com/mParticle/mParticle-iOS-SDK.git', :branch => 'extensions'
-pod 'mParticle-Apple-SDK/Localytics', :git => 'https://github.com/mParticle/mParticle-iOS-SDK.git', :branch => 'extensions'
+pod 'mParticle-Apple-SDK/Appboy', '~> 6'
+pod 'mParticle-Apple-SDK/BranchMetrics', '~> 6'
+pod 'mParticle-Apple-SDK/Localytics', '~> 6'
 ```
 
-In the case above, only the Appboy, Branch Metrics, and Localytics kits would be integrated, all other kits would be left out.
+You can also use the alternative syntax below, which specifies a collection of subspecs and keeps your Podfile cleaner:
+
+```ruby
+pod 'mParticle-Apple-SDK', :subspecs => ['Appboy', 'BranchMetrics', 'Localytics'], '~> 6'
+```
+
+Irrespective of syntax preference, in the case above the Appboy, Branch Metrics, and Localytics kits would be integrated; all other kits would be left out.
 
 #### Crash Reporter (iOS Only)
 
 The crash reporter feature has been implemented as an optional subspec. It is installed by default, however, if you are fine tuning your installation, you can choose to install it or not in your Podfile.
 
 ```ruby
-pod 'mParticle-Apple-SDK/CrashReporter', :git => 'https://github.com/mParticle/mParticle-iOS-SDK.git', :branch => 'extensions'
+pod 'mParticle-Apple-SDK/CrashReporter', '~> 6'
 ```
 
 > CrashReporter and Crittercism are mutually exclusive subspecs. If your app needs to use the Crittercism kit, it must _**not**_ include the CrashReporter subspec in your Podfile.
@@ -94,7 +99,7 @@ pod 'mParticle-Apple-SDK/CrashReporter', :git => 'https://github.com/mParticle/m
 
 With each integration with a partner we strive to implement as many features as possible in the server-to-server layer, however some times a deeper integration to work side-by-side with a 3rd party SDK comes with greater benefits to our clients. We use the term **Kit** to describe such integrations.
 
-#### Here is the List of All Currently Supported Kits
+#### List of All Currently Supported Kits
 
 * [Adjust](https://www.adjust.com)
 * [Appboy](https://www.appboy.com)
@@ -109,14 +114,30 @@ With each integration with a partner we strive to implement as many features as 
 * [Tune](https://www.tune.com)
 * [Wootric](https://www.wootric.com)
 
+
 ## Initialize the SDK
 
-The syntax for the import statement to use the mParticle SDK needs to be one for **modules** or **semantic import**.
+For apps supporting iOS 8 and above, the syntax for the import statement should be one for **modules** or **semantic import**.
+
+#### Swift
+
+```swift
+import mParticle_Apple_SDK
+```
+
+#### Objective-C
 
 ```objective-c
 @import mParticle_Apple_SDK;
 ```
 
+>If your app still needs to support iOS 7, please use:
+>
+>```objective-c
+>#import <mParticle_Apple_SDK/mParticle.h>
+>```
+
+<br>
 The mParticle SDK is initialized by calling the `startWithKey` method within the `application:didFinishLaunchingWithOptions:` delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`
 
 #### Swift
@@ -152,7 +173,7 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 ```
 
 
-## Migrating From Version 4.x to Version 5.x (iOS Only)
+## Migrating From Version 4.x to Version 6.x (iOS Only)
 
 Remove the statement from your `Podfile`
 
@@ -160,21 +181,11 @@ Remove the statement from your `Podfile`
 pod 'mParticle', '~> 4'
 ```
 
-and replace it with one of the options described above.
+and replace it with one of the options described in the [Installation](#installation) section.
 
-The `#import` statements are now simpler, instead of:
+The `#import` statement is different, it no longer is: `#import <mParticle/mParticle.h>`. Please replace it with the appropriate `import` statement for your app as described in the [Initialize the SDK](#initialize-the-sdk) section
 
-```objective-c
-#import <mParticle/mParticle.h>
-```
-
-use:
-
-```objective-c
-@import mParticle_Apple_SDK;
-```
-
-In case you had the need to directly call methods from a 3rd party provider kit through the mParticle SDK, you no longer need to indirectly import their headers. You can just import them directly as indicated in the provider respective documentation. For example, if you were using:
+Moreover, in case you had the need to directly call methods from a 3rd party provider kit through the mParticle SDK, you no longer need to indirectly import their headers. You can just import them directly as indicated in the provider respective documentation. For example, if you were using:
 
 ```objective-c
 #import <mParticle/Appboy/AppboyKit.h>
@@ -196,7 +207,7 @@ A sample project is provided with the mParticle Apple SDK. A multi-platform vide
 Clone the repository to your local machine
 
 ```bash
-git clone https://github.com/mParticle/mParticle-iOS-SDK.git
+git clone https://github.com/mParticle/mparticle-apple-sdk.git
 ```
 
 In order to run either the iOS or tvOS examples you will first install the mParticle Apple SDK via CocoaPods.
@@ -205,7 +216,8 @@ In order to run either the iOS or tvOS examples you will first install the mPart
 2. Run `pod install`
 3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run. (In case you want to run on iOS 7, please use the **iOS7_Example** scheme instead)
 
-> You can read a great blog post about developing a multi-platform app using the mParticle Apple SDK  [here](http://blog.mparticle.com/unified-mparticle-apple-sdk/)
+We have published an article named [Blah Blah Blah](http://mparticle.com) showing how to use kits as extensions.
+
 
 ## Documentation
 
@@ -231,3 +243,4 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 [http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+”
