@@ -25,12 +25,13 @@
 >Upgrade suggestion: **LOW**
 
 * [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
+* [FIX] Do not forward push information to Kahuna if the app was launched as a result of a user tapping on a push notification, since their SDK is already capturing the contents of the notification. There is no impact on data forwarding/counting/reporting, this just prevents a Kahuna delegate method from being called twice
 
 ## 5.4.1
 
 >Upgrade suggestion: **HIGH**. If you are using Appboy, Branch Metrics, Localytics, or Impressions in commerce events
 
-* [NEW] Expanded the Branch Metrics kit to handle openURL and continueUserActivity
+* [NEW] Expanded the Branch Metrics kit to handle `openURL` and `continueUserActivity`
 * [NEW] Custom mapping between mParticle and Appboy user attributes
 * [FIX] Fixed duplicate forwarding of a push notification when launching an app by tapping on a remote notification
 * [FIX] Fixed the representation of custom attributes in commerce event product impressions
