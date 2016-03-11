@@ -1,14 +1,16 @@
 # mParticle iOS SDK CHANGELOG
 
-
 >Upgrade suggestion levels:
->
 >* **LOW**: An upgrade is not needed unless there are new features you want to use
 >* **MODERATE**: An upgrade is recommended, but it's not urgent
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 5.4.2
 
+>Upgrade suggestion: **LOW**
+
+* [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
 
 ## 5.4.1
 
