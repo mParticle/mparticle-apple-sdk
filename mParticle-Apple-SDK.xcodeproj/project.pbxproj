@@ -34,13 +34,13 @@
 		C9049A901C56C2EF005F11EA /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C904992C1C56B8DE005F11EA /* MPAppDelegateProxy.h */; };
 		C9049A911C56C2EF005F11EA /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */; };
 		C9049A921C56C2EF005F11EA /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */; };
-		C9049A931C56C2EF005F11EA /* MPAppNotificationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.m */; };
+		C9049A931C56C2EF005F11EA /* MPAppNotificationHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.mm */; };
 		C9049A941C56C2EF005F11EA /* MPSurrogateAppDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499301C56B8DE005F11EA /* MPSurrogateAppDelegate.h */; };
 		C9049A951C56C2EF005F11EA /* MPSurrogateAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */; };
 		C9049A961C56C2F7005F11EA /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C904992C1C56B8DE005F11EA /* MPAppDelegateProxy.h */; };
 		C9049A971C56C2F7005F11EA /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */; };
 		C9049A981C56C2F7005F11EA /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */; };
-		C9049A991C56C2F7005F11EA /* MPAppNotificationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.m */; };
+		C9049A991C56C2F7005F11EA /* MPAppNotificationHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.mm */; };
 		C9049A9A1C56C2F7005F11EA /* MPSurrogateAppDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499301C56B8DE005F11EA /* MPSurrogateAppDelegate.h */; };
 		C9049A9B1C56C2F7005F11EA /* MPSurrogateAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */; };
 		C9049A9C1C56C2FE005F11EA /* MPAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499331C56B8DE005F11EA /* MPAppboy.h */; };
@@ -423,7 +423,7 @@
 		C904992C1C56B8DE005F11EA /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
 		C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAppDelegateProxy.m; sourceTree = "<group>"; };
 		C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
-		C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAppNotificationHandler.m; sourceTree = "<group>"; };
+		C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPAppNotificationHandler.mm; sourceTree = "<group>"; };
 		C90499301C56B8DE005F11EA /* MPSurrogateAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPSurrogateAppDelegate.h; sourceTree = "<group>"; };
 		C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPSurrogateAppDelegate.m; sourceTree = "<group>"; };
 		C90499331C56B8DE005F11EA /* MPAppboy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppboy.h; sourceTree = "<group>"; };
@@ -744,7 +744,7 @@
 				C904992C1C56B8DE005F11EA /* MPAppDelegateProxy.h */,
 				C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */,
 				C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */,
-				C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.m */,
+				C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.mm */,
 				C90499301C56B8DE005F11EA /* MPSurrogateAppDelegate.h */,
 				C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */,
 			);
@@ -1623,7 +1623,7 @@
 				C9049B6B1C56C3C5005F11EA /* MPMediaMetadataBase.m in Sources */,
 				C9049D091C57FBC2005F11EA /* MPNotificationController.mm in Sources */,
 				C9049B271C56C353005F11EA /* MPAttributeProjection.m in Sources */,
-				C9049A931C56C2EF005F11EA /* MPAppNotificationHandler.m in Sources */,
+				C9049A931C56C2EF005F11EA /* MPAppNotificationHandler.mm in Sources */,
 				C9049C011C56C436005F11EA /* NSDictionary+MPCaseInsensitive.m in Sources */,
 				C9049B681C56C3C5005F11EA /* MediaControl.cpp in Sources */,
 				C9049BF91C56C436005F11EA /* MPResponseEvents.mm in Sources */,
@@ -1680,7 +1680,7 @@
 				C9049AD91C56C31E005F11EA /* MPSession.m in Sources */,
 				C9049BD91C56C41A005F11EA /* MPLaunchInfo.m in Sources */,
 				C9049BBF1C56C405005F11EA /* MPApplication.m in Sources */,
-				C9049A991C56C2F7005F11EA /* MPAppNotificationHandler.m in Sources */,
+				C9049A991C56C2F7005F11EA /* MPAppNotificationHandler.mm in Sources */,
 				C9049BC91C56C410005F11EA /* MPCurrentState.m in Sources */,
 				C9049AC81C56C31E005F11EA /* MPBreadcrumb.m in Sources */,
 				C9049ADF1C56C31E005F11EA /* MPStandaloneMessage.m in Sources */,

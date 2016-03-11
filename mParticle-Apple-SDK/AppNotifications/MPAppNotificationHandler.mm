@@ -1,5 +1,5 @@
 //
-//  MPAppNotificationHandler.m
+//  MPAppNotificationHandler.mm
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -26,6 +26,7 @@
 #import "MPKitExecStatus.h"
 #import "MPKitAbstract.h"
 #import <UIKit/UIKit.h>
+#include "MPHasher.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -191,7 +192,7 @@
         
         NSString *notificationName;
         if (userNotificationMode == MPUserNotificationModeAutoDetect) {
-            MPUserNotificationCommand command = [userInfo[kMPUserNotificationCommandKey] integerValue];
+            MPUserNotificationCommand command = static_cast<MPUserNotificationCommand>([userInfo[kMPUserNotificationCommandKey] integerValue]);
             
             notificationName = command != MPUserNotificationCommandAlertUserLocalTime ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
         } else {
@@ -207,9 +208,24 @@
         SEL receivedNotificationSelector = @selector(receivedUserNotification:);
         NSArray<__kindof MPKitAbstract *> *activeKits = [[MPKitContainer sharedInstance] activeKits];
         NSNumber *lastKit = nil;
+        BOOL shouldForward = YES;
         
+        if ([MPNotificationController launchNotificationHash] != 0) {
+            NSError *error = nil;
+            NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:userInfo options:0 error:&error];
+            
+            if (!error && remoteNotificationData.length > 0) {
+                int64_t launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
+                shouldForward = launchNotificationHash != [MPNotificationController launchNotificationHash];
+            }
+        }
+
         for (MPKitAbstract *kit in activeKits) {
             if ([kit respondsToSelector:receivedNotificationSelector]) {
+                if (static_cast<MPKitInstance>([kit.kitCode integerValue]) == MPKitInstanceKahuna && !shouldForward) {
+                    continue;
+                }
+                
                 MPKitExecStatus *execStatus = [kit receivedUserNotification:userInfo];
                 
                 if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
