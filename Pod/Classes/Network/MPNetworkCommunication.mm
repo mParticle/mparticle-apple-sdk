@@ -19,7 +19,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPMessage.h"
 #import "MPSession.h"
-#import "UIKit/UIKit.h"
+#import <UIKit/UIKit.h>
 #import "MPConnector.h"
 #import "MPStateMachine.h"
 #import "MPCommand.h"
@@ -39,6 +39,7 @@
 #import "MPDataModelAbstract.h"
 #import "NSUserDefaults+mParticle.h"
 #import "MPSessionHistory.h"
+#import "MPDateFormatter.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const kMPConfigVersion = @"/v3";
@@ -142,6 +143,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 #pragma mark Private methods
 - (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPDataModelAbstract *)batchObject {
+    [self processNetworkResponseAction:responseAction batchObject:batchObject httpResponse:nil];
+}
+
+- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPDataModelAbstract *)batchObject httpResponse:(NSHTTPURLResponse *)httpResponse {
     switch (responseAction) {
         case MPNetworkResponseActionDeleteBatch:
             if (!batchObject) {
@@ -158,8 +163,37 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
             
         case MPNetworkResponseActionThrottle: {
             NSDate *now = [NSDate date];
+            NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+            NSTimeInterval retryAfter = 7200; // Default of 2 hours
+            NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
+            id suggestedRetryAfter = httpHeaders[@"Retry-After"];
+            
+            if (!MPIsNull(suggestedRetryAfter)) {
+                if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
+                    if ([suggestedRetryAfter containsString:@":"]) { // Date
+                        NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
+                        if (retryAfterDate) {
+                            retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
+                            retryAfter = retryAfter > 0 ? retryAfter : 7200;
+                        } else {
+                            MPLogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
+                        }
+                    } else { // Number of seconds
+                        @try {
+                            retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
+                        } @catch (NSException *exception) {
+                            retryAfter = 7200;
+                            MPLogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
+                        }
+                    }
+                } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
+                    retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
+                }
+            }
+            
             if ([[MPStateMachine sharedInstance].minUploadDate compare:now] == NSOrderedAscending) {
-                [MPStateMachine sharedInstance].minUploadDate = [now dateByAddingTimeInterval:7200]; // 2 hours
+                [MPStateMachine sharedInstance].minUploadDate = [now dateByAddingTimeInterval:retryAfter];
+                MPLogDebug(@"Throttling network for %.0f seconds", retryAfter);
             }
         }
             break;
@@ -238,9 +272,9 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      NSDictionary *configurationDictionary = nil;
                      MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
                      
-                     BOOL success = NO;
+                     BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
                      
-                     if (!data) {
+                     if (!data && success) {
                          completionHandler(NO, nil);
                          strongSelf->retrievingConfig = NO;
                          MPLogWarning(@"Failed config request");
@@ -249,7 +283,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      
                      NSDictionary *headersDictionary = [httpResponse allHeaderFields];
                      NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
-                     success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
+                     success = success && [data length] > 0;
                      
                      if (!MPIsNull(eTag) && success) {
                          NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -271,7 +305,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                          }
                      }
                      
-                     [strongSelf processNetworkResponseAction:responseAction batchObject:nil];
+                     [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
                      
                      completionHandler(success, configurationDictionary);
                      strongSelf->retrievingConfig = NO;
@@ -628,7 +662,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                           MPLogWarning(@"Stand-alone Uploads Error - Response Code: %ld", (long)responseCode);
                       }
                       
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:standaloneUpload];
+                      [strongSelf processNetworkResponseAction:responseAction batchObject:standaloneUpload httpResponse:httpResponse];
                       
                       completionHandler(success, standaloneUpload, responseDictionary, finished);
                       
@@ -700,16 +734,16 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       NSDictionary *responseDictionary = nil;
                       MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
                       BOOL finished = index == uploads.count - 1;
-                      BOOL success = NO;
+                      NSInteger responseCode = [httpResponse statusCode];
+                      BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
                       
-                      if (!data) {
-                          completionHandler(success, upload, responseDictionary, finished);
+                      if (!data && success) {
+                          completionHandler(NO, upload, nil, finished);
                           strongSelf->uploading = NO;
                           return;
                       }
                       
-                      NSInteger responseCode = [httpResponse statusCode];
-                      success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
+                      success = success && [data length] > 0;
                       
                       if (success) {
                           NSError *serializationError = nil;
@@ -736,7 +770,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       
                       MPLogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:upload];
+                      [strongSelf processNetworkResponseAction:responseAction batchObject:upload httpResponse:httpResponse];
                       
                       completionHandler(success, upload, responseDictionary, finished);
                       
@@ -839,7 +873,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       
                       MPLogVerbose(@"Session History Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil];
+                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
                       
                       completionHandler(success);
                       

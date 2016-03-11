@@ -1136,7 +1136,7 @@ static BOOL appBackgrounded = NO;
                 launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
             }
             
-            if (launchNotificationHash != 0 && _notificationController.launchNotificationHash != 0 && launchNotificationHash != _notificationController.launchNotificationHash) {
+            if (launchNotificationHash != 0 && [MPNotificationController launchNotificationHash] != 0 && launchNotificationHash != [MPNotificationController launchNotificationHash]) {
                 astType = kMPASTForegroundKey;
                 userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
                                                                                  actionIdentifier:nil
@@ -1152,8 +1152,6 @@ static BOOL appBackgrounded = NO;
                     sessionFinalized = backgroundedTime > self.sessionTimeout;
                 }
             }
-            
-            _notificationController.launchNotificationHash = 0;
         }
         
         messageInfo[kMPAppStateTransitionType] = astType;

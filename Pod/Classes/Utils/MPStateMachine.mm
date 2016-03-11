@@ -614,9 +614,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setMinUploadDate:(NSDate *)minUploadDate {
-    [self willChangeValueForKey:@"minUploadDate"];
     _minUploadDate = minUploadDate;
-    [self didChangeValueForKey:@"minUploadDate"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {

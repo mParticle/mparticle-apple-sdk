@@ -32,6 +32,7 @@
 @end
 
 static NSData *deviceToken = nil;
+static int64_t launchNotificationHash = 0;
 
 @implementation MPNotificationController
 
@@ -49,7 +50,6 @@ static NSData *deviceToken = nil;
     appJustFinishedLaunching = YES;
     backgrounded = YES;
     notificationLaunchedApp = NO;
-    _launchNotificationHash = 0;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter addObserver:self
@@ -214,7 +214,7 @@ static NSData *deviceToken = nil;
         NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:launchRemoteNotificationDictionary options:0 error:&error];
         
         if (!error && remoteNotificationData.length > 0) {
-            _launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
+            launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
         }
         
         NSDictionary *apsDictionary = launchRemoteNotificationDictionary[kMPUserNotificationApsKey];
@@ -260,6 +260,7 @@ static NSData *deviceToken = nil;
         
         strongSelf->notificationLaunchedApp = NO;
         strongSelf->_initialRedactedUserNotificationString = nil;
+        launchNotificationHash = 0;
 #ifndef MP_UNIT_TESTING
     });
 #endif
@@ -537,6 +538,10 @@ static NSData *deviceToken = nil;
         [userDefaults synchronize];
 #endif
     });
+}
+
++ (int64_t)launchNotificationHash {
+    return launchNotificationHash;
 }
 
 #pragma mark Public methods

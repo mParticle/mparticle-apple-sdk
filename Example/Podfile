@@ -4,8 +4,3 @@ use_frameworks!
 target 'mParticle-iOS-SDK_Example', :exclusive => true do
   pod "mParticle-iOS-SDK", :path => "../"
 end
-
-target 'mParticle-iOS-SDK_Tests', :exclusive => true do
-  pod "mParticle-iOS-SDK", :path => "../"
-  link_with 'Pods-mParticle-iOS-SDK_Tests'
-end

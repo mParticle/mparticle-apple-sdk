@@ -27,7 +27,7 @@
 		C9C2DC3B1BD458600002F75A /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB551BD458600002F75A /* MPAppDelegateProxy.h */; };
 		C9C2DC3C1BD458600002F75A /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB561BD458600002F75A /* MPAppDelegateProxy.m */; };
 		C9C2DC3D1BD458600002F75A /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C9C2DC3E1BD458600002F75A /* MPAppNotificationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB581BD458600002F75A /* MPAppNotificationHandler.m */; };
+		C9C2DC3E1BD458600002F75A /* MPAppNotificationHandler.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB581BD458600002F75A /* MPAppNotificationHandler.mm */; };
 		C9C2DC3F1BD458600002F75A /* MPSurrogateAppDelegate.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB591BD458600002F75A /* MPSurrogateAppDelegate.h */; };
 		C9C2DC401BD458600002F75A /* MPSurrogateAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C2DB5A1BD458600002F75A /* MPSurrogateAppDelegate.m */; };
 		C9C2DC411BD458600002F75A /* MPAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C2DB5C1BD458600002F75A /* MPAppboy.h */; };
@@ -315,7 +315,7 @@
 		C9C2DB551BD458600002F75A /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
 		C9C2DB561BD458600002F75A /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppDelegateProxy.m; sourceTree = "<group>"; };
 		C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
-		C9C2DB581BD458600002F75A /* MPAppNotificationHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPAppNotificationHandler.m; sourceTree = "<group>"; };
+		C9C2DB581BD458600002F75A /* MPAppNotificationHandler.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPAppNotificationHandler.mm; sourceTree = "<group>"; };
 		C9C2DB591BD458600002F75A /* MPSurrogateAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSurrogateAppDelegate.h; sourceTree = "<group>"; };
 		C9C2DB5A1BD458600002F75A /* MPSurrogateAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSurrogateAppDelegate.m; sourceTree = "<group>"; };
 		C9C2DB5C1BD458600002F75A /* MPAppboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppboy.h; sourceTree = "<group>"; };
@@ -750,7 +750,7 @@
 				C9C2DB551BD458600002F75A /* MPAppDelegateProxy.h */,
 				C9C2DB561BD458600002F75A /* MPAppDelegateProxy.m */,
 				C9C2DB571BD458600002F75A /* MPAppNotificationHandler.h */,
-				C9C2DB581BD458600002F75A /* MPAppNotificationHandler.m */,
+				C9C2DB581BD458600002F75A /* MPAppNotificationHandler.mm */,
 				C9C2DB591BD458600002F75A /* MPSurrogateAppDelegate.h */,
 				C9C2DB5A1BD458600002F75A /* MPSurrogateAppDelegate.m */,
 			);
@@ -1518,7 +1518,7 @@
 				C9C2DC501BD458600002F75A /* MPDataModelAbstract.m in Sources */,
 				C9C2DD071BD458D50002F75A /* MPEnums.m in Sources */,
 				C9C2DC481BD458600002F75A /* MParticleUserNotification.m in Sources */,
-				C9C2DC3E1BD458600002F75A /* MPAppNotificationHandler.m in Sources */,
+				C9C2DC3E1BD458600002F75A /* MPAppNotificationHandler.mm in Sources */,
 				C9C2DCB41BD458600002F75A /* MPMediaMetadataBase.m in Sources */,
 				C9C2DD031BD458600002F75A /* NSUserDefaults+mParticle.m in Sources */,
 				C9C2DCD61BD458600002F75A /* MPURLConnectionAssociate.m in Sources */,
