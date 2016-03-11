@@ -263,6 +263,22 @@
         return;
     }
     
+    BOOL validDataType = [customFlags isKindOfClass:[NSArray class]];
+    NSAssert(validDataType, @"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
+    if (!validDataType) {
+        MPLogError(@"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
+        return;
+    }
+    
+    for (id item in customFlags) {
+        validDataType = [item isKindOfClass:[NSString class]];
+        NSAssert(validDataType, @"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
+        if (!validDataType) {
+            MPLogError(@"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
+            return;
+        }
+    }
+    
     NSMutableArray<NSString *> *flags = self.customFlagsDictionary[key];
     if (!flags) {
         flags = [[NSMutableArray alloc] initWithCapacity:1];

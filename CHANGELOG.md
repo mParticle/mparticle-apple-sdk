@@ -9,7 +9,7 @@
 
 ## 6.0.0
 
->Upgrade suggestion: **MODERATE**. 
+>Upgrade suggestion: **MODERATE**.
 
 * [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
 
@@ -19,6 +19,12 @@
 
 * [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
 * [NEW] Updated Kahuna kit
+
+## 5.4.2
+
+>Upgrade suggestion: **LOW**
+
+* [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
 
 ## 5.4.1
 
