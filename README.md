@@ -15,6 +15,7 @@ Your job is to build an awesome app experience that consumers love. You also nee
 
 [mParticle](http://mparticle.com) solves all these problems with one lightweight SDK. Implement new partners without changing code or waiting for app store approval. Improve stability and security within your app. We enable our clients to spend more time innovating and less time integrating.
 
+
 ## Installation
 
 mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mparticle).
@@ -76,7 +77,13 @@ pod 'mParticle-Apple-SDK/BranchMetrics', '~> 5'
 pod 'mParticle-Apple-SDK/Localytics', '~> 5'
 ```
 
-In the case above, only the Appboy, Branch Metrics, and Localytics kits would be integrated, all other kits would be left out.
+You can also use the alternative syntax below, which specifies a collection of subspecs and keeps your Podfile cleaner:
+
+```ruby
+pod 'mParticle-Apple-SDK', :subspecs => ['Appboy', 'BranchMetrics', 'Localytics'], '~> 5'
+```
+
+Irrespective of syntax preference, in the case above the Appboy, Branch Metrics, and Localytics kits would be integrated; all other kits would be left out.
 
 #### Crash Reporter (iOS Only)
 
@@ -92,7 +99,7 @@ pod 'mParticle-Apple-SDK/CrashReporter', '~> 5'
 
 With each integration with a partner we strive to implement as many features as possible in the server-to-server layer, however some times a deeper integration to work side-by-side with a 3rd party SDK comes with greater benefits to our clients. We use the term **Kit** to describe such integrations.
 
-#### Here is the List of All Currently Supported Kits
+#### List of All Currently Supported Kits
 
 * [Adjust](https://www.adjust.com)
 * [Appboy](https://www.appboy.com)
@@ -107,14 +114,30 @@ With each integration with a partner we strive to implement as many features as 
 * [Tune](https://www.tune.com)
 * [Wootric](https://www.wootric.com)
 
+
 ## Initialize the SDK
 
-The syntax for the import statement to use the mParticle SDK needs to be one for **modules** or **semantic import**.
+For apps supporting iOS 8 and above, the syntax for the import statement should be one for **modules** or **semantic import**.
+
+#### Swift
+
+```swift
+import mParticle_Apple_SDK
+```
+
+#### Objective-C
 
 ```objective-c
 @import mParticle_Apple_SDK;
 ```
 
+>If your app still needs to support iOS 7, please use:
+>
+>```objective-c
+>#import <mParticle_Apple_SDK/mParticle.h>
+>```
+
+<br>
 The mParticle SDK is initialized by calling the `startWithKey` method within the `application:didFinishLaunchingWithOptions:` delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`
 
 #### Swift
@@ -158,21 +181,11 @@ Remove the statement from your `Podfile`
 pod 'mParticle', '~> 4'
 ```
 
-and replace it with one of the options described above.
+and replace it with one of the options described in the [Installation](#installation) section.
 
-The `#import` statements are now simpler, instead of:
+The `#import` statement is different, it no longer is: `#import <mParticle/mParticle.h>`. Please replace it with the appropriate `import` statement for your app as described in the [Initialize the SDK](#initialize-the-sdk) section
 
-```objective-c
-#import <mParticle/mParticle.h>
-```
-
-use:
-
-```objective-c
-@import mParticle_Apple_SDK;
-```
-
-In case you had the need to directly call methods from a 3rd party provider kit through the mParticle SDK, you no longer need to indirectly import their headers. You can just import them directly as indicated in the provider respective documentation. For example, if you were using:
+Moreover, in case you had the need to directly call methods from a 3rd party provider kit through the mParticle SDK, you no longer need to indirectly import their headers. You can just import them directly as indicated in the provider respective documentation. For example, if you were using:
 
 ```objective-c
 #import <mParticle/Appboy/AppboyKit.h>
@@ -203,7 +216,8 @@ In order to run either the iOS or tvOS examples you will first install the mPart
 2. Run `pod install`
 3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run. (In case you want to run on iOS 7, please use the **iOS7_Example** scheme instead)
 
-> You can read a great blog post about developing a multi-platform app using the mParticle Apple SDK  [here](http://blog.mparticle.com/unified-mparticle-apple-sdk/)
+We have published an article named the [Unified mParticle Apple SDK](http://blog.mparticle.com/unified-mparticle-apple-sdk/) where we explore the development of multi-platform apps. There you can discover more about how the project was built, use cases of the mParticle SDK, and see the sample apps in action.
+
 
 ## Documentation
 

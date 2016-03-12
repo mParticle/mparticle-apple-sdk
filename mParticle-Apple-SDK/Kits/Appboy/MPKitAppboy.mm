@@ -257,6 +257,18 @@ NSString *const eabOptions = @"options";
 - (MPKitExecStatus *)setUserAttribute:(NSString *)key value:(NSString *)value {
     MPKitExecStatus *execStatus;
     
+    if (!value) {
+        [appboyInstance.user unsetCustomAttributeWithKey:key];
+        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+        return execStatus;
+    }
+    
+    value = [self stringRepresentation:value];
+    if (!value) {
+        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
+        return execStatus;
+    }
+    
     if ([key isEqualToString:mParticleUserAttributeFirstName]) {
         appboyInstance.user.firstName = value;
     } else if ([key isEqualToString:mParticleUserAttributeLastName]) {
@@ -270,7 +282,7 @@ NSString *const eabOptions = @"options";
         @try {
             age = [value integerValue];
         } @catch (NSException *exception) {
-            MPLogError(@"Invalid age: %@", value);
+            NSLog(@"mParticle -> Invalid age: %@", value);
             execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeFail];
             return execStatus;
         }
@@ -289,16 +301,14 @@ NSString *const eabOptions = @"options";
         [appboyInstance.user setCustomAttributeWithKey:@"gender" andStringValue:value];
     } else if ([key isEqualToString:mParticleUserAttributeMobileNumber] || [key isEqualToString:@"$MPUserMobile"]) {
         appboyInstance.user.phone = value;
-    } else if (value) {
-        if ([value containsString:@"$"]) {
-            NSMutableString *editedValue = [value mutableCopy];
-            [editedValue replaceOccurrencesOfString:@"$" withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, value.length)];
-            value = editedValue;
+    } else {
+        if ([key containsString:@"$"]) {
+            NSMutableString *editedKey = [key mutableCopy];
+            [editedKey replaceOccurrencesOfString:@"$" withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, key.length)];
+            key = editedKey;
         }
         
         [appboyInstance.user setCustomAttributeWithKey:key andStringValue:value];
-    } else {
-        [appboyInstance.user unsetCustomAttributeWithKey:key];
     }
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
