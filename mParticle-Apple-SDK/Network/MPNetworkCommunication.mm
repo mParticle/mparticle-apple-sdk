@@ -214,7 +214,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 #pragma mark Public methods
 - (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary))completionHandler {
-    if (retrievingConfig) {
+    if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == NotReachable) {
         return;
     }
     
