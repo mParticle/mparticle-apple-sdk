@@ -343,6 +343,8 @@ static BOOL appBackgrounded = NO;
             
             [strongSelf endBackgroundTimer];
             
+            strongSelf->_networkCommunication = nil;
+            
             if (strongSelf->_session) {
                 [strongSelf broadcastSessionDidEnd:strongSelf->_session];
                 strongSelf->_session = nil;
@@ -516,10 +518,13 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    if (self.networkCommunication.inUse) {
+        return;
+    }
+    
     __weak MPBackendController *weakSelf = self;
 
-    [networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary) {
+    [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary) {
         if (!success) {
             if (completionHandler) {
                 completionHandler(NO);
@@ -575,7 +580,6 @@ static BOOL appBackgrounded = NO;
     MPSession *uploadSession = [session copy];
     sessionBeingUploaded = uploadSession;
     __weak MPBackendController *weakSelf = self;
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     [persistence fetchMessagesForUploadingInSession:uploadSession
@@ -619,24 +623,24 @@ static BOOL appBackgrounded = NO;
                                                                    return;
                                                                }
                                                                
-                                                               [networkCommunication upload:uploads
-                                                                                      index:0
-                                                                          completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
-                                                                              if (!success) {
-                                                                                  return;
-                                                                              }
-                                                                              
-                                                                              [MPResponseEvents parseConfiguration:responseDictionary session:uploadSession];
-                                                                              
-                                                                              [persistence deleteUpload:upload];
-                                                                              
-                                                                              if (!finished) {
-                                                                                  return;
-                                                                              }
-                                                                              
-                                                                              sessionBeingUploaded = nil;
-                                                                              completionHandlerCopy(uploadSession);
-                                                                          }];
+                                                               [strongSelf.networkCommunication upload:uploads
+                                                                                                 index:0
+                                                                                     completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
+                                                                                         if (!success) {
+                                                                                             return;
+                                                                                         }
+                                                                                         
+                                                                                         [MPResponseEvents parseConfiguration:responseDictionary session:uploadSession];
+                                                                                         
+                                                                                         [persistence deleteUpload:upload];
+                                                                                         
+                                                                                         if (!finished) {
+                                                                                             return;
+                                                                                         }
+                                                                                         
+                                                                                         sessionBeingUploaded = nil;
+                                                                                         completionHandlerCopy(uploadSession);
+                                                                                     }];
                                                            }];
                                       }];
                                       
