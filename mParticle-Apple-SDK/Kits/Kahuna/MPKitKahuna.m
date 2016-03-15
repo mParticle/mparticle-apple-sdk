@@ -114,7 +114,7 @@ NSString *const khnSdkWrapper = @"mParticle";
     }
     
     [self setupWithConfiguration:configuration];
-    [[Kahuna sharedInstance] performSelector:@selector(setSDKWrapper:withVersion:) withObject:khnSdkWrapper withObject:[MParticle sharedInstance].version];
+//    [[Kahuna sharedInstance] performSelector:@selector(setSDKWrapper:withVersion:) withObject:khnSdkWrapper withObject:[MParticle sharedInstance].version];
     [Kahuna launchWithKey:configuration[khnSecretKey]];
     [Kahuna setDeepIntegrationMode:false];
     
