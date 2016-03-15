@@ -66,7 +66,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
 }
 
-
 - (instancetype)init {
     self = [super init];
     if (!self) {
