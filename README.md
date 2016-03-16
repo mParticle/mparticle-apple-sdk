@@ -80,7 +80,7 @@ pod 'mParticle-Apple-SDK/Localytics', '~> 5'
 You can also use the alternative syntax below, which specifies a collection of subspecs and keeps your Podfile cleaner:
 
 ```ruby
-pod 'mParticle-Apple-SDK', :subspecs => ['Appboy', 'BranchMetrics', 'Localytics'], '~> 5'
+pod 'mParticle-Apple-SDK', '~> 5', :subspecs => ['Appboy', 'BranchMetrics', 'Localytics']
 ```
 
 Irrespective of syntax preference, in the case above the Appboy, Branch Metrics, and Localytics kits would be integrated; all other kits would be left out.
