@@ -1844,7 +1844,7 @@ NSString *const kitFileExtension = @"eks";
                                            @(MPKitInstanceLocalytics),
 #endif
 #if defined(MP_KIT_TUNE)
-                                           @(MPKitTune),
+                                           @(MPKitInstanceTune),
 #endif
 #if defined(MP_KIT_WOOTRIC)
                                            @(MPKitInstanceWootric),
