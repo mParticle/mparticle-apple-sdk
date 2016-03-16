@@ -537,7 +537,7 @@ static BOOL appBackgrounded = NO;
         
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
         
-        if (responseConfig.influencedOpenTimer) {
+        if (responseConfig.influencedOpenTimer && strongSelf) {
 #if TARGET_OS_IOS == 1
             strongSelf.notificationController.influencedOpenTimer = [responseConfig.influencedOpenTimer doubleValue];
 #endif

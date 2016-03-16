@@ -30,8 +30,10 @@
 
 @end
 
+#if TARGET_OS_IOS == 1
 static NSData *deviceToken = nil;
 static int64_t launchNotificationHash = 0;
+#endif
 
 @implementation MPNotificationController
 

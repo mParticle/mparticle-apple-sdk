@@ -20,7 +20,7 @@ Pod::Spec.new do |s|
     s.homepage          = "http://www.mparticle.com"
     s.license           = { :type => 'Apache 2.0', :file => 'LICENSE'}
     s.author            = { "mParticle" => "support@mparticle.com" }
-    s.source            = { :git => "https://github.com/mParticle/mParticle-ObjC-SDK.git", :tag => s.version.to_s }
+    s.source            = { :git => "https://github.com/mParticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
     s.documentation_url = "http://docs.mparticle.com"
     s.social_media_url  = "https://twitter.com/mparticles"
     s.requires_arc      = true
