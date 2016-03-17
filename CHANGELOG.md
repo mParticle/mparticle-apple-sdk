@@ -13,6 +13,12 @@
 
 * [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
 
+## 5.5.1
+
+>Upgrade suggestion: **LOW**.
+
+* [NEW] Added Branch Metrics support for received push notifications
+
 ## 5.5.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you are planning to release a multi-platform app supporting iOS and tvOS

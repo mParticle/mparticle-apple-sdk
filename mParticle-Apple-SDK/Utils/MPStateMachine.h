@@ -65,6 +65,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained, readonly) BOOL backgrounded;
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
+@property (nonatomic, unsafe_unretained) BOOL shouldUploadSessionHistory;
 
 + (nonnull instancetype)sharedInstance;
 + (MPEnvironment)environment;
