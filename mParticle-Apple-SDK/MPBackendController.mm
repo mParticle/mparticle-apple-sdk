@@ -776,24 +776,29 @@ static BOOL appBackgrounded = NO;
                                                                return;
                                                            }
                                                            
-                                                           if ([MPStateMachine sharedInstance].dataRamped) {
+                                                           MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+                                                           if (!stateMachine.shouldUploadSessionHistory || stateMachine.dataRamped) {
                                                                for (MPUpload *upload in uploads) {
                                                                    [persistence deleteUpload:upload];
                                                                }
                                                                
-                                                               [persistence deleteNetworkPerformanceMessages];
                                                                [persistence deleteMessages:messages];
+                                                               [persistence deleteNetworkPerformanceMessages];
+                                                               
+                                                               [persistence archiveSession:session
+                                                                         completionHandler:^(MPSession *archivedSession) {
+                                                                             [persistence deleteSession:archivedSession];
+                                                                             
+                                                                             if (completionHandler) {
+                                                                                 completionHandler(NO);
+                                                                             }
+                                                                         }];
+                                                               
                                                                return;
                                                            }
 
                                                            [strongSelf.networkCommunication uploadSessionHistory:sessionHistory
                                                                                                completionHandler:^(BOOL success) {
-                                                                                                   void (^deleteUploadIds)(NSArray *uploadIds) = ^(NSArray *uploadIds) {
-                                                                                                       for (NSNumber *uploadId in sessionHistory.uploadIds) {
-                                                                                                           [persistence deleteUploadId:[uploadId intValue]];
-                                                                                                       }
-                                                                                                   };
-                                                                                                   
                                                                                                    if (!success) {
                                                                                                        if (completionHandler) {
                                                                                                            completionHandler(NO);
@@ -802,8 +807,10 @@ static BOOL appBackgrounded = NO;
                                                                                                        return;
                                                                                                    }
                                                                                                    
-                                                                                                   deleteUploadIds(sessionHistory.uploadIds);
-                                                                                                   
+                                                                                                   for (NSNumber *uploadId in sessionHistory.uploadIds) {
+                                                                                                       [persistence deleteUploadId:[uploadId intValue]];
+                                                                                                   }
+
                                                                                                    [persistence archiveSession:session
                                                                                                              completionHandler:^(MPSession *archivedSession) {
                                                                                                                  [persistence deleteSession:archivedSession];

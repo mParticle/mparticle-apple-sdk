@@ -89,6 +89,7 @@ static BOOL runningInBackground = NO;
     _launchDate = [NSDate date];
     _launchOptions = nil;
     _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPLogLevelNone : MPLogLevelWarning;
+    _shouldUploadSessionHistory = YES;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 
