@@ -404,6 +404,23 @@
 		C97C08FD1CA3089400280B1E /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08CE1CA3074F00280B1E /* MPStateMachineTests.mm */; };
 		C97C08FE1CA3089400280B1E /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D01CA3074F00280B1E /* MPURLRequestBuilderTests.m */; };
 		C97C08FF1CA3089400280B1E /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D11CA3074F00280B1E /* MPZipTests.mm */; };
+		C97C09091CA3116800280B1E /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9049A661C56B99F005F11EA /* mParticle_Apple_SDK.framework */; };
+		C97C090F1CA311AD00280B1E /* BracketTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08B91CA3074F00280B1E /* BracketTests.mm */; };
+		C97C09101CA3122600280B1E /* HasherTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08BC1CA3074F00280B1E /* HasherTests.mm */; };
+		C97C09111CA3122600280B1E /* MPBackendControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08BF1CA3074F00280B1E /* MPBackendControllerTests.mm */; };
+		C97C09121CA3122600280B1E /* MPCartTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C11CA3074F00280B1E /* MPCartTests.m */; };
+		C97C09131CA3122600280B1E /* MPCommerceEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C21CA3074F00280B1E /* MPCommerceEventTests.m */; };
+		C97C09141CA3122600280B1E /* MPConsumerInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C31CA3074F00280B1E /* MPConsumerInfoTests.m */; };
+		C97C09151CA3122600280B1E /* MPCustomModuleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C41CA3074F00280B1E /* MPCustomModuleTests.m */; };
+		C97C09161CA3122600280B1E /* MPEventTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C51CA3074F00280B1E /* MPEventTests.mm */; };
+		C97C09171CA3122600280B1E /* MPForwardRecordTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C61CA3074F00280B1E /* MPForwardRecordTests.m */; };
+		C97C09181CA3122600280B1E /* MPLaunchInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C71CA3074F00280B1E /* MPLaunchInfoTests.m */; };
+		C97C09191CA3122600280B1E /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08C81CA3074F00280B1E /* MPMessageBuilderTests.m */; };
+		C97C091B1CA3122600280B1E /* MPPersistenceControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08CC1CA3074F00280B1E /* MPPersistenceControllerTests.mm */; };
+		C97C091C1CA3122600280B1E /* MPProductBagTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08CD1CA3074F00280B1E /* MPProductBagTests.m */; };
+		C97C091D1CA3122600280B1E /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08CE1CA3074F00280B1E /* MPStateMachineTests.mm */; };
+		C97C091E1CA3122600280B1E /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D01CA3074F00280B1E /* MPURLRequestBuilderTests.m */; };
+		C97C091F1CA3122600280B1E /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D11CA3074F00280B1E /* MPZipTests.mm */; };
 		C9A88DD61C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9A88DD71C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
@@ -415,6 +432,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = C9049A581C56B98E005F11EA;
 			remoteInfo = "mParticle-iOS-SDK";
+		};
+		C97C090A1CA3116800280B1E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6003F582195388D10070C39A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C9049A651C56B99F005F11EA;
+			remoteInfo = "mParticle-tvOS-SDK";
 		};
 /* End PBXContainerItemProxy section */
 
@@ -648,6 +672,8 @@
 		C97C08CF1CA3074F00280B1E /* MPURLRequestBuilder+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPURLRequestBuilder+Tests.h"; sourceTree = "<group>"; };
 		C97C08D01CA3074F00280B1E /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		C97C08D11CA3074F00280B1E /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		C97C09041CA3116800280B1E /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C97C09081CA3116800280B1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExtensionProtocol.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -696,6 +722,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C97C09011CA3116800280B1E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C97C09091CA3116800280B1E /* mParticle_Apple_SDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -706,8 +740,9 @@
 				C904992A1C56B8DE005F11EA /* mParticle-Apple-SDK */,
 				C9049C3C1C56E1C9005F11EA /* Supporting Files */,
 				C97C08AE1CA306A000280B1E /* mParticle_iOS_SDKTests */,
+				C97C09051CA3116800280B1E /* mParticle_tvOS_SDKTests */,
 				C9049C3B1C56DF6A005F11EA /* Products */,
-				C97C08AD1CA306A000280B1E /* mParticle_iOS_SDKTests.xctest */,
+				C97C09201CA31D0000280B1E /* Products_UnitTests */,
 				C97C08B81CA3074F00280B1E /* UnitTests */,
 			);
 			sourceTree = "<group>";
@@ -1127,6 +1162,23 @@
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
+		C97C09051CA3116800280B1E /* mParticle_tvOS_SDKTests */ = {
+			isa = PBXGroup;
+			children = (
+				C97C09081CA3116800280B1E /* Info.plist */,
+			);
+			path = mParticle_tvOS_SDKTests;
+			sourceTree = "<group>";
+		};
+		C97C09201CA31D0000280B1E /* Products_UnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				C97C08AD1CA306A000280B1E /* mParticle_iOS_SDKTests.xctest */,
+				C97C09041CA3116800280B1E /* mParticle_tvOS_SDKTests.xctest */,
+			);
+			name = Products_UnitTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -1395,6 +1447,24 @@
 			productReference = C97C08AD1CA306A000280B1E /* mParticle_iOS_SDKTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		C97C09031CA3116800280B1E /* mParticle_tvOS_SDKTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C97C090C1CA3116800280B1E /* Build configuration list for PBXNativeTarget "mParticle_tvOS_SDKTests" */;
+			buildPhases = (
+				C97C09001CA3116800280B1E /* Sources */,
+				C97C09011CA3116800280B1E /* Frameworks */,
+				C97C09021CA3116800280B1E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C97C090B1CA3116800280B1E /* PBXTargetDependency */,
+			);
+			name = mParticle_tvOS_SDKTests;
+			productName = mParticle_tvOS_SDKTests;
+			productReference = C97C09041CA3116800280B1E /* mParticle_tvOS_SDKTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1412,6 +1482,9 @@
 						CreatedOnToolsVersion = 7.2;
 					};
 					C97C08AC1CA306A000280B1E = {
+						CreatedOnToolsVersion = 7.3;
+					};
+					C97C09031CA3116800280B1E = {
 						CreatedOnToolsVersion = 7.3;
 					};
 				};
@@ -1432,6 +1505,7 @@
 				C9049A581C56B98E005F11EA /* mParticle-iOS-SDK */,
 				C9049A651C56B99F005F11EA /* mParticle-tvOS-SDK */,
 				C97C08AC1CA306A000280B1E /* mParticle_iOS_SDKTests */,
+				C97C09031CA3116800280B1E /* mParticle_tvOS_SDKTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1452,6 +1526,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C97C08AB1CA306A000280B1E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C97C09021CA3116800280B1E /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1697,6 +1778,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C97C09001CA3116800280B1E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C97C09101CA3122600280B1E /* HasherTests.mm in Sources */,
+				C97C09161CA3122600280B1E /* MPEventTests.mm in Sources */,
+				C97C09151CA3122600280B1E /* MPCustomModuleTests.m in Sources */,
+				C97C091C1CA3122600280B1E /* MPProductBagTests.m in Sources */,
+				C97C090F1CA311AD00280B1E /* BracketTests.mm in Sources */,
+				C97C09121CA3122600280B1E /* MPCartTests.m in Sources */,
+				C97C09171CA3122600280B1E /* MPForwardRecordTests.m in Sources */,
+				C97C091E1CA3122600280B1E /* MPURLRequestBuilderTests.m in Sources */,
+				C97C09191CA3122600280B1E /* MPMessageBuilderTests.m in Sources */,
+				C97C09111CA3122600280B1E /* MPBackendControllerTests.mm in Sources */,
+				C97C091F1CA3122600280B1E /* MPZipTests.mm in Sources */,
+				C97C09141CA3122600280B1E /* MPConsumerInfoTests.m in Sources */,
+				C97C091D1CA3122600280B1E /* MPStateMachineTests.mm in Sources */,
+				C97C09131CA3122600280B1E /* MPCommerceEventTests.m in Sources */,
+				C97C09181CA3122600280B1E /* MPLaunchInfoTests.m in Sources */,
+				C97C091B1CA3122600280B1E /* MPPersistenceControllerTests.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1704,6 +1808,11 @@
 			isa = PBXTargetDependency;
 			target = C9049A581C56B98E005F11EA /* mParticle-iOS-SDK */;
 			targetProxy = C97C08B31CA306A000280B1E /* PBXContainerItemProxy */;
+		};
+		C97C090B1CA3116800280B1E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C9049A651C56B99F005F11EA /* mParticle-tvOS-SDK */;
+			targetProxy = C97C090A1CA3116800280B1E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1936,6 +2045,47 @@
 			};
 			name = Release;
 		};
+		C97C090D1CA3116800280B1E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = mParticle_tvOS_SDKTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-tvOS-SDKTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Debug;
+		};
+		C97C090E1CA3116800280B1E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = mParticle_tvOS_SDKTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-tvOS-SDKTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1973,6 +2123,16 @@
 				C97C08B61CA306A000280B1E /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C97C090C1CA3116800280B1E /* Build configuration list for PBXNativeTarget "mParticle_tvOS_SDKTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C97C090D1CA3116800280B1E /* Debug */,
+				C97C090E1CA3116800280B1E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
 @property (nonatomic, strong, nonnull) MPBags *bags;
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
-@property (nonatomic, weak) MPSession *currentSession;
+@property (nonatomic, weak, nullable) MPSession *currentSession;
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
 @property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
 @property (nonatomic, strong, nullable) NSString *locationTrackingMode;

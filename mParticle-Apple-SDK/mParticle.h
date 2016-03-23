@@ -17,6 +17,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #import "MPUserSegments.h"
 #import "MPEvent.h"
 #import "MPEnums.h"
@@ -27,8 +28,8 @@
 #import "MPPromotion.h"
 #import "MPTransactionAttributes.h"
 #import "MPBags.h"
-#import <UIKit/UIKit.h>
 #import "MPExtensionProtocol.h"
+#import "MPKitRegister.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>

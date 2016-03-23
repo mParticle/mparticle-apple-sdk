@@ -112,6 +112,7 @@
     return _backendController;
 }
 
+#if TARGET_OS_IOS == 1
 - (NSDictionary *)remoteNotificationDictionary {
     UIMutableUserNotificationAction *dinoHandsUserAction = [[UIMutableUserNotificationAction alloc] init];
     dinoHandsUserAction.identifier = @"DINO_CAB_ACTION_IDENTIFIER";
@@ -157,6 +158,7 @@
     
     return remoteNotificationDictionary;
 }
+#endif
 
 - (NSDictionary *)nonmParticleRemoteNotificationDictionary {
     NSDictionary *remoteNotificationDictionary = @{@"aps":@{
@@ -191,6 +193,7 @@
     return silentNotificationDictionary;
 }
 
+#if TARGET_OS_IOS == 1
 - (MPNotificationController *)notificationController {
     if (_notificationController) {
         return _notificationController;
@@ -201,6 +204,7 @@
     
     return _notificationController;
 }
+#endif
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([keyPath isEqualToString:@"backendController.session"]) {
@@ -493,6 +497,7 @@
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
 }
 
+#if TARGET_OS_IOS == 1
 - (void)testLogInteractionWithAction {
     [self backendController];
     
@@ -619,6 +624,7 @@
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
 }
+#endif
 
 - (void)testDidBecomeActiveWithAppLink {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];

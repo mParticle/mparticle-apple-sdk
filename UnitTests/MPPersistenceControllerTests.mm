@@ -390,6 +390,7 @@
     XCTAssertNil(standaloneUpload, @"Stand-alone upload should have been deleted.");
 }
 
+#if TARGET_OS_IOS == 1
 - (void)testRemoteNotification {
     NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:NO];
     
@@ -490,5 +491,6 @@
         XCTAssertNil(latestRemoteNotification, @"Non mParticle user notifications should not be persisted.");
     }
 }
+#endif
 
 @end

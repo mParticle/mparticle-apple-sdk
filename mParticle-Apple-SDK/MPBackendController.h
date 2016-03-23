@@ -77,7 +77,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 @property (nonatomic, strong, nonnull) MPNotificationController *notificationController;
 #endif
 
-@property (nonatomic, weak) id<MPBackendControllerDelegate> delegate;
+@property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
 @property (nonatomic, strong, nonnull) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong, nullable) MPSession *session;
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
