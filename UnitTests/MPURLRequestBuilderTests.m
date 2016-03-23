@@ -78,7 +78,7 @@
     
     NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
     NSArray *keys = [headersDictionary allKeys];
-    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"x-mp-kits", @"Date", @"x-mp-signature", @"x-mp-env"];
+    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env"];
     NSString *headerValue;
     
     for (NSString *header in headers) {
@@ -95,9 +95,6 @@
             XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
         } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
             XCTAssert([headerValue length] > 0, @"%@ has invalid length", header);
-//        } else if ([header isEqualToString:@"x-mp-kits"]) {
-//            NSString *supportedEmbeddedKits = [[MPEmbeddedKit supportedEmbeddedKits] componentsJoinedByString:@","];
-//            XCTAssertEqualObjects(headerValue, supportedEmbeddedKits, @"Supported embedded kits is not being set.");
         } else if ([header isEqualToString:@"x-mp-env"]) {
             BOOL validEnvironment = [headerValue isEqualToString:[@(MPEnvironmentDevelopment) stringValue]] ||
             [headerValue isEqualToString:[@(MPEnvironmentProduction) stringValue]];

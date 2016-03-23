@@ -104,20 +104,8 @@
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
     XCTAssertNil(launchInfo, @"Should have been nil.");
     
-    url = [NSURL URLWithString:@"http://mparticle.com"];
-    sourceApp = nil;
-    
-    launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
-    XCTAssertNil(launchInfo, @"Should have been nil.");
-    
     url = (NSURL *)[NSNull null];
-    sourceApp = @"testApp";
-    
-    launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
-    XCTAssertNil(launchInfo, @"Should have been nil.");
-    
-    url = [NSURL URLWithString:@"http://mparticle.com"];
-    sourceApp = (NSString *)[NSNull null];
+    sourceApp = nil;
     
     launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
     XCTAssertNil(launchInfo, @"Should have been nil.");

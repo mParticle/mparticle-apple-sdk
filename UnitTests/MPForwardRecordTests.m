@@ -21,7 +21,6 @@
 #import "MPKitFilter.h"
 #import "MPEnums.h"
 #import "MPStateMachine.h"
-#import "MPKitAbstract.h"
 #import "MPEvent.h"
 #import "MPKitExecStatus.h"
 #import "MPKitContainer.h"

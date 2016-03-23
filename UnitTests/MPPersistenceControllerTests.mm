@@ -21,13 +21,11 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPUpload.h"
-#import "MPCommand.h"
 #import "MPSegment.h"
 #import "MPSegmentMembership.h"
 #import "MPIConstants.h"
 #import "MPStandaloneMessage.h"
 #import "MPStandaloneUpload.h"
-#import "MPStandaloneCommand.h"
 #import "MPMessageBuilder.h"
 #import "MParticleUserNotification.h"
 
@@ -237,49 +235,6 @@
                                           }];
                          
                      }];
-    
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECATIONS_TIMEOUT handler:nil];
-}
-
-- (void)testCommand {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
-    
-    NSDictionary *commandDictionary = @{@"ct":@1397231725992,
-                                        @"dt":@"hc",
-                                        @"h":@{@"User-Agent":@"Mozilla/5.0 (iPhone; CPU iPhone OS 7_1 like Mac OS X) AppleWebKit/537.51.2 (KHTML, like Gecko) Mobile/11D167 mParticle/2.3.1"},
-                                        @"id":@"ac813ca3-3236-457a-9edd-fe0b9965f7f6",
-                                        @"m":@"GET",
-                                        @"u":@"https://ssl.google-analytics.com/collect?sc=start&ht=1397226437508&cid=31383639353030303030&ul=en-us&sr=640x1136&an=Particlebox&av=2.3.1&aid=com.mparticle.Particlebox&tid=UA-46924309-3&t=appview&v=1&_v=mi3.0.3&qt=5288484&z=D0151150-BAB9-482D-9826-5713145E0263"
-                                        };
-    
-    MPCommand *command = [[MPCommand alloc] initWithSession:session commandDictionary:commandDictionary];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence saveCommand:command];
-    
-    XCTAssertTrue(command.commandId > 0, @"Command id not greater than zero: %lld", command.commandId);
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Command test"];
-    
-    [persistence fetchCommandsInSession:session
-                      completionHandler:^(NSArray<MPCommand *> *commands) {
-                          MPCommand *fetchedCommand = [commands lastObject];
-                          
-                          XCTAssertEqualObjects(command, fetchedCommand, @"Command and fetchedCommand are not equal.");
-                          
-                          [persistence deleteCommand:command];
-                          
-                          [persistence fetchCommandsInSession:session
-                                            completionHandler:^(NSArray *commands) {
-                                                if (commands) {
-                                                    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"commandId == %lld", fetchedCommand.commandId];
-                                                    commands = [commands filteredArrayUsingPredicate:predicate];
-                                                    XCTAssertTrue(commands.count == 0, @"Command is not being deleted.");
-                                                }
-                                                
-                                                [expectation fulfill];
-                                            }];
-                      }];
     
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECATIONS_TIMEOUT handler:nil];
 }
