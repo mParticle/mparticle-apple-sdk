@@ -421,6 +421,8 @@
 		C97C091D1CA3122600280B1E /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08CE1CA3074F00280B1E /* MPStateMachineTests.mm */; };
 		C97C091E1CA3122600280B1E /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D01CA3074F00280B1E /* MPURLRequestBuilderTests.m */; };
 		C97C091F1CA3122600280B1E /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D11CA3074F00280B1E /* MPZipTests.mm */; };
+		C97C09221CA322C000280B1E /* MPKitRegisterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C09211CA322C000280B1E /* MPKitRegisterTests.m */; };
+		C97C09231CA322C000280B1E /* MPKitRegisterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C09211CA322C000280B1E /* MPKitRegisterTests.m */; };
 		C9A88DD61C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9A88DD71C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
@@ -674,6 +676,7 @@
 		C97C08D11CA3074F00280B1E /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
 		C97C09041CA3116800280B1E /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C97C09081CA3116800280B1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C97C09211CA322C000280B1E /* MPKitRegisterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitRegisterTests.m; sourceTree = "<group>"; };
 		C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExtensionProtocol.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1147,6 +1150,7 @@
 				C97C08C41CA3074F00280B1E /* MPCustomModuleTests.m */,
 				C97C08C51CA3074F00280B1E /* MPEventTests.mm */,
 				C97C08C61CA3074F00280B1E /* MPForwardRecordTests.m */,
+				C97C09211CA322C000280B1E /* MPKitRegisterTests.m */,
 				C97C08C71CA3074F00280B1E /* MPLaunchInfoTests.m */,
 				C97C08C81CA3074F00280B1E /* MPMessageBuilderTests.m */,
 				C97C08C91CA3074F00280B1E /* MPNetworkCommunication+Tests.h */,
@@ -1768,6 +1772,7 @@
 				C97C08F21CA3087B00280B1E /* MPCartTests.m in Sources */,
 				C97C08FC1CA3089400280B1E /* MPProductBagTests.m in Sources */,
 				C97C08EE1CA307CE00280B1E /* BracketTests.mm in Sources */,
+				C97C09221CA322C000280B1E /* MPKitRegisterTests.m in Sources */,
 				C97C08FF1CA3089400280B1E /* MPZipTests.mm in Sources */,
 				C97C08F11CA3087000280B1E /* MPBackendControllerTests.mm in Sources */,
 				C97C08FD1CA3089400280B1E /* MPStateMachineTests.mm in Sources */,
@@ -1798,6 +1803,7 @@
 				C97C09131CA3122600280B1E /* MPCommerceEventTests.m in Sources */,
 				C97C09181CA3122600280B1E /* MPLaunchInfoTests.m in Sources */,
 				C97C091B1CA3122600280B1E /* MPPersistenceControllerTests.mm in Sources */,
+				C97C09231CA322C000280B1E /* MPKitRegisterTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

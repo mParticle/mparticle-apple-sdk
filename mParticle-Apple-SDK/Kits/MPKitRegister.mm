@@ -18,6 +18,7 @@
 
 #import "MPKitRegister.h"
 #import "MPStateMachine.h"
+#import "MPIConstants.h"
 
 @implementation MPKitRegister
 
@@ -28,8 +29,8 @@
 }
 
 - (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately {
-    NSAssert(name != nil, @"Required parameter. It cannot be nil.");
-    NSAssert(className != nil, @"Required parameter. It cannot be nil.");
+    NSAssert(!MPIsNull(name), @"Required parameter. It cannot be nil/null.");
+    NSAssert(!MPIsNull(className), @"Required parameter. It cannot be nil/null.");
     
     self = [super init];
     if (!self) {

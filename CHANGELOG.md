@@ -12,6 +12,7 @@
 >Upgrade suggestion: **MODERATE**.
 
 * [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
+* [FIX] Restored unit tests for each of the platforms
 
 ## 5.5.1
 
