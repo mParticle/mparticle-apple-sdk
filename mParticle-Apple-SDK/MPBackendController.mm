@@ -44,7 +44,7 @@
 #import "MediaControl.h"
 #import "MPMediaTrack+Internal.h"
 #import "MPUploadBuilder.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPResponseEvents.h"
 #import "MPConsumerInfo.h"
 #import "MPResponseConfig.h"
@@ -360,7 +360,7 @@ static BOOL appBackgrounded = NO;
             
             [[MPPersistenceController sharedInstance] purgeMemory];
             
-            MPLogDebug(@"SDK has become dormant with the app.");
+            MPILogDebug(@"SDK has become dormant with the app.");
             
             [[UIApplication sharedApplication] endBackgroundTask:strongSelf->backendBackgroundTaskIdentifier];
             strongSelf->backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
@@ -544,7 +544,7 @@ static BOOL appBackgrounded = NO;
         }
         
         if ([[MPStateMachine sharedInstance].minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-            MPLogDebug(@"Throttling batches");
+            MPILogDebug(@"Throttling batches");
             
             if (completionHandler) {
                 completionHandler(NO);
@@ -683,7 +683,7 @@ static BOOL appBackgrounded = NO;
         message = (MPMessage *)[[messageBuilder withTimestamp:session.endTime] build];
         
         [self saveMessage:message updateSession:NO];
-        MPLogVerbose(@"Session Ended: %@", session.uuid);
+        MPILogVerbose(@"Session Ended: %@", session.uuid);
     }
     
     __weak MPBackendController *weakSelf = self;
@@ -905,7 +905,7 @@ static BOOL appBackgrounded = NO;
     [self.session suspendSession];
     [self saveMessage:message updateSession:YES];
 
-    MPLogVerbose(@"Application Did Enter Background");
+    MPILogVerbose(@"Application Did Enter Background");
 
     [self upload];
     [self beginBackgroundTimer];
@@ -1001,7 +1001,7 @@ static BOOL appBackgrounded = NO;
         
         [self saveMessage:message updateSession:YES];
         
-        MPLogVerbose(@"Application Did Finish Launching");
+        MPILogVerbose(@"Application Did Finish Launching");
     });
 }
 
@@ -1019,7 +1019,7 @@ static BOOL appBackgrounded = NO;
     NSString *messagePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%.0f.arcmsg", message.uuid, message.timestamp]];
     BOOL messageArchived = [NSKeyedArchiver archiveRootObject:message toFile:messagePath];
     if (!messageArchived) {
-        MPLogError(@"Application Will Terminate message not archived.");
+        MPILogError(@"Application Will Terminate message not archived.");
     }
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
@@ -1086,7 +1086,7 @@ static BOOL appBackgrounded = NO;
         
         [self saveMessage:message updateSession:YES];
         
-        MPLogVerbose(@"Application Did Become Active");
+        MPILogVerbose(@"Application Did Become Active");
     };
     
     if (sessionExpired) {
@@ -1109,7 +1109,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleEventCounterLimitReached:(NSNotification *)notification {
-    MPLogDebug(@"The event limit has been exceeded for this session. Automatically begining a new session.");
+    MPILogDebug(@"The event limit has been exceeded for this session. Automatically begining a new session.");
     [self beginSession:nil];
 }
 
@@ -1306,7 +1306,7 @@ static BOOL appBackgrounded = NO;
     
     [self broadcastSessionDidBegin:_session];
     
-    MPLogVerbose(@"New Session Has Begun: %@", _session.uuid);
+    MPILogVerbose(@"New Session Has Begun: %@", _session.uuid);
 }
 
 - (void)endSession {
@@ -1362,7 +1362,7 @@ static BOOL appBackgrounded = NO;
     [self broadcastSessionDidEnd:endSession];
     _session = nil;
     
-    MPLogVerbose(@"Session Ended: %@", endSession.uuid);
+    MPILogVerbose(@"Session Ended: %@", endSession.uuid);
 }
 
 - (void)beginTimedEvent:(MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
@@ -1700,7 +1700,7 @@ static BOOL appBackgrounded = NO;
                     [[MPCart sharedInstance] addProducts:products logEvent:NO updateProductList:YES];
                     [commerceEvent resetLatestProducts];
                 } else {
-                    MPLogWarning(@"Commerce event products were not added to the cart.");
+                    MPILogWarning(@"Commerce event products were not added to the cart.");
                 }
             } else if (commerceEvent.action == MPCommerceEventActionRemoveFromCart) {
                 products = [commerceEvent removedProducts];
@@ -1709,7 +1709,7 @@ static BOOL appBackgrounded = NO;
                     [[MPCart sharedInstance] removeProducts:products logEvent:NO updateProductList:YES];
                     [commerceEvent resetLatestProducts];
                 } else {
-                    MPLogWarning(@"Commerce event products were not removed from the cart.");
+                    MPILogWarning(@"Commerce event products were not removed from the cart.");
                 }
             }
             
@@ -2167,14 +2167,14 @@ static BOOL appBackgrounded = NO;
             
             [strongSelf saveMessage:message updateSession:YES];
             
-            MPLogDebug(@"Application First Run");
+            MPILogDebug(@"Application First Run");
         }
         
         [strongSelf processPendingArchivedMessages];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             strongSelf->_initializationStatus = MPInitializationStatusStarted;
-            MPLogDebug(@"SDK %@ has started", kMParticleSDKVersion);
+            MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
             
             [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {
                 if (firstRun) {
@@ -2201,7 +2201,7 @@ static BOOL appBackgrounded = NO;
             [persistence saveMessage:message];
         }
         
-        MPLogVerbose(@"Source Event Id: %@", message.uuid);
+        MPILogVerbose(@"Source Event Id: %@", message.uuid);
         
         if (updateSession) {
             if (self.session.persisted) {
@@ -2594,9 +2594,9 @@ static BOOL appBackgrounded = NO;
     [self saveMessage:message updateSession:YES];
     
     if (deviceToken) {
-        MPLogDebug(@"Set Device Token: %@", deviceToken);
+        MPILogDebug(@"Set Device Token: %@", deviceToken);
     } else {
-        MPLogDebug(@"Reset Device Token: %@", oldDeviceToken);
+        MPILogDebug(@"Reset Device Token: %@", oldDeviceToken);
     }
 }
 

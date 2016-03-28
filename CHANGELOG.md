@@ -9,9 +9,10 @@
 
 ## 5.5.1
 
->Upgrade suggestion: **LOW**.
+>Upgrade suggestion: **LOW**. Upgrade if you are having an enum conflict with MPLogLevel
 
 * [NEW] Added Branch Metrics support for received push notifications
+* [NEW] Renamed the `MPLogLevel` enum to `MPILogLevel`. The renamed values are: `MPILogLevelNone`, `MPILogLevelError`, `MPILogLevelWarning`, `MPILogLevelDebug`, and `MPILogLevelVerbose`
 
 ## 5.5.0
 

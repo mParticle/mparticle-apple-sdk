@@ -28,7 +28,7 @@
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPKitFilter.h"
 #include "EventTypeName.h"
 #import "MPEvent.h"
@@ -225,7 +225,7 @@ NSString *const kitFileExtension = @"eks";
     [self didChangeValueForKey:@"kits"];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if ([MPStateMachine sharedInstance].logLevel >= MPLogLevelDebug) {
+        if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
             NSArray<NSNumber *> *supportedKits = [self supportedKits];
             NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
             for (NSNumber *supportedKit in supportedKits) {
@@ -235,7 +235,7 @@ NSString *const kitFileExtension = @"eks";
             [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
             [listOfKits appendString:@"}"];
             
-            MPLogDebug(@"%@", listOfKits);
+            MPILogDebug(@"%@", listOfKits);
         }
     });
 }
@@ -371,7 +371,7 @@ NSString *const kitFileExtension = @"eks";
                     value = @(integerValue);
                 } else {
                     value = [NSNull null];
-                    MPLogError(@"Value '%@' was expected to be a number string.", originalValue);
+                    MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
                 }
             }
         }
@@ -387,7 +387,7 @@ NSString *const kitFileExtension = @"eks";
                     value = @(floatValue);
                 } else {
                     value = [NSNull null];
-                    MPLogError(@"Attribute '%@' was expected to be a number string.", originalValue);
+                    MPILogError(@"Attribute '%@' was expected to be a number string.", originalValue);
                 }
             }
         }
@@ -1733,7 +1733,7 @@ NSString *const kitFileExtension = @"eks";
                 [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
             }
         } else {
-            MPLogWarning(@"SDK is trying to configure the %@ kit, however it is not currently configured in your Podfile.", [MPKitAbstract nameForKit:kitCode]);
+            MPILogWarning(@"SDK is trying to configure the %@ kit, however it is not currently configured in your Podfile.", [MPKitAbstract nameForKit:kitCode]);
         }
         
         if (!removeKits.empty()) {
@@ -1886,7 +1886,7 @@ NSString *const kitFileExtension = @"eks";
                           
                           [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                           
-                          MPLogDebug(@"Forwarded logCommerceEvent call to kit: %@", [kit kitName]);
+                          MPILogDebug(@"Forwarded logCommerceEvent call to kit: %@", [kit kitName]);
                       }
                   }
               }];
@@ -1928,7 +1928,7 @@ NSString *const kitFileExtension = @"eks";
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
+                    MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
                 }
             }
         };
@@ -1959,7 +1959,7 @@ NSString *const kitFileExtension = @"eks";
             if (!kitFilter.shouldFilter && [kit canExecuteSelector:selector]) {
                 kitHandler(kit);
                 
-                MPLogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, [kit kitName]);
+                MPILogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, [kit kitName]);
             }
         }
     }
@@ -1975,7 +1975,7 @@ NSString *const kitFileExtension = @"eks";
             if ([kit canExecuteSelector:selector]) {
                 kitHandler(kit, kitFilter.filteredAttributes);
                 
-                MPLogDebug(@"Forwarded user attributes to kit: %@", [kit kitName]);
+                MPILogDebug(@"Forwarded user attributes to kit: %@", [kit kitName]);
             }
         }
     }
@@ -1991,7 +1991,7 @@ NSString *const kitFileExtension = @"eks";
             if (!kitFilter.shouldFilter && [kit canExecuteSelector:selector]) {
                 kitHandler(kit);
                 
-                MPLogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, [kit kitName]);
+                MPILogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, [kit kitName]);
             }
         }
     }
@@ -2009,7 +2009,7 @@ NSString *const kitFileExtension = @"eks";
                 
                 kitHandler(kit, &execStatus);
                 
-                MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
+                MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
             }
         }
     }
@@ -2025,7 +2025,7 @@ NSString *const kitFileExtension = @"eks";
                 
                 kitHandler(kit, &execStatus);
                 
-                MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
+                MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), [kit kitName]);
             }
         }
     }

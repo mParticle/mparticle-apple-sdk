@@ -27,7 +27,7 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPTransactionAttributes.h"
 #import "MPPromotion.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "mParticle.h"
 #import <Kahuna/Kahuna.h>
 
@@ -301,7 +301,7 @@ NSString *const khnSdkWrapper = @"mParticle";
         NSError *error = nil;
         [Kahuna loginWithCredentials:kuc error:&error];
         if (error) {
-            MPLogDebug(@"Kahuna Login Error : %@", error.description);
+            MPILogDebug(@"Kahuna Login Error : %@", error.description);
         }
     }
     

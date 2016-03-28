@@ -36,20 +36,20 @@
 @property (nonatomic, strong, nullable) NSString *attributeValueFilteringHashedAttribute;
 @property (nonatomic, strong, nullable) NSString *attributeValueFilteringHashedValue;
 
-@property (nonatomic, weak, readonly) NSDictionary *eventTypeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *eventNameFilters;
-@property (nonatomic, weak, readonly) NSDictionary *eventAttributeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *messageTypeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *screenNameFilters;
-@property (nonatomic, weak, readonly) NSDictionary *screenAttributeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *userIdentityFilters;
-@property (nonatomic, weak, readonly) NSDictionary *userAttributeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *commerceEventAttributeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *commerceEventEntityTypeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *commerceEventAppFamilyAttributeFilters;
-@property (nonatomic, weak, readonly) NSDictionary *addEventAttributeList;
-@property (nonatomic, weak, readonly) NSDictionary *removeEventAttributeList;
-@property (nonatomic, weak, readonly) NSDictionary *singleItemEventAttributeList;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *eventTypeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *eventNameFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *eventAttributeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *messageTypeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *screenNameFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *screenAttributeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *userIdentityFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *userAttributeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *commerceEventAttributeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *commerceEventEntityTypeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *commerceEventAppFamilyAttributeFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *addEventAttributeList;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *removeEventAttributeList;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *singleItemEventAttributeList;
 
 - (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)configurationDictionary;
 - (void)updateConfiguration:(nonnull NSDictionary *)configurationDictionary;

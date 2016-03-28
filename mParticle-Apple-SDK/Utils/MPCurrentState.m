@@ -117,15 +117,15 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     NSString *dataConnectionStatus;
     
     switch ([MPStateMachine sharedInstance].networkStatus) {
-        case ReachableViaWWAN:
+        case MParticleNetworkStatusReachableViaWAN:
             dataConnectionStatus = kDataConnectionMobile;
             break;
             
-        case ReachableViaWiFi:
+        case MParticleNetworkStatusReachableViaWiFi:
             dataConnectionStatus = kDataConnectionWifi;
             break;
             
-        case NotReachable:
+        case MParticleNetworkStatusNotReachable:
             dataConnectionStatus = kDataConnectionOffline;
             break;
     }

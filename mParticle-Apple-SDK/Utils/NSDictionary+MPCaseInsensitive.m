@@ -18,7 +18,7 @@
 
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPDateFormatter.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 @implementation NSDictionary(MPCaseInsensitive)
 
@@ -78,7 +78,7 @@
         } else if ([obj isKindOfClass:[NSData class]] && [(NSData *)obj length] > 0) {
             transformedDictionary[key] = [[NSString alloc] initWithData:obj encoding:NSUTF8StringEncoding];
         } else {
-            MPLogError(@"Data type is not supported as an attribute value: %@ - %@", obj, [[obj class] description]);
+            MPILogError(@"Data type is not supported as an attribute value: %@ - %@", obj, [[obj class] description]);
             NSAssert([obj isKindOfClass:[NSString class]], @"Data type is not supported as an attribute value");
             return;
         }

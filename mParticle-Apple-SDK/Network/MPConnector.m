@@ -22,7 +22,7 @@
 #import "MPStateMachine.h"
 #import "MPURLRequestBuilder.h"
 #import "MPNetworkCommunication.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 static NSArray *mpStoredCertificates = nil;
 static NSArray *mpFiddlerCertificates = nil;
@@ -220,7 +220,7 @@ static NSArray *mpFiddlerCertificates = nil;
             @try {
                 self.completionHandler(receivedData, nil, downloadTime, httpURLResponse);
             } @catch (NSException *exception) {
-                MPLogError(@"Error invoking the completion handler of a data download task.");
+                MPILogError(@"Error invoking the completion handler of a data download task.");
             }
         }
     } else {
@@ -228,7 +228,7 @@ static NSArray *mpFiddlerCertificates = nil;
             @try {
                 self.completionHandler(nil, error, 0, nil);
             } @catch (NSException *exception) {
-                MPLogError(@"Error invoking the completion handler of a data download task with error: %@.", [error localizedDescription]);
+                MPILogError(@"Error invoking the completion handler of a data download task with error: %@.", [error localizedDescription]);
             }
         }
     }
@@ -248,7 +248,7 @@ static NSArray *mpFiddlerCertificates = nil;
 #pragma mark Public methods
 - (void)asyncGetDataFromURL:(NSURL *)url completionHandler:(void (^)(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse))completionHandler {
 #if !defined(MP_UNIT_TESTING)
-    if ([MPStateMachine sharedInstance].networkStatus == NotReachable) {
+    if ([MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
         NSError *error = [NSError errorWithDomain:@"MPConnector" code:1 userInfo:nil];
         completionHandler(nil, error, 0, nil);
         return;
@@ -272,7 +272,7 @@ static NSArray *mpFiddlerCertificates = nil;
 
 - (void)asyncPostDataFromURL:(NSURL *)url message:(NSString *)message serializedParams:(NSData *)serializedParams completionHandler:(void (^)(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse))completionHandler {
 #if !defined(MP_UNIT_TESTING)
-    if ([MPStateMachine sharedInstance].networkStatus == NotReachable) {
+    if ([MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
         NSError *error = [NSError errorWithDomain:@"MPConnector" code:1 userInfo:nil];
         completionHandler(nil, error, 0, nil);
         return;
