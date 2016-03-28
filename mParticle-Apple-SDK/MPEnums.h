@@ -173,17 +173,17 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
 };
 
 /// Log Levels
-typedef NS_ENUM(NSUInteger, MPLogLevel) {
+typedef NS_ENUM(NSUInteger, MPILogLevel) {
     /** No log messages are displayed on the console  */
-    MPLogLevelNone = 0,
+    MPILogLevelNone = 0,
     /** Only error log messages are displayed on the console */
-    MPLogLevelError,
+    MPILogLevelError,
     /** Warning and error log messages are displayed on the console */
-    MPLogLevelWarning,
+    MPILogLevelWarning,
     /** Debug, warning, and error log messages are displayed on the console */
-    MPLogLevelDebug,
+    MPILogLevelDebug,
     /** Verbose, debug, warning, and error log messages are displayed on the console */
-    MPLogLevelVerbose
+    MPILogLevelVerbose
 };
 
 /// Message Types

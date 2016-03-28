@@ -20,7 +20,7 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPSurrogateAppDelegate.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 @interface MPAppDelegateProxy() {
     SEL applicationOpenURLOptionsSelector;
@@ -67,7 +67,7 @@
     if ([self.surrogateAppDelegate respondsToSelector:selector]) {
         target = self.surrogateAppDelegate;
     } else if (![_originalAppDelegate respondsToSelector:selector]) {
-        MPLogError(@"App Delegate does not implement selector: %@", NSStringFromSelector(selector));
+        MPILogError(@"App Delegate does not implement selector: %@", NSStringFromSelector(selector));
     }
     
     [anInvocation invokeWithTarget:target];
@@ -79,7 +79,7 @@
     if ([self.surrogateAppDelegate respondsToSelector:aSelector]) {
         target = self.surrogateAppDelegate;
     } else if (![_originalAppDelegate respondsToSelector:aSelector]) {
-        MPLogError(@"App Delegate does not implement selector: %@", NSStringFromSelector(aSelector));
+        MPILogError(@"App Delegate does not implement selector: %@", NSStringFromSelector(aSelector));
     }
     
     return target;

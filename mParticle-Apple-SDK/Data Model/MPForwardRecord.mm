@@ -18,7 +18,7 @@
 
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPKitFilter.h"
 #include "EventTypeName.h"
 #include "MessageTypeName.h"
@@ -52,7 +52,7 @@ NSString *const kMPFROptOutState = @"s";
         if (!error) {
             _dataDictionary = [NSMutableDictionary dictionaryWithDictionary:jsonDictionary];
         } else {
-            MPLogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
+            MPILogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
         }
     }
     
@@ -178,7 +178,7 @@ NSString *const kMPFROptOutState = @"s";
 #pragma mark Public methods
 - (NSData *)dataRepresentation {
     if (MPIsNull(_dataDictionary)) {
-        MPLogWarning(@"Data dictionary is nil/null.");
+        MPILogWarning(@"Data dictionary is nil/null.");
         return nil;
     }
     
@@ -188,7 +188,7 @@ NSString *const kMPFROptOutState = @"s";
     if (!error) {
         return data;
     } else {
-        MPLogError(@"Error serializing the dictionary into a data representation: %@", [error localizedDescription]);
+        MPILogError(@"Error serializing the dictionary into a data representation: %@", [error localizedDescription]);
         return nil;
     }
 }

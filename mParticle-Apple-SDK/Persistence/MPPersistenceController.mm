@@ -30,7 +30,7 @@
 #import "MPStandaloneUpload.h"
 #include <string>
 #include <vector>
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPProductBag.h"
 #import "MPForwardRecord.h"
@@ -150,7 +150,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_int64(preparedStatement, 0, cookie.cookieId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-            MPLogError(@"Error while deleting cookie: %s", sqlite3_errmsg(mParticleDB));
+            MPILogError(@"Error while deleting cookie: %s", sqlite3_errmsg(mParticleDB));
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -166,7 +166,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting cookies: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting cookies: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -229,7 +229,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_int64(preparedStatement, 1, consumerInfo.consumerInfoId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-            MPLogError(@"Error while storing cookie: %s", sqlite3_errmsg(mParticleDB));
+            MPILogError(@"Error while storing cookie: %s", sqlite3_errmsg(mParticleDB));
             sqlite3_clear_bindings(preparedStatement);
             sqlite3_finalize(preparedStatement);
             return;
@@ -406,7 +406,7 @@ const int MaxBreadcrumbs = 50;
             tableCreationStatus = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
             
             if (tableCreationStatus != SQLITE_OK) {
-                MPLogError("Problem creating table: %s\n", sqlStatement.c_str());
+                MPILogError("Problem creating table: %s\n", sqlStatement.c_str());
             }
         }
         
@@ -447,7 +447,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_int64(preparedStatement, 1, cookie.cookieId);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-            MPLogError(@"Error while updating cookie: %s", sqlite3_errmsg(mParticleDB));
+            MPILogError(@"Error while updating cookie: %s", sqlite3_errmsg(mParticleDB));
         }
         
         sqlite3_clear_bindings(preparedStatement);
@@ -472,13 +472,13 @@ const int MaxBreadcrumbs = 50;
             }
             
             if (databaseState == MPDatabaseStateCorrupted) {
-                MPLogError(@"Database is corrupted.");
+                MPILogError(@"Database is corrupted.");
             }
             
             sqlite3_finalize(preparedStatement);
         }
     } @catch (NSException *exception) {
-        MPLogError(@"Verifying database state - exception %@.", [exception reason]);
+        MPILogError(@"Verifying database state - exception %@.", [exception reason]);
         return MPDatabaseStateCorrupted;
     }
     
@@ -537,7 +537,7 @@ const int MaxBreadcrumbs = 50;
                 sqlite3_bind_double(preparedStatement, 11, session.length);
                 
                 if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPLogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
+                    MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
                 }
                 
                 sqlite3_clear_bindings(preparedStatement);
@@ -570,7 +570,7 @@ const int MaxBreadcrumbs = 50;
         _databasePath = nil;
         databaseOpen = NO;
     } else {
-        MPLogError(@"Error closing database: %d - %s", statusCode, sqlite3_errmsg(mParticleDB));
+        MPILogError(@"Error closing database: %d - %s", statusCode, sqlite3_errmsg(mParticleDB));
     }
     
     return databaseClosed;
@@ -631,7 +631,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting consumer info: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting consumer info: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -648,7 +648,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 1, [[NSDate date] timeIntervalSince1970]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting expired user notifications: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting expired user notifications: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -671,7 +671,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting forwarding records: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting forwarding records: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -697,7 +697,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -712,7 +712,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting messages with no sessions");
+                MPILogError(@"Error while deleting messages with no sessions");
             }
         }
         
@@ -727,7 +727,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting network messages from sessions");
+                MPILogError(@"Error while deleting network messages from sessions");
             }
         }
         
@@ -752,7 +752,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_text(preparedStatement, 1, name.c_str(), (int)name.size(), SQLITE_STATIC);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting product bag: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting product bag: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -769,7 +769,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting product bags: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting product bags: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -792,7 +792,7 @@ const int MaxBreadcrumbs = 50;
                 sqlite3_bind_double(preparedStatement, 1, timestamp);
                 
                 if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPLogError(@"Error while deleting old records: %s", sqlite3_errmsg(mParticleDB));
+                    MPILogError(@"Error while deleting old records: %s", sqlite3_errmsg(mParticleDB));
                 }
                 
                 sqlite3_clear_bindings(preparedStatement);
@@ -811,7 +811,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting segment memberships: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting segment memberships: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -821,7 +821,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting segments: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting segments: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -839,7 +839,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -854,7 +854,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting session: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting session: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -877,7 +877,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, uploadId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting upload: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting upload: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -896,7 +896,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, standaloneMessage.messageId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting stand-alone message: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting stand-alone message: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -917,7 +917,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting stand-alone messages: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting stand-alone messages: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -938,7 +938,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, standaloneUploadId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting stand-alone upload: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting stand-alone upload: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -1706,7 +1706,7 @@ const int MaxBreadcrumbs = 50;
     
     databaseOpen = statusCode == SQLITE_OK;
     if (!databaseOpen) {
-        MPLogError(@"Error opening database: %d - %s", statusCode, sqlite3_errmsg(mParticleDB));
+        MPILogError(@"Error opening database: %d - %s", statusCode, sqlite3_errmsg(mParticleDB));
         sqlite3_close(mParticleDB);
         mParticleDB = NULL;
     }
@@ -1735,7 +1735,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 5, [session.sessionNumber integerValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -1750,7 +1750,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 1, MaxBreadcrumbs);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while pruning breadcrumbs: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while pruning breadcrumbs: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -1793,7 +1793,7 @@ const int MaxBreadcrumbs = 50;
             }
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -1828,7 +1828,7 @@ const int MaxBreadcrumbs = 50;
             }
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing forward record: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing forward record: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -1862,7 +1862,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 6, message.uploadStatus);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing message: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing message: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -1898,7 +1898,7 @@ const int MaxBreadcrumbs = 50;
                 sqlite3_bind_blob(preparedStatement, 3, [productData bytes], (int)[productData length], SQLITE_STATIC); // product_data
                 
                 if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPLogError(@"Error while storing product bag: %s", sqlite3_errmsg(mParticleDB));
+                    MPILogError(@"Error while storing product bag: %s", sqlite3_errmsg(mParticleDB));
                     sqlite3_clear_bindings(preparedStatement);
                     sqlite3_finalize(preparedStatement);
                     return;
@@ -1924,7 +1924,7 @@ const int MaxBreadcrumbs = 50;
                 sqlite3_bind_int(preparedStatement, 3, segmentMembership.action);
                 
                 if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPLogError(@"Error while storing segment membership: %s", sqlite3_errmsg(mParticleDB));
+                    MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(mParticleDB));
                     sqlite3_clear_bindings(preparedStatement);
                     sqlite3_finalize(preparedStatement);
                     return;
@@ -1994,7 +1994,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 10, session.length);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing session: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing session: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -2023,7 +2023,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 4, upload.sessionId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -2053,7 +2053,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 4, upload.sessionId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -2084,7 +2084,7 @@ const int MaxBreadcrumbs = 50;
             
             if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
                 if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPLogError(@"Error while post-processing upload: %s", sqlite3_errmsg(mParticleDB));
+                    MPILogError(@"Error while post-processing upload: %s", sqlite3_errmsg(mParticleDB));
                 }
             }
             
@@ -2110,7 +2110,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 5, standaloneMessage.uploadStatus);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing stand-alone message: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing stand-alone message: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -2138,7 +2138,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 3, standaloneUpload.timestamp);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing stand-alone upload: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing stand-alone upload: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -2174,7 +2174,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 2, consumerInfo.consumerInfoId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while updating consumer info: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while updating consumer info: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -2217,7 +2217,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 8, session.sessionId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while updating session: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while updating session: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -2237,7 +2237,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, userNotification.userNotificationId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while deleting user notification: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while deleting user notification: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -2505,7 +2505,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 8, [userNotification.receiptTime timeIntervalSince1970]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while storing user notification: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing user notification: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
@@ -2532,7 +2532,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 2, userNotification.userNotificationId);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPLogError(@"Error while updating user notification: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while updating user notification: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -2578,7 +2578,7 @@ static inline NSDictionary *dictionaryRepresentation(sqlite3_stmt *const prepare
                                                    error:&error];
     
     if (error) {
-        MPLogError(@"Error deserializing JSON: %@", error);
+        MPILogError(@"Error deserializing JSON: %@", error);
         return nil;
     }
     

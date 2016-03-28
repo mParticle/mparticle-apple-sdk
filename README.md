@@ -175,6 +175,8 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 
 ## Migrating From Version 4.x to Version 6.x (iOS Only)
 
+### Podfile
+
 Remove the statement from your `Podfile`
 
 ```ruby
@@ -183,6 +185,7 @@ pod 'mParticle', '~> 4'
 
 and replace it with one of the options described in the [Installation](#installation) section.
 
+### Import Header
 The `#import` statement is different, it no longer is: `#import <mParticle/mParticle.h>`. Please replace it with the appropriate `import` statement for your app as described in the [Initialize the SDK](#initialize-the-sdk) section
 
 Moreover, in case you had the need to directly call methods from a 3rd party provider kit through the mParticle SDK, you no longer need to indirectly import their headers. You can just import them directly as indicated in the provider respective documentation. For example, if you were using:
@@ -198,6 +201,10 @@ You will now use:
 ```
 
 Or whichever other way is recommended by the 3rd party provider.
+
+### MPLogLevel Enum
+
+If you are using the `.logLevel` property, we have renamed the `MPLogLevel` enum to `MPILogLevel`. The renamed values are: `MPILogLevelNone`, `MPILogLevelError`, `MPILogLevelWarning`, `MPILogLevelDebug`, and `MPILogLevelVerbose`.
 
 
 ## Example Project with Sample Code

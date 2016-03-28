@@ -26,7 +26,7 @@
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPKitFilter.h"
 #include "EventTypeName.h"
 #import "MPEvent.h"
@@ -215,7 +215,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     kitsInitialized = YES;
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if ([MPStateMachine sharedInstance].logLevel >= MPLogLevelDebug) {
+        if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
             NSArray<NSNumber *> *supportedKits = [self supportedKits];
             NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
             for (NSNumber *supportedKit in supportedKits) {
@@ -225,7 +225,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
             [listOfKits appendString:@"}"];
             
-            MPLogDebug(@"%@", listOfKits);
+            MPILogDebug(@"%@", listOfKits);
         }
     });
 }
@@ -342,7 +342,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     value = @(integerValue);
                 } else {
                     value = [NSNull null];
-                    MPLogError(@"Value '%@' was expected to be a number string.", originalValue);
+                    MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
                 }
             }
         }
@@ -358,7 +358,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     value = @(floatValue);
                 } else {
                     value = [NSNull null];
-                    MPLogError(@"Attribute '%@' was expected to be a number string.", originalValue);
+                    MPILogError(@"Attribute '%@' was expected to be a number string.", originalValue);
                 }
             }
         }
@@ -1699,7 +1699,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
             }
         } else {
-            MPLogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the Code SDK.", kitCode);
+            MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the Code SDK.", kitCode);
         }
         
         if (!deactivateKits.empty()) {
@@ -1795,7 +1795,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded logCommerceEvent call to kit: %@", kitRegister.name);
+                    MPILogDebug(@"Forwarded logCommerceEvent call to kit: %@", kitRegister.name);
                 }
             }
         }];
@@ -1837,7 +1837,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                    MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
                 }
             }
         };
@@ -1865,7 +1865,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if (!kitFilter.shouldFilter) {
                 kitHandler(kitRegister.wrapperInstance);
                 
-                MPLogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, kitRegister.name);
+                MPILogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, kitRegister.name);
             }
         }
     }
@@ -1880,7 +1880,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             kitHandler(kitRegister.wrapperInstance, kitFilter.filteredAttributes);
             
-            MPLogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
+            MPILogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
         }
     }
 }
@@ -1895,7 +1895,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if (!kitFilter.shouldFilter) {
                 kitHandler(kitRegister.wrapperInstance);
                 
-                MPLogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, kitRegister.name);
+                MPILogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, kitRegister.name);
             }
         }
     }
@@ -1913,7 +1913,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 
                 kitHandler(kitRegister.wrapperInstance, &execStatus);
                 
-                MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
             }
         }
     }
@@ -1928,7 +1928,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             kitHandler(kitRegister.wrapperInstance, &execStatus);
             
-            MPLogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+            MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
         }
     }
 }

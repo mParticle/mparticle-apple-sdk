@@ -50,14 +50,14 @@
 #import <netinet/in.h>
 
 
-typedef enum : NSInteger {
-	NotReachable = 0,
-	ReachableViaWiFi,
-	ReachableViaWWAN
-} NetworkStatus;
+typedef NS_ENUM(NSInteger, MParticleNetworkStatus) {
+    MParticleNetworkStatusNotReachable = 0,
+    MParticleNetworkStatusReachableViaWiFi,
+    MParticleNetworkStatusReachableViaWAN
+};
 
 
-extern NSString *kMPReachabilityChangedNotification;
+extern NSString *MParticleReachabilityChangedNotification;
 
 
 @interface MParticleReachability : NSObject
@@ -88,7 +88,7 @@ extern NSString *kMPReachabilityChangedNotification;
 - (BOOL)startNotifier;
 - (void)stopNotifier;
 
-- (NetworkStatus)currentReachabilityStatus;
+- (MParticleNetworkStatus)currentReachabilityStatus;
 
 /*!
  * WWAN may be available, but not active until a connection has been established. WiFi may require a connection for VPN on Demand.

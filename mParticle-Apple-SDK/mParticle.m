@@ -30,7 +30,7 @@
 #import "MPUserSegments+Setters.h"
 #import "NSURLSession+mParticle.h"
 #import "MPNotificationController.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPCommerce.h"
 #import "MPProduct+Dictionary.h"
@@ -283,11 +283,11 @@ NSString *const kMPStateKey = @"state";
     return [MPStateMachine environment];
 }
 
-- (MPLogLevel)logLevel {
+- (MPILogLevel)logLevel {
     return [MPStateMachine sharedInstance].logLevel;
 }
 
-- (void)setLogLevel:(MPLogLevel)logLevel {
+- (void)setLogLevel:(MPILogLevel)logLevel {
     if ([MPStateMachine environment] == MPEnvironmentDevelopment) {
         [MPStateMachine sharedInstance].logLevel = logLevel;
     }
@@ -320,7 +320,7 @@ NSString *const kMPStateKey = @"state";
                         __strong MParticle *strongSelf = weakSelf;
                         
                         if (execStatus == MPExecStatusSuccess) {
-                            MPLogDebug(@"Set Opt Out: %d", optOut);
+                            MPILogDebug(@"Set Opt Out: %d", optOut);
                             
                             // Forwarding calls to kits
                             [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setOptOut:)
@@ -331,9 +331,9 @@ NSString *const kMPStateKey = @"state";
                                                                      *execStatus = [kit setOptOut:optOut];
                                                                  }];
                         } else if (execStatus == MPExecStatusDelayedExecution) {
-                            MPLogWarning(@"Delayed Set Opt Out: %@\n Reason: %@", optOut ? @"YES" : @"NO", [strongSelf.backendController execStatusDescription:execStatus]);
+                            MPILogWarning(@"Delayed Set Opt Out: %@\n Reason: %@", optOut ? @"YES" : @"NO", [strongSelf.backendController execStatusDescription:execStatus]);
                         } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                            MPLogError(@"Failed Setting Opt Out: %@\n Reason: %@", optOut ? @"YES" : @"NO", [strongSelf.backendController execStatusDescription:execStatus]);
+                            MPILogError(@"Failed Setting Opt Out: %@\n Reason: %@", optOut ? @"YES" : @"NO", [strongSelf.backendController execStatusDescription:execStatus]);
                         }
                     }];
 }
@@ -344,7 +344,7 @@ NSString *const kMPStateKey = @"state";
 
 - (void)setSessionTimeout:(NSTimeInterval)sessionTimeout {
     self.backendController.sessionTimeout = sessionTimeout;
-    MPLogDebug(@"Set Session Timeout: %.0f", sessionTimeout);
+    MPILogDebug(@"Set Session Timeout: %.0f", sessionTimeout);
 }
 
 - (NSString *)uniqueIdentifier {
@@ -359,7 +359,7 @@ NSString *const kMPStateKey = @"state";
     self.backendController.uploadInterval = uploadInterval;
     
 #if TARGET_OS_IOS == 1
-    MPLogDebug(@"Set Upload Interval: %0.0f", uploadInterval);
+    MPILogDebug(@"Set Upload Interval: %0.0f", uploadInterval);
 #endif
 }
 
@@ -541,7 +541,7 @@ NSString *const kMPStateKey = @"state";
                               __strong MParticle *strongSelf = weakSelf;
                               
                               if (execStatus == MPExecStatusSuccess) {
-                                  MPLogDebug(@"Began timed event: %@", event);
+                                  MPILogDebug(@"Began timed event: %@", event);
                                   
                                   // Forwarding calls to kits
                                   [[MPKitContainer sharedInstance] forwardSDKCall:@selector(beginTimedEvent:)
@@ -552,9 +552,9 @@ NSString *const kMPStateKey = @"state";
                                                                            *execStatus = [kit beginTimedEvent:forwardEvent];
                                                                        }];
                               } else if (execStatus == MPExecStatusDelayedExecution) {
-                                  MPLogWarning(@"Delayed timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                                  MPILogWarning(@"Delayed timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                               } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                  MPLogError(@"Could not begin timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                                  MPILogError(@"Could not begin timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                               }
                           }];
 }
@@ -568,7 +568,7 @@ NSString *const kMPStateKey = @"state";
                        __strong MParticle *strongSelf = weakSelf;
                        
                        if (execStatus == MPExecStatusSuccess) {
-                           MPLogDebug(@"Ended and logged timed event: %@", event);
+                           MPILogDebug(@"Ended and logged timed event: %@", event);
                            
                            // Forwarding calls to kits
                            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(endTimedEvent:)
@@ -579,9 +579,9 @@ NSString *const kMPStateKey = @"state";
                                                                     *execStatus = [kit endTimedEvent:forwardEvent];
                                                                 }];
                        } else if (execStatus == MPExecStatusDelayedExecution) {
-                           MPLogWarning(@"Delayed timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogWarning(@"Delayed timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                           MPLogError(@"Could not end timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogError(@"Could not end timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        }
                    }];
 }
@@ -599,7 +599,7 @@ NSString *const kMPStateKey = @"state";
                        __strong MParticle *strongSelf = weakSelf;
                        
                        if (execStatus == MPExecStatusSuccess) {
-                           MPLogDebug(@"Logged event: %@", event);
+                           MPILogDebug(@"Logged event: %@", event);
                            
                            // Forwarding calls to kits
                            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logEvent:)
@@ -610,9 +610,9 @@ NSString *const kMPStateKey = @"state";
                                                                     *execStatus = [kit logEvent:forwardEvent];
                                                                 }];
                        } else if (execStatus == MPExecStatusDelayedExecution) {
-                           MPLogWarning(@"Delayed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogWarning(@"Delayed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                           MPLogError(@"Failed logging event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogError(@"Failed logging event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        }
                    }];
 }
@@ -638,7 +638,7 @@ NSString *const kMPStateKey = @"state";
                         __strong MParticle *strongSelf = weakSelf;
                         
                         if (execStatus == MPExecStatusSuccess) {
-                            MPLogDebug(@"Logged screen event: %@", event);
+                            MPILogDebug(@"Logged screen event: %@", event);
                             
                             // Forwarding calls to kits
                             [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logScreen:)
@@ -649,16 +649,16 @@ NSString *const kMPStateKey = @"state";
                                                                      *execStatus = [kit logScreen:forwardEvent];
                                                                  }];
                         } else if (execStatus == MPExecStatusDelayedExecution) {
-                            MPLogWarning(@"Delayed screen event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                            MPILogWarning(@"Delayed screen event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                         } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                            MPLogError(@"Failed logging screen event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                            MPILogError(@"Failed logging screen event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                         }
                     }];
 }
 
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!screenName) {
-        MPLogError(@"Screen name is required.");
+        MPILogError(@"Screen name is required.");
         return;
     }
     
@@ -685,7 +685,7 @@ NSString *const kMPStateKey = @"state";
     if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
         [exceptionHandler beginUncaughtExceptionLogging];
         isLoggingUncaughtExceptions = YES;
-        MPLogDebug(@"Begin uncaught exception logging.");
+        MPILogDebug(@"Begin uncaught exception logging.");
     } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
         __weak MParticle *weakSelf = self;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -701,7 +701,7 @@ NSString *const kMPStateKey = @"state";
     if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
         [exceptionHandler endUncaughtExceptionLogging];
         isLoggingUncaughtExceptions = NO;
-        MPLogDebug(@"End uncaught exception logging.");
+        MPILogDebug(@"End uncaught exception logging.");
     } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
         __weak MParticle *weakSelf = self;
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -718,7 +718,7 @@ NSString *const kMPStateKey = @"state";
 
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!breadcrumbName) {
-        MPLogError(@"Breadcrumb name is required.");
+        MPILogError(@"Breadcrumb name is required.");
         return;
     }
     
@@ -737,7 +737,7 @@ NSString *const kMPStateKey = @"state";
                               __strong MParticle *strongSelf = weakSelf;
                               
                               if (execStatus == MPExecStatusSuccess) {
-                                  MPLogDebug(@"Left breadcrumb: %@", event);
+                                  MPILogDebug(@"Left breadcrumb: %@", event);
                                   
                                   // Forwarding calls to kits
                                   [[MPKitContainer sharedInstance] forwardSDKCall:@selector(leaveBreadcrumb:)
@@ -748,9 +748,9 @@ NSString *const kMPStateKey = @"state";
                                                                            *execStatus = [kit leaveBreadcrumb:forwardEvent];
                                                                        }];
                               } else if (execStatus == MPExecStatusDelayedExecution) {
-                                  MPLogWarning(@"Delayed breadcrumb: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                                  MPILogWarning(@"Delayed breadcrumb: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                               } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                  MPLogError(@"Could not leave breadcrumb: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                                  MPILogError(@"Could not leave breadcrumb: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                               }
                           }];
 }
@@ -761,7 +761,7 @@ NSString *const kMPStateKey = @"state";
 
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!message) {
-        MPLogError(@"'message' is required for %@", NSStringFromSelector(_cmd));
+        MPILogError(@"'message' is required for %@", NSStringFromSelector(_cmd));
         return;
     }
     
@@ -776,7 +776,7 @@ NSString *const kMPStateKey = @"state";
                        __strong MParticle *strongSelf = weakSelf;
                        
                        if (execStatus == MPExecStatusSuccess) {
-                           MPLogDebug(@"Logged error with message: %@", message);
+                           MPILogDebug(@"Logged error with message: %@", message);
                            
                            // Forwarding calls to kits
                            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logError:eventInfo:)
@@ -787,9 +787,9 @@ NSString *const kMPStateKey = @"state";
                                                                     *execStatus = [kit logError:message eventInfo:eventInfo];
                                                                 }];
                        } else if (execStatus == MPExecStatusDelayedExecution) {
-                           MPLogWarning(@"Delayed log error mesage: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogWarning(@"Delayed log error mesage: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
                        } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                           MPLogError(@"Could not log error: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogError(@"Could not log error: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
                        }
                    }];
 }
@@ -810,7 +810,7 @@ NSString *const kMPStateKey = @"state";
                        __strong MParticle *strongSelf = weakSelf;
                        
                        if (execStatus == MPExecStatusSuccess) {
-                           MPLogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
+                           MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
                            
                            // Forwarding calls to kits
                            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logError:eventInfo:)
@@ -821,9 +821,9 @@ NSString *const kMPStateKey = @"state";
                                                                     *execStatus = [kit logException:exception];
                                                                 }];
                        } else if (execStatus == MPExecStatusDelayedExecution) {
-                           MPLogWarning(@"Delayed log exception name: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogWarning(@"Delayed log exception name: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
                        } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                           MPLogError(@"Could not exception name: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogError(@"Could not exception name: %@\n Reason: %@", message, [strongSelf.backendController execStatusDescription:execStatus]);
                        }
                    }];
 }
@@ -838,7 +838,7 @@ NSString *const kMPStateKey = @"state";
                                __strong MParticle *strongSelf = weakSelf;
                                
                                if (execStatus == MPExecStatusSuccess) {
-                                   MPLogDebug(@"Logged commerce event: %@", commerceEvent);
+                                   MPILogDebug(@"Logged commerce event: %@", commerceEvent);
                                    
                                    // Forwarding calls to kits
                                    SEL logCommerceEventSelector = @selector(logCommerceEvent:);
@@ -865,9 +865,9 @@ NSString *const kMPStateKey = @"state";
                                                                                       }
                                                                                   }];
                                } else if (execStatus == MPExecStatusDelayedExecution) {
-                                   MPLogWarning(@"Delayed commerce event: %@\n Reason: %@", commerceEvent, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogWarning(@"Delayed commerce event: %@\n Reason: %@", commerceEvent, [strongSelf.backendController execStatusDescription:execStatus]);
                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                   MPLogError(@"Failed logging commerce event: %@\n Reason: %@", commerceEvent, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogError(@"Failed logging commerce event: %@\n Reason: %@", commerceEvent, [strongSelf.backendController execStatusDescription:execStatus]);
                                }
                            }];
 }
@@ -900,7 +900,7 @@ NSString *const kMPStateKey = @"state";
                        __strong MParticle *strongSelf = weakSelf;
                        
                        if (execStatus == MPExecStatusSuccess) {
-                           MPLogDebug(@"Logged LTV Increase: %@", event);
+                           MPILogDebug(@"Logged LTV Increase: %@", event);
                            
                            // Forwarding calls to kits
                            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logLTVIncrease:event:)
@@ -911,9 +911,9 @@ NSString *const kMPStateKey = @"state";
                                                                     *execStatus = [kit logLTVIncrease:increaseAmount event:forwardEvent];
                                                                 }];
                        } else if (execStatus == MPExecStatusDelayedExecution) {
-                           MPLogWarning(@"Delayed LTV Increase: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogWarning(@"Delayed LTV Increase: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                           MPLogError(@"Failed Increasing LTV: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                           MPILogError(@"Failed Increasing LTV: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        }
                    }];
 }
@@ -926,9 +926,9 @@ NSString *const kMPStateKey = @"state";
     if ([extension conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
         registrationSuccessful = [MPKitContainer registerKit:(id<MPExtensionKitProtocol>)extension];
         
-        MPLogDebug(@"Registered kit extension: %@", extension);
+        MPILogDebug(@"Registered kit extension: %@", extension);
     } else {
-        MPLogError(@"Could not register extension: %@", extension);
+        MPILogError(@"Could not register extension: %@", extension);
     }
     
     return registrationSuccessful;
@@ -937,7 +937,7 @@ NSString *const kMPStateKey = @"state";
 #pragma mark Kits
 - (nullable id const)kitInstance:(nonnull NSNumber *)kitCode {
     if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPLogError(@"Cannot retrieve kit instance. mParticle SDK is not initialized yet.");
+        MPILogError(@"Cannot retrieve kit instance. mParticle SDK is not initialized yet.");
         return nil;
     }
     
@@ -949,7 +949,7 @@ NSString *const kMPStateKey = @"state";
 
 - (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
     if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPLogError(@"Cannot verify whether kit is active. mParticle SDK is not initialized yet.");
+        MPILogError(@"Cannot verify whether kit is active. mParticle SDK is not initialized yet.");
         return NO;
     }
     
@@ -975,7 +975,7 @@ NSString *const kMPStateKey = @"state";
 
 - (void)setLocation:(CLLocation *)location {
     [MPStateMachine sharedInstance].locationManager.location = location;
-    MPLogDebug(@"Set location %@", location);
+    MPILogDebug(@"Set location %@", location);
     
     // Forwarding calls to kits
     [[MPKitContainer sharedInstance] forwardSDKCall:_cmd
@@ -999,18 +999,18 @@ NSString *const kMPStateKey = @"state";
     
     MPExecStatus execStatus = [_backendController beginLocationTrackingWithAccuracy:accuracy distanceFilter:distanceFilter authorizationRequest:authorizationRequest];
     if (execStatus == MPExecStatusSuccess) {
-        MPLogDebug(@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter);
+        MPILogDebug(@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter);
     } else {
-        MPLogError(@"Could not begin location tracking: %@", [_backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not begin location tracking: %@", [_backendController execStatusDescription:execStatus]);
     }
 }
 
 - (void)endLocationTracking {
     MPExecStatus execStatus = [_backendController endLocationTracking];
     if (execStatus == MPExecStatusSuccess) {
-        MPLogDebug(@"Ended location tracking");
+        MPILogDebug(@"Ended location tracking");
     } else {
-        MPLogError(@"Could not end location tracking: %@", [_backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not end location tracking: %@", [_backendController execStatusDescription:execStatus]);
     }
 }
 #endif
@@ -1025,7 +1025,7 @@ NSString *const kMPStateKey = @"state";
                            __strong MParticle *strongSelf = weakSelf;
                            
                            if (execStatus == MPExecStatusSuccess) {
-                               MPLogDebug(@"Began playing media track: %@", mediaTrack.channel);
+                               MPILogDebug(@"Began playing media track: %@", mediaTrack.channel);
                                
                                // Forwarding calls to kits
                                [[MPKitContainer sharedInstance] forwardSDKCall:@selector(beginPlaying:)
@@ -1036,9 +1036,9 @@ NSString *const kMPStateKey = @"state";
                                                                         *execStatus = [kit beginPlaying:mediaTrack];
                                                                     }];
                            } else if (execStatus == MPExecStatusDelayedExecution) {
-                               MPLogWarning(@"Delayed begin playing: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                               MPILogWarning(@"Delayed begin playing: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                            } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                               MPLogError(@"Could not begin playing media track: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                               MPILogError(@"Could not begin playing media track: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                            }
                        }];
 }
@@ -1046,9 +1046,9 @@ NSString *const kMPStateKey = @"state";
 - (void)discardMediaTrack:(MPMediaTrack *)mediaTrack {
     MPExecStatus execStatus = [self.backendController discardMediaTrack:mediaTrack];
     if (execStatus == MPExecStatusSuccess) {
-        MPLogDebug(@"Discarded media track: %@", mediaTrack.channel);
+        MPILogDebug(@"Discarded media track: %@", mediaTrack.channel);
     } else {
-        MPLogError(@"Could not discard media track: %@\n Reason: %@", mediaTrack, [self.backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not discard media track: %@\n Reason: %@", mediaTrack, [self.backendController execStatusDescription:execStatus]);
     }
 }
 
@@ -1061,7 +1061,7 @@ NSString *const kMPStateKey = @"state";
                          __strong MParticle *strongSelf = weakSelf;
                          
                          if (execStatus == MPExecStatusSuccess) {
-                             MPLogDebug(@"Ended playing media track: %@", mediaTrack.channel);
+                             MPILogDebug(@"Ended playing media track: %@", mediaTrack.channel);
                              
                              // Forwarding calls to kits
                              [[MPKitContainer sharedInstance] forwardSDKCall:@selector(endPlaying:)
@@ -1072,9 +1072,9 @@ NSString *const kMPStateKey = @"state";
                                                                       *execStatus = [kit endPlaying:mediaTrack];
                                                                   }];
                          } else if (execStatus == MPExecStatusDelayedExecution) {
-                             MPLogWarning(@"Delayed end playing: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                             MPILogWarning(@"Delayed end playing: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                          } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                             MPLogError(@"Could not end playing media track: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                             MPILogError(@"Could not end playing media track: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                          }
                      }];
 }
@@ -1088,7 +1088,7 @@ NSString *const kMPStateKey = @"state";
                                         __strong MParticle *strongSelf = weakSelf;
                                         
                                         if (execStatus == MPExecStatusSuccess) {
-                                            MPLogDebug(@"Logged metadata with media track: %@", mediaTrack.channel);
+                                            MPILogDebug(@"Logged metadata with media track: %@", mediaTrack.channel);
                                             
                                             // Forwarding calls to kits
                                             [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logMetadataWithMediaTrack:)
@@ -1099,9 +1099,9 @@ NSString *const kMPStateKey = @"state";
                                                                                      *execStatus = [kit logMetadataWithMediaTrack:mediaTrack];
                                                                                  }];
                                         } else if (execStatus == MPExecStatusDelayedExecution) {
-                                            MPLogWarning(@"Delayed log metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                                            MPILogWarning(@"Delayed log metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                                         } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                            MPLogError(@"Could not log metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                                            MPILogError(@"Could not log metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                                         }
                                     }];
 }
@@ -1115,7 +1115,7 @@ NSString *const kMPStateKey = @"state";
                                              __strong MParticle *strongSelf = weakSelf;
                                              
                                              if (execStatus == MPExecStatusSuccess) {
-                                                 MPLogDebug(@"Logged timed metadata with media track: %@", mediaTrack.channel);
+                                                 MPILogDebug(@"Logged timed metadata with media track: %@", mediaTrack.channel);
                                                  
                                                  // Forwarding calls to kits
                                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logTimedMetadataWithMediaTrack:)
@@ -1126,9 +1126,9 @@ NSString *const kMPStateKey = @"state";
                                                                                           *execStatus = [kit logTimedMetadataWithMediaTrack:mediaTrack];
                                                                                       }];
                                              } else if (execStatus == MPExecStatusDelayedExecution) {
-                                                 MPLogWarning(@"Delayed log timed metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                                                 MPILogWarning(@"Delayed log timed metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                                              } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                                 MPLogError(@"Could not log timed metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                                                 MPILogError(@"Could not log timed metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                                              }
                                          }];
 }
@@ -1150,7 +1150,7 @@ NSString *const kMPStateKey = @"state";
                                      __strong MParticle *strongSelf = weakSelf;
                                      
                                      if (execStatus == MPExecStatusSuccess) {
-                                         MPLogDebug(@"Updated media track with channel: %@, playback position %.1f seconds, playback rate: %.1f", mediaTrack.channel, mediaTrack.playbackPosition, mediaTrack.playbackRate);
+                                         MPILogDebug(@"Updated media track with channel: %@, playback position %.1f seconds, playback rate: %.1f", mediaTrack.channel, mediaTrack.playbackPosition, mediaTrack.playbackRate);
                                          
                                          // Forwarding calls to kits
                                          [[MPKitContainer sharedInstance] forwardSDKCall:@selector(updatePlaybackPosition:)
@@ -1161,9 +1161,9 @@ NSString *const kMPStateKey = @"state";
                                                                                   *execStatus = [kit updatePlaybackPosition:mediaTrack];
                                                                               }];
                                      } else if (execStatus == MPExecStatusDelayedExecution) {
-                                         MPLogWarning(@"Delayed update playback position: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                                         MPILogWarning(@"Delayed update playback position: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                                      } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                         MPLogError(@"Could not update playback position: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
+                                         MPILogError(@"Could not update playback position: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
                                      }
                                  }];
 }
@@ -1223,11 +1223,11 @@ NSString *const kMPStateKey = @"state";
                                                __strong MParticle *strongSelf = weakSelf;
                                                
                                                if (execStatus == MPExecStatusSuccess) {
-                                                   MPLogDebug(@"Logged network performance measurement");
+                                                   MPILogDebug(@"Logged network performance measurement");
                                                } else if (execStatus == MPExecStatusDelayedExecution) {
-                                                   MPLogWarning(@"Delayed network performance measurement\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+                                                   MPILogWarning(@"Delayed network performance measurement\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
                                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                                   MPLogError(@"Could not log network performance measurement\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+                                                   MPILogError(@"Could not log network performance measurement\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
                                                }
                                            }];
 }
@@ -1243,28 +1243,28 @@ NSString *const kMPStateKey = @"state";
 #pragma mark Session management
 - (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value {
     if (!_backendController || _backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPLogError(@"Cannot increment session attribute. SDK is not initialized yet.");
+        MPILogError(@"Cannot increment session attribute. SDK is not initialized yet.");
         return nil;
     }
     
     NSNumber *newValue = [self.backendController incrementSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key byValue:value];
     
-    MPLogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
+    MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
     
     return newValue;
 }
 
 - (void)setSessionAttribute:(NSString *)key value:(id)value {
     if (!_backendController || _backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPLogError(@"Cannot set session attribute. SDK is not initialized yet.");
+        MPILogError(@"Cannot set session attribute. SDK is not initialized yet.");
         return;
     }
     
     MPExecStatus execStatus = [self.backendController setSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key value:value];
     if (execStatus == MPExecStatusSuccess) {
-        MPLogDebug(@"Set session attribute - %@:%@", key, value);
+        MPILogDebug(@"Set session attribute - %@:%@", key, value);
     } else {
-        MPLogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
     }
 }
 
@@ -1277,11 +1277,11 @@ NSString *const kMPStateKey = @"state";
         MPExecStatus execStatus = [strongSelf.backendController upload];
         
         if (execStatus == MPExecStatusSuccess) {
-            MPLogDebug(@"Forcing Upload");
+            MPILogDebug(@"Forcing Upload");
         } else if (execStatus == MPExecStatusDelayedExecution) {
-            MPLogWarning(@"Delayed upload: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+            MPILogWarning(@"Delayed upload: %@", [strongSelf.backendController execStatusDescription:execStatus]);
         } else {
-            MPLogError(@"Could not upload data: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+            MPILogError(@"Could not upload data: %@", [strongSelf.backendController execStatusDescription:execStatus]);
         }
     });
 }
@@ -1329,7 +1329,7 @@ NSString *const kMPStateKey = @"state";
 #pragma mark User Identity
 - (NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
     if (!_backendController || _backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPLogError(@"Cannot increment user attribute. SDK is not initialized yet.");
+        MPILogError(@"Cannot increment user attribute. SDK is not initialized yet.");
         return nil;
     }
     
@@ -1340,7 +1340,7 @@ NSString *const kMPStateKey = @"state";
     
     NSNumber *newValue = [self.backendController incrementUserAttribute:key byValue:value];
     
-    MPLogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
+    MPILogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
     
     [[MPKitContainer sharedInstance] forwardSDKCall:@selector(incrementUserAttribute:byValue:)
                                    userAttributeKey:key
@@ -1361,7 +1361,7 @@ NSString *const kMPStateKey = @"state";
                             __strong MParticle *strongSelf = weakSelf;
                             
                             if (execStatus == MPExecStatusSuccess) {
-                                MPLogDebug(@"Logged out");
+                                MPILogDebug(@"Logged out");
                                 
                                 // Forwarding calls to kits
                                 [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logout)
@@ -1372,9 +1372,9 @@ NSString *const kMPStateKey = @"state";
                                                                          *execStatus = [kit logout];
                                                                      }];
                             } else if (execStatus == MPExecStatusDelayedExecution) {
-                                MPLogWarning(@"Delayed logout\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+                                MPILogWarning(@"Delayed logout\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
                             } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                MPLogError(@"Failed logout\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+                                MPILogError(@"Failed logout\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
                             }
                         }];
 }
@@ -1390,9 +1390,9 @@ NSString *const kMPStateKey = @"state";
                                
                                if (execStatus == MPExecStatusSuccess) {
                                    if (value) {
-                                       MPLogDebug(@"Set user attribute - %@:%@", key, value);
+                                       MPILogDebug(@"Set user attribute - %@:%@", key, value);
                                    } else {
-                                       MPLogDebug(@"Set user attribute - %@:%@", key, [NSNull null]);
+                                       MPILogDebug(@"Set user attribute - %@:%@", key, [NSNull null]);
                                    }
                                    
                                    // Forwarding calls to kits
@@ -1421,9 +1421,9 @@ NSString *const kMPStateKey = @"state";
                                                                             }];
                                    }
                                } else if (execStatus == MPExecStatusDelayedExecution) {
-                                   MPLogWarning(@"Delayed set user attribute: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogWarning(@"Delayed set user attribute: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                   MPLogError(@"Could not set user attribute - %@:%@\n Reason: %@", key, value, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogError(@"Could not set user attribute - %@:%@\n Reason: %@", key, value, [strongSelf.backendController execStatusDescription:execStatus]);
                                }
                            }];
 }
@@ -1438,7 +1438,7 @@ NSString *const kMPStateKey = @"state";
                               __strong MParticle *strongSelf = weakSelf;
                               
                               if (execStatus == MPExecStatusSuccess) {
-                                  MPLogDebug(@"Set user identity: %@", identityString);
+                                  MPILogDebug(@"Set user identity: %@", identityString);
                                   
                                   // Forwarding calls to kits
                                   [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserIdentity:identityType:)
@@ -1448,9 +1448,9 @@ NSString *const kMPStateKey = @"state";
                                                                            [kit setUserIdentity:identityString identityType:identityType];
                                                                        }];
                               } else if (execStatus == MPExecStatusDelayedExecution) {
-                                  MPLogWarning(@"Delayed set user identity: %@\n Reason: %@", identityString, [strongSelf.backendController execStatusDescription:execStatus]);
+                                  MPILogWarning(@"Delayed set user identity: %@\n Reason: %@", identityString, [strongSelf.backendController execStatusDescription:execStatus]);
                               } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                  MPLogError(@"Could not set user identity: %@\n Reason: %@", identityString, [strongSelf.backendController execStatusDescription:execStatus]);
+                                  MPILogError(@"Could not set user identity: %@\n Reason: %@", identityString, [strongSelf.backendController execStatusDescription:execStatus]);
                               }
                           }];
 }
@@ -1465,7 +1465,7 @@ NSString *const kMPStateKey = @"state";
                                __strong MParticle *strongSelf = weakSelf;
                                
                                if (execStatus == MPExecStatusSuccess) {
-                                   MPLogDebug(@"Set user tag - %@", tag);
+                                   MPILogDebug(@"Set user tag - %@", tag);
                                    
                                    // Forwarding calls to kits
                                    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserTag:)
@@ -1475,9 +1475,9 @@ NSString *const kMPStateKey = @"state";
                                                                             [kit setUserTag:tag];
                                                                         }];
                                } else if (execStatus == MPExecStatusDelayedExecution) {
-                                   MPLogWarning(@"Delayed set user tag: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogWarning(@"Delayed set user tag: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                   MPLogError(@"Could not set user tag - %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogError(@"Could not set user tag - %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
                                }
                            }];
 }
@@ -1492,7 +1492,7 @@ NSString *const kMPStateKey = @"state";
                                __strong MParticle *strongSelf = weakSelf;
                                
                                if (execStatus == MPExecStatusSuccess) {
-                                   MPLogDebug(@"Removed user attribute - %@", key);
+                                   MPILogDebug(@"Removed user attribute - %@", key);
                                    
                                    // Forwarding calls to kits
                                    [[MPKitContainer sharedInstance] forwardSDKCall:_cmd
@@ -1502,9 +1502,9 @@ NSString *const kMPStateKey = @"state";
                                                                             [kit removeUserAttribute:key];
                                                                         }];
                                } else if (execStatus == MPExecStatusDelayedExecution) {
-                                   MPLogWarning(@"Delayed removing user attribute: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogWarning(@"Delayed removing user attribute: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
-                                   MPLogError(@"Could not remove user attribute - %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
+                                   MPILogError(@"Could not remove user attribute - %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
                                }
                            }];
 }
@@ -1524,9 +1524,9 @@ NSString *const kMPStateKey = @"state";
                                                   }];
     
     if (execStatus == MPExecStatusSuccess) {
-        MPLogDebug(@"Fetching user segments");
+        MPILogDebug(@"Fetching user segments");
     } else {
-        MPLogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
     }
 }
 
@@ -1596,7 +1596,7 @@ NSString *const kMPStateKey = @"state";
             [self setSessionAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
         }
     } @catch (NSException *e) {
-        MPLogError(@"Exception processing UIWebView event: %@", e.reason)
+        MPILogError(@"Exception processing UIWebView event: %@", e.reason)
     }
 }
 #endif

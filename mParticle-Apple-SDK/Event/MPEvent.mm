@@ -21,7 +21,7 @@
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "EventTypeName.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 @interface MPEvent()
 
@@ -37,7 +37,7 @@
 @synthesize typeName = _typeName;
 
 - (instancetype)init {
-    MPLogError(@"%@ should NOT be initialized using the standard initializer.", [self class]);
+    MPILogError(@"%@ should NOT be initialized using the standard initializer.", [self class]);
     return [self initWithName:@"<<Event With No Name>>" type:MPEventTypeOther];
 }
 
@@ -48,12 +48,12 @@
     }
     
     if (!name || name.length == 0) {
-        MPLogError(@"'name' is required for MPEvent")
+        MPILogError(@"'name' is required for MPEvent")
         return nil;
     }
     
     if (name.length > LIMIT_NAME) {
-        MPLogError(@"The event name is too long.");
+        MPILogError(@"The event name is too long.");
         return nil;
     }
     
@@ -145,7 +145,7 @@
     if (category.length <= LIMIT_NAME) {
         _category = category;
     } else {
-        MPLogError(@"The category length is too long. Discarding category.");
+        MPILogError(@"The category length is too long. Discarding category.");
         _category = nil;
     }
 }
@@ -164,7 +164,7 @@
     NSAssert(numberOfEntries <= LIMIT_ATTR_COUNT, @"Event info has more than 100 key/value pairs.");
 
     if (numberOfEntries > LIMIT_ATTR_COUNT) {
-        MPLogError(@"Number of attributes exceeds the maximum number of attributes allowed per event. Discarding attributes.");
+        MPILogError(@"Number of attributes exceeds the maximum number of attributes allowed per event. Discarding attributes.");
         return;
     }
     
@@ -191,12 +191,12 @@
 
 - (void)setName:(NSString *)name {
     if (name.length == 0) {
-        MPLogError(@"'name' cannot be nil or empty.")
+        MPILogError(@"'name' cannot be nil or empty.")
         return;
     }
     
     if (name.length > LIMIT_NAME) {
-        MPLogError(@"The event name is too long.");
+        MPILogError(@"The event name is too long.");
         return;
     }
     
@@ -211,7 +211,7 @@
     }
     
     if (type < MPEventTypeNavigation || type > MPEventTypeMedia) {
-        MPLogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
+        MPILogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
         _type = MPEventTypeOther;
     } else {
         _type = type;
@@ -240,12 +240,12 @@
 #pragma mark Public methods
 - (void)addCustomFlag:(NSString *)customFlag withKey:(NSString *)key {
     if (MPIsNull(customFlag)) {
-        MPLogError(@"'customFlag' cannot be nil or null.");
+        MPILogError(@"'customFlag' cannot be nil or null.");
         return;
     }
     
     if (MPIsNull(key)) {
-        MPLogError(@"'key' cannot be nil or null.");
+        MPILogError(@"'key' cannot be nil or null.");
         return;
     }
     
@@ -254,19 +254,19 @@
 
 - (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key {
     if (MPIsNull(customFlags)) {
-        MPLogError(@"'customFlags' cannot be nil or null.");
+        MPILogError(@"'customFlags' cannot be nil or null.");
         return;
     }
     
     if (MPIsNull(key)) {
-        MPLogError(@"'key' cannot be nil or null.");
+        MPILogError(@"'key' cannot be nil or null.");
         return;
     }
     
     BOOL validDataType = [customFlags isKindOfClass:[NSArray class]];
     NSAssert(validDataType, @"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
     if (!validDataType) {
-        MPLogError(@"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
+        MPILogError(@"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
         return;
     }
     
@@ -274,7 +274,7 @@
         validDataType = [item isKindOfClass:[NSString class]];
         NSAssert(validDataType, @"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
         if (!validDataType) {
-            MPLogError(@"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
+            MPILogError(@"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
             return;
         }
     }

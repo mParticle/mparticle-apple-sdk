@@ -21,7 +21,7 @@
 #import "MPLaunchInfo.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
@@ -121,7 +121,7 @@
                 
                 [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                 
-                MPLogDebug(@"Forwarded fail to register for remote notification call to kit: %@", kitRegister.name);
+                MPILogDebug(@"Forwarded fail to register for remote notification call to kit: %@", kitRegister.name);
             }
         }
     }
@@ -151,7 +151,7 @@
                 
                 [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                 
-                MPLogDebug(@"Forwarded remote notification registration call to kit: %@", kitRegister.name);
+                MPILogDebug(@"Forwarded remote notification registration call to kit: %@", kitRegister.name);
             }
         }
     }
@@ -236,7 +236,7 @@
                     
                     [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
                     
-                    MPLogDebug(@"Forwarded push notifications call to kit: %@", kitRegister.name);
+                    MPILogDebug(@"Forwarded push notifications call to kit: %@", kitRegister.name);
                 }
             }
         }

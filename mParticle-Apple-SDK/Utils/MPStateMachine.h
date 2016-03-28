@@ -58,9 +58,9 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerEventTypes;
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerMessageTypes;
 @property (nonatomic, unsafe_unretained) MPConsoleLogging consoleLogging;
-@property (nonatomic, unsafe_unretained) MPLogLevel logLevel;
+@property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
 @property (nonatomic, unsafe_unretained) MPInstallationType installationType;
-@property (nonatomic, unsafe_unretained, readonly) NetworkStatus networkStatus;
+@property (nonatomic, unsafe_unretained, readonly) MParticleNetworkStatus networkStatus;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 @property (nonatomic, unsafe_unretained, readonly) BOOL backgrounded;
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;

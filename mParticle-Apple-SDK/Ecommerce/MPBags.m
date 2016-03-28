@@ -17,7 +17,7 @@
 //
 
 #import "MPBags.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPProduct.h"
 #import "MPProductBag.h"
 #import "MPPersistenceController.h"
@@ -71,12 +71,12 @@
 #pragma mark Public methods
 - (void)addProduct:(MPProduct *)product toBag:(NSString *)bagName {
     if (MPIsNull(bagName)) {
-        MPLogError(@"'bagName' cannot be nil/null.");
+        MPILogError(@"'bagName' cannot be nil/null.");
         return;
     }
     
     if (MPIsNull(product)) {
-        MPLogError(@"'product' cannot be nil/null.");
+        MPILogError(@"'product' cannot be nil/null.");
         return;
     }
     
@@ -95,12 +95,12 @@
 
 - (void)removeProduct:(MPProduct *)product fromBag:(NSString *)bagName {
     if (MPIsNull(bagName)) {
-        MPLogWarning(@"'bagName' parameter is nil/null.");
+        MPILogWarning(@"'bagName' parameter is nil/null.");
         return;
     }
     
     if (MPIsNull(product)) {
-        MPLogWarning(@"'product' parameter is nil/null.");
+        MPILogWarning(@"'product' parameter is nil/null.");
         return;
     }
     
@@ -108,7 +108,7 @@
     MPProductBag *productBag = [[self.productBagsArray filteredArrayUsingPredicate:predicate] firstObject];
     
     if (!productBag) {
-        MPLogDebug(@"No bag was found under the name: %@", bagName);
+        MPILogDebug(@"No bag was found under the name: %@", bagName);
         return;
     }
 
@@ -118,7 +118,7 @@
     if (numberOfProducts != productBag.products.count) {
         [[MPPersistenceController sharedInstance] saveProductBag:productBag];
     } else {
-        MPLogDebug(@"Bag %@, did not contain such product", bagName);
+        MPILogDebug(@"Bag %@, did not contain such product", bagName);
     }
 }
 
@@ -143,7 +143,7 @@
 
 - (void)removeProductBag:(NSString *)bagName {
     if (MPIsNull(bagName)) {
-        MPLogWarning(@"'bagName' parameter is nil/null.");
+        MPILogWarning(@"'bagName' parameter is nil/null.");
         return;
     }
     
@@ -154,7 +154,7 @@
         [[MPPersistenceController sharedInstance] deleteProductBag:productBag];
         [self.productBagsArray removeObject:productBag];
     } else {
-        MPLogDebug(@"Bag %@, did not exist.", bagName);
+        MPILogDebug(@"Bag %@, did not exist.", bagName);
     }
 }
 

@@ -20,7 +20,7 @@
 #import "NSUserDefaults+mParticle.h"
 #import "MPAppboy.h"
 #import "MPStateMachine.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPDateFormatter.h"
 
 @interface MPCustomModulePreference()
@@ -247,7 +247,7 @@
                     @try {
                         _value = [appboy jsonString];
                     } @catch (NSException *exception) {
-                        MPLogError(@"Could not parse Appboy data with exception reason: %@", [exception reason]);
+                        MPILogError(@"Could not parse Appboy data with exception reason: %@", [exception reason]);
                     }
                 }
             }
