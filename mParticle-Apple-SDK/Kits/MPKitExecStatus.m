@@ -18,7 +18,7 @@
 
 #import "MPKitExecStatus.h"
 #import "MPIConstants.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 @implementation MPKitExecStatus
 
@@ -43,7 +43,7 @@
     NSAssert(!MPIsNull(kitCode), @"'kitCode' is a required parameter.");
     
     if (MPIsNull(kitCode)) {
-        MPLogError(@"'kitCode' is a required parameter.");
+        MPILogError(@"'kitCode' is a required parameter.");
         return nil;
     }
     

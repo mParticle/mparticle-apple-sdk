@@ -34,7 +34,7 @@
 #import "MPMessageBuilder.h"
 #import <UIKit/UIKit.h>
 #import "MPPersistenceController.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPMessageBuilder.h"
 
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
@@ -326,7 +326,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         [persistence saveMessage:message];
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     } else {
-        MPLogError(@"Could not process pending crash report with error: %@", error);
+        MPILogError(@"Could not process pending crash report with error: %@", error);
 #endif
     }
     
@@ -384,7 +384,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     MPCurrentState *currentState = [[MPCurrentState alloc] init];
     fileArchived = [NSKeyedArchiver archiveRootObject:[currentState dictionaryRepresentation] toFile:filePath];
     if (!fileArchived) {
-        MPLogError(@"Application will crash, current state not archived.");
+        MPILogError(@"Application will crash, current state not archived.");
     }
     
     // Topmost Context
@@ -395,7 +395,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"TopmostContext-%.0f.tc", timestamp]];
         fileArchived = [NSKeyedArchiver archiveRootObject:archiveDictionary toFile:filePath];
         if (!fileArchived) {
-            MPLogError(@"Application will crash, topmost context not archived.");
+            MPILogError(@"Application will crash, topmost context not archived.");
         }
     }
     
@@ -406,7 +406,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"Exception-%.0f.ex", timestamp]];
         fileArchived = [NSKeyedArchiver archiveRootObject:exception toFile:filePath];
         if (!fileArchived) {
-            MPLogError(@"Application will crash, exception not archived.");
+            MPILogError(@"Application will crash, exception not archived.");
         }
     }
 
@@ -417,7 +417,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"StackTrace-%.0f.st", timestamp]];
         fileArchived = [NSKeyedArchiver archiveRootObject:archiveDictionary toFile:filePath];
         if (!fileArchived) {
-            MPLogError(@"Application will crash, stack trace not archived.");
+            MPILogError(@"Application will crash, stack trace not archived.");
         }
     }
     
@@ -427,7 +427,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"AppImageInfo-%.0f.aii", timestamp]];
         fileArchived = [NSKeyedArchiver archiveRootObject:archiveDictionary toFile:filePath];
         if (!fileArchived) {
-            MPLogError(@"Application will crash, app image info not archived.");
+            MPILogError(@"Application will crash, app image info not archived.");
         }
     }
 }
@@ -531,7 +531,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 #endif
     
     if (!crashReporterEnabled) {
-        MPLogError(@"Could not enable crash reporter with error: %@", error);
+        MPILogError(@"Could not enable crash reporter with error: %@", error);
     }
 }
 

@@ -21,7 +21,7 @@
 #import "MPProduct.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 NSString *const kMPEventCategoryKey = @"$Category";
 NSString *const kMPAttrsEventLengthKey = @"EventLength";
@@ -96,7 +96,7 @@ NSString *const kMPEventCustomFlags = @"flags";
             if (category.length <= LIMIT_NAME) {
                 attributes[kMPEventCategoryKey] = category;
             } else {
-                MPLogError(@"The event category is too long. Discarding category.");
+                MPILogError(@"The event category is too long. Discarding category.");
             }
         }
     }

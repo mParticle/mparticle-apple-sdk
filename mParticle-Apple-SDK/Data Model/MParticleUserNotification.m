@@ -37,7 +37,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 @implementation MParticleUserNotification
 
@@ -234,7 +234,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
                 dictionaryString = [[NSString alloc] initWithData:dictionaryData encoding:NSUTF8StringEncoding];
             }
         } @catch (NSException *exception) {
-            MPLogError(@"Exception serializing a notification dictionary: %@", [exception reason]);
+            MPILogError(@"Exception serializing a notification dictionary: %@", [exception reason]);
         }
         
         return dictionaryString;

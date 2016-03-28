@@ -108,7 +108,7 @@
  Production, the log level will always be none, regardless of the value you assign to it.
  @see environment
  */
-@property (nonatomic, unsafe_unretained) MPLogLevel logLevel;
+@property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
 
 /**
  Flag indicating whether network performance is being measured.

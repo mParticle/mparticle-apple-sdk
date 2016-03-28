@@ -23,7 +23,7 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPIConstants.h"
 #import "mParticle.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 
 @interface MPCart()
 
@@ -73,7 +73,7 @@
     
     if (self.productsList.count > 0) {
         if (![NSKeyedArchiver archiveRootObject:self toFile:self.cartFile]) {
-            MPLogError(@"Cart was not persisted.");
+            MPILogError(@"Cart was not persisted.");
         }
     }
 }

@@ -39,7 +39,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
 @property (nonatomic, strong, nonnull) MPBags *bags;
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
-@property (nonatomic, weak) MPSession *currentSession;
+@property (nonatomic, weak, nullable) MPSession *currentSession;
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
 @property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
 @property (nonatomic, strong, nullable) NSString *locationTrackingMode;
@@ -58,13 +58,14 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerEventTypes;
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerMessageTypes;
 @property (nonatomic, unsafe_unretained) MPConsoleLogging consoleLogging;
-@property (nonatomic, unsafe_unretained) MPLogLevel logLevel;
+@property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
 @property (nonatomic, unsafe_unretained) MPInstallationType installationType;
-@property (nonatomic, unsafe_unretained, readonly) NetworkStatus networkStatus;
+@property (nonatomic, unsafe_unretained, readonly) MParticleNetworkStatus networkStatus;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 @property (nonatomic, unsafe_unretained, readonly) BOOL backgrounded;
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
+@property (nonatomic, unsafe_unretained) BOOL shouldUploadSessionHistory;
 
 + (nonnull instancetype)sharedInstance;
 + (MPEnvironment)environment;

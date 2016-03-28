@@ -29,7 +29,7 @@
 #import "MPCurrentState.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"

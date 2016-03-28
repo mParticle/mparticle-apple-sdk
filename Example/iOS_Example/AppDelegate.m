@@ -35,8 +35,8 @@
     [mParticle startWithKey:@"Your_App_Key" secret:@"Your_App_Secret"];
     
     // Debug log level to the console. The default log level is
-    // MPLogLevelWarning (only warning and error log messages are displayed to the console)
-    mParticle.logLevel = MPLogLevelDebug;
+    // MPILogLevelWarning (only warning and error log messages are displayed to the console)
+    mParticle.logLevel = MPILogLevelDebug;
     
     return YES;
 }

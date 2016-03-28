@@ -29,7 +29,7 @@
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #include "MPHasher.h"
 #import "AppboyKit.h"
 

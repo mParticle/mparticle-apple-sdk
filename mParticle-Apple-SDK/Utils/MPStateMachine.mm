@@ -26,7 +26,7 @@
 #import "MPNotificationController.h"
 #import "MPDateFormatter.h"
 #import "MPHasher.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
 #import "MPBags.h"
@@ -46,7 +46,7 @@ static BOOL runningInBackground = NO;
     BOOL optOutSet;
 }
 
-@property (nonatomic, unsafe_unretained) NetworkStatus networkStatus;
+@property (nonatomic, unsafe_unretained) MParticleNetworkStatus networkStatus;
 @property (nonatomic, strong) NSString *storedSDKVersion;
 @property (nonatomic, strong) MParticleReachability *reachability;
 
@@ -88,7 +88,8 @@ static BOOL runningInBackground = NO;
     _firstSeenInstallation = nil;
     _launchDate = [NSDate date];
     _launchOptions = nil;
-    _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPLogLevelNone : MPLogLevelWarning;
+    _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
+    _shouldUploadSessionHistory = YES;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 
@@ -123,7 +124,7 @@ static BOOL runningInBackground = NO;
         
         [notificationCenter addObserver:strongSelf
                                selector:@selector(handleReachabilityChanged:)
-                                   name:kMPReachabilityChangedNotification
+                                   name:MParticleReachabilityChangedNotification
                                  object:nil];
         
         [MPApplication markInitialLaunchTime];
@@ -139,7 +140,7 @@ static BOOL runningInBackground = NO;
     [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-    [notificationCenter removeObserver:self name:kMPReachabilityChangedNotification object:nil];
+    [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
 }
 
 #pragma mark Private accessors
@@ -155,25 +156,25 @@ static BOOL runningInBackground = NO;
     return _reachability;
 }
 
-- (void)setNetworkStatus:(NetworkStatus)networkStatus {
+- (void)setNetworkStatus:(MParticleNetworkStatus)networkStatus {
     _networkStatus = networkStatus;
 
     NSString *networkStatusDescription;
     switch (networkStatus) {
-        case ReachableViaWiFi:
+        case MParticleNetworkStatusReachableViaWiFi:
             networkStatusDescription = @"Reachable via Wi-Fi";
             break;
             
-        case ReachableViaWWAN:
+        case MParticleNetworkStatusReachableViaWAN:
             networkStatusDescription = @"Reachable via WAN";
             break;
             
-        case NotReachable:
+        case MParticleNetworkStatusNotReachable:
             networkStatusDescription = @"Not reachable";
             break;
     }
     
-    MPLogVerbose(@"Network Status: %@", networkStatusDescription);
+    MPILogVerbose(@"Network Status: %@", networkStatusDescription);
 }
 
 - (NSString *)storedSDKVersion {
@@ -384,7 +385,7 @@ static BOOL runningInBackground = NO;
     
     _consoleLogging = [MPStateMachine environment] == MPEnvironmentProduction ? MPConsoleLoggingSuppress : MPConsoleLoggingDisplay;
     if (_consoleLogging == MPConsoleLoggingSuppress) {
-        _logLevel = MPLogLevelNone;
+        _logLevel = MPILogLevelNone;
     }
     
     return _consoleLogging;
@@ -392,9 +393,9 @@ static BOOL runningInBackground = NO;
 
 - (void)setConsoleLogging:(MPConsoleLogging)consoleLogging {
     if (consoleLogging == MPConsoleLoggingSuppress) {
-        _logLevel = MPLogLevelNone;
+        _logLevel = MPILogLevelNone;
     } else if ([MPStateMachine environment] == MPEnvironmentDevelopment && _consoleLogging != MPConsoleLoggingSuppress) {
-        _logLevel = MPLogLevelWarning;
+        _logLevel = MPILogLevelWarning;
     }
     
     _consoleLogging = consoleLogging;
@@ -416,14 +417,14 @@ static BOOL runningInBackground = NO;
     return _consumerInfo;
 }
 
-- (void)setLogLevel:(MPLogLevel)logLevel {
+- (void)setLogLevel:(MPILogLevel)logLevel {
     if ([MPStateMachine environment] == MPEnvironmentProduction) {
-        _logLevel = MPLogLevelNone;
+        _logLevel = MPILogLevelNone;
         _consoleLogging = MPConsoleLoggingSuppress;
     } else {
         _logLevel = logLevel;
         
-        if (logLevel == MPLogLevelNone) {
+        if (logLevel == MPILogLevelNone) {
             _consoleLogging = MPConsoleLoggingSuppress;
         }
     }

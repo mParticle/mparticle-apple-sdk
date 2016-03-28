@@ -18,7 +18,7 @@
 
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "NSUserDefaults+mParticle.h"
 #include "MPHasher.h"
 #import "MPDateFormatter.h"

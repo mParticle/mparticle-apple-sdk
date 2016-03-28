@@ -31,7 +31,7 @@
 #import "MPZip.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleReachability.h"
-#import "MPLogger.h"
+#import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
 #import "MPDataModelAbstract.h"
@@ -86,7 +86,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     
     [notificationCenter addObserver:self
                            selector:@selector(handleReachabilityChanged:)
-                               name:kMPReachabilityChangedNotification
+                               name:MParticleReachabilityChangedNotification
                              object:nil];
     
     return self;
@@ -94,7 +94,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 - (void)dealloc {
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter removeObserver:self name:kMPReachabilityChangedNotification object:nil];
+    [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
 }
 
 #pragma mark Private accessors
@@ -170,14 +170,14 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                             retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
                             retryAfter = retryAfter > 0 ? retryAfter : 7200;
                         } else {
-                            MPLogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
+                            MPILogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
                         }
                     } else { // Number of seconds
                         @try {
                             retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
                         } @catch (NSException *exception) {
                             retryAfter = 7200;
-                            MPLogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
+                            MPILogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
                         }
                     }
                 } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
@@ -187,7 +187,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
             
             if ([[MPStateMachine sharedInstance].minUploadDate compare:now] == NSOrderedAscending) {
                 [MPStateMachine sharedInstance].minUploadDate = [now dateByAddingTimeInterval:retryAfter];
-                MPLogDebug(@"Throttling network for %.0f seconds", retryAfter);
+                MPILogDebug(@"Throttling network for %.0f seconds", retryAfter);
             }
         }
             break;
@@ -214,7 +214,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 #pragma mark Public methods
 - (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary))completionHandler {
-    if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == NotReachable) {
+    if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
         return;
     }
     
@@ -222,7 +222,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     __weak MPNetworkCommunication *weakSelf = self;
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
-    MPLogVerbose(@"Starting config request");
+    MPILogVerbose(@"Starting config request");
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -255,7 +255,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      }
                      
                      NSInteger responseCode = [httpResponse statusCode];
-                     MPLogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+                     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                      
                      if (responseCode == HTTPStatusCodeNotModified) {
                          completionHandler(YES, nil);
@@ -270,7 +270,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      if (!data && success) {
                          completionHandler(NO, nil);
                          strongSelf->retrievingConfig = NO;
-                         MPLogWarning(@"Failed config request");
+                         MPILogWarning(@"Failed config request");
                          return;
                      }
                      
@@ -310,7 +310,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
         
         if (connector.active) {
-            MPLogWarning(@"Failed config request");
+            MPILogWarning(@"Failed config request");
             completionHandler(NO, nil);
         }
         
@@ -378,12 +378,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                              } @catch (NSException *exception) {
                                  segmentsDictionary = nil;
                                  success = NO;
-                                 MPLogError(@"Segments Error: %@", [exception reason]);
+                                 MPILogError(@"Segments Error: %@", [exception reason]);
                              }
                          } @catch (NSException *exception) {
                              segmentsDictionary = nil;
                              success = NO;
-                             MPLogError(@"Segments Error: %@", [exception reason]);
+                             MPILogError(@"Segments Error: %@", [exception reason]);
                          }
                          
                          if (success) {
@@ -403,9 +403,9 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                              }
                          }
                          
-                         MPLogVerbose(@"Segments Response Code: %ld", (long)responseCode);
+                         MPILogVerbose(@"Segments Response Code: %ld", (long)responseCode);
                      } else {
-                         MPLogWarning(@"Segments Error - Response Code: %ld", (long)responseCode);
+                         MPILogWarning(@"Segments Error - Response Code: %ld", (long)responseCode);
                      }
                      
                      if (segments.count == 0) {
@@ -517,12 +517,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                           @try {
                               responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
                               success = serializationError == nil;
-                              MPLogVerbose(@"Stand-alone Uploaded Message: %@\n", uploadString);
-                              MPLogVerbose(@"Stand-alone Upload Response Code: %ld", (long)responseCode);
+                              MPILogVerbose(@"Stand-alone Uploaded Message: %@\n", uploadString);
+                              MPILogVerbose(@"Stand-alone Upload Response Code: %ld", (long)responseCode);
                           } @catch (NSException *exception) {
                               responseDictionary = nil;
                               success = NO;
-                              MPLogError(@"Stand-alone Upload Error: %@", [exception reason]);
+                              MPILogError(@"Stand-alone Upload Error: %@", [exception reason]);
                           }
                       } else {
                           if (responseCode == HTTPStatusCodeBadRequest) {
@@ -531,7 +531,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                               responseAction = MPNetworkResponseActionThrottle;
                           }
                           
-                          MPLogWarning(@"Stand-alone Uploads Error - Response Code: %ld", (long)responseCode);
+                          MPILogWarning(@"Stand-alone Uploads Error - Response Code: %ld", (long)responseCode);
                       }
                       
                       [strongSelf processNetworkResponseAction:responseAction batchObject:standaloneUpload httpResponse:httpResponse];
@@ -572,7 +572,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
     connector.connectionId = connectionId;
     
-    MPLogVerbose(@"Source Batch Id: %@", upload.uuid);
+    MPILogVerbose(@"Source Batch Id: %@", upload.uuid);
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     NSData *zipUploadData = nil;
@@ -623,12 +623,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                           @try {
                               responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
                               success = serializationError == nil && [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader];
-                              MPLogVerbose(@"Uploaded Message: %@\n", uploadString);
-                              MPLogVerbose(@"Upload Response Code: %ld", (long)responseCode);
+                              MPILogVerbose(@"Uploaded Message: %@\n", uploadString);
+                              MPILogVerbose(@"Upload Response Code: %ld", (long)responseCode);
                           } @catch (NSException *exception) {
                               responseDictionary = nil;
                               success = NO;
-                              MPLogError(@"Uploads Error: %@", [exception reason]);
+                              MPILogError(@"Uploads Error: %@", [exception reason]);
                           }
                       } else {
                           if (responseCode == HTTPStatusCodeBadRequest) {
@@ -637,10 +637,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                               responseAction = MPNetworkResponseActionThrottle;
                           }
                           
-                          MPLogWarning(@"Uploads Error - Response Code: %ld", (long)responseCode);
+                          MPILogWarning(@"Uploads Error - Response Code: %ld", (long)responseCode);
                       }
                       
-                      MPLogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+                      MPILogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
                       [strongSelf processNetworkResponseAction:responseAction batchObject:upload httpResponse:httpResponse];
                       
@@ -658,7 +658,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
         
         if (connector.active) {
-            MPLogWarning(@"Failed Uploading Source Batch Id: %@", upload.uuid);
+            MPILogWarning(@"Failed Uploading Source Batch Id: %@", upload.uuid);
             completionHandler(NO, upload, nil, YES);
         }
         
@@ -685,7 +685,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     __weak MPNetworkCommunication *weakSelf = self;
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
-    MPLogVerbose(@"Source Batch Id: %@", sessionHistory.session.uuid);
+    MPILogVerbose(@"Source Batch Id: %@", sessionHistory.session.uuid);
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -731,8 +731,8 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
                       
                       if (success) {
-                          MPLogVerbose(@"Session History: %@\n", jsonString);
-                          MPLogVerbose(@"Session History Response Code: %ld", (long)responseCode);
+                          MPILogVerbose(@"Session History: %@\n", jsonString);
+                          MPILogVerbose(@"Session History Response Code: %ld", (long)responseCode);
                       } else {
                           if (responseCode == HTTPStatusCodeBadRequest) {
                               responseAction = MPNetworkResponseActionDeleteBatch;
@@ -740,10 +740,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                               responseAction = MPNetworkResponseActionThrottle;
                           }
                           
-                          MPLogWarning(@"Session History Error - Response Code: %ld", (long)responseCode);
+                          MPILogWarning(@"Session History Error - Response Code: %ld", (long)responseCode);
                       }
                       
-                      MPLogVerbose(@"Session History Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+                      MPILogVerbose(@"Session History Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
                       [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
                       
@@ -763,7 +763,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
         
         if (connector.active) {
-            MPLogWarning(@"Failed Uploading Source Batch Id: %@", sessionHistory.session.uuid);
+            MPILogWarning(@"Failed Uploading Source Batch Id: %@", sessionHistory.session.uuid);
             completionHandler(NO);
         }
         
