@@ -94,17 +94,15 @@ NSString *const kMPIsForegroung = @"fg";
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
     self = [self initWithMessageType:messageType session:session];
-    if (!self) {
-        return nil;
-    }
-
-    NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
-    if (commerceEventDictionary) {
-        [messageDictionary addEntriesFromDictionary:commerceEventDictionary];
-        
-        NSDictionary *messageAttributes = messageDictionary[kMPAttributesKey];
-        if (messageAttributes) {
-            messageDictionary[kMPAttributesKey] = [messageAttributes transformValuesToString];
+    if (self) {
+        NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
+        if (commerceEventDictionary) {
+            [messageDictionary addEntriesFromDictionary:commerceEventDictionary];
+            
+            NSDictionary *messageAttributes = messageDictionary[kMPAttributesKey];
+            if (messageAttributes) {
+                messageDictionary[kMPAttributesKey] = [messageAttributes transformValuesToString];
+            }
         }
     }
     
@@ -113,16 +111,14 @@ NSString *const kMPIsForegroung = @"fg";
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     self = [self initWithMessageType:messageType session:session];
-    if (!self) {
-        return nil;
-    }
-    
-    if (messageInfo) {
-        [messageDictionary addEntriesFromDictionary:messageInfo];
-        
-        NSDictionary *messageAttributes = messageDictionary[kMPAttributesKey];
-        if (messageAttributes) {
-            messageDictionary[kMPAttributesKey] = [messageAttributes transformValuesToString];
+    if (self) {
+        if (messageInfo) {
+            [messageDictionary addEntriesFromDictionary:messageInfo];
+            
+            NSDictionary *messageAttributes = messageDictionary[kMPAttributesKey];
+            if (messageAttributes) {
+                messageDictionary[kMPAttributesKey] = [messageAttributes transformValuesToString];
+            }
         }
     }
 

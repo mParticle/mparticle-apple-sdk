@@ -34,11 +34,21 @@
 
 - (instancetype)initWithDictionary:(NSDictionary *)preferenceDictionary location:(NSString *)location moduleId:(NSNumber *)moduleId {
     self = [super init];
-    if (!self) {
+
+    _readKey = preferenceDictionary[kMPRemoteConfigCustomModuleReadKey];
+    _writeKey = preferenceDictionary[kMPRemoteConfigCustomModuleWriteKey];
+
+    if (!self || MPIsNull(moduleId) || MPIsNull(_readKey) || MPIsNull(_writeKey)) {
         return nil;
     }
     
-    _dataType = [preferenceDictionary[kMPRemoteConfigCustomModuleDataTypeKey] intValue];
+    id temp = preferenceDictionary[kMPRemoteConfigCustomModuleDataTypeKey];
+    if (!MPIsNull(temp) && [temp isKindOfClass:[NSNumber class]]) {
+        _dataType = [(NSNumber *)temp intValue];
+    } else {
+        _dataType = MPDataTypeString;
+    }
+    
     _moduleId = [moduleId copy];
 
     NSArray *macroPlaceholders = @[@"%gn%", @"%oaid%", @"%dt%", @"%glsb%", @"%g%"];
@@ -47,7 +57,7 @@
     if ([macroPlaceholders containsObject:defaultValue]) {
         _defaultValue = [self defaultValueForMacroPlaceholder:defaultValue];
     } else {
-        if (defaultValue) {
+        if (!MPIsNull(defaultValue) && [defaultValue isKindOfClass:[NSString class]]) {
             _defaultValue = defaultValue;
         } else {
             switch (_dataType) {
@@ -72,27 +82,9 @@
     }
     
     _location = location;
-    _readKey = preferenceDictionary[kMPRemoteConfigCustomModuleReadKey];
     _value = nil;
-    _writeKey = preferenceDictionary[kMPRemoteConfigCustomModuleWriteKey];
     
     return self;
-}
-
-#pragma mark NSCopying
-- (id)copyWithZone:(NSZone *)zone {
-    MPCustomModulePreference *copyObject = [[[self class] alloc] init];
-    
-    if (copyObject) {
-        copyObject->_defaultValue = [_defaultValue copy];
-        copyObject.location = [_location copy];
-        copyObject->_readKey = [_readKey copy];
-        copyObject.value = [_value copy];
-        copyObject->_writeKey = [_writeKey copy];
-        copyObject->_dataType = _dataType;
-    }
-    
-    return copyObject;
 }
 
 #pragma mark NSCoding
@@ -107,17 +99,15 @@
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _defaultValue = [coder decodeObjectForKey:@"defaultValue"];
+        _location = [coder decodeObjectForKey:@"location"];
+        _readKey = [coder decodeObjectForKey:@"readKey"];
+        _value = [coder decodeObjectForKey:@"value"];
+        _writeKey = [coder decodeObjectForKey:@"writeKey"];
+        _dataType = [coder decodeIntegerForKey:@"dataType"];
     }
     
-    _defaultValue = [coder decodeObjectForKey:@"defaultValue"];
-    _location = [coder decodeObjectForKey:@"location"];
-    _readKey = [coder decodeObjectForKey:@"readKey"];
-    _value = [coder decodeObjectForKey:@"value"];
-    _writeKey = [coder decodeObjectForKey:@"writeKey"];
-    _dataType = [coder decodeIntegerForKey:@"dataType"];
-
     return self;
 }
 
@@ -237,7 +227,7 @@
 
     if ([keys containsObject:self.readKey]) {
         if ([_moduleId isEqual:@(MPCustomModuleIdAppBoy)]) {
-            NSData *appboyData = [userDefaults objectForKey:self.readKey];
+            NSData *appboyData = [userDefaults objectForKey:_readKey];
             if (appboyData) {
                 id appboy = [NSKeyedUnarchiver unarchiveObjectWithData:appboyData];
                 
@@ -252,25 +242,25 @@
                 }
             }
         } else {
-            id storedValue = [userDefaults objectForKey:self.readKey];
-            if (storedValue) {
+            id storedValue = [userDefaults objectForKey:_readKey];
+            if (!MPIsNull(storedValue)) {
                 _value = [storedValue isKindOfClass:[NSDate class]] ? [MPDateFormatter stringFromDateRFC3339:storedValue] : storedValue;
             }
         }
         
-        if (!_value && self.dataType != MPDataTypeString) {
-            switch (self.dataType) {
+        if (!_value && _dataType != MPDataTypeString) {
+            switch (_dataType) {
                 case MPDataTypeInt:
                 case MPDataTypeLong:
-                    _value = @([userDefaults integerForKey:self.readKey]);
+                    _value = @([userDefaults integerForKey:_readKey]);
                     break;
                     
                 case MPDataTypeBool:
-                    _value = @([userDefaults boolForKey:self.readKey]);
+                    _value = @([userDefaults boolForKey:_readKey]);
                     break;
                     
                 case MPDataTypeFloat:
-                    _value = @([userDefaults floatForKey:self.readKey]);
+                    _value = @([userDefaults floatForKey:_readKey]);
                     break;
                     
                 default:

@@ -9,9 +9,11 @@
 
 ## 6.0.0
 
->Upgrade suggestion: **MODERATE**.
+>Upgrade suggestion: **MODERATE**. Upgrade if you want to use Carthage, or if you want to queue events for kits.
 
 * [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
+* [NEW] A queue was added to hold events to be forwarded to kits until the first configuration is received from the server and kits are initialized
+* [NEW] Added support for Carthage
 * [FIX] Restored unit tests for each of the platforms
 
 ## 5.5.1

@@ -29,11 +29,15 @@
 }
 
 - (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately {
-    NSAssert(!MPIsNull(name), @"Required parameter. It cannot be nil/null.");
-    NSAssert(!MPIsNull(className), @"Required parameter. It cannot be nil/null.");
+    Class stringClass = [NSString class];
+    BOOL validName = !MPIsNull(name) && [name isKindOfClass:stringClass];
+    NSAssert(validName, @"The 'name' variable is not valid.");
+    
+    BOOL validClassName = !MPIsNull(className) && [className isKindOfClass:stringClass];
+    NSAssert(validClassName, @"The 'className' variable is not valid.");
     
     self = [super init];
-    if (!self) {
+    if (!self || !validName || !validClassName) {
         return nil;
     }
     
@@ -48,7 +52,7 @@
 }
 
 - (NSString *)description {
-    NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ : {\n", [self class]];
+    NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ {\n", [self class]];
     [description appendFormat:@"    code: %@,\n", _code];
     [description appendFormat:@"    name: %@,\n", _name];
     [description appendString:@"}"];

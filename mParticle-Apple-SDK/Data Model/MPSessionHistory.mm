@@ -24,6 +24,7 @@
 #import "MPSession.h"
 #import "MPConsumerInfo.h"
 #include <vector>
+#import "MPIConstants.h"
 
 using namespace std;
 
@@ -34,6 +35,11 @@ using namespace std;
 @end
 
 @implementation MPSessionHistory
+
+- (instancetype)init {
+    id invalidParameter = nil;
+    return [self initWithSession:invalidParameter uploads:invalidParameter];
+}
 
 - (instancetype)initWithSession:(MPSession *)session uploads:(NSArray<MPUpload *> *)uploads {
     self = [super init];
@@ -90,14 +96,14 @@ using namespace std;
 
 #pragma mark Public accessors
 - (void)setUploads:(NSArray<MPUpload *> *)uploads {
-    _uploads = uploads;
-    
-    if (uploads.count == 0) {
+    if (MPIsNull(uploads) || uploads.count == 0) {
+        _uploads = nil;
         _uploadIds = nil;
         sessionMessages.clear();
         return;
     }
-
+    
+    _uploads = uploads;
     vector<NSNumber *> uploadIdsVector;
     
     for (MPUpload *upload in uploads) {

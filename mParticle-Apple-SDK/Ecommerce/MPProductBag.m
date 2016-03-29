@@ -29,13 +29,13 @@
 
 - (instancetype)initWithName:(NSString *)name product:(MPProduct *)product {
     self = [super init];
-    if (!self || MPIsNull(name)) {
+    if (!self || MPIsNull(name) || ![name isKindOfClass:[NSString class]]) {
         return nil;
     }
     
     _name = name;
     
-    if (!MPIsNull(product)) {
+    if (!MPIsNull(product) && [product isKindOfClass:[MPProduct class]]) {
         [self.products addObject:product];
     }
     
@@ -59,7 +59,7 @@
 }
 
 - (BOOL)isEqual:(id)object {
-    if (![object isKindOfClass:[MPProductBag class]]) {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPProductBag class]]) {
         return NO;
     }
 
@@ -74,9 +74,10 @@
 
 #pragma mark Public accessors
 - (void)setName:(NSString *)name {
-    NSAssert(!MPIsNull(name), @"Name cannot be nil/null.");
+    BOOL validName = !MPIsNull(name) && [name isKindOfClass:[NSString class]];
+    NSAssert(validName, @"The 'name' variable is not valid.");
     
-    if (!MPIsNull(name)) {
+    if (validName) {
         _name = name;
     }
 }

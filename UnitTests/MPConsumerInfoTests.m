@@ -20,6 +20,15 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 
+#pragma mark - MPConsumerInfo(Tests)
+@interface MPConsumerInfo(Tests)
+
+- (NSNumber *)generateMpId;
+
+@end
+
+
+#pragma mark - MPConsumerInfoTests
 @interface MPConsumerInfoTests : XCTestCase {
     NSDictionary *responseDictionary;
     NSDictionary *consumerInfoDictionary;
@@ -70,8 +79,18 @@
 
 - (void)testInstance {
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    XCTAssertNotNil(consumerInfo.mpId, @"Should not have been nil.");
+
     [consumerInfo updateWithConfiguration:consumerInfoDictionary];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
+    
+    NSData *consumerInfoData = [NSKeyedArchiver archivedDataWithRootObject:consumerInfo];
+    XCTAssertNotNil(consumerInfoData, @"Should not have been nil.");
+    MPConsumerInfo *deserializedConsumerInfo = [NSKeyedUnarchiver unarchiveObjectWithData:consumerInfoData];
+    XCTAssertNotNil(deserializedConsumerInfo, @"Should not have been nil.");
+    
+    NSNumber *mpId = [consumerInfo generateMpId];
+    XCTAssertNotNil(mpId, @"Should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];
     [consumerInfo updateWithConfiguration:@{}];
@@ -167,6 +186,59 @@
     
     cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
     XCTAssertNil(cookiesDictionary, @"Cookies dictionary should have been nil.");
+}
+
+- (void)testCookie {
+    NSString *name = @"Cookie";
+    NSDictionary *configuration = @{@"c":@"288160084=2832403&-515079401=2832403&1546594223=2832403&264784951=2832403&4151713=2832403&-1663781220=2832403",
+                                    @"e":@"2035-05-26T22:43:31.505262Z"};
+    
+    MPCookie *cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNotNil(cookie, @"Should not have been nil.");
+    XCTAssertFalse([cookie expired], @"Should have been false.");
+    
+    NSData *cookieData = [NSKeyedArchiver archivedDataWithRootObject:cookie];
+    XCTAssertNotNil(cookieData, @"Should not have been nil.");
+    MPCookie *deserializedCookie = [NSKeyedUnarchiver unarchiveObjectWithData:cookieData];
+    XCTAssertNotNil(deserializedCookie, @"Should not have been nil.");
+    XCTAssertEqualObjects(cookie, deserializedCookie, @"Should have been equal.");
+    XCTAssertNotEqualObjects(cookie, (MPCookie *)@"A string is not a cookie", @"Should not have been equal.");
+    XCTAssertNotEqualObjects(cookie, [NSNull null], @"Should not have been equal.");
+    XCTAssertNotEqualObjects(cookie, nil, @"Should not have been equal.");
+    
+    NSDictionary *dictionary = [cookie dictionaryRepresentation];
+    XCTAssertNotNil(dictionary, @"Should not have been nil.");
+    
+    deserializedCookie.content = nil;
+    deserializedCookie.domain = nil;
+    deserializedCookie.expiration = nil;
+    dictionary = [deserializedCookie dictionaryRepresentation];
+    XCTAssertNil(dictionary, @"Should have been nil.");
+    
+    name = (NSString *)[NSNull null];
+    cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNil(cookie, @"Should have been nil.");
+    
+    name = (NSString *)[NSNumber numberWithInteger:42];
+    cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNil(cookie, @"Should have been nil.");
+    
+    name = nil;
+    cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNil(cookie, @"Should have been nil.");
+    
+    name = @"Cookie";
+    configuration = (NSDictionary *)[NSNull null];
+    cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNil(cookie, @"Should have been nil.");
+    
+    configuration = (NSDictionary *)@"This is not a dictionary";
+    cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNil(cookie, @"Should have been nil.");
+    
+    configuration = nil;
+    cookie = [[MPCookie alloc] initWithName:name configuration:configuration];
+    XCTAssertNil(cookie, @"Should have been nil.");
 }
 
 @end

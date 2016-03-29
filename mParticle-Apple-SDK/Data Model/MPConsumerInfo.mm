@@ -34,7 +34,10 @@ NSString *const kMPCKExpiration = @"e";
 
 - (instancetype)initWithName:(NSString *)name configuration:(NSDictionary *)configuration {
     self = [super init];
-    if (!self || MPIsNull(name) || MPIsNull(configuration)) {
+    BOOL validName = !MPIsNull(name) && [name isKindOfClass:[NSString class]];
+    BOOL validConfiguration = !MPIsNull(configuration) && [configuration isKindOfClass:[NSDictionary class]];
+    
+    if (!self || !validName || !validConfiguration) {
         return nil;
     }
     
@@ -48,7 +51,7 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (BOOL)isEqual:(MPCookie *)object {
-    if (MPIsNull(object)) {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPCookie class]]) {
         return NO;
     }
     
@@ -181,12 +184,10 @@ NSString *const kMPCKExpiration = @"e";
 
 - (id)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _consumerInfoId = 0;
     }
     
-    _consumerInfoId = 0;
-
     return self;
 }
 
@@ -207,13 +208,11 @@ NSString *const kMPCKExpiration = @"e";
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _cookies = [coder decodeObjectForKey:@"cookies"];
+        _mpId = [coder decodeObjectForKey:@"mpId"];
+        _uniqueIdentifier = [coder decodeObjectForKey:@"uniqueIdentifier"];
     }
-    
-    _cookies = [coder decodeObjectForKey:@"cookies"];
-    _mpId = [coder decodeObjectForKey:@"mpId"];
-    _uniqueIdentifier = [coder decodeObjectForKey:@"uniqueIdentifier"];
     
     return self;
 }
@@ -400,7 +399,7 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (void)updateWithConfiguration:(NSDictionary *)configuration {
-    if (MPIsNull(configuration)) {
+    if (MPIsNull(configuration) || ![configuration isKindOfClass:[NSDictionary class]]) {
         return;
     }
     

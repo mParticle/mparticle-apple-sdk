@@ -42,12 +42,14 @@ typedef NS_ENUM(NSUInteger, MPProjectionPropertyKind) {
 
 @interface MPBaseProjection : NSObject <NSCopying, NSCoding> {
     @protected
+    NSDictionary *_configuration;
     NSString *_name;
     NSString *_projectedName;
     MPProjectionMatchType _matchType;
     MPProjectionType _projectionType;
     MPProjectionPropertyKind _propertyKind;
     NSUInteger _projectionId;
+    NSUInteger _attributeIndex;
 }
 
 @property (nonatomic, strong, nonnull) NSString *name;

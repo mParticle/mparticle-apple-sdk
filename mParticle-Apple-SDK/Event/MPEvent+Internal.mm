@@ -81,15 +81,7 @@ NSString *const kMPEventCustomFlags = @"flags";
     
     if (numberOfItems > 0) {
         if (info) {
-            if ([info isKindOfClass:[MPProduct class]]) {
-                NSArray *keys = [info allKeys];
-                
-                for (id key in keys) {
-                    attributes[key] = info[key];
-                }
-            } else {
-                [attributes addEntriesFromDictionary:info];
-            }
+            [attributes addEntriesFromDictionary:info];
         }
         
         if (category) {

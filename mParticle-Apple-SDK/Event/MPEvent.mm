@@ -22,6 +22,8 @@
 #import "MPSession.h"
 #import "EventTypeName.h"
 #import "MPILogger.h"
+#import "MPProduct.h"
+#import "MPProduct+Dictionary.h"
 
 @interface MPEvent()
 
@@ -69,7 +71,7 @@
 }
 
 - (NSString *)description {
-    NSString *nameAndType = [[NSString alloc] initWithFormat:@"Event\n Name: %@\n Type: %@\n", self.name, self.typeName];
+    NSString *nameAndType = [[NSString alloc] initWithFormat:@"Event:{\n  Name: %@\n  Type: %@\n", self.name, self.typeName];
     NSMutableString *description = [[NSMutableString alloc] initWithString:nameAndType];
     
     if (self.info) {
@@ -83,6 +85,8 @@
     if (_customFlagsDictionary.count > 0) {
         [description appendFormat:@"  Custom Flags: %@\n", _customFlagsDictionary];
     }
+    
+    [description appendString:@"}"];
     
     return description;
 }
@@ -168,24 +172,30 @@
         return;
     }
     
-    __block BOOL respectsConstraints = YES;
-    
     if (numberOfEntries > 0) {
-        [info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-            if ([value isKindOfClass:[NSString class]] && ((NSString *)value).length > LIMIT_ATTR_VALUE) {
-                respectsConstraints = NO;
-                *stop = YES;
-            }
+        __block BOOL respectsConstraints = YES;
+        
+        if ([info isKindOfClass:[NSDictionary class]]) {
+            [info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+                if ([value isKindOfClass:[NSString class]] && ((NSString *)value).length > LIMIT_ATTR_VALUE) {
+                    respectsConstraints = NO;
+                    *stop = YES;
+                }
+                
+                if (key.length > LIMIT_NAME) {
+                    respectsConstraints = NO;
+                    *stop = YES;
+                }
+            }];
             
-            if (key.length > LIMIT_NAME) {
-                respectsConstraints = NO;
-                *stop = YES;
+            if (respectsConstraints) {
+                _info = info;
             }
-        }];
-    }
-
-    if (respectsConstraints) {
-        _info = info;
+        } else if ([info isKindOfClass:[MPProduct class]]) {
+            _info = [(MPProduct *)info dictionaryRepresentation];
+        }
+    } else {
+        _info = nil;
     }
 }
 

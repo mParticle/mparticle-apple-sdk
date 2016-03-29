@@ -93,7 +93,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     _behavior = behavior;
     _state = state;
     _redactedUserNotificationString = [self redactUserNotification:notificationDictionary];
-    _uuid = [self newUUID];
+    _uuid = [[NSUUID UUID] UUIDString];
     
     if (actionIdentifier) {
         _actionIdentifier = [actionIdentifier copy];

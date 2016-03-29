@@ -68,12 +68,18 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 @synthesize userDefinedAttributes = _userDefinedAttributes;
 
 - (instancetype)initWithName:(NSString *)name sku:(NSString *)sku quantity:(NSNumber *)quantity price:(NSNumber *)price {
-    NSAssert(!MPIsNull(name), @"'name' is a required parameter.");
-    NSAssert(!MPIsNull(sku), @"'sku' is a required parameter.");
-    NSAssert(!MPIsNull(price), @"'price' is a required parameter.");
+    Class stringClass = [NSString class];
+    BOOL validName = !MPIsNull(name) && [name isKindOfClass:stringClass];
+    NSAssert(validName, @"The 'name' variable not valid.");
+    
+    BOOL validSKU = !MPIsNull(sku) && [sku isKindOfClass:stringClass];
+    NSAssert(validSKU, @"The 'sku' variable not valid.");
+    
+    BOOL validPrice = !MPIsNull(price) && [price isKindOfClass:[NSNumber class]];
+    NSAssert(validPrice, @"The 'price' variable not valid.");
     
     self = [super init];
-    if (!self || MPIsNull(name) || MPIsNull(sku) || MPIsNull(price)) {
+    if (!self || !validName || !validSKU || !validPrice) {
         return nil;
     }
     
@@ -82,23 +88,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     self.quantity = quantity ? : @1;
     self.price = price;
 
-    return self;
-}
-
-- (instancetype)initWithName:(NSString *)name category:(NSString *)category quantity:(NSInteger)quantity totalAmount:(double)totalAmount {
-    self = [self initWithName:name sku:@"No SKU" quantity:@(quantity) price:@0];
-    if (!self) {
-        return nil;
-    }
-    
-    if (category) {
-        self.category = category;
-    }
-    
-    if (totalAmount != 0.0) {
-        self.totalAmount = totalAmount;
-    }
-    
     return self;
 }
 
@@ -120,7 +109,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 }
 
 - (BOOL)isEqual:(id)object {
-    if (![object isKindOfClass:[MPProduct class]]) {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPProduct class]]) {
         return NO;
     }
     
@@ -181,11 +170,9 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     NSAssert(key != nil, @"'key' cannot be nil.");
     NSAssert(obj != nil, @"'obj' cannot be nil.");
     
-    if (obj == nil) {
-        return;
+    if (obj != nil) {
+        [self.userDefinedAttributes setObject:obj forKey:key];
     }
-    
-    [self.userDefinedAttributes setObject:obj forKey:key];
 }
 
 - (NSArray *)allKeys {
@@ -299,40 +286,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     }
     
     return dictionary.count > 0 ? (NSDictionary *)dictionary : nil;
-}
-
-- (NSDictionary<NSString *, id> *)legacyDictionaryRepresentation {
-    NSMutableDictionary<NSString *, id> *dictionary = [[NSMutableDictionary alloc] init];
-    
-    if (_userDefinedAttributes) {
-        [dictionary addEntriesFromDictionary:_userDefinedAttributes];
-    }
-    
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    dictionary[@"TransactionAffiliation"] = self.affiliation ? : @"No Affiliation";
-    dictionary[@"ProductCategory"] = self.category ? : @"No Category";
-    dictionary[@"CurrencyCode"] = self.currency ? : @"USD";
-    dictionary[@"ProductName"] = self.name ? : @"No Name";
-    dictionary[@"ProductSKU"] = self.sku ? : @"No SKU";
-    dictionary[@"ProductUnitPrice"] = self.price ? : @0;
-    dictionary[@"ProductQuantity"] = self.quantity ? : @1;
-    dictionary[@"TransactionID"] = self.transactionId ? : [[NSUUID UUID] UUIDString];
-    
-    if (self.totalAmount != 0.0) {
-        dictionary[@"RevenueAmount"] = @(self.totalAmount);
-    }
-    
-    if (self.taxAmount != 0.0) {
-        dictionary[@"TaxAmount"] = @(self.taxAmount);
-    }
-    
-    if (self.shippingAmount != 0.0) {
-        dictionary[@"ShippingAmount"] = @(self.shippingAmount);
-    }
-#pragma clang diagnostic pop
-    
-    return (NSDictionary *)dictionary;
 }
 
 - (void)setTimeAddedToCart:(NSDate *)date {
@@ -451,10 +404,10 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 }
 
 - (void)setPrice:(NSNumber *)price {
-    NSAssert(!MPIsNull(price), @"'price' is a required property. Use @0 if the product does not have a price.");
-    NSAssert([price isKindOfClass:[NSNumber class]], @"'price' must be a number.");
+    BOOL validPrice = !MPIsNull(price) && [price isKindOfClass:[NSNumber class]];
+    NSAssert(validPrice, @"'price' is a required property. Use @0 if the product does not have a price.");
 
-    if (price && [price isKindOfClass:[NSNumber class]]) {
+    if (validPrice) {
         NSNumber *formattedPrice = [price formatWithNonScientificNotation];
         self.objectDictionary[kMPProductUnitPrice] = formattedPrice;
         self.beautifiedAttributes[kMPExpProductUnitPrice] = formattedPrice;
@@ -543,10 +496,10 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 }
 
 - (void)setQuantity:(NSNumber *)quantity {
-    NSAssert(!MPIsNull(quantity), @"'quantity' is a required property.");
-    NSAssert([quantity isKindOfClass:[NSNumber class]], @"'quantity' must be a number.");
+    BOOL validQuantity = !MPIsNull(quantity) && [quantity isKindOfClass:[NSNumber class]];
+    NSAssert(validQuantity, @"The 'quantity' variable is not valid.");
 
-    if (quantity && [quantity isKindOfClass:[NSNumber class]]) {
+    if (validQuantity) {
         self.objectDictionary[kMPProductQuantity] = quantity;
         self.beautifiedAttributes[kMPExpProductQuantity] = quantity;
         [self calculateTotalAmount];

@@ -277,6 +277,14 @@
 }
 
 - (void)testStandaloneMessage {
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];
+    MPStandaloneMessage *standaloneMessage;
+    
+    for (standaloneMessage in standaloneMessages) {
+        [persistence deleteStandaloneMessage:standaloneMessage];
+    }
+
     NSDictionary *messageInfo = @{kMPDeviceTokenKey:@"<Device Token>",
                                   kMPPushMessageProviderKey:kMPPushMessageProviderValue};
     
@@ -285,13 +293,12 @@
     XCTAssertNotNil(message, @"Stand-alone message should not have been nil.");
     XCTAssertTrue([message isKindOfClass:[MPStandaloneMessage class]], @"Instance should have been of kind MPStandaloneMessage.");
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
     
-    NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];
+    standaloneMessages = [persistence fetchStandaloneMessages];
     XCTAssertEqual(standaloneMessages.count, 1, @"There should have been only 1 fetched stand-alone message.");
     
-    MPStandaloneMessage *standaloneMessage = [standaloneMessages firstObject];
+    standaloneMessage = [standaloneMessages firstObject];
     XCTAssertNotNil(standaloneMessage, @"Stand-alone message should not have been nil.");
     XCTAssertEqualObjects(standaloneMessage.messageType, @"pm", @"Stand-alone message type should have been 'pm.'");
     XCTAssertGreaterThan(standaloneMessage.messageId, 0, @"Stand-alone message id should have been greater than 0.");
@@ -384,6 +391,9 @@
     MPStandaloneUpload *copyStandaloneUpload = [standaloneUpload copy];
     XCTAssertNotEqual(copyStandaloneUpload, standaloneUpload, @"Pointer addresses should not have been the same.");
     XCTAssertEqualObjects(copyStandaloneUpload, standaloneUpload, @"Stand-alone upload is not being copied properly.");
+    
+    NSString *serializedString = [standaloneUpload serializedString];
+    XCTAssertNotNil(serializedString, @"Should not have been nil.");
     
     [persistence deleteStandaloneUpload:standaloneUpload];
     standaloneUpload = [[persistence fetchStandaloneUploads] firstObject];

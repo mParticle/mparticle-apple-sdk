@@ -1,7 +1,7 @@
 //
 //  MPURLRequestBuilderTests.m
 //
-//  Copyright 2015 mParticle, Inc.
+//  Copyright 2016 mParticle, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,13 +18,25 @@
 
 #import <XCTest/XCTest.h>
 #import "MPURLRequestBuilder.h"
-#import "MPURLRequestBuilder+Tests.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPConsumerInfo.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
+#import "MPStandaloneMessage.h"
+#import "MPKitRegister.h"
+#import "MPKitContainer.h"
+#import "MPKitTestClass.h"
 
+#pragma mark - MPURLRequestBuilder category
+@interface MPURLRequestBuilder(Tests)
+
+- (NSString *)hmacSha256Encode:(NSString *const)message key:(NSString *const)key;
+- (NSString *)userAgent;
+
+@end
+
+#pragma mark - MPURLRequestBuilderTests
 @interface MPURLRequestBuilderTests : XCTestCase
 
 @end
@@ -37,18 +49,48 @@
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
+    
+    if (![MPKitContainer registeredKits]) {
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:@{@"appKey":@"🔑"} startImmediately:YES];
+        [MPKitContainer registerKit:kitRegister];
+    }
 }
 
 - (void)tearDown {
     [super tearDown];
 }
 
+- (void)testUserAgent {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    
+    MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageType:@"e"
+                                                                                  messageInfo:@{@"key":@"value"}
+                                                                                 uploadStatus:MPUploadStatusBatch
+                                                                                         UUID:[[NSUUID UUID] UUIDString]
+                                                                                    timestamp:[[NSDate date] timeIntervalSince1970]];
+    
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+                                                                            message:[standaloneMessage serializedString]
+                                                                         httpMethod:@"POST"];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *userAgent = [urlRequestBuilder userAgent];
+        XCTAssertNotNil(userAgent, @"Should not have been nil.");
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 - (void)testHMACSha256Encode {
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
-    NSString *message = @"The Quick Brown Fox Jumped Over The Lazy Dog.";
-    NSString *referenceEncodedMessage = @"6c51252301b0052f3309b5ae8fe43ed5f73364b3590d7b8658d300a3b723cc0c";
+    NSString *message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
+    NSString *referenceEncodedMessage = @"ceefdfeab2fe404a7cbb75f6f6a01443286fab507eb85c213fce3d812e8b615c";
     NSString *encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:stateMachine.apiKey];
     
     XCTAssertEqualObjects(encodedMessage, referenceEncodedMessage, @"HMAC Sha 256 is failing to encode correctly.");
@@ -66,7 +108,7 @@
     encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:stateMachine.apiKey];
     XCTAssertNotNil(encodedMessage, @"Encoded message should not have been nil.");
     
-    message = @"The Quick Brown Fox Jumped Over The Lazy Dog.";
+    message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
     encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:nil];
     XCTAssertNil(encodedMessage, @"Should not have tried to encode with a nil key.");
 }
@@ -78,7 +120,7 @@
     
     NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
     NSArray *keys = [headersDictionary allKeys];
-    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env"];
+    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env", @"x-mp-kits"];
     NSString *headerValue;
     
     for (NSString *header in headers) {
@@ -89,8 +131,7 @@
         if ([header isEqualToString:@"Accept-Encoding"] || [header isEqualToString:@"Content-Encoding"]) {
             XCTAssertTrue([headerValue isEqualToString:@"gzip"], @"%@ has an invalid value: %@", header, headerValue);
         } else if ([header isEqualToString:@"Content-Type"]) {
-            BOOL validContentType = [headerValue isEqualToString:@"application/json"] ||
-            [headerValue isEqualToString:@"application/x-www-form-urlencoded"];
+            BOOL validContentType = [headerValue isEqualToString:@"application/x-www-form-urlencoded"];
             
             XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
         } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
@@ -100,6 +141,8 @@
             [headerValue isEqualToString:[@(MPEnvironmentProduction) stringValue]];
             
             XCTAssertTrue(validEnvironment, @"Invalid environment value: %@", headerValue);
+        } else if ([header isEqualToString:@"x-mp-kits"]) {
+            XCTAssertEqualObjects(headerValue, @"42", @"Should have been equal.");
         }
     }
 }
@@ -181,6 +224,51 @@
     urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:urlString] message:nil httpMethod:nil];
     
     XCTAssertEqualObjects(urlRequestBuilder.httpMethod, @"GET", @"HTTP method is assuming GET as default.");
+}
+
+- (void)testEventRequest {
+    XCTAssertEqual([MPURLRequestBuilder requestTimeout], 30, @"Should have been equal.");
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    
+    MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageType:@"e"
+                                                                                  messageInfo:@{@"key":@"value"}
+                                                                                 uploadStatus:MPUploadStatusBatch
+                                                                                         UUID:[[NSUUID UUID] UUIDString]
+                                                                                    timestamp:[[NSDate date] timeIntervalSince1970]];
+    
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+                                                                            message:[standaloneMessage serializedString]
+                                                                         httpMethod:@"POST"];
+    NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
+    
+    NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
+    NSArray *keys = [headersDictionary allKeys];
+    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-kits", @"x-mp-bundled-kits"];
+    NSString *headerValue;
+    
+    for (NSString *header in headers) {
+        XCTAssertTrue([keys containsObject:header], @"HTTP header %@ is missing", header);
+        
+        headerValue = headersDictionary[header];
+        
+        if ([header isEqualToString:@"Accept-Encoding"] || [header isEqualToString:@"Content-Encoding"]) {
+            XCTAssertTrue([headerValue isEqualToString:@"gzip"], @"%@ has an invalid value: %@", header, headerValue);
+        } else if ([header isEqualToString:@"Content-Type"]) {
+            BOOL validContentType = [headerValue isEqualToString:@"application/json"];
+            
+            XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
+        } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
+            XCTAssert([headerValue length] > 0, @"%@ has invalid length", header);
+        } else if ([header isEqualToString:@"x-mp-env"]) {
+            BOOL validEnvironment = [headerValue isEqualToString:[@(MPEnvironmentDevelopment) stringValue]] ||
+                                    [headerValue isEqualToString:[@(MPEnvironmentProduction) stringValue]];
+            
+            XCTAssertTrue(validEnvironment, @"Invalid environment value: %@", headerValue);
+        } else if ([header isEqualToString:@"x-mp-bundled-kits"] || [header isEqualToString:@"x-mp-kits"]) {
+            XCTAssertEqualObjects(headerValue, @"42", @"Should have been equal.");
+        }
+    }
 }
 
 @end

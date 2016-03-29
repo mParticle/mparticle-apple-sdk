@@ -171,7 +171,7 @@
 /**
  @deprecated use initWithName:sku:quantity:price: instead
  */
-- (nonnull instancetype)initWithName:(nonnull NSString *)name category:(nullable NSString *)category quantity:(NSInteger)quantity totalAmount:(double)totalAmount __attribute__((deprecated("use initWithName:sku:quantity:price: instead")));
+- (nonnull instancetype)initWithName:(nonnull NSString *)name category:(nullable NSString *)category quantity:(NSInteger)quantity totalAmount:(double)totalAmount __attribute__((unavailable("use initWithName:sku:quantity:price: instead")));
 
 /**
  @deprecated use initWithName:sku:quantity:price: instead

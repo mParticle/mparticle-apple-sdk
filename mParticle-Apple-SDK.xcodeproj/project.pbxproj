@@ -182,7 +182,7 @@
 		C9049B2F1C56C353005F11EA /* MPKitConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A61C56B8DF005F11EA /* MPKitConfiguration.mm */; };
 		C9049B301C56C353005F11EA /* MPKitContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A71C56B8DF005F11EA /* MPKitContainer.h */; };
 		C9049B311C56C353005F11EA /* MPKitContainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A81C56B8DF005F11EA /* MPKitContainer.mm */; };
-		C9049B321C56C353005F11EA /* MPKitExecStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A91C56B8DF005F11EA /* MPKitExecStatus.h */; };
+		C9049B321C56C353005F11EA /* MPKitExecStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A91C56B8DF005F11EA /* MPKitExecStatus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9049B331C56C353005F11EA /* MPKitExecStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499AA1C56B8DF005F11EA /* MPKitExecStatus.m */; };
 		C9049B341C56C353005F11EA /* MPKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499AB1C56B8DF005F11EA /* MPKitFilter.h */; };
 		C9049B351C56C353005F11EA /* MPKitFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499AC1C56B8DF005F11EA /* MPKitFilter.m */; };
@@ -196,7 +196,7 @@
 		C9049B3F1C56C354005F11EA /* MPKitConfiguration.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A61C56B8DF005F11EA /* MPKitConfiguration.mm */; };
 		C9049B401C56C354005F11EA /* MPKitContainer.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A71C56B8DF005F11EA /* MPKitContainer.h */; };
 		C9049B411C56C354005F11EA /* MPKitContainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499A81C56B8DF005F11EA /* MPKitContainer.mm */; };
-		C9049B421C56C354005F11EA /* MPKitExecStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A91C56B8DF005F11EA /* MPKitExecStatus.h */; };
+		C9049B421C56C354005F11EA /* MPKitExecStatus.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499A91C56B8DF005F11EA /* MPKitExecStatus.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9049B431C56C354005F11EA /* MPKitExecStatus.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499AA1C56B8DF005F11EA /* MPKitExecStatus.m */; };
 		C9049B441C56C354005F11EA /* MPKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499AB1C56B8DF005F11EA /* MPKitFilter.h */; };
 		C9049B451C56C354005F11EA /* MPKitFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = C90499AC1C56B8DF005F11EA /* MPKitFilter.m */; };
@@ -372,6 +372,10 @@
 		C9049C341C56C68F005F11EA /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9049C331C56C68F005F11EA /* AdSupport.framework */; };
 		C9049D091C57FBC2005F11EA /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.mm */; };
 		C9049D0A1C57FBC6005F11EA /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F31C56B8DF005F11EA /* MPNotificationController.h */; };
+		C91A176E1CBBFC8D0020B1C9 /* MPKitTestClass.m in Sources */ = {isa = PBXBuildFile; fileRef = C91A176D1CBBFC8D0020B1C9 /* MPKitTestClass.m */; };
+		C91A176F1CBBFC8D0020B1C9 /* MPKitTestClass.m in Sources */ = {isa = PBXBuildFile; fileRef = C91A176D1CBBFC8D0020B1C9 /* MPKitTestClass.m */; };
+		C943F0CA1CB6F81300752E91 /* MPDataModelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C943F0C91CB6F81300752E91 /* MPDataModelTests.m */; };
+		C943F0CB1CB6F81300752E91 /* MPDataModelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C943F0C91CB6F81300752E91 /* MPDataModelTests.m */; };
 		C95801401C61170C00E62148 /* MParticleUserNotification.m in Sources */ = {isa = PBXBuildFile; fileRef = C904993B1C56B8DE005F11EA /* MParticleUserNotification.m */; };
 		C95801411C61171700E62148 /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993A1C56B8DE005F11EA /* MParticleUserNotification.h */; };
 		C95801421C61171700E62148 /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = C904993A1C56B8DE005F11EA /* MParticleUserNotification.h */; };
@@ -423,8 +427,24 @@
 		C97C091F1CA3122600280B1E /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C97C08D11CA3074F00280B1E /* MPZipTests.mm */; };
 		C97C09221CA322C000280B1E /* MPKitRegisterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C09211CA322C000280B1E /* MPKitRegisterTests.m */; };
 		C97C09231CA322C000280B1E /* MPKitRegisterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C09211CA322C000280B1E /* MPKitRegisterTests.m */; };
+		C97F929A1CAF093000A3135B /* MPForwardQueueItem.h in Headers */ = {isa = PBXBuildFile; fileRef = C97F92981CAF093000A3135B /* MPForwardQueueItem.h */; };
+		C97F929B1CAF093000A3135B /* MPForwardQueueItem.h in Headers */ = {isa = PBXBuildFile; fileRef = C97F92981CAF093000A3135B /* MPForwardQueueItem.h */; };
+		C97F929C1CAF093000A3135B /* MPForwardQueueItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F92991CAF093000A3135B /* MPForwardQueueItem.m */; };
+		C97F929D1CAF093000A3135B /* MPForwardQueueItem.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F92991CAF093000A3135B /* MPForwardQueueItem.m */; };
+		C97F929F1CB2C41A00A3135B /* MPForwardQueueItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F929E1CB2C41A00A3135B /* MPForwardQueueItemTests.m */; };
+		C97F92A01CB2C41A00A3135B /* MPForwardQueueItemTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F929E1CB2C41A00A3135B /* MPForwardQueueItemTests.m */; };
+		C97F92A21CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F92A11CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m */; };
+		C97F92A31CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F92A11CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m */; };
 		C9A88DD61C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9A88DD71C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9CD55091CB415950052868A /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD55081CB415950052868A /* MPResponseConfigTests.m */; };
+		C9CD550A1CB415950052868A /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD55081CB415950052868A /* MPResponseConfigTests.m */; };
+		C9CD550C1CB42D580052868A /* MPKitConfigurationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9CD550B1CB42D580052868A /* MPKitConfigurationTests.mm */; };
+		C9CD550D1CB42D580052868A /* MPKitConfigurationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9CD550B1CB42D580052868A /* MPKitConfigurationTests.mm */; };
+		C9CD550F1CB4538D0052868A /* MPDateFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD550E1CB4538D0052868A /* MPDateFormatterTests.m */; };
+		C9CD55101CB4538D0052868A /* MPDateFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD550E1CB4538D0052868A /* MPDateFormatterTests.m */; };
+		C9F694ED1CAADA7400E4DCD4 /* MPKitContainerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F694EC1CAADA7400E4DCD4 /* MPKitContainerTests.m */; };
+		C9F694EE1CAADA7400E4DCD4 /* MPKitContainerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F694EC1CAADA7400E4DCD4 /* MPKitContainerTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -646,6 +666,9 @@
 		C9049C2F1C56C65E005F11EA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		C9049C311C56C664005F11EA /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
 		C9049C331C56C68F005F11EA /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/AdSupport.framework; sourceTree = DEVELOPER_DIR; };
+		C91A176C1CBBFC8D0020B1C9 /* MPKitTestClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTestClass.h; sourceTree = "<group>"; };
+		C91A176D1CBBFC8D0020B1C9 /* MPKitTestClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClass.m; sourceTree = "<group>"; };
+		C943F0C91CB6F81300752E91 /* MPDataModelTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDataModelTests.m; sourceTree = "<group>"; };
 		C97310B21C6E456A0031E702 /* MPKitProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitProtocol.h; sourceTree = "<group>"; };
 		C97310B31C6E456A0031E702 /* MPKitRegister.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitRegister.h; sourceTree = "<group>"; };
 		C97310B41C6E456A0031E702 /* MPKitRegister.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitRegister.mm; sourceTree = "<group>"; };
@@ -671,13 +694,20 @@
 		C97C08CC1CA3074F00280B1E /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; };
 		C97C08CD1CA3074F00280B1E /* MPProductBagTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPProductBagTests.m; sourceTree = "<group>"; };
 		C97C08CE1CA3074F00280B1E /* MPStateMachineTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPStateMachineTests.mm; sourceTree = "<group>"; };
-		C97C08CF1CA3074F00280B1E /* MPURLRequestBuilder+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPURLRequestBuilder+Tests.h"; sourceTree = "<group>"; };
 		C97C08D01CA3074F00280B1E /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		C97C08D11CA3074F00280B1E /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
 		C97C09041CA3116800280B1E /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C97C09081CA3116800280B1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C97C09211CA322C000280B1E /* MPKitRegisterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitRegisterTests.m; sourceTree = "<group>"; };
+		C97F92981CAF093000A3135B /* MPForwardQueueItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPForwardQueueItem.h; sourceTree = "<group>"; };
+		C97F92991CAF093000A3135B /* MPForwardQueueItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueItem.m; sourceTree = "<group>"; };
+		C97F929E1CB2C41A00A3135B /* MPForwardQueueItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueItemTests.m; sourceTree = "<group>"; };
+		C97F92A11CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBase_Attribute_Event_ProjectionTests.m; sourceTree = "<group>"; };
 		C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExtensionProtocol.h; sourceTree = "<group>"; };
+		C9CD55081CB415950052868A /* MPResponseConfigTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfigTests.m; sourceTree = "<group>"; };
+		C9CD550B1CB42D580052868A /* MPKitConfigurationTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitConfigurationTests.mm; sourceTree = "<group>"; };
+		C9CD550E1CB4538D0052868A /* MPDateFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDateFormatterTests.m; sourceTree = "<group>"; };
+		C9F694EC1CAADA7400E4DCD4 /* MPKitContainerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitContainerTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -912,6 +942,8 @@
 				C97310B21C6E456A0031E702 /* MPKitProtocol.h */,
 				C97310B31C6E456A0031E702 /* MPKitRegister.h */,
 				C97310B41C6E456A0031E702 /* MPKitRegister.mm */,
+				C97F92981CAF093000A3135B /* MPForwardQueueItem.h */,
+				C97F92991CAF093000A3135B /* MPForwardQueueItem.m */,
 			);
 			path = Kits;
 			sourceTree = "<group>";
@@ -1143,14 +1175,22 @@
 				C97C08BD1CA3074F00280B1E /* MPAppNotificationHandlerTests.m */,
 				C97C08BE1CA3074F00280B1E /* MPBackendController+Tests.h */,
 				C97C08BF1CA3074F00280B1E /* MPBackendControllerTests.mm */,
+				C97F92A11CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m */,
 				C97C08C01CA3074F00280B1E /* MPCart+Tests.h */,
 				C97C08C11CA3074F00280B1E /* MPCartTests.m */,
 				C97C08C21CA3074F00280B1E /* MPCommerceEventTests.m */,
 				C97C08C31CA3074F00280B1E /* MPConsumerInfoTests.m */,
 				C97C08C41CA3074F00280B1E /* MPCustomModuleTests.m */,
+				C943F0C91CB6F81300752E91 /* MPDataModelTests.m */,
+				C9CD550E1CB4538D0052868A /* MPDateFormatterTests.m */,
 				C97C08C51CA3074F00280B1E /* MPEventTests.mm */,
+				C97F929E1CB2C41A00A3135B /* MPForwardQueueItemTests.m */,
 				C97C08C61CA3074F00280B1E /* MPForwardRecordTests.m */,
+				C9CD550B1CB42D580052868A /* MPKitConfigurationTests.mm */,
+				C9F694EC1CAADA7400E4DCD4 /* MPKitContainerTests.m */,
 				C97C09211CA322C000280B1E /* MPKitRegisterTests.m */,
+				C91A176C1CBBFC8D0020B1C9 /* MPKitTestClass.h */,
+				C91A176D1CBBFC8D0020B1C9 /* MPKitTestClass.m */,
 				C97C08C71CA3074F00280B1E /* MPLaunchInfoTests.m */,
 				C97C08C81CA3074F00280B1E /* MPMessageBuilderTests.m */,
 				C97C08C91CA3074F00280B1E /* MPNetworkCommunication+Tests.h */,
@@ -1158,8 +1198,8 @@
 				C97C08CB1CA3074F00280B1E /* MPNotificationControllerTests.m */,
 				C97C08CC1CA3074F00280B1E /* MPPersistenceControllerTests.mm */,
 				C97C08CD1CA3074F00280B1E /* MPProductBagTests.m */,
+				C9CD55081CB415950052868A /* MPResponseConfigTests.m */,
 				C97C08CE1CA3074F00280B1E /* MPStateMachineTests.mm */,
-				C97C08CF1CA3074F00280B1E /* MPURLRequestBuilder+Tests.h */,
 				C97C08D01CA3074F00280B1E /* MPURLRequestBuilderTests.m */,
 				C97C08D11CA3074F00280B1E /* MPZipTests.mm */,
 			);
@@ -1280,6 +1320,7 @@
 				C9049B9A1C56C3D0005F11EA /* NSURLSession+mParticle.h in Headers */,
 				C9049C021C56C436005F11EA /* NSNumber+MPFormatter.h in Headers */,
 				C9049ABD1C56C31D005F11EA /* MPSessionHistory.h in Headers */,
+				C97F929A1CAF093000A3135B /* MPForwardQueueItem.h in Headers */,
 				C9049B771C56C3C5005F11EA /* MPMediaTrack.h in Headers */,
 				C9049B341C56C353005F11EA /* MPKitFilter.h in Headers */,
 				C9049BC61C56C40F005F11EA /* MPDateFormatter.h in Headers */,
@@ -1383,6 +1424,7 @@
 				C9049B231C56C337005F11EA /* MPEvent+MessageType.h in Headers */,
 				C9049AED1C56C32C005F11EA /* MPCommerceEvent.h in Headers */,
 				C9049B3E1C56C354005F11EA /* MPKitConfiguration.h in Headers */,
+				C97F929B1CAF093000A3135B /* MPForwardQueueItem.h in Headers */,
 				C9049BD81C56C41A005F11EA /* MPLaunchInfo.h in Headers */,
 				C9049BF01C56C436005F11EA /* NSNumber+MPFormatter.h in Headers */,
 				C9049B211C56C337005F11EA /* MPEvent+Internal.h in Headers */,
@@ -1662,6 +1704,7 @@
 				C9049AFE1C56C32D005F11EA /* MPBags.m in Sources */,
 				C9049AB41C56C31D005F11EA /* MPForwardRecord.mm in Sources */,
 				C9049AC21C56C31D005F11EA /* MPStandaloneMessage.m in Sources */,
+				C97F929C1CAF093000A3135B /* MPForwardQueueItem.m in Sources */,
 				C9049B2F1C56C353005F11EA /* MPKitConfiguration.mm in Sources */,
 				C9049C031C56C436005F11EA /* NSNumber+MPFormatter.m in Sources */,
 			);
@@ -1752,6 +1795,7 @@
 				C9049AA71C56C2FF005F11EA /* MPCustomModulePreference.m in Sources */,
 				C9049B871C56C3C5005F11EA /* MPMediaMetadataTVR.m in Sources */,
 				C9049BD61C56C41A005F11EA /* MPHasher.cpp in Sources */,
+				C97F929D1CAF093000A3135B /* MPForwardQueueItem.m in Sources */,
 				C9049A7F1C56C2A2005F11EA /* MPBackendController.mm in Sources */,
 				C9049BF11C56C436005F11EA /* NSNumber+MPFormatter.m in Sources */,
 			);
@@ -1761,7 +1805,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C943F0CA1CB6F81300752E91 /* MPDataModelTests.m in Sources */,
 				C97C08F41CA3088500280B1E /* MPConsumerInfoTests.m in Sources */,
+				C9CD55091CB415950052868A /* MPResponseConfigTests.m in Sources */,
 				C97C08F61CA3089400280B1E /* MPEventTests.mm in Sources */,
 				C97C08F01CA3086600280B1E /* MPAppNotificationHandlerTests.m in Sources */,
 				C97C08EF1CA3085F00280B1E /* HasherTests.mm in Sources */,
@@ -1772,14 +1818,20 @@
 				C97C08F21CA3087B00280B1E /* MPCartTests.m in Sources */,
 				C97C08FC1CA3089400280B1E /* MPProductBagTests.m in Sources */,
 				C97C08EE1CA307CE00280B1E /* BracketTests.mm in Sources */,
+				C9CD550C1CB42D580052868A /* MPKitConfigurationTests.mm in Sources */,
+				C9CD550F1CB4538D0052868A /* MPDateFormatterTests.m in Sources */,
 				C97C09221CA322C000280B1E /* MPKitRegisterTests.m in Sources */,
+				C97F92A21CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
+				C97F929F1CB2C41A00A3135B /* MPForwardQueueItemTests.m in Sources */,
 				C97C08FF1CA3089400280B1E /* MPZipTests.mm in Sources */,
 				C97C08F11CA3087000280B1E /* MPBackendControllerTests.mm in Sources */,
 				C97C08FD1CA3089400280B1E /* MPStateMachineTests.mm in Sources */,
 				C97C08F81CA3089400280B1E /* MPLaunchInfoTests.m in Sources */,
+				C91A176E1CBBFC8D0020B1C9 /* MPKitTestClass.m in Sources */,
 				C97C08FE1CA3089400280B1E /* MPURLRequestBuilderTests.m in Sources */,
 				C97C08FA1CA3089400280B1E /* MPNotificationControllerTests.m in Sources */,
 				C97C08F51CA3088900280B1E /* MPCustomModuleTests.m in Sources */,
+				C9F694ED1CAADA7400E4DCD4 /* MPKitContainerTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1787,22 +1839,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C943F0CB1CB6F81300752E91 /* MPDataModelTests.m in Sources */,
 				C97C09101CA3122600280B1E /* HasherTests.mm in Sources */,
 				C97C09161CA3122600280B1E /* MPEventTests.mm in Sources */,
 				C97C09151CA3122600280B1E /* MPCustomModuleTests.m in Sources */,
 				C97C091C1CA3122600280B1E /* MPProductBagTests.m in Sources */,
+				C9CD550D1CB42D580052868A /* MPKitConfigurationTests.mm in Sources */,
 				C97C090F1CA311AD00280B1E /* BracketTests.mm in Sources */,
 				C97C09121CA3122600280B1E /* MPCartTests.m in Sources */,
+				C97F92A31CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				C97C09171CA3122600280B1E /* MPForwardRecordTests.m in Sources */,
 				C97C091E1CA3122600280B1E /* MPURLRequestBuilderTests.m in Sources */,
 				C97C09191CA3122600280B1E /* MPMessageBuilderTests.m in Sources */,
+				C9F694EE1CAADA7400E4DCD4 /* MPKitContainerTests.m in Sources */,
+				C91A176F1CBBFC8D0020B1C9 /* MPKitTestClass.m in Sources */,
+				C9CD550A1CB415950052868A /* MPResponseConfigTests.m in Sources */,
 				C97C09111CA3122600280B1E /* MPBackendControllerTests.mm in Sources */,
 				C97C091F1CA3122600280B1E /* MPZipTests.mm in Sources */,
 				C97C09141CA3122600280B1E /* MPConsumerInfoTests.m in Sources */,
 				C97C091D1CA3122600280B1E /* MPStateMachineTests.mm in Sources */,
+				C97F92A01CB2C41A00A3135B /* MPForwardQueueItemTests.m in Sources */,
 				C97C09131CA3122600280B1E /* MPCommerceEventTests.m in Sources */,
 				C97C09181CA3122600280B1E /* MPLaunchInfoTests.m in Sources */,
 				C97C091B1CA3122600280B1E /* MPPersistenceControllerTests.mm in Sources */,
+				C9CD55101CB4538D0052868A /* MPDateFormatterTests.m in Sources */,
 				C97C09231CA322C000280B1E /* MPKitRegisterTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2023,6 +2083,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = mParticle_iOS_SDKTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -2042,6 +2103,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = mParticle_iOS_SDKTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -2060,6 +2122,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				INFOPLIST_FILE = mParticle_tvOS_SDKTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -2081,6 +2144,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = "";
 				INFOPLIST_FILE = mParticle_tvOS_SDKTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;

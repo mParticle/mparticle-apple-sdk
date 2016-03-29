@@ -30,6 +30,7 @@
 #import "MPBags.h"
 #import "MPExtensionProtocol.h"
 #import "MPKitRegister.h"
+#import "MPKitExecStatus.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -290,6 +291,14 @@
 - (void)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 
 #pragma mark - Basic Tracking
+/**
+ Contains a collection with all active timed events (timed events that had begun, but not yet ended). You should not keep a 
+ separate reference collection containing the events being timed. The mParticle SDK manages the lifecycle of those events.
+ @see beginTimedEvent:
+ @returns A set with all active timed events
+ */
+- (nullable NSSet *)activeTimedEvents;
+
 /**
  Begins timing an event. There can be many timed events going on at the same time, the only requirement is that each
  concurrent timed event must have a unique event name. After beginning a timed event you don't have to keep a reference

@@ -31,31 +31,43 @@
 
 - (instancetype)initWithDictionary:(NSDictionary *)customModuleDictionary {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _customModuleId = customModuleDictionary[kMPRemoteConfigCustomModuleIdKey];
-    
-    NSArray *preferences = customModuleDictionary[kMPRemoteConfigCustomModulePreferencesKey];
-    NSMutableArray<MPCustomModulePreference *> *localPreferences = [[NSMutableArray alloc] initWithCapacity:preferences.count];
-    NSString *location;
-    NSArray *preferenceSettings;
-    MPCustomModulePreference *preference;
-    for (NSDictionary *preferenceDictionary in preferences) {
-        location = preferenceDictionary[kMPRemoteConfigCustomModuleLocationKey];
-        preferenceSettings = preferenceDictionary[kMPRemoteConfigCustomModulePreferenceSettingsKey];
-        
-        for (NSDictionary *preferenceSettingDictionary in preferenceSettings) {
-            preference = [[MPCustomModulePreference alloc] initWithDictionary:preferenceSettingDictionary location:location moduleId:self.customModuleId];
-            [localPreferences addObject:preference];
+    if (self) {
+        _customModuleId = customModuleDictionary[kMPRemoteConfigCustomModuleIdKey];
+        NSArray *preferences = customModuleDictionary[kMPRemoteConfigCustomModulePreferencesKey];
+        Class arrayClass = [NSArray class];
+        if (MPIsNull(_customModuleId) || ![_customModuleId isKindOfClass:[NSNumber class]] || MPIsNull(preferences) || ![preferences isKindOfClass:arrayClass]) {
+            return nil;
         }
+        
+        NSMutableArray<MPCustomModulePreference *> *localPreferences = [[NSMutableArray alloc] initWithCapacity:preferences.count];
+        NSString *location;
+        NSArray *preferenceSettings;
+        MPCustomModulePreference *preference;
+        for (NSDictionary *preferenceDictionary in preferences) {
+            if (MPIsNull(preferenceDictionary) || ![preferenceDictionary isKindOfClass:[NSDictionary class]]) {
+                continue;
+            }
+            
+            id temp = preferenceDictionary[kMPRemoteConfigCustomModuleLocationKey];
+            location = !MPIsNull(temp) ? (NSString *)temp : @"NSUserDefaults";
+            
+            temp = preferenceDictionary[kMPRemoteConfigCustomModulePreferenceSettingsKey];
+            preferenceSettings = !MPIsNull(temp) && [temp isKindOfClass:arrayClass] ? (NSArray *)temp : nil;
+            
+            for (NSDictionary *preferenceSettingDictionary in preferenceSettings) {
+                preference = [[MPCustomModulePreference alloc] initWithDictionary:preferenceSettingDictionary location:location moduleId:_customModuleId];
+                
+                if (preference) {
+                    [localPreferences addObject:preference];
+                }
+            }
+        }
+        
+        if (localPreferences.count == 0) {
+            localPreferences = nil;
+        }
+        _preferences = (NSArray *)localPreferences;
     }
-    
-    if (localPreferences.count == 0) {
-        localPreferences = nil;
-    }
-    _preferences = (NSArray *)localPreferences;
     
     return self;
 }
@@ -95,13 +107,11 @@
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _customModuleId = [coder decodeObjectForKey:@"customModuleId"];
+        _preferences = [coder decodeObjectForKey:@"preferences"];
     }
     
-    _customModuleId = [coder decodeObjectForKey:@"customModuleId"];
-    _preferences = [coder decodeObjectForKey:@"preferences"];
-
     return self;
 }
 

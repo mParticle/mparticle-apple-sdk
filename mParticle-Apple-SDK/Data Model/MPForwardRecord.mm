@@ -77,7 +77,20 @@ NSString *const kMPFROptOutState = @"s";
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(id)originalEvent {
     self = [super init];
-    if (!self) {
+    
+    BOOL validMessageType = messageType > MPMessageTypeUnknown && messageType <= MPMessageTypeCommerceEvent;
+    NSAssert(validMessageType, @"The 'messageType' variable is not valid.");
+    
+    BOOL validExecStatus = !MPIsNull(execStatus) && [execStatus isKindOfClass:[MPKitExecStatus class]];
+    NSAssert(validExecStatus, @"The 'execStatus' variable is not valid.");
+    
+    BOOL validKitFilter = MPIsNull(kitFilter) || [kitFilter isKindOfClass:[MPKitFilter class]];
+    NSAssert(validExecStatus, @"The 'kitFilter' variable is not valid.");
+    
+    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]];
+    NSAssert(validOriginalEvent, @"The 'originalEvent' variable is not valid.");
+    
+    if (!self || !validMessageType || !validExecStatus || !validKitFilter || !validOriginalEvent) {
         return nil;
     }
     
@@ -160,7 +173,7 @@ NSString *const kMPFROptOutState = @"s";
 }
 
 - (BOOL)isEqual:(id)object {
-    if (![object isKindOfClass:[self class]]) {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPForwardRecord class]]) {
         return NO;
     }
     
@@ -177,8 +190,8 @@ NSString *const kMPFROptOutState = @"s";
 
 #pragma mark Public methods
 - (NSData *)dataRepresentation {
-    if (MPIsNull(_dataDictionary)) {
-        MPILogWarning(@"Data dictionary is nil/null.");
+    if (MPIsNull(_dataDictionary) || ![_dataDictionary isKindOfClass:[NSDictionary class]]) {
+        MPILogWarning(@"Invalid Data dictionary.");
         return nil;
     }
     

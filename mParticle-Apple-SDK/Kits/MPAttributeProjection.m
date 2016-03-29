@@ -78,7 +78,7 @@
 
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPAttributeProjection *copyObject = [[[self class] alloc] init];
+    MPAttributeProjection *copyObject = [[[self class] alloc] initWithConfiguration:_configuration projectionType:MPProjectionTypeAttribute attributeIndex:_attributeIndex];
     
     if (copyObject) {
         copyObject.name = [_name copy];

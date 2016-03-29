@@ -22,7 +22,6 @@
 #include "EventTypeName.h"
 
 using namespace std;
-using namespace mParticle;
 
 @implementation MPEventProjection
 
@@ -46,7 +45,7 @@ using namespace mParticle;
     NSString *auxString;
     
     auxString = matchDictionary[@"event"];
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)EventTypeName::eventTypeForHash(string([auxString cStringUsingEncoding:NSUTF8StringEncoding])) : MPEventTypeOther;
+    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([auxString cStringUsingEncoding:NSUTF8StringEncoding])) : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     
@@ -85,7 +84,7 @@ using namespace mParticle;
 
     NSDictionary *actionDictionary = configuration[@"action"];
     
-    _outboundMessageType = actionDictionary[@"outbound_message_type"] ? (MPMessageType)[actionDictionary[@"outbound_message_type"] integerValue] : MPMessageTypeEvent;
+    _outboundMessageType = !MPIsNull(actionDictionary[@"outbound_message_type"]) ? (MPMessageType)[actionDictionary[@"outbound_message_type"] integerValue] : MPMessageTypeEvent;
     
     NSArray *attributeMaps = !MPIsNull(actionDictionary[@"attribute_maps"]) ? actionDictionary[@"attribute_maps"] : nil;
     if (attributeMaps) {
@@ -108,7 +107,7 @@ using namespace mParticle;
 }
 
 - (BOOL)isEqual:(id)object {
-    BOOL isEqual = [object isKindOfClass:[self class]];
+    BOOL isEqual = !MPIsNull(object) && [object isKindOfClass:[MPEventProjection class]];
     
     if (isEqual) {
         isEqual = [super isEqual:object];
@@ -116,15 +115,15 @@ using namespace mParticle;
         if (isEqual) {
             MPEventProjection *eventProjection = (MPEventProjection *)object;
             
-            isEqual = [_attributeKey isEqualToString:eventProjection.attributeKey] &&
-                      [_attributeValue isEqualToString:eventProjection.attributeValue] &&
+            isEqual = ((!_attributeKey && !eventProjection.attributeKey) || [_attributeKey isEqualToString:eventProjection.attributeKey]) &&
+                      ((!_attributeValue && !eventProjection.attributeValue) || [_attributeValue isEqualToString:eventProjection.attributeValue]) &&
                       _messageType == eventProjection.messageType &&
                       _maxCustomParameters == eventProjection.maxCustomParameters &&
                       _appendAsIs == eventProjection.appendAsIs &&
                       _isDefault == eventProjection.isDefault;
    
             if (isEqual) {
-                isEqual = [_attributeProjections isEqualToArray:eventProjection.attributeProjections];
+                isEqual = (!_attributeProjections && !eventProjection.attributeProjections) || [_attributeProjections isEqualToArray:eventProjection.attributeProjections];
             }
         }
     }
@@ -158,27 +157,25 @@ using namespace mParticle;
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
-    if (!self) {
-        return nil;
+    if (self) {
+        _attributeKey = [coder decodeObjectForKey:@"attributeKey"];
+        _attributeValue = [coder decodeObjectForKey:@"attributeValue"];
+        _attributeProjections = [coder decodeObjectForKey:@"attributeProjections"];
+        _behaviorSelector = (MPProjectionBehaviorSelector)[coder decodeIntegerForKey:@"behaviorSelector"];
+        _eventType = (MPEventType)[coder decodeIntegerForKey:@"eventType"];
+        _messageType = (MPMessageType)[coder decodeIntegerForKey:@"messageType"];
+        _maxCustomParameters = [coder decodeIntegerForKey:@"maxCustomParameters"];
+        _appendAsIs = [coder decodeBoolForKey:@"appendAsIs"];
+        _isDefault = [coder decodeBoolForKey:@"isDefault"];
     }
     
-    _attributeKey = [coder decodeObjectForKey:@"attributeKey"];
-    _attributeValue = [coder decodeObjectForKey:@"attributeValue"];
-    _attributeProjections = [coder decodeObjectForKey:@"attributeProjections"];
-    _behaviorSelector = (MPProjectionBehaviorSelector)[coder decodeIntegerForKey:@"behaviorSelector"];
-    _eventType = (MPEventType)[coder decodeIntegerForKey:@"eventType"];
-    _messageType = (MPMessageType)[coder decodeIntegerForKey:@"messageType"];
-    _maxCustomParameters = [coder decodeIntegerForKey:@"maxCustomParameters"];
-    _appendAsIs = [coder decodeBoolForKey:@"appendAsIs"];
-    _isDefault = [coder decodeBoolForKey:@"isDefault"];
-
     return self;
 }
 
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPEventProjection *copyObject = [[[self class] alloc] init];
-    
+    MPEventProjection *copyObject = [[[self class] alloc] initWithConfiguration:_configuration projectionType:MPProjectionTypeEvent attributeIndex:_attributeIndex];
+
     if (copyObject) {
         copyObject.name = [_name copy];
         copyObject.projectedName = [_projectedName copy];

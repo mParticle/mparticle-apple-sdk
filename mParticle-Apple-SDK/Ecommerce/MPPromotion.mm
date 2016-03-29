@@ -70,7 +70,13 @@ static NSArray *actionNames;
         return NO;
     }
     
-    return [_attributes isEqualToDictionary:((MPPromotion *)object)->_attributes];
+    if (_attributes && ((MPPromotion *)object)->_attributes) {
+        return [_attributes isEqualToDictionary:((MPPromotion *)object)->_attributes];
+    } else if (_attributes || ((MPPromotion *)object)->_attributes) {
+        return NO;
+    } else {
+        return YES;
+    }
 }
 
 #pragma mark Private accessors
@@ -97,8 +103,8 @@ static NSArray *actionNames;
     MPPromotion *copyObject = [[[self class] alloc] init];
     
     if (copyObject) {
-        copyObject->_attributes = [_attributes copy];
-        copyObject->_beautifiedAttributes = [_beautifiedAttributes copy];
+        copyObject->_attributes = [_attributes mutableCopy];
+        copyObject->_beautifiedAttributes = [_beautifiedAttributes mutableCopy];
     }
     
     return copyObject;
@@ -117,20 +123,18 @@ static NSArray *actionNames;
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
-    if (!self) {
-        return nil;
+    if (self) {
+        NSDictionary<NSString *, NSString *> *dictionary = [coder decodeObjectForKey:@"attributes"];
+        if (dictionary.count > 0) {
+            self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
+        
+        dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
+        if (dictionary) {
+            self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
     }
     
-    NSDictionary<NSString *, NSString *> *dictionary = [coder decodeObjectForKey:@"attributes"];
-    if (dictionary.count > 0) {
-        self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-    
-    dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
-    if (dictionary) {
-        self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-
     return self;
 }
 
@@ -229,17 +233,34 @@ static NSArray *actionNames;
 
 - (instancetype)initWithAction:(MPPromotionAction)action promotion:(MPPromotion *)promotion {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _action = action;
-    
-    if (!MPIsNull(promotion)) {
-        [self.promotionsArray addObject:promotion];
+    if (self) {
+        _action = action;
+        
+        if (!MPIsNull(promotion)) {
+            NSAssert([promotion isKindOfClass:[MPPromotion class]], @"'promotion' must be of class type MPPromotion.");
+            [self.promotionsArray addObject:promotion];
+        }
     }
     
     return self;
+}
+
+- (BOOL)isEqual:(id)object {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPPromotionContainer class]]) {
+        return NO;
+    }
+    
+    BOOL isEqual = _action == ((MPPromotionContainer *)object)->_action;
+    
+    if (isEqual) {
+        if (_promotionsArray && ((MPPromotionContainer *)object)->_promotionsArray) {
+            isEqual = [_promotionsArray isEqualToArray:((MPPromotionContainer *)object)->_promotionsArray];
+        } else {
+            isEqual = NO;
+        }
+    }
+    
+    return isEqual;
 }
 
 #pragma mark Private accessors
@@ -275,15 +296,13 @@ static NSArray *actionNames;
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
-    if (!self) {
-        return nil;
-    }
-    
-    _action = (MPPromotionAction)[coder decodeIntegerForKey:@"action"];
-    
-    NSArray *array = [coder decodeObjectForKey:@"promotionsArray"];
-    if (array) {
-        _promotionsArray = [[NSMutableArray alloc] initWithArray:array];
+    if (self) {
+        _action = (MPPromotionAction)[coder decodeIntegerForKey:@"action"];
+        
+        NSArray *array = [coder decodeObjectForKey:@"promotionsArray"];
+        if (array) {
+            _promotionsArray = [[NSMutableArray alloc] initWithArray:array];
+        }
     }
     
     return self;

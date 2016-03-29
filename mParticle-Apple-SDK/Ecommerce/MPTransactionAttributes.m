@@ -88,10 +88,9 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPTransactionAttributes *copyObject = [[[self class] alloc] init];
-    
     if (copyObject) {
-        copyObject->_attributes = [_attributes copy];
-        copyObject->_beautifiedAttributes = _beautifiedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_beautifiedAttributes copy]] : nil;
+        copyObject->_attributes = [_attributes mutableCopy];
+        copyObject->_beautifiedAttributes = _beautifiedAttributes ? [_beautifiedAttributes mutableCopy] : nil;
     }
     
     return copyObject;
@@ -110,18 +109,16 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
-    if (!self) {
-        return nil;
-    }
-    
-    NSDictionary *dictionary = [coder decodeObjectForKey:@"attributes"];
-    if (dictionary.count > 0) {
-        self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-    
-    dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
-    if (dictionary) {
-        self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+    if (self) {
+        NSDictionary *dictionary = [coder decodeObjectForKey:@"attributes"];
+        if (dictionary.count > 0) {
+            self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
+        
+        dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
+        if (dictionary) {
+            self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
     }
     
     return self;

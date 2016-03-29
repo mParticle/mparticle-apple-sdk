@@ -93,7 +93,6 @@ static BOOL appBackgrounded = NO;
     BOOL retrievingSegments;
 }
 
-@property (nonatomic, strong, nonnull) NSMutableSet<MPEvent *> *eventSet;
 @property (nonatomic, strong) MPMediaTrackContainer *mediaTrackContainer;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, id> *userAttributes;
 @property (nonatomic, strong) NSMutableArray<NSDictionary<NSString *, id> *> *userIdentities;
@@ -825,6 +824,7 @@ static BOOL appBackgrounded = NO;
                                   }];
                               }];
 }
+
 - (void)uploadStandaloneMessages {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];

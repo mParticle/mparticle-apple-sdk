@@ -49,7 +49,8 @@ Pod::Spec.new do |s|
                                  'mParticle-Apple-SDK/Event/MPEvent.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerce.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent.h', \
                                  'mParticle-Apple-SDK/Ecommerce/MPCart.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct.h', 'mParticle-Apple-SDK/Ecommerce/MPPromotion.h', \
                                  'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes.h', 'mParticle-Apple-SDK/Ecommerce/MPBags.h', \
-                                 'mParticle-Apple-SDK/MPExtensionProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitRegister.h'
+                                 'mParticle-Apple-SDK/MPExtensionProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitRegister.h', \
+                                 'mParticle-Apple-SDK/Kits/MPKitExecStatus.h'
 
         ss.header_mappings_dir = 'mParticle-Apple-SDK'
         ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'

@@ -106,13 +106,11 @@
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [[MPCart alloc] init];
-    if (!self) {
-        return nil;
-    }
-
-    NSArray *productList = [coder decodeObjectForKey:@"productsList"];
-    if (productList) {
-        _productsList = [[NSMutableArray alloc] initWithArray:productList];
+    if (self) {
+        NSArray *productList = [coder decodeObjectForKey:@"productsList"];
+        if (productList) {
+            _productsList = [[NSMutableArray alloc] initWithArray:productList];
+        }
     }
 
     return self;
@@ -188,14 +186,12 @@
 
 #pragma mark Public methods
 - (void)addProduct:(MPProduct *)product {
-    NSAssert(!MPIsNull(product), @"'product' cannot be nil/null.");
-    NSAssert([product isKindOfClass:[MPProduct class]], @"'product' is not an instance of MPProduct.");
+    BOOL validProduct = MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
+    NSAssert(validProduct, @"The 'product' variable is not valid.");
     
-    if (MPIsNull(product) || ![product isKindOfClass:[MPProduct class]]) {
-        return;
+    if (validProduct) {
+        [self addProducts:@[product] logEvent:YES updateProductList:NO];
     }
-    
-    [self addProducts:@[product] logEvent:YES updateProductList:NO];
 }
 
 - (void)clear {
@@ -208,14 +204,12 @@
 }
 
 - (void)removeProduct:(MPProduct *)product {
-    NSAssert(!MPIsNull(product), @"'product' cannot be nil/null.");
-    NSAssert([product isKindOfClass:[MPProduct class]], @"'product' is not an instance of MPProduct.");
-    
-    if (MPIsNull(product) || ![product isKindOfClass:[MPProduct class]]) {
-        return;
+    BOOL validProduct = MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
+    NSAssert(validProduct, @"The 'product' variable is not valid.");
+
+    if (validProduct) {
+        [self removeProducts:@[product] logEvent:YES updateProductList:NO];
     }
-    
-    [self removeProducts:@[product] logEvent:YES updateProductList:NO];
 }
 
 @end

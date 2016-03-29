@@ -88,7 +88,6 @@ static NSTimeInterval requestTimeout = 30.0;
 
     if (!mpUserAgent) {
 #if TARGET_OS_IOS == 1
-    #ifndef MP_UNIT_TESTING
         dispatch_block_t getUserAgent = ^{
             UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
             
@@ -100,9 +99,6 @@ static NSTimeInterval requestTimeout = 30.0;
         } else {
             dispatch_sync(dispatch_get_main_queue(), getUserAgent);
         }
-    #else
-        mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Mobile/12F70 mParticle/%@", kMParticleSDKVersion];
-    #endif
 #elif TARGET_OS_TV == 1
         mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS 9_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Mobile/12F70 mParticle/%@", kMParticleSDKVersion];
 #endif

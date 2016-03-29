@@ -22,6 +22,7 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
+#import "MPProduct.h"
 
 @interface MPEventTests : XCTestCase
 
@@ -76,6 +77,18 @@
     copyEvent.duration = event.duration;
     copyEvent.category = nil;
     XCTAssertNotEqualObjects(copyEvent, event, @"Copied event object should have been different.");
+
+    XCTAssertNotNil(event.category, @"Should not have been nil.");
+    event.category = @"Bacon ipsum dolor amet mollit reprehenderit occaecat shankle officia fatback, enim corned beef ham sunt adipisicing swine. Frankfurter duis ground round shoulder nostrud do jowl ea adipisicing exercitation fugiat. Tempor consectetur chicken anim pork belly pancetta et. Venison deserunt cillum sed aliqua ipsum landjaeger rump et qui.";
+    XCTAssertNil(event.category, @"Should have been nil.");
+    
+    XCTAssertNotNil(event.info, @"Should not have been nil.");
+    NSDictionary *copyEventInfo = [eventInfo copy];
+    event.info = copyEventInfo;
+    XCTAssertEqualObjects(event.info, eventInfo, @"Should have been equal.");
+    
+    event = [[MPEvent alloc] init];
+    XCTAssertNotNil(event, @"Should not have been nil.");
 }
 
 - (void)testEventTiming {
@@ -94,7 +107,7 @@
 }
 
 - (void)testInvalidNames {
-    NSString *longName = @"The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog. The quick brown fox jumped over the lazy dog.";
+    NSString *longName = @"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
     
     NSString *nilName = nil;
     
@@ -191,27 +204,104 @@
 
 - (void)testCustomFlags {
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Jogging" type:MPEventTypeTransaction];
-    NSArray *nilArray = nil;
-    NSString *nilKey = nil;
-    
-    [event addCustomFlags:nilArray withKey:@"key"];
+    NSArray *customFlags = nil;
+    NSString *customFlagKey = @"Era";
+    NSString *customFlagValue = @"Mesozoic";
+
+    [event addCustomFlags:customFlags withKey:customFlagKey];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
-    [event addCustomFlags:(NSArray *)[NSNull null] withKey:@"key"];
+    customFlags = (NSArray *)[NSNull null];
+    [event addCustomFlags:customFlags withKey:customFlagKey];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
-    [event addCustomFlags:@[@"Flag 1"] withKey:nilKey];
+    customFlagKey = nil;
+    [event addCustomFlags:@[@"Flag 1"] withKey:customFlagKey];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
-    [event addCustomFlags:@[@"Flag 1"] withKey:(NSString *)[NSNull null]];
+    customFlagKey = (NSString *)[NSNull null];
+    [event addCustomFlags:@[@"Flag 1"] withKey:customFlagKey];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
     
-    [event addCustomFlags:@[@"Flag 1"] withKey:@"key1"];
+    customFlagKey = @"Era";
+    customFlags = @[customFlagValue];
+    [event addCustomFlags:customFlags withKey:customFlagKey];
     XCTAssertNotNil(event.customFlags, @"Should not have been nil.");
     
     NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
-    NSMutableDictionary *expectedDictionary = [@{@"key1":@[@"Flag 1"]} mutableCopy];
+    NSMutableDictionary *expectedDictionary = [@{customFlagKey:customFlags} mutableCopy];
     XCTAssertEqualObjects(dictionaryRepresentation[@"flags"], expectedDictionary, @"Should have been equal.");
+
+    event = [[MPEvent alloc] initWithName:@"Dinosaur Jogging" type:MPEventTypeNavigation];
+    customFlagValue = nil;
+    [event addCustomFlag:customFlagValue withKey:customFlagKey];
+    XCTAssertNil(event.customFlags, @"Should have been nil.");
+
+    customFlagValue = (NSString *)[NSNull null];
+    [event addCustomFlag:customFlagValue withKey:customFlagKey];
+    XCTAssertNil(event.customFlags, @"Should have been nil.");
+    
+    customFlagKey = nil;
+    customFlagValue = @"Mesozoic";
+    [event addCustomFlag:customFlagValue withKey:customFlagKey];
+    XCTAssertNil(event.customFlags, @"Should have been nil.");
+    
+    customFlagKey = (NSString *)[NSNull null];
+    [event addCustomFlag:customFlagValue withKey:customFlagKey];
+    XCTAssertNil(event.customFlags, @"Should have been nil.");
+
+    customFlagKey = @"Era";
+    [event addCustomFlag:customFlagValue withKey:customFlagKey];
+    XCTAssertNotNil(event.customFlags, @"Should not have been nil.");
+    
+    dictionaryRepresentation = [event dictionaryRepresentation];
+    XCTAssertEqualObjects(dictionaryRepresentation[@"flags"], expectedDictionary, @"Should have been equal.");
+}
+
+- (void)testEquality {
+    MPEvent *event1 = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
+    event1.info = @{@"Shoes":@"Sneakers"};
+    
+    MPEvent *event2 = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
+    XCTAssertNotEqualObjects(event1, event2, @"Should not have been equal.");
+    XCTAssertNotEqualObjects(event2, event1, @"Should not have been equal.");
+    
+    event1.duration = @1;
+    event2.info = @{@"Shoes":@"Sneakers"};
+    XCTAssertNotEqualObjects(event1, event2, @"Should not have been equal.");
+    XCTAssertNotEqualObjects(event2, event1, @"Should not have been equal.");
+    
+    event1.category = @"Sports";
+    event2.duration = @1;
+    XCTAssertNotEqualObjects(event1, event2, @"Should not have been equal.");
+    XCTAssertNotEqualObjects(event2, event1, @"Should not have been equal.");
+    
+    event2.category = @"Sports";
+    XCTAssertEqualObjects(event1, event2, @"Should have been equal.");
+    XCTAssertEqualObjects(event2, event1, @"Should have been equal.");
+}
+
+- (void)testDescription {
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Jogging" type:MPEventTypeNavigation];
+    NSString *description = [event description];
+    XCTAssertNotNil(description, @"Should not have been nil.");
+}
+
+- (void)testEventWithProduct {
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    
+    NSDictionary *expectedEventInfo = @{
+                                        @"id":@"OutATime",
+                                        @"nm":@"DeLorean",
+                                        @"pr":@"4.32",
+                                        @"qt":@"1",
+                                        @"tpa":@"4.32"
+                                        };
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Jump In Time" type:MPEventTypeNavigation];
+    event.info = (NSDictionary *)product;
+    XCTAssertNotNil(event.info, @"Should not have been nil.");
+    XCTAssertEqualObjects(event.info, expectedEventInfo, @"Should have been equal.");
 }
 
 @end

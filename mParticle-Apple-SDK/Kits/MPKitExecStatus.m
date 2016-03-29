@@ -24,13 +24,11 @@
 
 - (instancetype)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _kitCode = nil;
+        _returnCode = MPKitReturnCodeFail;
+        _forwardCount = 0;
     }
-    
-    _kitCode = nil;
-    _returnCode = MPKitReturnCodeFail;
-    _forwardCount = 0;
     
     return self;
 }
@@ -40,14 +38,16 @@
 }
 
 - (instancetype)initWithSDKCode:(NSNumber *)kitCode returnCode:(MPKitReturnCode)returnCode forwardCount:(NSUInteger)forwardCount {
-    NSAssert(!MPIsNull(kitCode), @"'kitCode' is a required parameter.");
+    BOOL validKitCode = !MPIsNull(kitCode) && [kitCode isKindOfClass:[NSNumber class]];
+    NSAssert(validKitCode, @"The 'kitCode' variable is not valid.");
     
-    if (MPIsNull(kitCode)) {
-        MPILogError(@"'kitCode' is a required parameter.");
-        return nil;
-    }
+    BOOL validReturnCode = returnCode >= MPKitReturnCodeSuccess && returnCode <= MPKitReturnCodeRequirementsNotMet;
+    NSAssert(validReturnCode, @"The 'returnCode' variable is not valid.");
     
     self = [self init];
+    if (!self || !validKitCode || !validReturnCode) {
+        return nil;
+    }
     
     _kitCode = kitCode;
     _returnCode = returnCode;

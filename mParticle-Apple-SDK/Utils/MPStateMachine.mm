@@ -71,65 +71,63 @@ static BOOL runningInBackground = NO;
 
 - (instancetype)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        optOutSet = NO;
+        _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
+        _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
+        _uploadStatus = MPUploadStatusBatch;
+        _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
+        _backgrounded = NO;
+        _consoleLogging = MPConsoleLoggingAutoDetect;
+        lastestSDKWarningShown = NO;
+        _dataRamped = NO;
+        _installationType = MPInstallationTypeAutodetect;
+        _firstSeenInstallation = nil;
+        _launchDate = [NSDate date];
+        _launchOptions = nil;
+        _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
+        _shouldUploadSessionHistory = YES;
+        
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        
+        __weak MPStateMachine *weakSelf = self;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            __strong MPStateMachine *strongSelf = weakSelf;
+            
+            strongSelf.storedSDKVersion = kMParticleSDKVersion;
+            
+            [strongSelf.reachability startNotifier];
+            strongSelf.networkStatus = [strongSelf->_reachability currentReachabilityStatus];
+            
+            [notificationCenter addObserver:strongSelf
+                                   selector:@selector(handleApplicationDidEnterBackground:)
+                                       name:UIApplicationDidEnterBackgroundNotification
+                                     object:nil];
+            
+            [notificationCenter addObserver:strongSelf
+                                   selector:@selector(handleApplicationWillEnterForeground:)
+                                       name:UIApplicationWillEnterForegroundNotification
+                                     object:nil];
+            
+            [notificationCenter addObserver:strongSelf
+                                   selector:@selector(handleApplicationWillTerminate:)
+                                       name:UIApplicationWillTerminateNotification
+                                     object:nil];
+            
+            [notificationCenter addObserver:strongSelf
+                                   selector:@selector(handleMemoryWarningNotification:)
+                                       name:UIApplicationDidReceiveMemoryWarningNotification
+                                     object:nil];
+            
+            [notificationCenter addObserver:strongSelf
+                                   selector:@selector(handleReachabilityChanged:)
+                                       name:MParticleReachabilityChangedNotification
+                                     object:nil];
+            
+            [MPApplication markInitialLaunchTime];
+            [MPApplication updateLaunchCountsAndDates];
+        });
     }
-    
-    optOutSet = NO;
-    _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
-    _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
-    _uploadStatus = MPUploadStatusBatch;
-    _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
-    _backgrounded = NO;
-    _consoleLogging = MPConsoleLoggingAutoDetect;
-    lastestSDKWarningShown = NO;
-    _dataRamped = NO;
-    _installationType = MPInstallationTypeAutodetect;
-    _firstSeenInstallation = nil;
-    _launchDate = [NSDate date];
-    _launchOptions = nil;
-    _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
-    _shouldUploadSessionHistory = YES;
-    
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-
-    __weak MPStateMachine *weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __strong MPStateMachine *strongSelf = weakSelf;
-        
-        strongSelf.storedSDKVersion = kMParticleSDKVersion;
-        
-        [strongSelf.reachability startNotifier];
-        strongSelf.networkStatus = [strongSelf->_reachability currentReachabilityStatus];
-        
-        [notificationCenter addObserver:strongSelf
-                               selector:@selector(handleApplicationDidEnterBackground:)
-                                   name:UIApplicationDidEnterBackgroundNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:strongSelf
-                               selector:@selector(handleApplicationWillEnterForeground:)
-                                   name:UIApplicationWillEnterForegroundNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:strongSelf
-                               selector:@selector(handleApplicationWillTerminate:)
-                                   name:UIApplicationWillTerminateNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:strongSelf
-                               selector:@selector(handleMemoryWarningNotification:)
-                                   name:UIApplicationDidReceiveMemoryWarningNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:strongSelf
-                               selector:@selector(handleReachabilityChanged:)
-                                   name:MParticleReachabilityChangedNotification
-                                 object:nil];
-        
-        [MPApplication markInitialLaunchTime];
-        [MPApplication updateLaunchCountsAndDates];
-    });
     
     return self;
 }
@@ -729,7 +727,9 @@ static BOOL runningInBackground = NO;
     MPCustomModule *customModule;
     for (NSDictionary *customModuleDictionary in customModuleSettings) {
         customModule = [[MPCustomModule alloc] initWithDictionary:customModuleDictionary];
-        [localCustomModules addObject:customModule];
+        if (customModule) {
+            [localCustomModules addObject:customModule];
+        }
     }
     
     if (localCustomModules.count == 0) {

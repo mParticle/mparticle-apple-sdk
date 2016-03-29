@@ -54,6 +54,9 @@
     productBag = [[MPProductBag alloc] initWithName:@"bag1" product:product];
     XCTAssertNotNil(productBag, @"Instance should not have been nil.");
     XCTAssertEqual(productBag.products.count, 1, @"Incorrect count.");
+    
+    productBag.name = @"A new bag";
+    XCTAssertEqualObjects(productBag.name, @"A new bag", @"Should have been equal.");
 }
 
 - (void)testProductBagEquality {
@@ -65,6 +68,10 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"prod1" sku:@"sku1" quantity:@1 price:@0];
     [productBag2.products addObject:product];
     XCTAssertNotEqualObjects(productBag1, productBag2, @"Instances should have been different.");
+    XCTAssertNotEqualObjects(productBag1, [NSNull null], @"Should have been different.");
+    
+    NSString *description = [productBag2 description];
+    XCTAssertNotNil(description, @"Should not have been nil.");
 }
 
 - (void)testProductBagDictionaryRepresentation {
@@ -113,7 +120,7 @@
     [bags addProduct:product1 toBag:(NSString *)[NSNull null]];
     [bags addProduct:nilProduct toBag:nilBag];
     [bags addProduct:(MPProduct *)[NSNull null] toBag:(NSString *)[NSNull null]];
-    XCTAssertEqual(bags.productBags.count, 1, @"Incorrect count.");
+    XCTAssertEqual([bags productBags].count, 1, @"Incorrect count.");
     
     MPProduct *product2 = [[MPProduct alloc] initWithName:@"prod2" sku:@"sku2" quantity:@1 price:@0];
     [bags addProduct:product2 toBag:@"bag1"];
@@ -135,9 +142,22 @@
     products = bags.productBags[@"bag1"];
     XCTAssertNotNil(products, @"Should not have been nil.");
     XCTAssertEqual(products.count, 1, @"Incorrect count.");
-    
+
+    MPProduct *product3 = [[MPProduct alloc] initWithName:@"prod3" sku:@"sku3" quantity:@1 price:@0];
+    [bags addProduct:product3 toBag:@"bag2"];
+
+    [bags removeProduct:product3 fromBag:@"bag4"];
+    [bags removeProduct:product3 fromBag:@"bag1"];
+    products = bags.productBags[@"bag1"];
+    XCTAssertEqual(products.count, 1, @"Incorrect count.");
+
+    XCTAssertEqual([bags productBags].count, 2, @"Should have been equal.");
+    [bags removeProductBag:(NSString *)[NSNull null]];
+    [bags removeProductBag:@"bag3"];
+    [bags removeProductBag:@"bag2"];
+    XCTAssertEqual([bags productBags].count, 1, @"Should have been equal.");
     [bags removeAllProductBags];
-    XCTAssertEqual(bags.productBags.count, 0, @"Incorrect count.");
+    XCTAssertEqual([bags productBags].count, 0, @"Incorrect count.");
 }
 
 - (void)testBagsDictionaryRepresentation {

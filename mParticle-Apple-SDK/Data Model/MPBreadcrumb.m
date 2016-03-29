@@ -28,18 +28,16 @@
 
 - (instancetype)initWithSessionUUID:(NSString *)sessionUUID breadcrumbId:(int64_t)breadcrumbId UUID:(NSString *)uuid breadcrumbData:(NSData *)breadcrumbData sessionNumber:(NSNumber *)sessionNumber timestamp:(NSTimeInterval)timestamp {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _sessionUUID = sessionUUID;
-    _breadcrumbId = breadcrumbId;
-    _uuid = uuid;
-    _timestamp = timestamp;
-    _sessionNumber = sessionNumber;
-    _breadcrumbData = breadcrumbData;
-    if (breadcrumbData) {
-        _content = [[NSString alloc] initWithData:breadcrumbData encoding:NSUTF8StringEncoding];
+    if (self) {
+        _sessionUUID = sessionUUID;
+        _breadcrumbId = breadcrumbId;
+        _uuid = uuid;
+        _timestamp = timestamp;
+        _sessionNumber = sessionNumber;
+        _breadcrumbData = breadcrumbData;
+        if (breadcrumbData) {
+            _content = [[NSString alloc] initWithData:breadcrumbData encoding:NSUTF8StringEncoding];
+        }
     }
     
     return self;
@@ -47,6 +45,19 @@
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"Breadcrumb\n UUID: %@\n Content: %@\n timestamp: %.0f\n Session number: %@\n", self.uuid, self.content, self.timestamp, self.sessionNumber];
+}
+
+- (BOOL)isEqual:(MPBreadcrumb *)object {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPBreadcrumb class]]) {
+        return NO;
+    }
+    
+    BOOL isEqual = _breadcrumbId == object.breadcrumbId &&
+                   _timestamp == object.timestamp &&
+                   [_uuid isEqualToString:object.uuid] &&
+                   [_sessionUUID isEqualToString:object.sessionUUID] &&
+                   [_breadcrumbData isEqualToData:object.breadcrumbData];
+    return isEqual;
 }
 
 #pragma mark NSCopying
@@ -94,10 +105,17 @@
                                                    kMPTimestampKey:breadcrumbInfo[kMPTimestampKey],
                                                    kMPMessageIdKey:breadcrumbInfo[kMPMessageIdKey],
                                                    kMPSessionIdKey:breadcrumbInfo[kMPSessionIdKey],
-                                                   kMPSessionNumberKey:breadcrumbInfo[kMPSessionNumberKey],
-                                                   kMPSessionStartTimestamp:breadcrumbInfo[kMPSessionStartTimestamp],
-                                                   kMPLeaveBreadcrumbsKey:breadcrumbInfo[kMPLeaveBreadcrumbsKey]}
+                                                   kMPSessionStartTimestamp:breadcrumbInfo[kMPSessionStartTimestamp]
+                                                  }
                                                  mutableCopy];
+
+    if (breadcrumbInfo[kMPSessionNumberKey]) {
+       breadcrumbDictionary[kMPSessionNumberKey] = breadcrumbInfo[kMPSessionNumberKey];
+    }
+
+    if (breadcrumbInfo[kMPLeaveBreadcrumbsKey]) {
+        breadcrumbDictionary[kMPLeaveBreadcrumbsKey] = breadcrumbInfo[kMPLeaveBreadcrumbsKey];
+    }
     
     if (breadcrumbInfo[kMPAttributesKey]) {
         breadcrumbDictionary[kMPAttributesKey] = breadcrumbInfo[kMPAttributesKey];

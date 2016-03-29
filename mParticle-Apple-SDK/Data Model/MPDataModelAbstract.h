@@ -27,6 +27,5 @@
 @property (nonatomic, strong, nonnull) NSString *uuid;
 
 - (nonnull id)copyWithZone:(nullable NSZone *)zone;
-- (nonnull NSString *)newUUID;
 
 @end

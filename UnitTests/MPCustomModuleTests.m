@@ -23,19 +23,19 @@
 
 @interface MPCustomModuleTests : XCTestCase
 
-@property (nonatomic, strong) NSString *customMudulesString;
+@property (nonatomic, strong) NSString *customModulesString;
 @property (nonatomic, strong) NSDictionary *customModuleConfiguration;
 
 @end
 
 @implementation MPCustomModuleTests
 
-- (NSString *)customMudulesString {
-    if (_customMudulesString) {
-        return _customMudulesString;
+- (NSString *)customModulesString {
+    if (_customModulesString) {
+        return _customModulesString;
     }
     
-    _customMudulesString = @"{\"cms\":[\
+    _customModulesString = @"{\"cms\":[\
                                         { \
                                             \"id\": 11, \
                                             \"pr\": [ \
@@ -90,7 +90,7 @@
                                                    ] \
                                         }]}";
     
-    return _customMudulesString;
+    return _customModulesString;
 }
 
 - (NSDictionary *)customModuleConfiguration {
@@ -98,7 +98,7 @@
         return _customModuleConfiguration;
     }
     
-    NSData *customModuleData = [self.customMudulesString dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *customModuleData = [self.customModulesString dataUsingEncoding:NSUTF8StringEncoding];
     NSDictionary *customModuleJSONDictionary = [NSJSONSerialization JSONObjectWithData:customModuleData options:0 error:nil];
     NSArray *customModules = customModuleJSONDictionary[kMPRemoteConfigCustomModuleSettingsKey];
     _customModuleConfiguration = [customModules lastObject];
@@ -115,7 +115,7 @@
 }
 
 - (void)testConfiguration {
-    NSData *customModuleData = [self.customMudulesString dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *customModuleData = [self.customModulesString dataUsingEncoding:NSUTF8StringEncoding];
     XCTAssertNotNil(customModuleData, @"Should not have been nil.");
     
     NSError *error = nil;
@@ -168,7 +168,89 @@
             XCTAssertLessThanOrEqual([[preference.defaultValue substringWithRange:NSMakeRange(17, 1)] integerValue], 4, @"OAID's seventeenth digit is too large.");
         }
     }
+    
+    NSString *description = [customModule description];
+    XCTAssertNotNil(description, @"Should not have been nil");
 }
+
+- (void)testInvalidConfiguration {
+    NSMutableDictionary *customModuleConfiguration = [@{
+                                                        @"id":[NSNull null],
+                                                        @"pr":[NSNull null]
+                                                        } mutableCopy];
+    
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNil(customModule, @"Should have been nil.");
+
+    customModuleConfiguration[@"id"] = @"Invalid. This is not a number.";
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNil(customModule, @"Should have been nil.");
+
+    customModuleConfiguration[@"id"] = @11;
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNil(customModule, @"Should have been nil.");
+
+    customModuleConfiguration[@"pr"] = @{@"Invalid":@"This is not an array."};
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNil(customModule, @"Should have been nil.");
+    
+    customModuleConfiguration[@"pr"] = @[[NSNull null]];
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNotNil(customModule, @"Should not have been nil.");
+    XCTAssertNil(customModule.preferences, @"Should have been nil.");
+    
+    customModuleConfiguration[@"pr"] = @[@"This is not a dictionary."];
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNotNil(customModule, @"Should not have been nil.");
+    XCTAssertNil(customModule.preferences, @"Should have been nil.");
+    
+    customModuleConfiguration[@"pr"] = @[];
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNotNil(customModule, @"Should not have been nil.");
+    XCTAssertNil(customModule.preferences, @"Should have been nil.");
+    
+    customModuleConfiguration[@"pr"] = @[
+                                         @{@"f":@"NSUserDefaults",
+                                           @"m":@0,
+                                           @"ps":@[
+                                                   @{@"k":@"APP_MEASUREMENT_VISITOR_ID",
+                                                     @"t":@1,
+                                                     @"n":@"vid",
+                                                     @"d":[NSNull null]
+                                                     },
+                                                   @{@"k":@"ADOBEMOBILE_STOREDDEFAULTS_AID",
+                                                     @"t":@1,
+                                                     @"n":[NSNull null],
+                                                     @"d":@"%oaid%"
+                                                     },
+                                                   @{@"k":@"GLSB",
+                                                     @"n":@"aid",
+                                                     @"d":@"%glsb%"
+                                                     },
+                                                   @{@"k":[NSNull null],
+                                                     @"t":@1,
+                                                     @"n":@"ltv",
+                                                     @"d":@"0"
+                                                     },
+                                                   @{},
+                                                   @{@"k":@"OMCK6",
+                                                     @"t":[NSNull null],
+                                                     @"n":@"l",
+                                                     @"d":@"0"
+                                                     },
+                                                   @{@"k":@"OMCK5",
+                                                     @"t":@1,
+                                                     @"n":@"lud",
+                                                     @"d":@"%dt%"
+                                                     }
+                                                   ]
+                                           }
+                                         ];
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    XCTAssertNotNil(customModule, @"Should not have been nil.");
+    XCTAssertEqual(customModule.preferences.count, 4, @"Should have been equal.");
+}
+
 
 - (void)testCustomModuleSerialization {
     MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
@@ -198,6 +280,68 @@
     XCTAssertNotNil(customModuleDictionary[@"ltv"], @"Should not have been nil.");
     XCTAssertNotNil(customModuleDictionary[@"lud"], @"Should not have been nil.");
     XCTAssertNotNil(customModuleDictionary[@"vid"], @"Should not have been nil.");
+}
+
+- (void)testValue {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    void (^removeKeysFromUserDefaults)() = ^{
+        [userDefaults removeObjectForKey:@"mParticle_UNIT_TEST_CustomModule_1"];
+        [userDefaults removeObjectForKey:@"mParticle_UNIT_TEST_CustomModule_2"];
+        [userDefaults removeObjectForKey:@"mParticle_UNIT_TEST_CustomModule_3"];
+        [userDefaults removeObjectForKey:@"mParticle::cms::vid"];
+        [userDefaults removeObjectForKey:@"mParticle::cms::aid"];
+        [userDefaults removeObjectForKey:@"mParticle::cms::ltv"];
+        [userDefaults removeObjectForKey:@"mParticle::cms::11::vid"];
+        [userDefaults removeObjectForKey:@"mParticle::cms::11::aid"];
+        [userDefaults removeObjectForKey:@"mParticle::cms::11::ltv"];
+        [userDefaults synchronize];
+    };
+
+    removeKeysFromUserDefaults();
+    
+    NSDictionary *customModuleConfiguration = @{
+                                                @"id":@11,
+                                                @"pr":@[
+                                                        @{@"f":@"NSUserDefaults",
+                                                          @"m":@0,
+                                                          @"ps":@[
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_1",
+                                                                    @"t":@1,
+                                                                    @"n":@"vid",
+                                                                    @"d":@"%oaid%"
+                                                                    },
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_2",
+                                                                    @"t":@1,
+                                                                    @"n":@"aid",
+                                                                    @"d":@"%oaid%"
+                                                                    },
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_3",
+                                                                    @"t":@2,
+                                                                    @"n":@"ltv",
+                                                                    @"d":@"0"
+                                                                    }
+                                                                  ]
+                                                          }
+                                                        ]
+                                                };
+
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    removeKeysFromUserDefaults();
+    for (MPCustomModulePreference *preference in customModule.preferences) {
+        XCTAssertNotNil(preference.value, @"Should not have been nil.");
+    }
+        
+    customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    removeKeysFromUserDefaults();
+    [userDefaults setObject:@"Value1" forKey:@"mParticle_UNIT_TEST_CustomModule_1"];
+    [userDefaults setObject:@"Value2" forKey:@"mParticle_UNIT_TEST_CustomModule_2"];
+    [userDefaults setObject:@"Value3" forKey:@"mParticle_UNIT_TEST_CustomModule_3"];
+    for (MPCustomModulePreference *preference in customModule.preferences) {
+        XCTAssertNotNil(preference.value, @"Should not have been nil.");
+    }
+    
+    removeKeysFromUserDefaults();
 }
 
 @end

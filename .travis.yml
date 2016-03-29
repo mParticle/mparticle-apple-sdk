@@ -1,15 +1,33 @@
-# references:
-# * http://www.objc.io/issue-6/travis-ci.html
-# * https://github.com/supermarin/xcpretty#usage
-
 language: objective-c
-# cache: cocoapods
-# podfile: Example/Podfile
-# before_install:
-# - gem install cocoapods # Since Travis is not always on latest version
-# - pod install --project-directory=Example
-install:
-- gem install xcpretty --no-rdoc --no-ri --no-document --quiet
-script:
-- set -o pipefail && xcodebuild test -workspace Example/mParticle-iOS-SDK.xcworkspace -scheme mParticle-iOS-SDK-Example -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO | xcpretty -c
-- pod lib lint --quick --allow-warnings
+matrix:
+  include:
+    - env:
+        - config="iOS7_Example"
+        - workspace="Example.xcworkspace"
+      osx_image: beta-xcode6.1
+      script:
+        - echo "Updating tools"
+        - rvm use system
+        - sudo gem install cocoapods
+        - cd Example
+        - pod install
+        - echo "Building for config=${config}"
+        - xctool test -workspace "${workspace}" -scheme "${config}" -sdk iphonesimulator
+    - env:
+        - config="iOS_Example"
+        - workspace="Example.xcworkspace"
+      osx_image: xcode7.3
+      script:
+        - cd Example
+        - pod install
+        - echo "Building for config=${config}"
+        - xctool test -workspace "${workspace}" -scheme "${config}" -sdk iphonesimulator
+    - env:
+        - config="tvOS_Example"
+        - workspace="Example.xcworkspace"
+      osx_image: xcode7.3
+      script:
+        - cd Example
+        - pod install
+        - echo "Building for config=${config}"
+        - xctool test -workspace "${workspace}" -scheme "${config}" -sdk appletvsimulator

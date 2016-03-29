@@ -21,5 +21,6 @@
 @interface MPNetworkCommunication(Tests)
 
 - (NSURL *)configURL;
+- (NSURL *)eventURL;
 
 @end

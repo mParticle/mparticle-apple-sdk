@@ -19,41 +19,8 @@
 #import <XCTest/XCTest.h>
 #import "MPKitRegister.h"
 #import "MPKitProtocol.h"
+#import "MPKitTestClass.h"
 
-#pragma mark - MPKitTestClass
-@interface MPKitTestClass : NSObject <MPKitProtocol>
-
-@property (nonatomic, unsafe_unretained, readonly) BOOL started;
-
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
-+ (nonnull NSNumber *)kitCode;
-
-@end
-
-@implementation MPKitTestClass
-
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _started = startImmediately;
-    
-    return self;
-}
-
-+ (nonnull NSNumber *)kitCode {
-    return @42;
-}
-
-- (void)start {
-    _started = YES;
-}
-
-@end
-
-#pragma mark - MPKitRegisterTests
 @interface MPKitRegisterTests : XCTestCase
 
 @end
@@ -82,6 +49,12 @@
     XCTAssertFalse(kitRegister.wrapperInstance.started, @"Should have been false.");
     [kitRegister.wrapperInstance start];
     XCTAssertTrue(kitRegister.wrapperInstance.started, @"Should have been true.");
+}
+
+- (void)testDescription {
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+    NSString *description = [kitRegister description];
+    XCTAssertNotNil(description, @"Should not have been nil.");
 }
 
 @end

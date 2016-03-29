@@ -27,11 +27,6 @@
 @synthesize propertyKind = _propertyKind;
 @synthesize projectionId = _projectionId;
 
-- (id)init {
-    self = [self initWithConfiguration:nil projectionType:MPProjectionTypeEvent attributeIndex:0];
-    return self;
-}
-
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex {
     self = [super init];
     NSDictionary *actionDictionary = !MPIsNull(configuration[@"action"]) ? configuration[@"action"] : nil;
@@ -40,6 +35,8 @@
         return nil;
     }
     
+    _configuration = configuration;
+    _attributeIndex = attributeIndex;
     _projectionType = projectionType;
     NSString *matchType = nil;
     NSString *auxString;
@@ -71,8 +68,7 @@
     };
     
     switch (projectionType) {
-        case MPProjectionTypeAttribute:
-            if (!MPIsNull(actionDictionary)) {
+        case MPProjectionTypeAttribute: {
                 NSArray *attributesMap = !MPIsNull(actionDictionary[@"attribute_maps"]) ? (NSArray *)actionDictionary[@"attribute_maps"] : nil;
                 NSDictionary *attributeMap = nil;
                 
@@ -91,6 +87,8 @@
                         
                         matchType = !MPIsNull(attributeMap[@"match_type"]) ? attributeMap[@"match_type"] : @"String";
                     }
+                } else {
+                    return nil;
                 }
             }
             break;
@@ -232,24 +230,27 @@
         [coder encodeObject:_projectedName forKey:@"projectedName"];
     }
     
+    [coder encodeObject:_configuration forKey:@"configuration"];
     [coder encodeInteger:_matchType forKey:@"matchType"];
     [coder encodeInteger:_projectionType forKey:@"projectionType"];
     [coder encodeInteger:_propertyKind forKey:@"propertyKind"];
     [coder encodeInteger:_projectionId forKey:@"projectionId"];
+    [coder encodeInteger:_attributeIndex forKey:@"attributeIndex"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super init];
-    if (!self) {
-        return nil;
+
+    if (self) {
+        _configuration = [coder decodeObjectForKey:@"configuration"];
+        _name = [coder decodeObjectForKey:@"name"];
+        _projectedName = [coder decodeObjectForKey:@"projectedName"];
+        _matchType = (MPProjectionMatchType)[coder decodeIntegerForKey:@"matchType"];
+        _projectionType = (MPProjectionType)[coder decodeIntegerForKey:@"projectionType"];
+        _propertyKind = (MPProjectionPropertyKind)[coder decodeObjectForKey:@"propertyKind"];
+        _projectionId = (NSUInteger)[coder decodeIntegerForKey:@"projectionId"];
+        _attributeIndex = (NSUInteger)[coder decodeIntegerForKey:@"attributeIndex"];
     }
-    
-    _name = [coder decodeObjectForKey:@"name"];
-    _projectedName = [coder decodeObjectForKey:@"projectedName"];
-    _matchType = (MPProjectionMatchType)[coder decodeIntegerForKey:@"matchType"];
-    _projectionType = (MPProjectionType)[coder decodeIntegerForKey:@"projectionType"];
-    _propertyKind = (MPProjectionPropertyKind)[coder decodeObjectForKey:@"propertyKind"];
-    _projectionId = (NSUInteger)[coder decodeIntegerForKey:@"projectionId"];
     
     return self;
 }
@@ -262,9 +263,11 @@
         copyObject.name = [_name copy];
         copyObject.projectedName = [_projectedName copy];
         copyObject.matchType = _matchType;
+        copyObject->_configuration = [_configuration copy];
         copyObject->_projectionType = _projectionType;
         copyObject->_propertyKind = _propertyKind;
         copyObject->_projectionId = _projectionId;
+        copyObject->_attributeIndex = _attributeIndex;
     }
     
     return copyObject;

@@ -1,5 +1,5 @@
 //
-//  MPDataModelAbstract.m
+//  MPKitTestClass.h
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,20 +16,17 @@
 //  limitations under the License.
 //
 
-#import "MPDataModelAbstract.h"
+#import <Foundation/Foundation.h>
+#import "MPKitProtocol.h"
 
-@implementation MPDataModelAbstract
+@interface MPKitTestClass : NSObject <MPKitProtocol>
 
-@synthesize uuid = _uuid;
+@property (nonatomic, strong, nullable) NSDictionary *launchOptions;
+@property (nonatomic, unsafe_unretained, readonly) BOOL started;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
+@property (nonatomic, strong, nullable) NSArray<NSDictionary<NSString *, id> *> *userIdentities;
 
-#pragma mark NSCopying
-- (id)copyWithZone:(NSZone *)zone {
-    MPDataModelAbstract *copyObject = [[[self class] alloc] init];
-    if (copyObject) {
-        copyObject.uuid = [_uuid copy];
-    }
-    
-    return copyObject;
-}
+- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
++ (nonnull NSNumber *)kitCode;
 
 @end

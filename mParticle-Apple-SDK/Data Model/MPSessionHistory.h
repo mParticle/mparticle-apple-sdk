@@ -29,6 +29,6 @@
 @property (nonatomic, strong, nullable) NSArray<MPUpload *> *uploads;
 @property (nonatomic, strong, readonly, nullable) NSArray<NSNumber *> *uploadIds;
 
-- (nonnull instancetype)initWithSession:(nonnull MPSession *)session uploads:(nonnull NSArray<MPUpload *> *)uploads;
+- (nullable instancetype)initWithSession:(nonnull MPSession *)session uploads:(nonnull NSArray<MPUpload *> *)uploads;
 
 @end

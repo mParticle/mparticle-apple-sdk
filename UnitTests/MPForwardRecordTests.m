@@ -25,6 +25,8 @@
 #import "MPKitExecStatus.h"
 #import "MPKitContainer.h"
 #import "MPKitFilter.h"
+#import "MPProduct.h"
+#import "MPCommerceEvent.h"
 
 @interface MPForwardRecordTests : XCTestCase
 
@@ -38,6 +40,31 @@
 
 - (void)tearDown {
     [super tearDown];
+}
+
+- (void)testInstance {
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+    XCTAssertTrue([execStatus success], @"Should have been true.");
+    XCTAssertEqual(execStatus.forwardCount, 1, @"Should have been equal.");
+    
+    [execStatus incrementForwardCount];
+    XCTAssertEqual(execStatus.forwardCount, 2, @"Should have been equal.");
+    
+    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                                       execStatus:execStatus
+                                                                        stateFlag:YES];
+    forwardRecord.forwardRecordId = 314;
+    XCTAssertNotNil(forwardRecord, @"Should not have been nil.");
+    
+    NSData *dataRepresentation = [forwardRecord dataRepresentation];
+    
+    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation];
+    XCTAssertNotNil(derivedForwardRecord, @"Should not have been nil.");
+    XCTAssertEqualObjects(forwardRecord, derivedForwardRecord, @"Should have been equal.");
+    
+    forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                      execStatus:execStatus];
+    XCTAssertNotNil(forwardRecord, @"Should not have been nil.");
 }
 
 - (void)testRemoteNotificationForwardReport {
@@ -106,6 +133,80 @@
     XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"], @"Does not match.");
     XCTAssertEqualObjects(forwardRecord.dataDictionary[@"et"], expectedDataDictionary[@"et"], @"Does not match.");
     XCTAssertEqualObjects(forwardRecord.dataDictionary[@"n"], expectedDataDictionary[@"n"], @"Does not match.");
+    
+    MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+    kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
+    
+    forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
+                                                      execStatus:execStatus
+                                                       kitFilter:kitFilter
+                                                   originalEvent:commerceEvent];
+    XCTAssertNotNil(forwardRecord, @"Should not have been nil.");
+}
+
+- (void)testEquality {
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+    
+    MPForwardRecord *forwardRecord1 = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                                        execStatus:execStatus
+                                                                         stateFlag:YES];
+    
+    MPForwardRecord *forwardRecord2 = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                                        execStatus:execStatus
+                                                                         stateFlag:YES];
+    
+    XCTAssertEqualObjects(forwardRecord1, forwardRecord2, @"Should have been equal");
+    
+    forwardRecord1.forwardRecordId = 123;
+    forwardRecord2.forwardRecordId = 123;
+    XCTAssertEqualObjects(forwardRecord1, forwardRecord2, @"Should have been equal");
+
+    forwardRecord2.forwardRecordId = 321;
+    XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
+    
+    forwardRecord2 = nil;
+    XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
+    
+    forwardRecord2 = (MPForwardRecord *)[NSNull null];
+    XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
+}
+
+- (void)testDataRepresentation {
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+    
+    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                                       execStatus:execStatus
+                                                                        stateFlag:YES];
+    
+    NSData *dataRepresentation = [forwardRecord dataRepresentation];
+    XCTAssertNotNil(dataRepresentation, @"Should not have been nil.");
+    
+    NSMutableDictionary *dataDictionary = nil;
+    forwardRecord.dataDictionary = dataDictionary;
+    dataRepresentation = [forwardRecord dataRepresentation];
+    XCTAssertNil(dataRepresentation, @"Should have been nil.");
+    
+    dataDictionary = (NSMutableDictionary *)[NSNull null];
+    forwardRecord.dataDictionary = dataDictionary;
+    dataRepresentation = [forwardRecord dataRepresentation];
+    XCTAssertNil(dataRepresentation, @"Should have been nil.");
+    
+    dataDictionary = (NSMutableDictionary *)@"This clearly is not an instance of NSMutableDictionary";
+    forwardRecord.dataDictionary = dataDictionary;
+    dataRepresentation = [forwardRecord dataRepresentation];
+    XCTAssertNil(dataRepresentation, @"Should have been nil.");
+}
+
+- (void)testDescription {
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+    
+    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                                       execStatus:execStatus
+                                                                        stateFlag:YES];
+    
+    NSString *description = [forwardRecord description];
+    XCTAssertNotNil(description, @"Should not have been nil.");
 }
 
 @end

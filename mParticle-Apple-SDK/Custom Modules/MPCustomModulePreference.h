@@ -16,13 +16,14 @@
 //  limitations under the License.
 //
 
+#import <Foundation/Foundation.h>
 #import "MPIConstants.h"
 
 typedef NS_ENUM(NSUInteger, MPCustomModuleId) {
     MPCustomModuleIdAppBoy = 28
 };
 
-@interface MPCustomModulePreference : NSObject <NSCopying, NSCoding>
+@interface MPCustomModulePreference : NSObject <NSCoding>
 
 @property (nonatomic, strong, readonly, nonnull) NSNumber *moduleId;
 @property (nonatomic, strong, readonly, nonnull) NSString *defaultValue;

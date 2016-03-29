@@ -44,6 +44,6 @@
 - (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nullable forwardAttributes))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector errorMessage:(nullable NSString *)errorMessage exception:(nullable NSException *)exception eventInfo:(nullable NSDictionary *)eventInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
-- (void)forwardSDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit , MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 
 @end

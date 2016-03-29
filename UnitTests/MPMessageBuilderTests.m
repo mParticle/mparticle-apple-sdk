@@ -33,6 +33,7 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPCart.h"
 #import "MPCart+Dictionary.h"
+#import "NSDictionary+MPCaseInsensitive.h"
 
 @interface MPMessageBuilderTests : XCTestCase
 
@@ -235,6 +236,35 @@
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
+}
+
+- (void)testCaseInsensitiveDictionary {
+    NSDictionary *dictionary = @{@"Key1":@"Value1",
+                                 @"kEY2":@"Value2"
+                                 };
+    
+    NSString *key = [dictionary caseInsensitiveKey:@"kEy1"];
+    XCTAssertNotNil(key, @"Should not have been nil.");
+    XCTAssertEqualObjects(key, @"Key1", @"Should have been equal.");
+    
+    key = [dictionary caseInsensitiveKey:@"KeY2"];
+    XCTAssertNotNil(key, @"Should not have been nil.");
+    XCTAssertEqualObjects(key, @"kEY2", @"Should have been equal.");
+    
+    key = [dictionary caseInsensitiveKey:@"This key does not exist"];
+    XCTAssertNotNil(key, @"Should not have been nil.");
+    XCTAssertEqualObjects(key, @"This key does not exist", @"Should have been equal.");
+    
+    id value = [dictionary valueForCaseInsensitiveKey:@"keY1"];
+    XCTAssertNotNil(value, @"Should not have been nil.");
+    XCTAssertEqualObjects(value, @"Value1", @"Should have been equal.");
+    
+    value = [dictionary valueForCaseInsensitiveKey:@"kEy2"];
+    XCTAssertNotNil(value, @"Should not have been nil.");
+    XCTAssertEqualObjects(value, @"Value2", @"Should have been equal.");
+    
+    value = [dictionary valueForCaseInsensitiveKey:@"This key does not exist"];
+    XCTAssertNil(value, @"Should have been nil.");
 }
 
 @end

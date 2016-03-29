@@ -84,4 +84,18 @@ mParticle::Bracket makeBracket() {
     XCTAssertFalse(bracket != *bracketPtr, @"Brackets should have been equal.");
 }
 
+- (void)testDifferent {
+    mParticle::Bracket bracket1(LONG_MAX - 3141592, 95, 97);
+    mParticle::Bracket bracket2(LONG_MAX - 2951413, 59, 79);
+    XCTAssertTrue(bracket1 != bracket2, @"Should have been different.");
+}
+
+- (void)testInvalidBracket {
+    mParticle::Bracket bracket(0, 0, 0);
+    XCTAssertFalse(bracket.shouldForward(), @"Should have been false.");
+    
+    bracket.mpId = LONG_MAX - 3141592;
+    XCTAssertFalse(bracket.shouldForward(), @"Should have been false.");
+}
+
 @end

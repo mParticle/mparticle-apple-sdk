@@ -52,6 +52,6 @@
 @property (nonatomic, weak, readonly, nullable) NSDictionary *singleItemEventAttributeList;
 
 - (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)configurationDictionary;
-- (void)updateConfiguration:(nonnull NSDictionary *)configurationDictionary;
+- (BOOL)updateConfiguration:(nonnull NSDictionary *)configurationDictionary;
 
 @end

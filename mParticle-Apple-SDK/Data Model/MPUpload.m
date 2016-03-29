@@ -34,15 +34,13 @@
 
 - (instancetype)initWithSessionId:(int64_t)sessionId uploadId:(int64_t)uploadId UUID:(NSString *)uuid uploadData:(NSData *)uploadData timestamp:(NSTimeInterval)timestamp {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _sessionId = sessionId;
+        _uploadId = uploadId;
+        _uuid = uuid;
+        _timestamp = timestamp;
+        _uploadData = uploadData;
     }
-    
-    _sessionId = sessionId;
-    _uploadId = uploadId;
-    _uuid = uuid;
-    _timestamp = timestamp;
-    _uploadData = uploadData;
     
     return self;
 }
@@ -54,6 +52,10 @@
 }
 
 - (BOOL)isEqual:(MPUpload *)object {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPUpload class]]) {
+        return NO;
+    }
+    
     BOOL isEqual = _sessionId == object.sessionId &&
                    _uploadId == object.uploadId &&
                    _timestamp == object.timestamp &&

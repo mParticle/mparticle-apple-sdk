@@ -37,10 +37,17 @@
         return nil;
     }
     
-    _configurationDictionary = configurationDictionary;
-    [self updateConfiguration:configurationDictionary];
+    if ([self updateConfiguration:configurationDictionary]) {
+        _configurationDictionary = configurationDictionary;
+    } else {
+        return nil;
+    }
     
     return self;
+}
+
+- (BOOL)isEqual:(MPKitConfiguration *)object {
+    return [_configurationHash isEqualToNumber:object.configurationHash];
 }
 
 #pragma mark NSCoding
@@ -72,6 +79,19 @@
         return;
     }
     
+    if (!MPIsNull(filters)) {
+        NSMutableDictionary *sanitizedFilters = [[NSMutableDictionary alloc] initWithCapacity:filters.count];
+        [filters enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            if (!MPIsNull(obj)) {
+                sanitizedFilters[key] = obj;
+            }
+        }];
+        
+        filters = sanitizedFilters.count > 0 ? [sanitizedFilters copy] : nil;
+    } else {
+        filters = nil;
+    }
+    
     _filters = filters;
     
     _eventTypeFilters = _filters[@"et"];
@@ -91,15 +111,19 @@
 }
 
 #pragma mark Public methods
-- (void)updateConfiguration:(NSDictionary *)configurationDictionary {
+- (BOOL)updateConfiguration:(NSDictionary *)configurationDictionary {
+    if (MPIsNull(configurationDictionary)) {
+        return NO;
+    }
+    
     NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:0 error:nil];
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
     _configurationHash = @(mParticle::Hasher::hashFromString([ekConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
     
     // Attribute value filtering
     NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
-    if (attributeValueFiltering) {
-        NSNumber *shouldIncludeMatches = attributeValueFiltering[@"i"];
+    if (!MPIsNull(attributeValueFiltering)) {
+        NSNumber *shouldIncludeMatches = !MPIsNull(attributeValueFiltering[@"i"]) ? attributeValueFiltering[@"i"] : nil;
         NSNumber *hashedAttribute = attributeValueFiltering[@"a"];
         NSNumber *hashedValue = attributeValueFiltering[@"v"];
         
@@ -139,15 +163,17 @@
     [self configureProjections:configurationDictionary[@"pr"]];
     
     // Kit instance
-    _bracketConfiguration = configurationDictionary[@"bk"];
+    _bracketConfiguration = !MPIsNull(configurationDictionary[@"bk"]) ? configurationDictionary[@"bk"] : nil;
     
-    _kitCode = configurationDictionary[@"id"];
+    _kitCode = !MPIsNull(configurationDictionary[@"id"]) ? configurationDictionary[@"id"] : nil;
+    
+    return _kitCode != nil;
 }
 
 - (void)configureProjections:(NSArray *)projections {
     _defaultProjections = nil;
     
-    if (!projections || projections.count == 0) {
+    if (MPIsNull(projections) || projections.count == 0) {
         _projections = nil;
         return;
     }

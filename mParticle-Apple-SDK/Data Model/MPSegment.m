@@ -67,7 +67,7 @@ NSString *const kMPSegmentMembershipListKey = @"c";
     }
 
     return [self initWithSegmentId:@(segmentId)
-                              UUID:[self newUUID]
+                              UUID:[[NSUUID UUID] UUIDString]
                               name:segmentDictionary[kMPSegmentNameKey]
                        memberships:[memberships copy]
                        endpointIds:segmentDictionary[kMPSegmentEndpointIds]];

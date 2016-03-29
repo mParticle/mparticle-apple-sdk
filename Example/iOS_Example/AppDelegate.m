@@ -36,7 +36,7 @@
     
     // Debug log level to the console. The default log level is
     // MPLogLevelWarning (only warning and error log messages are displayed to the console)
-    mParticle.logLevel = MPLogLevelDebug;
+    mParticle.logLevel = MPILogLevelDebug;
     
     return YES;
 }

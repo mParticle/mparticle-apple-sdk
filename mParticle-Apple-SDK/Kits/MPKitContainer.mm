@@ -43,6 +43,7 @@
 #import "NSUserDefaults+mParticle.h"
 #include "MPBracket.h"
 #import "MPConsumerInfo.h"
+#import "MPForwardQueueItem.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -52,10 +53,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 @interface MPKitContainer() {
     dispatch_semaphore_t kitsSemaphore;
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
-    BOOL kitsInitialized;
 }
 
+@property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
+@property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
 
 @end
 
@@ -68,27 +70,25 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 - (instancetype)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _kitsInitialized = NO;
+        kitsSemaphore = dispatch_semaphore_create(1);
+        
+        if (![MPStateMachine sharedInstance].optOut) {
+            [self initializeKits];
+        }
+        
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(handleApplicationDidBecomeActive:)
+                                   name:UIApplicationDidBecomeActiveNotification
+                                 object:nil];
+        
+        [notificationCenter addObserver:self
+                               selector:@selector(handleApplicationDidFinishLaunching:)
+                                   name:UIApplicationDidFinishLaunchingNotification
+                                 object:nil];
     }
-    
-    kitsInitialized = NO;
-    kitsSemaphore = dispatch_semaphore_create(1);
-    
-    if (![MPStateMachine sharedInstance].optOut) {
-        [self initializeKits];
-    }
-    
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter addObserver:self
-                           selector:@selector(handleApplicationDidBecomeActive:)
-                               name:UIApplicationDidBecomeActiveNotification
-                             object:nil];
-    
-    [notificationCenter addObserver:self
-                           selector:@selector(handleApplicationDidFinishLaunching:)
-                               name:UIApplicationDidFinishLaunchingNotification
-                             object:nil];
     
     return self;
 }
@@ -132,6 +132,24 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 }
 
+#pragma mark Private accessors
+- (NSMutableArray<MPForwardQueueItem *> *)forwardQueue {
+    if (_forwardQueue) {
+        return _forwardQueue;
+    }
+    
+    _forwardQueue = [[NSMutableArray alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
+    return _forwardQueue;
+}
+
+- (void)setKitsInitialized:(BOOL)kitsInitialized {
+    _kitsInitialized = kitsInitialized;
+    
+    if (_kitsInitialized) {
+        [self replayQueuedItems];
+    }
+}
+
 #pragma mark Private methods
 - (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
     NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
@@ -171,14 +189,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode,
-                                       mParticleEmbeddedSDKInstanceKey:kitCode};
+            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode};
             
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                                object:nil
-                                                              userInfo:userInfo];
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleEmbeddedSDKDidBecomeInactiveNotification
                                                                 object:nil
                                                               userInfo:userInfo];
         });
@@ -186,33 +199,26 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)initializeKits {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSArray *directoryContents = [self fetchKitConfigurationFileNames];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
     
-    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        NSArray *directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
+    for (NSString *fileName in directoryContents) {
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
         
-        for (NSString *fileName in directoryContents) {
-            NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        @try {
+            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
             
-            @try {
-                id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-                
-                if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                    MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                    self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
-                    [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
-                }
-            } @catch (NSException *exception) {
-                [self removeKitConfigurationAtPath:kitPath];
+            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
+                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
+                self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
+                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
             }
+        } @catch (NSException *exception) {
+            [self removeKitConfigurationAtPath:kitPath];
         }
     }
     
-    kitsInitialized = YES;
+    self.kitsInitialized = YES;
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
@@ -228,6 +234,25 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             MPILogDebug(@"%@", listOfKits);
         }
     });
+}
+
+- (NSArray<NSString *> *)fetchKitConfigurationFileNames {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSArray<NSString *> *directoryContents = nil;
+    
+    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+        directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
+        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
+        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
+        
+        if (directoryContents.count == 0) {
+            directoryContents = nil;
+        }
+    }
+    
+    return directoryContents;
 }
 
 - (NSDictionary *)methodMessageTypeMapping {
@@ -256,6 +281,26 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     return kitRegister.name;
+}
+
+- (void)replayQueuedItems {
+    if (!_forwardQueue) {
+        return;
+    }
+    
+    for (MPForwardQueueItem *forwardQueueItem in _forwardQueue) {
+        switch (forwardQueueItem.queueItemType) {
+            case MPQueueItemTypeEvent:
+                [self forwardSDKCall:forwardQueueItem.selector event:forwardQueueItem.event messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.eventCompletionHandler];
+                break;
+                
+            case MPQueueItemTypeEcommerce:
+                [self forwardCommerceEventCall:forwardQueueItem.commerceEvent kitHandler:forwardQueueItem.commerceEventCompletionHandler];
+                break;
+        }
+    }
+    
+    _forwardQueue = nil;
 }
 
 - (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
@@ -294,14 +339,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return kitRegister.wrapperInstance;
     }
     
-    __block NSMutableDictionary *safeConfiguration = [[NSMutableDictionary alloc] initWithCapacity:configuration.count];
-    [configuration enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ((NSNull *)obj != [NSNull null]) {
-            safeConfiguration[key] = obj;
-        }
-    }];
-    configuration = [safeConfiguration copy];
-    
     [self startKitRegister:kitRegister configuration:configuration];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
@@ -320,7 +357,33 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull NSDictionary *)configuration {
-    kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
+    configuration = [self validateAndTransformToSafeConfiguration:configuration];
+    
+    if (configuration) {
+        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
+    }
+}
+
+- (NSDictionary *)validateAndTransformToSafeConfiguration:(NSDictionary *)configuration {
+    if (configuration.count == 0) {
+        return nil;
+    }
+    
+    __block NSMutableDictionary *safeConfiguration = [[NSMutableDictionary alloc] initWithCapacity:configuration.count];
+    __block BOOL configurationModified = NO;
+    [configuration enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+        if ((NSNull *)obj != [NSNull null]) {
+            safeConfiguration[key] = obj;
+        } else {
+            configurationModified = YES;
+        }
+    }];
+    
+    if (configurationModified) {
+        return safeConfiguration.count > 0 ? [safeConfiguration copy] : nil;
+    } else {
+        return configuration;
+    }
 }
 
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {
@@ -328,11 +391,19 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     switch (dataType) {
         case MPDataTypeString:
+            if (MPIsNull(originalValue)) {
+                return nil;
+            }
+            
             value = originalValue;
             break;
             
         case MPDataTypeInt:
         case MPDataTypeLong: {
+            if (MPIsNull(originalValue)) {
+                return @0;
+            }
+            
             NSInteger integerValue = [originalValue integerValue];
             
             if (integerValue != 0) {
@@ -341,7 +412,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 if ([originalValue isEqualToString:@"0"]) {
                     value = @(integerValue);
                 } else {
-                    value = [NSNull null];
+                    value = nil;
                     MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
                 }
             }
@@ -349,6 +420,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             break;
             
         case MPDataTypeFloat: {
+            if (MPIsNull(originalValue)) {
+                return @0.0;
+            }
+            
             float floatValue = [originalValue floatValue];
             
             if (floatValue != HUGE_VAL && floatValue != -HUGE_VAL && floatValue != 0.0) {
@@ -365,12 +440,14 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             break;
             
         case MPDataTypeBool: {
+            if (MPIsNull(originalValue)) {
+                return @NO;
+            }
+            
             if ([originalValue caseInsensitiveCompare:@"true"] == NSOrderedSame) {
                 value = @YES;
-            } else if ([originalValue caseInsensitiveCompare:@"false"] == NSOrderedSame) {
-                value = @NO;
             } else {
-                value = originalValue;
+                value = @NO;
             }
         }
             break;
@@ -956,10 +1033,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     
                     key = hashKeyMap[[attributeProjection.name intValue]];
                     
-                    if (!MPIsNull(key) && sourceDictionary[key]) {
+                    if (!MPIsNull(key)) {
                         value = [strongSelf transformValue:sourceDictionary[key] dataType:attributeProjection.dataType];
                         
-                        if (!MPIsNull(value)) {
+                        if (value) {
                             projectedDictionary[attributeProjection.projectedName] = value;
                         }
                     } else if (attributeProjection.required) {
@@ -973,7 +1050,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     if (sourceDictionary[attributeProjection.name]) {
                         value = [strongSelf transformValue:sourceDictionary[attributeProjection.name] dataType:attributeProjection.dataType];
                         
-                        if (!MPIsNull(value)) {
+                        if (value) {
                             projectedDictionary[attributeProjection.projectedName] = value;
                         }
                     } else if (attributeProjection.required) {
@@ -984,7 +1061,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 case MPProjectionMatchTypeStatic:
                     value = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
                     
-                    if (!MPIsNull(value)) {
+                    if (value) {
                         projectedDictionary[attributeProjection.projectedName] = value;
                     }
                     break;
@@ -1345,7 +1422,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if ([key isEqualToString:attributeProjection.name]) {
                                 projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
                                 
-                                if ((NSNull *)projectedAttributeValue != [NSNull null]) {
+                                if (projectedAttributeValue) {
                                     projectedAttributeKey = attributeProjection.projectedName ? : key;
                                     [projectedAttributes removeObjectForKey:key];
                                     projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
@@ -1370,7 +1447,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if (hashValue == [attributeProjection.name integerValue]) {
                                 projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
                                 
-                                if ((NSNull *)projectedAttributeValue != [NSNull null]) {
+                                if (projectedAttributeValue) {
                                     projectedAttributeKey = attributeProjection.projectedName ? : key;
                                     [projectedAttributes removeObjectForKey:key];
                                     projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
@@ -1402,8 +1479,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             
                         case MPProjectionMatchTypeStatic:
                             projectedAttributeKey = attributeProjection.projectedName ? : key;
-                            projectedAttributes[projectedAttributeKey] = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
-                            [projectedKeys addObject:projectedAttributeKey];
+                            projectedAttributeValue = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
+                            
+                            if (projectedAttributeValue) {
+                                projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
+                                [projectedKeys addObject:projectedAttributeKey];
+                            }
                             [removeAttributeProjections addObject:attributeProjection];
                             break;
                             
@@ -1587,6 +1668,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     if (MPIsNull(kitConfigurations) || stateMachine.optOut) {
         [self flushSerializedKits];
+        self.kitsInitialized = YES;
         
         return;
     }
@@ -1643,7 +1725,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 }
             } else {
                 kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-                self.kitConfigurations[kitCode] = kitConfiguration;
+                if (kitConfiguration) {
+                    self.kitConfigurations[kitCode] = kitConfiguration;
+                }
                 
                 [self startKitRegister:kitRegister configuration:kitConfiguration.configuration];
                 kitInstance = kitRegister.wrapperInstance;
@@ -1721,6 +1805,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
     }
     
+    self.kitsInitialized = YES;
+
     dispatch_semaphore_signal(kitsSemaphore);
 }
 
@@ -1769,6 +1855,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 #pragma mark Forward methods
 - (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler {
+    if (!self.kitsInitialized) {
+        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithCommerceEvent:commerceEvent completionHandler:kitHandler];
+        
+        if (forwardQueueItem) {
+            [self.forwardQueue addObject:forwardQueueItem];
+        }
+        
+        return;
+    }
+    
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
@@ -1803,6 +1899,20 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler {
+    if (!self.kitsInitialized) {
+        if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
+            return;
+        }
+        
+        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:messageType completionHandler:kitHandler];
+        
+        if (forwardQueueItem) {
+            [self.forwardQueue addObject:forwardQueueItem];
+        }
+        
+        return;
+    }
+    
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {

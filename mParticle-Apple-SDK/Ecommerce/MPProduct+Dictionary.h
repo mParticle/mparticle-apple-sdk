@@ -20,7 +20,6 @@
 
 - (NSDictionary<NSString *, id> *)commerceDictionaryRepresentation;
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation;
-- (NSDictionary<NSString *, id> *)legacyDictionaryRepresentation;
 - (NSDictionary<NSString *, id> *)beautifiedDictionaryRepresentation;
 - (void)setTimeAddedToCart:(NSDate *)date;
 - (MPProduct *)copyMatchingHashedProperties:(NSDictionary *)hashedMap;

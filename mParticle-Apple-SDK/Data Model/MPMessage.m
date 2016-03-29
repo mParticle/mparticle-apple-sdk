@@ -31,17 +31,15 @@
 
 - (instancetype)initWithSessionId:(int64_t)sessionId messageId:(int64_t)messageId UUID:(NSString *)uuid messageType:(NSString *)messageType messageData:(NSData *)messageData timestamp:(NSTimeInterval)timestamp uploadStatus:(MPUploadStatus)uploadStatus {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _sessionId = sessionId;
+        _messageId = messageId;
+        _uuid = uuid;
+        _messageType = messageType;
+        _messageData = messageData;
+        _timestamp = timestamp;
+        _uploadStatus = uploadStatus;
     }
-    
-    _sessionId = sessionId;
-    _messageId = messageId;
-    _uuid = uuid;
-    _messageType = messageType;
-    _messageData = messageData;
-    _timestamp = timestamp;
-    _uploadStatus = uploadStatus;
     
     return self;
 }
@@ -63,6 +61,10 @@
 }
 
 - (BOOL)isEqual:(MPMessage *)object {
+    if (MPIsNull(object) || ![object isKindOfClass:[MPMessage class]]) {
+        return NO;
+    }
+    
     BOOL isEqual = _sessionId == object.sessionId &&
                    _messageId == object.messageId &&
                    _timestamp == object.timestamp &&

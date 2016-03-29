@@ -34,16 +34,7 @@
 }
 
 - (NSString *)percentEscape {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    NSString *escapedString = (__bridge_transfer NSString *)CFURLCreateStringByAddingPercentEscapes(NULL,
-                                                                                                    (__bridge CFStringRef)self,
-                                                                                                    (__bridge CFStringRef)@"@&=%",
-                                                                                                    (__bridge CFStringRef)@"; ",
-                                                                                                    kCFStringEncodingUTF8);
-#pragma clang diagnostic pop
-    
-    return escapedString;
+    return [NSString percentEscapeString:self];
 }
 
 @end

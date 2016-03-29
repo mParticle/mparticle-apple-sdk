@@ -29,11 +29,11 @@ NSString *const sessionNumberKey = @"sessionNumber";
 
 - (instancetype)init {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    return [self initWithSessionId:0 UUID:[self newUUID] backgroundTime:0.0 startTime:now endTime:now attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0];
+    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0];
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp {
-    self = [self initWithSessionId:0 UUID:[self newUUID] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0];
+    self = [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0];
     
     return self;
 }
@@ -77,14 +77,12 @@ NSString *const sessionNumberKey = @"sessionNumber";
 }
 
 - (BOOL)isEqual:(MPSession *)object {
-//    unsigned int numberOfProperties;
-//    class_copyPropertyList([self class], &numberOfProperties);
-//    
-//    if (numberOfProperties != 9) {
-//        return NO;
-//    }
+    if (MPIsNull(object) || ![object isKindOfClass:[MPSession class]]) {
+        return NO;
+    }
     
     BOOL isEqual = _sessionId == object.sessionId &&
+                   _eventCounter == object.eventCounter &&
                    [_uuid isEqualToString:object.uuid] &&
                    [_sessionNumber isEqualToNumber:object.sessionNumber];
     

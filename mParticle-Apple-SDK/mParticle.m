@@ -532,6 +532,16 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Basic tracking
+- (nullable NSSet *)activeTimedEvents {
+    NSAssert(self.backendController.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Cannot fetch timed events prior to starting the mParticle SDK.\n****\n");
+    
+    if (self.backendController.initializationStatus != MPInitializationStatusStarted || self.backendController.eventSet.count == 0) {
+        return nil;
+    } else {
+        return self.backendController.eventSet;
+    }
+}
+
 - (void)beginTimedEvent:(MPEvent *)event {
     __weak MParticle *weakSelf = self;
     

@@ -91,4 +91,15 @@
     XCTAssertEqualObjects(originalString, expandedString, @"Strings are not the same.");
 }
 
+- (void)testInvalidCompressAndExpand {
+    NSData *originalData = nil;
+    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[originalData bytes], (unsigned int)[originalData length]);
+    XCTAssertEqual(get<0>(zipData), nullptr, @"Should have been equal.");
+    XCTAssertEqual(get<1>(zipData), 0, @"Should have been equal.");
+    
+    zipData = mParticle::Zip::expand((const unsigned char *)[originalData bytes], (unsigned int)[originalData length]);
+    XCTAssertEqual(get<0>(zipData), nullptr, @"Should have been equal.");
+    XCTAssertEqual(get<1>(zipData), 0, @"Should have been equal.");
+}
+
 @end

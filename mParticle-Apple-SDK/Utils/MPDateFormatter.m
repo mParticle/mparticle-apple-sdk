@@ -17,11 +17,11 @@
 //
 
 #import "MPDateFormatter.h"
+#import "MPIConstants.h"
 
 static NSDateFormatter *dateFormatterRFC3339;
 static NSDateFormatter *dateFormatterRFC1123; // HTTP-date
 static NSDateFormatter *dateFormatterRFC850;
-static NSDateFormatter *dateFormatterASC;
 
 @implementation MPDateFormatter
 
@@ -41,15 +41,14 @@ static NSDateFormatter *dateFormatterASC;
     dateFormatterRFC850.locale = dateFormatterRFC1123.locale;
     dateFormatterRFC850.timeZone = dateFormatterRFC1123.timeZone;
     dateFormatterRFC850.dateFormat = @"EEEE',' dd'-'MMM'-'yy HH':'mm':'ss z";
-    
-    dateFormatterASC = [[NSDateFormatter alloc] init];
-    dateFormatterASC.locale = dateFormatterRFC1123.locale;
-    dateFormatterASC.timeZone = dateFormatterRFC1123.timeZone;
-    dateFormatterASC.dateFormat = @"EEE MMM d HH':'mm':'ss yyyy";
 }
 
 #pragma mark Public static methods
 + (NSDate *)dateFromString:(NSString *)dateString {
+    if (MPIsNull(dateString)) {
+        return nil;
+    }
+    
     NSDate *date = [dateFormatterRFC3339 dateFromString:dateString];
     if (date) {
         return date;
@@ -61,40 +60,42 @@ static NSDateFormatter *dateFormatterASC;
     }
     
     date = [dateFormatterRFC850 dateFromString:dateString];
-    if (date) {
-        return date;
-    }
     
-    date = [dateFormatterASC dateFromString:dateString];
     return date;
 }
 
 + (NSDate *)dateFromStringRFC3339:(NSString *)dateString {
+    if (MPIsNull(dateString)) {
+        return nil;
+    }
+    
     NSDate *date = [dateFormatterRFC3339 dateFromString:dateString];
     return date;
 }
 
 + (NSDate *)dateFromStringRFC1123:(NSString *)dateString {
+    if (MPIsNull(dateString)) {
+        return nil;
+    }
+    
     NSDate *date = [dateFormatterRFC1123 dateFromString:dateString];
-    if (date) {
-        return date;
-    }
-    
-    date = [dateFormatterRFC850 dateFromString:dateString];
-    if (date) {
-        return date;
-    }
-    
-    date = [dateFormatterASC dateFromString:dateString];
     return date;
 }
 
 + (NSString *)stringFromDateRFC1123:(NSDate *)date {
+    if (MPIsNull(date)) {
+        return nil;
+    }
+    
     NSString *dateString = [dateFormatterRFC1123 stringFromDate:date];
     return dateString;
 }
 
 + (NSString *)stringFromDateRFC3339:(NSDate *)date {
+    if (MPIsNull(date)) {
+        return nil;
+    }
+    
     NSString *dateString = [dateFormatterRFC3339 stringFromDate:date];
     return dateString;
 }
