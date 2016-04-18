@@ -44,7 +44,7 @@ Pod::Spec.new do |s|
     s.ios.deployment_target  = "7.0"
     s.tvos.deployment_target = "9.0"
 
-    s.subspec 'Core-SDK' do |ss|
+    s.subspec 'mParticle' do |ss|
         ss.public_header_files = 'mParticle-Apple-SDK/mParticle.h', 'mParticle-Apple-SDK/MPEnums.h', 'mParticle-Apple-SDK/MPUserSegments.h', \
                                  'mParticle-Apple-SDK/Event/MPEvent.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerce.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent.h', \
                                  'mParticle-Apple-SDK/Ecommerce/MPCart.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct.h', 'mParticle-Apple-SDK/Ecommerce/MPPromotion.h', \
@@ -136,13 +136,7 @@ Pod::Spec.new do |s|
         ss.tvos.deployment_target = "9.0"
     end
 
-    s.subspec 'mParticle' do |ss|
-        ss.dependency 'mParticle-Apple-SDK/Core-SDK'
-        ss.prefix_header_contents = "#define MP_KIT_MPARTICLE 1"
-    end
-
     s.subspec 'CrashReporter' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
         ss.ios.dependency 'mParticle-CrashReporter', '~> 1.2'
         ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"

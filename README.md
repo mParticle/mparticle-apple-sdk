@@ -36,7 +36,7 @@ end
 
 Configuring you `Podfile` with the statement above will include only the _Core_ mParticle SDK.
 
-> If your app is targeting iOS and tvOS in the same Xcode project, you will need to configure the `Podfile` differently in order to use the SDK with multiple platforms. You can find multi-platform configuration [here](https://github.com/mParticle/mparticle-apple-sdk/wiki/Multi-platform-Configuration).
+> If your app is targeting iOS and tvOS in the same Xcode project, you will need to configure the `Podfile` differently in order to use the SDK with multiple platforms. You can find multi-platform configuration [here](https://github.com/mParticle/mparticle-apple-sdk-private/wiki/Multi-platform-Configuration).
 
 If you'd like to add any kits, you can do so as follows:
 
