@@ -42,27 +42,17 @@ If you'd like to add any kits, you can do so as follows:
 
 ```ruby
 target '<Your Target>' do
-    pod 'mParticle-Apple-SDK', '~> 6', :subspecs => ['Appboy', 'BranchMetrics', 'Localytics']
+    pod 'mParticle-Appboy', '~> 6'
+    pod 'mParticle-BranchMetrics', '~> 6'
+    pod 'mParticle-Localytics', '~> 6'
 end
 ```
 
-You can also use the more verbose syntax, specifying a kit per line item.
-
-```ruby
-target '<Your Target>' do
-    pod 'mParticle-Apple-SDK/Appboy', '~> 6'
-    pod 'mParticle-Apple-SDK/BranchMetrics', '~> 6'
-    pod 'mParticle-Apple-SDK/Localytics', '~> 6'
-end
-```
-
-In the cases above, only the _Appboy_, _Branch Metrics_, and _Localytics_ kits would be integrated; all other kits would be left out.
+In the cases above, the _Appboy_, _Branch Metrics_, and _Localytics_ kits would be integrated together with the core SDK.
 
 For iOS only, you can also choose to install the crash reporter. You include it as a subspec:
 
 ```ruby
-pod 'mParticle-Apple-SDK', '~> 6', :subspecs => ['CrashReporter']
-or
 pod 'mParticle-Apple-SDK/CrashReporter', '~> 6'
 ```
 

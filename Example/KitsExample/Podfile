@@ -5,6 +5,21 @@ use_frameworks!
 source 'https://github.com/CocoaPods/Specs'
 source 'git@github.com:mparticle/Specs'
 
+pre_install do |pre_i|
+    def pre_i.verify_no_static_framework_transitive_dependencies; end
+end
+
 target 'KitsExample' do
-    pod 'mParticle-Apple-SDK', :path => '../..', :subspecs => ['Adjust', 'Appboy', 'AppsFlyer', 'comScore', 'Crittercism','Flurry', 'Kahuna', 'Kochava', 'Localytics', 'Tune', 'Wootric']
+    pod 'mParticle-Apple-SDK', :path => '../..'
+    pod 'mParticle-Adjust'
+    pod 'mParticle-Appboy'
+    pod 'mParticle-AppsFlyer'
+    pod 'mParticle-ComScore'
+    pod 'mParticle-Crittercism'
+    pod 'mParticle-Flurry'
+    pod 'mParticle-Kahuna'
+    pod 'mParticle-Kochava'
+    pod 'mParticle-Localytics'
+    pod 'mParticle-Tune'
+    pod 'mParticle-Wootric'
 end
