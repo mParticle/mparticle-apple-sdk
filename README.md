@@ -14,7 +14,7 @@ The mParticle platform addresses all these problems. We support an ever growing 
 This document is a quick-start to:
 
 * Obtaining the mParticle SDK via [CocoaPods](https://cocoapods.org/?q=mparticle) or via [Carthage](https://github.com/Carthage/Carthage)
-* Extending the mParticle SDK with *Kits*
+* Extending the mParticle SDK with [*Kits*](https://github.com/mparticle-integrations)
 * Initializing the mParticle SDK
 
 The mParticle SDK is composed of the _Core_ library and a series of _kit_ libraries that depend on Core. With each integration with a partner we strive to implement as many features as possible in the server-to-server layer, however some times a deeper integration to work side-by-side with a 3rd party SDK comes with greater benefits to our clients. We use the term **Kit** to describe such integrations. The Core SDK takes care of initializing the kits depending on what you've configured in [your app's dashboard](https://app.mparticle.com), so you just have to decide which kits you may use prior to submission to the App Store. You can easily include all of the kits, none of the kits, or individual kits – the choice is yours.
@@ -84,7 +84,7 @@ github "mparticle-integrations/mparticle-apple-integration-branchmetrics" ~> 6.0
 
 In this case, only the _Branch Metrics_ kit would be integrated; all other kits would be left out.
 
-> All [kits](https://github.com/mparticle-integrations) are currently compatible with CocoaPods. For Carthage, look for this badge [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) in the kit README to confirm availability.
+> All kits are currently compatible with CocoaPods. For Carthage, look for this badge [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) in the kit README to confirm availability.
 
 #### Currently Supported Kits
 
@@ -100,6 +100,8 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 * [Localytics](https://www.localytics.com)
 * [Tune](https://www.tune.com)
 * [Wootric](https://www.wootric.com)
+
+Integration information can be found in each [kit repository](https://github.com/mparticle-integrations).
 
 
 ## Initialize the SDK

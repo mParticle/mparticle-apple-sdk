@@ -4,11 +4,8 @@ matrix:
     - env:
         - config="iOS7_Example"
         - workspace="Example.xcworkspace"
-      osx_image: beta-xcode6.1
+      osx_image: xcode7.3
       script:
-        - echo "Updating tools"
-        - rvm use system
-        - sudo gem install cocoapods
         - cd Example
         - pod install
         - echo "Building for config=${config}"
@@ -31,3 +28,21 @@ matrix:
         - pod install
         - echo "Building for config=${config}"
         - xctool test -workspace "${workspace}" -scheme "${config}" -sdk appletvsimulator
+    - env:
+        - config="CarthageExample"
+      osx_image: xcode7.3
+      script:
+        - cd Example/CarthageExample
+        - echo "git \"$TRAVIS_BUILD_DIR\" \"$TRAVIS_BRANCH\"" > Cartfile
+        - carthage update
+        - echo "Building for config=${config}"
+        - xctool -scheme "${config}" -sdk iphonesimulator
+    - env:
+        - config="KitsExample"
+        - workspace="KitsExample.xcworkspace"
+      osx_image: xcode7.3
+      script:
+        - cd Example/KitsExample
+        - pod install
+        - echo "Building for config=${config}"
+        - xctool -workspace "${workspace}" -scheme "${config}" -sdk iphonesimulator

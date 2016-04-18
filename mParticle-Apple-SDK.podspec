@@ -64,6 +64,78 @@ Pod::Spec.new do |s|
         ss.tvos.weak_framework = 'AdSupport'
     end
 
+    s.subspec 'Adjust' do |ss|
+        ss.ios.dependency 'mParticle-Adjust'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Appboy' do |ss|
+        ss.ios.dependency 'mParticle-Appboy'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'AppsFlyer' do |ss|
+        ss.ios.dependency 'mParticle-AppsFlyer'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'BranchMetrics' do |ss|
+        ss.ios.dependency 'mParticle-BranchMetrics'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'comScore' do |ss|
+        ss.ios.dependency 'mParticle-ComScore'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Crittercism' do |ss|
+        ss.ios.dependency 'mParticle-Crittercism'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Flurry' do |ss|
+        ss.ios.dependency 'mParticle-Flurry'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Kahuna' do |ss|
+        ss.ios.dependency 'mParticle-Kahuna'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Kochava' do |ss|
+        ss.ios.dependency 'mParticle-Kochava'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Localytics' do |ss|
+        ss.ios.dependency 'mParticle-Localytics'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Tune' do |ss|
+        ss.ios.dependency 'mParticle-Tune'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
+    s.subspec 'Wootric' do |ss|
+        ss.ios.dependency 'mParticle-Wootric'
+        ss.ios.deployment_target      = "7.0"
+        ss.tvos.deployment_target = "9.0"
+    end
+
     s.subspec 'mParticle' do |ss|
         ss.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.prefix_header_contents = "#define MP_KIT_MPARTICLE 1"
