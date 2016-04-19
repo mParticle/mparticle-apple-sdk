@@ -34,7 +34,7 @@ target '<Your Target>' do
 end
 ```
 
-Configuring you `Podfile` with the statement above will include only the _Core_ mParticle SDK.
+Configuring your `Podfile` with the statement above will include only the _Core_ mParticle SDK.
 
 > If your app is targeting iOS and tvOS in the same Xcode project, you will need to configure the `Podfile` differently in order to use the SDK with multiple platforms. You can find multi-platform configuration [here](https://github.com/mParticle/mparticle-apple-sdk-private/wiki/Multi-platform-Configuration).
 
@@ -74,7 +74,7 @@ github "mparticle-integrations/mparticle-apple-integration-branchmetrics" ~> 6.0
 
 In this case, only the _Branch Metrics_ kit would be integrated; all other kits would be left out.
 
-> All kits are currently compatible with CocoaPods. For Carthage, look for this badge [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage) in the kit README to confirm availability.
+> All kits are currently compatible with CocoaPods. For Carthage, look for this badge [![Carthage compatible](http://img.shields.io/badge/Carthage-compatible-brightgreen.png)](https://github.com/Carthage/Carthage) in the kit README to confirm availability.
 
 #### Currently Supported Kits
 
@@ -83,7 +83,7 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 * [AppsFlyer](https://www.appsflyer.com)
 * [Branch Metrics](https://branch.io)
 * [comScore](https://www.comscore.com)
-* [Apteligent](www.apteligent.com)/[Crittercism](http://www.crittercism.com)
+* [Apteligent](www.apteligent.com)
 * [Flurry](https://developer.yahoo.com)
 * [Kahuna](https://www.kahuna.com)
 * [Kochava](https://www.kochava.com)
@@ -153,7 +153,7 @@ Clone the repository to your local machine
 git clone https://github.com/mParticle/mparticle-apple-sdk.git
 ```
 
-In order to run either the iOS or tvOS examples you will first install the mParticle Apple SDK via CocoaPods.
+In order to run either the iOS or tvOS examples you will first install the mParticle Apple SDK via [CocoaPods](https://guides.cocoapods.org/using/getting-started.html).
 
 1. Change to the `Example` directory
 2. Run `pod install`
@@ -174,10 +174,4 @@ Questions? Give us a shout at <support@mparticle.com>
 
 ## License
 
-mParticle-Apple-SDK is available under the Apache license. See the LICENSE file for more info.
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
-
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+The mParticle-Apple-SDK is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). See the LICENSE file for more info.

@@ -162,7 +162,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceFlurry = 83,
     /** Kit code for Localytics */
     MPKitInstanceLocalytics = 84,
-    /** Kit code for Crittercism */
+    /** Kit code for Apteligent (formerly known as Crittercism) */
+    MPKitInstanceApteligent = 86,
+    /** Kit code for Crittercism (now Apteligent) */
     MPKitInstanceCrittercism = 86,
     /** Kit code for Wootric */
     MPKitInstanceWootric = 90,
