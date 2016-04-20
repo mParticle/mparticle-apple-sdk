@@ -31,6 +31,7 @@
 #import "MPExtensionProtocol.h"
 #import "MPKitRegister.h"
 #import "MPKitExecStatus.h"
+#import "MPIHasher.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>

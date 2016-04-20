@@ -437,6 +437,10 @@
 		C97F92A31CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F92A11CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m */; };
 		C9A88DD61C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9A88DD71C7F64580011768C /* MPExtensionProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9C42B231CC8235C006C417F /* MPIHasher.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C42B211CC8235C006C417F /* MPIHasher.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9C42B241CC8235C006C417F /* MPIHasher.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C42B211CC8235C006C417F /* MPIHasher.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9C42B251CC8235C006C417F /* MPIHasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C42B221CC8235C006C417F /* MPIHasher.mm */; };
+		C9C42B261CC8235C006C417F /* MPIHasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9C42B221CC8235C006C417F /* MPIHasher.mm */; };
 		C9CD55091CB415950052868A /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD55081CB415950052868A /* MPResponseConfigTests.m */; };
 		C9CD550A1CB415950052868A /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD55081CB415950052868A /* MPResponseConfigTests.m */; };
 		C9CD550C1CB42D580052868A /* MPKitConfigurationTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9CD550B1CB42D580052868A /* MPKitConfigurationTests.mm */; };
@@ -704,6 +708,8 @@
 		C97F929E1CB2C41A00A3135B /* MPForwardQueueItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueItemTests.m; sourceTree = "<group>"; };
 		C97F92A11CB304EB00A3135B /* MPBase_Attribute_Event_ProjectionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBase_Attribute_Event_ProjectionTests.m; sourceTree = "<group>"; };
 		C9A88DD51C7F64580011768C /* MPExtensionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExtensionProtocol.h; sourceTree = "<group>"; };
+		C9C42B211CC8235C006C417F /* MPIHasher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIHasher.h; sourceTree = "<group>"; };
+		C9C42B221CC8235C006C417F /* MPIHasher.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPIHasher.mm; sourceTree = "<group>"; };
 		C9CD55081CB415950052868A /* MPResponseConfigTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfigTests.m; sourceTree = "<group>"; };
 		C9CD550B1CB42D580052868A /* MPKitConfigurationTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitConfigurationTests.mm; sourceTree = "<group>"; };
 		C9CD550E1CB4538D0052868A /* MPDateFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDateFormatterTests.m; sourceTree = "<group>"; };
@@ -811,6 +817,8 @@
 				C90499E01C56B8DF005F11EA /* MPIConstants.m */,
 				C90499E11C56B8DF005F11EA /* MPUserSegments.h */,
 				C90499E21C56B8DF005F11EA /* MPUserSegments.m */,
+				C9C42B211CC8235C006C417F /* MPIHasher.h */,
+				C9C42B221CC8235C006C417F /* MPIHasher.mm */,
 			);
 			path = "mParticle-Apple-SDK";
 			sourceTree = "<group>";
@@ -1240,6 +1248,7 @@
 				C9049BC41C56C40F005F11EA /* MPCurrentState.h in Headers */,
 				C9049AAA1C56C31D005F11EA /* MPBreadcrumb.h in Headers */,
 				C9049BFA1C56C436005F11EA /* MPStateMachine.h in Headers */,
+				C9C42B231CC8235C006C417F /* MPIHasher.h in Headers */,
 				C9049AB21C56C31D005F11EA /* MPDataModelProtocol.h in Headers */,
 				C9049BFF1C56C436005F11EA /* MPZip.h in Headers */,
 				C9049B731C56C3C5005F11EA /* MPMediaMetadataTVR.h in Headers */,
@@ -1344,6 +1353,7 @@
 				C95801441C6117CA00E62148 /* MPLocationManager.h in Headers */,
 				C9049ADA1C56C31E005F11EA /* MPSessionHistory.h in Headers */,
 				C9049BED1C56C436005F11EA /* MPZip.h in Headers */,
+				C9C42B241CC8235C006C417F /* MPIHasher.h in Headers */,
 				C9049BD41C56C41A005F11EA /* MPDevice.h in Headers */,
 				C9049AE51C56C32C005F11EA /* MPBags.h in Headers */,
 				C9049AE81C56C32C005F11EA /* MPCart.h in Headers */,
@@ -1699,6 +1709,7 @@
 				C9049ABC1C56C31D005F11EA /* MPSession.m in Sources */,
 				C9049B711C56C3C5005F11EA /* MPMediaMetadataOCR.m in Sources */,
 				C9049BCF1C56C41A005F11EA /* MPDevice.m in Sources */,
+				C9C42B251CC8235C006C417F /* MPIHasher.mm in Sources */,
 				C9049AA91C56C30D005F11EA /* MParticleUserNotification.m in Sources */,
 				C9049BBB1C56C405005F11EA /* MPApplication.m in Sources */,
 				C9049AFE1C56C32D005F11EA /* MPBags.m in Sources */,
@@ -1790,6 +1801,7 @@
 				C95801431C6117C600E62148 /* MPLocationManager.m in Sources */,
 				C9049B7E1C56C3C5005F11EA /* MPMediaMetadataBase.m in Sources */,
 				C9049BDD1C56C423005F11EA /* MPMessageBuilder.mm in Sources */,
+				C9C42B261CC8235C006C417F /* MPIHasher.mm in Sources */,
 				C9049AE61C56C32C005F11EA /* MPBags.m in Sources */,
 				C9049B8B1C56C3C5005F11EA /* MPMediaTrack.m in Sources */,
 				C9049AA71C56C2FF005F11EA /* MPCustomModulePreference.m in Sources */,

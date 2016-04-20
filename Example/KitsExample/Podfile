@@ -14,6 +14,7 @@ target 'KitsExample' do
     pod 'mParticle-Adjust'
     pod 'mParticle-Appboy'
     pod 'mParticle-AppsFlyer'
+    pod 'mParticle-BranchMetrics'
     pod 'mParticle-ComScore'
     pod 'mParticle-Crittercism'
     pod 'mParticle-Flurry'
