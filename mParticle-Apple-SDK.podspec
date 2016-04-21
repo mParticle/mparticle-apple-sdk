@@ -76,6 +76,11 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'Appboy-iOS-SDK', '~> 2.19'
         ss.ios.prefix_header_contents = "#define MP_KIT_APPBOY 1"
         ss.ios.deployment_target      = "7.0"
+
+        ss.ios.pod_target_xcconfig = {
+            'LIBRARY_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/Appboy-iOS-SDK/**',
+            'OTHER_LDFLAGS' => '$(inherited) -l"AppboyKitLibrary"'
+        }
     end
 
     s.subspec 'AppsFlyer' do |ss|
@@ -84,6 +89,11 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'AppsFlyer-SDK', '~> 4.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_APPSFLYER 1"
         ss.ios.deployment_target      = "7.0"
+
+        ss.ios.pod_target_xcconfig = {
+            'LIBRARY_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/AppsFlyer-SDK/**',
+            'OTHER_LDFLAGS' => '$(inherited) -l"AppsFlyerLib"'
+        }
     end
 
     s.subspec 'BranchMetrics' do |ss|
@@ -101,6 +111,11 @@ Pod::Spec.new do |s|
         ss.ios.prefix_header_contents = "#define MP_KIT_COMSCORE 1"
         ss.ios.deployment_target      = "7.0"
         ss.ios.frameworks             = 'AVFoundation', 'CoreMedia', 'MediaPlayer'
+
+        ss.ios.pod_target_xcconfig = {
+            'LIBRARY_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/ComScore-iOS/**',
+            'OTHER_LDFLAGS' => '$(inherited) -l"comScore"'
+        }
     end
 
     s.subspec 'Crittercism' do |ss|
@@ -109,6 +124,11 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'CrittercismSDK', '5.4.0'
         ss.ios.prefix_header_contents = "#define MP_KIT_CRITTERCISM 1"
         ss.ios.deployment_target      = "7.0"
+
+        ss.ios.pod_target_xcconfig = {
+            'LIBRARY_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/CrittercismSDK/**',
+            'OTHER_LDFLAGS' => '$(inherited) -l"Crittercism_v5_4_0"'
+        }
     end
 
     s.subspec 'Flurry' do |ss|
@@ -125,6 +145,11 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'Kahuna', '~> 2.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_KAHUNA 1"
         ss.ios.deployment_target      = "7.0"
+
+        ss.ios.pod_target_xcconfig = {
+            'FRAMEWORK_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/Kahuna/**',
+            'OTHER_LDFLAGS' => '$(inherited) -framework "Kahuna"'
+        }
     end
 
     s.subspec 'Kochava' do |ss|
@@ -138,9 +163,14 @@ Pod::Spec.new do |s|
     s.subspec 'Localytics' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Localytics', '~> 3.5'
+        ss.ios.dependency 'Localytics', '~> 3.8'
         ss.ios.prefix_header_contents = "#define MP_KIT_LOCALYTICS 1"
         ss.ios.deployment_target      = "7.0"
+
+        ss.ios.pod_target_xcconfig = {
+            'LIBRARY_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/Localytics/**',
+            'OTHER_LDFLAGS' => '$(inherited) -l"Localytics"'
+        }
     end
 
     s.subspec 'Tune' do |ss|
@@ -169,5 +199,10 @@ Pod::Spec.new do |s|
         ss.ios.dependency 'mParticle-CrashReporter', '~> 1.2'
         ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
         ss.ios.deployment_target      = "7.0"
+
+        ss.ios.pod_target_xcconfig = {
+            'FRAMEWORK_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/mParticle-CrashReporter/**',
+            'OTHER_LDFLAGS' => '$(inherited) -framework "mParticle-CrashReporter"'
+        }
     end
 end
