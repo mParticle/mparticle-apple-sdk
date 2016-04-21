@@ -9,11 +9,11 @@
 [![Platform](https://img.shields.io/cocoapods/p/mParticle-Apple-SDK.svg?style=flat)](http://cocoapods.org/pods/mParticle-Apple-SDK)
 -->
 
-Hello! This is the unified mParticle Apple SDK. It currently supports iOS and tvOS, and we plan to continue adding support for more platforms in the future. For the past 3 years we have been working tirelessly on developing each component of our platform; initially we deployed this SDK as iOS only, however we are at a different stage now, and we could not be more excited to be able to share it with you.
+Hello! This is the unified [mParticle](http://mparticle.com) Apple SDK. It currently supports iOS and tvOS, and we plan to continue adding support for more platforms in the future. For the past 3 years we have been working tirelessly on developing each component of our platform; initially we deployed this SDK as iOS only, however we are at a different stage now, and we could not be more excited to be able to share it with you.
 
 Your job is to build an awesome app experience that consumers love. You also need several tools and services to make data-driven decisions. Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing, monetization, etc. But embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs. From not being able to move as fast as you want, to bloating and destabilizing your app, to losing control and ownership of your 1st party data.
 
-[mParticle](http://mparticle.com) solves all these problems with one lightweight SDK. Implement new partners without changing code or waiting for app store approval. Improve stability and security within your app. We enable our clients to spend more time innovating and less time integrating.
+The mParticle platform addresses all these problems. We support an ever growing number of integrations with services and SDKs, including developer tools, analytics, attribution, messaging, advertising, and more. mParticle has been designed to be the central hub connecting all these services – check [our site](https://www.mparticle.com), or hit us at <dev@mparticle.com> to learn more.
 
 
 ## Installation
@@ -119,26 +119,9 @@ With each integration with a partner we strive to implement as many features as 
 
 For apps supporting iOS 8 and above, the syntax for the import statement should be one for **modules** or **semantic import**.
 
-#### Swift
+The mParticle SDK is initialized by calling the `startWithKey` method within the `application:didFinishLaunchingWithOptions:` delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`.
 
-```swift
-import mParticle_Apple_SDK
-```
-
-#### Objective-C
-
-```objective-c
-@import mParticle_Apple_SDK;
-```
-
->If your app still needs to support iOS 7, please use:
->
->```objective-c
->#import <mParticle_Apple_SDK/mParticle.h>
->```
-
-<br>
-The mParticle SDK is initialized by calling the `startWithKey` method within the `application:didFinishLaunchingWithOptions:` delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`
+> Note that it is imperative that the SDK is initialized in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
 
 #### Swift
 
@@ -172,7 +155,13 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 }
 ```
 
+>If your app still needs to support iOS 7, please use:
+>
+>```objective-c
+>#import <mParticle_Apple_SDK/mParticle.h>
+>```
 
+<br>
 ## Migrating From Version 4.x to Version 5.x (iOS Only)
 
 ### Podfile
@@ -226,27 +215,18 @@ In order to run either the iOS or tvOS examples you will first install the mPart
 We have published an article named the [Unified mParticle Apple SDK](http://blog.mparticle.com/unified-mparticle-apple-sdk/) where we explore the development of multi-platform apps. There you can discover more about how the project was built, use cases of the mParticle SDK, and see the sample apps in action.
 
 
-## Documentation
+## Read More
 
-Detailed documentation and other information about the mParticle SDK can be found at: [http://docs.mparticle.com](http://docs.mparticle.com)
+Just by initializing the SDK you'll be set up to track user installs, engagement, and much more. Check out our doc site to learn how to add specific event tracking to your app.
 
-
-## Author
-
-mParticle, Inc.
+* [SDK Documentation](http://docs.mparticle.com/#sdk-documentation)
 
 
 ## Support
 
-<support@mparticle.com>
+Questions? Give us a shout at <support@mparticle.com>
 
 
 ## License
 
-mParticle-Apple-SDK is available under the Apache license. See the LICENSE file for more info.
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
-
-[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+The mParticle-Apple-SDK is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). See the LICENSE file for more info.

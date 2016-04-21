@@ -45,6 +45,19 @@ NSString *const eabOptions = @"options";
 
 @implementation MPKitAppboy
 
+#pragma mark Private methods
+- (NSString *)stripCharacter:(NSString *)character fromString:(NSString *)originalString {
+    NSRange range = [originalString rangeOfString:character];
+    
+    if (range.location == 0) {
+        NSMutableString *strippedString = [originalString mutableCopy];
+        [strippedString replaceOccurrencesOfString:character withString:@"" options:NSCaseInsensitiveSearch range:range];
+        return [strippedString copy];
+    } else {
+        return originalString;
+    }
+}
+
 #pragma mark MPKitInstanceProtocol methods
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
     self = [super initWithConfiguration:configuration startImmediately:startImmediately];
@@ -177,10 +190,17 @@ NSString *const eabOptions = @"options";
 
 - (MPKitExecStatus *)logEvent:(MPEvent *)event {
     void (^logCustomEvent)(void) = ^{
-        [appboyInstance logCustomEvent:event.name withProperties:event.info];
+        NSDictionary *transformedEventInfo = [event.info transformValuesToString];
+
+        NSMutableDictionary *eventInfo = [[NSMutableDictionary alloc] initWithCapacity:event.info.count];
+        [transformedEventInfo enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            NSString *strippedKey = [self stripCharacter:@"$" fromString:key];
+            eventInfo[strippedKey] = obj;
+        }];
+        
+        [appboyInstance logCustomEvent:event.name withProperties:eventInfo];
         
         NSString *eventTypeString = [@(event.type) stringValue];
-        NSDictionary *eventInfo = [event.info transformValuesToString];
         
         for (NSString *key in eventInfo) {
             NSString *eventTypePlusNamePlusKey = [[NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key] lowercaseString];
@@ -302,11 +322,7 @@ NSString *const eabOptions = @"options";
     } else if ([key isEqualToString:mParticleUserAttributeMobileNumber] || [key isEqualToString:@"$MPUserMobile"]) {
         appboyInstance.user.phone = value;
     } else {
-        if ([key containsString:@"$"]) {
-            NSMutableString *editedKey = [key mutableCopy];
-            [editedKey replaceOccurrencesOfString:@"$" withString:@"" options:NSCaseInsensitiveSearch range:NSMakeRange(0, key.length)];
-            key = editedKey;
-        }
+        key = [self stripCharacter:@"$" fromString:key];
         
         [appboyInstance.user setCustomAttributeWithKey:key andStringValue:value];
     }
