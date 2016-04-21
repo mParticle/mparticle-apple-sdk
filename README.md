@@ -81,7 +81,7 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 * [Adjust](https://www.adjust.com)
 * [Appboy](https://www.appboy.com)
 * [AppsFlyer](https://www.appsflyer.com)
-* [Apteligent](www.apteligent.com)
+* [Apteligent](https://www.apteligent.com)
 * [Branch Metrics](https://branch.io)
 * [comScore](https://www.comscore.com)
 * [Flurry](https://developer.yahoo.com)
