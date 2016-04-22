@@ -16,6 +16,13 @@
 * [NEW] Added support for Carthage
 * [FIX] Restored unit tests for each of the platforms
 
+## 5.5.2
+
+>Upgrade suggestion: **HIGH**. Upgrade if you are using one of the following kits: Appboy, AppsFlyer, comScore, Crittercism, Kahuna, or Localytics. The `podspec` has been changed for those kits
+
+* [NEW] Stripping `$` from event attributes when forwarding to Appboy
+* [FIX] Updated the `podspec` to include paths and flags required to build kits
+
 ## 5.5.1
 
 >Upgrade suggestion: **LOW**. Upgrade if you are having an enum conflict with MPLogLevel

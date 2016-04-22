@@ -10,7 +10,7 @@ pre_install do |pre_i|
 end
 
 target 'KitsExample' do
-    pod 'mParticle-Apple-SDK', :path => '../..'
+    pod 'mParticle-Apple-SDK', :path => '../../..'
     pod 'mParticle-Adjust'
     pod 'mParticle-Appboy'
     pod 'mParticle-AppsFlyer'
