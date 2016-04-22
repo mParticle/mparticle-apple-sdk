@@ -50,6 +50,14 @@ end
 
 In the cases above, the _Appboy_, _Branch Metrics_, and _Localytics_ kits would be integrated together with the core SDK.
 
+If you plan to use Appboy, AppsFlyer, comScore, Crittercism, Kahuna, or Localytics as a kit, please include the `pre_install` script below in your `Podfile`. This is necessary to inform CocoaPods how to properly handle static transitive dependencies:
+
+```ruby
+pre_install do |pre_i|
+    def pre_i.verify_no_static_framework_transitive_dependencies; end
+end
+```
+
 For iOS only, you can also choose to install the crash reporter. You include it as a subspec:
 
 ```ruby
