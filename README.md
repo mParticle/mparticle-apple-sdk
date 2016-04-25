@@ -52,7 +52,7 @@ end
 
 In the cases above, the _Appboy_, _Branch Metrics_, and _Localytics_ kits would be integrated together with the core SDK.
 
-If you plan to use Appboy, AppsFlyer, Apteligent, comScore, Kahuna, or Localytics as a kit, please include the `pre_install` script below in your `Podfile`. This is necessary to inform CocoaPods how to properly handle static transitive dependencies:
+If you plan to use AppsFlyer, comScore, Kahuna, Kochava, or Localytics as a kit, please include the `pre_install` script below in your `Podfile`. This is necessary to inform CocoaPods how to properly handle static transitive dependencies:
 
 ```ruby
 pre_install do |pre_i|
@@ -179,8 +179,7 @@ Just by initializing the SDK you'll be set up to track user installs, engagement
 
 ## Support
 
-Questions? Give us a shout at <support@mparticle.com>
-
+Questions? Have an issue? Consult the [Troubleshooting](https://github.com/mParticle/mparticle-apple-sdk/wiki/Troubleshooting) page or contact our **Customer Success** team at <support@mparticle.com>.
 
 ## License
 

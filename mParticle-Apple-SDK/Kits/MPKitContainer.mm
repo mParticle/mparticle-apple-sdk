@@ -1783,7 +1783,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
             }
         } else {
-            MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the Code SDK.", kitCode);
+            MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", kitCode);
         }
         
         if (!deactivateKits.empty()) {

@@ -4,17 +4,15 @@ Pod::Spec.new do |s|
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
-                         Hello! This is the unified mParticle Apple SDK. It currently supports iOS and tvOS, however we plan to continue adding
-                         support for more platforms in the future. Since 2013 we have been working tirelessly on developing each component of our platform.
-                         We could not be more excited to be able to share it with you.
+                         Hello! This is the unified mParticle Apple SDK built for the iOS and tvOS platforms.
 
-                         Your job is to build an awesome app experience that consumers love. You also need several tools and services to make data-driven decisions.
+                         At mParticle our mission is straightforward: make it really easy for apps and app services to connect and take ownership of your 1st party data.
                          Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing,
-                         monetization, etc. But embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs. From not being
-                         able to move as fast as you want, to bloating and destabilizing your app, to losing control and ownership of your 1st party data.
+                         monetization, etc. However, embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs.
 
-                         mParticle solves all these problems with one lightweight SDK. Implement new partners without changing code or waiting for app store approval.
-                         Improve stability and security within your app. We enable our clients to spend more time innovating and less time integrating.
+                         The mParticle platform addresses all these problems. We support an ever growing number of integrations with services and SDKs, including developer
+                         tools, analytics, attribution, messaging, advertising, and more. mParticle has been designed to be the central hub connecting all these services –
+                         check [our site](https://www.mparticle.com), or hit us at <dev@mparticle.com> to learn more.
                          DESC
 
     s.homepage          = "http://www.mparticle.com"

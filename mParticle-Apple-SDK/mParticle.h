@@ -452,7 +452,7 @@
 
 #pragma mark - Extensions
 /**
- Registers an extension against the code mParticle SDK. Extensions are external code, unknown to the code SDK, which
+ Registers an extension against the code mParticle SDK. Extensions are external code, unknown to the core SDK, which
  conform to one of more known protocols. They allow the core SDK to function in ways beyond its core functionality.
  @param extension An instance of a class conforming to a MPExtensionProtocol specialization
  @see MPExtensionProtocol
