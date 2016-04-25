@@ -303,7 +303,8 @@ extern const NSUInteger EVENT_LIMIT; // maximum number of events per session
 
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_COUNT;
-extern const NSInteger LIMIT_ATTR_VALUE;
+extern const NSInteger LIMIT_ATTR_LENGTH;
 extern const NSInteger LIMIT_NAME;
+extern const NSInteger LIMIT_USER_ATTR_LENGTH;
 
 #endif

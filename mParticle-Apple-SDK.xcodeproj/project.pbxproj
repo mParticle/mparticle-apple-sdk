@@ -589,8 +589,8 @@
 		C90499DC1C56B8DF005F11EA /* MPEnums.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPEnums.m; sourceTree = "<group>"; };
 		C90499DD1C56B8DF005F11EA /* MPExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPExceptionHandler.h; sourceTree = "<group>"; };
 		C90499DE1C56B8DF005F11EA /* MPExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPExceptionHandler.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		C90499DF1C56B8DF005F11EA /* MPIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPIConstants.h; sourceTree = "<group>"; };
-		C90499E01C56B8DF005F11EA /* MPIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIConstants.m; sourceTree = "<group>"; };
+		C90499DF1C56B8DF005F11EA /* MPIConstants.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPIConstants.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C90499E01C56B8DF005F11EA /* MPIConstants.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPIConstants.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C90499E11C56B8DF005F11EA /* MPUserSegments.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPUserSegments.h; sourceTree = "<group>"; };
 		C90499E21C56B8DF005F11EA /* MPUserSegments.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPUserSegments.m; sourceTree = "<group>"; };
 		C90499E41C56B8DF005F11EA /* MPConnector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnector.h; sourceTree = "<group>"; };

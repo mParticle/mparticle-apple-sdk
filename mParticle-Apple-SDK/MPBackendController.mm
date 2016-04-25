@@ -1403,22 +1403,19 @@ static BOOL appBackgrounded = NO;
 }
 
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error {
+    return [self checkAttribute:attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:error];
+}
+
+- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
-    
-    if (!key) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];
-        }
-        
-        return NO;
-    }
+    NSString *errorMessage = nil;
     
     if (!value) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidValue userInfo:nil];
         }
         
-        return NO;
+        errorMessage = @"The 'value' parameter is invalid.";
     }
     
     if ([value isKindOfClass:[NSString class]]) {
@@ -1427,15 +1424,15 @@ static BOOL appBackgrounded = NO;
                 *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kEmptyValueAttribute userInfo:nil];
             }
             
-            return NO;
+            errorMessage = @"The 'value' parameter is an empty string.";
         }
         
-        if (((NSString *)value).length > LIMIT_ATTR_VALUE) {
+        if (((NSString *)value).length > maxValueLength) {
             if (error != NULL) {
                 *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
             }
             
-            return NO;
+            errorMessage = @"The 'value' parameter is longer than the maximum allowed length.";
         }
     }
     
@@ -1444,7 +1441,7 @@ static BOOL appBackgrounded = NO;
             *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededNumberOfAttributesLimit userInfo:nil];
         }
         
-        return NO;
+        errorMessage = @"There are more attributes than the maximum number allowed.";
     }
     
     if (key.length > LIMIT_NAME) {
@@ -1452,10 +1449,15 @@ static BOOL appBackgrounded = NO;
             *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededKeyMaximumLength userInfo:nil];
         }
         
+        errorMessage = @"The 'key' parameter is longer than the maximum allowed length.";
+    }
+
+    if (errorMessage == nil) {
+        return YES;
+    } else {
+        MPILogError(@"%@", errorMessage);
         return NO;
     }
-    
-    return YES;
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
@@ -2327,7 +2329,7 @@ static BOOL appBackgrounded = NO;
             
             NSString *localKey = [self.userAttributes caseInsensitiveKey:key];
             NSError *error = nil;
-            BOOL validAttributes = [self checkAttribute:self.userAttributes key:localKey value:value error:&error];
+            BOOL validAttributes = [self checkAttribute:self.userAttributes key:localKey value:value maxValueLength:LIMIT_USER_ATTR_LENGTH error:&error];
             
             id<NSObject> userAttributeValue;
             if (!validAttributes && error.code == kInvalidValue) {

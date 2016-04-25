@@ -177,7 +177,7 @@
         
         if ([info isKindOfClass:[NSDictionary class]]) {
             [info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                if ([value isKindOfClass:[NSString class]] && ((NSString *)value).length > LIMIT_ATTR_VALUE) {
+                if ([value isKindOfClass:[NSString class]] && ((NSString *)value).length > LIMIT_ATTR_LENGTH) {
                     respectsConstraints = NO;
                     *stop = YES;
                 }
