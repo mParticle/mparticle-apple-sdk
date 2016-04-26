@@ -14,7 +14,7 @@ The mParticle platform addresses all these problems. We support an ever growing 
 This document will help you:
 
 * Obtain the mParticle SDK via [CocoaPods](https://cocoapods.org/?q=mparticle) or via [Carthage](https://github.com/Carthage/Carthage)
-* Extend the mParticle SDK with [*Kits*](https://github.com/mparticle-integrations)
+* Extend the mParticle SDK with [*Kits*](#currently-supported-kits)
 * Initialize the mParticle SDK
 
 The mParticle SDK is composed of the _core_ library and a series of _kit_ libraries that depend on the core. With each integration with a partner we strive to implement as many features as possible in the server-to-server layer, however some times a deeper integration to work side-by-side with a 3rd party SDK comes with greater benefits to our clients. We use the term **Kit** to describe such integrations.
@@ -88,21 +88,18 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 
 #### Currently Supported Kits
 
-* [Adjust](https://www.adjust.com)
-* [Appboy](https://www.appboy.com)
-* [AppsFlyer](https://www.appsflyer.com)
-* [Apteligent](https://www.apteligent.com)
-* [Branch Metrics](https://branch.io)
-* [comScore](https://www.comscore.com)
-* [Flurry](https://developer.yahoo.com)
-* [Kahuna](https://www.kahuna.com)
-* [Kochava](https://www.kochava.com)
-* [Localytics](https://www.localytics.com)
-* [Tune](https://www.tune.com)
-* [Wootric](https://www.wootric.com)
-
-Integration information can be found in each [kit repository](https://github.com/mparticle-integrations).
-
+* [Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)
+* [Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)
+* [AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)
+* [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)
+* [Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics)
+* [comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)
+* [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)
+* [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)
+* [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)
+* [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)
+* [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)
+* [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)
 
 ## Initialize the SDK
 
