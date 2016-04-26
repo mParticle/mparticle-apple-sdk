@@ -38,7 +38,7 @@ end
 
 Configuring your `Podfile` with the statement above will include only the _Core_ mParticle SDK.
 
-> If your app targets iOS and tvOS in the same Xcode project, you need to configure the `Podfile` differently in order to use the SDK with multiple platforms. You can find an example of multi-platform configuration [here](https://github.com/mParticle/mparticle-apple-sdk-private/wiki/Multi-platform-Configuration).
+> If your app targets iOS and tvOS in the same Xcode project, you need to configure the `Podfile` differently in order to use the SDK with multiple platforms. You can find an example of multi-platform configuration [here](https://github.com/mParticle/mparticle-apple-sdk/wiki/Multi-platform-Configuration).
 
 If you'd like to add any kits, you can do so as follows:
 
@@ -150,7 +150,7 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 >#import <mParticle_Apple_SDK/mParticle.h>
 >```
 
-If you are migrating to mParticle SDK v6.x from a previous version (4 or 5), please consult the [Migration Guide](https://github.com/mParticle/mparticle-apple-sdk-private/wiki/Migration-Guide)
+If you are migrating to mParticle SDK v6.x from a previous version (4 or 5), please consult the [Migration Guide](https://github.com/mParticle/mparticle-apple-sdk/wiki/Migration-Guide)
 
 
 ## Example Project with Sample Code

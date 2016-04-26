@@ -343,12 +343,6 @@
     XCTAssertFalse(validAttributes, @"Accepting values that are too long.");
     
     // Nil values
-    key = nil;
-    value = [NSString stringWithFormat:@"Value%d", 0];
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
-    XCTAssertFalse(validAttributes, @"Accepting nil keys.");
-    
     key = [NSString stringWithFormat:@"Key%d", 0];
     value = nil;
     error = nil;

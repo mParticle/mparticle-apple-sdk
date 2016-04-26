@@ -402,6 +402,14 @@
 
 #if TARGET_OS_IOS == 1
 - (void)testRemoteNotification {
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+
+    [persistence fetchUserNotificationCampaignHistory:^(NSArray<MParticleUserNotification *> *userNotificationCampaignHistory) {
+        for (MParticleUserNotification *userNotification in userNotificationCampaignHistory) {
+            [persistence deleteUserNotification:userNotification];
+        }
+    }];
+
     NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:NO];
     
     MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:remoteNotificationDictionary
@@ -413,7 +421,6 @@
     
     XCTAssertNotNil(userNotification, @"Remote notification should not have been nil.");
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence saveUserNotification:userNotification];
     
     XCTAssertGreaterThan(userNotification.userNotificationId, 0, @"Remote notification id is not being assign.");

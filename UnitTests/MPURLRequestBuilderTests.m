@@ -260,11 +260,6 @@
             XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
         } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
             XCTAssert([headerValue length] > 0, @"%@ has invalid length", header);
-        } else if ([header isEqualToString:@"x-mp-env"]) {
-            BOOL validEnvironment = [headerValue isEqualToString:[@(MPEnvironmentDevelopment) stringValue]] ||
-                                    [headerValue isEqualToString:[@(MPEnvironmentProduction) stringValue]];
-            
-            XCTAssertTrue(validEnvironment, @"Invalid environment value: %@", headerValue);
         } else if ([header isEqualToString:@"x-mp-bundled-kits"] || [header isEqualToString:@"x-mp-kits"]) {
             XCTAssertEqualObjects(headerValue, @"42", @"Should have been equal.");
         }
