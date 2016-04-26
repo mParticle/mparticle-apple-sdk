@@ -3,7 +3,6 @@
 # Uncomment this line if you're using Swift
 use_frameworks!
 source 'https://github.com/CocoaPods/Specs'
-source 'git@github.com:mparticle/Specs'
 
 pre_install do |pre_i|
     def pre_i.verify_no_static_framework_transitive_dependencies; end

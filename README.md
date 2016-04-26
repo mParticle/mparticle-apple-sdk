@@ -84,22 +84,23 @@ github "mparticle-integrations/mparticle-apple-integration-branchmetrics" ~> 6.0
 
 In this case, only the _Branch Metrics_ kit would be integrated; all other kits would be left out.
 
-> All kits are currently compatible with CocoaPods. For Carthage, look for this badge [![Carthage compatible](http://img.shields.io/badge/Carthage-compatible-brightgreen.png)](https://github.com/Carthage/Carthage) in the kit README to confirm availability.
-
 #### Currently Supported Kits
 
-* [Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)
-* [Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)
-* [AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)
-* [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)
-* [Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics)
-* [comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)
-* [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)
-* [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)
-* [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)
-* [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)
-* [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)
-* [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)
+Kit | CocoaPods | Carthage
+----|:---------:|:-------:
+[Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)                |  ✓ | ✓
+[Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                |  ✓ |  
+[AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)          |  ✓ |  
+[Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)        |  ✓ |  
+[Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics) |  ✓ | ✓
+[comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)            |  ✓ |  
+[Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                |  ✓ |  
+[Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)                |  ✓ |  
+[Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
+[Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ |  
+[Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                    |  ✓ |  
+[Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)              |  ✓ |  
+
 
 ## Initialize the SDK
 

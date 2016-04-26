@@ -14,6 +14,7 @@
 * [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
 * [NEW] A queue was added to hold events to be forwarded to kits until the first configuration is received from the server and kits are initialized
 * [NEW] Added support for Carthage
+* [NEW] Maximum user attribute value length has been extended to 4096 characters
 * [FIX] Restored unit tests for each of the platforms
 
 ## 5.5.2
