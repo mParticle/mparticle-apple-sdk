@@ -186,7 +186,7 @@
 
 #pragma mark Public methods
 - (void)addProduct:(MPProduct *)product {
-    BOOL validProduct = MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
+    BOOL validProduct = !MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
     NSAssert(validProduct, @"The 'product' variable is not valid.");
     
     if (validProduct) {
@@ -204,7 +204,7 @@
 }
 
 - (void)removeProduct:(MPProduct *)product {
-    BOOL validProduct = MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
+    BOOL validProduct = !MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
     NSAssert(validProduct, @"The 'product' variable is not valid.");
 
     if (validProduct) {

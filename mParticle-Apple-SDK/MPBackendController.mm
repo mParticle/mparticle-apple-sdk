@@ -64,7 +64,6 @@
 #define METHOD_EXEC_MAX_ATTEMPT 10
 
 const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 1000;
-const NSInteger kInvalidKey = 100;
 const NSInteger kInvalidValue = 101;
 const NSInteger kEmptyValueAttribute = 102;
 const NSInteger kExceededNumberOfAttributesLimit = 103;
