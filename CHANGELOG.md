@@ -6,6 +6,11 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.0.1
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you want to use Carthage, or if you want to queue events for kits.
+
+* [FIX] Correct a condition determining whether variables were valid
 
 ## 6.0.0
 
