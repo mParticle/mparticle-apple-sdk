@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.0.2
+
+>Upgrade suggestion: **LOW**. Upgrade if you are relying on the queue to hold events to be forwarded to kits before they have been configured.
+
+* [FIX] Set the kits initialized flag only if persisted kits have been initialized
+
 ## 6.0.1
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you want to use Carthage, or if you want to queue events for kits.

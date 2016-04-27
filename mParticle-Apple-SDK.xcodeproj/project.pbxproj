@@ -777,8 +777,6 @@
 				C9049C221C56C55D005F11EA /* Frameworks and Libraries */,
 				C904992A1C56B8DE005F11EA /* mParticle-Apple-SDK */,
 				C9049C3C1C56E1C9005F11EA /* Supporting Files */,
-				C97C08AE1CA306A000280B1E /* mParticle_iOS_SDKTests */,
-				C97C09051CA3116800280B1E /* mParticle_tvOS_SDKTests */,
 				C9049C3B1C56DF6A005F11EA /* Products */,
 				C97C09201CA31D0000280B1E /* Products_UnitTests */,
 				C97C08B81CA3074F00280B1E /* UnitTests */,
@@ -1166,13 +1164,6 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		C97C08AE1CA306A000280B1E /* mParticle_iOS_SDKTests */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = mParticle_iOS_SDKTests;
-			sourceTree = "<group>";
-		};
 		C97C08B81CA3074F00280B1E /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
@@ -1211,13 +1202,6 @@
 				C97C08D11CA3074F00280B1E /* MPZipTests.mm */,
 			);
 			path = UnitTests;
-			sourceTree = "<group>";
-		};
-		C97C09051CA3116800280B1E /* mParticle_tvOS_SDKTests */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = mParticle_tvOS_SDKTests;
 			sourceTree = "<group>";
 		};
 		C97C09201CA31D0000280B1E /* Products_UnitTests */ = {

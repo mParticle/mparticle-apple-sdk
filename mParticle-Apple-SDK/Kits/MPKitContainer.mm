@@ -201,6 +201,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 - (void)initializeKits {
     NSArray *directoryContents = [self fetchKitConfigurationFileNames];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    BOOL initializedArchivedKits = NO;
     
     for (NSString *fileName in directoryContents) {
         NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
@@ -212,13 +213,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
                 self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
                 [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
+                initializedArchivedKits = YES;
             }
         } @catch (NSException *exception) {
             [self removeKitConfigurationAtPath:kitPath];
         }
     }
     
-    self.kitsInitialized = YES;
+    if (initializedArchivedKits) {
+        self.kitsInitialized = YES;
+    }
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
