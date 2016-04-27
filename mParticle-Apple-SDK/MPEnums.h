@@ -307,4 +307,11 @@ extern NSString * _Nonnull const mParticleEmbeddedSDKDidBecomeInactiveNotificati
 extern NSString * _Nonnull const mParticleKitInstanceKey;
 extern NSString * _Nonnull const mParticleEmbeddedSDKInstanceKey;
 
+/**
+ Constant used to express gender.
+ */
+extern NSString * _Nonnull const mParticleGenderMale;
+extern NSString * _Nonnull const mParticleGenderFemale;
+extern NSString * _Nonnull const mParticleGenderNotAvailable;
+
 #endif
