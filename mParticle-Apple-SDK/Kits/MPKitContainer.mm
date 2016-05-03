@@ -1752,10 +1752,11 @@ NSString *const kitFileExtension = @"eks";
             predicate = [NSPredicate predicateWithFormat:@"kitCode == %@", *ekIterator];
             kit = [[self.kits filteredArrayUsingPredicate:predicate] firstObject];
             kit.active = NO;
+            NSNumber *kitCode = *ekIterator;
             
             dispatch_async(dispatch_get_main_queue(), ^{
-                NSDictionary *userInfo = @{mParticleKitInstanceKey:*ekIterator,
-                                           mParticleEmbeddedSDKInstanceKey:*ekIterator};
+                NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode,
+                                           mParticleEmbeddedSDKInstanceKey:kitCode};
                 
                 [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
                                                                     object:nil
