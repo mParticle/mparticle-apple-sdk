@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 5.5.3
+
+>Upgrade suggestion: **HIGH**. Upgrade if you are experiencing issues when disabling kits
+
+* [FIX] Updated kit logic to prevent a timing issue
+
 ## 5.5.2
 
 >Upgrade suggestion: **HIGH**. Upgrade if you are using one of the following kits: Appboy, AppsFlyer, comScore, Crittercism, Kahuna, or Localytics. The `podspec` has been changed for those kits
