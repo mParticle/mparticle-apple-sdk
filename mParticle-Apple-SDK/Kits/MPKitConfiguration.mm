@@ -38,7 +38,63 @@
     }
     
     _configurationDictionary = configurationDictionary;
-    [self updateConfiguration:configurationDictionary];
+    
+    NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:0 error:nil];
+    NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
+    _configurationHash = @(mParticle::Hasher::hashFromString([ekConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
+    
+    // Attribute value filtering
+    NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
+    if (attributeValueFiltering) {
+        NSNumber *shouldIncludeMatches = attributeValueFiltering[@"i"];
+        NSNumber *hashedAttribute = attributeValueFiltering[@"a"];
+        NSNumber *hashedValue = attributeValueFiltering[@"v"];
+        
+        if (shouldIncludeMatches && hashedAttribute && hashedValue) {
+            _attributeValueFilteringIsActive = YES;
+            _attributeValueFilteringShouldIncludeMatches = [shouldIncludeMatches boolValue];
+            _attributeValueFilteringHashedAttribute = [NSString stringWithFormat:@"%@", hashedAttribute];
+            _attributeValueFilteringHashedValue = [NSString stringWithFormat:@"%@", hashedValue];
+        }
+    }
+    else {
+        _attributeValueFilteringIsActive = NO;
+        _attributeValueFilteringShouldIncludeMatches = NO;
+        _attributeValueFilteringHashedAttribute = nil;
+        _attributeValueFilteringHashedValue = nil;
+    }
+    
+    // Filters
+    [self setFilters:configurationDictionary[@"hs"]];
+    
+    // Configuration
+    _configuration = configurationDictionary[@"as"];
+    if (_configuration) {
+        NSMutableDictionary *configDictionary = [_configuration mutableCopy];
+        configDictionary[@"mpEnv"] = @([MPStateMachine environment]);
+        
+        if (_addEventAttributeList) {
+            configDictionary[@"eaa"] = _addEventAttributeList;
+        }
+        
+        if (_removeEventAttributeList) {
+            configDictionary[@"ear"] = _removeEventAttributeList;
+        }
+        
+        if (_singleItemEventAttributeList) {
+            configDictionary[@"eas"] = _singleItemEventAttributeList;
+        }
+        
+        _configuration = [configDictionary copy];
+    }
+    
+    // Projections
+    [self configureProjections:configurationDictionary[@"pr"]];
+    
+    // Kit instance
+    _bracketConfiguration = configurationDictionary[@"bk"];
+    
+    _kitCode = configurationDictionary[@"id"];
     
     return self;
 }
@@ -91,58 +147,6 @@
 }
 
 #pragma mark Public methods
-- (void)updateConfiguration:(NSDictionary *)configurationDictionary {
-    NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:0 error:nil];
-    NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
-    _configurationHash = @(mParticle::Hasher::hashFromString([ekConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
-    
-    // Attribute value filtering
-    NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
-    if (attributeValueFiltering) {
-        NSNumber *shouldIncludeMatches = attributeValueFiltering[@"i"];
-        NSNumber *hashedAttribute = attributeValueFiltering[@"a"];
-        NSNumber *hashedValue = attributeValueFiltering[@"v"];
-        
-        if (shouldIncludeMatches && hashedAttribute && hashedValue) {
-            _attributeValueFilteringIsActive = YES;
-            _attributeValueFilteringShouldIncludeMatches = [shouldIncludeMatches boolValue];
-            _attributeValueFilteringHashedAttribute = [NSString stringWithFormat:@"%@", hashedAttribute];
-            _attributeValueFilteringHashedValue = [NSString stringWithFormat:@"%@", hashedValue];
-        }
-    }
-    
-    // Filters
-    [self setFilters:configurationDictionary[@"hs"]];
-    
-    // Configuration
-    _configuration = configurationDictionary[@"as"];
-    if (_configuration) {
-        NSMutableDictionary *configDictionary = [_configuration mutableCopy];
-        configDictionary[@"mpEnv"] = @([MPStateMachine environment]);
-        
-        if (_addEventAttributeList) {
-            configDictionary[@"eaa"] = _addEventAttributeList;
-        }
-        
-        if (_removeEventAttributeList) {
-            configDictionary[@"ear"] = _removeEventAttributeList;
-        }
-        
-        if (_singleItemEventAttributeList) {
-            configDictionary[@"eas"] = _singleItemEventAttributeList;
-        }
-        
-        _configuration = [configDictionary copy];
-    }
-    
-    // Projections
-    [self configureProjections:configurationDictionary[@"pr"]];
-    
-    // Kit instance
-    _bracketConfiguration = configurationDictionary[@"bk"];
-    
-    _kitCode = configurationDictionary[@"id"];
-}
 
 - (void)configureProjections:(NSArray *)projections {
     _defaultProjections = nil;
