@@ -1659,21 +1659,19 @@ NSString *const kitFileExtension = @"eks";
         if (isKitSupported) {
             predicate = [NSPredicate predicateWithFormat:@"kitCode == %@", kitCode];
             kit = [[self.kits filteredArrayUsingPredicate:predicate] firstObject];
+            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             
             if (kit) {
                 NSData *kitConfigData = [NSJSONSerialization dataWithJSONObject:kitConfigurationDictionary options:0 error:nil];
                 NSString *kitConfigString = [[NSString alloc] initWithData:kitConfigData encoding:NSUTF8StringEncoding];
                 NSNumber *configurationHash = @(mParticle::Hasher::hashFromString([kitConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
                 
-                kitConfiguration = self.kitConfigurations[kitCode];
                 shouldPersistKit = !(kitConfiguration && [kitConfiguration.configurationHash isEqualToNumber:configurationHash]);
                 if (shouldPersistKit) {
-                    [kitConfiguration updateConfiguration:kitConfigurationDictionary];
                     kit.configuration = kitConfiguration.configuration;
                     [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
                 }
             } else {
-                kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
                 self.kitConfigurations[kitCode] = kitConfiguration;
                 
                 kit = [self startKit:kitCode configuration:kitConfiguration.configuration];
