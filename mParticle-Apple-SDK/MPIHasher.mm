@@ -26,4 +26,9 @@
     return dataHash;
 }
 
++ (NSString *)hashString:(NSString *)stringToHash {
+    NSString *result = [NSString stringWithCString:mParticle::Hasher::hashString([stringToHash cStringUsingEncoding:NSUTF8StringEncoding]).c_str() encoding:NSUTF8StringEncoding];
+    return result;
+}
+
 @end

@@ -32,6 +32,14 @@
 #import "MPKitRegister.h"
 #import "MPKitExecStatus.h"
 #import "MPIHasher.h"
+#import "MPTransactionAttributes.h"
+#import "MPCommerceEvent+Dictionary.h"
+#import "MPCommerceEventInstruction.h"
+#import "MPTransactionAttributes.h"
+#import "MPTransactionAttributes+Dictionary.h"
+#import "MPProduct+Dictionary.h"
+#import "MPDateFormatter.h"
+#import "NSDictionary+MPCaseInsensitive.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
