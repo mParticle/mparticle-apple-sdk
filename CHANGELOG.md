@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 5.5.4
+
+>Upgrade suggestion: **HIGH**. Upgrade if you are experiencing issues when disabling kits
+
+* [FIX] Updated kit logic to prevent a timing issue
+
 ## 5.5.3
 
 >Upgrade suggestion: **HIGH**. Upgrade if you are experiencing issues when disabling kits
