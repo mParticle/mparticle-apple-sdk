@@ -44,6 +44,9 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPKitAbstract.h"
 #import "NSUserDefaults+mParticle.h"
+#include "MPBracket.h"
+#import "MPStateMachine.h"
+#import "MPConsumerInfo.h"
 
 #if defined(MP_KIT_ADJUST)
     #import "MPKitAdjust.h"
@@ -212,7 +215,7 @@ NSString *const kitFileExtension = @"eks";
                     if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
                         MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
                         self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
-                        [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
+                        [self startKit:kitConfiguration.kitCode configuration:kitConfiguration];
                     }
                 } @catch (NSException *exception) {
                     [self removeKitConfigurationAtPath:kitPath];
@@ -262,9 +265,29 @@ NSString *const kitFileExtension = @"eks";
     return methodMessageTypeDictionary;
 }
 
-- (MPKitAbstract *)startKit:(NSNumber *)kitCode configuration:(NSDictionary *)configuration {
+- (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
+    shared_ptr<mParticle::Bracket> localBracket;
+    if (!bracketConfiguration) {
+        return NO;
+    }
+    NSString *const MPKitBracketLowKey = @"lo";
+    NSString *const MPKitBracketHighKey = @"hi";
+    
+    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
+    short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
+    localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
+    return !localBracket->shouldForward();
+}
+
+- (MPKitAbstract *)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration {
     MPKitAbstract *kit = nil;
     MPKitInstance kitInstanceCode = (MPKitInstance)[kitCode integerValue];
+    NSDictionary *configuration = kitConfiguration.configuration;
+    BOOL disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
+    if (disabled) {
+        return nil;
+    }
     
     __block NSMutableDictionary *safeConfiguration = [[NSMutableDictionary alloc] initWithCapacity:configuration.count];
     [configuration enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
@@ -1649,7 +1672,6 @@ NSString *const kitFileExtension = @"eks";
     // Configure kits according to server instructions
     for (NSDictionary *kitConfigurationDictionary in kitConfigurations) {
         MPKitConfiguration *kitConfiguration = nil;
-        BOOL shouldPersistKit = YES;
         
         NSNumber *kitCode = kitConfigurationDictionary[@"id"];
         
@@ -1660,23 +1682,17 @@ NSString *const kitFileExtension = @"eks";
             predicate = [NSPredicate predicateWithFormat:@"kitCode == %@", kitCode];
             kit = [[self.kits filteredArrayUsingPredicate:predicate] firstObject];
             kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            self.kitConfigurations[kitCode] = kitConfiguration;
             
             if (kit) {
-                NSData *kitConfigData = [NSJSONSerialization dataWithJSONObject:kitConfigurationDictionary options:0 error:nil];
-                NSString *kitConfigString = [[NSString alloc] initWithData:kitConfigData encoding:NSUTF8StringEncoding];
-                NSNumber *configurationHash = @(mParticle::Hasher::hashFromString([kitConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
-                
-                shouldPersistKit = !(kitConfiguration && [kitConfiguration.configurationHash isEqualToNumber:configurationHash]);
-                if (shouldPersistKit) {
-                    kit.configuration = kitConfiguration.configuration;
-                    [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
-                }
+                kit.configuration = kitConfiguration.configuration;
+                [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
             } else {
-                self.kitConfigurations[kitCode] = kitConfiguration;
-                
-                kit = [self startKit:kitCode configuration:kitConfiguration.configuration];
+            
+                kit = [self startKit:kitCode configuration:kitConfiguration];
                 
                 if (kit) {
+                    [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
                     if (![kit started]) {
                         if ([kit respondsToSelector:@selector(setLaunchOptions:)]) {
                             [kit performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
@@ -1686,11 +1702,7 @@ NSString *const kitFileExtension = @"eks";
                             [kit start];
                         }
                     }
-                    
-                    [self emplaceKit:kit];
                 }
-                
-                [kit setBracketConfiguration:kitConfiguration.bracketConfiguration];
             }
             
             if (kit) {
@@ -1717,19 +1729,19 @@ NSString *const kitFileExtension = @"eks";
                 }
             }
             
-            if (shouldPersistKit) {
-                if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-                    [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-                }
-                
-                kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
-                
-                if ([fileManager fileExistsAtPath:kitPath]) {
-                    [fileManager removeItemAtPath:kitPath error:nil];
-                }
-                
-                [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
+            
+            if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+                [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
             }
+            
+            kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
+            
+            if ([fileManager fileExistsAtPath:kitPath]) {
+                [fileManager removeItemAtPath:kitPath error:nil];
+            }
+            
+            [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
+            
         } else {
             MPILogWarning(@"SDK is trying to configure the %@ kit, however it is not currently configured in your Podfile.", [MPKitAbstract nameForKit:kitCode]);
         }
