@@ -216,21 +216,17 @@ using namespace std;
 }
 
 - (MPUploadBuilder *)withUserAttributes:(NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(NSSet<NSString *> *)deletedUserAttributes {
-    NSUInteger numberOfUserAttributes = userAttributes.count;
-    
-    if (numberOfUserAttributes > 0) {
-        NSMutableDictionary *attributesDictionary = [[NSMutableDictionary alloc] initWithCapacity:numberOfUserAttributes];
-        NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
-        NSString *key;
-        id value;
-        Class NSNumberClass = [NSNumber class];
-        
-        while ((key = [attributeEnumerator nextObject])) {
-            value = userAttributes[key];
-            attributesDictionary[key] = [value isKindOfClass:NSNumberClass] ? [(NSNumber *)value stringValue] : value;
+    if ([userAttributes count] > 0) {
+        NSMutableDictionary<NSString *, id> *userAttributesCopy = [userAttributes mutableCopy];
+        NSArray *keys = [userAttributesCopy allKeys];
+        for (int i = 0; i < [keys count]; i += 1) {
+            NSString *key = keys[i];
+            id currentValue = userAttributesCopy[key];
+            NSString *newValue = [currentValue isKindOfClass:[NSNumber class]] ? [(NSNumber *)currentValue stringValue] : currentValue;
+            userAttributesCopy[key] = newValue;
         }
         
-        uploadDictionary[kMPUserAttributeKey] = attributesDictionary;
+        uploadDictionary[kMPUserAttributeKey] = userAttributesCopy;
     }
     
     if (deletedUserAttributes && _session) {
