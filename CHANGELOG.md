@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.0.3
+
+>Upgrade suggestion: **LOW**. Upgrade if you need to use the newly public files.
+
+* [FIX] Expose some files for use by kits
+* [FIX] Add nil check and prevent modifying while enumerating
+
 ## 6.0.2
 
 >Upgrade suggestion: **LOW**. Upgrade if you are relying on the queue to hold events to be forwarded to kits before they have been configured.
