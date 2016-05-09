@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.0.4
+
+>Upgrade suggestion: **HIGH**. Upgrade if you are experiencing issues related to kit initialization
+
+* [FIX] More consistent handling of kit initialization and sampling
+
 ## 6.0.3
 
 >Upgrade suggestion: **LOW**. Upgrade if you need to use the newly public files.
