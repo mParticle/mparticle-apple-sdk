@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 5.5.5
+
+>Upgrade suggestion: **MODERATE**. This update improves upload stability
+
+* [FIX] Verifying the reference to self inside the dispatch block when uploading session history
+
 ## 5.5.4
 
 >Upgrade suggestion: **HIGH**. Upgrade if you are experiencing issues related to kit initialization

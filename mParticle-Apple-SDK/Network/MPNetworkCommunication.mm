@@ -691,7 +691,9 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
             __strong MPNetworkCommunication *strongSelf = weakSelf;
-            strongSelf->uploadingSessionHistory = NO;
+            if (strongSelf) {
+                strongSelf->uploadingSessionHistory = NO;
+            }
             
             [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
