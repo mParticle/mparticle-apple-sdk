@@ -212,7 +212,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
                 MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
                 self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
-                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration.configuration];
+                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration];
                 initializedArchivedKits = YES;
             }
         } @catch (NSException *exception) {
@@ -331,7 +331,22 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return shouldInclude;
 }
 
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(NSDictionary *)configuration {
+- (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
+    shared_ptr<mParticle::Bracket> localBracket;
+    if (!bracketConfiguration) {
+        return NO;
+    }
+    NSString *const MPKitBracketLowKey = @"lo";
+    NSString *const MPKitBracketHighKey = @"hi";
+    
+    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
+    short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
+    localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
+    return !localBracket->shouldForward();
+}
+
+- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
@@ -343,7 +358,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return kitRegister.wrapperInstance;
     }
     
-    [self startKitRegister:kitRegister configuration:configuration];
+    [self startKitRegister:kitRegister configuration:kitConfiguration];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
@@ -360,7 +375,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return kitRegister.wrapperInstance;
 }
 
-- (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull NSDictionary *)configuration {
+- (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
+    bool disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
+    if (disabled) {
+        return;
+    }
+    
+    NSDictionary * configuration = kitConfiguration.configuration;
     configuration = [self validateAndTransformToSafeConfiguration:configuration];
     
     if (configuration) {
@@ -1711,38 +1732,29 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
             kitInstance = kitRegister.wrapperInstance;
+            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            self.kitConfigurations[kitCode] = kitConfiguration;
             
             if (kitInstance) {
-                NSData *kitConfigData = [NSJSONSerialization dataWithJSONObject:kitConfigurationDictionary options:0 error:nil];
-                NSString *kitConfigString = [[NSString alloc] initWithData:kitConfigData encoding:NSUTF8StringEncoding];
-                NSNumber *configurationHash = @(mParticle::Hasher::hashFromString([kitConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
+                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
                 
-                kitConfiguration = self.kitConfigurations[kitCode];
-                shouldPersistKit = !(kitConfiguration && [kitConfiguration.configurationHash isEqualToNumber:configurationHash]);
-                if (shouldPersistKit) {
-                    [kitConfiguration updateConfiguration:kitConfigurationDictionary];
-                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
-                    
-                    if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
-                        [kitInstance setConfiguration:kitConfiguration.configuration];
-                    }
+                if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
+                    [kitInstance setConfiguration:kitConfiguration.configuration];
                 }
             } else {
-                kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-                if (kitConfiguration) {
-                    self.kitConfigurations[kitCode] = kitConfiguration;
-                }
-                
-                [self startKitRegister:kitRegister configuration:kitConfiguration.configuration];
+                [self startKitRegister:kitRegister configuration:kitConfiguration];
                 kitInstance = kitRegister.wrapperInstance;
                 
-                if (kitInstance && ![kitInstance started]) {
-                    if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                        [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
-                    }
-                    
-                    if ([kitInstance respondsToSelector:@selector(start)]) {
-                        [kitInstance start];
+                if (kitInstance) {
+                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
+                    if (![kitInstance started]) {
+                        if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
+                            [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
+                        }
+                        
+                        if ([kitInstance respondsToSelector:@selector(start)]) {
+                            [kitInstance start];
+                        }
                     }
                 }
                 
