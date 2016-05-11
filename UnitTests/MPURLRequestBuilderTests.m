@@ -244,7 +244,7 @@
     
     NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
     NSArray *keys = [headersDictionary allKeys];
-    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-kits", @"x-mp-bundled-kits"];
+    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature"];
     NSString *headerValue;
     
     for (NSString *header in headers) {
@@ -260,8 +260,6 @@
             XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
         } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
             XCTAssert([headerValue length] > 0, @"%@ has invalid length", header);
-        } else if ([header isEqualToString:@"x-mp-bundled-kits"] || [header isEqualToString:@"x-mp-kits"]) {
-            XCTAssertEqualObjects(headerValue, @"42", @"Should have been equal.");
         }
     }
 }

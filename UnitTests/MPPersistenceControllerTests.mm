@@ -457,6 +457,14 @@
 }
 
 - (void)testExpiredRemoteNotification {
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    
+    [persistence fetchUserNotificationCampaignHistory:^(NSArray<MParticleUserNotification *> *userNotificationCampaignHistory) {
+        for (MParticleUserNotification *userNotification in userNotificationCampaignHistory) {
+            [persistence deleteUserNotification:userNotification];
+        }
+    }];
+
     NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:YES];
     
     MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:remoteNotificationDictionary
@@ -466,14 +474,13 @@
                                                                                                    mode:MPUserNotificationModeRemote
                                                                                             runningMode:MPUserNotificationRunningModeBackground];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+
     [persistence saveUserNotification:userNotification];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Expired remote notification test"];
     
     [persistence fetchUserNotificationCampaignHistory:^(NSArray<MParticleUserNotification *> *userNotificationCampaignHistory) {
         MParticleUserNotification *fetchedRemoteNotification = [userNotificationCampaignHistory lastObject];
-        XCTAssertNil(fetchedRemoteNotification, @"Fetched remote notification should have been nil.");
         
         fetchedRemoteNotification = [[persistence fetchUserNotifications] firstObject];
         XCTAssertNotNil(fetchedRemoteNotification, @"Fetched remote notification should not have been nil.");

@@ -32,20 +32,24 @@
 #import "MPConsumerInfo.h"
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
+#import "MPKitConfiguration.h"
 
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
 
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
+@property (nonatomic, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
+- (NSArray<NSString *> *)fetchKitConfigurationFileNames;
+- (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (void)replayQueuedItems;
 - (NSDictionary *)validateAndTransformToSafeConfiguration:(NSDictionary *)configuration;
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)kitCode;
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(NSDictionary *)configuration;
+- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
 - (void)flushSerializedKits;
 - (NSDictionary *)methodMessageTypeMapping;
 - (void)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler;
@@ -82,7 +86,15 @@
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
         [MPKitContainer registerKit:kitRegister];
         
-        [kitContainer startKit:@42 configuration:@{@"appKey":@"🔑"}];
+        NSDictionary *configuration = @{
+                                        @"id":@42,
+                                        @"as":@{
+                                                @"appId":@"MyAppId"
+                                                }
+                                        };
+        
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+        [kitContainer startKit:@42 configuration:kitConfiguration];
     }
 }
 
@@ -90,6 +102,94 @@
     kitContainer = nil;
     
     [super tearDown];
+}
+
+- (void)testUpdateKitConfiguration {
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1];
+    [kitContainer configureKits:kitConfigs];
+    XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+    
+    NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    BOOL found = NO;
+    for (NSString *fileName in directoryContents) {
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        
+        @try {
+            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
+            
+            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
+                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
+                if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                    XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
+                    found = YES;
+                }
+            }
+        } @catch (NSException *exception) {
+        }
+    }
+    
+    XCTAssertTrue(found);
+    found = NO;
+    
+    kitConfigs = @[configuration2];
+    [kitContainer configureKits:kitConfigs];
+    XCTAssertEqual(@"cool app key 2", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+    
+    for (NSString *fileName in directoryContents) {
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        
+        @try {
+            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
+            
+            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
+                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
+                if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                    
+                    XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+                    
+                    found = YES;
+                }
+            }
+        } @catch (NSException *exception) {
+        }
+    }
+    
+    XCTAssertTrue(found);
+    
+    NSDictionary *configuration = @{
+                                    @"id":@42,
+                                    @"as":@{
+                                            @"appId":@"MyAppId"
+                                            }
+                                    };
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configuration]];
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    [kitContainer startKit:@42 configuration:kitConfiguration];
+}
+
+- (void)testIsDisabledByBracketConfiguration {
+    NSDictionary *bracketConfig = @{@"hi":@(0),@"lo":@(0)};
+    XCTAssertTrue([kitContainer isDisabledByBracketConfiguration:bracketConfig]);
+    
+    bracketConfig = @{@"hi":@(100),@"lo":@(0)};
+    XCTAssertFalse([kitContainer isDisabledByBracketConfiguration:bracketConfig]);    
 }
 
 - (void)testConfigurationValidation {
