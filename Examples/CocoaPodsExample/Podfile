@@ -1,29 +1,20 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
 inhibit_all_warnings!
-xcodeproj 'Example'
 
-def include_common_pods
+abstract_target 'Example' do
+    use_frameworks!
     pod 'mParticle-Apple-SDK', :path => '../../'
-end
 
-target :phoneApp do
-    link_with 'iOS_Example'
-    use_frameworks!
-    platform :ios, '8.0'
-    include_common_pods
-end
+    target 'iOS_Example' do
+        platform :ios, '8.0'
+    end
 
-target :tvApp do
-    link_with 'tvOS_Example'
-    use_frameworks!
-    platform :tvos, '9.0'
-    include_common_pods
-end
+    target 'tvOS_Example' do
+        platform :tvos, '9.0'
+    end
 
-target :phoneApp_iOS7 do
-    link_with 'iOS7_Example'
-    use_frameworks!
-    platform :ios, '7.0'
-    include_common_pods
+    target 'iOS7_Example' do
+        platform :ios, '7.0'
+    end
 end
