@@ -172,7 +172,7 @@
         return [originalAppDelegate application:app openURL:url options:options];
     }
 #if TARGET_OS_IOS == 1
-    else if ([originalAppDelegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)]) {
+    else if ([originalAppDelegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)] && &UIApplicationOpenURLOptionsSourceApplicationKey != NULL && &UIApplicationOpenURLOptionsAnnotationKey != NULL) {
         NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
         id annotation =  options[UIApplicationOpenURLOptionsAnnotationKey];
         
