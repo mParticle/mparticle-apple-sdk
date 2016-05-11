@@ -28,6 +28,8 @@ The mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mp
 
 #### CocoaPods
 
+> CocoaPods 0.39.0 is required for now.
+
 To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guides.cocoapods.org/syntax/podfile.html):
 
 ```ruby
@@ -128,7 +130,11 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 #### Objective-C
 
 ```objective-c
-@import mParticle_Apple_SDK;
+// If you are using Cocoapods with use_frameworks! or if you are using Carthage 
+#import <mParticle_Apple_SDK/mParticle.h>
+// If you are using Cocoapods without use_frameworks!
+#import <mParticle-Apple-SDK/mParticle.h>
+
 
 - (BOOL)application:(UIApplication *)application
         didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
