@@ -111,4 +111,13 @@
     XCTAssertNil(launchInfo, @"Should have been nil.");
 }
 
+- (void)testCreation {
+    MPLaunchInfo *info = nil;
+    info = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"https://example.com"] sourceApplication:@"My app" annotation:@"My annotation"];
+    XCTAssert(info);
+
+    info = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"https://example.com"] options:nil];
+    XCTAssert(info);
+}
+
 @end

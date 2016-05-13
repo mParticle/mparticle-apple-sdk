@@ -2340,7 +2340,15 @@ static BOOL appBackgrounded = NO;
             }
             
             if (validAttributes) {
-                self.userAttributes[localKey] = userAttributeValue;
+                if (localKey) {
+                    self.userAttributes[localKey] = userAttributeValue;
+                }
+                else {
+                    if (completionHandler) {
+                        completionHandler(key, value, MPExecStatusInvalidDataType);
+                    }
+                    return;
+                }
             } else if ((error.code == kEmptyValueAttribute) && self.userAttributes[localKey]) {
                 [self.userAttributes removeObjectForKey:localKey];
                 

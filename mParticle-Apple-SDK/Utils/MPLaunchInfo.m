@@ -40,12 +40,14 @@
     self.annotation = annotation;
     
     NSMutableDictionary *options = [[NSMutableDictionary alloc] initWithCapacity:2];
-    if (_sourceApplication) {
-        options[UIApplicationOpenURLOptionsSourceApplicationKey] = _sourceApplication;
-    }
-    
-    if (_annotation) {
-        options[UIApplicationOpenURLOptionsAnnotationKey] = _annotation;
+    if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL && &UIApplicationOpenURLOptionsAnnotationKey != NULL) {
+        if (_sourceApplication) {
+            options[UIApplicationOpenURLOptionsSourceApplicationKey] = _sourceApplication;
+        }
+        
+        if (_annotation) {
+            options[UIApplicationOpenURLOptionsAnnotationKey] = _annotation;
+        }
     }
     
     if (options.count > 0) {
@@ -62,8 +64,10 @@
     }
     
     _options = options;
-    sourceApp = options[UIApplicationOpenURLOptionsSourceApplicationKey];
-    self.annotation = options[UIApplicationOpenURLOptionsAnnotationKey];
+    if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL && &UIApplicationOpenURLOptionsAnnotationKey != NULL) {
+        sourceApp = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+        self.annotation = options[UIApplicationOpenURLOptionsAnnotationKey];
+    }
     self.url = url;
     
     return self;
@@ -86,7 +90,7 @@
         NSMutableDictionary *paramsDictionary = [[NSMutableDictionary alloc] initWithCapacity:((NSDictionary *)annotation).count];
         NSString *key;
         id value;
- 
+        
         while ((key = [annotationEnumerator nextObject])) {
             value = annotation[key];
             
@@ -133,3 +137,4 @@
 }
 
 @end
+
