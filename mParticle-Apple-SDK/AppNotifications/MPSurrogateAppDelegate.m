@@ -172,9 +172,9 @@
         return [originalAppDelegate application:app openURL:url options:options];
     }
 #if TARGET_OS_IOS == 1
-    else if ([originalAppDelegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)] && &UIApplicationOpenURLOptionsSourceApplicationKey != NULL && &UIApplicationOpenURLOptionsAnnotationKey != NULL) {
-        NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
-        id annotation =  options[UIApplicationOpenURLOptionsAnnotationKey];
+    else if ([originalAppDelegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)]) {
+        NSString *sourceApplication = &UIApplicationOpenURLOptionsSourceApplicationKey != NULL ? options[UIApplicationOpenURLOptionsSourceApplicationKey] : options[@"UIApplicationOpenURLOptionsSourceApplicationKey"];
+        id annotation = &UIApplicationOpenURLOptionsAnnotationKey != NULL ? options[UIApplicationOpenURLOptionsAnnotationKey] : options[@"UIApplicationOpenURLOptionsAnnotationKey"];
         
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"

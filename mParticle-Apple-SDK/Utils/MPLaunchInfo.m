@@ -24,10 +24,16 @@
     NSString *sourceApp;
 }
 
+@property (nonatomic, strong, readonly) NSString *annotationKey;
+@property (nonatomic, strong, readonly) NSString *sourceAppKey;
+
 @end
 
 
 @implementation MPLaunchInfo
+
+@synthesize sourceAppKey = _sourceAppKey;
+@synthesize annotationKey = _annotationKey;
 
 - (instancetype)initWithURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     self = [super init];
@@ -40,14 +46,13 @@
     self.annotation = annotation;
     
     NSMutableDictionary *options = [[NSMutableDictionary alloc] initWithCapacity:2];
-    if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL && &UIApplicationOpenURLOptionsAnnotationKey != NULL) {
-        if (_sourceApplication) {
-            options[UIApplicationOpenURLOptionsSourceApplicationKey] = _sourceApplication;
-        }
-        
-        if (_annotation) {
-            options[UIApplicationOpenURLOptionsAnnotationKey] = _annotation;
-        }
+    
+    if (_sourceApplication) {
+        options[self.sourceAppKey] = _sourceApplication;
+    }
+    
+    if (_annotation) {
+        options[self.annotationKey] = _annotation;
     }
     
     if (options.count > 0) {
@@ -64,15 +69,35 @@
     }
     
     _options = options;
-    if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL && &UIApplicationOpenURLOptionsAnnotationKey != NULL) {
-        sourceApp = options[UIApplicationOpenURLOptionsSourceApplicationKey];
-        self.annotation = options[UIApplicationOpenURLOptionsAnnotationKey];
-    }
+    sourceApp = options[self.sourceAppKey];
+    self.annotation = options[self.annotationKey];
     self.url = url;
     
     return self;
 }
 
+#pragma mark Private accessors
+- (NSString *)annotationKey {
+    if (_annotationKey) {
+        return _annotationKey;
+    }
+    
+    _annotationKey = &UIApplicationOpenURLOptionsAnnotationKey != NULL ? UIApplicationOpenURLOptionsAnnotationKey : @"UIApplicationOpenURLOptionsAnnotationKey";
+    
+    return _annotationKey;
+}
+
+- (NSString *)sourceAppKey {
+    if (_sourceAppKey) {
+        return _sourceAppKey;
+    }
+    
+    _sourceAppKey = &UIApplicationOpenURLOptionsSourceApplicationKey != NULL ? UIApplicationOpenURLOptionsSourceApplicationKey : @"UIApplicationOpenURLOptionsSourceApplicationKey" ;
+
+    return _sourceAppKey;
+}
+
+#pragma mark Public accessors
 - (void)setAnnotation:(id)annotation {
     BOOL (^shouldIncludeObject)(id) = ^(id obj) {
         BOOL shouldInclude = NO;
