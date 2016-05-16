@@ -345,22 +345,25 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     
     [connector asyncGetDataFromURL:self.segmentURL
                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
+                     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
                      __strong MPNetworkCommunication *strongSelf = weakSelf;
+                     if (!strongSelf) {
+                         completionHandler(NO, nil, elapsedTime, nil);
+                         return;
+                     }
                      
                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                      }
                      
-                     NSMutableArray<MPSegment *> *segments = nil;
-                     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
-                     BOOL success = NO;
-                     
                      if (!data) {
-                         completionHandler(success, segments, elapsedTime, nil);
+                         completionHandler(NO, nil, elapsedTime, nil);
                          return;
                      }
                      
+                     NSMutableArray<MPSegment *> *segments = nil;
+                     BOOL success = NO;
                      strongSelf->retrievingSegments = NO;
                      
                      NSArray *segmentsList = nil;
@@ -485,7 +488,13 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                             message:uploadString
                    serializedParams:zipUploadData
                   completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
+                      BOOL finished = index == standaloneUploads.count - 1;
+                      
                       __strong MPNetworkCommunication *strongSelf = weakSelf;
+                      if (!strongSelf) {
+                          completionHandler(NO, standaloneUpload, nil, finished);
+                          return;
+                      }
                       
                       if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                           [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
@@ -494,7 +503,6 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       
                       NSDictionary *responseDictionary = nil;
                       MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-                      BOOL finished = index == standaloneUploads.count - 1;
                       NSInteger responseCode = [httpResponse statusCode];
                       BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
                       

@@ -183,6 +183,10 @@
     dispatch_async(processUserNotificationQueue, ^{
         __strong MPAppNotificationHandler *strongSelf = weakSelf;
         
+        if (!strongSelf) {
+            return;
+        }
+        
         NSMutableDictionary *userNotificationDictionary = [@{kMPUserNotificationDictionaryKey:userInfo,
                                                              kMPUserNotificationRunningModeKey:@(strongSelf.runningMode)}
                                                            mutableCopy];

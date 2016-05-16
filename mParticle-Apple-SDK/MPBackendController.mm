@@ -338,30 +338,30 @@ static BOOL appBackgrounded = NO;
             __strong MPBackendController *strongSelf = weakSelf;
             
             [MPStateMachine setRunningInBackground:NO];
-            
-            [strongSelf endBackgroundTimer];
-            
-            strongSelf->_networkCommunication = nil;
-            
-            if (strongSelf->_session) {
-                [strongSelf broadcastSessionDidEnd:strongSelf->_session];
-                strongSelf->_session = nil;
-                
-                if (strongSelf.eventSet.count == 0) {
-                    strongSelf->_eventSet = nil;
-                }
-                
-                if (strongSelf.mediaTrackContainer.count == 0) {
-                    strongSelf->_mediaTrackContainer = nil;
-                }
-            }
-            
             [[MPPersistenceController sharedInstance] purgeMemory];
-            
             MPILogDebug(@"SDK has become dormant with the app.");
             
-            [[UIApplication sharedApplication] endBackgroundTask:strongSelf->backendBackgroundTaskIdentifier];
-            strongSelf->backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+            if (strongSelf) {
+                [strongSelf endBackgroundTimer];
+                
+                strongSelf->_networkCommunication = nil;
+                
+                if (strongSelf->_session) {
+                    [strongSelf broadcastSessionDidEnd:strongSelf->_session];
+                    strongSelf->_session = nil;
+                    
+                    if (strongSelf.eventSet.count == 0) {
+                        strongSelf->_eventSet = nil;
+                    }
+                    
+                    if (strongSelf.mediaTrackContainer.count == 0) {
+                        strongSelf->_mediaTrackContainer = nil;
+                    }
+                }
+                
+                [[UIApplication sharedApplication] endBackgroundTask:strongSelf->backendBackgroundTaskIdentifier];
+                strongSelf->backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+            }
         }];
     }
 }
@@ -375,9 +375,11 @@ static BOOL appBackgrounded = NO;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), notificationsQueue, ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
-                                                            object:strongSelf.delegate
-                                                          userInfo:@{mParticleSessionId:@(session.sessionId)}];
+        if (strongSelf) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
+                                                                object:strongSelf.delegate
+                                                              userInfo:@{mParticleSessionId:@(session.sessionId)}];
+        }
     });
 }
 
@@ -391,9 +393,11 @@ static BOOL appBackgrounded = NO;
     dispatch_async(notificationsQueue, ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
-                                                            object:strongSelf.delegate
-                                                          userInfo:@{mParticleSessionId:sessionId}];
+        if (strongSelf) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
+                                                                object:strongSelf.delegate
+                                                              userInfo:@{mParticleSessionId:sessionId}];
+        }
     });
 }
 
@@ -591,7 +595,7 @@ static BOOL appBackgrounded = NO;
                                       __strong MPBackendController *strongSelf = weakSelf;
                                       MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
                                       
-                                      if (!uploadBuilder) {
+                                      if (!uploadBuilder || !strongSelf) {
                                           sessionBeingUploaded = nil;
                                           completionHandlerCopy(uploadSession);
                                           return;
@@ -747,7 +751,7 @@ static BOOL appBackgrounded = NO;
                                                                                            sessionTimeout:strongSelf.sessionTimeout
                                                                                            uploadInterval:strongSelf.uploadInterval];
                                   
-                                  if (!uploadBuilder) {
+                                  if (!uploadBuilder || !strongSelf) {
                                       if (completionHandler) {
                                           completionHandler(NO);
                                       }
@@ -1122,9 +1126,12 @@ static BOOL appBackgrounded = NO;
     backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
                                   eventHandler:^{
                                       NSTimeInterval backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
+                                      __strong MPBackendController *strongSelf = weakSelf;
+                                      if (!strongSelf) {
+                                          return;
+                                      }
                                       
                                       if (backgroundTimeRemaining < kMPRemainingBackgroundTimeMinimumThreshold) {
-                                          __strong MPBackendController *strongSelf = weakSelf;
                                           NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
                                           
                                           void(^processSession)(NSTimeInterval) = ^(NSTimeInterval timeout) {
@@ -1149,11 +1156,11 @@ static BOOL appBackgrounded = NO;
                                                                             }];
                                           };
                                           
-                                          if ((MINIMUM_SESSION_TIMEOUT + 0.1) >= self.sessionTimeout) {
-                                              processSession(self.sessionTimeout);
+                                          if ((MINIMUM_SESSION_TIMEOUT + 0.1) >= strongSelf.sessionTimeout) {
+                                              processSession(strongSelf.sessionTimeout);
                                           } else if (backgroundStartTime == 0) {
                                               backgroundStartTime = currentTime;
-                                          } else if ((currentTime - backgroundStartTime) >= self.sessionTimeout) {
+                                          } else if ((currentTime - backgroundStartTime) >= strongSelf.sessionTimeout) {
                                               processSession(currentTime - timeAppWentToBackground);
                                           }
                                       } else {
@@ -1161,12 +1168,14 @@ static BOOL appBackgrounded = NO;
                                           longSession = YES;
                                           
                                           if (!uploadSource) {
-                                              [self beginUploadTimer];
+                                              [strongSelf beginUploadTimer];
                                           }
                                       }
                                   } cancelHandler:^{
                                       __strong MPBackendController *strongSelf = weakSelf;
-                                      strongSelf->backgroundSource = nil;
+                                      if (strongSelf) {
+                                          strongSelf->backgroundSource = nil;
+                                      }
                                   }];
 }
 

@@ -260,8 +260,11 @@ static int64_t launchNotificationHash = 0;
 #endif
         __strong MPNotificationController *strongSelf = weakSelf;
         
-        strongSelf->notificationLaunchedApp = NO;
-        strongSelf->_initialRedactedUserNotificationString = nil;
+        if (strongSelf) {
+            strongSelf->notificationLaunchedApp = NO;
+            strongSelf->_initialRedactedUserNotificationString = nil;
+        }
+        
         launchNotificationHash = 0;
 #ifndef MP_UNIT_TESTING
     });
@@ -273,7 +276,9 @@ static int64_t launchNotificationHash = 0;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPNotificationController *strongSelf = weakSelf;
         
-        strongSelf->backgrounded = NO;
+        if (strongSelf) {
+            strongSelf->backgrounded = NO;
+        }
     });
     
     if (appJustFinishedLaunching) {
