@@ -1,0 +1,10 @@
+language: objective-c
+osx_image: xcode7.3
+matrix:
+  include:
+    - env: IOS_DEVICE="iPhone 6s (9.3)", UDID="5752202B-E7A2-4B6C-9D7B-B211C2F54654"
+    - env: IOS_DEVICE="iPhone 5s (8.1)", UDID="8DC0EE03-9484-4184-A7AF-444BDC4EDDC8"
+script:
+  - open -a "simulator" --args -CurrentDeviceUDID $UDID
+  - xctool -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -destination "platform=iOS Simulator,id=$UDID" test
+  - osascript -e 'tell app "Simulator" to quit'
