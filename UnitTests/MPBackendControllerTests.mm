@@ -34,7 +34,7 @@
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
 
-#define BACKEND_TESTS_EXPECATIONS_TIMEOUT 1
+#define BACKEND_TESTS_EXPECATIONS_TIMEOUT 10
 
 @interface MPBackendControllerTests : XCTestCase <MPBackendControllerDelegate>
 
