@@ -94,7 +94,10 @@
     MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
     
     NSURL *url = [NSURL URLWithString:@"http://mparticle.com"];
-    NSDictionary *options = @{UIApplicationOpenURLOptionsSourceApplicationKey:@"testApp"};
+    NSDictionary *options;
+    if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL) {
+        options = @{UIApplicationOpenURLOptionsSourceApplicationKey:@"testApp"};
+    }
     [appNotificationHandler openURL:url options:options];
     
     url = nil;
