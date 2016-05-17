@@ -54,7 +54,6 @@ Pod::Spec.new do |s|
                                  'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', \
                                  'mParticle-Apple-SDK/Utils/MPDateFormatter.h', 'mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.h'
 
-        ss.header_mappings_dir = 'mParticle-Apple-SDK'
         ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files        = 'mParticle-Apple-SDK/**/*'
         ss.libraries           = 'c++', 'sqlite3', 'z'
