@@ -1451,6 +1451,14 @@ static BOOL appBackgrounded = NO;
         
         errorMessage = @"There are more attributes than the maximum number allowed.";
     }
+
+    if (MPIsNull(key)) {
+        if (error != NULL) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidValue userInfo:nil];
+        }
+        
+        errorMessage = @"The 'key' parameter cannot be nil.";
+    }
     
     if (key.length > LIMIT_NAME) {
         if (error != NULL) {
@@ -2295,13 +2303,16 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)setUserAttribute:(NSString *)key value:(id)value attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    NSAssert([key isKindOfClass:[NSString class]], @"'key' must be a string.");
+    NSString *keyCopy = [key copy];
+    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
+    
+    NSAssert(validKey, @"'key' must be a string.");
     NSAssert(value == nil || (value != nil && ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])), @"'value' must be either nil, or string or number.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user attribute cannot be done prior to starting the mParticle SDK.\n****\n");
     
-    if (!key) {
+    if (!validKey) {
         if (completionHandler) {
-            completionHandler(key, value, MPExecStatusMissingParam);
+            completionHandler(keyCopy, value, MPExecStatusMissingParam);
         }
         
         return;
@@ -2309,7 +2320,7 @@ static BOOL appBackgrounded = NO;
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         if (completionHandler) {
-            completionHandler(key, value, MPExecStatusFail);
+            completionHandler(keyCopy, value, MPExecStatusFail);
         }
         
         return;
@@ -2321,7 +2332,7 @@ static BOOL appBackgrounded = NO;
         case MPInitializationStatusStarted: {
             if ([MPStateMachine sharedInstance].optOut) {
                 if (completionHandler) {
-                    completionHandler(key, value, MPExecStatusOptOut);
+                    completionHandler(keyCopy, value, MPExecStatusOptOut);
                 }
                 
                 return;
@@ -2329,13 +2340,13 @@ static BOOL appBackgrounded = NO;
             
             if (value && ![value isKindOfClass:[NSString class]] && ![value isKindOfClass:[NSNumber class]]) {
                 if (completionHandler) {
-                    completionHandler(key, value, MPExecStatusInvalidDataType);
+                    completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
                 }
                 
                 return;
             }
             
-            NSString *localKey = [self.userAttributes caseInsensitiveKey:key];
+            NSString *localKey = [self.userAttributes caseInsensitiveKey:keyCopy];
             NSError *error = nil;
             BOOL validAttributes = [self checkAttribute:self.userAttributes key:localKey value:value maxValueLength:LIMIT_USER_ATTR_LENGTH error:&error];
             
@@ -2349,25 +2360,17 @@ static BOOL appBackgrounded = NO;
             }
             
             if (validAttributes) {
-                if (localKey) {
-                    self.userAttributes[localKey] = userAttributeValue;
-                }
-                else {
-                    if (completionHandler) {
-                        completionHandler(key, value, MPExecStatusInvalidDataType);
-                    }
-                    return;
-                }
+                self.userAttributes[localKey] = userAttributeValue;
             } else if ((error.code == kEmptyValueAttribute) && self.userAttributes[localKey]) {
                 [self.userAttributes removeObjectForKey:localKey];
                 
                 if (!deletedUserAttributes) {
                     deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
                 }
-                [deletedUserAttributes addObject:key];
+                [deletedUserAttributes addObject:keyCopy];
             } else {
                 if (completionHandler) {
-                    completionHandler(key, value, MPExecStatusInvalidDataType);
+                    completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
                 }
                 
                 return;
@@ -2399,7 +2402,7 @@ static BOOL appBackgrounded = NO;
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf setUserAttribute:key value:value attempt:(attempt + 1) completionHandler:completionHandler];
+                [strongSelf setUserAttribute:keyCopy value:value attempt:(attempt + 1) completionHandler:completionHandler];
             });
             
             execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
@@ -2412,7 +2415,7 @@ static BOOL appBackgrounded = NO;
     }
     
     if (completionHandler) {
-        completionHandler(key, value, execStatus);
+        completionHandler(keyCopy, value, execStatus);
     }
 }
 
