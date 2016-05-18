@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.0.6
+
+>Upgrade suggestion: **HIGH**. Upgrade if you are not seeing the source app in deep-linking when running iOS 8
+
+* [FIX] Using a string constant (iOS 9 or above) or a string literal (iOS 8 or below) to log a deep-linking event
+
 ## 6.0.5
 
 >Upgrade suggestion: **MODERATE**.
