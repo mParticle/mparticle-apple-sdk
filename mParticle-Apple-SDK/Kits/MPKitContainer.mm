@@ -376,7 +376,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
-    bool disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
+    BOOL disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
     if (disabled) {
         return;
     }
