@@ -84,10 +84,10 @@ NSString *const kMPFROptOutState = @"s";
     BOOL validExecStatus = !MPIsNull(execStatus) && [execStatus isKindOfClass:[MPKitExecStatus class]];
     NSAssert(validExecStatus, @"The 'execStatus' variable is not valid.");
     
-    BOOL validKitFilter = !MPIsNull(kitFilter) || [kitFilter isKindOfClass:[MPKitFilter class]];
-    NSAssert(validExecStatus, @"The 'kitFilter' variable is not valid.");
+    BOOL validKitFilter = MPIsNull(kitFilter) || [kitFilter isKindOfClass:[MPKitFilter class]];
+    NSAssert(validKitFilter, @"The 'kitFilter' variable is not valid.");
     
-    BOOL validOriginalEvent = !MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]];
+    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]];
     NSAssert(validOriginalEvent, @"The 'originalEvent' variable is not valid.");
     
     if (!self || !validMessageType || !validExecStatus || !validKitFilter || !validOriginalEvent) {
@@ -100,6 +100,10 @@ NSString *const kMPFROptOutState = @"s";
     _dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;
     _dataDictionary[kMPMessageTypeKey] = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(messageType)).c_str()
                                                             encoding:NSUTF8StringEncoding];
+
+    if (!kitFilter) {
+        return self;
+    }
     
     NSString * (^eventTypeString)(id) = ^(id event) {
         NSString *eventTypeString = nil;
