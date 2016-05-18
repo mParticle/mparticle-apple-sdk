@@ -28,11 +28,14 @@ The mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mp
 
 #### CocoaPods
 
-> CocoaPods 0.39.0 is required for now.
-
 To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guides.cocoapods.org/syntax/podfile.html):
 
 ```ruby
+source 'https://github.com/CocoaPods/Specs.git'
+
+# Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
+# use_frameworks!
+
 target '<Your Target>' do
     pod 'mParticle-Apple-SDK', '~> 6'
 end
@@ -45,6 +48,11 @@ Configuring your `Podfile` with the statement above will include only the _Core_
 If you'd like to add any kits, you can do so as follows:
 
 ```ruby
+source 'https://github.com/CocoaPods/Specs.git'
+
+# Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
+# use_frameworks!
+
 target '<Your Target>' do
     pod 'mParticle-Appboy', '~> 6'
     pod 'mParticle-BranchMetrics', '~> 6'
@@ -54,7 +62,7 @@ end
 
 In the cases above, the _Appboy_, _Branch Metrics_, and _Localytics_ kits would be integrated together with the core SDK.
 
-If you plan to use AppsFlyer, comScore, Kahuna, Kochava, or Localytics as a kit, please include the `pre_install` script below in your `Podfile`. This is necessary to inform CocoaPods how to properly handle static transitive dependencies:
+If you are using CocoaPods with use_frameworks! and you plan to use AppsFlyer, comScore, Kahuna, Kochava, or Localytics as a kit, please include the `pre_install` script below in your `Podfile`. This is necessary to inform CocoaPods how to properly handle static transitive dependencies:
 
 ```ruby
 pre_install do |pre_i|
@@ -106,8 +114,6 @@ Kit | CocoaPods | Carthage
 
 ## Initialize the SDK
 
-For apps supporting iOS 8 and above, the syntax for the import statement should be one for **modules** or **semantic import**.
-
 The mParticle SDK is initialized by calling the `startWithKey` method within the `application:didFinishLaunchingWithOptions:` delegate call. The mParticle SDK must be initialized with your app key and secret prior to use. Preferably the location of the initialization method call should be one of the last statements in the `application:didFinishLaunchingWithOptions:`.
 
 > Note that it is imperative for the SDK to be initialized in the `application:didFinishLaunchingWithOptions:` method. Other parts of the SDK rely on the `UIApplicationDidBecomeActiveNotification` notification to function properly. Failing to start the SDK as indicated will impair it. Also, please do **not** use _GCD_'s `dispatch_async` to start the SDK.
@@ -129,13 +135,26 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
 
 #### Objective-C
 
+For apps supporting iOS 8 and above, Apple recommends using the import syntax for **modules** or **semantic import**. However, if you prefer the traditional CocoaPods and static libraries delivery mechanism, that is fully supported as well.
+
+If you are using mParticle as a framework, your import statement will be as follows:
+
 ```objective-c
-// If you are using Cocoapods with use_frameworks! or if you are using Carthage 
-#import <mParticle_Apple_SDK/mParticle.h>
-// If you are using Cocoapods without use_frameworks!
+@import mParticle_Apple_SDK;                // Apple recommended syntax, but requires "Enable Modules (C and Objective-C)" in pbxproj
+#import <mParticle_Apple_SDK/mParticle.h>   // Works regardless of Enable Modules setting
+
+```
+
+Otherwise, for CocoaPods without use_frameworks, you can use either of these statements:
+
+```objective-c
 #import <mParticle-Apple-SDK/mParticle.h>
+#import "mParticle.h"
+```
 
+Next, you'll need to start the SDK:
 
+```objective-c
 - (BOOL)application:(UIApplication *)application
         didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Other code goes here, prior to initializing the mParticle SDK
@@ -147,12 +166,6 @@ func application(application: UIApplication, didFinishLaunchingWithOptions launc
     return YES;
 }
 ```
-
->If your app still needs to support iOS 7, please use:
->
->```objective-c
->#import <mParticle_Apple_SDK/mParticle.h>
->```
 
 If you are migrating to mParticle SDK v6.x from a previous version (4 or 5), please consult the [Migration Guide](https://github.com/mParticle/mparticle-apple-sdk/wiki/Migration-Guide)
 
