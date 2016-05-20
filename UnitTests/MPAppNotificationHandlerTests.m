@@ -95,9 +95,13 @@
     
     NSURL *url = [NSURL URLWithString:@"http://mparticle.com"];
     NSDictionary *options;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+#pragma clang diagnostic ignored "-Wunreachable-code"
     if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL) {
         options = @{UIApplicationOpenURLOptionsSourceApplicationKey:@"testApp"};
     }
+#pragma clang diagnostic pop
     [appNotificationHandler openURL:url options:options];
     
     url = nil;
