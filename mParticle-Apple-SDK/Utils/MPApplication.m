@@ -74,13 +74,18 @@ static NSString *kMPAppStoreReceiptString = nil;
     }
 }
 
++ (NSUserDefaults * )userDefaults
+{
+    return [[NSUserDefaults alloc] initWithSuiteName:@"mParticle"];
+}
+
 - (id)init {
     self = [super init];
     if (!self) {
         return nil;
     }
     
-    userDefaults = [NSUserDefaults standardUserDefaults];
+    userDefaults = [MPApplication userDefaults];
     syncUserDefaults = NO;
     
     return self;
@@ -89,7 +94,8 @@ static NSString *kMPAppStoreReceiptString = nil;
 - (void)dealloc {
     if (syncUserDefaults) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSUserDefaults standardUserDefaults] synchronize];
+        
+            [userDefaults synchronize];
         });
     }
 }
@@ -325,15 +331,14 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 + (void)markInitialLaunchTime {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
+    NSNumber *initialLaunchTime = [MPApplication userDefaults][kMPAppInitialLaunchTimeKey];
     
     if (!initialLaunchTime) {
         initialLaunchTime = MPCurrentEpochInMilliseconds;
-        userDefaults[kMPAppInitialLaunchTimeKey] = initialLaunchTime;
+        [MPApplication userDefaults][kMPAppInitialLaunchTimeKey] = initialLaunchTime;
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [userDefaults synchronize];
+            [[MPApplication userDefaults] synchronize];
         });
     }
 }
