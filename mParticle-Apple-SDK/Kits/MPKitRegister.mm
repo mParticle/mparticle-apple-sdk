@@ -19,12 +19,17 @@
 #import "MPKitRegister.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
+#import "MPILogger.h"
 
 @implementation MPKitRegister
 
 - (instancetype)init {
     id invalidVar = nil;
     self = [self initWithName:invalidVar className:invalidVar startImmediately:NO];
+    if (self) {
+        MPILogError(@"MPKitRegister cannot be initialized using the init method");
+    }
+    
     return nil;
 }
 

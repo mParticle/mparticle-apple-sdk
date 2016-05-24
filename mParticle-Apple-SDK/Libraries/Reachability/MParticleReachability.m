@@ -120,10 +120,12 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 			returnValue->reachabilityRef = reachability;
 			returnValue->localWiFiRef = NO;
 		}
+        else {
+            CFRelease(reachability);
+        }
 	}
 	return returnValue;
 }
-
 
 + (instancetype)reachabilityWithAddress:(const struct sockaddr_in *)hostAddress;
 {
@@ -139,11 +141,12 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 			returnValue->reachabilityRef = reachability;
 			returnValue->localWiFiRef = NO;
 		}
+        else {
+            CFRelease(reachability);
+        }
 	}
 	return returnValue;
 }
-
-
 
 + (instancetype)reachabilityForInternetConnection;
 {
