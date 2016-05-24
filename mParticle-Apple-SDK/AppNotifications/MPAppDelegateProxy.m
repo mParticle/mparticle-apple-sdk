@@ -60,6 +60,16 @@
     return self;
 }
 
+- (BOOL)conformsToProtocol:(Protocol *)aProtocol {
+    BOOL conformsToProtocol = [self.surrogateAppDelegate conformsToProtocol:aProtocol];
+    
+    if (!conformsToProtocol) {
+        conformsToProtocol = [_originalAppDelegate conformsToProtocol:aProtocol];
+    }
+    
+    return conformsToProtocol;
+}
+
 - (void)forwardInvocation:(NSInvocation *)anInvocation {
     SEL selector = [anInvocation selector];
     id target = _originalAppDelegate;
@@ -83,6 +93,26 @@
     }
     
     return target;
+}
+
+- (BOOL)isKindOfClass:(Class)aClass {
+    BOOL isKindOfClass = [self.surrogateAppDelegate isKindOfClass:aClass];
+    
+    if (!isKindOfClass) {
+        isKindOfClass = [_originalAppDelegate isKindOfClass:aClass];
+    }
+    
+    return isKindOfClass;
+}
+
+- (BOOL)isMemberOfClass:(Class)aClass {
+    BOOL isMemberOfClass = [self.surrogateAppDelegate isMemberOfClass:aClass];
+    
+    if (!isMemberOfClass) {
+        isMemberOfClass = [_originalAppDelegate isMemberOfClass:aClass];
+    }
+    
+    return isMemberOfClass;
 }
 
 - (NSMethodSignature *)methodSignatureForSelector:(SEL)selector {
