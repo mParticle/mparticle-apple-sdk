@@ -6,6 +6,15 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.0.7
+
+>Upgrade suggestion: **HIGH**. Upgrade if you are filtering transaction attributes in commerce events
+
+* [FIX] Filter transaction attributes in commerce events
+* [FIX] Expand the scope of MPAppDelegateProxy to handle protocol conformance and class hierarchy matching
+* [FIX] Fix static analysis flags
+* [FIX] Add clang pragmas to remove warnings
+
 ## 6.0.6
 
 >Upgrade suggestion: **HIGH**. Upgrade if you are not seeing the source app in deep-linking when running iOS 8
