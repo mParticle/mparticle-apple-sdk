@@ -44,6 +44,8 @@
 #include "MPBracket.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardQueueItem.h"
+#import "MPTransactionAttributes.h"
+#import "MPTransactionAttributes+Dictionary.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -636,40 +638,72 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         }
         
-        // Commerce event attribute filter (expanded attributes)
-        __block NSString *auxString;
-        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] init];
-        
-        [[forwardCommerceEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-            auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-            hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        NSDictionary *commerceEventAttributeFilters = kitConfiguration.commerceEventAttributeFilters;
+        if (commerceEventAttributeFilters) {
+            // Commerce event attribute filter (expanded attributes)
+            __block NSString *auxString;
+            __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] init];
             
-            id filterValue = kitConfiguration.commerceEventAttributeFilters[hashValue];
-            BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
+            [[forwardCommerceEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
+                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                
+                id filterValue = commerceEventAttributeFilters[hashValue];
+                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
+                
+                if (!filterValue || (filterValue && !filterValueIsFalse)) {
+                    filteredAttributes[key] = obj;
+                }
+            }];
             
-            if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                filteredAttributes[key] = obj;
-            }
-        }];
-        
-        [forwardCommerceEvent setBeautifiedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
-        
-        // Commerce event attribute filter (user defined attributes)
-        filteredAttributes = [[NSMutableDictionary alloc] init];
-        
-        [[forwardCommerceEvent userDefinedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-            auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-            hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+            [forwardCommerceEvent setBeautifiedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
             
-            id filterValue = kitConfiguration.commerceEventAttributeFilters[hashValue];
-            BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
+            // Commerce event attribute filter (user defined attributes)
+            filteredAttributes = [[NSMutableDictionary alloc] init];
             
-            if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                filteredAttributes[key] = obj;
-            }
-        }];
-        
-        [forwardCommerceEvent setUserDefinedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
+            [[forwardCommerceEvent userDefinedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
+                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                
+                id filterValue = commerceEventAttributeFilters[hashValue];
+                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
+                
+                if (!filterValue || (filterValue && !filterValueIsFalse)) {
+                    filteredAttributes[key] = obj;
+                }
+            }];
+            
+            [forwardCommerceEvent setUserDefinedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
+            
+            // Transaction attributes
+            __block MPTransactionAttributes *filteredTransactionAttributes = [[MPTransactionAttributes alloc] init];
+            
+            [[forwardCommerceEvent.transactionAttributes beautifiedDictionaryRepresentation] enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
+                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                
+                id filterValue = commerceEventAttributeFilters[hashValue];
+                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
+                
+                if (!filterValue || (filterValue && !filterValueIsFalse)) {
+                    if ([key isEqualToString:kMPExpTAAffiliation]) {
+                        filteredTransactionAttributes.affiliation = forwardCommerceEvent.transactionAttributes.affiliation;
+                    } else if ([key isEqualToString:kMPExpTAShipping]) {
+                        filteredTransactionAttributes.shipping = forwardCommerceEvent.transactionAttributes.shipping;
+                    } else if ([key isEqualToString:kMPExpTATax]) {
+                        filteredTransactionAttributes.tax = forwardCommerceEvent.transactionAttributes.tax;
+                    } else if ([key isEqualToString:kMPExpTARevenue]) {
+                        filteredTransactionAttributes.revenue = forwardCommerceEvent.transactionAttributes.revenue;
+                    } else if ([key isEqualToString:kMPExpTATransactionId]) {
+                        filteredTransactionAttributes.transactionId = forwardCommerceEvent.transactionAttributes.transactionId;
+                    } else if ([key isEqualToString:kMPExpTACouponCode]) {
+                        filteredTransactionAttributes.couponCode = forwardCommerceEvent.transactionAttributes.couponCode;
+                    }
+                }
+            }];
+            
+            forwardCommerceEvent.transactionAttributes = filteredTransactionAttributes;
+        }
     }
     
     [self project:kitRegister commerceEvent:forwardCommerceEvent completionHandler:^(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {

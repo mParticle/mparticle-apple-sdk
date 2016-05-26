@@ -886,4 +886,80 @@
        }];
 }
 
+- (void)testFilterCommerceEvent_TransactionAttributes {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Transaction attributes"];
+    
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"hs":@{
+                                            @"cea":@{@"-94160813":@0, // Revenue
+                                                     @"-1865890959":@0 // Affiliation
+                                                     }
+                                            }
+                                    }
+                                ];
+    
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id registeredKit = [registeredKits anyObject];
+    
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    XCTAssertNotNil(commerceEvent);
+    XCTAssertEqual(commerceEvent.products.count, 1);
+    
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    
+    product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
+    product.brand = @"Gallifrey Tardis";
+    product.category = @"Time Machine";
+    product.position = 2;
+    product.variant = @"Police Box";
+    
+    [commerceEvent addProduct:product];
+    XCTAssertEqual(commerceEvent.products.count, 2);
+    
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
+    transactionAttributes.affiliation = @"Doctor";
+    transactionAttributes.shipping = @3;
+    transactionAttributes.tax = @4.56;
+    transactionAttributes.revenue = @18;
+    transactionAttributes.transactionId = @"42";
+    commerceEvent.transactionAttributes = transactionAttributes;
+    XCTAssertNotNil(commerceEvent.transactionAttributes);
+    
+    [kitContainer filter:registeredKit
+        forCommerceEvent:commerceEvent
+       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+           XCTAssertNotNil(kitFilter);
+           XCTAssertNotNil(kitFilter.forwardCommerceEvent);
+           XCTAssertNotNil(kitFilter.forwardCommerceEvent.transactionAttributes);
+           XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.affiliation);
+           XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.revenue);
+           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.shipping, @3);
+           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.tax, @4.56);
+           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.transactionId, @"42");
+           
+           [expectation fulfill];
+       }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 @end
