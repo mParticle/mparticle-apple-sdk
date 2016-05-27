@@ -65,7 +65,7 @@ Pod::Spec.new do |s|
     s.subspec 'Adjust' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Adjust', '~> 4.3'
+        ss.ios.dependency 'Adjust', '4.7.0'
         ss.ios.prefix_header_contents = "#define MP_KIT_ADJUST 1"
         ss.ios.deployment_target      = "7.0"
     end
@@ -73,7 +73,7 @@ Pod::Spec.new do |s|
     s.subspec 'Appboy' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Appboy-iOS-SDK', '~> 2.19'
+        ss.ios.dependency 'Appboy-iOS-SDK', '2.20.0'
         ss.ios.prefix_header_contents = "#define MP_KIT_APPBOY 1"
         ss.ios.deployment_target      = "7.0"
 
@@ -86,7 +86,7 @@ Pod::Spec.new do |s|
     s.subspec 'AppsFlyer' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'AppsFlyer-SDK', '~> 4.3'
+        ss.ios.dependency 'AppsFlyer-SDK', '4.4.1'
         ss.ios.prefix_header_contents = "#define MP_KIT_APPSFLYER 1"
         ss.ios.deployment_target      = "7.0"
 
@@ -99,7 +99,7 @@ Pod::Spec.new do |s|
     s.subspec 'BranchMetrics' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Branch', '~> 0.12.2'
+        ss.ios.dependency 'Branch', '0.12.2'
         ss.ios.prefix_header_contents = "#define MP_KIT_BRANCHMETRICS 1"
         ss.ios.deployment_target      = "7.0"
     end
@@ -134,7 +134,7 @@ Pod::Spec.new do |s|
     s.subspec 'Flurry' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Flurry-iOS-SDK/FlurrySDK'
+        ss.ios.dependency 'Flurry-iOS-SDK/FlurrySDK', '7.6.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_FLURRY 1"
         ss.ios.deployment_target      = "7.0"
     end
@@ -142,7 +142,7 @@ Pod::Spec.new do |s|
     s.subspec 'Kahuna' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Kahuna', '~> 2.3'
+        ss.ios.dependency 'Kahuna', '2.4.0'
         ss.ios.prefix_header_contents = "#define MP_KIT_KAHUNA 1"
         ss.ios.deployment_target      = "7.0"
 
@@ -155,7 +155,7 @@ Pod::Spec.new do |s|
     s.subspec 'Kochava' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Kochava'
+        ss.ios.dependency 'Kochava', '20160517'
         ss.ios.prefix_header_contents = "#define MP_KIT_KOCHAVA 1"
         ss.ios.deployment_target      = "7.0"
     end
@@ -163,7 +163,7 @@ Pod::Spec.new do |s|
     s.subspec 'Localytics' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'Localytics', '~> 3.8'
+        ss.ios.dependency 'Localytics', '3.8.0'
         ss.ios.prefix_header_contents = "#define MP_KIT_LOCALYTICS 1"
         ss.ios.deployment_target      = "7.0"
 
@@ -183,7 +183,7 @@ Pod::Spec.new do |s|
     s.subspec 'Wootric' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'WootricSDK'
+        ss.ios.dependency 'WootricSDK', '0.5.3'
         ss.ios.prefix_header_contents = "#define MP_KIT_WOOTRIC 1"
         ss.ios.deployment_target      = "7.0"
     end
@@ -196,7 +196,7 @@ Pod::Spec.new do |s|
     s.subspec 'CrashReporter' do |ss|
         ss.ios.dependency 'mParticle-Apple-SDK/Core-SDK'
         ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'mParticle-CrashReporter', '~> 1.2'
+        ss.ios.dependency 'mParticle-CrashReporter', '1.2.2'
         ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
         ss.ios.deployment_target      = "7.0"
 
