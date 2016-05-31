@@ -216,17 +216,18 @@ using namespace std;
 }
 
 - (MPUploadBuilder *)withUserAttributes:(NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(NSSet<NSString *> *)deletedUserAttributes {
-    NSUInteger numberOfUserAttributes = userAttributes.count;
+    NSDictionary<NSString *, id> *userAttributesCopy = [userAttributes copy];
+    NSUInteger numberOfUserAttributes = userAttributesCopy.count;
     
     if (numberOfUserAttributes > 0) {
         NSMutableDictionary *attributesDictionary = [[NSMutableDictionary alloc] initWithCapacity:numberOfUserAttributes];
-        NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
+        NSEnumerator *attributeEnumerator = [userAttributesCopy keyEnumerator];
         NSString *key;
         id value;
         Class NSNumberClass = [NSNumber class];
         
         while ((key = [attributeEnumerator nextObject])) {
-            value = userAttributes[key];
+            value = userAttributesCopy[key];
             attributesDictionary[key] = [value isKindOfClass:NSNumberClass] ? [(NSNumber *)value stringValue] : value;
         }
         
