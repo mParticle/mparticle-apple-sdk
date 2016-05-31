@@ -409,6 +409,25 @@
 		C95801441C6117CA00E62148 /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499B71C56B8DF005F11EA /* MPLocationManager.h */; };
 		C95801451C61247900E62148 /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C90499F31C56B8DF005F11EA /* MPNotificationController.h */; };
 		C95801461C61247D00E62148 /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C90499F41C56B8DF005F11EA /* MPNotificationController.mm */; };
+		C9A8EDA91CFDDF6800E823E7 /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9049A591C56B98E005F11EA /* mParticle_Apple_SDK.framework */; };
+		C9A8EE3A1CFDE1A900E823E7 /* BracketTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE0C1CFDE19400E823E7 /* BracketTests.mm */; };
+		C9A8EE3B1CFDE1A900E823E7 /* HasherTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE0D1CFDE19400E823E7 /* HasherTests.mm */; };
+		C9A8EE3C1CFDE1A900E823E7 /* MPAppNotificationHandlerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE0E1CFDE19400E823E7 /* MPAppNotificationHandlerTests.m */; };
+		C9A8EE3D1CFDE1A900E823E7 /* MPBackendControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE101CFDE19400E823E7 /* MPBackendControllerTests.mm */; };
+		C9A8EE3E1CFDE1A900E823E7 /* MPCartTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE121CFDE19400E823E7 /* MPCartTests.m */; };
+		C9A8EE3F1CFDE1A900E823E7 /* MPCommerceEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE131CFDE19400E823E7 /* MPCommerceEventTests.m */; };
+		C9A8EE401CFDE1A900E823E7 /* MPConsumerInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE141CFDE19400E823E7 /* MPConsumerInfoTests.m */; };
+		C9A8EE411CFDE1A900E823E7 /* MPCustomModuleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE151CFDE19400E823E7 /* MPCustomModuleTests.m */; };
+		C9A8EE421CFDE1A900E823E7 /* MPEventTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE161CFDE19400E823E7 /* MPEventTests.mm */; };
+		C9A8EE431CFDE1A900E823E7 /* MPForwardRecordTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE171CFDE19400E823E7 /* MPForwardRecordTests.m */; };
+		C9A8EE441CFDE1A900E823E7 /* MPLaunchInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE181CFDE19400E823E7 /* MPLaunchInfoTests.m */; };
+		C9A8EE451CFDE1A900E823E7 /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE191CFDE19400E823E7 /* MPMessageBuilderTests.m */; };
+		C9A8EE461CFDE1A900E823E7 /* MPNotificationControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE1C1CFDE19400E823E7 /* MPNotificationControllerTests.m */; };
+		C9A8EE471CFDE1A900E823E7 /* MPPersistenceControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE1D1CFDE19400E823E7 /* MPPersistenceControllerTests.mm */; };
+		C9A8EE481CFDE1A900E823E7 /* MPProductBagTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE1E1CFDE19400E823E7 /* MPProductBagTests.m */; };
+		C9A8EE491CFDE1A900E823E7 /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE1F1CFDE19400E823E7 /* MPStateMachineTests.mm */; };
+		C9A8EE4A1CFDE1A900E823E7 /* MPURLRequestBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE211CFDE19400E823E7 /* MPURLRequestBuilderTests.m */; };
+		C9A8EE4B1CFDE1A900E823E7 /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9A8EE221CFDE19400E823E7 /* MPZipTests.mm */; };
 		DB4924DD1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DE1C76779E00D473A3 /* MPKitTune.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4924DB1C76779E00D473A3 /* MPKitTune.h */; };
 		DB4924DF1C76779E00D473A3 /* MPKitTune.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4924DC1C76779E00D473A3 /* MPKitTune.m */; };
@@ -416,6 +435,16 @@
 		DBA191541C6C006100F7E74B /* MPKitAppsFlyer.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA191521C6C006100F7E74B /* MPKitAppsFlyer.h */; };
 		DBA191551C6C006100F7E74B /* MPKitAppsFlyer.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA191531C6C006100F7E74B /* MPKitAppsFlyer.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C9A8EDAA1CFDDF6800E823E7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6003F582195388D10070C39A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C9049A581C56B98E005F11EA;
+			remoteInfo = "mParticle-iOS-SDK";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		C90499271C56B8DE005F11EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Framework/Info.plist; sourceTree = "<group>"; };
@@ -647,6 +676,31 @@
 		C9049C331C56C68F005F11EA /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS9.1.sdk/System/Library/Frameworks/AdSupport.framework; sourceTree = DEVELOPER_DIR; };
 		C984F85B1C6CE1DD00002F67 /* ios.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ios.h; sourceTree = "<group>"; };
 		C984F85D1C6CE1DD00002F67 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C9A8EDA41CFDDF6800E823E7 /* mParticle_iOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_iOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9A8EDB21CFDDFAF00E823E7 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		C9A8EE0C1CFDE19400E823E7 /* BracketTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BracketTests.mm; sourceTree = "<group>"; };
+		C9A8EE0D1CFDE19400E823E7 /* HasherTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HasherTests.mm; sourceTree = "<group>"; };
+		C9A8EE0E1CFDE19400E823E7 /* MPAppNotificationHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppNotificationHandlerTests.m; sourceTree = "<group>"; };
+		C9A8EE0F1CFDE19400E823E7 /* MPBackendController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPBackendController+Tests.h"; sourceTree = "<group>"; };
+		C9A8EE101CFDE19400E823E7 /* MPBackendControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPBackendControllerTests.mm; sourceTree = "<group>"; };
+		C9A8EE111CFDE19400E823E7 /* MPCart+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPCart+Tests.h"; sourceTree = "<group>"; };
+		C9A8EE121CFDE19400E823E7 /* MPCartTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCartTests.m; sourceTree = "<group>"; };
+		C9A8EE131CFDE19400E823E7 /* MPCommerceEventTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCommerceEventTests.m; sourceTree = "<group>"; };
+		C9A8EE141CFDE19400E823E7 /* MPConsumerInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsumerInfoTests.m; sourceTree = "<group>"; };
+		C9A8EE151CFDE19400E823E7 /* MPCustomModuleTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomModuleTests.m; sourceTree = "<group>"; };
+		C9A8EE161CFDE19400E823E7 /* MPEventTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEventTests.mm; sourceTree = "<group>"; };
+		C9A8EE171CFDE19400E823E7 /* MPForwardRecordTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardRecordTests.m; sourceTree = "<group>"; };
+		C9A8EE181CFDE19400E823E7 /* MPLaunchInfoTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLaunchInfoTests.m; sourceTree = "<group>"; };
+		C9A8EE191CFDE19400E823E7 /* MPMessageBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMessageBuilderTests.m; sourceTree = "<group>"; };
+		C9A8EE1A1CFDE19400E823E7 /* MPNetworkCommunication+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNetworkCommunication+Tests.h"; sourceTree = "<group>"; };
+		C9A8EE1B1CFDE19400E823E7 /* MPNotificationController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNotificationController+Tests.h"; sourceTree = "<group>"; };
+		C9A8EE1C1CFDE19400E823E7 /* MPNotificationControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNotificationControllerTests.m; sourceTree = "<group>"; };
+		C9A8EE1D1CFDE19400E823E7 /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; };
+		C9A8EE1E1CFDE19400E823E7 /* MPProductBagTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPProductBagTests.m; sourceTree = "<group>"; };
+		C9A8EE1F1CFDE19400E823E7 /* MPStateMachineTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPStateMachineTests.mm; sourceTree = "<group>"; };
+		C9A8EE201CFDE19400E823E7 /* MPURLRequestBuilder+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPURLRequestBuilder+Tests.h"; sourceTree = "<group>"; };
+		C9A8EE211CFDE19400E823E7 /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
+		C9A8EE221CFDE19400E823E7 /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
 		DB4924DB1C76779E00D473A3 /* MPKitTune.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTune.h; sourceTree = "<group>"; };
 		DB4924DC1C76779E00D473A3 /* MPKitTune.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTune.m; sourceTree = "<group>"; };
 		DBA191521C6C006100F7E74B /* MPKitAppsFlyer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppsFlyer.h; sourceTree = "<group>"; };
@@ -690,6 +744,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C9A8EDA11CFDDF6800E823E7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9A8EDA91CFDDF6800E823E7 /* mParticle_Apple_SDK.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -701,6 +763,8 @@
 				C9049C3C1C56E1C9005F11EA /* Supporting Files */,
 				C984F85A1C6CE1DD00002F67 /* ios */,
 				C9049C3B1C56DF6A005F11EA /* Products */,
+				C9A8EDAF1CFDDFAF00E823E7 /* UnitTests */,
+				C9A8EDA41CFDDF6800E823E7 /* mParticle_iOS_SDKTests.xctest */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1202,6 +1266,37 @@
 			path = ios;
 			sourceTree = "<group>";
 		};
+		C9A8EDAF1CFDDFAF00E823E7 /* UnitTests */ = {
+			isa = PBXGroup;
+			children = (
+				C9A8EE0C1CFDE19400E823E7 /* BracketTests.mm */,
+				C9A8EE0D1CFDE19400E823E7 /* HasherTests.mm */,
+				C9A8EE0E1CFDE19400E823E7 /* MPAppNotificationHandlerTests.m */,
+				C9A8EE0F1CFDE19400E823E7 /* MPBackendController+Tests.h */,
+				C9A8EE101CFDE19400E823E7 /* MPBackendControllerTests.mm */,
+				C9A8EE111CFDE19400E823E7 /* MPCart+Tests.h */,
+				C9A8EE121CFDE19400E823E7 /* MPCartTests.m */,
+				C9A8EE131CFDE19400E823E7 /* MPCommerceEventTests.m */,
+				C9A8EE141CFDE19400E823E7 /* MPConsumerInfoTests.m */,
+				C9A8EE151CFDE19400E823E7 /* MPCustomModuleTests.m */,
+				C9A8EE161CFDE19400E823E7 /* MPEventTests.mm */,
+				C9A8EE171CFDE19400E823E7 /* MPForwardRecordTests.m */,
+				C9A8EE181CFDE19400E823E7 /* MPLaunchInfoTests.m */,
+				C9A8EE191CFDE19400E823E7 /* MPMessageBuilderTests.m */,
+				C9A8EE1A1CFDE19400E823E7 /* MPNetworkCommunication+Tests.h */,
+				C9A8EE1B1CFDE19400E823E7 /* MPNotificationController+Tests.h */,
+				C9A8EE1C1CFDE19400E823E7 /* MPNotificationControllerTests.m */,
+				C9A8EE1D1CFDE19400E823E7 /* MPPersistenceControllerTests.mm */,
+				C9A8EE1E1CFDE19400E823E7 /* MPProductBagTests.m */,
+				C9A8EE1F1CFDE19400E823E7 /* MPStateMachineTests.mm */,
+				C9A8EE201CFDE19400E823E7 /* MPURLRequestBuilder+Tests.h */,
+				C9A8EE211CFDE19400E823E7 /* MPURLRequestBuilderTests.m */,
+				C9A8EE221CFDE19400E823E7 /* MPZipTests.mm */,
+				C9A8EDB21CFDDFAF00E823E7 /* Info.plist */,
+			);
+			path = UnitTests;
+			sourceTree = "<group>";
+		};
 		DB4924DA1C76776B00D473A3 /* Tune */ = {
 			isa = PBXGroup;
 			children = (
@@ -1482,6 +1577,24 @@
 			productReference = C9049A661C56B99F005F11EA /* mParticle_Apple_SDK.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		C9A8EDA31CFDDF6800E823E7 /* mParticle_iOS_SDKTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C9A8EDAC1CFDDF6800E823E7 /* Build configuration list for PBXNativeTarget "mParticle_iOS_SDKTests" */;
+			buildPhases = (
+				C9A8EDA01CFDDF6800E823E7 /* Sources */,
+				C9A8EDA11CFDDF6800E823E7 /* Frameworks */,
+				C9A8EDA21CFDDF6800E823E7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C9A8EDAB1CFDDF6800E823E7 /* PBXTargetDependency */,
+			);
+			name = mParticle_iOS_SDKTests;
+			productName = mParticle_iOS_SDKTests;
+			productReference = C9A8EDA41CFDDF6800E823E7 /* mParticle_iOS_SDKTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1497,6 +1610,9 @@
 					};
 					C9049A651C56B99F005F11EA = {
 						CreatedOnToolsVersion = 7.2;
+					};
+					C9A8EDA31CFDDF6800E823E7 = {
+						CreatedOnToolsVersion = 7.3.1;
 					};
 				};
 			};
@@ -1515,6 +1631,7 @@
 			targets = (
 				C9049A581C56B98E005F11EA /* mParticle-iOS-SDK */,
 				C9049A651C56B99F005F11EA /* mParticle-tvOS-SDK */,
+				C9A8EDA31CFDDF6800E823E7 /* mParticle_iOS_SDKTests */,
 			);
 		};
 /* End PBXProject section */
@@ -1528,6 +1645,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		C9049A641C56B99F005F11EA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C9A8EDA21CFDDF6800E823E7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1764,7 +1888,40 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C9A8EDA01CFDDF6800E823E7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9A8EE471CFDE1A900E823E7 /* MPPersistenceControllerTests.mm in Sources */,
+				C9A8EE481CFDE1A900E823E7 /* MPProductBagTests.m in Sources */,
+				C9A8EE3F1CFDE1A900E823E7 /* MPCommerceEventTests.m in Sources */,
+				C9A8EE4A1CFDE1A900E823E7 /* MPURLRequestBuilderTests.m in Sources */,
+				C9A8EE411CFDE1A900E823E7 /* MPCustomModuleTests.m in Sources */,
+				C9A8EE491CFDE1A900E823E7 /* MPStateMachineTests.mm in Sources */,
+				C9A8EE3E1CFDE1A900E823E7 /* MPCartTests.m in Sources */,
+				C9A8EE431CFDE1A900E823E7 /* MPForwardRecordTests.m in Sources */,
+				C9A8EE4B1CFDE1A900E823E7 /* MPZipTests.mm in Sources */,
+				C9A8EE3C1CFDE1A900E823E7 /* MPAppNotificationHandlerTests.m in Sources */,
+				C9A8EE441CFDE1A900E823E7 /* MPLaunchInfoTests.m in Sources */,
+				C9A8EE421CFDE1A900E823E7 /* MPEventTests.mm in Sources */,
+				C9A8EE3B1CFDE1A900E823E7 /* HasherTests.mm in Sources */,
+				C9A8EE461CFDE1A900E823E7 /* MPNotificationControllerTests.m in Sources */,
+				C9A8EE3A1CFDE1A900E823E7 /* BracketTests.mm in Sources */,
+				C9A8EE401CFDE1A900E823E7 /* MPConsumerInfoTests.m in Sources */,
+				C9A8EE451CFDE1A900E823E7 /* MPMessageBuilderTests.m in Sources */,
+				C9A8EE3D1CFDE1A900E823E7 /* MPBackendControllerTests.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C9A8EDAB1CFDDF6800E823E7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C9049A581C56B98E005F11EA /* mParticle-iOS-SDK */;
+			targetProxy = C9A8EDAA1CFDDF6800E823E7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6003F5BD195388D20070C39A /* Debug */ = {
@@ -1958,6 +2115,43 @@
 			};
 			name = Release;
 		};
+		C9A8EDAD1CFDDF6800E823E7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = UnitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDKTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C9A8EDAE1CFDDF6800E823E7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = UnitTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDKTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1987,6 +2181,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		C9A8EDAC1CFDDF6800E823E7 /* Build configuration list for PBXNativeTarget "mParticle_iOS_SDKTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C9A8EDAD1CFDDF6800E823E7 /* Debug */,
+				C9A8EDAE1CFDDF6800E823E7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};
