@@ -876,7 +876,9 @@ NSString *const kitFileExtension = @"eks";
     // Projections are executed on a background thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __strong MPKitContainer *strongSelf = weakSelf;
-        dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        if (strongSelf) {
+            dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        }
         
         // Filter projections only to those of 'messageType'
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType == %ld", (long)MPMessageTypeCommerceEvent];
@@ -1334,7 +1336,9 @@ NSString *const kitFileExtension = @"eks";
             projectedCommerceEvents.push_back(commerceEvent);
         }
         
-        dispatch_semaphore_signal(strongSelf->kitsSemaphore);
+        if (strongSelf) {
+            dispatch_semaphore_signal(strongSelf->kitsSemaphore);
+        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
@@ -1365,7 +1369,9 @@ NSString *const kitFileExtension = @"eks";
     // Projections are executed on a background thread
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __strong MPKitContainer *strongSelf = weakSelf;
-        dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        if (strongSelf) {
+            dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
+        }
         
         // Attribute projection lambda function
         NSDictionary * (^projectAttributes)(MPEvent *const, MPEventProjection *const) = ^(MPEvent *const event, MPEventProjection *const eventProjection) {
@@ -1625,7 +1631,9 @@ NSString *const kitFileExtension = @"eks";
             }
         }
         
-        dispatch_semaphore_signal(strongSelf->kitsSemaphore);
+        if (strongSelf) {
+            dispatch_semaphore_signal(strongSelf->kitsSemaphore);
+        }
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionHandler(projectedEvents, appliedProjections);

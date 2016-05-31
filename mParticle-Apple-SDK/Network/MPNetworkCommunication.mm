@@ -345,15 +345,19 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     
     [connector asyncGetDataFromURL:self.segmentURL
                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                     __strong MPNetworkCommunication *strongSelf = weakSelf;
-                     
                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                      }
                      
-                     NSMutableArray<MPSegment *> *segments = nil;
                      NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
+                     __strong MPNetworkCommunication *strongSelf = weakSelf;
+                     if (!strongSelf) {
+                         completionHandler(NO, nil, elapsedTime, nil);
+                         return;
+                     }
+
+                     NSMutableArray<MPSegment *> *segments = nil;
                      BOOL success = NO;
                      
                      if (!data) {
@@ -485,16 +489,20 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                             message:uploadString
                    serializedParams:zipUploadData
                   completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                      __strong MPNetworkCommunication *strongSelf = weakSelf;
-                      
                       if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                           [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                           backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                       }
                       
+                      BOOL finished = index == standaloneUploads.count - 1;
+                      __strong MPNetworkCommunication *strongSelf = weakSelf;
+                      if (!strongSelf) {
+                          completionHandler(NO, standaloneUpload, nil, finished);
+                          return;
+                      }
+                      
                       NSDictionary *responseDictionary = nil;
                       MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-                      BOOL finished = index == standaloneUploads.count - 1;
                       NSInteger responseCode = [httpResponse statusCode];
                       BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
                       
@@ -591,16 +599,16 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                             message:uploadString
                    serializedParams:zipUploadData
                   completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
+                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+                      }
+                      
                       __strong MPNetworkCommunication *strongSelf = weakSelf;
                       
                       if (!strongSelf) {
                           completionHandler(NO, upload, nil, YES);
                           return;
-                      }
-                      
-                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                       }
                       
                       NSDictionary *responseDictionary = nil;
