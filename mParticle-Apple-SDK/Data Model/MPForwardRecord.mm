@@ -77,7 +77,20 @@ NSString *const kMPFROptOutState = @"s";
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(id)originalEvent {
     self = [super init];
-    if (!self) {
+    
+    BOOL validMessageType = messageType > MPMessageTypeUnknown && messageType <= MPMessageTypeCommerceEvent;
+    NSAssert(validMessageType, @"The 'messageType' variable is not valid.");
+    
+    BOOL validExecStatus = !MPIsNull(execStatus) && [execStatus isKindOfClass:[MPKitExecStatus class]];
+    NSAssert(validExecStatus, @"The 'execStatus' variable is not valid.");
+    
+    BOOL validKitFilter = MPIsNull(kitFilter) || [kitFilter isKindOfClass:[MPKitFilter class]];
+    NSAssert(validKitFilter, @"The 'kitFilter' variable is not valid.");
+    
+    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]];
+    NSAssert(validOriginalEvent, @"The 'originalEvent' variable is not valid.");
+    
+    if (!self || !validMessageType || !validExecStatus || !validKitFilter || !validOriginalEvent) {
         return nil;
     }
     
