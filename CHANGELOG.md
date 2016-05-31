@@ -6,6 +6,16 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 5.5.6
+
+>Upgrade suggestion: **MODERATE**. Update if you are using Branch Metrics or need filtering of e-commerce transaction attributes
+
+* [FIX] Verify the reference to self inside blocks
+* [FIX] Filter transactions attributes in commerce events
+* [FIX] Refactor Branch Metrics kit
+* [FIX] Fix user attribution mutation crash
+* [FIX] Restore Unit Tests
+
 ## 5.5.5
 
 >Upgrade suggestion: **MODERATE**. This update improves upload stability
