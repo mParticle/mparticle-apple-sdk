@@ -140,7 +140,7 @@
             NSDictionary *commerceEventAttributes = [commerceEvent beautifiedAttributes];
             NSString *eventName = [NSString stringWithFormat:@"eCommerce - %@", [[commerceEvent actionNameForAction:commerceEvent.action] capitalizedString]];
             long revenue = lround([commerceEvent.transactionAttributes.revenue doubleValue] * (multiplyByOneHundred ? 100 : 1));
-            revenue = commerceEvent.action == MPCommerceEventActionPurchase ? : labs(revenue) * -1;
+            revenue = commerceEvent.action == MPCommerceEventActionPurchase ? revenue : labs(revenue) * -1;
             
             [Localytics tagEvent:eventName attributes:commerceEventAttributes customerValueIncrease:@(revenue)];
             [execStatus incrementForwardCount];

@@ -29,6 +29,9 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
 @interface MPKitBranchMetrics() {
     Branch *branchInstance;
     BOOL forwardScreenViews;
+    NSDictionary *temporaryParams;
+    NSError *temporaryError;
+    void (^completionHandlerCopy)(NSDictionary<NSString *, NSString *> *, NSError *);
 }
 
 @end
@@ -53,7 +56,9 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
     
     forwardScreenViews = [configuration[ekBMAForwardScreenViews] boolValue];
     frameworkAvailable = YES;
-    
+    temporaryParams = nil;
+    temporaryError = nil;
+
     if (startImmediately) {
         [self start];
     }
@@ -72,33 +77,43 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
         NSString *branchKey = [self.configuration[ekBMAppKey] copy];
         branchInstance = [Branch getInstance:branchKey];
         
-        started = YES;
-        self.forwardedEvents = YES;
-        self.active = YES;
-        
         [branchInstance initSessionWithLaunchOptions:self.launchOptions isReferrable:YES andRegisterDeepLinkHandler:^(NSDictionary *params, NSError *error) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSMutableDictionary *userInfo = [@{mParticleKitInstanceKey:@(MPKitInstanceBranchMetrics),
-                                                   mParticleEmbeddedSDKInstanceKey:@(MPKitInstanceBranchMetrics),
-                                                   @"branchKey":branchKey} mutableCopy];
-                
-                if (params && params.count > 0) {
-                    userInfo[@"params"] = params;
-                }
-                
-                if (error) {
-                    userInfo[@"error"] = error;
-                }
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
-                                                                    object:nil
-                                                                  userInfo:userInfo];
-                
-                [[NSNotificationCenter defaultCenter] postNotificationName:mParticleEmbeddedSDKDidBecomeActiveNotification
-                                                                    object:nil
-                                                                  userInfo:userInfo];
-            });
+            temporaryParams = [params copy];
+            temporaryError = [error copy];
+            
+            if (completionHandlerCopy) {
+                completionHandlerCopy(params, error);
+                completionHandlerCopy = nil;
+            }
         }];
+
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (branchInstance) {
+                started = YES;
+                self.forwardedEvents = YES;
+                self.active = YES;
+            }
+            
+            NSMutableDictionary *userInfo = [@{mParticleKitInstanceKey:@(MPKitInstanceBranchMetrics),
+                                               mParticleEmbeddedSDKInstanceKey:@(MPKitInstanceBranchMetrics),
+                                               @"branchKey":branchKey} mutableCopy];
+            
+            if (temporaryParams && temporaryParams.count > 0) {
+                userInfo[@"params"] = temporaryParams;
+            }
+            
+            if (temporaryError) {
+                userInfo[@"error"] = temporaryError;
+            }
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
+                                                                object:nil
+                                                              userInfo:userInfo];
+            
+            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleEmbeddedSDKDidBecomeActiveNotification
+                                                                object:nil
+                                                              userInfo:userInfo];
+        });
     });
 }
 
@@ -172,6 +187,19 @@ NSString *const ekBMAForwardScreenViews = @"forwardScreenViews";
     [branchInstance setIdentity:identityString];
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceBranchMetrics) returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
+}
+
+- (MPKitExecStatus *)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> *linkInfo, NSError *error))completionHandler {
+    if (started && (temporaryParams || temporaryError)) {
+        completionHandler(temporaryParams, temporaryError);
+        temporaryParams = nil;
+        temporaryError = nil;
+    } else {
+        completionHandlerCopy = [completionHandler copy];
+    }
+    
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceBranchMetrics) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }
 
