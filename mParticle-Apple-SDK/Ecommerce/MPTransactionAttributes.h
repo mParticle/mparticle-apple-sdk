@@ -86,4 +86,9 @@
 
 @end
 
+extern NSString * _Nonnull const kMPExpTAAffiliation;
+extern NSString * _Nonnull const kMPExpTAShipping;
+extern NSString * _Nonnull const kMPExpTATax;
+extern NSString * _Nonnull const kMPExpTARevenue;
 extern NSString * _Nonnull const kMPExpTATransactionId;
+extern NSString * _Nonnull const kMPExpTACouponCode;
