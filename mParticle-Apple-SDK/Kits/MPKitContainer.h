@@ -18,8 +18,8 @@
 
 #import <Foundation/Foundation.h>
 #import <Foundation/Foundation.h>
-#import "MPKitProtocol.h"
 #import "MPExtensionProtocol.h"
+#import "MPKitProtocol.h"
 
 @class MPKitFilter;
 @class MPKitExecStatus;
