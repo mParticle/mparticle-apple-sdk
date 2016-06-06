@@ -1753,6 +1753,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     id<MPExtensionKitProtocol>kitRegister;
     id<MPKitProtocol> kitInstance;
+    Class NSStringClass = [NSString class];
+    Class NSNumberClass = [NSNumber class];
+    Class NSArrayClass = [NSArray class];
 
     // Adds all currently configured kits to a list
     vector<NSNumber *> deactivateKits;
@@ -1804,16 +1807,22 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
             
             if (kitInstance) {
-                if (userAttributes && [kitInstance respondsToSelector:@selector(setUserAttribute:value:)]) {
+                if (userAttributes) {
                     NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
                     NSString *key;
                     id value;
-                    Class NSStringClass = [NSString class];
                     
                     while ((key = [attributeEnumerator nextObject])) {
                         value = userAttributes[key];
-                        value = [value isKindOfClass:NSStringClass] ? (NSString *)value : [value stringValue];
-                        [kitInstance setUserAttribute:key value:value];
+                        
+                        if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
+                            [kitInstance setUserAttribute:key value:value];
+                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
+                            value = [value stringValue];
+                            [kitInstance setUserAttribute:key value:value];
+                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
+                            [kitInstance setUserAttribute:key values:value];
+                        }
                     }
                 }
                 

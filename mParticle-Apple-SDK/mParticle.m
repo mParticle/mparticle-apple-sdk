@@ -363,6 +363,11 @@ NSString *const kMPStateKey = @"state";
 #endif
 }
 
+- (nullable NSDictionary <NSString *, id> *)userAttributes {
+    NSDictionary *userAttributes = [self.backendController.userAttributes copy];
+    return userAttributes;
+}
+
 - (NSString *)version {
     return [kMParticleSDKVersion copy];
 }
@@ -1402,7 +1407,7 @@ NSString *const kMPStateKey = @"state";
                                    if (value) {
                                        MPILogDebug(@"Set user attribute - %@:%@", key, value);
                                    } else {
-                                       MPILogDebug(@"Set user attribute - %@:%@", key, [NSNull null]);
+                                       MPILogDebug(@"Reset user attribute - %@", key);
                                    }
                                    
                                    // Forwarding calls to kits
@@ -1434,6 +1439,46 @@ NSString *const kMPStateKey = @"state";
                                    MPILogWarning(@"Delayed set user attribute: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
                                    MPILogError(@"Could not set user attribute - %@:%@\n Reason: %@", key, value, [strongSelf.backendController execStatusDescription:execStatus]);
+                               }
+                           }];
+}
+
+- (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values {
+    __weak MParticle *weakSelf = self;
+    
+    [self.backendController setUserAttribute:key
+                                      values:values
+                                     attempt:0
+                           completionHandler:^(NSString *key, NSArray *values, MPExecStatus execStatus) {
+                               __strong MParticle *strongSelf = weakSelf;
+                               
+                               if (execStatus == MPExecStatusSuccess) {
+                                   if (values) {
+                                       MPILogDebug(@"Set user attribute values - %@:%@", key, values);
+                                   } else {
+                                       MPILogDebug(@"Reset user attribute - %@", key);
+                                   }
+                                   
+                                   // Forwarding calls to kits
+                                   if (values) {
+                                       [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:values:)
+                                                                      userAttributeKey:key
+                                                                                 value:values
+                                                                            kitHandler:^(id<MPKitProtocol> kit) {
+                                                                                [kit setUserAttribute:key values:values];
+                                                                            }];
+                                   } else {
+                                       [[MPKitContainer sharedInstance] forwardSDKCall:@selector(removeUserAttribute:)
+                                                                      userAttributeKey:key
+                                                                                 value:values
+                                                                            kitHandler:^(id<MPKitProtocol> kit) {
+                                                                                [kit removeUserAttribute:key];
+                                                                            }];
+                                   }
+                               } else if (execStatus == MPExecStatusDelayedExecution) {
+                                   MPILogWarning(@"Delayed set user attribute values: %@\n Reason: %@", key, [strongSelf.backendController execStatusDescription:execStatus]);
+                               } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
+                                   MPILogError(@"Could not set user attribute values - %@:%@\n Reason: %@", key, values, [strongSelf.backendController execStatusDescription:execStatus]);
                                }
                            }];
 }

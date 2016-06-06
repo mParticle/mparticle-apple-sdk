@@ -17,7 +17,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPBackendController+Tests.h"
+#import "MPBackendController.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
 #import "MPStateMachine.h"
@@ -33,9 +33,42 @@
 #import "MPMediaTrack+Internal.h"
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
+#import "mParticle.h"
 
 #define BACKEND_TESTS_EXPECATIONS_TIMEOUT 10
 
+#pragma mark - MPBackendController+Tests category
+@interface MPBackendController(Tests)
+
+@property (nonatomic, strong, readonly) MPMediaTrackContainer *mediaTrackContainer;
+@property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
+@property (nonatomic, strong) NSMutableDictionary *userAttributes;
+@property (nonatomic, strong) NSMutableArray *userIdentities;
+@property (nonatomic, unsafe_unretained) MPInitializationStatus initializationStatus;
+
+- (NSString *)caseInsensitiveKeyInDictionary:(NSDictionary *)dictionary withKey:(NSString *)key;
+- (void)cleanUp;
+- (void)forceAppFinishedLaunching;
+- (void)setInitializationStatus:(MPInitializationStatus)initializationStatus;
+- (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
+- (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
+- (void)logRemoteNotificationWithNotificationController:(MPNotificationController *const)notificationController;
+- (void)parseConfigResponse:(NSDictionary *)configurationDictionary;
+- (void)parseResponseHeader:(NSDictionary *)responseDictionary session:(MPSession *)session;
+- (NSNumber *)previousSessionSuccessfullyClosed;
+- (void)setPreviousSessionSuccessfullyClosed:(NSNumber *)previousSessionSuccessfullyClosed;
+- (void)processOpenSessionsIncludingCurrent:(BOOL)includeCurrentSession completionHandler:(dispatch_block_t)completionHandler;
+- (void)processPendingArchivedMessages;
+- (void)resetUserIdentitiesFirstTimeUseFlag;
+- (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession;
+- (void)uploadMessagesFromSession:(MPSession *)session completionHandler:(void(^)(MPSession *uploadedSession))completionHandler;
+- (void)uploadSessionHistory:(MPSession *)session completionHandler:(dispatch_block_t)completionHandler;
+- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
+- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error;
+
+@end
+
+#pragma mark - MPBackendControllerTests unit test class
 @interface MPBackendControllerTests : XCTestCase <MPBackendControllerDelegate>
 
 @property (nonatomic, strong) MPBackendController *backendController;
@@ -56,7 +89,6 @@
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
     [[MPPersistenceController sharedInstance] openDatabase];
-    [self.backendController setInitializationStatus:MPInitializationStatusStarted];
     [self.backendController beginSession:^(MPSession *session, MPSession *previousSession, MPExecStatus execStatus) {
         _session = session;
     }];
@@ -351,6 +383,9 @@
 }
 
 - (void)testBatchCycle {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.info = @{@"key":@"value"};
     
@@ -412,6 +447,8 @@
     });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
 }
 
 - (void)testRampUpload {
@@ -490,135 +527,6 @@
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
 }
-
-#if TARGET_OS_IOS == 1
-- (void)testLogInteractionWithAction {
-    [self backendController];
-    
-    NSDictionary *remoteNotificationDictionary = @{kMPUserNotificationDictionaryKey:[self remoteNotificationDictionary],
-                                                   kMPUserNotificationActionKey:@"DINO_CAB_ACTION_IDENTIFIER",
-                                                   kMPPushNotificationActionTileKey:@"Dino Cab"};
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                        object:self
-                                                      userInfo:remoteNotificationDictionary];
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Log interaction with action test"];
-    
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session
-                                                               completionHandler:^(NSArray *messages) {
-                                                                   BOOL containsPushNotificationMessage = NO;
-                                                                   if (messages) {
-                                                                       for (MPMessage *message in messages) {
-                                                                           if ([message.messageType isEqualToString:@"pm"]) {
-                                                                               containsPushNotificationMessage = YES;
-                                                                               NSDictionary *messageDictionary = [message dictionaryRepresentation];
-                                                                               
-                                                                               XCTAssertNotNil(messageDictionary, @"Not able to deserialize message dictionary.");
-                                                                               XCTAssertEqualObjects(messageDictionary[kMPPushMessageTypeKey], kMPPushMessageAction, @"Type should have been 'action.'");
-                                                                               XCTAssertNotNil(messageDictionary[kMPPushNotificationActionIdentifierKey], @"Action identifier is not being set.");
-                                                                               XCTAssertEqualObjects(messageDictionary[kMPPushNotificationActionIdentifierKey], @"DINO_CAB_ACTION_IDENTIFIER", @"Action identifier is being set incorrectly.");
-                                                                               XCTAssertEqualObjects(messageDictionary[kMPPushNotificationBehaviorKey], @(MPUserNotificationBehaviorRead | MPUserNotificationBehaviorReceived), @"Behavior should have been '1 << 2 | 1 << 0.'");
-                                                                           }
-                                                                       }
-                                                                       
-                                                                       XCTAssertTrue(containsPushNotificationMessage, @"Not logging interaction with received remote notifications.");
-                                                                   }
-                                                                   
-                                                                   [expectation fulfill];
-                                                               }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
-}
-
-- (void)testLogSilentNotification {
-    [self backendController];
-    [self notificationController];
-    
-    NSDictionary *remoteNotificationDictionary = @{kMPUserNotificationDictionaryKey:[self silentNotificationDictionary]};
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                        object:self
-                                                      userInfo:remoteNotificationDictionary];
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Log silent notification test"];
-    
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session
-                                                               completionHandler:^(NSArray *messages) {
-                                                                   XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-                                                                   
-                                                                   BOOL containsPushNotificationMessage = NO;
-                                                                   MPMessage *message;
-                                                                   for (message in messages) {
-                                                                       if ([message.messageType isEqualToString:@"pm"]) {
-                                                                           containsPushNotificationMessage = YES;
-                                                                           NSDictionary *messageDictionary = [message dictionaryRepresentation];
-                                                                           
-                                                                           XCTAssertEqualObjects(messageDictionary[kMPPushMessageTypeKey], kMPPushMessageReceived, @"Type should have been 'received.'");
-                                                                           XCTAssertNil(messageDictionary[kMPPushNotificationActionIdentifierKey], @"Action should not have been set.");
-                                                                           XCTAssertEqualObjects(messageDictionary[kMPPushNotificationBehaviorKey], @(MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorDisplayed), @"Behavior should have been '1 << 4 | 1 << 0.'");
-                                                                           
-                                                                           NSString *messageString = messageDictionary[kMPPushMessagePayloadKey];
-                                                                           NSArray *pushComponents = @[@"aps", @"content-available", @"sound"];
-                                                                           for (NSString *pushComponent in pushComponents) {
-                                                                               NSRange pushRange = [messageString rangeOfString:pushComponent];
-                                                                               XCTAssertNotEqual(pushRange.location, NSNotFound, @"Silent notification payload component %@ is not part of the message.", pushComponent);
-                                                                           }
-                                                                       }
-                                                                   }
-                                                                   
-                                                                   XCTAssertTrue(containsPushNotificationMessage, @"Not logging received silent notifications.");
-                                                                   
-                                                                   [expectation fulfill];
-                                                               }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
-}
-
-- (void)testLogNonmParticleRemoteNotification {
-    [self backendController];
-    [self notificationController];
-    
-    NSDictionary *remoteNotificationDictionary = @{kMPUserNotificationDictionaryKey:[self nonmParticleRemoteNotificationDictionary]};
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                        object:self
-                                                      userInfo:remoteNotificationDictionary];
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Log non mParticle remote notification test"];
-    
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session
-                                                               completionHandler:^(NSArray *messages) {
-                                                                   XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-                                                                   
-                                                                   BOOL containsPushNotificationMessage = NO;
-                                                                   MPMessage *message;
-                                                                   for (message in messages) {
-                                                                       if ([message.messageType isEqualToString:@"pm"]) {
-                                                                           containsPushNotificationMessage = YES;
-                                                                           NSDictionary *messageDictionary = [message dictionaryRepresentation];
-                                                                           
-                                                                           XCTAssertEqualObjects(messageDictionary[kMPPushMessageTypeKey], kMPPushMessageReceived, @"Type should have been 'received.'");
-                                                                           XCTAssertNil(messageDictionary[kMPPushNotificationActionIdentifierKey], @"Action should not have been set.");
-                                                                           XCTAssertEqualObjects(messageDictionary[kMPPushNotificationBehaviorKey], @(MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorDisplayed), @"Behavior should have been '1 << 4 | 1 << 0.'");
-                                                                           
-                                                                           NSString *messageString = messageDictionary[kMPPushMessagePayloadKey];
-                                                                           NSArray *pushComponents = @[@"aps", @"alert", @"badge", @"sound"];
-                                                                           for (NSString *pushComponent in pushComponents) {
-                                                                               NSRange pushRange = [messageString rangeOfString:pushComponent];
-                                                                               XCTAssertNotEqual(pushRange.location, NSNotFound, @"Push notification payload component %@ is not part of the message.", pushComponent);
-                                                                           }
-                                                                       }
-                                                                   }
-                                                                   
-                                                                   XCTAssertTrue(containsPushNotificationMessage, @"Not logging received push notifications upon launch.");
-                                                                   
-                                                                   [expectation fulfill];
-                                                               }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
-}
-#endif
 
 - (void)testDidBecomeActiveWithAppLink {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
@@ -723,6 +631,9 @@
 }
 
 - (void)testMediaTrackContainerBasics {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
     MPMediaTrack *mediaTrack = [[MPMediaTrack alloc] initWithChannel:@"Jurassic Park"];
     XCTAssertNotNil(mediaTrack, @"Instance should not have been nil.");
     mediaTrack.metadata = @{@"type":@"content", @"assetid":@"112358"};
@@ -748,9 +659,14 @@
     
     [self.backendController discardMediaTrack:mediaTrack];
     XCTAssertEqual(self.backendController.mediaTrackContainer.count, 0, @"There should have been no media tracks in the container.");
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
 }
 
 - (void)testPlayMediaTrack {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
     MPMediaTrack *mediaTrack = [[MPMediaTrack alloc] initWithChannel:@"Jurassic Park"];
     mediaTrack.format = MPMediaTrackFormatVideo;
     mediaTrack.quality = MPMediaTrackQualityMediumDefinition;
@@ -830,6 +746,230 @@
     });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
+- (void)testCheckAttributes {
+    NSMutableDictionary *dictionary = [@{@"Transport":@"Time Machine",
+                                         @"Model":@"Tardis",
+                                         @"Keywords":@[@"It is bigger on the inside", @"Looks like a police callbox", @"It is blue"]} mutableCopy];
+    
+    NSError *error = nil;
+    BOOL validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertTrue(validAttributes);
+    
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"Temperamental" error:&error];
+    XCTAssertTrue(validAttributes);
+    
+    NSMutableString *invalidLengthString = [[NSMutableString alloc] initWithCapacity:(MAX_USER_ATTR_LIST_ENTRY_LENGTH + 1)];
+    for (int i = 0; i < (MAX_USER_ATTR_LIST_ENTRY_LENGTH + 1); ++i) {
+        [invalidLengthString appendString:@"T"];
+    }
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@[invalidLengthString] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    NSMutableArray *invalidValues = [[NSMutableArray alloc] initWithCapacity:(MAX_USER_ATTR_LIST_SIZE + 1)];
+    for (int i = 0; i < (MAX_USER_ATTR_LIST_SIZE + 1); ++i) {
+        [invalidValues addObject:@"Use the stabilisers"];
+    }
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:invalidValues maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:nil maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:invalidLengthString maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    NSString *key = nil;
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:key value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    key = (NSString *)[NSNull null];
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:key value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    invalidLengthString = [[NSMutableString alloc] initWithCapacity:(LIMIT_NAME + 1)];
+    for (int i = 0; i < (LIMIT_NAME + 1); ++i) {
+        [invalidLengthString appendString:@"K"];
+    }
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:invalidLengthString value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+    
+    for (int i = 0; i < LIMIT_ATTR_COUNT; ++i) {
+        key = [@(i) stringValue];
+        dictionary[key] = key;
+    }
+    error = nil;
+    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    XCTAssertFalse(validAttributes);
+}
+
+- (void)testUserAttributes {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
+    NSDictionary *attributes = @{@"TardisKey1":@"Master",
+                                 @"TardisKey2":@"Guest",
+                                 @"TardisKey3":@42,
+                                 @"TardisKey4":@[@"alohomora", @"open sesame"]
+                                 };
+    
+    [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([obj isKindOfClass:[NSArray class]]) {
+            [self.backendController setUserAttribute:key values:obj attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+        } else {
+            [self.backendController setUserAttribute:key value:obj attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+        }
+    }];
+    
+    NSDictionary *userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes, attributes);
+    
+    [self.backendController incrementUserAttribute:@"TardisKey4" byValue:@1];
+    XCTAssertEqualObjects(userAttributes, attributes);
+    
+    [self.backendController setUserAttribute:@"TardisKey4" value:@"Door" attempt:0 completionHandler:nil];
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertNotEqualObjects(userAttributes, attributes);
+    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
+    
+    attributes = @{@"TardisKey1":@"Master",
+                   @"TardisKey2":@"Guest",
+                   @"TardisKey3":@42,
+                   @"TardisKey4":@"Door"
+                   };
+    
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes, attributes);
+    
+    [self.backendController setUserAttribute:@"TardisKey1" value:@"Wrong" attempt:11 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes, attributes);
+
+    NSMutableString *longString = [[NSMutableString alloc] initWithCapacity:(LIMIT_USER_ATTR_LENGTH + 1)];
+    for (int i = 0; i < (LIMIT_USER_ATTR_LENGTH + 1); ++i) {
+        [longString appendString:@"T"];
+    }
+    
+    [self.backendController setUserAttribute:@"TardisKey1" value:longString attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes, attributes);
+
+    [self.backendController setUserAttribute:@"TardisKey1" value:@"" attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertNotEqualObjects(userAttributes, attributes);
+    XCTAssertNil(userAttributes[@"TardisKey1"]);
+    
+    attributes = @{@"TardisKey2":@"Guest",
+                   @"TardisKey3":@42,
+                   @"TardisKey4":@"Door"
+                   };
+
+    XCTAssertEqualObjects(userAttributes, attributes);
+
+    [self.backendController setUserAttribute:@"TardisKey2" value:nil attempt:0 completionHandler:nil];
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertNotEqualObjects(userAttributes, attributes);
+    XCTAssertEqualObjects(userAttributes[@"TardisKey2"], [NSNull null]);
+
+    attributes = @{@"TardisKey2":[NSNull null],
+                   @"TardisKey3":@42,
+                   @"TardisKey4":@"Door"
+                   };
+    
+    XCTAssertEqualObjects(userAttributes, attributes);
+
+    [self.backendController incrementUserAttribute:@"TardisKey2" byValue:@1];
+    XCTAssertEqualObjects(userAttributes, attributes);
+    
+    NSArray *values = @[@"alohomora", @314];
+    [self.backendController setUserAttribute:@"TardisKey4" values:values attempt:0 completionHandler:nil];
+    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes, attributes);
+
+    [self.backendController setUserAttribute:@"TardisKey4" values:nil attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    XCTAssertNil(userAttributes[@"TardisKey4"]);
+
+    attributes = @{@"TardisKey2":[NSNull null],
+                   @"TardisKey3":@42
+                   };
+
+    userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes, attributes);
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
+- (void)testDeferredUserAttributes {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarting;
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Deferred user attributes"];
+    __weak MPBackendController *weakBackendController = self.backendController;
+    __block NSString *setKey = nil;
+    __block NSString *setValue = nil;
+    
+    [self.backendController setUserAttribute:@"TardisKey1" value:@"Master" attempt:0 completionHandler:^(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus) {
+        if (execStatus == MPExecStatusSuccess) {
+            setKey = key;
+            setValue = value;
+            
+            [expectation fulfill];
+        } else if (execStatus == MPExecStatusDelayedExecution || execStatus == MPExecStatusContinuedDelayedExecution) {
+            weakBackendController.initializationStatus = MPInitializationStatusStarted;
+        }
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+    
+    XCTAssertEqualObjects(setKey, @"TardisKey1");
+    XCTAssertEqualObjects(setValue, @"Master");
+}
+
+- (void)testDeferredUserAttributeList {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarting;
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Deferred user attributes"];
+    __weak MPBackendController *weakBackendController = self.backendController;
+    __block NSString *setKey = nil;
+    __block NSArray *setValues = nil;
+    NSArray *values = @[@"Master", @"Guest"];
+    
+    [self.backendController setUserAttribute:@"TardisKey1" values:values attempt:0 completionHandler:^(NSString * _Nonnull key, id _Nullable values, MPExecStatus execStatus) {
+        if (execStatus == MPExecStatusSuccess) {
+            setKey = key;
+            setValues = values;
+            
+            [expectation fulfill];
+        } else if (execStatus == MPExecStatusDelayedExecution || execStatus == MPExecStatusContinuedDelayedExecution) {
+            weakBackendController.initializationStatus = MPInitializationStatusStarted;
+        }
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+    
+    XCTAssertEqualObjects(setKey, @"TardisKey1");
+    XCTAssertEqualObjects(setValues, values);
 }
 
 @end

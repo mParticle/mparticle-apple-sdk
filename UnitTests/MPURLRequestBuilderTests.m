@@ -142,7 +142,11 @@
             
             XCTAssertTrue(validEnvironment, @"Invalid environment value: %@", headerValue);
         } else if ([header isEqualToString:@"x-mp-kits"]) {
-            XCTAssertEqualObjects(headerValue, @"42", @"Should have been equal.");
+            NSRange kitRange = [headerValue rangeOfString:@"42"];
+            XCTAssertTrue(kitRange.location != NSNotFound);
+            
+            kitRange = [headerValue rangeOfString:@"314"];
+            XCTAssertTrue(kitRange.location != NSNotFound);
         }
     }
 }

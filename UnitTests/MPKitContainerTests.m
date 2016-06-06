@@ -27,12 +27,14 @@
 #import "MPKitFilter.h"
 #import "MPEvent.h"
 #import "MPKitTestClass.h"
+#import "MPKitSecondTestClass.h"
 #import "MPStateMachine.h"
 #import "MPKitRegister.h"
 #import "MPConsumerInfo.h"
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
+#import "NSUserDefaults+mParticle.h"
 
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
@@ -86,6 +88,9 @@
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
         [MPKitContainer registerKit:kitRegister];
         
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        [MPKitContainer registerKit:kitRegister];
+        
         NSDictionary *configuration = @{
                                         @"id":@42,
                                         @"as":@{
@@ -100,11 +105,42 @@
 
 - (void)tearDown {
     kitContainer = nil;
-    
+
     [super tearDown];
 }
 
+- (void)setUserAttributesAndIdentities {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
+                                     @"Arm length":@"Short",
+                                     @"Height":@20,
+                                     @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+    
+    userDefaults[@"ua"] = userAttributes;
+    
+    NSArray *userIdentities = @[@{
+                                    @"n":@7,
+                                    @"i":@"trex@shortarmsdinosaurs.com",
+                                    @"dfs":MPCurrentEpochInMilliseconds,
+                                    @"f":@NO
+                                    }
+                                ];
+    
+    userDefaults[@"ui"] = userIdentities;
+    
+    [userDefaults synchronize];
+}
+
+- (void)resetUserAttributesAndIdentities {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults removeMPObjectForKey:@"ua"];
+    [userDefaults removeMPObjectForKey:@"ui"];
+    [userDefaults synchronize];
+}
+
 - (void)testUpdateKitConfiguration {
+    [self setUserAttributesAndIdentities];
+    
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{
@@ -182,6 +218,96 @@
     [kitContainer configureKits:@[configuration]];
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
     [kitContainer startKit:@42 configuration:kitConfiguration];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
+- (void)testRemoveKitConfiguration {
+    [self setUserAttributesAndIdentities];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appKey":@"unique key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@314,
+                                     @"as":@{
+                                             @"appId":@"unique id"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:kitConfigs];
+    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
+    XCTAssertEqual(@"unique id", [kitContainer.kitConfigurations objectForKey:@314].configuration[@"appId"]);
+    
+    NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    BOOL found = NO;
+    for (NSString *fileName in directoryContents) {
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        
+        @try {
+            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
+            
+            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
+                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
+                
+                if ([[kitConfiguration kitCode] isEqual:@42]){
+                    XCTAssertEqualObjects(@"unique key", kitConfiguration.configuration[@"appKey"]);
+                    found = YES;
+                } else if ([[kitConfiguration kitCode] isEqual:@314]){
+                    XCTAssertEqualObjects(@"unique id", kitConfiguration.configuration[@"appId"]);
+                    found = YES;
+                }
+                
+                XCTAssertTrue(found);
+            }
+        } @catch (NSException *exception) {
+        }
+    }
+    
+    found = NO;
+    kitConfigs = @[configuration1];
+    [kitContainer configureKits:kitConfigs];
+    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
+    
+    for (NSString *fileName in directoryContents) {
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        
+        @try {
+            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
+            
+            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
+                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
+                if ([[kitConfiguration kitCode] isEqual:@42]){
+                    XCTAssertEqualObjects(@"unique key", kitConfiguration.configuration[@"appKey"]);
+                    found = YES;
+                }
+            }
+        } @catch (NSException *exception) {
+        }
+    }
+    
+    XCTAssertTrue(found);
+    
+    NSDictionary *configuration = @{
+                                    @"id":@42,
+                                    @"as":@{
+                                            @"appId":@"MyAppId"
+                                            }
+                                    };
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configuration]];
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    [kitContainer startKit:@42 configuration:kitConfiguration];
+    
+    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testIsDisabledByBracketConfiguration {
@@ -383,16 +509,19 @@
     id kit;
     for (kit in registeredKits) {
         id wrapperInstance = [kit wrapperInstance];
-        NSDictionary *launchOptions = [(id<MPKitProtocol>)wrapperInstance launchOptions];
-        XCTAssertNotNil(launchOptions, @"Should not have been nil.");
+        NSNumber *kitCode = ((MPKitRegister *)kit).code;
+        
+        if ([kitCode isEqualToNumber:@42]) {
+            NSDictionary *launchOptions = [(id<MPKitProtocol>)wrapperInstance launchOptions];
+            XCTAssertNotNil(launchOptions, @"Should not have been nil.");
+        }
+        
+        NSString *name = [kitContainer nameForKitCode:kitCode];
+        XCTAssertEqualObjects(name, [kit name], @"Should have been equal.");
     }
     
     [kitContainer handleApplicationDidBecomeActive:nil];
     
-    NSString *name = [kitContainer nameForKitCode:@42];
-    kit = [registeredKits anyObject];
-    XCTAssertEqualObjects(name, [kit name], @"Should have been equal.");
-
     NSDictionary *mapping = [kitContainer methodMessageTypeMapping];
     XCTAssertNotNil(mapping, @"Should not have been nil.");
 }
@@ -571,13 +700,16 @@
     [kitContainer configureKits:configurations];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forSelector:@selector(logScreen:)];
     XCTAssertNotNil(kitFilter, @"Should not have been nil.");
 }
 
 - (void)testFilterForUserAttribute {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Filtering user attributes"];
+    
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),
@@ -595,22 +727,82 @@
     [kitContainer configureKits:configurations];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     NSString *key = @"Shoe Size";
     NSString *value = @"11";
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
-    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter user attribute.");
+    XCTAssertNotNil(kitFilter);
+    XCTAssertTrue(kitFilter.shouldFilter);
     
     key = @"teeth";
     value = @"sharp";
     kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
-    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+    XCTAssertNil(kitFilter);
     
     key = nil;
     kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
-    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+    XCTAssertNil(kitFilter);
+    
+    key = @"Shoe Size";
+    NSMutableArray *values = [@[@"9", @"10", @"11"] mutableCopy];
+    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:values];
+    XCTAssertNotNil(kitFilter);
+    
+    key = @"Dinosaur";
+    values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit) {
+                          XCTAssertNotNil(kit);
+                          
+                          MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+                          XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+                          NSArray *referenceValues = @[@"T-Rex", @"Short arms", @"Omnivore"];
+                          XCTAssertEqualObjects(kit.userAttributes[@"Dinosaur"], referenceValues);
+                          
+                          [expectation fulfill];
+                      }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testNotForwardUserAttributeList {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Not forwarding user attribute list"];
+    
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"hs":@{
+                                            @"ua":@{@"1818103830":@0}
+                                            }
+                                    }
+                                ];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSString *key = @"Shoe Size";
+    NSMutableArray *values = [@[@"9", @"10", @"11"] mutableCopy];
+
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit) {
+                          NSAssert(false, @"This line should never be executed.");
+                      }];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:1.1 handler:nil];
 }
 
 - (void)testFilterForUserAttributes {
@@ -642,7 +834,8 @@
     [kitContainer configureKits:configurations];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserAttributes:userAttributes];
     XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
@@ -684,7 +877,8 @@
     [kitContainer configureKits:configurations];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     NSString *identityString = @"earl.sinclair@shortarmsdinosaurs.com";
     MPUserIdentity identityType = MPUserIdentityEmail;
@@ -909,7 +1103,8 @@
     [kitContainer configureKits:configurations];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     product.brand = @"DLC";

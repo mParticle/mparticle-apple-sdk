@@ -1,5 +1,5 @@
 //
-//  MPKitTestClass.h
+//  MPKitSecondTestClass.h
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -19,13 +19,12 @@
 #import <Foundation/Foundation.h>
 #import "MPKitProtocol.h"
 
-@interface MPKitTestClass : NSObject <MPKitProtocol>
+@interface MPKitSecondTestClass : NSObject <MPKitProtocol>
 
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 @property (nonatomic, unsafe_unretained, readonly) BOOL started;
 @property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
 @property (nonatomic, strong, nullable) NSArray<NSDictionary<NSString *, id> *> *userIdentities;
-@property (nonatomic, strong, nonnull) NSDictionary *configuration;
 
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
 + (nonnull NSNumber *)kitCode;

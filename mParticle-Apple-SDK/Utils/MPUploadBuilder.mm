@@ -219,10 +219,11 @@ using namespace std;
     if ([userAttributes count] > 0) {
         NSMutableDictionary<NSString *, id> *userAttributesCopy = [userAttributes mutableCopy];
         NSArray *keys = [userAttributesCopy allKeys];
-        for (int i = 0; i < [keys count]; i += 1) {
-            NSString *key = keys[i];
+        Class numberClass = [NSNumber class];
+        
+        for (NSString *key in keys) {
             id currentValue = userAttributesCopy[key];
-            NSString *newValue = [currentValue isKindOfClass:[NSNumber class]] ? [(NSNumber *)currentValue stringValue] : currentValue;
+            NSString *newValue = [currentValue isKindOfClass:numberClass] ? [(NSNumber *)currentValue stringValue] : currentValue;
             userAttributesCopy[key] = newValue;
         }
         

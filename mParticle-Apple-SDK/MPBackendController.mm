@@ -69,6 +69,7 @@ const NSInteger kEmptyValueAttribute = 102;
 const NSInteger kExceededNumberOfAttributesLimit = 103;
 const NSInteger kExceededAttributeMaximumLength = 104;
 const NSInteger kExceededKeyMaximumLength = 105;
+const NSInteger kInvalidDataType = 106;
 
 static NSArray *execStatusDescriptions;
 static BOOL appBackgrounded = NO;
@@ -93,7 +94,6 @@ static BOOL appBackgrounded = NO;
 }
 
 @property (nonatomic, strong) MPMediaTrackContainer *mediaTrackContainer;
-@property (nonatomic, strong) NSMutableDictionary<NSString *, id> *userAttributes;
 @property (nonatomic, strong) NSMutableArray<NSDictionary<NSString *, id> *> *userIdentities;
 
 @end
@@ -1417,6 +1417,7 @@ static BOOL appBackgrounded = NO;
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
     NSString *errorMessage = nil;
+    Class NSStringClass = [NSString class];
     
     if (!value) {
         if (error != NULL) {
@@ -1426,7 +1427,7 @@ static BOOL appBackgrounded = NO;
         errorMessage = @"The 'value' parameter is invalid.";
     }
     
-    if ([value isKindOfClass:[NSString class]]) {
+    if ([value isKindOfClass:NSStringClass]) {
         if ([value isEqualToString:@""]) {
             if (error != NULL) {
                 *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kEmptyValueAttribute userInfo:nil];
@@ -1440,7 +1441,38 @@ static BOOL appBackgrounded = NO;
                 *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
             }
             
-            errorMessage = @"The 'value' parameter is longer than the maximum allowed length.";
+            errorMessage = [NSString stringWithFormat:@"The parameter: %@ is longer than the maximum allowed.", value];
+        }
+    } else if ([value isKindOfClass:[NSArray class]]) {
+        NSArray *values = (NSArray *)value;
+        if (values.count > MAX_USER_ATTR_LIST_SIZE) {
+            if (error != NULL) {
+                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
+            }
+            
+            errorMessage = @"The 'values' parameter contains more entries than the maximum allowed.";
+        }
+
+        if (!errorMessage) {
+            for (id entryValue in values) {
+                if (![entryValue isKindOfClass:NSStringClass]) {
+                    if (error != NULL) {
+                        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
+                    }
+                    
+                    errorMessage = [NSString stringWithFormat:@"All user attribute entries in the array must be of type string. Error entry: %@", entryValue];
+                    
+                    break;
+                } else if (((NSString *)entryValue).length > maxValueLength) {
+                    if (error != NULL) {
+                        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
+                    }
+                    
+                    errorMessage = [NSString stringWithFormat:@"The values entry: %@ is longer than the maximum allowed.", entryValue];
+                    
+                    break;
+                }
+            }
         }
     }
     
@@ -1458,9 +1490,7 @@ static BOOL appBackgrounded = NO;
         }
         
         errorMessage = @"The 'key' parameter cannot be nil.";
-    }
-    
-    if (key.length > LIMIT_NAME) {
+    } else if (key.length > LIMIT_NAME) {
         if (error != NULL) {
             *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededKeyMaximumLength userInfo:nil];
         }
@@ -2361,7 +2391,7 @@ static BOOL appBackgrounded = NO;
             
             if (validAttributes) {
                 self.userAttributes[localKey] = userAttributeValue;
-            } else if ((error.code == kEmptyValueAttribute) && self.userAttributes[localKey]) {
+            } else if (error.code == kEmptyValueAttribute && self.userAttributes[localKey]) {
                 [self.userAttributes removeObjectForKey:localKey];
                 
                 if (!deletedUserAttributes) {
@@ -2416,6 +2446,108 @@ static BOOL appBackgrounded = NO;
     
     if (completionHandler) {
         completionHandler(keyCopy, value, execStatus);
+    }
+}
+
+- (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler {
+    NSString *keyCopy = [key copy];
+    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
+    
+    NSAssert(validKey, @"'key' must be a string.");
+    NSAssert(values == nil || (values != nil && ([values isKindOfClass:[NSArray class]])), @"'values' must be either nil or array.");
+    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user attribute cannot be done prior to starting the mParticle SDK.\n****\n");
+    
+    if (!validKey) {
+        if (completionHandler) {
+            completionHandler(keyCopy, values, MPExecStatusMissingParam);
+        }
+        
+        return;
+    }
+    
+    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
+        if (completionHandler) {
+            completionHandler(keyCopy, values, MPExecStatusFail);
+        }
+        
+        return;
+    }
+    
+    MPExecStatus execStatus = MPExecStatusFail;
+    
+    switch (_initializationStatus) {
+        case MPInitializationStatusStarted: {
+            if ([MPStateMachine sharedInstance].optOut) {
+                if (completionHandler) {
+                    completionHandler(keyCopy, values, MPExecStatusOptOut);
+                }
+                
+                return;
+            }
+            
+            if (values && ![values isKindOfClass:[NSArray class]]) {
+                if (completionHandler) {
+                    completionHandler(keyCopy, nil, MPExecStatusInvalidDataType);
+                }
+                
+                return;
+            }
+            
+            NSString *localKey = [self.userAttributes caseInsensitiveKey:keyCopy];
+            NSError *error = nil;
+            BOOL validAttributes = [self checkAttribute:self.userAttributes key:localKey value:values maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+
+            if (validAttributes) {
+                self.userAttributes[localKey] = values;
+            } else if (error.code == kInvalidValue && self.userAttributes[localKey]) {
+                [self.userAttributes removeObjectForKey:localKey];
+                
+                if (!deletedUserAttributes) {
+                    deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
+                }
+                [deletedUserAttributes addObject:keyCopy];
+            }
+            
+            NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
+            NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
+            NSString *aKey;
+            
+            while ((aKey = [attributeEnumerator nextObject])) {
+                if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
+                    userAttributes[aKey] = kMPNullUserAttributeString;
+                } else {
+                    userAttributes[aKey] = self.userAttributes[aKey];
+                }
+            }
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                userDefaults[kMPUserAttributeKey] = userAttributes;
+                [userDefaults synchronize];
+            });
+            
+            execStatus = MPExecStatusSuccess;
+        }
+            break;
+            
+        case MPInitializationStatusStarting: {
+            __weak MPBackendController *weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong MPBackendController *strongSelf = weakSelf;
+                [strongSelf setUserAttribute:keyCopy values:values attempt:(attempt + 1) completionHandler:completionHandler];
+            });
+            
+            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
+        }
+            break;
+            
+        case MPInitializationStatusNotStarted:
+            execStatus = MPExecStatusSDKNotStarted;
+            break;
+    }
+    
+    if (completionHandler) {
+        completionHandler(keyCopy, values, execStatus);
     }
 }
 

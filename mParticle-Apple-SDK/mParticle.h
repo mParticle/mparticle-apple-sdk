@@ -165,6 +165,12 @@
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 
 /**
+ Gets all user attributes.
+ @returns A dictionary containing the collection of user attributes.
+ */
+@property (nonatomic, strong, nullable, readonly) NSDictionary<NSString *, id> *userAttributes;
+
+/**
  mParticle Apple SDK version
  */
 @property (nonatomic, strong, readonly, nonnull) NSString *version;
@@ -627,12 +633,20 @@
 
 /**
  Sets a single user attribute. The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes. Passing in an empry string value (@"") for an
+ There is a 100 count limit to user attributes. Passing in an empty string value (@"") for an
  existing key will remove the user attribute.
  @param key The user attribute key
  @param value The user attribute value
  */
 - (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value;
+
+/**
+ Sets a list of user attributes associated with a key.
+ Passing nil to values for an existing key will remove the user attribute.
+ @param key The user attribute list key
+ @param values An array of user attributes
+ */
+- (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values;
 
 /**
  Sets User/Customer Identity

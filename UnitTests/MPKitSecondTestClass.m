@@ -1,5 +1,5 @@
 //
-//  MPKitTestClass.m
+//  MPKitSecondTestClass.m
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,10 +16,10 @@
 //  limitations under the License.
 //
 
-#import "MPKitTestClass.h"
+#import "MPKitSecondTestClass.h"
 #import "MPKitExecStatus.h"
 
-@implementation MPKitTestClass
+@implementation MPKitSecondTestClass
 
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
     self = [super init];
@@ -33,7 +33,7 @@
 }
 
 + (nonnull NSNumber *)kitCode {
-    return @42;
+    return @314;
 }
 
 - (void)deinit {
@@ -83,11 +83,6 @@
     tempUserAttributes[key] = values;
     self.userAttributes = tempUserAttributes;
     
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-    return execStatus;
-}
-
-- (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }

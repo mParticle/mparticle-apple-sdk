@@ -82,6 +82,7 @@
 - (nonnull MPKitExecStatus *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nonnull MPKitExecStatus *)removeUserAttribute:(nonnull NSString *)key;
 - (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key value:(nullable NSString *)value;
+- (nonnull MPKitExecStatus *)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values;
 - (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
 - (nonnull MPKitExecStatus *)setUserTag:(nonnull NSString *)tag;
 
