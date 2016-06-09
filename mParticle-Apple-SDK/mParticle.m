@@ -1461,11 +1461,19 @@ NSString *const kMPStateKey = @"state";
                                    
                                    // Forwarding calls to kits
                                    if (values) {
-                                       [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:values:)
+                                       SEL setUserAttributeSelector = @selector(setUserAttribute:value:);
+                                       SEL setUserAttributeListSelector = @selector(setUserAttribute:values:);
+
+                                       [[MPKitContainer sharedInstance] forwardSDKCall:setUserAttributeListSelector
                                                                       userAttributeKey:key
                                                                                  value:values
                                                                             kitHandler:^(id<MPKitProtocol> kit) {
-                                                                                [kit setUserAttribute:key values:values];
+                                                                                if ([kit respondsToSelector:setUserAttributeListSelector]) {
+                                                                                    [kit setUserAttribute:key values:values];
+                                                                                } else if ([kit respondsToSelector:setUserAttributeSelector]) {
+                                                                                    NSString *csvValues = [values componentsJoinedByString:@","];
+                                                                                    [kit setUserAttribute:key value:csvValues];
+                                                                                }
                                                                             }];
                                    } else {
                                        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(removeUserAttribute:)

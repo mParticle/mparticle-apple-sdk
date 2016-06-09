@@ -499,6 +499,16 @@
 }
 
 - (void)testAssortedItems {
+    NSDictionary *configuration = @{
+                                    @"id":@42,
+                                    @"as":@{
+                                            @"appId":@"MyAppId"
+                                            }
+                                    };
+    
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    [kitContainer startKit:@42 configuration:kitConfiguration];
+
     NSNotification *notification = [[NSNotification alloc] initWithName:@"Test Launching"
                                                                  object:self
                                                                userInfo:@{@"deep":@"linking"}];

@@ -34,8 +34,24 @@
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
 #import "mParticle.h"
+#import "MPKitContainer.h"
+#import "MPKitConfiguration.h"
 
 #define BACKEND_TESTS_EXPECATIONS_TIMEOUT 10
+
+#pragma mark - MParticle+Tests category
+@interface MParticle(Tests)
+
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+
+@end
+
+#pragma mark - MPKitContainer category for unit tests
+@interface MPKitContainer(Tests)
+
+- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+
+@end
 
 #pragma mark - MPBackendController+Tests category
 @interface MPBackendController(Tests)
@@ -819,8 +835,37 @@
 }
 
 - (void)testUserAttributes {
+    if (![MPKitContainer registeredKits]) {
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        [MPKitContainer registerKit:kitRegister];
+        
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        [MPKitContainer registerKit:kitRegister];
+        
+        NSDictionary *configuration1 = @{
+                                         @"id":@42,
+                                         @"as":@{
+                                                 @"appId":@"MyAppId"
+                                                 }
+                                         };
+        
+        NSDictionary *configuration2 = @{
+                                         @"id":@314,
+                                         @"as":@{
+                                                 @"appId":@"unique id"
+                                                 }
+                                         };
+        
+        NSArray *kitConfigs = @[configuration1, configuration2];
+        [[MPKitContainer sharedInstance] configureKits:nil];
+        [[MPKitContainer sharedInstance] configureKits:kitConfigs];
+    }
+
     MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
     self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController.initializationStatus = MPInitializationStatusStarted;
     
     NSDictionary *attributes = @{@"TardisKey1":@"Master",
                                  @"TardisKey2":@"Guest",
@@ -830,8 +875,10 @@
     
     [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj isKindOfClass:[NSArray class]]) {
+            [mParticle setUserAttribute:key values:obj];
             [self.backendController setUserAttribute:key values:obj attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
         } else {
+            [mParticle setUserAttribute:key value:obj];
             [self.backendController setUserAttribute:key value:obj attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
         }
     }];
@@ -913,6 +960,8 @@
     XCTAssertEqualObjects(userAttributes, attributes);
     
     self.backendController.initializationStatus = originalInitializationStatus;
+    mParticle.backendController.initializationStatus = originalInitializationStatus;
+    [[MPKitContainer sharedInstance] configureKits:nil];
 }
 
 - (void)testDeferredUserAttributes {

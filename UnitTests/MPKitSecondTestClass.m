@@ -78,13 +78,4 @@
     return execStatus;
 }
 
-- (MPKitExecStatus *)setUserAttribute:(NSString *)key values:(NSArray<NSString *> *)values {
-    NSMutableDictionary *tempUserAttributes = self.userAttributes ? [self.userAttributes mutableCopy] : [[NSMutableDictionary alloc] initWithCapacity:1];
-    tempUserAttributes[key] = values;
-    self.userAttributes = tempUserAttributes;
-    
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-    return execStatus;
-}
-
 @end

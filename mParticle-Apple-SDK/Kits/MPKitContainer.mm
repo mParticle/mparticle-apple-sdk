@@ -2035,8 +2035,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 - (void)forwardSDKCall:(SEL)selector userAttributeKey:(NSString *)key value:(id)value kitHandler:(void (^)(id<MPKitProtocol> kit))kitHandler {
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
+    SEL setUserAttributeSelector = @selector(setUserAttribute:value:);
+    SEL setUserAttributeListSelector = @selector(setUserAttribute:values:);
+    SEL otherUserAttributeSelector = selector == setUserAttributeListSelector ? setUserAttributeSelector : setUserAttributeListSelector;
+    
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector] || [kitRegister.wrapperInstance respondsToSelector:otherUserAttributeSelector]) {
             MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributeKey:key value:value];
             
             if (!kitFilter.shouldFilter) {
