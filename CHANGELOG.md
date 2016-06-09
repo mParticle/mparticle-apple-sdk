@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.1.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you need user attribute lists
+
+* [NEW] User attributes can now take arrays as values. The array of values is associated with a user attribute key. The list of all user attributes can be retrieved using the new `userAttributes` property
+
 ## 6.0.7
 
 >Upgrade suggestion: **HIGH**. Upgrade if you are filtering transaction attributes in commerce events
