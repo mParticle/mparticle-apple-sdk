@@ -191,7 +191,7 @@ In order to run either the iOS or tvOS examples, first install the mParticle App
 
 Just by initializing the SDK you'll be set up to track user installs, engagement, and much more. Check out our doc site to learn how to add specific event tracking to your app.
 
-* [SDK Documentation](http://docs.mparticle.com/#sdk-documentation)
+* [SDK Documentation](http://docs.mparticle.com/#mobile-sdk-guide)
 
 
 ## Support
