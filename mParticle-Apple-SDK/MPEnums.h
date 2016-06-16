@@ -160,6 +160,8 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceBranchMetrics = 80,
     /** Kit code for Flurry */
     MPKitInstanceFlurry = 83,
+    /** Kit code for Leanplum */
+    MPKitInstanceLeanplum = 98,
     /** Kit code for Localytics */
     MPKitInstanceLocalytics = 84,
     /** Kit code for Apteligent (formerly known as Crittercism) */
