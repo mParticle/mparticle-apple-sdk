@@ -156,6 +156,7 @@
                                      };
     
     NSArray *kitConfigs = @[configuration1];
+    [kitContainer configureKits:nil];
     [kitContainer configureKits:kitConfigs];
     XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
     
