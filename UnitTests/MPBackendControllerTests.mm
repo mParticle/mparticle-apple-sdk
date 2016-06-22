@@ -576,8 +576,8 @@
                                                                            testRange = [messageString rangeOfString:@"\"nsi\""];
                                                                            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
                                                                            
-                                                                           testRange = [messageString rangeOfString:@"\"lpr\":{\"foo\":\"bar\"}"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"Launch parameters are not present.");
+                                                                           testRange = [messageString rangeOfString:@"lpr"];
+                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
                                                                        }
                                                                    }
                                                                    
@@ -619,11 +619,11 @@
                                                                            testRange = [messageString rangeOfString:@"\"nsi\""];
                                                                            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
                                                                            
-                                                                           testRange = [messageString rangeOfString:@"\"lpr\":{\"key1\":1}"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"Launch parameters are not present.");
+                                                                           testRange = [messageString rangeOfString:@"lpr"];
+                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
                                                                            
                                                                            testRange = [messageString rangeOfString:@"key2"];
-                                                                           XCTAssertEqual(testRange.location, NSNotFound, @"Not filtering launch parameters.");
+                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
                                                                        }
                                                                    }
                                                                    

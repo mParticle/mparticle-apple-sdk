@@ -22,7 +22,7 @@
 
 @property (nonatomic, strong, readonly, nonnull) NSURL *url;
 @property (nonatomic, strong, readonly, nonnull) NSString *sourceApplication;
-@property (nonatomic, strong, readonly, nullable) id annotation;
+@property (nonatomic, strong, readonly, nullable) NSString *annotation;
 @property (nonatomic, strong, readonly, nullable) NSDictionary<NSString *, id> *options;
 
 - (nonnull instancetype)initWithURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
