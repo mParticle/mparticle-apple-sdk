@@ -253,6 +253,8 @@
         return NO;
     }
     
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
     BOOL handlingActivity = NO;

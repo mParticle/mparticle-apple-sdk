@@ -86,7 +86,7 @@ static BOOL appBackgrounded = NO;
     dispatch_source_t backgroundSource;
     dispatch_source_t uploadSource;
     UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
-    BOOL appFinishedLaunching;
+    BOOL sdkIsLaunching;
     BOOL longSession;
     BOOL originalAppDelegateProxied;
     BOOL resignedActive;
@@ -124,7 +124,7 @@ static BOOL appBackgrounded = NO;
         retrievingSegments = NO;
         _delegate = delegate;
         backgroundStartTime = 0;
-        appFinishedLaunching = YES;
+        sdkIsLaunching = YES;
         longSession = NO;
         _initializationStatus = MPInitializationStatusNotStarted;
         resignedActive = NO;
@@ -419,7 +419,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)forceAppFinishedLaunching {
-    appFinishedLaunching = NO;
+    sdkIsLaunching = NO;
 }
 
 - (NSNumber *)previousSessionSuccessfullyClosed {
@@ -950,11 +950,19 @@ static BOOL appBackgrounded = NO;
         
         messageInfo[kMPASTPreviousSessionSuccessfullyClosedKey] = [self previousSessionSuccessfullyClosed];
         
-        BOOL sessionFinalized = YES;
-        
-#if TARGET_OS_IOS == 1
         MParticleUserNotification *userNotification = nil;
         NSDictionary *userInfo = [notification userInfo];
+        BOOL sessionFinalized = YES;
+
+        if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+            NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
+            
+            if (userActivity) {
+                stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+            }
+        }
+
+#if TARGET_OS_IOS == 1
         NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
         
         if (pushNotificationDictionary) {
@@ -1061,8 +1069,8 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    if (appFinishedLaunching || [MPStateMachine sharedInstance].optOut) {
-        appFinishedLaunching = NO;
+    if (sdkIsLaunching || [MPStateMachine sharedInstance].optOut) {
+        sdkIsLaunching = NO;
         return;
     }
     
@@ -2183,7 +2191,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate completionHandler:(dispatch_block_t)completionHandler {
-    appFinishedLaunching = YES;
+    sdkIsLaunching = YES;
     _initializationStatus = MPInitializationStatusStarting;
     
     if (proxyAppDelegate) {
