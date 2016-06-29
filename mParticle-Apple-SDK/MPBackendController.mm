@@ -951,7 +951,6 @@ static BOOL appBackgrounded = NO;
         
         messageInfo[kMPASTPreviousSessionSuccessfullyClosedKey] = [self previousSessionSuccessfullyClosed];
         
-        MParticleUserNotification *userNotification = nil;
         NSDictionary *userInfo = [notification userInfo];
         BOOL sessionFinalized = YES;
 
@@ -964,6 +963,7 @@ static BOOL appBackgrounded = NO;
         }
 
 #if TARGET_OS_IOS == 1
+        MParticleUserNotification *userNotification = nil;
         NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
         
         if (pushNotificationDictionary) {

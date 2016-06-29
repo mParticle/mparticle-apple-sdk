@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.2.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you want to use Button as a kit
+
+* [NEW] Support for [Button](https://www.usebutton.com) as a kit
+* [FIX] Server configuration override of crash report initialization is restored
+
 ## 6.1.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you need user attribute lists
