@@ -21,6 +21,7 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "mParticle.h"
+#import "MPILogger.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -28,25 +29,33 @@
 
 @implementation MPResponseConfig
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configurationDictionary {
+- (instancetype)initWithConfiguration:(NSDictionary *)configuration {
+    return [self initWithConfiguration:configuration dataReceivedFromServer:YES];
+}
+
+- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration dataReceivedFromServer:(BOOL)dataReceivedFromServer {
     self = [super init];
-    if (!self || MPIsNull(configurationDictionary)) {
+    if (!self || MPIsNull(configuration)) {
         return nil;
     }
-    
-    [[MPKitContainer sharedInstance] configureKits:configurationDictionary[kMPRemoteConfigKitsKey]];
 
+    _configuration = [configuration copy];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.latestSDKVersion = configurationDictionary[kMPRemoteConfigLatestSDKVersionKey];
-    [stateMachine configureCustomModules:configurationDictionary[kMPRemoteConfigCustomModuleSettingsKey]];
-    [stateMachine configureRampPercentage:configurationDictionary[kMPRemoteConfigRampKey]];
-    [stateMachine configureTriggers:configurationDictionary[kMPRemoteConfigTriggerKey]];
     
-    _influencedOpenTimer = !MPIsNull(configurationDictionary[kMPRemoteConfigInfluencedOpenTimerKey]) ? configurationDictionary[kMPRemoteConfigInfluencedOpenTimerKey] : nil;
+    if (dataReceivedFromServer) {
+        [[MPKitContainer sharedInstance] configureKits:_configuration[kMPRemoteConfigKitsKey]];
+        
+        stateMachine.latestSDKVersion = _configuration[kMPRemoteConfigLatestSDKVersionKey];
+        [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];
+        [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
+        [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
+    }
+    
+    _influencedOpenTimer = !MPIsNull(_configuration[kMPRemoteConfigInfluencedOpenTimerKey]) ? _configuration[kMPRemoteConfigInfluencedOpenTimerKey] : nil;
     
     // Exception handling
-    NSString *auxString = !MPIsNull(configurationDictionary[kMPRemoteConfigExceptionHandlingModeKey]) ? configurationDictionary[kMPRemoteConfigExceptionHandlingModeKey] : nil;
-    if (auxString && ![auxString isEqualToString:stateMachine.exceptionHandlingMode]) {
+    NSString *auxString = !MPIsNull(_configuration[kMPRemoteConfigExceptionHandlingModeKey]) ? _configuration[kMPRemoteConfigExceptionHandlingModeKey] : nil;
+    if (auxString) {
         stateMachine.exceptionHandlingMode = [auxString copy];
         
         [[NSNotificationCenter defaultCenter] postNotificationName:kMPConfigureExceptionHandlingNotification
@@ -55,36 +64,48 @@
     }
     
     // Network performance
-    auxString = !MPIsNull(configurationDictionary[kMPRemoteConfigNetworkPerformanceModeKey]) ? configurationDictionary[kMPRemoteConfigNetworkPerformanceModeKey] : nil;
+    auxString = !MPIsNull(_configuration[kMPRemoteConfigNetworkPerformanceModeKey]) ? _configuration[kMPRemoteConfigNetworkPerformanceModeKey] : nil;
     if (auxString) {
         [self configureNetworkPerformanceMeasurement:auxString];
     }
     
     // Session timeout
-    NSNumber *auxNumber = configurationDictionary[kMPRemoteConfigSessionTimeoutKey];
+    NSNumber *auxNumber = _configuration[kMPRemoteConfigSessionTimeoutKey];
     if (auxNumber) {
         [MParticle sharedInstance].sessionTimeout = [auxNumber doubleValue];
     }
     
     // Upload interval
-    auxNumber = !MPIsNull(configurationDictionary[kMPRemoteConfigUploadIntervalKey]) ? configurationDictionary[kMPRemoteConfigUploadIntervalKey] : nil;
+    auxNumber = !MPIsNull(_configuration[kMPRemoteConfigUploadIntervalKey]) ? _configuration[kMPRemoteConfigUploadIntervalKey] : nil;
     if (auxNumber) {
         [MParticle sharedInstance].uploadInterval = [auxNumber doubleValue];
     }
     
 #if TARGET_OS_IOS == 1
     // Push notifications
-    NSDictionary *auxDictionary = !MPIsNull(configurationDictionary[kMPRemoteConfigPushNotificationDictionaryKey]) ? configurationDictionary[kMPRemoteConfigPushNotificationDictionaryKey] : nil;
+    NSDictionary *auxDictionary = !MPIsNull(_configuration[kMPRemoteConfigPushNotificationDictionaryKey]) ? _configuration[kMPRemoteConfigPushNotificationDictionaryKey] : nil;
     if (auxDictionary) {
         [self configurePushNotifications:auxDictionary];
     }
     
     // Location tracking
-    auxDictionary = !MPIsNull(configurationDictionary[kMPRemoteConfigLocationKey]) ? configurationDictionary[kMPRemoteConfigLocationKey] : nil;
+    auxDictionary = !MPIsNull(_configuration[kMPRemoteConfigLocationKey]) ? _configuration[kMPRemoteConfigLocationKey] : nil;
     if (auxDictionary) {
         [self configureLocationTracking:auxDictionary];
     }
 #endif
+    
+    return self;
+}
+
+#pragma mark NSCoding
+- (void)encodeWithCoder:(NSCoder *)coder {
+    [coder encodeObject:_configuration forKey:@"configuration"];
+}
+
+- (id)initWithCoder:(NSCoder *)coder {
+    NSDictionary *configuration = [coder decodeObjectForKey:@"configuration"];
+    self = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO];
     
     return self;
 }
@@ -106,7 +127,42 @@
     }
 }
 
-#pragma mark Public methods
+#pragma mark Public class methods
++ (void)save:(nonnull MPResponseConfig *)responseConfig; {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+        [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
+    
+    if ([fileManager fileExistsAtPath:configurationPath]) {
+        [fileManager removeItemAtPath:configurationPath error:nil];
+    }
+    
+    BOOL configurationArchived = [NSKeyedArchiver archiveRootObject:responseConfig.configuration toFile:configurationPath];
+    if (!configurationArchived) {
+        MPILogError(@"RequestConfig could not be archived.");
+    }
+}
+
++ (nullable MPResponseConfig *)restore {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
+
+    if (![fileManager fileExistsAtPath:configurationPath]) {
+        return nil;
+    }
+    
+    NSDictionary *configuration = [NSKeyedUnarchiver unarchiveObjectWithFile:configurationPath];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO];
+    
+    return responseConfig;
+}
+
+#pragma mark Public instance methods
 #if TARGET_OS_IOS == 1
 - (void)configureLocationTracking:(NSDictionary *)locationDictionary {
     NSString *locationMode = locationDictionary[kMPRemoteConfigLocationModeKey];

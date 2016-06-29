@@ -538,6 +538,7 @@ static BOOL appBackgrounded = NO;
         __strong MPBackendController *strongSelf = weakSelf;
         
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
+        [MPResponseConfig save:responseConfig];
         
         if (responseConfig.influencedOpenTimer && strongSelf) {
 #if TARGET_OS_IOS == 1
@@ -2230,6 +2231,8 @@ static BOOL appBackgrounded = NO;
         dispatch_async(dispatch_get_main_queue(), ^{
             strongSelf->_initializationStatus = MPInitializationStatusStarted;
             MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
+            
+            [MPResponseConfig restore];
             
             [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {
                 if (firstRun) {

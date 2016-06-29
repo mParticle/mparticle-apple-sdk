@@ -59,4 +59,31 @@
     XCTAssertNil(responseConfig, @"Should have been nil.");
 }
 
+- (void)testSaveRestore {
+    NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
+                                    kMPRemoteConfigLatestSDKVersionKey:kMParticleSDKVersion,
+                                    kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                    kMPRemoteConfigRampKey:@100,
+                                    kMPRemoteConfigTriggerKey:[NSNull null],
+                                    kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                    kMPRemoteConfigNetworkPerformanceModeKey:kMPRemoteConfigForceFalse,
+                                    kMPRemoteConfigSessionTimeoutKey:@112,
+                                    kMPRemoteConfigUploadIntervalKey:@42};
+    
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+    [MPResponseConfig save:responseConfig];
+    
+    MPResponseConfig *restoredResponseConfig = [MPResponseConfig restore];
+    XCTAssertNotNil(restoredResponseConfig);
+    XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
+    
+    if ([fileManager fileExistsAtPath:configurationPath]) {
+        [fileManager removeItemAtPath:configurationPath error:nil];
+    }
+}
+
 @end

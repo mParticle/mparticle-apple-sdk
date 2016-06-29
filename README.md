@@ -107,7 +107,6 @@ Kit | CocoaPods | Carthage
 [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                |  ✓ |  
 [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)                |  ✓ |  
 [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
-[Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)            |  ✓ |  
 [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ |  
 [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                    |  ✓ |  
 [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)              |  ✓ |  
