@@ -34,7 +34,7 @@
     }
     
     NSArray *titles = @[@"Bip Bop",
-                        @"Vevo Playlist",
+                        @"Airshow (no sound)",
                         @"Back to the Mac",
                         @"Wild Life",
                         @"Mango Open Movie Project",
@@ -46,7 +46,7 @@
                         @"This will log an exception"];
     
     NSArray *urls = @[@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8",
-                      @"http://vevoplaylist-live.hls.adaptive.level3.net/vevo/ch1/appleman.m3u8",
+                      @"http://cdn3.viblast.com/streams/hls/airshow/playlist.m3u8",
                       @"http://qthttp.apple.com.edgesuite.net/1010qwoeiuryfg/sl.m3u8",
                       @"http://playertest.longtailvideo.com/adaptive/wowzaid3/playlist.m3u8",
                       @"http://content.jwplatform.com/manifests/vM7nH0Kl.m3u8",
