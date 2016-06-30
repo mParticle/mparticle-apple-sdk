@@ -545,6 +545,7 @@
 }
 
 - (void)testDidBecomeActiveWithAppLink {
+#if TARGET_OS_IOS == 1
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
@@ -585,9 +586,11 @@
                                                                }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+#endif
 }
 
 - (void)testDidBecomeActive {
+#if TARGET_OS_IOS == 1
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
@@ -631,6 +634,7 @@
                                                                }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+#endif
 }
 
 - (void)testSessionEventCounter {
