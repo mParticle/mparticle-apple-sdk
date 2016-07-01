@@ -146,12 +146,14 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
 typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Appboy */
     MPKitInstanceAppboy = 28,
+    /** Kit code for Tune */
+    MPKitInstanceTune = 32,
     /** Kit code for Kochava */
     MPKitInstanceKochava = 37,
-    /** Kit code for Kahuna */
-    MPKitInstanceKahuna = 56,
     /** Kit code for comScore */
     MPKitInstanceComScore = 39,
+    /** Kit code for Kahuna */
+    MPKitInstanceKahuna = 56,
     /** Kit code for Foresee */
     MPKitInstanceForesee = 64,
     /** Kit code for Adjust */
@@ -160,8 +162,6 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceBranchMetrics = 80,
     /** Kit code for Flurry */
     MPKitInstanceFlurry = 83,
-    /** Kit code for Leanplum */
-    MPKitInstanceLeanplum = 98,
     /** Kit code for Localytics */
     MPKitInstanceLocalytics = 84,
     /** Kit code for Apteligent (formerly known as Crittercism) */
@@ -172,8 +172,10 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceWootric = 90,
     /** Kit code for AppsFlyer */
     MPKitInstanceAppsFlyer = 92,
-    /** Kit code for Tune */
-    MPKitInstanceTune = 32,
+    /** Kit code for Apptentive */
+    MPKitInstanceApptentive = 97,
+    /** Kit code for Leanplum */
+    MPKitInstanceLeanplum = 98,
     /** Kit code for Button */
     MPKitInstanceButton = 1022
 };
