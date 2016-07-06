@@ -21,6 +21,7 @@
 #import "MPIConstants.h"
 #import "MPForwardQueueItem.h"
 #import "MPCommerceEvent.h"
+#import "MPCommerceEvent+Dictionary.h"
 #import "MPProduct.h"
 #import "MPKitProtocol.h"
 #import "MPKitExecStatus.h"
@@ -28,6 +29,7 @@
 #import "MPEvent.h"
 #import "MPKitTestClass.h"
 #import "MPKitSecondTestClass.h"
+#import "MPKitAppsFlyerTest.h"
 #import "MPStateMachine.h"
 #import "MPKitRegister.h"
 #import "MPConsumerInfo.h"
@@ -83,12 +85,16 @@
     stateMachine.consumerInfo.mpId = @(-986700791391657968);
     
     kitContainer = [MPKitContainer sharedInstance];
-    
-    if (![MPKitContainer registeredKits]) {
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
         [MPKitContainer registerKit:kitRegister];
         
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        [MPKitContainer registerKit:kitRegister];
+        
+        kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest" startImmediately:YES];
         [MPKitContainer registerKit:kitRegister];
         
         NSDictionary *configuration = @{
@@ -100,6 +106,13 @@
         
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
         [kitContainer startKit:@42 configuration:kitConfiguration];
+    }
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 92"];
+    id kitAppsFlyer = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    if (!kitAppsFlyer) {
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest" startImmediately:YES];
+        [MPKitContainer registerKit:kitRegister];
     }
 }
 
@@ -119,7 +132,13 @@
     userDefaults[@"ua"] = userAttributes;
     
     NSArray *userIdentities = @[@{
-                                    @"n":@7,
+                                    @"n":@(MPUserIdentityEmail),
+                                    @"i":@"trex@shortarmsdinosaurs.com",
+                                    @"dfs":MPCurrentEpochInMilliseconds,
+                                    @"f":@NO
+                                    },
+                                @{
+                                    @"n":@(MPUserIdentityCustomerId),
                                     @"i":@"trex@shortarmsdinosaurs.com",
                                     @"dfs":MPCurrentEpochInMilliseconds,
                                     @"f":@NO
@@ -1166,6 +1185,291 @@
        }];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testForwardAppsFlyerEvent {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"AppsFlyer projection"];
+    
+    [self setUserAttributesAndIdentities];
+    
+    NSString *configurationStr =  @"{ \
+                                        \"id\":92, \
+                                        \"as\":{ \
+                                            \"devKey\":\"INVALID_DEV_KEY\", \
+                                            \"appleAppId\":\"INVALID_APPLE_APP_ID\" \
+                                        }, \
+                                        \"hs\":{ \
+                                        }, \
+                                        \"pr\":[ \
+                                              { \
+                                                  \"id\":144, \
+                                                  \"pmmid\":24, \
+                                                  \"match\":{ \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"String\", \
+                                                      \"event\":\"subscription_success\", \
+                                                      \"attribute_key\":\"plan\", \
+                                                      \"attribute_value\":\"premium\" \
+                                                  }, \
+                                                  \"behavior\":{ \
+                                                      \"append_unmapped_as_is\":true \
+                                                  }, \
+                                                  \"action\":{ \
+                                                      \"projected_event_name\":\"new_premium_subscriber\", \
+                                                      \"attribute_maps\":[ \
+                                                      ], \
+                                                      \"outbound_message_type\":4 \
+                                                  } \
+                                              }, \
+                                              { \
+                                                  \"id\":166, \
+                                                  \"match\":{ \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"\", \
+                                                      \"event\":\"\" \
+                                                  }, \
+                                                  \"behavior\":{ \
+                                                      \"append_unmapped_as_is\":true, \
+                                                      \"is_default\":true \
+                                                  }, \
+                                                  \"action\":{ \
+                                                      \"projected_event_name\":\"\", \
+                                                      \"attribute_maps\":[ \
+                                                      ], \
+                                                      \"outbound_message_type\":4 \
+                                                  } \
+                                              }, \
+                                              { \
+                                                  \"id\":156, \
+                                                  \"pmid\":350, \
+                                                  \"match\":{ \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"Hash\", \
+                                                      \"event\":\"-882445395\" \
+                                                  }, \
+                                                  \"behavior\":{ \
+                                                      \"append_unmapped_as_is\":true \
+                                                  }, \
+                                                  \"action\":{ \
+                                                      \"projected_event_name\":\"af_achievement_unlocked\", \
+                                                      \"attribute_maps\":[ \
+                                                                        { \
+                                                                            \"projected_attribute_name\":\"af_description\", \
+                                                                            \"match_type\":\"Hash\", \
+                                                                            \"value\":\"995159031\", \
+                                                                            \"data_type\":\"String\" \
+                                                                        } \
+                                                                        ], \
+                                                      \"outbound_message_type\":4 \
+                                                  } \
+                                              } \
+                                              ] \
+                                    }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"subscription_success" type:MPEventTypeTransaction];
+    event.info = @{@"plan":@"premium"};
+    
+    [kitContainer forwardSDKCall:@selector(logEvent:)
+                           event:event
+                     messageType:MPMessageTypeEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                              XCTAssertNotNil(forwardEvent);
+                              XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
+                              XCTAssertNotNil(forwardEvent.info);
+                              XCTAssertEqual(forwardEvent.info.count, 2);
+                              XCTAssertEqualObjects(forwardEvent.info[@"af_customer_user_id"], @"trex@shortarmsdinosaurs.com");
+                              
+                              [expectation fulfill];
+                          }
+                      }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
+- (void)testForwardAppsFlyerCommerceEvent {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"AppsFlyer ecommerce projection"];
+
+    [self setUserAttributesAndIdentities];
+
+    NSString *configurationStr =  @"{ \
+                                        \"id\":92, \
+                                        \"as\":{ \
+                                            \"devKey\":\"INVALID_DEV_KEY\", \
+                                            \"appleAppId\":\"INVALID_APPLE_APP_ID\" \
+                                        }, \
+                                        \"hs\":{ \
+                                        }, \
+                                        \"pr\":[ \
+                                              { \
+                                                  \"id\":144, \
+                                                  \"pmmid\":24, \
+                                                  \"match\":{ \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"String\", \
+                                                      \"event\":\"subscription_success\", \
+                                                      \"attribute_key\":\"plan\", \
+                                                      \"attribute_value\":\"premium\" \
+                                                  }, \
+                                                  \"behavior\":{ \
+                                                      \"append_unmapped_as_is\":false \
+                                                  }, \
+                                                  \"action\":{ \
+                                                      \"projected_event_name\":\"new_premium_subscriber\", \
+                                                      \"attribute_maps\":[ \
+                                                      ], \
+                                                      \"outbound_message_type\":4 \
+                                                  } \
+                                              }, \
+                                            { \
+                                                \"id\":147, \
+                                                \"pmid\":352, \
+                                                \"match\":{ \
+                                                    \"message_type\":16, \
+                                                    \"event_match_type\":\"Hash\", \
+                                                    \"event\":\"1567\" \
+                                                }, \
+                                                \"behavior\":{ \
+                                                    \"append_unmapped_as_is\":true \
+                                                }, \
+                                                \"action\":{ \
+                                                    \"projected_event_name\":\"af_add_to_cart\", \
+                                                    \"attribute_maps\":[ \
+                                                                      { \
+                                                                          \"projected_attribute_name\":\"af_content_type\", \
+                                                                          \"match_type\":\"Hash\", \
+                                                                          \"value\":\"-1847184355\", \
+                                                                          \"data_type\":\"String\", \
+                                                                          \"property\":\"ProductField\" \
+                                                                      }, \
+                                                                      { \
+                                                                          \"projected_attribute_name\":\"af_currency\", \
+                                                                          \"match_type\":\"Hash\", \
+                                                                          \"value\":\"-885836579\", \
+                                                                          \"data_type\":\"String\", \
+                                                                          \"property\":\"EventField\" \
+                                                                      }, \
+                                                                      { \
+                                                                          \"projected_attribute_name\":\"af_content_id\", \
+                                                                          \"match_type\":\"Hash\", \
+                                                                          \"value\":\"1509242\", \
+                                                                          \"data_type\":\"String\", \
+                                                                          \"property\":\"ProductField\" \
+                                                                      }, \
+                                                                      { \
+                                                                          \"projected_attribute_name\":\"af_price\", \
+                                                                          \"match_type\":\"Hash\", \
+                                                                          \"value\":\"2019141258\", \
+                                                                          \"data_type\":\"Float\", \
+                                                                          \"property\":\"ProductField\" \
+                                                                      }, \
+                                                                      { \
+                                                                          \"projected_attribute_name\":\"af_quantity\", \
+                                                                          \"match_type\":\"Hash\", \
+                                                                          \"value\":\"1112267690\", \
+                                                                          \"data_type\":\"Int\", \
+                                                                          \"property\":\"ProductField\" \
+                                                                      } \
+                                                                      ], \
+                                                    \"outbound_message_type\":4 \
+                                                } \
+                                            }, \
+                                              { \
+                                                  \"id\":166, \
+                                                  \"match\":{ \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"\", \
+                                                      \"event\":\"\" \
+                                                  }, \
+                                                  \"behavior\":{ \
+                                                      \"append_unmapped_as_is\":true, \
+                                                      \"is_default\":true \
+                                                  }, \
+                                                  \"action\":{ \
+                                                      \"projected_event_name\":\"\", \
+                                                      \"attribute_maps\":[ \
+                                                      ], \
+                                                      \"outbound_message_type\":4 \
+                                                  } \
+                                              }, \
+                                              { \
+                                                  \"id\":156, \
+                                                  \"pmid\":350, \
+                                                  \"match\":{ \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"Hash\", \
+                                                      \"event\":\"-882445395\" \
+                                                  }, \
+                                                  \"behavior\":{ \
+                                                      \"append_unmapped_as_is\":true \
+                                                  }, \
+                                                  \"action\":{ \
+                                                      \"projected_event_name\":\"af_achievement_unlocked\", \
+                                                      \"attribute_maps\":[ \
+                                                                        { \
+                                                                            \"projected_attribute_name\":\"af_description\", \
+                                                                            \"match_type\":\"Hash\", \
+                                                                            \"value\":\"995159031\", \
+                                                                            \"data_type\":\"String\" \
+                                                                        } \
+                                                                        ], \
+                                                      \"outbound_message_type\":4 \
+                                                  } \
+                                              } \
+                                              ] \
+                                    }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
+    transactionAttributes.affiliation = @"Doctor";
+    transactionAttributes.shipping = @1.23;
+    transactionAttributes.tax = @4.56;
+    transactionAttributes.revenue = @18;
+    transactionAttributes.transactionId = @"42";
+    commerceEvent.transactionAttributes = transactionAttributes;
+
+    [kitContainer forwardCommerceEventCall:commerceEvent
+                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                    if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                        NSString *customerUserId = kitFilter.forwardEvent.info[@"af_customer_user_id"];
+                                        XCTAssertNotNil(customerUserId);
+                                        XCTAssertEqualObjects(customerUserId, @"trex@shortarmsdinosaurs.com");
+                                        
+                                        [expectation fulfill];
+                                    }
+                                }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
 }
 
 @end
