@@ -104,6 +104,7 @@ NSString *const kMPPushNotificationCategoryIdentifierKey = @"acid";
 NSString *const kMPSessionLengthKey = @"sl";
 NSString *const kMPSessionTotalLengthKey = @"slx";
 NSString *const kMPOptOutStatus = @"s";
+NSString *const kMPAlwaysTryToCollectIDFA = @"alwaysTryToCollectIDFA";
 NSString *const kMPCrashingSeverity = @"s";
 NSString *const kMPCrashingClass = @"c";
 NSString *const kMPCrashWasHandled = @"eh";
@@ -183,6 +184,7 @@ NSString *const kMPRemoteConfigTriggerMessageTypesKey = @"dts";
 NSString *const kMPRemoteConfigInfluencedOpenTimerKey = @"pio";
 NSString *const kMPRemoteConfigUniqueIdentifierKey = @"das";
 NSString *const kMPRemoteConfigBracketKey = @"bk";
+NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
 
 // Notifications
 NSString *const kMPCrashReportOccurredNotification = @"MPCrashReportOccurredNotification";

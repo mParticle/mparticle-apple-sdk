@@ -73,6 +73,7 @@ int main(int argc, char *argv[]);
 @interface MPDevice() {
     NSCalendar *calendar;
     NSDictionary *deviceInfo;
+    BOOL isAdTrackingLimited;
 #if TARGET_OS_IOS == 1
     CTTelephonyNetworkInfo *telephonyNetworkInfo;
 #endif
@@ -131,7 +132,9 @@ int main(int argc, char *argv[]);
         
         selector = NSSelectorFromString(@"isAdvertisingTrackingEnabled");
         BOOL advertisingTrackingEnabled = (BOOL)[adIdentityManager performSelector:selector];
-        if (advertisingTrackingEnabled) {
+        isAdTrackingLimited = !advertisingTrackingEnabled;
+        BOOL alwaysTryToCollectIDFA = [MPStateMachine sharedInstance].alwaysTryToCollectIDFA;
+        if (advertisingTrackingEnabled || alwaysTryToCollectIDFA) {
             selector = NSSelectorFromString(@"advertisingIdentifier");
             _advertiserId = [[adIdentityManager performSelector:selector] UUIDString];
         }
@@ -241,7 +244,7 @@ int main(int argc, char *argv[]);
 }
 
 - (NSNumber *)limitAdTracking {
-    return self.advertiserId == nil ? @YES : @NO;
+    return isAdTrackingLimited ? @YES : @NO;
 }
 
 - (NSString *)manufacturer __attribute__((const)) {

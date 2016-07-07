@@ -141,6 +141,7 @@ extern NSString * _Nonnull const kMPPushNotificationCategoryIdentifierKey;
 extern NSString * _Nonnull const kMPSessionLengthKey;                 
 extern NSString * _Nonnull const kMPSessionTotalLengthKey;
 extern NSString * _Nonnull const kMPOptOutStatus;
+extern NSString * _Nonnull const kMPAlwaysTryToCollectIDFA;
 extern NSString * _Nonnull const kMPCrashingSeverity;
 extern NSString * _Nonnull const kMPCrashingClass;
 extern NSString * _Nonnull const kMPCrashWasHandled;
@@ -220,6 +221,7 @@ extern NSString * _Nonnull const kMPRemoteConfigTriggerMessageTypesKey;
 extern NSString * _Nonnull const kMPRemoteConfigInfluencedOpenTimerKey;
 extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
 extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
+extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
