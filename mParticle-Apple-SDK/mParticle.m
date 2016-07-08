@@ -1284,6 +1284,8 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)upload {
+    NSAssert(_backendController.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Upload cannot be done prior to starting the mParticle SDK.\n****\n");
+    
     __weak MParticle *weakSelf = self;
     
     dispatch_async(dispatch_get_main_queue(), ^{

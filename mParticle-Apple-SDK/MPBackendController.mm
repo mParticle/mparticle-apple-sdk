@@ -2301,8 +2301,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPExecStatus)upload {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Upload cannot be done prior to starting the mParticle SDK.\n****\n");
-    
     if (_initializationStatus != MPInitializationStatusStarted) {
         return MPExecStatusDelayedExecution;
     }
