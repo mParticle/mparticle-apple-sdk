@@ -157,6 +157,21 @@
     }
 }
 
+- (void)didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
+    if ([MPStateMachine sharedInstance].optOut) {
+        return;
+    }
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    SEL didRegisterUserNotificationSettingsSelector = @selector(didRegisterUserNotificationSettings:);
+    
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:didRegisterUserNotificationSettingsSelector]) {
+            [kitRegister.wrapperInstance didRegisterUserNotificationSettings:notificationSettings];
+        }
+    }
+}
+
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
     if ([MPStateMachine sharedInstance].optOut) {
         return;
@@ -170,6 +185,23 @@
     for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:handleActionWithIdentifierSelector]) {
             [kitRegister.wrapperInstance handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+        }
+    }
+}
+
+- (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo {
+    if ([MPStateMachine sharedInstance].optOut) {
+        return;
+    }
+    
+    [self receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeRemote];
+    
+    SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:withResponseInfo:);
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:handleActionWithIdentifierSelector]) {
+            [kitRegister.wrapperInstance handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
         }
     }
 }
