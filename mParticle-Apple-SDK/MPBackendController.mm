@@ -767,18 +767,6 @@ static BOOL appBackgrounded = NO;
                                       
                                       [persistence fetchUploadsInSession:session
                                                        completionHandler:^(NSArray<MPUpload *> *uploads) {
-                                                           MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:session uploads:uploads];
-                                                           sessionHistory.userAttributes = self.userAttributes;
-                                                           sessionHistory.userIdentities = self.userIdentities;
-                                                           
-                                                           if (!sessionHistory) {
-                                                               if (completionHandler) {
-                                                                   completionHandler(NO);
-                                                               }
-                                                               
-                                                               return;
-                                                           }
-                                                           
                                                            MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
                                                            if (!stateMachine.shouldUploadSessionHistory || stateMachine.dataRamped) {
                                                                for (MPUpload *upload in uploads) {
@@ -796,6 +784,18 @@ static BOOL appBackgrounded = NO;
                                                                                  completionHandler(NO);
                                                                              }
                                                                          }];
+                                                               
+                                                               return;
+                                                           }
+                                                           
+                                                           MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:session uploads:uploads];
+                                                           sessionHistory.userAttributes = self.userAttributes;
+                                                           sessionHistory.userIdentities = self.userIdentities;
+                                                           
+                                                           if (!sessionHistory) {
+                                                               if (completionHandler) {
+                                                                   completionHandler(NO);
+                                                               }
                                                                
                                                                return;
                                                            }

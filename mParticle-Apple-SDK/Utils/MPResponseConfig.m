@@ -82,6 +82,10 @@
         [MParticle sharedInstance].uploadInterval = [auxNumber doubleValue];
     }
     
+    // Session history
+    auxNumber = !MPIsNull(_configuration[kMPRemoteConfigIncludeSessionHistory]) ? _configuration[kMPRemoteConfigIncludeSessionHistory] : nil;
+    stateMachine.shouldUploadSessionHistory = auxNumber ? [auxNumber boolValue] : YES;
+    
 #if TARGET_OS_IOS == 1
     // Push notifications
     NSDictionary *auxDictionary = !MPIsNull(_configuration[kMPRemoteConfigPushNotificationDictionaryKey]) ? _configuration[kMPRemoteConfigPushNotificationDictionaryKey] : nil;
