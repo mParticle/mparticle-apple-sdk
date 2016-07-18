@@ -177,7 +177,7 @@
         return;
     }
     
-    [self receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeRemote];
+    [self receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
@@ -194,7 +194,7 @@
         return;
     }
     
-    [self receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeRemote];
+    [self receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:withResponseInfo:);
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
@@ -206,7 +206,7 @@
     }
 }
 
-- (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode {
+- (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode {
     if ([MPStateMachine sharedInstance].optOut || !userInfo) {
         return;
     }

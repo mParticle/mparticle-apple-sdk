@@ -479,10 +479,10 @@
 		C90499291C56B8DE005F11EA /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		C904992C1C56B8DE005F11EA /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
 		C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPAppDelegateProxy.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
+		C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPAppNotificationHandler.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPAppNotificationHandler.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C90499301C56B8DE005F11EA /* MPSurrogateAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPSurrogateAppDelegate.h; sourceTree = "<group>"; };
-		C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPSurrogateAppDelegate.m; sourceTree = "<group>"; };
+		C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPSurrogateAppDelegate.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C90499331C56B8DE005F11EA /* MPAppboy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppboy.h; sourceTree = "<group>"; };
 		C90499341C56B8DE005F11EA /* MPAppboy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAppboy.m; sourceTree = "<group>"; };
 		C90499351C56B8DE005F11EA /* MPCustomModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPCustomModule.h; sourceTree = "<group>"; };
@@ -687,7 +687,7 @@
 		C97C08AD1CA306A000280B1E /* mParticle_iOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_iOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C97C08B91CA3074F00280B1E /* BracketTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = BracketTests.mm; sourceTree = "<group>"; };
 		C97C08BC1CA3074F00280B1E /* HasherTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = HasherTests.mm; sourceTree = "<group>"; };
-		C97C08BD1CA3074F00280B1E /* MPAppNotificationHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppNotificationHandlerTests.m; sourceTree = "<group>"; };
+		C97C08BD1CA3074F00280B1E /* MPAppNotificationHandlerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPAppNotificationHandlerTests.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C97C08BF1CA3074F00280B1E /* MPBackendControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPBackendControllerTests.mm; sourceTree = "<group>"; };
 		C97C08C01CA3074F00280B1E /* MPCart+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPCart+Tests.h"; sourceTree = "<group>"; };
 		C97C08C11CA3074F00280B1E /* MPCartTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCartTests.m; sourceTree = "<group>"; };

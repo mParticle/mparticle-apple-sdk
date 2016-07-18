@@ -45,7 +45,7 @@
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
     if (userInfo) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeLocal];
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
     }
     
     if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
@@ -54,7 +54,7 @@
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeRemote];
+    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
     
     if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
         [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo];
@@ -69,7 +69,7 @@
     };
     
     MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
-    [appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeAutoDetect];
+    [appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeAutoDetect];
     
     if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
         [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:userNotificationCompletionHandler];
@@ -107,7 +107,7 @@
 - (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification completionHandler:(void (^)())completionHandler {
     NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
     if (userInfo) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeLocal];
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
     }
     
     id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;

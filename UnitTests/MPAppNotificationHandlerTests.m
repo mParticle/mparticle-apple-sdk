@@ -118,15 +118,15 @@
     
     NSDictionary *notification = @{};
     NSString *action = @"";
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNoticicationMode:MPUserNotificationModeRemote];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNoticicationMode:MPUserNotificationModeLocal];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNoticicationMode:MPUserNotificationModeAutoDetect];
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeLocal];
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeAutoDetect];
     
     notification = nil;
     action = nil;
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNoticicationMode:MPUserNotificationModeRemote];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNoticicationMode:MPUserNotificationModeLocal];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNoticicationMode:MPUserNotificationModeAutoDetect];
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeLocal];
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeAutoDetect];
 }
 
 @end

@@ -33,7 +33,7 @@
 - (void)didRegisterUserNotificationSettings:(nonnull UIUserNotificationSettings *)notificationSettings;
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nullable NSDictionary *)responseInfo;
-- (void)receivedUserNotification:(nonnull NSDictionary *)userInfo actionIdentifier:(nullable NSString *)actionIdentifier userNoticicationMode:(MPUserNotificationMode)userNotificationMode;
+- (void)receivedUserNotification:(nonnull NSDictionary *)userInfo actionIdentifier:(nullable NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode;
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler;
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
 #endif

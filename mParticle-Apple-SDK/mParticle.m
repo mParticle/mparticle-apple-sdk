@@ -476,7 +476,7 @@ NSString *const kMPStateKey = @"state";
 - (void)didReceiveLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
     if (userInfo && !self.proxiedAppDelegate) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeLocal];
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
     }
 }
 
@@ -485,7 +485,7 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeRemote];
+    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
@@ -507,7 +507,7 @@ NSString *const kMPStateKey = @"state";
 - (void)handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
     if (userInfo && !self.proxiedAppDelegate) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeLocal];
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
     }
 }
 
