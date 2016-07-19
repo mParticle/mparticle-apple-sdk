@@ -536,6 +536,14 @@ NSString *const kMPStateKey = @"state";
     [[MPAppNotificationHandler sharedInstance] openURL:url options:options];
 }
 
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
+    if (self.proxiedAppDelegate) {
+        return NO;
+    }
+
+    return [[MPAppNotificationHandler sharedInstance] continueUserActivity:userActivity restorationHandler:restorationHandler];
+}
+
 #pragma mark Basic tracking
 - (nullable NSSet *)activeTimedEvents {
     NSAssert(self.backendController.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Cannot fetch timed events prior to starting the mParticle SDK.\n****\n");

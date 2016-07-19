@@ -307,6 +307,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)openURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 
+/**
+ Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
+ This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.
+ @param userActivity The NSUserActivity that caused the app to be opened
+ @param restorationHandler A block to execute if your app creates objects to perform the task.
+ @see proxiedAppDelegate
+ */
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
+
 #pragma mark - Basic Tracking
 /**
  Contains a collection with all active timed events (timed events that had begun, but not yet ended). You should not keep a 
