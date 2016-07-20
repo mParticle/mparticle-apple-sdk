@@ -58,7 +58,6 @@
 - (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 - (nonnull MPKitExecStatus *)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
 - (nonnull MPKitExecStatus *)didBecomeActive;
-- (nonnull MPKitExecStatus *)didRegisterUserNotificationSettings:(nonnull UIUserNotificationSettings *)notificationSettings;
 - (nonnull MPKitExecStatus *)failedToRegisterForUserNotifications:(nullable NSError *)error;
 - (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nonnull NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo;
 - (nonnull MPKitExecStatus *)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nonnull NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
@@ -66,6 +65,10 @@
 - (nonnull MPKitExecStatus *)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 - (nonnull MPKitExecStatus *)receivedUserNotification:(nonnull NSDictionary *)userInfo;
 - (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken;
+
+#if TARGET_OS_IOS == 1
+- (nonnull MPKitExecStatus *)didRegisterUserNotificationSettings:(nonnull UIUserNotificationSettings *)notificationSettings;
+#endif
 
 #pragma mark Location tracking
 #if TARGET_OS_IOS == 1

@@ -279,28 +279,6 @@
     }
 }
 
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    if (stateMachine.optOut) {
-        return NO;
-    }
-    
-    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
-
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
-    SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
-    BOOL handlingActivity = NO;
-    
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
-            handlingActivity = YES;
-            [kitRegister.wrapperInstance continueUserActivity:userActivity restorationHandler:restorationHandler];
-        }
-    }
-    
-    return handlingActivity;
-}
-
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     if (stateMachine.optOut) {
@@ -317,6 +295,28 @@
     }
 }
 #endif
+
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    if (stateMachine.optOut) {
+        return NO;
+    }
+    
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
+    BOOL handlingActivity = NO;
+    
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
+            handlingActivity = YES;
+            [kitRegister.wrapperInstance continueUserActivity:userActivity restorationHandler:restorationHandler];
+        }
+    }
+    
+    return handlingActivity;
+}
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
