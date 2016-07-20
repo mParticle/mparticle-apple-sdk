@@ -6,6 +6,16 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.3.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you integrate with AppsFlyer, are writing an integration kit, or want to reduce network traffic
+
+* [NEW] Add the customerId user identity as an event attribute when forwarding to AppsFlyer
+* [NEW] Add new methods to the kit protocol to forward user notification related info to kits
+* [NEW] Config optional flag to send the session history batch (reducing the amount of data sent over to mParticle)
+* [NEW] Add continueUserActivity to the public SDK API (Pull Request submitted by twobitlabs)
+* [FIX] Guarantee that launch options in AST messages to contain only string parameters
+
 ## 6.2.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you want to use Button as a kit
