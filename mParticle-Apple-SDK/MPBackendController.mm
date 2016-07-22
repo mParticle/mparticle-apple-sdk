@@ -2191,7 +2191,7 @@ static BOOL appBackgrounded = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications completionHandler:(dispatch_block_t)completionHandler {
     sdkIsLaunching = YES;
     _initializationStatus = MPInitializationStatusStarting;
     
@@ -2200,7 +2200,9 @@ static BOOL appBackgrounded = NO;
     }
     
 #if TARGET_OS_IOS == 1
-    [self.notificationController registerForSilentNotifications];
+    if (registerForSilentNotifications) {
+        [self.notificationController registerForSilentNotifications];
+    }
 #endif
     
     [MPKitContainer sharedInstance];
