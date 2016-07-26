@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.4.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you want to use Apptentive as a kit or need to configure the behavior for silent notification registration
+
+* [NEW] Support for [Apptentive](http://www.apptentive.com) as a kit
+* [NEW] MParticleConfig.plist option to opt in/out of automatic silent notification registration. See [mParticle Docs](http://docs.mparticle.com/#apple) for details
+
 ## 6.3.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you integrate with AppsFlyer, are writing an integration kit, or want to reduce network traffic
