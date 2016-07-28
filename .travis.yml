@@ -2,9 +2,30 @@ language: objective-c
 osx_image: xcode7.3
 matrix:
   include:
-    - env: IOS_DEVICE="iPhone 6s (9.3)", UDID="5752202B-E7A2-4B6C-9D7B-B211C2F54654"
-    - env: IOS_DEVICE="iPhone 5s (8.1)", UDID="8DC0EE03-9484-4184-A7AF-444BDC4EDDC8"
+  - env: IOS_DEVICE="iPhone 6s (9.3)", UDID="5752202B-E7A2-4B6C-9D7B-B211C2F54654"
+  - env: IOS_DEVICE="iPhone 5s (8.1)", UDID="8DC0EE03-9484-4184-A7AF-444BDC4EDDC8"
+env:
+  global:
+  - FRAMEWORK_NAME=mParticle_Apple_SDK
+  - secure: "rKzMktHX0tQF9XjIZ0SiRKoNHINvFvb9VAlkPXCPyuu1L9UmKql4lsCH6VSafUK+Dm7EOyjle9P3jUGlO9RKY5T20ynNK5hBLKuSY7emWo2zEAhTfVCSAkZlixorkMIKEXD13jY/IZYvATsf4cTYo7DKsu97AWVL9AuQN4xPrETBYgrKXXYuLYnb0lDr2jJSaAUTvt0QqOEvIBLE59CRUIvcxnPqZefiQV5TMRjzNDoNY6SYlds/GEk1hXcYK6pIcKYV6QSjh0ZcAIYMnNaoWFXEmIdy1SNyGrwXSw43xPeVKCGrpbzMyjiEGPGm89fdy9y6c0TVsVXt8/BzY9a88H7TiJhjC/3BLpCKYtselNmYhGkhkGdPE/9NUfbSH4T1KQNjUVtFbsRBXmx0vhFf7Be+0mame187HxpP/t8oybAzqbLBda01V9HNTPyrzaG/y9gL6/g6eiPq8FkEAnOI4DnUpj9JOzQFDBErNfDniaTkqXRKbDaSvCA5rp/SBXjmHV5vv96egg6XOxJ0VR9XIVVpsCRxjehop7lEgLW+Syvft1Y70AooX8+CIj8FmBaCgSL6wHf7xJEygFpfLfYsVQNh+eUbXa1BsRh0iIIwrj5TtMt9WA9dfLAT7sZuVLLxTDx0uBzs7sdxYleBi43aVQXc+KwwHdhSZTQspQXkG34="
+before_install:
+- brew update
+- brew outdated carthage || brew upgrade carthage
 script:
-  - open -a "simulator" --args -CurrentDeviceUDID $UDID
-  - xctool -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test -only mParticle_iOS_SDKTests
-  - osascript -e 'tell app "Simulator" to quit'
+- open -a "simulator" --args -CurrentDeviceUDID $UDID
+- xctool -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test -only mParticle_iOS_SDKTests
+- osascript -e 'tell app "Simulator" to quit'
+before_deploy:
+- carthage build --no-skip-current
+- carthage archive $FRAMEWORK_NAME
+deploy:
+  provider: releases
+  api_key: $GITHUB_ACCESS_TOKEN
+  file: $FRAMEWORK_NAME.framework.zip
+  skip_cleanup: true
+  on:
+    repo: mParticle/mparticle-apple-sdk
+    tags: true
+    name: "Release"
+    draft: false
+    prerelease: false
