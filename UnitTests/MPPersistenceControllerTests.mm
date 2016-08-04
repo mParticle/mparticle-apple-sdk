@@ -28,6 +28,7 @@
 #import "MPStandaloneUpload.h"
 #import "MPMessageBuilder.h"
 #import "MParticleUserNotification.h"
+#import "MPIntegrationAttributes.h"
 
 #define DATABASE_TESTS_EXPECATIONS_TIMEOUT 1
 
@@ -398,6 +399,56 @@
     [persistence deleteStandaloneUpload:standaloneUpload];
     standaloneUpload = [[persistence fetchStandaloneUploads] firstObject];
     XCTAssertNil(standaloneUpload, @"Stand-alone upload should have been deleted.");
+}
+
+- (void)testIntegrationAttributes {
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+
+    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSDictionary<NSString *, NSString *> *attributes = @{@"keyUA":@"valueUA"};
+    MPIntegrationAttributes *integrationAttributes1 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    [persistence saveIntegrationAttributes:integrationAttributes1];
+    NSArray *integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNotNil(integrationAttributesArray);
+    XCTAssertEqual(integrationAttributesArray.count, 1);
+
+    kitCode = @(MPKitInstanceButton);
+    attributes = @{@"keyButton":@"valueButton"};
+    MPIntegrationAttributes *integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    [persistence saveIntegrationAttributes:integrationAttributes2];
+    integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNotNil(integrationAttributesArray);
+    XCTAssertEqual(integrationAttributesArray.count, 2);
+
+    kitCode = @(MPKitInstanceButton);
+    attributes = @{@"keyButton2":@"valueButton2"};
+    integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    [persistence saveIntegrationAttributes:integrationAttributes2];
+    integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNotNil(integrationAttributesArray);
+    XCTAssertEqual(integrationAttributesArray.count, 2);
+
+    [persistence deleteIntegrationAttributes:integrationAttributes2];
+    integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNotNil(integrationAttributesArray);
+    XCTAssertEqual(integrationAttributesArray.count, 1);
+    
+    kitCode = @(MPKitInstanceUrbanAirship);
+    [persistence deleteIntegrationAttributesForKitCode:kitCode];
+    integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNil(integrationAttributesArray);
+
+    kitCode = @(MPKitInstanceButton);
+    attributes = @{@"keyButton":@"valueButton"};
+    integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    [persistence saveIntegrationAttributes:integrationAttributes2];
+    integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNotNil(integrationAttributesArray);
+    XCTAssertEqual(integrationAttributesArray.count, 1);
+
+    [persistence deleteAllIntegrationAttributes];
+    integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    XCTAssertNil(integrationAttributesArray);
 }
 
 #if TARGET_OS_IOS == 1

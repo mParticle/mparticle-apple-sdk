@@ -272,6 +272,7 @@ extern NSString * _Nonnull const kMPNetworkPerformanceKey;
 
 // Kits
 extern NSString * _Nonnull const MPKitAttributeJailbrokenKey;
+extern NSString * _Nonnull const MPIntegrationAttributesKey;
 
 // Media Track
 extern NSString * _Nonnull const MPMediaTrackActionKey;

@@ -35,6 +35,7 @@
 #import "MPProductBag.h"
 #import "MPForwardRecord.h"
 #include "MessageTypeName.h"
+#import "MPIntegrationAttributes.h"
 
 #if TARGET_OS_IOS == 1
     #import "MParticleUserNotification.h"
@@ -85,7 +86,7 @@ const int MaxBreadcrumbs = 50;
 @synthesize databasePath = _databasePath;
 
 + (void)initialize {
-    databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24];
+    databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25];
 }
 
 - (instancetype)init {
@@ -397,6 +398,11 @@ const int MaxBreadcrumbs = 50;
             "CREATE TABLE IF NOT EXISTS forwarding_records ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
                 forwarding_data BLOB NOT NULL \
+            )",
+            "CREATE TABLE IF NOT EXISTS integration_attributes ( \
+                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+                kit_code INTEGER NOT NULL, \
+                attributes_data BLOB NOT NULL \
             )"
         };
         
@@ -672,6 +678,50 @@ const int MaxBreadcrumbs = 50;
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while deleting forwarding records: %s", sqlite3_errmsg(mParticleDB));
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+}
+
+- (void)deleteAllIntegrationAttributes {
+    dispatch_barrier_async(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "DELETE FROM integration_attributes";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+}
+
+- (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes {
+    if (MPIsNull(integrationAttributes)) {
+        return;
+    }
+    
+    [self deleteIntegrationAttributesForKitCode:integrationAttributes.kitCode];
+}
+
+- (void)deleteIntegrationAttributesForKitCode:(nonnull NSNumber *)kitCode {
+    if (MPIsNull(kitCode)) {
+        return;
+    }
+    
+    dispatch_barrier_async(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "DELETE FROM integration_attributes WHERE kit_code = ?";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int(preparedStatement, 1, [kitCode intValue]);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
             }
         }
         
@@ -1109,6 +1159,35 @@ const int MaxBreadcrumbs = 50;
     
     NSArray<MPForwardRecord *> *forwardRecords = [NSArray arrayWithObjects:&forwardRecordsVector[0] count:forwardRecordsVector.size()];
     return forwardRecords;
+}
+
+- (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes {
+    __block vector<MPIntegrationAttributes *> integrationAttributesVector;
+    
+    dispatch_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT kit_code, attributes_data FROM integration_attributes";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:@(intValue(preparedStatement, 0))
+                                                                                                   attributesData:dataValue(preparedStatement, 1)];
+                
+                if (integrationAttributes) {
+                    integrationAttributesVector.push_back(integrationAttributes);
+                }
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+    
+    if (integrationAttributesVector.empty()) {
+        return nil;
+    }
+    
+    NSArray<MPIntegrationAttributes *> *integrationAttributesArray = [NSArray arrayWithObjects:&integrationAttributesVector[0] count:integrationAttributesVector.size()];
+    return integrationAttributesArray;
 }
 
 - (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(MPSession *)session {
@@ -1835,6 +1914,43 @@ const int MaxBreadcrumbs = 50;
             }
             
             forwardRecord.forwardRecordId = sqlite3_last_insert_rowid(mParticleDB);
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+}
+
+- (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes {
+    [self deleteIntegrationAttributesForKitCode:integrationAttributes.kitCode];
+    
+    dispatch_barrier_async(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (?, ?)";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            NSError *error = nil;
+            NSData *attributesData = nil;
+            
+            @try {
+                attributesData = [NSJSONSerialization dataWithJSONObject:integrationAttributes.attributes options:0 error:&error];
+            } @catch (NSException *exception) {
+            }
+            
+            if (!attributesData && error != nil) {
+                return;
+            }
+            
+            sqlite3_bind_int(preparedStatement, 1, [integrationAttributes.kitCode intValue]);
+            sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while storing integration attributes: %s", sqlite3_errmsg(mParticleDB));
+                sqlite3_clear_bindings(preparedStatement);
+                sqlite3_finalize(preparedStatement);
+                return;
+            }
             
             sqlite3_clear_bindings(preparedStatement);
         }

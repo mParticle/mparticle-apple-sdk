@@ -36,6 +36,7 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
+#import "MPKitInstanceValidator.h"
 
 #define BACKEND_TESTS_EXPECATIONS_TIMEOUT 10
 
@@ -50,6 +51,13 @@
 @interface MPKitContainer(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+
+@end
+
+#pragma mark - MPKitInstanceValidator category for unit tests
+@interface MPKitInstanceValidator(BackendControllerTests)
+
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
 
 @end
 
@@ -839,6 +847,8 @@
 }
 
 - (void)testUserAttributes {
+    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
+    
     if (![MPKitContainer registeredKits]) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
         [MPKitContainer registerKit:kitRegister];

@@ -51,8 +51,9 @@ Pod::Spec.new do |s|
                                  'mParticle-Apple-SDK/Kits/MPKitExecStatus.h', 'mParticle-Apple-SDK/MPIHasher.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent+Dictionary.h', \
                                  'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h','mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', \
                                  'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Utils/MPDateFormatter.h', 'mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.h'
+                                 'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', \
+                                 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', 'mParticle-Apple-SDK/Utils/MPDateFormatter.h', \
+                                 'mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.h'
 
         ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files        = 'mParticle-Apple-SDK/**/*'

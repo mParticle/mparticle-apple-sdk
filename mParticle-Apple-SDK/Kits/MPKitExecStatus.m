@@ -19,6 +19,7 @@
 #import "MPKitExecStatus.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPKitInstanceValidator.h"
 
 @implementation MPKitExecStatus
 
@@ -38,20 +39,22 @@
 }
 
 - (instancetype)initWithSDKCode:(NSNumber *)kitCode returnCode:(MPKitReturnCode)returnCode forwardCount:(NSUInteger)forwardCount {
-    BOOL validKitCode = !MPIsNull(kitCode) && [kitCode isKindOfClass:[NSNumber class]];
+    BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:kitCode];
     NSAssert(validKitCode, @"The 'kitCode' variable is not valid.");
     
     BOOL validReturnCode = returnCode >= MPKitReturnCodeSuccess && returnCode <= MPKitReturnCodeRequirementsNotMet;
     NSAssert(validReturnCode, @"The 'returnCode' variable is not valid.");
-    
-    self = [self init];
-    if (!self || !validKitCode || !validReturnCode) {
+
+    if (!validKitCode || !validReturnCode) {
         return nil;
     }
-    
-    _kitCode = kitCode;
-    _returnCode = returnCode;
-    _forwardCount = forwardCount;
+
+    self = [self init];
+    if (self) {
+        _kitCode = kitCode;
+        _returnCode = returnCode;
+        _forwardCount = forwardCount;
+    }
     
     return self;
 }

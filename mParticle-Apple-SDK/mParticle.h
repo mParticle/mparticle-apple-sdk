@@ -484,6 +484,10 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
 
+#pragma mark - Integration Attributes (
+- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)kitCode;
+- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)kitCode;
+
 #pragma mark - Kits
 /**
  Retrieves the internal instance of a kit, so it can be used to invoke methods and properties of that kit directly.

@@ -42,6 +42,8 @@
 #import "MPKitExecStatus.h"
 #import "MPAppNotificationHandler.h"
 #import "MPEvent.h"
+#import "MPKitInstanceValidator.h"
+#import "MPIntegrationAttributes.h"
 
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"
@@ -965,6 +967,44 @@ NSString *const kMPStateKey = @"state";
     }
     
     return registrationSuccessful;
+}
+
+#pragma mark Integration attributes
+- (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)kitCode {
+    __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
+    
+    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
+        MPILogError(@"Cannot set integration attributes. mParticle SDK is not initialized yet.");
+        returnCode = MPKitReturnCodeCannotExecute;
+    }
+
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    
+    if (integrationAttributes) {
+        [[MPPersistenceController sharedInstance] saveIntegrationAttributes:integrationAttributes];
+    } else {
+        returnCode = MPKitReturnCodeRequirementsNotMet;
+    }
+    
+    return [[MPKitExecStatus alloc] initWithSDKCode:kitCode returnCode:returnCode forwardCount:0];
+}
+
+- (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)kitCode {
+    MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
+    BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:kitCode];
+    
+    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
+        MPILogError(@"Cannot clear integration attributes. mParticle SDK is not initialized yet.");
+        returnCode = MPKitReturnCodeCannotExecute;
+    }
+
+    if (validKitCode) {
+        [[MPPersistenceController sharedInstance] deleteIntegrationAttributesForKitCode:kitCode];
+    } else {
+        returnCode = MPKitReturnCodeRequirementsNotMet;
+    }
+
+    return [[MPKitExecStatus alloc] initWithSDKCode:kitCode returnCode:returnCode forwardCount:0];
 }
 
 #pragma mark Kits

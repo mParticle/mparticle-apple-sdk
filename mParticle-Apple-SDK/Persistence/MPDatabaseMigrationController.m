@@ -510,6 +510,33 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
+- (void)migrateIntegrationAttributesFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
+    const char *selectStatement, *insertStatement;
+    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    NSInteger oldVersionValue = [oldVersion integerValue];
+    
+    if (oldVersionValue < 25) {
+        return;
+    }
+
+    selectStatement = "SELECT _id, kit_code, attributes_data FROM integration_attributes";
+    insertStatement = "INSERT INTO integration_attributes (_id, kit_code, attributes_data) VALUES (?, ?, ?)";
+    
+    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
+    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
+    
+    while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
+        sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
+        sqlite3_bind_int(insertStatementHandle, 2, sqlite3_column_int(selectStatementHandle, 1)); // kit_code        
+        sqlite3_bind_blob(insertStatementHandle, 3, sqlite3_column_blob(selectStatementHandle, 2), sqlite3_column_bytes(selectStatementHandle, 2), SQLITE_TRANSIENT); // attributes_data
+        
+        sqlite3_step(insertStatementHandle);
+    }
+    
+    sqlite3_finalize(selectStatementHandle);
+    sqlite3_finalize(insertStatementHandle);
+}
+
 #pragma mark Public methods
 - (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion {
     dispatch_sync(dbQueue, ^{
@@ -548,6 +575,7 @@
         [self migrateProductBagsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+        [self migrateIntegrationAttributesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
 
         sqlite3_close(oldmParticleDB);
         [fileManager removeItemAtPath:dbPath error:nil];

@@ -235,6 +235,7 @@ NSString *const kMPNetworkPerformanceKey = @"MPNetworkPerformance";
 
 // Kits
 NSString *const MPKitAttributeJailbrokenKey = @"jailbroken";
+NSString *const MPIntegrationAttributesKey = @"ia";
 
 // Media Track
 NSString *const MPMediaTrackActionKey = @"act";
