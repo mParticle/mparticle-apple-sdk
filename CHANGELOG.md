@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.5.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you want to use Primer as a kit
+
+* [NEW] Support for [Primer](https://goprimer.com) as a kit
+
 ## 6.4.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you want to use Apptentive as a kit or need to configure the behavior for silent notification registration
