@@ -99,7 +99,7 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 Kit | CocoaPods | Carthage
 ----|:---------:|:-------:
 [Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)                |  ✓ | ✓
-[Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                |  ✓ |  
+[Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                |  ✓ | ✓
 [AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)          |  ✓ |  
 [Apptentive](https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive)        |  ✓ |   
 [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)        |  ✓ |  
@@ -110,6 +110,7 @@ Kit | CocoaPods | Carthage
 [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)                |  ✓ |  
 [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
 [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ |  
+[Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
 [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                    |  ✓ |  
 [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)              |  ✓ |  
 
