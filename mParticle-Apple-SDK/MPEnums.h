@@ -176,6 +176,8 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceApptentive = 97,
     /** Kit code for Leanplum */
     MPKitInstanceLeanplum = 98,
+    /** Kit code for Primer */
+    MPKitInstancePrimer = 100,
     /** Kit code for Button */
     MPKitInstanceButton = 1022
 };
