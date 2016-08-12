@@ -144,6 +144,8 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
 
 /// Kit Instance Codes
 typedef NS_ENUM(NSUInteger, MPKitInstance) {
+    /** Kit code for Urban Airship */
+    MPKitInstanceUrbanAirship = 25,
     /** Kit code for Appboy */
     MPKitInstanceAppboy = 28,
     /** Kit code for Tune */
@@ -178,8 +180,6 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceLeanplum = 98,
     /** Kit code for Primer */
     MPKitInstancePrimer = 100,
-    /** Kit code for Urban Airship */
-    MPKitInstanceUrbanAirship = 104,
     /** Kit code for Button */
     MPKitInstanceButton = 1022
 };
