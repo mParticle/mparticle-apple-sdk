@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.6.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
+
+* [FIX] A newly introduced class was missing from the tvOS Xcode target 
+
 ## 6.6.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
