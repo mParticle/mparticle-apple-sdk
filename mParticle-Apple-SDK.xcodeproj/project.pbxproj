@@ -463,6 +463,7 @@
 		C9CD55101CB4538D0052868A /* MPDateFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CD550E1CB4538D0052868A /* MPDateFormatterTests.m */; };
 		C9F694ED1CAADA7400E4DCD4 /* MPKitContainerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F694EC1CAADA7400E4DCD4 /* MPKitContainerTests.m */; };
 		C9F694EE1CAADA7400E4DCD4 /* MPKitContainerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F694EC1CAADA7400E4DCD4 /* MPKitContainerTests.m */; };
+		DBB646AA1D64C41A0072B51C /* MPKitInstanceValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = C97F07791D54DB380096F392 /* MPKitInstanceValidator.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1827,6 +1828,7 @@
 				C9049B871C56C3C5005F11EA /* MPMediaMetadataTVR.m in Sources */,
 				C9049BD61C56C41A005F11EA /* MPHasher.cpp in Sources */,
 				C97F929D1CAF093000A3135B /* MPForwardQueueItem.m in Sources */,
+				DBB646AA1D64C41A0072B51C /* MPKitInstanceValidator.m in Sources */,
 				C9049A7F1C56C2A2005F11EA /* MPBackendController.mm in Sources */,
 				C9049BF11C56C436005F11EA /* NSNumber+MPFormatter.m in Sources */,
 				C9B25B8E1D53E4E90034A1AB /* MPIntegrationAttributes.m in Sources */,
