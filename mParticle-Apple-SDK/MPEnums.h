@@ -69,7 +69,7 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     MPEventTypeRefund,
     /** Internal. Used when a promotion is displayed */
     MPEventTypePromotionView,
-    /** Internal. Used when a is clicked */
+    /** Internal. Used when a promotion is clicked */
     MPEventTypePromotionClick,
     /** Internal. Used when a product is added to the wishlist */
     MPEventTypeAddToWishlist,
