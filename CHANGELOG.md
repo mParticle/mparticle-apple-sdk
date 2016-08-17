@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.6.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
+
+* [NEW] Kits can now pass integration attributes back to the core SDK
+
 ## 6.5.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you want to use Primer as a kit
