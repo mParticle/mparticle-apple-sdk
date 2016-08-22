@@ -1204,13 +1204,19 @@
                                               { \
                                                   \"id\":144, \
                                                   \"pmmid\":24, \
-                                                  \"match\":{ \
+                                                  \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"String\", \
                                                       \"event\":\"subscription_success\", \
                                                       \"attribute_key\":\"plan\", \
-                                                      \"attribute_value\":\"premium\" \
-                                                  }, \
+                                                      \"attribute_values\":[\"extra-premium\", \"premium\"] \
+                                                  }, { \
+                                                      \"message_type\":4, \
+                                                      \"event_match_type\":\"String\", \
+                                                      \"event\":\"subscription_success\", \
+                                                      \"attribute_key\":\"plan_color\", \
+                                                      \"attribute_values\":[\"gold\", \"platinum\"] \
+                                                  }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":true \
                                                   }, \
@@ -1223,11 +1229,11 @@
                                               }, \
                                               { \
                                                   \"id\":166, \
-                                                  \"match\":{ \
+                                                  \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"\", \
                                                       \"event\":\"\" \
-                                                  }, \
+                                                  }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":true, \
                                                       \"is_default\":true \
@@ -1242,11 +1248,11 @@
                                               { \
                                                   \"id\":156, \
                                                   \"pmid\":350, \
-                                                  \"match\":{ \
+                                                  \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"Hash\", \
                                                       \"event\":\"-882445395\" \
-                                                  }, \
+                                                  }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":true \
                                                   }, \
@@ -1274,7 +1280,7 @@
     [kitContainer configureKits:configurations];
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"subscription_success" type:MPEventTypeTransaction];
-    event.info = @{@"plan":@"premium"};
+    event.info = @{@"plan":@"premium", @"plan_color":@"gold"};
     
     [kitContainer forwardSDKCall:@selector(logEvent:)
                            event:event
@@ -1285,7 +1291,7 @@
                               XCTAssertNotNil(forwardEvent);
                               XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
                               XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
+                              XCTAssertEqual(forwardEvent.info.count, 3);
                               XCTAssertEqualObjects(forwardEvent.info[@"af_customer_user_id"], @"trex@shortarmsdinosaurs.com");
                               
                               [expectation fulfill];
@@ -1314,13 +1320,13 @@
                                               { \
                                                   \"id\":144, \
                                                   \"pmmid\":24, \
-                                                  \"match\":{ \
+                                                  \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"String\", \
                                                       \"event\":\"subscription_success\", \
                                                       \"attribute_key\":\"plan\", \
-                                                      \"attribute_value\":\"premium\" \
-                                                  }, \
+                                                      \"attribute_values\":[\"premium\"] \
+                                                  }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":false \
                                                   }, \
@@ -1334,11 +1340,11 @@
                                             { \
                                                 \"id\":147, \
                                                 \"pmid\":352, \
-                                                \"match\":{ \
+                                                \"matches\":[{ \
                                                     \"message_type\":16, \
                                                     \"event_match_type\":\"Hash\", \
                                                     \"event\":\"1567\" \
-                                                }, \
+                                                }], \
                                                 \"behavior\":{ \
                                                     \"append_unmapped_as_is\":true \
                                                 }, \
@@ -1386,11 +1392,11 @@
                                             }, \
                                               { \
                                                   \"id\":166, \
-                                                  \"match\":{ \
+                                                  \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"\", \
                                                       \"event\":\"\" \
-                                                  }, \
+                                                  }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":true, \
                                                       \"is_default\":true \
@@ -1405,11 +1411,11 @@
                                               { \
                                                   \"id\":156, \
                                                   \"pmid\":350, \
-                                                  \"match\":{ \
+                                                  \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"Hash\", \
                                                       \"event\":\"-882445395\" \
-                                                  }, \
+                                                  }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":true \
                                                   }, \
@@ -1459,13 +1465,351 @@
     [kitContainer forwardCommerceEventCall:commerceEvent
                                 kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                                     if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                        NSString *customerUserId = kitFilter.forwardEvent.info[@"af_customer_user_id"];
+                                        MPEvent *event = kitFilter.forwardEvent;
+                                        NSString *customerUserId = event.info[@"af_customer_user_id"];
                                         XCTAssertNotNil(customerUserId);
                                         XCTAssertEqualObjects(customerUserId, @"trex@shortarmsdinosaurs.com");
+                                        
+                                        XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
+                                        XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
+                                        XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
+                                        XCTAssertEqualObjects(event.name, @"af_add_to_cart");
                                         
                                         [expectation fulfill];
                                     }
                                 }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
+- (void)testMatchArrayProjection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Match array projection"];
+    
+    [self setUserAttributesAndIdentities];
+
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 170, \
+                                         \"pmmid\": 29, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       }, \
+                                       { \
+                                         \"id\": 171, \
+                                         \"pmmid\": 30, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_NOAH_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           }, \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"plan_id\", \
+                                             \"attribute_values\": [ \
+                                               \"3\", \
+                                               \"8\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+
+    MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
+    event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription"};
+    __block NSMutableArray<NSString *> *foundEventNames = [NSMutableArray arrayWithCapacity:2];
+    
+    [kitContainer forwardSDKCall:@selector(logEvent:)
+                           event:event
+                     messageType:MPMessageTypeEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                              XCTAssertNotNil(forwardEvent);
+                              XCTAssertNotNil(forwardEvent.info);
+                              XCTAssertEqual(forwardEvent.info.count, 3);
+                              
+                              [foundEventNames addObject:forwardEvent.name];
+                              
+                              if (foundEventNames.count == 2) {
+                                  XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
+                                  XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
+                                  [expectation fulfill];
+                              }
+                          }
+                      }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
+- (void)testNonMatchingMatchArrayProjection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Non-matching match array projection"];
+    
+    [self setUserAttributesAndIdentities];
+
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 170, \
+                                         \"pmmid\": 29, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_MALE_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           }, \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"gender\", \
+                                             \"attribute_values\": [ \
+                                               \"male\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+
+    MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
+    event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription", @"gender":@"female"};
+    
+    [kitContainer forwardSDKCall:@selector(logEvent:)
+                           event:event
+                     messageType:MPMessageTypeEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                              XCTAssertNotNil(forwardEvent);
+                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
+                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                              [expectation fulfill];
+                          }
+                      }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
+- (void)testHashProjection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Hash projection"];
+    
+    [self setUserAttributesAndIdentities];
+    
+    NSString *configurationStr =  @"{ \
+                                        \"id\":92, \
+                                        \"as\":{ \
+                                            \"devKey\":\"INVALID_DEV_KEY\", \
+                                            \"appleAppId\":\"INVALID_APPLE_APP_ID\" \
+                                        }, \
+                                        \"hs\":{ \
+                                        }, \
+                                        \"pr\":[ \
+                                          { \
+                                            \"id\": 146, \
+                                            \"pmid\": 351, \
+                                            \"behavior\": { \
+                                              \"append_unmapped_as_is\": true \
+                                            }, \
+                                            \"action\": { \
+                                              \"projected_event_name\": \"af_add_payment_info\", \
+                                              \"attribute_maps\": [ \
+                                                { \
+                                                  \"projected_attribute_name\": \"af_success\", \
+                                                  \"match_type\": \"Static\", \
+                                                  \"value\": \"True\", \
+                                                  \"data_type\": \"Bool\" \
+                                                } \
+                                              ], \
+                                              \"outbound_message_type\": 4 \
+                                            }, \
+                                            \"matches\": [ \
+                                              { \
+                                                \"message_type\": 4, \
+                                                \"event_match_type\": \"Hash\", \
+                                                \"event\": \"-1602069210\" \
+                                              } \
+                                            ] \
+                                          } \
+                                        ] \
+                                    }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
+    event.info = @{@"plan":@"premium"};
+    
+    [kitContainer forwardSDKCall:@selector(logEvent:)
+                           event:event
+                     messageType:MPMessageTypeEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                              XCTAssertNotNil(forwardEvent);
+                              XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
+                              XCTAssertNotNil(forwardEvent.info);
+                              XCTAssertEqual(forwardEvent.info.count, 3);
+                              XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
+                              
+                              [expectation fulfill];
+                          }
+                      }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
+- (void)testAttributeHashProjection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Attribute hash projection"];
+    
+    [self setUserAttributesAndIdentities];
+    
+    NSString *configurationStr =  @"{ \
+                                        \"id\":92, \
+                                        \"as\":{ \
+                                            \"devKey\":\"INVALID_DEV_KEY\", \
+                                            \"appleAppId\":\"INVALID_APPLE_APP_ID\" \
+                                        }, \
+                                        \"hs\":{ \
+                                        }, \
+                                        \"pr\":[ \
+                                          { \
+                                            \"id\": 156, \
+                                            \"pmid\": 350, \
+                                            \"behavior\": { \
+                                              \"append_unmapped_as_is\": true \
+                                            }, \
+                                            \"action\": { \
+                                              \"projected_event_name\": \"af_achievement_unlocked\", \
+                                              \"attribute_maps\": [ \
+                                                { \
+                                                  \"projected_attribute_name\": \"af_description\", \
+                                                  \"match_type\": \"Hash\", \
+                                                  \"value\": \"-1289016075\", \
+                                                  \"data_type\": \"String\" \
+                                                } \
+                                              ], \
+                                              \"outbound_message_type\": 4 \
+                                            }, \
+                                            \"matches\": [ \
+                                              { \
+                                                \"message_type\": 4, \
+                                                \"event_match_type\": \"Hash\", \
+                                                \"event\": \"-1602069210\" \
+                                              } \
+                                            ] \
+                                          } \
+                                        ] \
+                                    }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
+    event.info = @{@"test_description":@"this is a description"};
+    
+    [kitContainer forwardSDKCall:@selector(logEvent:)
+                           event:event
+                     messageType:MPMessageTypeEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                              XCTAssertNotNil(forwardEvent);
+                              XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
+                              XCTAssertNotNil(forwardEvent.info);
+                              XCTAssertEqual(forwardEvent.info.count, 2);
+                              XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
+                              
+                              [expectation fulfill];
+                          }
+                      }];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     

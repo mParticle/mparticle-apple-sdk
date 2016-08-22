@@ -1020,25 +1020,30 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             return [commerceEvent kind] == MPCommerceEventKindPromotion ? commerceEvent.promotionContainer.promotions : (NSArray *)nil;
         }();
         
-        BOOL (^isApplicableEventProjection)(MPEventProjection *, NSDictionary *) = ^(MPEventProjection *eventProjection, NSDictionary *sourceDictionary) {
-            __block BOOL isApplicable = NO;
+        BOOL (^isApplicableEventProjection)(MPEventProjection *, NSDictionary *) = ^ BOOL (MPEventProjection *eventProjection, NSDictionary *sourceDictionary) {
             
-            [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                NSString *keyHash = [NSString stringWithCString:mParticle::Hasher::hashString(to_string(typeOfCommerceEvent) + string([[key lowercaseString] UTF8String])).c_str()
-                                                       encoding:NSUTF8StringEncoding];
-                
-                isApplicable = [eventProjection.attributeKey isEqualToString:keyHash] && [eventProjection.attributeValue isEqualToString:value];
-                *stop = isApplicable;
+            __block BOOL foundNonMatch = NO;
+            [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
+                __block BOOL isApplicable = NO;
+                [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
+                    NSString *keyHash = [NSString stringWithCString:mParticle::Hasher::hashString(to_string(typeOfCommerceEvent) + string([[key lowercaseString] UTF8String])).c_str()
+                                                           encoding:NSUTF8StringEncoding];
+                    
+                    isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues containsObject:value];
+                    *stop = isApplicable;
+                }];
+                foundNonMatch = !isApplicable;
+                *stop = foundNonMatch;
             }];
             
-            return isApplicable;
+            return !foundNonMatch;
         };
         
         if (projections.count > 0) {
             // Identifying which projections are applicable
             for (MPEventProjection *eventProjection in projections) {
                 if (eventProjection.eventType == typeOfCommerceEvent) {
-                    if (!MPIsNull(eventProjection.attributeKey) && !MPIsNull(eventProjection.attributeValue)) {
+                    if (!MPIsNull(eventProjection.projectionMatches)) {
                         switch (eventProjection.propertyKind) {
                             case MPProjectionPropertyKindEventField:
                                 if (isApplicableEventProjection(eventProjection, [[commerceEvent beautifiedAttributes] transformValuesToString])) {
@@ -1673,8 +1678,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 switch (eventProjection.matchType) {
                     case MPProjectionMatchTypeString:
                         if ([event.name isEqualToString:eventProjection.name]) {
-                            if (eventProjection.attributeKey && eventProjection.attributeValue) {
-                                shouldProjectEvent = [event.info[eventProjection.attributeKey] isEqualToString:eventProjection.attributeValue];
+                            if (eventProjection.projectionMatches) {
+                                __block BOOL foundNonMatch = NO;
+                                [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
+                                    if (![projectionMatch.attributeValues containsObject:event.info[projectionMatch.attributeKey]]) {
+                                        foundNonMatch = YES;
+                                        *stop = YES;
+                                    }
+                                }];
+                                shouldProjectEvent = !foundNonMatch;
                             } else {
                                 shouldProjectEvent = YES;
                             }
@@ -1689,8 +1701,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         }
                         
                         if (eventNameHash == [eventProjection.name integerValue]) {
-                            if (eventProjection.attributeKey && eventProjection.attributeValue) {
-                                shouldProjectEvent = [event.info[eventProjection.attributeKey] isEqualToString:eventProjection.attributeValue];
+                            if (eventProjection.projectionMatches) {
+                                __block BOOL foundNonMatch = NO;
+                                [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
+                                    if (![projectionMatch.attributeValues containsObject:event.info[projectionMatch.attributeKey]]) {
+                                        foundNonMatch = YES;
+                                        *stop = YES;
+                                    }
+                                }];
+                                shouldProjectEvent = !foundNonMatch;
                             } else {
                                 shouldProjectEvent = YES;
                             }
@@ -1714,10 +1733,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         projectedEvent.info = projectedAttributes;
                         
                         if (eventProjection.projectedName) {
-                            if (eventProjection.attributeKey && eventProjection.attributeValue) {
-                                if ([event.info[eventProjection.attributeKey] isEqualToString:eventProjection.attributeValue]) {
+                            if (eventProjection.projectionMatches) {
+                                __block BOOL foundNonMatch = NO;
+                                [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
+                                    if (![projectionMatch.attributeValues containsObject:event.info[projectionMatch.attributeKey]]) {
+                                        foundNonMatch = YES;
+                                        *stop = YES;
+                                    }
+                                }];
+                                if (!foundNonMatch) {
                                     projectedEvent.name = eventProjection.projectedName;
                                 }
+                                
                             } else {
                                 projectedEvent.name = eventProjection.projectedName;
                             }

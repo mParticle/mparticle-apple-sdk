@@ -40,7 +40,7 @@
 #import "MPDateFormatter.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
-NSString *const kMPConfigVersion = @"/v3";
+NSString *const kMPConfigVersion = @"/v4";
 NSString *const kMPConfigURL = @"/config";
 NSString *const kMPEventsVersion = @"/v1";
 NSString *const kMPEventsURL = @"/events";
