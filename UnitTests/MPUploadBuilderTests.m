@@ -179,17 +179,6 @@
 
         XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
         
-        referenceUserDictionary = @{
-                                    @"1022":@{
-                                            @"keyB":@"valueB"
-                                            },
-                                    @"25":@{
-                                            @"clientID":@"123abc",
-                                            @"key":@"value"
-                                            }};
-
-        XCTAssertEqualObjects(uploadDictionary[MPIntegrationAttributesKey], referenceUserDictionary);
-
         [expectation fulfill];
     }];
     
