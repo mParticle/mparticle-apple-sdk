@@ -43,17 +43,7 @@ Pod::Spec.new do |s|
     s.tvos.deployment_target = "9.0"
 
     s.subspec 'mParticle' do |ss|
-        ss.public_header_files = 'mParticle-Apple-SDK/mParticle.h', 'mParticle-Apple-SDK/MPEnums.h', 'mParticle-Apple-SDK/MPUserSegments.h', \
-                                 'mParticle-Apple-SDK/Event/MPEvent.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerce.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCart.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct.h', 'mParticle-Apple-SDK/Ecommerce/MPPromotion.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes.h', 'mParticle-Apple-SDK/Ecommerce/MPBags.h', \
-                                 'mParticle-Apple-SDK/MPExtensionProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitRegister.h', \
-                                 'mParticle-Apple-SDK/Kits/MPKitExecStatus.h', 'mParticle-Apple-SDK/MPIHasher.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h','mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', 'mParticle-Apple-SDK/Utils/MPDateFormatter.h', \
-                                 'mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.h'
+        ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files        = 'mParticle-Apple-SDK/**/*'
