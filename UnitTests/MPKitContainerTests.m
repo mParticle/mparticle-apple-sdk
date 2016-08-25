@@ -1668,6 +1668,73 @@
     [self resetUserAttributesAndIdentities];
 }
 
+- (void)testNonMatchingAttributeArrayProjection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Non-matching attribute array projection"];
+    
+    [self setUserAttributesAndIdentities];
+
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 170, \
+                                         \"pmmid\": 29, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+
+    MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
+    event.info = @{@"outcome":@"not_new_subscription"};
+    
+    [kitContainer forwardSDKCall:@selector(logEvent:)
+                           event:event
+                     messageType:MPMessageTypeEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                              XCTAssertNotNil(forwardEvent);
+                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
+                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                              [expectation fulfill];
+                          }
+                      }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
 - (void)testHashProjection {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Hash projection"];
     
