@@ -1195,7 +1195,7 @@ const int MaxBreadcrumbs = 50;
     
     dispatch_sync(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? ORDER BY _id";
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? ORDER BY timestamp";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
@@ -1229,7 +1229,7 @@ const int MaxBreadcrumbs = 50;
 - (void)fetchMessagesForUploadingInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? AND (upload_status = ? OR upload_status = ?) ORDER BY _id";
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp";
         vector<MPMessage *> messagesVector;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
@@ -1587,7 +1587,7 @@ const int MaxBreadcrumbs = 50;
         if (excludeNetworkPerformance) {
             sqlStatement += "AND message_type != '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "' ";
         }
-        sqlStatement += "ORDER BY _id";
+        sqlStatement += "ORDER BY timestamp";
         
         vector<MPMessage *> messagesVector;
         

@@ -23,7 +23,10 @@
  This class contains the information and represents an event to be logged using
  the mParticle SDK.
  */
-@interface MPEvent : NSObject <NSCopying>
+@interface MPEvent : NSObject <NSCopying> {
+@protected
+    NSDate *_timestamp;
+}
 
 /**
  Category is a string with a developer/company defined category of the event.

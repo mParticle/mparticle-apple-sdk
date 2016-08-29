@@ -61,7 +61,10 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  
  @see mParticle
  */
-@interface MPCommerceEvent : NSObject <NSCopying, NSCoding>
+@interface MPCommerceEvent : NSObject <NSCopying, NSCoding> {
+@protected
+    NSDate *_timestamp;
+}
 
 /**
  Checkout option string describing what the options are.

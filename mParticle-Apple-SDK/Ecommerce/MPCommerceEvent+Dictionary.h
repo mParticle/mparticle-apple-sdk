@@ -48,5 +48,7 @@ typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
 - (void)setImpressions:(NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions;
 - (void)setProducts:(NSArray<MPProduct *> *)products;
 - (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap;
+- (NSDate *)timestamp;
+- (void)setTimestamp:(NSDate *)timestamp;
 
 @end

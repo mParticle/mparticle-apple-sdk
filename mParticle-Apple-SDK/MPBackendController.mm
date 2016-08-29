@@ -1691,6 +1691,9 @@ static BOOL appBackgrounded = NO;
             NSDictionary *messageInfo = [event breadcrumbDictionaryRepresentation];
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+            if (event.timestamp) {
+                [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
+            }
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
             [self saveMessage:message updateSession:YES];
@@ -1706,6 +1709,10 @@ static BOOL appBackgrounded = NO;
             break;
             
         case MPInitializationStatusStarting: {
+            if (!event.timestamp) {
+                event.timestamp = [NSDate date];
+            }
+            
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
@@ -1737,6 +1744,9 @@ static BOOL appBackgrounded = NO;
     switch (_initializationStatus) {
         case MPInitializationStatusStarted: {
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent session:self.session commerceEvent:commerceEvent];
+            if (commerceEvent.timestamp) {
+                [messageBuilder withTimestamp:[commerceEvent.timestamp timeIntervalSince1970]];
+            }
 #if TARGET_OS_IOS == 1
             if ([MPLocationManager trackingLocation]) {
                 messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
@@ -1774,6 +1784,10 @@ static BOOL appBackgrounded = NO;
             break;
             
         case MPInitializationStatusStarting: {
+            if (!commerceEvent.timestamp) {
+                commerceEvent.timestamp = [NSDate date];
+            }
+            
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
@@ -1908,6 +1922,9 @@ static BOOL appBackgrounded = NO;
             NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+            if (event.timestamp) {
+                [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
+            }
 #if TARGET_OS_IOS == 1
             if ([MPLocationManager trackingLocation]) {
                 messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
@@ -1928,6 +1945,10 @@ static BOOL appBackgrounded = NO;
             break;
             
         case MPInitializationStatusStarting: {
+            if (!event.timestamp) {
+                event.timestamp = [NSDate date];
+            }
+            
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
@@ -2021,6 +2042,9 @@ static BOOL appBackgrounded = NO;
             NSDictionary *messageInfo = [event screenDictionaryRepresentation];
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+            if (event.timestamp) {
+                [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
+            }
 #if TARGET_OS_IOS == 1
             if ([MPLocationManager trackingLocation]) {
                 messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
@@ -2041,6 +2065,10 @@ static BOOL appBackgrounded = NO;
             break;
             
         case MPInitializationStatusStarting: {
+            if (!event.timestamp) {
+                event.timestamp = [NSDate date];
+            }
+            
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
