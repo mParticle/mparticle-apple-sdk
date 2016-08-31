@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.7.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you log events prior to the SDK being fully initialized
+
+* [FIX] Timing of logged events: Events (both app events and commerce events) now have a timestamp property, which gets populated automatically by the SDK, when an event is logged prior to the SDK being fully initialized. If set, this property will override the timestamp of messages when they are about to be persisted
+
 ## 6.7.0
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you use custom mappings
