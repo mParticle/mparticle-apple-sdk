@@ -18,8 +18,6 @@
 
 #import "MPIConstants.h"
 
-NSUInteger kMPNumberOfMessageTypes = 17;
-
 // mParticle SDK Version
 NSString *const kMParticleSDKVersion = @"6.7.1";
 

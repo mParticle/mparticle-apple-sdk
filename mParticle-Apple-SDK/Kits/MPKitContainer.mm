@@ -229,15 +229,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
             NSArray<NSNumber *> *supportedKits = [self supportedKits];
-            NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
-            for (NSNumber *supportedKit in supportedKits) {
-                [listOfKits appendFormat:@"%@, ", [self nameForKitCode:supportedKit]];
+            
+            if (supportedKits.count > 0) {
+                NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
+                for (NSNumber *supportedKit in supportedKits) {
+                    [listOfKits appendFormat:@"%@, ", [self nameForKitCode:supportedKit]];
+                }
+                
+                [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
+                [listOfKits appendString:@"}"];
+                
+                MPILogDebug(@"%@", listOfKits);
             }
-            
-            [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
-            [listOfKits appendString:@"}"];
-            
-            MPILogDebug(@"%@", listOfKits);
         }
     });
 }

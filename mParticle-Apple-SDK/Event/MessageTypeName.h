@@ -42,16 +42,18 @@ namespace mParticle {
         Breadcrumb = 13,
         Profile = 14,
         PushNotificationInteraction = 15,
-        CommerceEvent = 16
+        CommerceEvent = 16,
+        UserAttributeChange = 17
     };
     
     class MessageTypeName final {
         static const vector<string> names;
+        static const size_t _size;
         
     public:
-        static const size_t count;
         static string nameForMessageType(const MessageType messageType);
         static MessageType messageTypeForName(const string &messageTypeName);
+        static size_t size();
     };
 }
 

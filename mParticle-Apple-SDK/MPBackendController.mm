@@ -56,6 +56,7 @@
 #import "MPEvent+MessageType.h"
 #include "MessageTypeName.h"
 #import "MPKitContainer.h"
+#import "MPUserAttributeChange.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -420,6 +421,26 @@ static BOOL appBackgrounded = NO;
 
 - (void)forceAppFinishedLaunching {
     sdkIsLaunching = NO;
+}
+
+- (void)logUserAttributeChange:(MPUserAttributeChange *)userAttributeChange {
+    if (!userAttributeChange) {
+        return;
+    }
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:static_cast<MPMessageType>(mParticle::MessageType::UserAttributeChange)
+                                                                           session:self.session
+                                                                    userAttributes:userAttributeChange.userAttributes
+                                                                               key:userAttributeChange.key
+                                                                             value:userAttributeChange.valueToLog
+                                                                           deleted:userAttributeChange.deleted];
+    if (userAttributeChange.timestamp) {
+        [messageBuilder withTimestamp:[userAttributeChange.timestamp timeIntervalSince1970]];
+    }
+    
+    MPDataModelAbstract *message = [messageBuilder build];
+    
+    [self saveMessage:message updateSession:YES];
 }
 
 - (NSNumber *)previousSessionSuccessfullyClosed {
@@ -2371,25 +2392,12 @@ static BOOL appBackgrounded = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)setUserAttribute:(NSString *)key value:(id)value attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key copy];
-    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
-    
-    NSAssert(validKey, @"'key' must be a string.");
-    NSAssert(value == nil || (value != nil && ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])), @"'value' must be either nil, or string or number.");
+- (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user attribute cannot be done prior to starting the mParticle SDK.\n****\n");
-    
-    if (!validKey) {
-        if (completionHandler) {
-            completionHandler(keyCopy, value, MPExecStatusMissingParam);
-        }
-        
-        return;
-    }
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
         if (completionHandler) {
-            completionHandler(keyCopy, value, MPExecStatusFail);
+            completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusFail);
         }
         
         return;
@@ -2401,50 +2409,59 @@ static BOOL appBackgrounded = NO;
         case MPInitializationStatusStarted: {
             if ([MPStateMachine sharedInstance].optOut) {
                 if (completionHandler) {
-                    completionHandler(keyCopy, value, MPExecStatusOptOut);
+                    completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusOptOut);
                 }
                 
                 return;
             }
             
-            if (value && ![value isKindOfClass:[NSString class]] && ![value isKindOfClass:[NSNumber class]]) {
+            if (userAttributeChange.value && ![userAttributeChange.value isKindOfClass:[NSString class]] && ![userAttributeChange.value isKindOfClass:[NSNumber class]] && ![userAttributeChange.value isKindOfClass:[NSArray class]]) {
                 if (completionHandler) {
-                    completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
+                    completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
                 }
                 
                 return;
             }
             
-            NSString *localKey = [self.userAttributes caseInsensitiveKey:keyCopy];
+            id<NSObject> userAttributeValue = nil;
+            NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
             NSError *error = nil;
-            BOOL validAttributes = [self checkAttribute:self.userAttributes key:localKey value:value maxValueLength:LIMIT_USER_ATTR_LENGTH error:&error];
+            NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
+            BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
             
-            id<NSObject> userAttributeValue;
-            if (!validAttributes && error.code == kInvalidValue) {
-                userAttributeValue = [NSNull null];
-                validAttributes = YES;
-                error = nil;
+            if (userAttributeChange.isArray) {
+                userAttributeValue = userAttributeChange.value;
+                userAttributeChange.deleted = error.code == kInvalidValue && self.userAttributes[localKey];
             } else {
-                userAttributeValue = value;
+                if (!validAttributes && error.code == kInvalidValue) {
+                    userAttributeValue = [NSNull null];
+                    validAttributes = YES;
+                    error = nil;
+                } else {
+                    userAttributeValue = userAttributeChange.value;
+                }
+                
+                userAttributeChange.deleted = error.code == kEmptyValueAttribute && self.userAttributes[localKey];
             }
-            
+
             if (validAttributes) {
                 self.userAttributes[localKey] = userAttributeValue;
-            } else if (error.code == kEmptyValueAttribute && self.userAttributes[localKey]) {
+            } else if (userAttributeChange.deleted) {
                 [self.userAttributes removeObjectForKey:localKey];
                 
                 if (!deletedUserAttributes) {
                     deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
                 }
-                [deletedUserAttributes addObject:keyCopy];
+                [deletedUserAttributes addObject:userAttributeChange.key];
             } else {
                 if (completionHandler) {
-                    completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
+                    completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
                 }
                 
                 return;
             }
-            
+
+            userAttributeChange.valueToLog = userAttributeValue;
             NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
             NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
             NSString *aKey;
@@ -2457,6 +2474,8 @@ static BOOL appBackgrounded = NO;
                 }
             }
             
+            [self logUserAttributeChange:userAttributeChange];
+            
             dispatch_async(dispatch_get_main_queue(), ^{
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                 userDefaults[kMPUserAttributeKey] = userAttributes;
@@ -2468,10 +2487,14 @@ static BOOL appBackgrounded = NO;
             break;
             
         case MPInitializationStatusStarting: {
+            if (!userAttributeChange.timestamp) {
+                userAttributeChange.timestamp = [NSDate date];
+            }
+            
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf setUserAttribute:keyCopy value:value attempt:(attempt + 1) completionHandler:completionHandler];
+                [strongSelf setUserAttributeChange:userAttributeChange attempt:(attempt + 1) completionHandler:completionHandler];
             });
             
             execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
@@ -2484,7 +2507,52 @@ static BOOL appBackgrounded = NO;
     }
     
     if (completionHandler) {
-        completionHandler(keyCopy, value, execStatus);
+        completionHandler(userAttributeChange.key, userAttributeChange.value, execStatus);
+    }
+}
+
+- (void)setUserAttribute:(NSString *)key value:(id)value attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
+    NSString *keyCopy = [key copy];
+    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
+    
+    NSAssert(validKey, @"'key' must be a string.");
+    NSAssert(value == nil || (value != nil && ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])), @"'value' must be either nil, string, or number.");
+    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user attribute cannot be done prior to starting the mParticle SDK.\n****\n");
+    
+    if (!validKey) {
+        if (completionHandler) {
+            completionHandler(keyCopy, value, MPExecStatusMissingParam);
+        }
+        
+        return;
+    }
+    
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[self.userAttributes copy] key:keyCopy value:value];
+    
+    switch (_initializationStatus) {
+        case MPInitializationStatusStarted:
+            [self setUserAttributeChange:userAttributeChange attempt:attempt completionHandler:completionHandler];
+            break;
+            
+        case MPInitializationStatusStarting: {
+            userAttributeChange.timestamp = [NSDate date];
+
+            __weak MPBackendController *weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong MPBackendController *strongSelf = weakSelf;
+                [strongSelf setUserAttributeChange:userAttributeChange attempt:(attempt + 1) completionHandler:completionHandler];
+            });
+        }
+            break;
+            
+        case MPInitializationStatusNotStarted: {
+            MPExecStatus execStatus = MPExecStatusSDKNotStarted;
+            
+            if (completionHandler) {
+                completionHandler(keyCopy, value, execStatus);
+            }
+        }
+            break;
     }
 }
 
@@ -2504,89 +2572,33 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        if (completionHandler) {
-            completionHandler(keyCopy, values, MPExecStatusFail);
-        }
-        
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[self.userAttributes copy] key:keyCopy value:values];
+    userAttributeChange.isArray = YES;
     
     switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            if ([MPStateMachine sharedInstance].optOut) {
-                if (completionHandler) {
-                    completionHandler(keyCopy, values, MPExecStatusOptOut);
-                }
-                
-                return;
-            }
-            
-            if (values && ![values isKindOfClass:[NSArray class]]) {
-                if (completionHandler) {
-                    completionHandler(keyCopy, nil, MPExecStatusInvalidDataType);
-                }
-                
-                return;
-            }
-            
-            NSString *localKey = [self.userAttributes caseInsensitiveKey:keyCopy];
-            NSError *error = nil;
-            BOOL validAttributes = [self checkAttribute:self.userAttributes key:localKey value:values maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-
-            if (validAttributes) {
-                self.userAttributes[localKey] = values;
-            } else if (error.code == kInvalidValue && self.userAttributes[localKey]) {
-                [self.userAttributes removeObjectForKey:localKey];
-                
-                if (!deletedUserAttributes) {
-                    deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
-                }
-                [deletedUserAttributes addObject:keyCopy];
-            }
-            
-            NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
-            NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
-            NSString *aKey;
-            
-            while ((aKey = [attributeEnumerator nextObject])) {
-                if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
-                    userAttributes[aKey] = kMPNullUserAttributeString;
-                } else {
-                    userAttributes[aKey] = self.userAttributes[aKey];
-                }
-            }
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                userDefaults[kMPUserAttributeKey] = userAttributes;
-                [userDefaults synchronize];
-            });
-            
-            execStatus = MPExecStatusSuccess;
-        }
+        case MPInitializationStatusStarted:
+            [self setUserAttributeChange:userAttributeChange attempt:attempt completionHandler:completionHandler];
             break;
             
         case MPInitializationStatusStarting: {
+            userAttributeChange.timestamp = [NSDate date];
+            
             __weak MPBackendController *weakSelf = self;
             dispatch_async(dispatch_get_main_queue(), ^{
                 __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf setUserAttribute:keyCopy values:values attempt:(attempt + 1) completionHandler:completionHandler];
+                [strongSelf setUserAttributeChange:userAttributeChange attempt:(attempt + 1) completionHandler:completionHandler];
             });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
         }
             break;
             
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
+        case MPInitializationStatusNotStarted: {
+            MPExecStatus execStatus = MPExecStatusSDKNotStarted;
+            
+            if (completionHandler) {
+                completionHandler(keyCopy, values, execStatus);
+            }
+        }
             break;
-    }
-    
-    if (completionHandler) {
-        completionHandler(keyCopy, values, execStatus);
     }
 }
 

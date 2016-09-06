@@ -21,6 +21,7 @@
 #import "MPIConstants.h"
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
+#include "MessageTypeName.h"
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -171,14 +172,15 @@
         return;
     }
     
+    auto numberOfMessageTypes = mParticle::MessageTypeName::size();
     vector<NSNumber *> configuredMessageTypeProjectionsVector;
-    configuredMessageTypeProjectionsVector.reserve(kMPNumberOfMessageTypes);
+    configuredMessageTypeProjectionsVector.reserve(numberOfMessageTypes);
     vector<MPEventProjection *> defaultProjectionsVector;
-    defaultProjectionsVector.reserve(kMPNumberOfMessageTypes);
+    defaultProjectionsVector.reserve(numberOfMessageTypes);
     vector<MPEventProjection *> projectionsVector;
     projectionsVector.reserve(projections.count - 1);
     
-    for (NSUInteger i = 0; i < kMPNumberOfMessageTypes; ++i) {
+    for (NSUInteger i = 0; i < numberOfMessageTypes; ++i) {
         configuredMessageTypeProjectionsVector.push_back(@NO);
         defaultProjectionsVector.push_back((MPEventProjection *)[NSNull null]);
     }

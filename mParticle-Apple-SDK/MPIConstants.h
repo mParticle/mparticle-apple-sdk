@@ -55,8 +55,6 @@ typedef NS_ENUM(NSInteger, MPDataType) {
     MPDataTypeLong = 5
 };
 
-extern NSUInteger kMPNumberOfMessageTypes;
-
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 

@@ -233,7 +233,9 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type code for when a user interacts with a received push notification */
     MPMessageTypePushNotificationInteraction = 15,
     /** Message type code for a commerce event */
-    MPMessageTypeCommerceEvent = 16
+    MPMessageTypeCommerceEvent = 16,
+    /** Message type code for a user attribute change */
+    MPMessageTypeUserAttributeChange = 17
 };
 
 /** Posted immediately after a new session has begun.

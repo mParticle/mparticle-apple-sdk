@@ -1035,4 +1035,42 @@
     XCTAssertEqualObjects(setValues, values);
 }
 
+- (void)testUserAttributeChanged {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
+    [self.backendController setUserAttribute:@"TardisModel" value:@"Police Call Box" attempt:0 completionHandler:nil];
+    
+    NSDictionary *userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes[@"TardisModel"], @"Police Call Box");
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+    
+    MPMessage *message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    NSDictionary *messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+    
+    [persistence deleteSession:self.session];
+
+    [self.backendController setUserAttribute:@"TardisModel" value:@"" attempt:0 completionHandler:nil];
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    message = [messages firstObject];
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"ov"]);
+    XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
 @end

@@ -267,4 +267,86 @@
     XCTAssertNil(value, @"Should have been nil.");
 }
 
+- (void)testUserAttributeChange {
+    NSDictionary<NSString *, id> *userAttributes = @{@"membership_status":@"Gold",
+                                                     @"seat_preference":@"Window"};
+    
+    // Add a new user attribute
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
+                                                                           session:self.session
+                                                                    userAttributes:userAttributes
+                                                                               key:@"meal_restrictions"
+                                                                             value:@"Peanuts"
+                                                                           deleted:NO];
+    XCTAssertNotNil(messageBuilder);
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    XCTAssertNotNil(message);
+    
+    NSDictionary *messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"ov"]);
+    XCTAssertEqualObjects(@"Peanuts", messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"meal_restrictions", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+    XCTAssertEqualObjects(@YES, messageDictionary[@"na"]);
+    
+    // Remove an existing user attribute
+    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
+                                                         session:self.session
+                                                  userAttributes:userAttributes
+                                                             key:@"membership_status"
+                                                           value:[NSNull null]
+                                                         deleted:YES];
+    XCTAssertNotNil(messageBuilder);
+    message = (MPMessage *)[messageBuilder build];
+    XCTAssertNotNil(message);
+    
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects(@"Gold", messageDictionary[@"ov"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"membership_status", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"na"]);
+
+    // Update an existing user attribute
+    NSArray<NSString *> *seatPreference = @[@"Window", @"Aisle"];
+    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
+                                                         session:self.session
+                                                  userAttributes:userAttributes
+                                                             key:@"seat_preference"
+                                                           value:seatPreference
+                                                         deleted:NO];
+    XCTAssertNotNil(messageBuilder);
+    message = (MPMessage *)[messageBuilder build];
+    XCTAssertNotNil(message);
+    
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects(@"Window", messageDictionary[@"ov"]);
+    XCTAssertEqualObjects(seatPreference, messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"seat_preference", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"na"]);
+    
+    // User attribute tag
+    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
+                                                         session:self.session
+                                                  userAttributes:userAttributes
+                                                             key:@"VIP"
+                                                           value:[NSNull null]
+                                                         deleted:NO];
+    XCTAssertNotNil(messageBuilder);
+    message = (MPMessage *)[messageBuilder build];
+    XCTAssertNotNil(message);
+    
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"ov"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"VIP", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+    XCTAssertEqualObjects(@YES, messageDictionary[@"na"]);
+}
+
 @end
