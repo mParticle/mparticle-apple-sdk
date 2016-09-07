@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.7.2
+
+>Upgrade suggestion: **LOW**. Upgrade if you forward data to Amplitude
+
+* [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged.
+
 ## 6.7.1
 
 >Upgrade suggestion: **LOW**. Upgrade if you log events prior to the SDK being fully initialized
@@ -17,6 +23,7 @@
 >Upgrade suggestion: **MODERATE**. Upgrade if you use custom mappings
 
 * [NEW] Custom mappings now support more advanced matching schemes
+* [NEW] Support for [Urban Airship](https://www.urbanairship.com) as a kit
 
 ## 6.6.1
 
