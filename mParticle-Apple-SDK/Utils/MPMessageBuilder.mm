@@ -33,6 +33,8 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
+#import "MPUserAttributeChange.h"
+#import "MPUserIdentityChange.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -46,6 +48,8 @@ NSString *const kMPUserAttributeWasDeletedKey = @"d";
 NSString *const kMPUserAttributeNewValueKey = @"nv";
 NSString *const kMPUserAttributeOldValueKey = @"ov";
 NSString *const kMPUserAttributeNewlyAddedKey = @"na";
+NSString *const kMPUserIdentityNewValueKey = @"ni";
+NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 @implementation MPMessageBuilder
 
@@ -144,14 +148,28 @@ NSString *const kMPUserAttributeNewlyAddedKey = @"na";
     return self;
 }
 
-- (MPMessageBuilder *)withUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes key:(nonnull NSString *)key value:(nullable id)value deleted:(BOOL)deleted {
-    messageDictionary[kMPUserAttributeWasDeletedKey] = deleted ? @YES : @NO;
-    messageDictionary[kMPEventNameKey] = key;
+- (MPMessageBuilder *)withUserAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
+    messageDictionary[kMPUserAttributeWasDeletedKey] = userAttributeChange.deleted ? @YES : @NO;
+    messageDictionary[kMPEventNameKey] = userAttributeChange.key;
     
-    id oldValue = userAttributes[key];
+    id oldValue = userAttributeChange.userAttributes[userAttributeChange.key];
     messageDictionary[kMPUserAttributeOldValueKey] = oldValue ? oldValue : [NSNull null];
-    messageDictionary[kMPUserAttributeNewValueKey] = value && !deleted ? value : [NSNull null];
+    messageDictionary[kMPUserAttributeNewValueKey] = userAttributeChange.valueToLog && !userAttributeChange.deleted ? userAttributeChange.valueToLog : [NSNull null];
     messageDictionary[kMPUserAttributeNewlyAddedKey] = oldValue ? @NO : @YES;
+    
+    return self;
+}
+
+- (MPMessageBuilder *)withUserIdentityChange:(MPUserIdentityChange *)userIdentityChange {
+    NSDictionary *dictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+    if (dictionary) {
+        messageDictionary[kMPUserIdentityNewValueKey] = dictionary;
+    }
+    
+    dictionary = [userIdentityChange.userIdentityOld dictionaryRepresentation];
+    if (dictionary) {
+        messageDictionary[kMPUserIdentityOldValueKey] = dictionary;
+    }
     
     return self;
 }
@@ -185,9 +203,16 @@ NSString *const kMPUserAttributeNewlyAddedKey = @"na";
     return messageBuilder;
 }
 
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes key:(nonnull NSString *)key value:(nullable id)value deleted:(BOOL)deleted {
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
-    [messageBuilder withUserAttributes:userAttributes key:key value:value deleted:deleted];
+    [messageBuilder withUserAttributeChange:userAttributeChange];
+    
+    return messageBuilder;
+}
+
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange {
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
+    [messageBuilder withUserIdentityChange:userIdentityChange];
     
     return messageBuilder;
 }

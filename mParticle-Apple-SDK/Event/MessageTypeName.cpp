@@ -21,7 +21,7 @@
 
 namespace mParticle {
     const vector<string> MessageTypeName::names = {"unknown", "ss", "se", "v", "e", "x", "o", "fr", "unknown", "pr", // 0-9
-                                                   "ast", "pm", "npe", "bc", "pro", "pre", "cm", "uac"}; // 10-17
+                                                   "ast", "pm", "npe", "bc", "pro", "pre", "cm", "uac", "uic"}; // 10-17
     
     const size_t MessageTypeName::_size = MessageTypeName::names.size();
     

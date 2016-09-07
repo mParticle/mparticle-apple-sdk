@@ -235,7 +235,9 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type code for a commerce event */
     MPMessageTypeCommerceEvent = 16,
     /** Message type code for a user attribute change */
-    MPMessageTypeUserAttributeChange = 17
+    MPMessageTypeUserAttributeChange = 17,
+    /** Message type code for a user identity change */
+    MPMessageTypeUserIdentityChange = 18
 };
 
 /** Posted immediately after a new session has begun.

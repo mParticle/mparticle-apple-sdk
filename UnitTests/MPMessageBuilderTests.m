@@ -34,6 +34,8 @@
 #import "MPCart.h"
 #import "MPCart+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "MPUserAttributeChange.h"
+#import "MPUserIdentityChange.h"
 
 @interface MPMessageBuilderTests : XCTestCase
 
@@ -272,12 +274,11 @@
                                                      @"seat_preference":@"Window"};
     
     // Add a new user attribute
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:userAttributes key:@"meal_restrictions" value:@"Peanuts"];
+    
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
                                                                            session:self.session
-                                                                    userAttributes:userAttributes
-                                                                               key:@"meal_restrictions"
-                                                                             value:@"Peanuts"
-                                                                           deleted:NO];
+                                                               userAttributeChange:userAttributeChange];
     XCTAssertNotNil(messageBuilder);
     MPMessage *message = (MPMessage *)[messageBuilder build];
     XCTAssertNotNil(message);
@@ -291,12 +292,13 @@
     XCTAssertEqualObjects(@YES, messageDictionary[@"na"]);
     
     // Remove an existing user attribute
+    userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:userAttributes key:@"membership_status" value:nil];
+    userAttributeChange.deleted = YES;
+    
     messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
                                                          session:self.session
-                                                  userAttributes:userAttributes
-                                                             key:@"membership_status"
-                                                           value:[NSNull null]
-                                                         deleted:YES];
+                                             userAttributeChange:userAttributeChange];
+
     XCTAssertNotNil(messageBuilder);
     message = (MPMessage *)[messageBuilder build];
     XCTAssertNotNil(message);
@@ -311,12 +313,12 @@
 
     // Update an existing user attribute
     NSArray<NSString *> *seatPreference = @[@"Window", @"Aisle"];
+    userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:userAttributes key:@"seat_preference" value:seatPreference];
+    
     messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
                                                          session:self.session
-                                                  userAttributes:userAttributes
-                                                             key:@"seat_preference"
-                                                           value:seatPreference
-                                                         deleted:NO];
+                                             userAttributeChange:userAttributeChange];
+
     XCTAssertNotNil(messageBuilder);
     message = (MPMessage *)[messageBuilder build];
     XCTAssertNotNil(message);
@@ -330,12 +332,12 @@
     XCTAssertEqualObjects(@NO, messageDictionary[@"na"]);
     
     // User attribute tag
+    userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:userAttributes key:@"VIP" value:[NSNull null]];
+    
     messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
                                                          session:self.session
-                                                  userAttributes:userAttributes
-                                                             key:@"VIP"
-                                                           value:[NSNull null]
-                                                         deleted:NO];
+                                             userAttributeChange:userAttributeChange];
+
     XCTAssertNotNil(messageBuilder);
     message = (MPMessage *)[messageBuilder build];
     XCTAssertNotNil(message);

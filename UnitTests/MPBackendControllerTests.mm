@@ -1058,7 +1058,9 @@
     XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
     XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
     
-    [persistence deleteSession:self.session];
+    [persistence deleteSession:self.backendController.session];
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNil(messages);
 
     [self.backendController setUserAttribute:@"TardisModel" value:@"" attempt:0 completionHandler:nil];
     messages = [persistence fetchMessagesInSession:self.backendController.session];
@@ -1069,6 +1071,65 @@
     XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"ov"]);
     XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
     XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
+- (void)testUserIdentityChanged {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+
+    [self.backendController setUserIdentity:@"The Most Interesting Man in the World" identityType:MPUserIdentityCustomerId attempt:0 completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+    }];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", @"n", @(MPUserIdentityCustomerId)];
+    NSDictionary *userIdentity = [[self.backendController.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+    XCTAssertNotNil(userIdentity);
+    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+
+    MPMessage *message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    NSDictionary *messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
+    XCTAssertNotNil(messageDictionary[@"ni"]);
+    userIdentity = messageDictionary[@"ni"];
+    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+
+    [persistence deleteSession:self.backendController.session];
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNil(messages);
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
+    [self.backendController setUserIdentity:nil identityType:MPUserIdentityCustomerId attempt:0 completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+
+    userIdentity = [[self.backendController.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+    XCTAssertNil(userIdentity);
+
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+    
+    message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
+    XCTAssertNil(messageDictionary[@"ni"]);
+    userIdentity = messageDictionary[@"oi"];
+    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
     
     self.backendController.initializationStatus = originalInitializationStatus;
 }

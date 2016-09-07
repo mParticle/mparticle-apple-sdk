@@ -10,7 +10,7 @@
 
 >Upgrade suggestion: **LOW**. Upgrade if you forward data to Amplitude
 
-* [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged.
+* [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged
 
 ## 6.7.1
 

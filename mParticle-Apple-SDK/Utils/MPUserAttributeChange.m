@@ -30,7 +30,7 @@
     BOOL isValueAnAray = [value isKindOfClass:NSArrayClass];
     
     NSAssert(validKey, @"'key' must be a string.");
-    NSAssert(value == nil || (value != nil && ([value isKindOfClass:NSStringClass] || [value isKindOfClass:[NSNumber class]] || isValueAnAray)), @"'value' must be either nil, string, number, or array of strings.");
+    NSAssert(value == nil || (value != nil && ([value isKindOfClass:NSStringClass] || [value isKindOfClass:[NSNumber class]] || isValueAnAray) || (NSNull *)value == [NSNull null]), @"'value' must be either nil, string, number, or array of strings.");
     
     if (!validKey || (!userAttributes && !value)) {
         return nil;
