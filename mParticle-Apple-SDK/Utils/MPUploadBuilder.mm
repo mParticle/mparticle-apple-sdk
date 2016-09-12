@@ -195,7 +195,7 @@ using namespace std;
             
             completionHandler(upload);
             
-            [persistence deleteForwardRecodsIds:forwardRecordsIds];
+            [persistence deleteForwardRecordsIds:forwardRecordsIds];
         };
         
 #if TARGET_OS_IOS == 1

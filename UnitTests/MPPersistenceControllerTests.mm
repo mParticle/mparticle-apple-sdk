@@ -29,6 +29,9 @@
 #import "MPMessageBuilder.h"
 #import "MParticleUserNotification.h"
 #import "MPIntegrationAttributes.h"
+#import "MPConsumerInfo.h"
+#import "MPForwardRecord.h"
+#import "MPKitExecStatus.h"
 
 #define DATABASE_TESTS_EXPECATIONS_TIMEOUT 1
 
@@ -449,6 +452,127 @@
     [persistence deleteAllIntegrationAttributes];
     integrationAttributesArray = [persistence fetchIntegrationAttributes];
     XCTAssertNil(integrationAttributesArray);
+}
+
+- (void)testMessageCount {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+
+    NSUInteger messageCount = [persistence countMesssagesForUploadInSession:session];
+    XCTAssertEqual(messageCount, 0);
+
+    [persistence saveMessage:message];
+    
+    messageCount = [persistence countMesssagesForUploadInSession:session];
+    XCTAssertEqual(messageCount, 1);
+    
+    [persistence deleteSession:session];
+    
+    NSDictionary *messageInfo = @{kMPDeviceTokenKey:@"<Device Token>",
+                                  kMPPushMessageProviderKey:kMPPushMessageProviderValue};
+    
+    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:nil messageInfo:messageInfo];
+    MPStandaloneMessage *standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
+
+    messageCount = [persistence countStandaloneMessages];
+    XCTAssertEqual(messageCount, 0);
+
+    [persistence saveStandaloneMessage:standaloneMessage];
+
+    messageCount = [persistence countStandaloneMessages];
+    XCTAssertEqual(messageCount, 1);
+    
+    [persistence deleteStandaloneMessage:standaloneMessage];
+}
+
+- (void)testConsumerInfo {
+    NSDictionary *consumerInfoDictionary = @{
+                                             @"ck":@{
+                                                     @"rpl":@{
+                                                             @"c":@"288160084=2832403&-515079401=2832403&1546594223=2832403&264784951=2832403&4151713=2832403&-1663781220=2832403",
+                                                             @"e":@"2015-05-26T22:43:31.505262Z"
+                                                             },
+                                                     @"uddif":@{
+                                                             @"c":@"uah6978=1068490497975183452&uahist=%2524Gender%3Dm%26Tag1%3D",
+                                                             @"e":@"2025-05-18T22:43:31.461026Z"
+                                                             },
+                                                     @"uid":@{
+                                                             @"c":@"u=3452189063653540060&cr=2827774&lbri=53CB5411-5BF0-402C-88E4-DFE91F921D82&g=7754fbee-1b83-4cab-9b59-34518c14ae85&ls=2832403&lbe=2832403",
+                                                             @"e":@"2025-05-15T17:34:07.450231Z"
+                                                             },
+                                                     @"uuc6978":@{
+                                                             @"c":@"nu=t&et-Unknown=2832403&et-Other=2832403&et-=2832403&et-Transaction=2832198",
+                                                             @"e":@"2020-05-16T17:34:07.941843Z"
+                                                             }
+                                                     },
+                                             @"das":@"7754fbee-1b83-4cab-9b59-34518c14ae85",
+                                             @"mpid":@3452189063653540060
+                                             };
+
+    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    [persistence saveConsumerInfo:consumerInfo];
+    
+    MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfo];
+    XCTAssertNotNil(fetchedConsumerInfo);
+    
+    NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
+    NSDictionary *fetchedCookiesDictionary = [fetchedConsumerInfo cookiesDictionaryRepresentation];
+    XCTAssertEqualObjects(cookiesDictionary, fetchedCookiesDictionary);
+    
+    [persistence deleteConsumerInfo];
+    fetchedConsumerInfo = [persistence fetchConsumerInfo];
+    XCTAssertNil(fetchedConsumerInfo);
+    
+    consumerInfo = [[MPConsumerInfo alloc] init];
+    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+    [persistence saveConsumerInfo:consumerInfo];
+    [persistence updateConsumerInfo:consumerInfo];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
+    
+    [persistence fetchConsumerInfo:^(MPConsumerInfo * _Nullable consumerInfo) {
+        XCTAssertNotNil(consumerInfo);
+        [persistence deleteConsumerInfo];
+        
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testForwardRecord {
+    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
+    
+    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
+                                                                       execStatus:execStatus
+                                                                        stateFlag:YES];
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    [persistence saveForwardRecord:forwardRecord];
+    
+    NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
+    XCTAssertNotNil(forwardRecords);
+    XCTAssertEqual(forwardRecords.count, 1);
+    
+    MPForwardRecord *fetchedForwardRecord = [forwardRecords firstObject];
+    XCTAssertEqualObjects(forwardRecord, fetchedForwardRecord);
+    
+    NSArray *ids = nil;
+    [persistence deleteForwardRecordsIds:ids];
+    [persistence deleteForwardRecordsIds:@[]];
+    [persistence deleteForwardRecordsIds:@[@(forwardRecord.forwardRecordId)]];
+    
+    forwardRecords = [persistence fetchForwardRecords];
+    XCTAssertNil(forwardRecords);
 }
 
 #if TARGET_OS_IOS == 1

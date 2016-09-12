@@ -499,11 +499,11 @@
 		C90499271C56B8DE005F11EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = Info.plist; path = Framework/Info.plist; sourceTree = "<group>"; };
 		C90499291C56B8DE005F11EA /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		C904992C1C56B8DE005F11EA /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
-		C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPAppDelegateProxy.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
-		C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPAppNotificationHandler.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C904992D1C56B8DE005F11EA /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPAppDelegateProxy.m; sourceTree = "<group>"; };
+		C904992E1C56B8DE005F11EA /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
 		C904992F1C56B8DE005F11EA /* MPAppNotificationHandler.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPAppNotificationHandler.mm; sourceTree = "<group>"; };
 		C90499301C56B8DE005F11EA /* MPSurrogateAppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPSurrogateAppDelegate.h; sourceTree = "<group>"; };
-		C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPSurrogateAppDelegate.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		C90499311C56B8DE005F11EA /* MPSurrogateAppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPSurrogateAppDelegate.m; sourceTree = "<group>"; };
 		C90499331C56B8DE005F11EA /* MPAppboy.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAppboy.h; sourceTree = "<group>"; };
 		C90499341C56B8DE005F11EA /* MPAppboy.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAppboy.m; sourceTree = "<group>"; };
 		C90499351C56B8DE005F11EA /* MPCustomModule.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPCustomModule.h; sourceTree = "<group>"; };
@@ -612,7 +612,7 @@
 		C90499D41C56B8DF005F11EA /* mParticle.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = mParticle.m; sourceTree = "<group>"; };
 		C90499D91C56B8DF005F11EA /* MPBackendController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
 		C90499DA1C56B8DF005F11EA /* MPBackendController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPBackendController.mm; sourceTree = "<group>"; };
-		C90499DB1C56B8DF005F11EA /* MPEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPEnums.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C90499DB1C56B8DF005F11EA /* MPEnums.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPEnums.h; sourceTree = "<group>"; };
 		C90499DC1C56B8DF005F11EA /* MPEnums.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPEnums.m; sourceTree = "<group>"; };
 		C90499DD1C56B8DF005F11EA /* MPExceptionHandler.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPExceptionHandler.h; sourceTree = "<group>"; };
 		C90499DE1C56B8DF005F11EA /* MPExceptionHandler.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPExceptionHandler.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
@@ -621,9 +621,9 @@
 		C90499E11C56B8DF005F11EA /* MPUserSegments.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPUserSegments.h; sourceTree = "<group>"; };
 		C90499E21C56B8DF005F11EA /* MPUserSegments.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPUserSegments.m; sourceTree = "<group>"; };
 		C90499E41C56B8DF005F11EA /* MPConnector.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnector.h; sourceTree = "<group>"; };
-		C90499E51C56B8DF005F11EA /* MPConnector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPConnector.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
+		C90499E51C56B8DF005F11EA /* MPConnector.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPConnector.m; sourceTree = "<group>"; };
 		C90499E61C56B8DF005F11EA /* MPNetworkCommunication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
-		C90499E71C56B8DF005F11EA /* MPNetworkCommunication.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPNetworkCommunication.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C90499E71C56B8DF005F11EA /* MPNetworkCommunication.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPNetworkCommunication.mm; sourceTree = "<group>"; };
 		C90499E81C56B8DF005F11EA /* MPNetworkPerformance.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
 		C90499E91C56B8DF005F11EA /* MPNetworkPerformance.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformance.m; sourceTree = "<group>"; };
 		C90499EA1C56B8DF005F11EA /* MPURLConnectionAssociate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPURLConnectionAssociate.h; sourceTree = "<group>"; };
@@ -654,7 +654,7 @@
 		C9049A111C56B8DF005F11EA /* MPLaunchInfo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPLaunchInfo.h; sourceTree = "<group>"; };
 		C9049A121C56B8DF005F11EA /* MPLaunchInfo.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPLaunchInfo.m; sourceTree = "<group>"; };
 		C9049A151C56B8DF005F11EA /* MPMessageBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPMessageBuilder.h; sourceTree = "<group>"; };
-		C9049A161C56B8DF005F11EA /* MPMessageBuilder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPMessageBuilder.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C9049A161C56B8DF005F11EA /* MPMessageBuilder.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPMessageBuilder.mm; sourceTree = "<group>"; };
 		C9049A1B1C56B8DF005F11EA /* MPResponseConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPResponseConfig.h; sourceTree = "<group>"; };
 		C9049A1C1C56B8DF005F11EA /* MPResponseConfig.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfig.m; sourceTree = "<group>"; };
 		C9049A1D1C56B8DF005F11EA /* MPResponseEvents.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPResponseEvents.h; sourceTree = "<group>"; };
@@ -1574,7 +1574,7 @@
 			isa = PBXProject;
 			attributes = {
 				CLASSPREFIX = MP;
-				LastUpgradeCheck = 0700;
+				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = "mParticle, Inc.";
 				TargetAttributes = {
 					C9049A581C56B98E005F11EA = {
@@ -1974,15 +1974,20 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
 				ENABLE_BITCODE = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -2016,14 +2021,19 @@
 				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
 				ENABLE_BITCODE = YES;
 				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;

@@ -32,6 +32,11 @@
     #import "MPNotificationController.h"
 #endif
 
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+    #import <UserNotifications/UserNotifications.h>
+    #import <UserNotifications/UNUserNotificationCenter.h>
+#endif
+
 @interface MPAppNotificationHandler() {
     dispatch_queue_t processUserNotificationQueue;
 }
@@ -291,6 +296,86 @@
     for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:didUpdateUserActivitySelector]) {
             [kitRegister.wrapperInstance didUpdateUserActivity:userActivity];
+        }
+    }
+}
+#endif
+
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+- (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center willPresentNotification:(nonnull UNNotification *)notification {
+    if ([MPStateMachine sharedInstance].optOut) {
+        return;
+    }
+    
+    __weak MPAppNotificationHandler *weakSelf = self;
+    dispatch_async(processUserNotificationQueue, ^{
+        __strong MPAppNotificationHandler *strongSelf = weakSelf;
+        
+        if (!strongSelf) {
+            return;
+        }
+        
+        NSDictionary *userNotificationDictionary = @{kMPUserNotificationDictionaryKey:notification.request.content.userInfo,
+                                                     kMPUserNotificationRunningModeKey:@(strongSelf.runningMode)};
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
+                                                            object:strongSelf
+                                                          userInfo:userNotificationDictionary];
+    });
+    
+    SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
+            [kitRegister.wrapperInstance userNotificationCenter:center willPresentNotification:notification];
+        }
+    }
+}
+
+- (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response {
+    if ([MPStateMachine sharedInstance].optOut) {
+        return;
+    }
+    
+    __weak MPAppNotificationHandler *weakSelf = self;
+    dispatch_async(processUserNotificationQueue, ^{
+        __strong MPAppNotificationHandler *strongSelf = weakSelf;
+        
+        if (!strongSelf) {
+            return;
+        }
+        
+        NSMutableDictionary *userNotificationDictionary = [@{kMPUserNotificationDictionaryKey:response.notification.request.content.userInfo,
+                                                             kMPUserNotificationRunningModeKey:@(strongSelf.runningMode)}
+                                                           mutableCopy];
+        if (response.actionIdentifier) {
+            userNotificationDictionary[kMPUserNotificationActionKey] = response.actionIdentifier;
+        }
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
+                                                            object:strongSelf
+                                                          userInfo:userNotificationDictionary];
+    });
+    
+    SEL userNotificationCenterDidReceiveNotificationResponse = @selector(userNotificationCenter:didReceiveNotificationResponse:);
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+    NSNumber *lastKit = nil;
+    
+    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterDidReceiveNotificationResponse]) {
+            MPKitExecStatus *execStatus = [kitRegister.wrapperInstance userNotificationCenter:center didReceiveNotificationResponse:response];
+            
+            if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
+                lastKit = execStatus.kitCode;
+                
+                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification
+                                                                                   execStatus:execStatus];
+                
+                [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                
+                MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
+            }
         }
     }
 }

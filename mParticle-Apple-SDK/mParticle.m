@@ -1632,6 +1632,17 @@ NSString *const kMPStateKey = @"state";
                            }];
 }
 
+#pragma mark User Notifications
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification {
+    [[MPAppNotificationHandler sharedInstance] userNotificationCenter:center willPresentNotification:notification];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    [[MPAppNotificationHandler sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response];
+}
+#endif
+
 #pragma mark User Segments
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler {
     MPExecStatus execStatus = [self.backendController fetchSegments:timeout

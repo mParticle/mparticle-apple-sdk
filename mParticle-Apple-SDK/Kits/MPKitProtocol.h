@@ -33,6 +33,12 @@
 @class MPMediaTrack;
 @class MPUserSegments;
 
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+    @class UNUserNotificationCenter;
+    @class UNNotification;
+    @class UNNotificationResponse;
+#endif
+
 
 @protocol MPKitProtocol <NSObject>
 #pragma mark - Required methods
@@ -68,6 +74,12 @@
 
 #if TARGET_OS_IOS == 1
 - (nonnull MPKitExecStatus *)didRegisterUserNotificationSettings:(nonnull UIUserNotificationSettings *)notificationSettings;
+#endif
+
+#pragma mark User Notifications
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+- (nonnull MPKitExecStatus *)userNotificationCenter:(nonnull UNUserNotificationCenter *)center willPresentNotification:(nonnull UNNotification *)notification;
+- (nonnull MPKitExecStatus *)userNotificationCenter:(nonnull UNUserNotificationCenter *)center didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response;
 #endif
 
 #pragma mark Location tracking

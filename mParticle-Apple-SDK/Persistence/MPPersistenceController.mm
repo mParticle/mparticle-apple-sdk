@@ -664,7 +664,7 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (void)deleteForwardRecodsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds {
+- (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds {
     if (MPIsNull(forwardRecordsIds) || forwardRecordsIds.count == 0) {
         return;
     }
@@ -1338,39 +1338,6 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (MPProductBag *)fetchProductBag:(NSString *)bagName {
-    __block MPProductBag *productBag = nil;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT name, product_data FROM product_bags WHERE name = ? ORDER BY timestamp";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string name = string([bagName UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, name.c_str(), (int)name.size(), SQLITE_STATIC);
-            
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                if (!productBag) {
-                    NSString *name = stringValue(preparedStatement, 0);
-                    productBag = [[MPProductBag alloc] initWithName:name];
-                }
-                
-                MPProduct *product = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
-                
-                if (product) {
-                    [productBag.products addObject:product];
-                }
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    return productBag;
-}
-
 - (nullable NSArray<MPProductBag *> *)fetchProductBags {
     __block vector<MPProductBag *> productBagsVector;
     
@@ -1507,38 +1474,6 @@ const int MaxBreadcrumbs = 50;
     return message;
 }
 
-- (MPSession *)fetchSessionFromCrash {
-    __block MPSession *crashSession = nil;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length \
-                                     FROM sessions \
-                                     WHERE _id = (SELECT MAX(_id) FROM sessions)";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                crashSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
-                                                               UUID:stringValue(preparedStatement, 1)
-                                                     backgroundTime:doubleValue(preparedStatement, 2)
-                                                          startTime:doubleValue(preparedStatement, 3)
-                                                            endTime:doubleValue(preparedStatement, 4)
-                                                         attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                      sessionNumber:@(int64Value(preparedStatement, 6))
-                                              numberOfInterruptions:intValue(preparedStatement, 7)
-                                                       eventCounter:intValue(preparedStatement, 8)
-                                                        suspendTime:doubleValue(preparedStatement, 9)];
-                
-                crashSession.length = doubleValue(preparedStatement, 10);
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    return crashSession;
-}
-
 - (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
@@ -1667,41 +1602,6 @@ const int MaxBreadcrumbs = 50;
         const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM standalone_messages ORDER BY _id";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageId:int64Value(preparedStatement, 0)
-                                                                                                   UUID:stringValue(preparedStatement, 1)
-                                                                                            messageType:stringValue(preparedStatement, 2)
-                                                                                            messageData:dataValue(preparedStatement, 3)
-                                                                                              timestamp:doubleValue(preparedStatement, 4)
-                                                                                           uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)];
-                
-                messagesVector.push_back(standaloneMessage);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    if (messagesVector.empty()) {
-        return nil;
-    }
-    
-    NSArray<MPStandaloneMessage *> *standaloneMessages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
-    return standaloneMessages;
-}
-
-- (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessagesForUploading {
-    __block vector<MPStandaloneMessage *> messagesVector;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM standalone_messages WHERE upload_status = ? ORDER BY _id";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int(preparedStatement, 1, MPUploadStatusBatch);
-            
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageId:int64Value(preparedStatement, 0)
                                                                                                    UUID:stringValue(preparedStatement, 1)
@@ -2117,35 +2017,6 @@ const int MaxBreadcrumbs = 50;
             }
             
             session.sessionId = sqlite3_last_insert_rowid(mParticleDB);
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)saveUpload:(MPUpload *)upload {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([upload.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-            
-            sqlite3_bind_blob(preparedStatement, 2, [upload.uploadData bytes], (int)[upload.uploadData length], SQLITE_STATIC);
-            sqlite3_bind_double(preparedStatement, 3, upload.timestamp);
-            sqlite3_bind_int64(preparedStatement, 4, upload.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
             
             sqlite3_clear_bindings(preparedStatement);
         }
