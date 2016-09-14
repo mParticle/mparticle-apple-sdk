@@ -6,6 +6,17 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.8.0
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you need to support iOS 10
+
+* [NEW] Support for [Leanplum](https://www.leanplum.com) as a kit
+* [NEW] When a user identity changes a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user identities were set/present at the moment an app event is logged
+
+> You will need for this SDK update:
+> * Xcode 8 or later
+> * CocoaPods 1.1.0.rc.2 or later
+
 ## 6.7.2
 
 >Upgrade suggestion: **LOW**. Upgrade if you forward data to Amplitude
