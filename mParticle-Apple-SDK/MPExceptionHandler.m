@@ -709,13 +709,6 @@ static void addImageListCallback(const struct mach_header *mh, intptr_t vmaddr_s
     appendImageList(&sharedImageList, (uintptr_t) mh, info.dli_fname);
 }
 
-/**
- Write a binary image frame
- 
- @param file Output file
- @param name binary image path (or name).
- @param image_base Mach-O image base.
- */
 static void processBinaryImage(const char *name, const void *header, struct uuid_command *out_uuid, uintptr_t *out_baseaddr, uintptr_t *out_cmdsize) {
     uint32_t ncmds;
     const struct mach_header *header32 = (const struct mach_header *)header;

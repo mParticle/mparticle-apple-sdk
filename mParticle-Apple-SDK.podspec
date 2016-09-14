@@ -55,16 +55,4 @@ Pod::Spec.new do |s|
         ss.tvos.frameworks     = 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ss.tvos.weak_framework = 'AdSupport'
     end
-
-    s.subspec 'CrashReporter' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'mParticle-CrashReporter', '~> 1.3'
-        ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
-        ss.ios.deployment_target      = "8.0"
-
-        ss.ios.pod_target_xcconfig = {
-            'LIBRARY_SEARCH_PATHS' => '$(inherited) $(PODS_ROOT)/mParticle-CrashReporter/**',
-            'OTHER_LDFLAGS' => '$(inherited) -l"mParticle-CrashReporter"'
-        }
-    end
 end

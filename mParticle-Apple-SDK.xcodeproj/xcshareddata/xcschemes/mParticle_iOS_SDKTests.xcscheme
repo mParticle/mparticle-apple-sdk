@@ -17,7 +17,7 @@
             skipped = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C97C08AC1CA306A000280B1E"
+               BlueprintIdentifier = "C9DD20841D8A18F500D3ABBE"
                BuildableName = "mParticle_iOS_SDKTests.xctest"
                BlueprintName = "mParticle_iOS_SDKTests"
                ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">

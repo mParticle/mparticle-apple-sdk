@@ -14,7 +14,7 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "C9049A581C56B98E005F11EA"
+               BlueprintIdentifier = "C9DD1DFE1D8A118400D3ABBE"
                BuildableName = "mParticle_Apple_SDK.framework"
                BlueprintName = "mParticle-iOS-SDK"
                ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">
@@ -26,7 +26,8 @@
       buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
-      shouldUseLaunchSchemeArgsEnv = "YES">
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      codeCoverageEnabled = "YES">
       <Testables>
       </Testables>
       <AdditionalOptions>
@@ -45,7 +46,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C9049A581C56B98E005F11EA"
+            BlueprintIdentifier = "C9DD1DFE1D8A118400D3ABBE"
             BuildableName = "mParticle_Apple_SDK.framework"
             BlueprintName = "mParticle-iOS-SDK"
             ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">
@@ -63,7 +64,7 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "C9049A581C56B98E005F11EA"
+            BlueprintIdentifier = "C9DD1DFE1D8A118400D3ABBE"
             BuildableName = "mParticle_Apple_SDK.framework"
             BlueprintName = "mParticle-iOS-SDK"
             ReferencedContainer = "container:mParticle-Apple-SDK.xcodeproj">

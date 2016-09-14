@@ -702,7 +702,6 @@ NS_ASSUME_NONNULL_BEGIN
  @param timeout The maximum number of seconds to wait for a response from mParticle's servers. This value can be fractional, like 0.1 (100 milliseconds)
  @param endpointId The endpoint id
  @param completionHandler A block to be called when the results are available. The user segments array is passed to this block
- @returns An array of MPUserSegments objects in the completion handler
  */
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler;
 

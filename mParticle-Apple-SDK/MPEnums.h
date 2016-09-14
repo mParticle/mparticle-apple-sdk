@@ -268,16 +268,16 @@ extern NSString * _Nonnull const mParticleSessionId;
  @discussion There are many 3rd party services that support,
  for example, specifying a gender of a user. The mParticle platform will look for these constants within the user attributes that
  you have set for a given user, and forward any attributes to the services that support them.
- @param mParticleUserAttributeMobileNumber Setting the mobile number as user attribute
- @param mParticleUserAttributeGender Setting the gender as user attribute
- @param mParticleUserAttributeAge Setting the age as user attribute
- @param mParticleUserAttributeCountry Setting the country as user attribute
- @param mParticleUserAttributeZip Setting the postal code (zip) as user attribute
- @param mParticleUserAttributeCity Setting the city as user attribute
- @param mParticleUserAttributeState Setting the state as user attribute
- @param mParticleUserAttributeAddress Setting the address as user attribute
- @param mParticleUserAttributeFirstName Setting the first name as user attribute
- @param mParticleUserAttributeLastName Setting the last name as user attribute
+ mParticleUserAttributeMobileNumber Setting the mobile number as user attribute
+ mParticleUserAttributeGender Setting the gender as user attribute
+ mParticleUserAttributeAge Setting the age as user attribute
+ mParticleUserAttributeCountry Setting the country as user attribute
+ mParticleUserAttributeZip Setting the postal code (zip) as user attribute
+ mParticleUserAttributeCity Setting the city as user attribute
+ mParticleUserAttributeState Setting the state as user attribute
+ mParticleUserAttributeAddress Setting the address as user attribute
+ mParticleUserAttributeFirstName Setting the first name as user attribute
+ mParticleUserAttributeLastName Setting the last name as user attribute
  @see setUserAttribute:value:
  */
 extern NSString * _Nonnull const mParticleUserAttributeMobileNumber;

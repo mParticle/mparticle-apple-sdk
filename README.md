@@ -70,13 +70,15 @@ pre_install do |pre_i|
 end
 ```
 
-For iOS only, you can also choose to install the crash reporter by including it as a subspec:
+For iOS only, you can also choose to install the crash reporter by including it as a separate pod:
 
 ```ruby
-pod 'mParticle-Apple-SDK/CrashReporter', '~> 6'
+pod 'mParticle-CrashReporter', '~> 1.3'
 ```
 
-> You can't use the crash reporter at the same time as the Apteligent kit.
+You can read detailed instructions for including the Crash Reporter at its repository: [mParticle-CrashReporter](https://github.com/mParticle/mParticle-CrashReporter)
+
+> Note you can't use the crash reporter at the same time as the Apteligent kit.
 
 #### Carthage
 
@@ -146,11 +148,11 @@ If you are using mParticle as a framework, your import statement will be as foll
 
 ```objective-c
 @import mParticle_Apple_SDK;                // Apple recommended syntax, but requires "Enable Modules (C and Objective-C)" in pbxproj
-#import <mParticle_Apple_SDK/mParticle.h>   // Works regardless of Enable Modules setting
+#import <mParticle_Apple_SDK/mParticle.h>   // Works when modules are not enabled
 
 ```
 
-Otherwise, for CocoaPods without use_frameworks, you can use either of these statements:
+Otherwise, for CocoaPods without `use_frameworks!`, you can use either of these statements:
 
 ```objective-c
 #import <mParticle-Apple-SDK/mParticle.h>
