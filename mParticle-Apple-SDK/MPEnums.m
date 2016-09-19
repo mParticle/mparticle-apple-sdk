@@ -21,6 +21,7 @@
 NSString *const mParticleSessionDidBeginNotification = @"mParticleSessionDidBeginNotification";
 NSString *const mParticleSessionDidEndNotification = @"mParticleSessionDidEndNotification";
 NSString *const mParticleSessionId = @"mParticleSessionId";
+NSString *const mParticleDidFinishInitializing = @"mParticleDidFinishInitializing";
 
 NSString *const mParticleUserAttributeMobileNumber = @"$Mobile";
 NSString *const mParticleUserAttributeGender = @"$Gender";

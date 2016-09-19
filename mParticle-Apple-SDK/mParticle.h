@@ -117,6 +117,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment;
 
 /**
+ Flag indicating whether the mParticle SDK has been fully initialized yet or not. You can KVO this property to know when the SDK 
+ successfully finishes initializing
+ */
+@property (nonatomic, unsafe_unretained, readonly) BOOL initialized;
+
+/**
  Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
  If consoleLogging is set to false, the log level will be set to none automatically. When the environment is
  Production, the log level will always be none, regardless of the value you assign to it.

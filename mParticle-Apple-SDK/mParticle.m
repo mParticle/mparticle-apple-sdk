@@ -77,6 +77,7 @@ NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
+@property (nonatomic, unsafe_unretained) BOOL initialized;
 
 @end
 
@@ -99,6 +100,7 @@ NSString *const kMPStateKey = @"state";
     _commerce = nil;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
+    _initialized = NO;
     
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
@@ -472,6 +474,12 @@ NSString *const kMPStateKey = @"state";
                                }
 #endif
                            }
+                           
+                           strongSelf.initialized = YES;
+                           
+                           [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
+                                                                               object:self
+                                                                             userInfo:nil];
                        }];
 }
 

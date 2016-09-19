@@ -262,6 +262,13 @@ extern NSString * _Nonnull const mParticleSessionDidEndNotification;
  */
 extern NSString * _Nonnull const mParticleSessionId;
 
+/** Posted immediately after the SDK becomes initialized.
+ 
+ @discussion You can register to receive this notification using NSNotificationCenter. This notification is broadcast when the mParticle SDK successfully
+ finishes it initialization.
+ */
+extern NSString * _Nonnull const mParticleDidFinishInitializing;
+
 /**
  Set of constants that can be used to specify certain attributes of a user. 
  
