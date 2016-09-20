@@ -51,6 +51,7 @@ extern NSString * _Nonnull const kMPDeviceInformationKey;
 @property (nonatomic, strong, readonly, nullable) NSString *timezoneDescription;
 @property (nonatomic, strong, readonly, nullable) NSString *vendorId;
 @property (nonatomic, unsafe_unretained, readonly) CGSize screenSize;
+@property (nonatomic, unsafe_unretained, readonly) BOOL isDaylightSavingTime;
 @property (nonatomic, unsafe_unretained, readonly, getter = isTablet) BOOL tablet;
 
 + (nonnull NSDictionary *)jailbrokenInfo;
