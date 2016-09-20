@@ -45,14 +45,14 @@ Pod::Spec.new do |s|
     s.subspec 'mParticle' do |ss|
         ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
-        ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files        = 'mParticle-Apple-SDK/**/*'
-        ss.libraries           = 'c++', 'sqlite3', 'z'
+        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        ss.source_files         = 'mParticle-Apple-SDK/**/*'
+        ss.libraries            = 'c++', 'sqlite3', 'z'
 
-        ss.ios.frameworks      = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
-        ss.ios.weak_framework  = 'AdSupport', 'iAd'
+        ss.ios.frameworks       = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
+        ss.ios.weak_frameworks  = 'AdSupport', 'iAd', 'UserNotifications'
 
-        ss.tvos.frameworks     = 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-        ss.tvos.weak_framework = 'AdSupport'
+        ss.tvos.frameworks      = 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        ss.tvos.weak_frameworks = 'AdSupport'
     end
 end
