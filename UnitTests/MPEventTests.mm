@@ -101,9 +101,10 @@
     
     [event endTiming];
     
-    XCTAssertNotNil(event.startTime, @"Event start time should not have been nil.");
-    XCTAssertNotNil(event.endTime, @"Event end time should not have been nil.");
-    XCTAssertGreaterThan([event.duration doubleValue], (sleepTimer * 1000 - 1), @"Timing of an event is not being done properly.");
+    XCTAssertNotNil(event.startTime);
+    XCTAssertNotNil(event.endTime);
+    double referenceDuration = (sleepTimer * 1000.0 - 1.0);
+    XCTAssertGreaterThan([event.duration doubleValue], referenceDuration);
 }
 
 - (void)testInvalidNames {
