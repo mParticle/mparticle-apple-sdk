@@ -37,3 +37,8 @@ deploy:
     draft: false
     prerelease: false
     condition: "$IS_XCODE8 =~ ^true$"
+branches:
+  only:
+  - master
+  - development
+  - /^.*-ci$/
