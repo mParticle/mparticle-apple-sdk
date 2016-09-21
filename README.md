@@ -31,8 +31,6 @@ The mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mp
 To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guides.cocoapods.org/syntax/podfile.html):
 
 ```ruby
-source 'https://github.com/CocoaPods/Specs.git'
-
 # Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
 # use_frameworks!
 
@@ -48,8 +46,6 @@ Configuring your `Podfile` with the statement above will include only the _Core_
 If you'd like to add any kits, you can do so as follows:
 
 ```ruby
-source 'https://github.com/CocoaPods/Specs.git'
-
 # Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
 # use_frameworks!
 
@@ -104,6 +100,7 @@ Kit | CocoaPods | Carthage
 [Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                |  ✓ | ✓
 [AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)          |  ✓ |  
 [Apptentive](https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive)        |  ✓ |   
+[Apptimize](https://github.com/mparticle-integrations/mparticle-apple-integration-apptimize)          |  ✓ |   
 [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)        |  ✓ |  
 [Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics) |  ✓ | ✓
 [Button](https://github.com/mparticle-integrations/mparticle-apple-integration-button)                |  ✓ |  
@@ -191,7 +188,7 @@ In order to run either the iOS or tvOS examples, first install the mParticle App
 
 1. Change to the `Examples/CocoaPodsExample` directory
 2. Run `pod install`
-3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run. (In case you want to run on iOS 7, please use the **iOS7_Example** scheme instead)
+3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run.
 
 
 ## Read More

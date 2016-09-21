@@ -48,6 +48,7 @@
 		C911FDA51D8A365A002A3516 /* MPUserAttributeChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */; };
 		C911FDA61D8A365A002A3516 /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */; };
 		C911FDA71D8A365A002A3516 /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
+		C91E3AE91D92CFA00062B8DA /* UserNotifications.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		C935A6BB1D8A2DDF00A1EE2F /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C6D1D8A112B00D3ABBE /* MPAppDelegateProxy.h */; };
 		C935A6BC1D8A2DDF00A1EE2F /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C6E1D8A112B00D3ABBE /* MPAppDelegateProxy.m */; };
 		C935A6BD1D8A2DDF00A1EE2F /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C6F1D8A112B00D3ABBE /* MPAppNotificationHandler.h */; };
@@ -498,6 +499,7 @@
 
 /* Begin PBXFileReference section */
 		C911FD7C1D8A3524002A3516 /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		C935A6B31D8A2B6B00A1EE2F /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C9DD1C6D1D8A112B00D3ABBE /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
 		C9DD1C6E1D8A112B00D3ABBE /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppDelegateProxy.m; sourceTree = "<group>"; };
@@ -789,6 +791,7 @@
 				C9DD20701D8A148C00D3ABBE /* Security.framework in Frameworks */,
 				C9DD206E1D8A148400D3ABBE /* SystemConfiguration.framework in Frameworks */,
 				C9DD206C1D8A147A00D3ABBE /* UIKit.framework in Frameworks */,
+				C91E3AE91D92CFA00062B8DA /* UserNotifications.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1153,6 +1156,7 @@
 		C9DD20661D8A146900D3ABBE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */,
 				C9DD207F1D8A14E200D3ABBE /* CoreGraphics.framework */,
 				C9DD207D1D8A14D800D3ABBE /* CoreLocation.framework */,
 				C9DD207B1D8A14CE00D3ABBE /* CoreTelephony.framework */,
@@ -2132,6 +2136,7 @@
 				C911FD861D8A3524002A3516 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		C935A6B81D8A2B6B00A1EE2F /* Build configuration list for PBXNativeTarget "mParticle-tvOS-SDK" */ = {
 			isa = XCConfigurationList;

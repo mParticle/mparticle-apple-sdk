@@ -6,6 +6,14 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.9.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you forward data to Apptimize
+
+* [NEW] Support for [Apptimize](https://apptimize.com) as a kit
+* [NEW] Collect whether Daylight Savings Time is enabled
+* [NEW] Add notification for when the SDK has finished initializing. Add a flag property indicating whether the SDK has been initialized (KVO compatible)
+
 ## 6.8.0
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you need to support iOS 10
