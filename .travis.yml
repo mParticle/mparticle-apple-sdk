@@ -17,6 +17,7 @@ before_install:
 - sudo installer -pkg carthage.pkg -target /
 script:
 - open -a "simulator" --args -CurrentDeviceUDID $UDID
+- xcodebuild -version | grep "8.0" || ./Scripts/modify_for_older_xcode.rb
 - set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" build-for-testing | xcpretty || true
 - set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test-without-building | xcpretty || xctool -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test -only mParticle_iOS_SDKTests
 - osascript -e 'tell app "Simulator" to quit'
