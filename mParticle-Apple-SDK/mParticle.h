@@ -496,8 +496,9 @@ NS_ASSUME_NONNULL_BEGIN
  */
 + (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
 
-#pragma mark - Integration Attributes (
+#pragma mark - Integration Attributes
 - (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)kitCode;
+
 - (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)kitCode;
 
 #pragma mark - Kits
@@ -697,7 +698,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - User Notifications
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+/**
+ Informs the mParticle SDK that the app has received a user notification while in the foreground.
+ @param center The notification center that received the notification
+ @param notification The notification that is about to be delivered
+ */
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification;
+
+/**
+ Informs the mParticle SDK that the user has interacted with a given notification
+ @param center The notification center that received the notification
+ @param response The user’s response to the notification
+ */
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response;
 #endif
 

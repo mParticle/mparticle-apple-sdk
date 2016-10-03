@@ -24,6 +24,7 @@
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
 #import "MPEvent.h"
+#import "MPForwardQueueParameters.h"
 
 #define FORWARD_QUEUE_ITEM_TESTS_EXPECATIONS_TIMEOUT 1
 
@@ -169,6 +170,39 @@
     
     forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
     XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+}
+
+- (void)testGeneralPurposeInstance {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Forward Queue Item Test (General)"];
+    SEL selector = @selector(openURL:options:);
+    
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *queueParameters, MPKitExecStatus **execStatus) {
+        XCTAssertEqual(kit.started, YES, @"Should have been equal.");
+        [expectation fulfill];
+    };
+    
+    NSURL *url = [NSURL URLWithString:@"mparticle://launch/options"];
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] initWithParameters:@[url]];
+    XCTAssertEqual(queueParameters.count, 1);
+    
+    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:queueParameters messageType:MPMessageTypePushRegistration completionHandler:kitHandler];
+    
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose, @"Should have been equal.");
+    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler, @"Should have been equal.");
+    XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters, @"Should have been equal.");
+    XCTAssertNil(forwardQueueItem.commerceEvent, @"Should have been nil.");
+    XCTAssertNil(forwardQueueItem.commerceEventCompletionHandler, @"Should have been nil.");
+    XCTAssertNil(forwardQueueItem.event, @"Should have been nil.");
+    XCTAssertNil(forwardQueueItem.eventCompletionHandler, @"Should have been nil.");
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
+        MPKitExecStatus *execStatus = nil;
+        
+        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, queueParameters, &execStatus);
+    });
+    
+    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECATIONS_TIMEOUT handler:nil];
 }
 
 @end

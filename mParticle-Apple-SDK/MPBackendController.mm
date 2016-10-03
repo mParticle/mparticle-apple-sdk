@@ -37,12 +37,12 @@
 #import "MPEvent.h"
 #import "MPEvent+Internal.h"
 #import "MParticleUserNotification.h"
-#import "MPMediaTrackContainer.h"
+#import "MPMediaContainer.h"
 #import "MPMediaTrack.h"
+#import "MPMediaTrack+Internal.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPHasher.h"
 #import "MediaControl.h"
-#import "MPMediaTrack+Internal.h"
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
 #import "MPResponseEvents.h"
@@ -98,7 +98,7 @@ static BOOL appBackgrounded = NO;
     BOOL retrievingSegments;
 }
 
-@property (nonatomic, strong) MPMediaTrackContainer *mediaTrackContainer;
+@property (nonatomic, strong) MPMediaContainer *mediaTrackContainer;
 @property (nonatomic, strong) NSMutableArray<NSDictionary<NSString *, id> *> *userIdentities;
 
 @end
@@ -238,13 +238,13 @@ static BOOL appBackgrounded = NO;
     _initializationStatus = initializationStatus;
 }
 
-- (MPMediaTrackContainer *)mediaTrackContainer {
+- (MPMediaContainer *)mediaTrackContainer {
     if (_mediaTrackContainer) {
         return _mediaTrackContainer;
     }
     
     [self willChangeValueForKey:@"mediaTrackContainer"];
-    _mediaTrackContainer = [[MPMediaTrackContainer alloc] initWithCapacity:1];
+    _mediaTrackContainer = [[MPMediaContainer alloc] initWithCapacity:1];
     [self didChangeValueForKey:@"mediaTrackContainer"];
     
     return _mediaTrackContainer;

@@ -21,6 +21,7 @@
 #import "MPCommerceEvent.h"
 #import "MPKitFilter.h"
 #import "MPKitExecStatus.h"
+#import "MPForwardQueueParameters.h"
 
 @implementation MPForwardQueueItem
 
@@ -50,6 +51,21 @@
     _event = event;
     _messageType = messageType;
     _eventCompletionHandler = [completionHandler copy];
+    
+    return self;
+}
+
+- (nullable instancetype)initWithSelector:(nonnull SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType completionHandler:(void (^ _Nonnull)(_Nonnull id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus * _Nonnull * _Nonnull execStatus))completionHandler {
+    self = [super init];
+    if (!self || !selector || !completionHandler) {
+        return nil;
+    }
+    
+    _queueItemType = MPQueueItemTypeGeneralPurpose;
+    _selector = selector;
+    _generalPurposeCompletionHandler = [completionHandler copy];
+    _queueParameters = parameters;
+    _messageType = messageType;
     
     return self;
 }

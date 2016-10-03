@@ -25,7 +25,6 @@
 
 @class MPSession;
 @class MPDataModelAbstract;
-@class MPMediaTrack;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
 @class MPUserIdentityChange;

@@ -1,5 +1,5 @@
 //
-//  MPMediaTrackContainer.h
+//  MPForwardQueueParameters.h
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -18,20 +18,12 @@
 
 #import <Foundation/Foundation.h>
 
-@class MPMediaTrack;
-
-@interface MPMediaTrackContainer : NSObject
+@interface MPForwardQueueParameters : NSObject
 
 @property (nonatomic, unsafe_unretained, readonly) NSUInteger count;
 
-- (nonnull instancetype)initWithCapacity:(NSUInteger)capacity;
-- (void)addTrack:(nonnull MPMediaTrack *)mediaTrack;
-- (nullable NSArray<MPMediaTrack *> *)allMediaTracks;
-- (BOOL)containsTrack:(nonnull MPMediaTrack *)mediaTrack;
-- (BOOL)containsTrackWithChannel:(nonnull NSString *)channel;
-- (void)pruneMediaTracks;
-- (nullable MPMediaTrack *)trackWithChannel:(nonnull NSString *)channel;
-- (void)removeTrack:(nonnull MPMediaTrack *)mediaTrack;
-- (void)removeTrackWithChannel:(nonnull NSString *)channel;
+- (nonnull instancetype)initWithParameters:(nonnull NSArray *)parameters;
+- (void)addParameter:(nullable id)parameter;
+- (nullable id)objectAtIndexedSubscript:(NSUInteger)idx;
 
 @end

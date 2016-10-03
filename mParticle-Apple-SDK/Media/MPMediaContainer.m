@@ -1,5 +1,5 @@
 //
-//  MPMediaTrackContainer.m
+//  MPMediaContainer.m
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,10 +16,10 @@
 //  limitations under the License.
 //
 
-#import "MPMediaTrackContainer.h"
+#import "MPMediaContainer.h"
 #import "MPMediaTrack.h"
 
-@interface MPMediaTrackContainer() {
+@interface MPMediaContainer() {
     NSMutableSet<MPMediaTrack *> *trackSet;
     __weak MPMediaTrack *mostRecentMediaTrack;
 }
@@ -27,7 +27,7 @@
 @end
 
 
-@implementation MPMediaTrackContainer
+@implementation MPMediaContainer
 
 - (instancetype)initWithCapacity:(NSUInteger)capacity {
     self = [super init];

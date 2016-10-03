@@ -44,7 +44,7 @@
 #import "MPEvent.h"
 #import "MPKitInstanceValidator.h"
 #import "MPIntegrationAttributes.h"
-
+#import "MPForwardQueueParameters.h"
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"
 #import "MPMediaMetadataDPR.h"
@@ -1109,12 +1109,14 @@ NSString *const kMPStateKey = @"state";
                                MPILogDebug(@"Began playing media track: %@", mediaTrack.channel);
                                
                                // Forwarding calls to kits
+                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                               [queueParameters addParameter:mediaTrack];
+                               
                                [[MPKitContainer sharedInstance] forwardSDKCall:@selector(beginPlaying:)
-                                                                         event:nil
+                                                                    parameters:queueParameters
                                                                    messageType:MPMessageTypeEvent
-                                                                      userInfo:nil
-                                                                    kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-                                                                        *execStatus = [kit beginPlaying:mediaTrack];
+                                                                    kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                                        *execStatus = [kit beginPlaying:forwardParameters[0]];
                                                                     }];
                            } else if (execStatus == MPExecStatusDelayedExecution) {
                                MPILogWarning(@"Delayed begin playing: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
@@ -1145,12 +1147,14 @@ NSString *const kMPStateKey = @"state";
                              MPILogDebug(@"Ended playing media track: %@", mediaTrack.channel);
                              
                              // Forwarding calls to kits
+                             MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                             [queueParameters addParameter:mediaTrack];
+                             
                              [[MPKitContainer sharedInstance] forwardSDKCall:@selector(endPlaying:)
-                                                                       event:nil
+                                                                  parameters:queueParameters
                                                                  messageType:MPMessageTypeEvent
-                                                                    userInfo:nil
-                                                                  kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-                                                                      *execStatus = [kit endPlaying:mediaTrack];
+                                                                  kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                                      *execStatus = [kit endPlaying:forwardParameters[0]];
                                                                   }];
                          } else if (execStatus == MPExecStatusDelayedExecution) {
                              MPILogWarning(@"Delayed end playing: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
@@ -1172,12 +1176,14 @@ NSString *const kMPStateKey = @"state";
                                             MPILogDebug(@"Logged metadata with media track: %@", mediaTrack.channel);
                                             
                                             // Forwarding calls to kits
+                                            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                                            [queueParameters addParameter:mediaTrack];
+                                            
                                             [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logMetadataWithMediaTrack:)
-                                                                                      event:nil
+                                                                                 parameters:queueParameters
                                                                                 messageType:MPMessageTypeEvent
-                                                                                   userInfo:nil
-                                                                                 kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-                                                                                     *execStatus = [kit logMetadataWithMediaTrack:mediaTrack];
+                                                                                 kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                                                     *execStatus = [kit logMetadataWithMediaTrack:forwardParameters[0]];
                                                                                  }];
                                         } else if (execStatus == MPExecStatusDelayedExecution) {
                                             MPILogWarning(@"Delayed log metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
@@ -1199,12 +1205,14 @@ NSString *const kMPStateKey = @"state";
                                                  MPILogDebug(@"Logged timed metadata with media track: %@", mediaTrack.channel);
                                                  
                                                  // Forwarding calls to kits
+                                                 MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                                                 [queueParameters addParameter:mediaTrack];
+                                                 
                                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logTimedMetadataWithMediaTrack:)
-                                                                                           event:nil
+                                                                                      parameters:queueParameters
                                                                                      messageType:MPMessageTypeEvent
-                                                                                        userInfo:nil
-                                                                                      kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-                                                                                          *execStatus = [kit logTimedMetadataWithMediaTrack:mediaTrack];
+                                                                                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                                                          *execStatus = [kit logTimedMetadataWithMediaTrack:forwardParameters[0]];
                                                                                       }];
                                              } else if (execStatus == MPExecStatusDelayedExecution) {
                                                  MPILogWarning(@"Delayed log timed metadata: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);
@@ -1234,12 +1242,14 @@ NSString *const kMPStateKey = @"state";
                                          MPILogDebug(@"Updated media track with channel: %@, playback position %.1f seconds, playback rate: %.1f", mediaTrack.channel, mediaTrack.playbackPosition, mediaTrack.playbackRate);
                                          
                                          // Forwarding calls to kits
+                                         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                                         [queueParameters addParameter:mediaTrack];
+                                         
                                          [[MPKitContainer sharedInstance] forwardSDKCall:@selector(updatePlaybackPosition:)
-                                                                                   event:nil
+                                                                              parameters:queueParameters
                                                                              messageType:MPMessageTypeEvent
-                                                                                userInfo:nil
-                                                                              kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-                                                                                  *execStatus = [kit updatePlaybackPosition:mediaTrack];
+                                                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                                                  *execStatus = [kit updatePlaybackPosition:forwardParameters[0]];
                                                                               }];
                                      } else if (execStatus == MPExecStatusDelayedExecution) {
                                          MPILogWarning(@"Delayed update playback position: %@\n Reason: %@", mediaTrack, [strongSelf.backendController execStatusDescription:execStatus]);

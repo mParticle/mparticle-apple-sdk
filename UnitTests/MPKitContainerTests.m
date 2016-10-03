@@ -37,6 +37,7 @@
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
 #import "NSUserDefaults+mParticle.h"
+#import "MPForwardQueueParameters.h"
 
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
@@ -516,6 +517,36 @@
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
     XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+}
+
+- (void)testForwardQueueItem {
+    XCTAssertNotNil(kitContainer.forwardQueue, @"Should not have been nil.");
+    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+    
+    kitContainer.kitsInitialized = NO;
+    
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitExecStatus **execStatus) {
+    };
+    
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    NSURL *url = [NSURL URLWithString:@"mparticle://baseurl?query"];
+    [queueParameters addParameter:url];
+    NSDictionary *options = @{@"key":@"val"};
+    [queueParameters addParameter:options];
+    
+    [kitContainer forwardSDKCall:@selector(openURL:options:)
+                      parameters:queueParameters
+                     messageType:MPMessageTypeUnknown
+                      kitHandler:kitHandler];
+    
+    MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
+    XCTAssertEqual(kitContainer.forwardQueue.count, 1);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose);
+    XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters);
+    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
+    
+    kitContainer.kitsInitialized = YES;
+    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
 }
 
 - (void)testAssortedItems {
@@ -1891,6 +1922,19 @@
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
     [self resetUserAttributesAndIdentities];
+}
+
+- (void)testAllocationAndDeallocation {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Allocation and deallocation"];
+    
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    XCTAssertNotNil(localKitContainer);
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:1.01 handler:nil];
 }
 
 @end

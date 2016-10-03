@@ -25,6 +25,7 @@
 @class MPKitExecStatus;
 @class MPCommerceEvent;
 @class MPEvent;
+@class MPForwardQueueParameters;
 
 @interface MPKitContainer : NSObject
 
@@ -45,5 +46,6 @@
 - (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector errorMessage:(nullable NSString *)errorMessage exception:(nullable NSException *)exception eventInfo:(nullable NSDictionary *)eventInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 
 @end

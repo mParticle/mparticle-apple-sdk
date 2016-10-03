@@ -27,6 +27,7 @@
 #import <UIKit/UIKit.h>
 #import "MPKitContainer.h"
 #include "MPHasher.h"
+#import "MPForwardQueueParameters.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -110,26 +111,16 @@
     [MPNotificationController setDeviceToken:nil];
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
-    NSNumber *lastKit = nil;
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:failedRegistrationSelector]) {
-            MPKitExecStatus *execStatus = [kitRegister.wrapperInstance failedToRegisterForUserNotifications:error];
-            
-            if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
-                lastKit = execStatus.kitCode;
-                
-                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
-                                                                                   execStatus:execStatus
-                                                                                    stateFlag:NO];
-                
-                [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                
-                MPILogDebug(@"Forwarded fail to register for remote notification call to kit: %@", kitRegister.name);
-            }
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:error];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:failedRegistrationSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit failedToRegisterForUserNotifications:forwardParameters[0]];
+                                         }];
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
@@ -140,26 +131,16 @@
     [MPNotificationController setDeviceToken:deviceToken];
     
     SEL deviceTokenSelector = @selector(setDeviceToken:);
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
-    NSNumber *lastKit = nil;
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:deviceTokenSelector]) {
-            MPKitExecStatus *execStatus = [kitRegister.wrapperInstance setDeviceToken:deviceToken];
-            
-            if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
-                lastKit = execStatus.kitCode;
-                
-                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
-                                                                                   execStatus:execStatus
-                                                                                    stateFlag:(deviceToken != nil)];
-                
-                [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                
-                MPILogDebug(@"Forwarded remote notification registration call to kit: %@", kitRegister.name);
-            }
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:deviceToken];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:deviceTokenSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit setDeviceToken:forwardParameters[0]];
+                                         }];
 }
 
 - (void)didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
@@ -167,14 +148,17 @@
         return;
     }
     
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL didRegisterUserNotificationSettingsSelector = @selector(didRegisterUserNotificationSettings:);
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:didRegisterUserNotificationSettingsSelector]) {
-            [kitRegister.wrapperInstance didRegisterUserNotificationSettings:notificationSettings];
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:notificationSettings];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:didRegisterUserNotificationSettingsSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit didRegisterUserNotificationSettings:forwardParameters[0]];
+                                         }];
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
@@ -185,13 +169,17 @@
     [self receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:handleActionWithIdentifierSelector]) {
-            [kitRegister.wrapperInstance handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:identifier];
+    [queueParameters addParameter:userInfo];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1]];
+                                         }];
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo {
@@ -202,13 +190,18 @@
     [self receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeRemote];
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:withResponseInfo:);
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:handleActionWithIdentifierSelector]) {
-            [kitRegister.wrapperInstance handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:identifier];
+    [queueParameters addParameter:userInfo];
+    [queueParameters addParameter:responseInfo];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1] withResponseInfo:forwardParameters[2]];
+                                         }];
 }
 
 - (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode {
@@ -239,48 +232,42 @@
         } else {
             notificationName = userNotificationMode == MPUserNotificationModeRemote ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
         }
-
+        
         [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
                                                             object:strongSelf
                                                           userInfo:userNotificationDictionary];
     });
     
     if (!actionIdentifier) {
-        SEL receivedNotificationSelector = @selector(receivedUserNotification:);
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
-        NSNumber *lastKit = nil;
-        BOOL shouldForward = YES;
-        
         if ([MPNotificationController launchNotificationHash] != 0) {
             NSError *error = nil;
             NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:userInfo options:0 error:&error];
             
             if (!error && remoteNotificationData.length > 0) {
                 int64_t launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
-                shouldForward = launchNotificationHash != [MPNotificationController launchNotificationHash];
-            }
-        }
-
-        for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-            if ([kitRegister.wrapperInstance respondsToSelector:receivedNotificationSelector]) {
-                if (static_cast<MPKitInstance>([kitRegister.code integerValue]) == MPKitInstanceKahuna && !shouldForward) {
-                    continue;
-                }
+                BOOL shouldForward = launchNotificationHash != [MPNotificationController launchNotificationHash];
                 
-                MPKitExecStatus *execStatus = [kitRegister.wrapperInstance receivedUserNotification:userInfo];
-                
-                if (execStatus.success && ![lastKit isEqualToNumber:execStatus.kitCode]) {
-                    lastKit = execStatus.kitCode;
-                    
-                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification
-                                                                                       execStatus:execStatus];
-                    
-                    [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                    
-                    MPILogDebug(@"Forwarded push notifications call to kit: %@", kitRegister.name);
+                if (!shouldForward) {
+                    return;
                 }
             }
         }
+        
+        SEL receivedNotificationSelector = @selector(receivedUserNotification:);
+        
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:userInfo];
+        
+        [[MPKitContainer sharedInstance] forwardSDKCall:receivedNotificationSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypePushNotification
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 if (static_cast<MPKitInstance>([[[kit class] kitCode] integerValue]) == MPKitInstanceKahuna) {
+                                                     return;
+                                                 }
+                                                 
+                                                 *execStatus = [kit receivedUserNotification:forwardParameters[0]];
+                                             }];
     }
 }
 
@@ -290,14 +277,17 @@
         return;
     }
     
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:didUpdateUserActivitySelector]) {
-            [kitRegister.wrapperInstance didUpdateUserActivity:userActivity];
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:userActivity];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:didUpdateUserActivitySelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit didUpdateUserActivity:forwardParameters[0]];
+                                         }];
 }
 #endif
 
@@ -381,7 +371,7 @@
 }
 #endif
 
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ __nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     if (stateMachine.optOut) {
         return NO;
@@ -389,14 +379,25 @@
     
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
     
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
-    BOOL handlingActivity = NO;
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:userActivity];
+    [queueParameters addParameter:restorationHandler];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:continueUserActivitySelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit continueUserActivity:forwardParameters[0] restorationHandler:forwardParameters[1]];
+                                         }];
+    
+    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
+    BOOL handlingActivity = NO;
+    for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
             handlingActivity = YES;
-            [kitRegister.wrapperInstance continueUserActivity:userActivity restorationHandler:restorationHandler];
+            break;
         }
     }
     
@@ -411,14 +412,18 @@
     
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
     
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL openURLOptionsSelector = @selector(openURL:options:);
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:openURLOptionsSelector]) {
-            [kitRegister.wrapperInstance openURL:url options:options];
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:url];
+    [queueParameters addParameter:options];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:openURLOptionsSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit openURL:forwardParameters[0] options:forwardParameters[1]];
+                                         }];
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
@@ -431,14 +436,19 @@
                                               sourceApplication:sourceApplication
                                                      annotation:annotation];
     
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
     SEL openURLSourceAppAnnotationSelector = @selector(openURL:sourceApplication:annotation:);
     
-    for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:openURLSourceAppAnnotationSelector]) {
-            [kitRegister.wrapperInstance openURL:url sourceApplication:sourceApplication annotation:annotation];
-        }
-    }
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    [queueParameters addParameter:url];
+    [queueParameters addParameter:sourceApplication];
+    [queueParameters addParameter:annotation];
+    
+    [[MPKitContainer sharedInstance] forwardSDKCall:openURLSourceAppAnnotationSelector
+                                         parameters:queueParameters
+                                        messageType:MPMessageTypeUnknown
+                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                             *execStatus = [kit openURL:forwardParameters[0] sourceApplication:forwardParameters[1] annotation:forwardParameters[2]];
+                                         }];
 }
 
 @end

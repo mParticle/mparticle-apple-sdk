@@ -28,9 +28,8 @@
 #import "MPNotificationController.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
-#import "MPMediaTrackContainer.h"
+#import "MPMediaContainer.h"
 #import "MPMediaTrack.h"
-#import "MPMediaTrack+Internal.h"
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
 #import "mParticle.h"
@@ -64,7 +63,7 @@
 #pragma mark - MPBackendController+Tests category
 @interface MPBackendController(Tests)
 
-@property (nonatomic, strong, readonly) MPMediaTrackContainer *mediaTrackContainer;
+@property (nonatomic, strong, readonly) MPMediaContainer *mediaTrackContainer;
 @property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
