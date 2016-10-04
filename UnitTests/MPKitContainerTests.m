@@ -1207,9 +1207,9 @@
                                                   \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"String\", \
-                                                      \"event\":\"subscription_success\", \
-                                                      \"attribute_key\":\"plan\", \
-                                                      \"attribute_values\":[\"extra-premium\", \"premium\"] \
+                                                      \"event\":\"Subscription_success\", \
+                                                      \"attribute_key\":\"Plan\", \
+                                                      \"attribute_values\":[\"extra-premium\", \"Premium\"] \
                                                   }, { \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"String\", \
@@ -1323,9 +1323,9 @@
                                                   \"matches\":[{ \
                                                       \"message_type\":4, \
                                                       \"event_match_type\":\"String\", \
-                                                      \"event\":\"subscription_success\", \
-                                                      \"attribute_key\":\"plan\", \
-                                                      \"attribute_values\":[\"premium\"] \
+                                                      \"event\":\"Subscription_success\", \
+                                                      \"attribute_key\":\"Plan\", \
+                                                      \"attribute_values\":[\"Premium\"] \
                                                   }], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":false \
@@ -1536,9 +1536,9 @@
                                              \"message_type\": 4, \
                                              \"event_match_type\": \"String\", \
                                              \"event\": \"SUBSCRIPTION_END\", \
-                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_key\": \"Outcome\", \
                                              \"attribute_values\": [ \
-                                               \"new_subscription\" \
+                                               \"New_subscription\" \
                                              ] \
                                            }, \
                                            { \

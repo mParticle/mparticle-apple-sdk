@@ -478,6 +478,10 @@
 		C9DD21011D8A203D00D3ABBE /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
+		DBB491611DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBB491621DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBB491631DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */; };
+		DBB491641DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -747,6 +751,8 @@
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+MPCaseInsensitive.h"; sourceTree = "<group>"; };
+		DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+MPCaseInsensitive.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1149,6 +1155,8 @@
 				C9DD1D381D8A112B00D3ABBE /* NSString+MPPercentEscape.m */,
 				C9DD1D391D8A112B00D3ABBE /* NSUserDefaults+mParticle.h */,
 				C9DD1D3A1D8A112B00D3ABBE /* NSUserDefaults+mParticle.m */,
+				DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */,
+				DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1307,6 +1315,7 @@
 				C935A6FA1D8A2DF400A1EE2F /* MPTransactionAttributes.h in Headers */,
 				C935A7321D8A2E2200A1EE2F /* MPConnector.h in Headers */,
 				C935A7691D8A2E3800A1EE2F /* NSUserDefaults+mParticle.h in Headers */,
+				DBB491621DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */,
 				C935A7231D8A2E1D00A1EE2F /* MPMediaMetadataDigitalAudio.h in Headers */,
 				C935A6D01D8A2DED00A1EE2F /* MPForwardRecord.h in Headers */,
 				C935A76F1D8A2E4000A1EE2F /* MPEnums.h in Headers */,
@@ -1416,6 +1425,7 @@
 				C9DD1F9A1D8A13CA00D3ABBE /* MPAppDelegateProxy.h in Headers */,
 				C9DD1FF61D8A13EA00D3ABBE /* MPKitProtocol.h in Headers */,
 				C9DD1FC61D8A13DC00D3ABBE /* MPCart+Dictionary.h in Headers */,
+				DBB491611DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */,
 				C9DD203C1D8A142000D3ABBE /* MPUserAttributeChange.h in Headers */,
 				C9DD1FD61D8A13DC00D3ABBE /* MPPromotion.h in Headers */,
 				C9DD205B1D8A142900D3ABBE /* MPEnums.h in Headers */,
@@ -1653,6 +1663,7 @@
 				C935A6EB1D8A2DF400A1EE2F /* MPCommerce.m in Sources */,
 				C935A6C41D8A2DE700A1EE2F /* MPCustomModule.m in Sources */,
 				C935A7191D8A2E0500A1EE2F /* MPKitRegister.mm in Sources */,
+				DBB491641DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */,
 				C935A7721D8A2E4000A1EE2F /* MPExceptionHandler.m in Sources */,
 				C935A7261D8A2E1D00A1EE2F /* MPMediaMetadataDPR.m in Sources */,
 				C935A7581D8A2E3800A1EE2F /* MPResponseEvents.mm in Sources */,
@@ -1749,6 +1760,7 @@
 				C9DD20371D8A142000D3ABBE /* MPResponseEvents.mm in Sources */,
 				C9DD1FBC1D8A13D600D3ABBE /* MPSessionHistory.mm in Sources */,
 				C9DD20121D8A140800D3ABBE /* MPConnector.m in Sources */,
+				DBB491631DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */,
 				C9DD205E1D8A142900D3ABBE /* MPExceptionHandler.m in Sources */,
 				C9DD20311D8A142000D3ABBE /* MPLaunchInfo.m in Sources */,
 				C9DD20391D8A142000D3ABBE /* MPStateMachine.mm in Sources */,

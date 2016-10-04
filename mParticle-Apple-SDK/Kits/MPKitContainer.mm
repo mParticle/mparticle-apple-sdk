@@ -40,6 +40,7 @@
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSArray+MPCaseInsensitive.h"
 #import "NSUserDefaults+mParticle.h"
 #include "MPBracket.h"
 #import "MPConsumerInfo.h"
@@ -1032,7 +1033,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     NSString *keyHash = [NSString stringWithCString:mParticle::Hasher::hashString(to_string(typeOfCommerceEvent) + string([[key lowercaseString] UTF8String])).c_str()
                                                            encoding:NSUTF8StringEncoding];
                     
-                    isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues containsObject:value];
+                    isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
                     *stop = isApplicable;
                 }];
                 foundNonMatch = !isApplicable;
@@ -1171,8 +1172,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     
                 case MPProjectionMatchTypeField:
                 case MPProjectionMatchTypeString:
-                    if (sourceDictionary[attributeProjection.name]) {
-                        value = [strongSelf transformValue:sourceDictionary[attributeProjection.name] dataType:attributeProjection.dataType];
+                    if ([sourceDictionary valueForCaseInsensitiveKey:attributeProjection.name]) {
+                        value = [strongSelf transformValue:[sourceDictionary valueForCaseInsensitiveKey:attributeProjection.name] dataType:attributeProjection.dataType];
                         
                         if (value) {
                             projectedDictionary[attributeProjection.projectedName] = value;
@@ -1547,7 +1548,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     
                     switch (attributeProjection.matchType) {
                         case MPProjectionMatchTypeString: {
-                            if ([key isEqualToString:attributeProjection.name]) {
+                            if ([key caseInsensitiveCompare:attributeProjection.name] == NSOrderedSame) {
                                 projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
                                 
                                 if (projectedAttributeValue) {
@@ -1680,11 +1681,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 
                 switch (eventProjection.matchType) {
                     case MPProjectionMatchTypeString:
-                        if ([event.name isEqualToString:eventProjection.name]) {
+                        if ([event.name caseInsensitiveCompare:eventProjection.name] == NSOrderedSame) {
                             if (eventProjection.projectionMatches) {
                                 __block BOOL foundNonMatch = NO;
                                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues containsObject:event.info[projectionMatch.attributeKey]]) {
+                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[event.info valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
                                         foundNonMatch = YES;
                                         *stop = YES;
                                     }
@@ -1707,7 +1708,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if (eventProjection.projectionMatches) {
                                 __block BOOL foundNonMatch = NO;
                                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues containsObject:event.info[projectionMatch.attributeKey]]) {
+                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[event.info valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
                                         foundNonMatch = YES;
                                         *stop = YES;
                                     }
@@ -1739,7 +1740,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if (eventProjection.projectionMatches) {
                                 __block BOOL foundNonMatch = NO;
                                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues containsObject:event.info[projectionMatch.attributeKey]]) {
+                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[event.info valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
                                         foundNonMatch = YES;
                                         *stop = YES;
                                     }
