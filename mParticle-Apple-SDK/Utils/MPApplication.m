@@ -24,6 +24,7 @@
 #import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
+#import "MPSearchAdsAttribution.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
 NSString *const kMPApplicationNameKey = @"an";
@@ -305,6 +306,11 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 #endif
 
+- (NSDictionary *)searchAdsAttribution {
+    MPSearchAdsAttribution *searchAttribution = [MPStateMachine sharedInstance].searchAttribution;
+    return [searchAttribution dictionaryRepresentation];
+}
+
 #pragma mark NSCopying
 - (instancetype)copyWithZone:(NSZone *)zone {
     MPApplication *copyObject = [[[self class] alloc] init];
@@ -376,8 +382,14 @@ static NSString *kMPAppStoreReceiptString = nil;
                          kMPAppDeploymentTargetKey:[NSString stringWithFormat:@"%i", __IPHONE_OS_VERSION_MIN_REQUIRED],
                          kMPAppBuildSDKKey:[NSString stringWithFormat:@"%i", __IPHONE_OS_VERSION_MAX_ALLOWED],
                          kMPAppEnvironmentKey:@(self.environment),
-                         kMPAppFirstSeenInstallationKey:self.firstSeenInstallation}
+                         kMPAppFirstSeenInstallationKey:self.firstSeenInstallation
+                         }
                        mutableCopy];
+    
+    NSDictionary *auxDictionary = self.searchAdsAttribution;
+    if (auxDictionary) {
+        applicationInfo[kMPAppSearchAdsAttributionKey] = auxDictionary;
+    }
     
     auxString = self.bundleIdentifier;
     if (auxString) {

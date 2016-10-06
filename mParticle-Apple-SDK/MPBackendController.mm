@@ -58,6 +58,7 @@
 #import "MPKitContainer.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
+#import "MPSearchAdsAttribution.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -80,6 +81,7 @@ static BOOL appBackgrounded = NO;
     MPAppDelegateProxy *appDelegateProxy;
     NSMutableSet<NSString *> *deletedUserAttributes;
     __weak MPSession *sessionBeingUploaded;
+    NSNotification *didFinishLaunchingNotification;
     dispatch_queue_t backendQueue;
     dispatch_queue_t notificationsQueue;
     NSTimeInterval nextCleanUpTime;
@@ -488,6 +490,87 @@ static BOOL appBackgrounded = NO;
     }
     
     [previousSessionStateDictionary writeToFile:previousSessionStateFile atomically:YES];
+}
+
+- (void)processDidFinishLaunching:(NSNotification *)notification {
+    NSString *astType = kMPASTInitKey;
+    NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    
+    if (stateMachine.installationType == MPInstallationTypeKnownInstall) {
+        messageInfo[kMPASTIsFirstRunKey] = @YES;
+        [self.delegate forwardLogInstall];
+    } else if (stateMachine.installationType == MPInstallationTypeKnownUpgrade) {
+        messageInfo[kMPASTIsUpgradeKey] = @YES;
+        [self.delegate forwardLogUpdate];
+    }
+    
+    messageInfo[kMPASTPreviousSessionSuccessfullyClosedKey] = [self previousSessionSuccessfullyClosed];
+    
+    NSDictionary *userInfo = [notification userInfo];
+    BOOL sessionFinalized = YES;
+    
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+        NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
+        
+        if (userActivity) {
+            stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+        }
+    }
+    
+#if TARGET_OS_IOS == 1
+    MParticleUserNotification *userNotification = nil;
+    NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
+    
+    if (pushNotificationDictionary) {
+        NSError *error = nil;
+        NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:pushNotificationDictionary options:0 error:&error];
+        
+        int64_t launchNotificationHash = 0;
+        if (!error && remoteNotificationData.length > 0) {
+            launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
+        }
+        
+        if (launchNotificationHash != 0 && [MPNotificationController launchNotificationHash] != 0 && launchNotificationHash != [MPNotificationController launchNotificationHash]) {
+            astType = kMPASTForegroundKey;
+            userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
+                                                                             actionIdentifier:nil
+                                                                                        state:kMPPushNotificationStateNotRunning];
+            
+            if (userNotification.redactedUserNotificationString) {
+                messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
+            }
+            
+            if (_session) {
+                NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+                NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
+                sessionFinalized = backgroundedTime > self.sessionTimeout;
+            }
+        }
+    }
+    
+    if (userNotification) {
+        [self receivedUserNotification:userNotification];
+    }
+#endif
+    
+    messageInfo[kMPAppStateTransitionType] = astType;
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
+    
+#if TARGET_OS_IOS == 1
+    if ([MPLocationManager trackingLocation]) {
+        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
+    }
+#endif
+    messageBuilder = [messageBuilder withStateTransition:sessionFinalized previousSession:nil];
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    
+    [self saveMessage:message updateSession:YES];
+
+    didFinishLaunchingNotification = nil;
+    
+    MPILogVerbose(@"Application Did Finish Launching");
 }
 
 - (void)processOpenSessionsIncludingCurrent:(BOOL)includeCurrentSession completionHandler:(void (^)(BOOL success))completionHandler {
@@ -1212,84 +1295,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *astType = kMPASTInitKey;
-        NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
-        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-        
-        if (stateMachine.installationType == MPInstallationTypeKnownInstall) {
-            messageInfo[kMPASTIsFirstRunKey] = @YES;
-            [self.delegate forwardLogInstall];
-        } else if (stateMachine.installationType == MPInstallationTypeKnownUpgrade) {
-            messageInfo[kMPASTIsUpgradeKey] = @YES;
-            [self.delegate forwardLogUpdate];
-        }
-        
-        messageInfo[kMPASTPreviousSessionSuccessfullyClosedKey] = [self previousSessionSuccessfullyClosed];
-        
-        NSDictionary *userInfo = [notification userInfo];
-        BOOL sessionFinalized = YES;
-
-        if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
-            NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
-            
-            if (userActivity) {
-                stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
-            }
-        }
-
-#if TARGET_OS_IOS == 1
-        MParticleUserNotification *userNotification = nil;
-        NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
-        
-        if (pushNotificationDictionary) {
-            NSError *error = nil;
-            NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:pushNotificationDictionary options:0 error:&error];
-            
-            int64_t launchNotificationHash = 0;
-            if (!error && remoteNotificationData.length > 0) {
-                launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
-            }
-            
-            if (launchNotificationHash != 0 && [MPNotificationController launchNotificationHash] != 0 && launchNotificationHash != [MPNotificationController launchNotificationHash]) {
-                astType = kMPASTForegroundKey;
-                userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
-                                                                                 actionIdentifier:nil
-                                                                                            state:kMPPushNotificationStateNotRunning];
-                
-                if (userNotification.redactedUserNotificationString) {
-                    messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
-                }
-                
-                if (_session) {
-                    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-                    NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
-                    sessionFinalized = backgroundedTime > self.sessionTimeout;
-                }
-            }
-        }
-        
-        if (userNotification) {
-            [self receivedUserNotification:userNotification];
-        }
-#endif
-        
-        messageInfo[kMPAppStateTransitionType] = astType;
-        
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
-        
-#if TARGET_OS_IOS == 1
-        if ([MPLocationManager trackingLocation]) {
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-        }
-#endif
-        messageBuilder = [messageBuilder withStateTransition:sessionFinalized previousSession:nil];
-        MPMessage *message = (MPMessage *)[messageBuilder build];
-        
-        [self saveMessage:message updateSession:YES];
-        
-        MPILogVerbose(@"Application Did Finish Launching");
-    });
+    didFinishLaunchingNotification = [notification copy];
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
@@ -2521,16 +2527,23 @@ static BOOL appBackgrounded = NO;
     
     dispatch_async(backendQueue, ^{
         __strong MPBackendController *strongSelf = weakSelf;
-        
-        if (firstRun) {
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:strongSelf.session messageInfo:nil];
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            message.uploadStatus = MPUploadStatusBatch;
+
+        [stateMachine.searchAttribution requestAttributionDetailsWithBlock:^{
+            if (firstRun) {
+                MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:strongSelf.session messageInfo:nil];
+                MPMessage *message = (MPMessage *)[messageBuilder build];
+                message.uploadStatus = MPUploadStatusBatch;
+                
+                [strongSelf saveMessage:message updateSession:YES];
+                [strongSelf upload];
+
+                MPILogDebug(@"Application First Run");
+            }
             
-            [strongSelf saveMessage:message updateSession:YES];
-            
-            MPILogDebug(@"Application First Run");
-        }
+            [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {}];
+            [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
+            [strongSelf beginUploadTimer];
+        }];
         
         [strongSelf processPendingArchivedMessages];
         
@@ -2539,14 +2552,6 @@ static BOOL appBackgrounded = NO;
             MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
             
             [MPResponseConfig restore];
-            
-            [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {
-                if (firstRun) {
-                    [strongSelf upload];
-                }
-                
-                [strongSelf beginUploadTimer];
-            }];
             
             completionHandler();
         });

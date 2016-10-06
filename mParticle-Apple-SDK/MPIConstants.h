@@ -177,6 +177,7 @@ extern NSString * _Nonnull const kMPDeviceTokenTypeKey;
 extern NSString * _Nonnull const kMPDeviceTokenTypeDevelopment;
 extern NSString * _Nonnull const kMPDeviceTokenTypeProduction;
 extern NSString * _Nonnull const kMPHTTPETagHeaderKey;
+extern NSString * _Nonnull const kMPAppSearchAdsAttributionKey;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;

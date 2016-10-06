@@ -140,6 +140,7 @@ NSString *const kMPDeviceTokenTypeKey = @"tot";
 NSString *const kMPDeviceTokenTypeDevelopment = @"appleSandbox";
 NSString *const kMPDeviceTokenTypeProduction = @"appleProduction";
 NSString *const kMPHTTPETagHeaderKey = @"ETag";
+NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";

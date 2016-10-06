@@ -33,6 +33,7 @@
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
 #import "MPKitContainer.h"
+#import "MPSearchAdsAttribution.h"
 #import <UIKit/UIKit.h>
 
 NSString *const kCookieDateKey = @"e";
@@ -89,6 +90,7 @@ static BOOL runningInBackground = NO;
         _launchOptions = nil;
         _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
         _shouldUploadSessionHistory = YES;
+        _searchAttribution = [[MPSearchAdsAttribution alloc] init];
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         

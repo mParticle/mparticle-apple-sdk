@@ -478,6 +478,11 @@
 		C9DD21011D8A203D00D3ABBE /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
+		DB47D5BE1DAC308C0070D192 /* MPSearchAdsAttributionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */; };
+		DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
+		DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
+		DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
+		DB7ABA191DA6ED7F00367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
 		DBB491611DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBB491621DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBB491631DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */; };
@@ -751,6 +756,9 @@
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttributionTests.m; sourceTree = "<group>"; };
+		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
+		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
 		DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+MPCaseInsensitive.h"; sourceTree = "<group>"; };
 		DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+MPCaseInsensitive.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1157,6 +1165,8 @@
 				C9DD1D3A1D8A112B00D3ABBE /* NSUserDefaults+mParticle.m */,
 				DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */,
 				DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */,
+				DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */,
+				DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1225,6 +1235,7 @@
 				C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */,
 				C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */,
 				C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */,
+				DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1322,6 +1333,7 @@
 				C935A72C1D8A2E1D00A1EE2F /* MPMediaTrack+Internal.h in Headers */,
 				C935A7271D8A2E1D00A1EE2F /* MPMediaMetadataOCR.h in Headers */,
 				C935A7651D8A2E3800A1EE2F /* NSNumber+MPFormatter.h in Headers */,
+				DB7ABA191DA6ED7F00367A6D /* MPSearchAdsAttribution.h in Headers */,
 				C935A7211D8A2E1D00A1EE2F /* MPMediaMetadataBase.h in Headers */,
 				C935A7301D8A2E1D00A1EE2F /* MPMediaTrackContainer.h in Headers */,
 				C935A6BD1D8A2DDF00A1EE2F /* MPAppNotificationHandler.h in Headers */,
@@ -1432,6 +1444,7 @@
 				C9DD1FAF1D8A13D600D3ABBE /* MPForwardRecord.h in Headers */,
 				C9DD1FAE1D8A13D600D3ABBE /* MPDataModelProtocol.h in Headers */,
 				C9DD1FFD1D8A13FB00D3ABBE /* MPILogger.h in Headers */,
+				DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */,
 				C9DD20041D8A140100D3ABBE /* MPMediaMetadataDPR.h in Headers */,
 				C9DD1FD31D8A13DC00D3ABBE /* MPProductBag.h in Headers */,
 				C9DD1FA41D8A13D000D3ABBE /* MPCustomModulePreference.h in Headers */,
@@ -1670,6 +1683,7 @@
 				C935A6BE1D8A2DDF00A1EE2F /* MPAppNotificationHandler.mm in Sources */,
 				C935A7431D8A2E2D00A1EE2F /* MPPersistenceController.mm in Sources */,
 				C935A70E1D8A2E0500A1EE2F /* MPKitConfiguration.mm in Sources */,
+				DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */,
 				C935A7331D8A2E2200A1EE2F /* MPConnector.m in Sources */,
 				C935A6EE1D8A2DF400A1EE2F /* MPCommerceEvent.mm in Sources */,
 				C935A6CC1D8A2DED00A1EE2F /* MPConsumerInfo.mm in Sources */,
@@ -1767,6 +1781,7 @@
 				C9DD1FFC1D8A13F700D3ABBE /* MPLocationManager.m in Sources */,
 				C9DD1F9F1D8A13CA00D3ABBE /* MPSurrogateAppDelegate.m in Sources */,
 				C9DD20351D8A142000D3ABBE /* MPResponseConfig.m in Sources */,
+				DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */,
 				C9DD202D1D8A142000D3ABBE /* MPDevice.m in Sources */,
 				C9DD20401D8A142000D3ABBE /* MPZip.cpp in Sources */,
 				C9DD20491D8A142000D3ABBE /* NSUserDefaults+mParticle.m in Sources */,
@@ -1853,6 +1868,7 @@
 				C9DD20ED1D8A1FA500D3ABBE /* MPEventTests.mm in Sources */,
 				C9DD20E41D8A194D00D3ABBE /* MPAppNotificationHandlerTests.m in Sources */,
 				C9DD20FD1D8A202D00D3ABBE /* MPStateMachineTests.mm in Sources */,
+				DB47D5BE1DAC308C0070D192 /* MPSearchAdsAttributionTests.m in Sources */,
 				C9DD20F41D8A1FF700D3ABBE /* MPKitRegisterTests.m in Sources */,
 				C9DD20E71D8A195D00D3ABBE /* MPCartTests.m in Sources */,
 				C9DD20EB1D8A1F9E00D3ABBE /* MPDataModelTests.m in Sources */,
