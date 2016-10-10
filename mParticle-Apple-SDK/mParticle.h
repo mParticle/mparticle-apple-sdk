@@ -40,6 +40,7 @@
 #import "MPProduct+Dictionary.h"
 #import "MPDateFormatter.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSArray+MPCaseInsensitive.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
