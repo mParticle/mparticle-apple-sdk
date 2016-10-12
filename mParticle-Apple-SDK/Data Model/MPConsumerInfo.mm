@@ -176,16 +176,31 @@ NSString *const kMPCKExpiration = @"e";
 @end
 
 #pragma mark - MPConsumerInfo
+@interface MPConsumerInfo ()
+@property (nonatomic, strong, nonnull, readonly) dispatch_queue_t queue;
+@end
+
 @implementation MPConsumerInfo
 
 @synthesize cookies = _cookies;
 @synthesize mpId = _mpId;
 @synthesize uniqueIdentifier = _uniqueIdentifier;
 
+- (dispatch_queue_t)queue {
+    static dispatch_queue_t theQueue = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        theQueue = dispatch_queue_create("com.mParticle.MPCookie.queue", DISPATCH_QUEUE_SERIAL);
+    });
+    return theQueue;
+}
+
 - (id)init {
     self = [super init];
     if (self) {
         _consumerInfoId = 0;
+    } else {
+        self = nil;
     }
     
     return self;
@@ -193,17 +208,19 @@ NSString *const kMPCKExpiration = @"e";
 
 #pragma mark NSCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
-    if (self.cookies) {
-        [coder encodeObject:_cookies forKey:@"cookies"];
-    }
-    
-    if (self.mpId) {
-        [coder encodeObject:_mpId forKey:@"mpId"];
-    }
-    
-    if (self.uniqueIdentifier) {
-        [coder encodeObject:_uniqueIdentifier forKey:@"uniqueIdentifier"];
-    }
+    dispatch_sync(self.queue, ^{
+        if (self.cookies) {
+            [coder encodeObject:_cookies forKey:@"cookies"];
+        }
+        
+        if (self.mpId) {
+            [coder encodeObject:_mpId forKey:@"mpId"];
+        }
+        
+        if (self.uniqueIdentifier) {
+            [coder encodeObject:_uniqueIdentifier forKey:@"uniqueIdentifier"];
+        }
+    });
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -307,46 +324,52 @@ NSString *const kMPCKExpiration = @"e";
 
 #pragma mark Public accessors
 - (NSNumber *)mpId {
-    if (_mpId) {
-        return _mpId;
-    }
-    
-    [self willChangeValueForKey:@"mpId"];
-    
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
-    
-    if (mpIdString) {
-        [userDefaults removeMPObjectForKey:kMPRemoteConfigMPIDKey];
-
-        if (sizeof(void *) == 4) { // 32-bit
-            _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
-        } else if (sizeof(void *) == 8) { // 64-bit
-            _mpId = [NSNumber numberWithLong:(long)[mpIdString longLongValue]];
+    // Must ensure it's created prior to allowing it to be created
+    dispatch_sync(self.queue, ^{
+        // If we don't have the id, create it.
+        if (!_mpId) {
+            [self willChangeValueForKey:@"mpId"];
+            
+            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
+            
+            if (mpIdString) {
+                [userDefaults removeMPObjectForKey:kMPRemoteConfigMPIDKey];
+                
+                if (sizeof(void *) == 4) { // 32-bit
+                    _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
+                } else if (sizeof(void *) == 8) { // 64-bit
+                    _mpId = [NSNumber numberWithLong:(long)[mpIdString longLongValue]];
+                }
+                
+                if ([_mpId isEqualToNumber:@0]) {
+                    _mpId = [self generateMpId];
+                }
+            } else {
+                _mpId = [self generateMpId];
+            }
+            
+            [self didChangeValueForKey:@"mpId"];
         }
         
-        if ([_mpId isEqualToNumber:@0]) {
-            _mpId = [self generateMpId];
-        }
-    } else {
-        _mpId = [self generateMpId];
-    }
+    });
     
-    [self didChangeValueForKey:@"mpId"];
     
     return _mpId;
 }
 
 - (void)setMpId:(NSNumber *)mpId {
-    if (MPIsNull(mpId)) {
-        return;
-    }
-    
-    if ([mpId isEqualToNumber:@0]) {
-        _mpId = [self generateMpId];
-    } else {
-        _mpId = mpId;
-    }
+    dispatch_async(self.queue, ^{
+        if (MPIsNull(mpId)) {
+            return;
+        }
+        
+        if ([mpId isEqualToNumber:@0]) {
+            _mpId = [self generateMpId];
+        } else {
+            _mpId = mpId;
+        }
+    });
 }
 
 - (NSString *)uniqueIdentifier {
