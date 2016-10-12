@@ -45,6 +45,11 @@
     #import <CoreLocation/CoreLocation.h>
 #endif
 
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+    #import <UserNotifications/UserNotifications.h>
+    #import <UserNotifications/UNUserNotificationCenter.h>
+#endif
+
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -110,6 +115,12 @@ NS_ASSUME_NONNULL_BEGIN
  @see startWithKey:secret:installationType:environment:proxyAppDelegate:
  */
 @property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment;
+
+/**
+ Flag indicating whether the mParticle SDK has been fully initialized yet or not. You can KVO this property to know when the SDK 
+ successfully finishes initializing
+ */
+@property (nonatomic, unsafe_unretained, readonly) BOOL initialized;
 
 /**
  Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
@@ -307,6 +318,15 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)openURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 
+/**
+ Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
+ This method should be called only if proxiedAppDelegate is disabled. This method is only available for iOS 9 and above.
+ @param userActivity The NSUserActivity that caused the app to be opened
+ @param restorationHandler A block to execute if your app creates objects to perform the task.
+ @see proxiedAppDelegate
+ */
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
+
 #pragma mark - Basic Tracking
 /**
  Contains a collection with all active timed events (timed events that had begun, but not yet ended). You should not keep a 
@@ -474,6 +494,10 @@ NS_ASSUME_NONNULL_BEGIN
  @see MPExtensionProtocol
  */
 + (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
+
+#pragma mark - Integration Attributes (
+- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)kitCode;
+- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)kitCode;
 
 #pragma mark - Kits
 /**
@@ -670,6 +694,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)removeUserAttribute:(NSString *)key;
 
+#pragma mark - User Notifications
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification;
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response;
+#endif
+
 #pragma mark - User Segments
 /**
  Retrieves user segments from mParticle's servers and returns the result as an array of MPUserSegments objects.
@@ -678,7 +708,6 @@ NS_ASSUME_NONNULL_BEGIN
  @param timeout The maximum number of seconds to wait for a response from mParticle's servers. This value can be fractional, like 0.1 (100 milliseconds)
  @param endpointId The endpoint id
  @param completionHandler A block to be called when the results are available. The user segments array is passed to this block
- @returns An array of MPUserSegments objects in the completion handler
  */
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler;
 

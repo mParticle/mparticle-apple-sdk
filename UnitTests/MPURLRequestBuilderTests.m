@@ -27,6 +27,7 @@
 #import "MPKitRegister.h"
 #import "MPKitContainer.h"
 #import "MPKitTestClass.h"
+#import "NSUserDefaults+mParticle.h"
 
 #pragma mark - MPURLRequestBuilder category
 @interface MPURLRequestBuilder(Tests)
@@ -53,6 +54,8 @@
     if (![MPKitContainer registeredKits]) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
         kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:@{@"appKey":@"🔑"} startImmediately:YES];
+        [MPKitContainer registerKit:kitRegister];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
         [MPKitContainer registerKit:kitRegister];
     }
 }
@@ -151,6 +154,54 @@
     }
 }
 
+- (void)testEtag {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
+    if (!eTag) {
+        userDefaults[kMPHTTPETagHeaderKey] = @"1.618-2.718-3.141-42";
+    }
+
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
+    NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
+
+    NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
+    NSArray *keys = [headersDictionary allKeys];
+    NSArray *headers = @[@"If-None-Match", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env", @"x-mp-kits"];
+    NSString *headerValue;
+    
+    for (NSString *header in headers) {
+        XCTAssertTrue([keys containsObject:header], @"HTTP header %@ is missing", header);
+        
+        headerValue = headersDictionary[header];
+        
+        if ([header isEqualToString:@"Accept-Encoding"] || [header isEqualToString:@"Content-Encoding"]) {
+            XCTAssertTrue([headerValue isEqualToString:@"gzip"], @"%@ has an invalid value: %@", header, headerValue);
+        } else if ([header isEqualToString:@"Content-Type"]) {
+            BOOL validContentType = [headerValue isEqualToString:@"application/x-www-form-urlencoded"];
+            
+            XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
+        } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
+            XCTAssert([headerValue length] > 0, @"%@ has invalid length", header);
+        } else if ([header isEqualToString:@"x-mp-env"]) {
+            BOOL validEnvironment = [headerValue isEqualToString:[@(MPEnvironmentDevelopment) stringValue]] ||
+            [headerValue isEqualToString:[@(MPEnvironmentProduction) stringValue]];
+            
+            XCTAssertTrue(validEnvironment, @"Invalid environment value: %@", headerValue);
+        } else if ([header isEqualToString:@"x-mp-kits"]) {
+            NSRange kitRange = [headerValue rangeOfString:@"42"];
+            XCTAssertTrue(kitRange.location != NSNotFound);
+            
+            kitRange = [headerValue rangeOfString:@"314"];
+            XCTAssertTrue(kitRange.location != NSNotFound);
+        } else if ([header isEqualToString:@"If-None-Match"]) {
+            XCTAssertEqualObjects(headerValue, @"1.618-2.718-3.141-42");
+        }
+    }
+
+    [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
+}
+
 - (void)testComposingWithHeaderData {
     NSString *urlString = @"http://mparticle.com";
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:urlString]];
@@ -231,6 +282,17 @@
 }
 
 - (void)testEventRequest {
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appKey":@"unique key"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1];
+    [[MPKitContainer sharedInstance] configureKits:nil];
+    [[MPKitContainer sharedInstance] configureKits:kitConfigs];
+    
     XCTAssertEqual([MPURLRequestBuilder requestTimeout], 30, @"Should have been equal.");
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
@@ -248,7 +310,7 @@
     
     NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
     NSArray *keys = [headersDictionary allKeys];
-    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature"];
+    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-kits"];
     NSString *headerValue;
     
     for (NSString *header in headers) {
@@ -264,8 +326,12 @@
             XCTAssertTrue(validContentType, @"%@ http header is invalid: %@", header, headerValue);
         } else if ([header isEqualToString:@"secondsFromGMT"] || [header isEqualToString:@"x-mp-signature"]) {
             XCTAssert([headerValue length] > 0, @"%@ has invalid length", header);
+        } else if ([header isEqualToString:@"x-mp-kits"]) {
+            XCTAssertEqualObjects(headerValue, @"42");
         }
     }
+    
+    [[MPKitContainer sharedInstance] removeAllKitConfigurations];
 }
 
 @end

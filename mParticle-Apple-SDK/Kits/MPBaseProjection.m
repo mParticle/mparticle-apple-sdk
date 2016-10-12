@@ -95,7 +95,8 @@
             
         case MPProjectionTypeEvent:
             _projectionId = [configuration[@"id"] integerValue];
-            NSDictionary *matchDictionary = !MPIsNull(configuration[@"match"]) ? configuration[@"match"] : nil;
+            NSArray *matches = !MPIsNull(configuration[@"matches"]) ? configuration[@"matches"] : nil;
+            NSDictionary *matchDictionary = !MPIsNull(matches) && matches.count > 0 ? matches[0] : nil;
             
             if (matchDictionary) {
                 auxString = matchDictionary[@"event"];

@@ -31,6 +31,7 @@
 @class MPConsumerInfo;
 @class MPForwardRecord;
 @class MPBreadcrumb;
+@class MPIntegrationAttributes;
 
 #if TARGET_OS_IOS == 1
     @class MParticleUserNotification;
@@ -57,7 +58,10 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteConsumerInfo;
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
 - (void)deleteExpiredUserNotifications;
-- (void)deleteForwardRecodsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
+- (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
+- (void)deleteAllIntegrationAttributes;
+- (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
+- (void)deleteIntegrationAttributesForKitCode:(nonnull NSNumber *)kitCode;
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)deleteMessagesWithNoSession;
 - (void)deleteNetworkPerformanceMessages;
@@ -78,26 +82,25 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)fetchConsumerInfo:(void (^ _Nonnull)(MPConsumerInfo * _Nullable consumerInfo))completionHandler;
 - (nullable NSArray<MPCookie *> *)fetchCookies;
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
+- (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes;
 - (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(nonnull MPSession *)session;
 - (void)fetchMessagesForUploadingInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (void)fetchPreviousSession:(void (^ _Nonnull)(MPSession * _Nullable previousSession))completionHandler;
-- (nullable MPProductBag *)fetchProductBag:(nonnull NSString *)bagName;
 - (nullable NSArray<MPProductBag *> *)fetchProductBags;
 - (nullable NSArray<MPSegment *> *)fetchSegments;
 - (nullable MPMessage *)fetchSessionEndMessageInSession:(nonnull MPSession *)session;
-- (nullable MPSession *)fetchSessionFromCrash;
 - (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler;
 - (void)fetchUploadedMessagesInSession:(nonnull MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (void)fetchUploadsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessages;
-- (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessagesForUploading;
 - (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads;
 - (void)purgeMemory;
 - (BOOL)openDatabase;
 - (void)saveBreadcrumb:(nonnull MPMessage *)message session:(nonnull MPSession *)session;
 - (void)saveConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)saveForwardRecord:(nonnull MPForwardRecord *)forwardRecord;
+- (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
 - (void)saveMessage:(nonnull MPMessage *)message;
 - (void)saveProductBag:(nonnull MPProductBag *)productBag;
 - (void)saveSegment:(nonnull MPSegment *)segment;

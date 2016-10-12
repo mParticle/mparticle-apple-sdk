@@ -69,7 +69,7 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     MPEventTypeRefund,
     /** Internal. Used when a promotion is displayed */
     MPEventTypePromotionView,
-    /** Internal. Used when a is clicked */
+    /** Internal. Used when a promotion is clicked */
     MPEventTypePromotionClick,
     /** Internal. Used when a product is added to the wishlist */
     MPEventTypeAddToWishlist,
@@ -144,14 +144,18 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
 
 /// Kit Instance Codes
 typedef NS_ENUM(NSUInteger, MPKitInstance) {
+    /** Kit code for Urban Airship */
+    MPKitInstanceUrbanAirship = 25,
     /** Kit code for Appboy */
     MPKitInstanceAppboy = 28,
+    /** Kit code for Tune */
+    MPKitInstanceTune = 32,
     /** Kit code for Kochava */
     MPKitInstanceKochava = 37,
-    /** Kit code for Kahuna */
-    MPKitInstanceKahuna = 56,
     /** Kit code for comScore */
     MPKitInstanceComScore = 39,
+    /** Kit code for Kahuna */
+    MPKitInstanceKahuna = 56,
     /** Kit code for Foresee */
     MPKitInstanceForesee = 64,
     /** Kit code for Adjust */
@@ -160,8 +164,6 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceBranchMetrics = 80,
     /** Kit code for Flurry */
     MPKitInstanceFlurry = 83,
-    /** Kit code for Leanplum */
-    MPKitInstanceLeanplum = 98,
     /** Kit code for Localytics */
     MPKitInstanceLocalytics = 84,
     /** Kit code for Apteligent (formerly known as Crittercism) */
@@ -172,8 +174,14 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceWootric = 90,
     /** Kit code for AppsFlyer */
     MPKitInstanceAppsFlyer = 92,
-    /** Kit code for Tune */
-    MPKitInstanceTune = 32,
+    /** Kit code for Apptentive */
+    MPKitInstanceApptentive = 97,
+    /** Kit code for Leanplum */
+    MPKitInstanceLeanplum = 98,
+    /** Kit code for Primer */
+    MPKitInstancePrimer = 100,
+    /** Kit code for Apptimize */
+    MPKitInstanceApptimize = 105,
     /** Kit code for Button */
     MPKitInstanceButton = 1022
 };
@@ -227,7 +235,11 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type code for when a user interacts with a received push notification */
     MPMessageTypePushNotificationInteraction = 15,
     /** Message type code for a commerce event */
-    MPMessageTypeCommerceEvent = 16
+    MPMessageTypeCommerceEvent = 16,
+    /** Message type code for a user attribute change */
+    MPMessageTypeUserAttributeChange = 17,
+    /** Message type code for a user identity change */
+    MPMessageTypeUserIdentityChange = 18
 };
 
 /** Posted immediately after a new session has begun.
@@ -250,22 +262,29 @@ extern NSString * _Nonnull const mParticleSessionDidEndNotification;
  */
 extern NSString * _Nonnull const mParticleSessionId;
 
+/** Posted immediately after the SDK becomes initialized.
+ 
+ @discussion You can register to receive this notification using NSNotificationCenter. This notification is broadcast when the mParticle SDK successfully
+ finishes its initialization.
+ */
+extern NSString * _Nonnull const mParticleDidFinishInitializing;
+
 /**
  Set of constants that can be used to specify certain attributes of a user. 
  
  @discussion There are many 3rd party services that support,
  for example, specifying a gender of a user. The mParticle platform will look for these constants within the user attributes that
  you have set for a given user, and forward any attributes to the services that support them.
- @param mParticleUserAttributeMobileNumber Setting the mobile number as user attribute
- @param mParticleUserAttributeGender Setting the gender as user attribute
- @param mParticleUserAttributeAge Setting the age as user attribute
- @param mParticleUserAttributeCountry Setting the country as user attribute
- @param mParticleUserAttributeZip Setting the postal code (zip) as user attribute
- @param mParticleUserAttributeCity Setting the city as user attribute
- @param mParticleUserAttributeState Setting the state as user attribute
- @param mParticleUserAttributeAddress Setting the address as user attribute
- @param mParticleUserAttributeFirstName Setting the first name as user attribute
- @param mParticleUserAttributeLastName Setting the last name as user attribute
+ mParticleUserAttributeMobileNumber Setting the mobile number as user attribute
+ mParticleUserAttributeGender Setting the gender as user attribute
+ mParticleUserAttributeAge Setting the age as user attribute
+ mParticleUserAttributeCountry Setting the country as user attribute
+ mParticleUserAttributeZip Setting the postal code (zip) as user attribute
+ mParticleUserAttributeCity Setting the city as user attribute
+ mParticleUserAttributeState Setting the state as user attribute
+ mParticleUserAttributeAddress Setting the address as user attribute
+ mParticleUserAttributeFirstName Setting the first name as user attribute
+ mParticleUserAttributeLastName Setting the last name as user attribute
  @see setUserAttribute:value:
  */
 extern NSString * _Nonnull const mParticleUserAttributeMobileNumber;

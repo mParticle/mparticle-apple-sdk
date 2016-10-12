@@ -120,6 +120,7 @@
         copyObject.category = [_category copy];
         copyObject.messageType = _messageType;
         copyObject.customFlagsDictionary = [_customFlagsDictionary mutableCopy];
+        copyObject->_timestamp = [_timestamp copy];
     }
     
     return copyObject;

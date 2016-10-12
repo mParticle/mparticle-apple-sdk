@@ -16,6 +16,8 @@
 //  limitations under the License.
 //
 
+#import "MPProduct.h"
+
 @interface MPProduct(Dictionary)
 
 - (NSDictionary<NSString *, id> *)commerceDictionaryRepresentation;

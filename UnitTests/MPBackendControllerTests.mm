@@ -36,6 +36,7 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
+#import "MPKitInstanceValidator.h"
 
 #define BACKEND_TESTS_EXPECATIONS_TIMEOUT 10
 
@@ -50,6 +51,13 @@
 @interface MPKitContainer(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+
+@end
+
+#pragma mark - MPKitInstanceValidator category for unit tests
+@interface MPKitInstanceValidator(BackendControllerTests)
+
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
 
 @end
 
@@ -545,6 +553,7 @@
 }
 
 - (void)testDidBecomeActiveWithAppLink {
+#if TARGET_OS_IOS == 1
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
@@ -576,8 +585,8 @@
                                                                            testRange = [messageString rangeOfString:@"\"nsi\""];
                                                                            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
                                                                            
-                                                                           testRange = [messageString rangeOfString:@"\"lpr\":{\"foo\":\"bar\"}"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"Launch parameters are not present.");
+                                                                           testRange = [messageString rangeOfString:@"lpr"];
+                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
                                                                        }
                                                                    }
                                                                    
@@ -585,9 +594,11 @@
                                                                }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+#endif
 }
 
 - (void)testDidBecomeActive {
+#if TARGET_OS_IOS == 1
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
@@ -619,11 +630,11 @@
                                                                            testRange = [messageString rangeOfString:@"\"nsi\""];
                                                                            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
                                                                            
-                                                                           testRange = [messageString rangeOfString:@"\"lpr\":{\"key1\":1}"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"Launch parameters are not present.");
+                                                                           testRange = [messageString rangeOfString:@"lpr"];
+                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
                                                                            
                                                                            testRange = [messageString rangeOfString:@"key2"];
-                                                                           XCTAssertEqual(testRange.location, NSNotFound, @"Not filtering launch parameters.");
+                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
                                                                        }
                                                                    }
                                                                    
@@ -631,6 +642,7 @@
                                                                }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+#endif
 }
 
 - (void)testSessionEventCounter {
@@ -835,6 +847,8 @@
 }
 
 - (void)testUserAttributes {
+    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
+    
     if (![MPKitContainer registeredKits]) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
         [MPKitContainer registerKit:kitRegister];
@@ -1019,6 +1033,105 @@
     
     XCTAssertEqualObjects(setKey, @"TardisKey1");
     XCTAssertEqualObjects(setValues, values);
+}
+
+- (void)testUserAttributeChanged {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
+    [self.backendController setUserAttribute:@"TardisModel" value:@"Police Call Box" attempt:0 completionHandler:nil];
+    
+    NSDictionary *userAttributes = self.backendController.userAttributes;
+    XCTAssertEqualObjects(userAttributes[@"TardisModel"], @"Police Call Box");
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+    
+    MPMessage *message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    NSDictionary *messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+    
+    [persistence deleteSession:self.backendController.session];
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNil(messages);
+
+    [self.backendController setUserAttribute:@"TardisModel" value:@"" attempt:0 completionHandler:nil];
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    message = [messages firstObject];
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"ov"]);
+    XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
+- (void)testUserIdentityChanged {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+
+    [self.backendController setUserIdentity:@"The Most Interesting Man in the World" identityType:MPUserIdentityCustomerId attempt:0 completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+    }];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", @"n", @(MPUserIdentityCustomerId)];
+    NSDictionary *userIdentity = [[self.backendController.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+    XCTAssertNotNil(userIdentity);
+    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+
+    MPMessage *message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    NSDictionary *messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
+    XCTAssertNotNil(messageDictionary[@"ni"]);
+    userIdentity = messageDictionary[@"ni"];
+    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+
+    [persistence deleteSession:self.backendController.session];
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNil(messages);
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
+    [self.backendController setUserIdentity:nil identityType:MPUserIdentityCustomerId attempt:0 completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+
+    userIdentity = [[self.backendController.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+    XCTAssertNil(userIdentity);
+
+    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+    
+    message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
+    XCTAssertNil(messageDictionary[@"ni"]);
+    userIdentity = messageDictionary[@"oi"];
+    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
 }
 
 @end

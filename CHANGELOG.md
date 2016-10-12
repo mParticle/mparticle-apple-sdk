@@ -6,6 +6,80 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.9.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you forward data to Apptimize
+
+* [NEW] Support for [Apptimize](https://apptimize.com) as a kit
+* [NEW] Collect whether Daylight Savings Time is enabled
+* [NEW] Add notification for when the SDK has finished initializing. Add a flag property indicating whether the SDK has been initialized (KVO compatible)
+
+## 6.8.0
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you need to support iOS 10
+
+* [NEW] Support for [Leanplum](https://www.leanplum.com) as a kit
+* [NEW] When a user identity changes a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user identities were set/present at the moment an app event is logged
+
+> You will need for this SDK update:
+> * Xcode 8 or later
+> * CocoaPods 1.1.0.rc.2 or later
+
+## 6.7.2
+
+>Upgrade suggestion: **LOW**. Upgrade if you forward data to Amplitude
+
+* [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged
+
+## 6.7.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you log events prior to the SDK being fully initialized
+
+* [FIX] Timing of logged events: Events (both app events and commerce events) now have a timestamp property, which gets populated automatically by the SDK, when an event is logged prior to the SDK being fully initialized. If set, this property will override the timestamp of messages when they are about to be persisted
+
+## 6.7.0
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you use custom mappings
+
+* [NEW] Custom mappings now support more advanced matching schemes
+* [NEW] Support for [Urban Airship](https://www.urbanairship.com) as a kit
+
+## 6.6.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
+
+* [FIX] A newly introduced class was missing from the tvOS Xcode target
+
+## 6.6.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
+
+* [NEW] Kits can now pass integration attributes back to the core SDK
+
+## 6.5.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you want to use Primer as a kit
+
+* [NEW] Support for [Primer](https://goprimer.com) as a kit
+
+## 6.4.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you want to use Apptentive as a kit or need to configure the behavior for silent notification registration
+
+* [NEW] Support for [Apptentive](http://www.apptentive.com) as a kit
+* [NEW] MParticleConfig.plist option to opt in/out of automatic silent notification registration. See [mParticle Docs](http://docs.mparticle.com/#apple) for details
+
+## 6.3.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you integrate with AppsFlyer, are writing an integration kit, or want to reduce network traffic
+
+* [NEW] Add the customerId user identity as an event attribute when forwarding to AppsFlyer
+* [NEW] Add new methods to the kit protocol to forward user notification related info to kits
+* [NEW] Config optional flag to send the session history batch (reducing the amount of data sent over to mParticle)
+* [NEW] Opt-in to always try to collect the IDFA
+* [NEW] Add continueUserActivity to the public SDK API (Pull Request submitted by twobitlabs)
+* [FIX] Guarantee that launch options in AST messages to contain only string parameters
+
 ## 6.2.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you want to use Button as a kit

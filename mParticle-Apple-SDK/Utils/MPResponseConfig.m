@@ -49,6 +49,7 @@
         [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];
         [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
         [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
+        [stateMachine configureRestrictIDFA:_configuration[kMPRemoteConfigRestrictIDFA]];
     }
     
     _influencedOpenTimer = !MPIsNull(_configuration[kMPRemoteConfigInfluencedOpenTimerKey]) ? _configuration[kMPRemoteConfigInfluencedOpenTimerKey] : nil;
@@ -80,6 +81,10 @@
     if (auxNumber) {
         [MParticle sharedInstance].uploadInterval = [auxNumber doubleValue];
     }
+    
+    // Session history
+    auxNumber = !MPIsNull(_configuration[kMPRemoteConfigIncludeSessionHistory]) ? _configuration[kMPRemoteConfigIncludeSessionHistory] : nil;
+    stateMachine.shouldUploadSessionHistory = auxNumber ? [auxNumber boolValue] : YES;
     
 #if TARGET_OS_IOS == 1
     // Push notifications

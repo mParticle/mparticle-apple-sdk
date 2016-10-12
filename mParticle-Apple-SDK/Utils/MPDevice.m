@@ -60,11 +60,12 @@ NSString *const kMPTimezoneDescriptionKey = @"tzn";
 NSString *const kMPDeviceJailbrokenKey = @"jb";
 NSString *const kMPDeviceArchitectureKey = @"arc";
 NSString *const kMPDeviceRadioKey = @"dr";
-NSString *const floatingPointFormat = @"%0.0f";
-NSString *const signerIdentityString = @"signeridentity";
+NSString *const kMPDeviceFloatingPointFormat = @"%0.0f";
+NSString *const kMPDeviceSignerIdentityString = @"signeridentity";
 NSString *const kMPDeviceIsTabletKey = @"it";
 NSString *const kMPDeviceIdentifierKey = @"deviceIdentifier";
 NSString *const kMPDeviceLimitAdTrackingKey = @"lat";
+NSString *const kMPDeviceIsDaylightSavingTime = @"idst";
 
 static NSDictionary *jailbrokenInfo;
 
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]);
 @interface MPDevice() {
     NSCalendar *calendar;
     NSDictionary *deviceInfo;
+    BOOL isAdTrackingLimited;
 #if TARGET_OS_IOS == 1
     CTTelephonyNetworkInfo *telephonyNetworkInfo;
 #endif
@@ -131,7 +133,9 @@ int main(int argc, char *argv[]);
         
         selector = NSSelectorFromString(@"isAdvertisingTrackingEnabled");
         BOOL advertisingTrackingEnabled = (BOOL)[adIdentityManager performSelector:selector];
-        if (advertisingTrackingEnabled) {
+        isAdTrackingLimited = !advertisingTrackingEnabled;
+        BOOL alwaysTryToCollectIDFA = [MPStateMachine sharedInstance].alwaysTryToCollectIDFA;
+        if (advertisingTrackingEnabled || alwaysTryToCollectIDFA) {
             selector = NSSelectorFromString(@"advertisingIdentifier");
             _advertiserId = [[adIdentityManager performSelector:selector] UUIDString];
         }
@@ -231,6 +235,11 @@ int main(int argc, char *argv[]);
     return _deviceIdentifier;
 }
 
+- (BOOL)isDaylightSavingTime {
+    BOOL isDaylightSavingTime = [[calendar timeZone] isDaylightSavingTime];
+    return isDaylightSavingTime;
+}
+
 - (BOOL)isTablet {
     BOOL isTablet = [UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad;
     return isTablet;
@@ -241,7 +250,7 @@ int main(int argc, char *argv[]);
 }
 
 - (NSNumber *)limitAdTracking {
-    return self.advertiserId == nil ? @YES : @NO;
+    return isAdTrackingLimited ? @YES : @NO;
 }
 
 - (NSString *)manufacturer __attribute__((const)) {
@@ -291,7 +300,7 @@ int main(int argc, char *argv[]);
 
 - (NSString *)timezoneOffset {
     float timeZoneOffset = ([[NSTimeZone systemTimeZone] secondsFromGMT] / 3600.0);
-    return [NSString stringWithFormat:floatingPointFormat, timeZoneOffset];
+    return [NSString stringWithFormat:kMPDeviceFloatingPointFormat, timeZoneOffset];
 }
 
 - (NSString *)timezoneDescription {
@@ -352,7 +361,7 @@ int main(int argc, char *argv[]);
     NSString *key;
     
     while ((key = [infoEnumerator nextObject])) {
-        if ([[key lowercaseString] isEqualToString:signerIdentityString]) {
+        if ([[key lowercaseString] isEqualToString:kMPDeviceSignerIdentityString]) {
             signerIdentityKey = [key copy];
             break;
         }
@@ -422,14 +431,15 @@ int main(int argc, char *argv[]);
                                                kMPDeviceOSKey:self.operatingSystem,
                                                kMPDeviceModelKey:self.model,
                                                kMPDeviceArchitectureKey:self.architecture,
-                                               kMPScreenWidthKey:[NSString stringWithFormat:floatingPointFormat, self.screenSize.width],
-                                               kMPScreenHeightKey:[NSString stringWithFormat:floatingPointFormat, self.screenSize.height],
+                                               kMPScreenWidthKey:[NSString stringWithFormat:kMPDeviceFloatingPointFormat, self.screenSize.width],
+                                               kMPScreenHeightKey:[NSString stringWithFormat:kMPDeviceFloatingPointFormat, self.screenSize.height],
                                                kMPDevicePlatformKey:self.platform,
                                                kMPDeviceManufacturerKey:self.manufacturer,
                                                kMPTimezoneOffsetKey:self.timezoneOffset,
                                                kMPTimezoneDescriptionKey:self.timezoneDescription,
                                                kMPDeviceJailbrokenKey:[MPDevice jailbrokenInfo],
-                                               kMPDeviceIsTabletKey:@(self.tablet)}
+                                               kMPDeviceIsTabletKey:@(self.tablet),
+                                               kMPDeviceIsDaylightSavingTime:@(self.isDaylightSavingTime)}
                                              mutableCopy];
     
     NSString *auxString;

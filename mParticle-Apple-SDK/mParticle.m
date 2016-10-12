@@ -42,6 +42,8 @@
 #import "MPKitExecStatus.h"
 #import "MPAppNotificationHandler.h"
 #import "MPEvent.h"
+#import "MPKitInstanceValidator.h"
+#import "MPIntegrationAttributes.h"
 
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"
@@ -75,6 +77,7 @@ NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
+@property (nonatomic, unsafe_unretained) BOOL initialized;
 
 @end
 
@@ -97,6 +100,7 @@ NSString *const kMPStateKey = @"state";
     _commerce = nil;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
+    _initialized = NO;
     
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
@@ -413,13 +417,23 @@ NSString *const kMPStateKey = @"state";
     __weak MParticle *weakSelf = self;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
+    BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
+    
+    if (self.configSettings) {
+        NSNumber *configRegisterForSilentNotifications = self.configSettings[kMPConfigRegisterForSilentNotifications];
+        
+        if (configRegisterForSilentNotifications) {
+            registerForSilentNotifications = [configRegisterForSilentNotifications boolValue];
+        }
+    }
     
     [self.backendController startWithKey:apiKey
                                   secret:secret
                                 firstRun:firstRun
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
+          registerForSilentNotifications:registerForSilentNotifications
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            
@@ -460,6 +474,12 @@ NSString *const kMPStateKey = @"state";
                                }
 #endif
                            }
+                           
+                           strongSelf.initialized = YES;
+                           
+                           [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
+                                                                               object:self
+                                                                             userInfo:nil];
                        }];
 }
 
@@ -476,7 +496,7 @@ NSString *const kMPStateKey = @"state";
 - (void)didReceiveLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
     if (userInfo && !self.proxiedAppDelegate) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeLocal];
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
     }
 }
 
@@ -485,7 +505,7 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNoticicationMode:MPUserNotificationModeRemote];
+    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
@@ -507,7 +527,7 @@ NSString *const kMPStateKey = @"state";
 - (void)handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
     if (userInfo && !self.proxiedAppDelegate) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNoticicationMode:MPUserNotificationModeLocal];
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
     }
 }
 
@@ -534,6 +554,14 @@ NSString *const kMPStateKey = @"state";
     }
     
     [[MPAppNotificationHandler sharedInstance] openURL:url options:options];
+}
+
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
+    if (self.proxiedAppDelegate) {
+        return NO;
+    }
+
+    return [[MPAppNotificationHandler sharedInstance] continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
 #pragma mark Basic tracking
@@ -949,6 +977,44 @@ NSString *const kMPStateKey = @"state";
     return registrationSuccessful;
 }
 
+#pragma mark Integration attributes
+- (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)kitCode {
+    __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
+    
+    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
+        MPILogError(@"Cannot set integration attributes. mParticle SDK is not initialized yet.");
+        returnCode = MPKitReturnCodeCannotExecute;
+    }
+
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    
+    if (integrationAttributes) {
+        [[MPPersistenceController sharedInstance] saveIntegrationAttributes:integrationAttributes];
+    } else {
+        returnCode = MPKitReturnCodeRequirementsNotMet;
+    }
+    
+    return [[MPKitExecStatus alloc] initWithSDKCode:kitCode returnCode:returnCode forwardCount:0];
+}
+
+- (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)kitCode {
+    MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
+    BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:kitCode];
+    
+    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
+        MPILogError(@"Cannot clear integration attributes. mParticle SDK is not initialized yet.");
+        returnCode = MPKitReturnCodeCannotExecute;
+    }
+
+    if (validKitCode) {
+        [[MPPersistenceController sharedInstance] deleteIntegrationAttributesForKitCode:kitCode];
+    } else {
+        returnCode = MPKitReturnCodeRequirementsNotMet;
+    }
+
+    return [[MPKitExecStatus alloc] initWithSDKCode:kitCode returnCode:returnCode forwardCount:0];
+}
+
 #pragma mark Kits
 - (nullable id const)kitInstance:(nonnull NSNumber *)kitCode {
     if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
@@ -1284,6 +1350,8 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)upload {
+    NSAssert(_backendController.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Upload cannot be done prior to starting the mParticle SDK.\n****\n");
+    
     __weak MParticle *weakSelf = self;
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -1571,6 +1639,17 @@ NSString *const kMPStateKey = @"state";
                                }
                            }];
 }
+
+#pragma mark User Notifications
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification {
+    [[MPAppNotificationHandler sharedInstance] userNotificationCenter:center willPresentNotification:notification];
+}
+
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    [[MPAppNotificationHandler sharedInstance] userNotificationCenter:center didReceiveNotificationResponse:response];
+}
+#endif
 
 #pragma mark User Segments
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler {

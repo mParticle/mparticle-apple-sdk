@@ -39,9 +39,9 @@
     NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"
                                                 },
                                     @"id":@"314",
-                                    @"match":@{@"event":@"Non-projected event",
-                                               @"event_match_type":@"String"
-                                               }
+                                    @"matches":@[@{@"event":@"Non-projected event",
+                                              @"event_match_type":@"String"
+                                              }]
                                     };
     
     MPBaseProjection *baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeEvent attributeIndex:0];
@@ -73,8 +73,8 @@
 - (void)testBaseCopyAndCoding {
     NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"},
                                     @"id":@"314",
-                                    @"match":@{@"event":@"Non-projected event",
-                                               @"event_match_type":@"String"}};
+                                    @"matches":@[@{@"event":@"Non-projected event",
+                                               @"event_match_type":@"String"}]};
     
     MPBaseProjection *baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeEvent attributeIndex:0];
     MPBaseProjection *copyProjection = [baseProjection copy];
@@ -93,10 +93,10 @@
     NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"
                                                 },
                                     @"id":@"314",
-                                    @"match":@{@"event":@"Non-projected event",
+                                    @"matches":@[@{@"event":@"Non-projected event",
                                                @"event_match_type":@"This is not even remotely valid",
                                                @"property":@"Same here, this is not valid"
-                                               }
+                                                 }]
                                     };
     
     MPBaseProjection *baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeEvent attributeIndex:0];
@@ -108,10 +108,10 @@
     NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"
                                                 },
                                     @"id":@"314",
-                                    @"match":@{@"event":@"Non-projected event",
+                                    @"matches":@[@{@"event":@"Non-projected event",
                                                @"event_match_type":@"Hash",
                                                @"property":@"ProductField"
-                                               }
+                                               }]
                                     };
     
     MPBaseProjection *baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeEvent attributeIndex:0];
@@ -232,11 +232,11 @@
                                                 @"outbound_message_type":@"4"
                                                 },
                                     @"id":@"314",
-                                    @"match":@{@"event":@"52",
+                                    @"matches":@[@{@"event":@"52",
                                                @"event_match_type":@"String",
                                                @"attribute_key":@"aKey",
-                                               @"attribute_value":@"aValue"
-                                               },
+                                               @"attribute_values":@[@"aValue"]
+                                               }],
                                     @"behavior":@{@"append_unmapped_as_is":@YES,
                                                   @"is_default":@NO,
                                                   @"max_custom_params":@42
@@ -248,15 +248,18 @@
     XCTAssertEqual(eventProjection.eventType, MPEventTypeTransaction, @"Should have been equal.");
     XCTAssertEqual(eventProjection.messageType, MPMessageTypeEvent, @"Should have been equal.");
     XCTAssertEqual(eventProjection.maxCustomParameters, 42, @"Should have been equal.");
-    XCTAssertEqualObjects(eventProjection.attributeKey, @"aKey", @"Should have been equal.");
-    XCTAssertEqualObjects(eventProjection.attributeValue, @"aValue", @"Should have been equal.");
+    MPProjectionMatch *projectionMatch = eventProjection.projectionMatches[0];
+    XCTAssertEqualObjects(projectionMatch.attributeKey, @"aKey", @"Should have been equal.");
+    XCTAssertEqualObjects(projectionMatch.attributeValues[0], @"aValue", @"Should have been equal.");
     XCTAssertTrue(eventProjection.appendAsIs, @"Should have been true.");
     XCTAssertFalse(eventProjection.isDefault, @"Should have been false.");
     
     MPEventProjection *eventProjectionCopy = [eventProjection copy];
     XCTAssertNotNil(eventProjectionCopy, @"Should not have been nil");
     XCTAssertEqualObjects(eventProjection, eventProjectionCopy, @"Should have been equal.");
-    eventProjectionCopy.attributeValue = @"New value";
+    MPProjectionMatch *secondProjectionMatch = [[MPProjectionMatch alloc] init];
+    secondProjectionMatch.attributeValues = @[@"New value"];
+    eventProjectionCopy.projectionMatches = @[secondProjectionMatch];
     XCTAssertNotEqualObjects(eventProjection, eventProjectionCopy, @"Should not have been equal.");
     
     NSData *eventProjectionData = [NSKeyedArchiver archivedDataWithRootObject:eventProjection];
@@ -274,12 +277,12 @@
                                                 @"outbound_message_type":@"16"
                                                 },
                                     @"id":@"314",
-                                    @"match":@{@"event":@"1567",
+                                    @"matches":@[@{@"event":@"1567",
                                                @"event_match_type":@"String",
                                                @"property_name":@"pName",
-                                               @"property_value":@"pValue",
+                                               @"property_value":@[@"pValue"],
                                                @"message_type":@"16"
-                                               },
+                                               }],
                                     @"behavior":@{@"append_unmapped_as_is":@YES,
                                                   @"is_default":@NO,
                                                   @"max_custom_params":@42
@@ -291,15 +294,18 @@
     XCTAssertEqual(eventProjection.eventType, MPEventTypeAddToCart, @"Should have been equal.");
     XCTAssertEqual(eventProjection.messageType, MPMessageTypeCommerceEvent, @"Should have been equal.");
     XCTAssertEqual(eventProjection.maxCustomParameters, 42, @"Should have been equal.");
-    XCTAssertEqualObjects(eventProjection.attributeKey, @"pName", @"Should have been equal.");
-    XCTAssertEqualObjects(eventProjection.attributeValue, @"pValue", @"Should have been equal.");
+    MPProjectionMatch *firstMatch = eventProjection.projectionMatches[0];
+    XCTAssertEqualObjects(firstMatch.attributeKey, @"pName", @"Should have been equal.");
+    XCTAssertEqualObjects(firstMatch.attributeValues[0], @"pValue", @"Should have been equal.");
     XCTAssertTrue(eventProjection.appendAsIs, @"Should have been true.");
     XCTAssertFalse(eventProjection.isDefault, @"Should have been false.");
     
     MPEventProjection *eventProjectionCopy = [eventProjection copy];
     XCTAssertNotNil(eventProjectionCopy, @"Should not have been nil");
     XCTAssertEqualObjects(eventProjection, eventProjectionCopy, @"Should have been equal.");
-    eventProjectionCopy.attributeValue = @"New value";
+    MPProjectionMatch *match = [[MPProjectionMatch alloc] init];
+    match.attributeValues = @[@"New value"];
+    eventProjectionCopy.projectionMatches = @[match];
     XCTAssertNotEqualObjects(eventProjection, eventProjectionCopy, @"Should not have been equal.");
     
     NSData *eventProjectionData = [NSKeyedArchiver archivedDataWithRootObject:eventProjection];
@@ -317,7 +323,7 @@
                                                 @"outbound_message_type":@"16"
                                                 },
                                     @"id":@"314",
-                                    @"match":[NSNull null],
+                                    @"matches":[NSNull null],
                                     @"behavior":[NSNull null]
                                     };
     
@@ -326,8 +332,7 @@
     XCTAssertEqual(eventProjection.eventType, MPEventTypeOther, @"Should have been equal.");
     XCTAssertEqual(eventProjection.messageType, MPMessageTypeEvent, @"Should have been equal.");
     XCTAssertEqual(eventProjection.maxCustomParameters, INT_MAX, @"Should have been equal.");
-    XCTAssertNil(eventProjection.attributeKey, @"Should have been nil.");
-    XCTAssertNil(eventProjection.attributeValue, @"Should have been nil.");
+    XCTAssertNil(eventProjection.projectionMatches, @"Should have been nil.");
     XCTAssertTrue(eventProjection.appendAsIs, @"Should have been true.");
     XCTAssertFalse(eventProjection.isDefault, @"Should have been false.");
     
@@ -335,12 +340,12 @@
                                   @"outbound_message_type":[NSNull null]
                                   },
                       @"id":@"314",
-                      @"match":@{@"event":@"1567",
+                      @"matches":@[@{@"event":@"1567",
                                  @"event_match_type":@"String",
                                  @"property_name":[NSNull null],
                                  @"property_value":[NSNull null],
                                  @"message_type":@"16"
-                                 },
+                                 }],
                       @"behavior":@{@"append_unmapped_as_is":[NSNull null],
                                     @"is_default":[NSNull null],
                                     @"max_custom_params":[NSNull null]
@@ -353,8 +358,7 @@
     XCTAssertEqual(eventProjection.messageType, MPMessageTypeCommerceEvent, @"Should have been equal.");
     XCTAssertEqual(eventProjection.outboundMessageType, MPMessageTypeEvent, @"Should have been equal.");
     XCTAssertEqual(eventProjection.maxCustomParameters, INT_MAX, @"Should have been equal.");
-    XCTAssertNil(eventProjection.attributeKey, @"Should have been nil.");
-    XCTAssertNil(eventProjection.attributeValue, @"Should have been nil.");
+    XCTAssertNil(eventProjection.projectionMatches, @"Should have been nil.");
     XCTAssertTrue(eventProjection.appendAsIs, @"Should have been true.");
     XCTAssertFalse(eventProjection.isDefault, @"Should have been false.");
 }

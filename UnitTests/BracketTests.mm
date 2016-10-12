@@ -65,7 +65,7 @@ mParticle::Bracket makeBracket() {
 }
 
 - (void)testMoveBracket {
-    mParticle::Bracket bracket = move(makeBracket());
+    mParticle::Bracket bracket = makeBracket();
     
     XCTAssertTrue(bracket.shouldForward(), @"Backet should be forwarding.");
     
@@ -74,7 +74,7 @@ mParticle::Bracket makeBracket() {
 }
 
 - (void)testBracketComparison {
-    mParticle::Bracket bracket = move(makeBracket());
+    mParticle::Bracket bracket = makeBracket();
     shared_ptr<mParticle::Bracket> bracketPtr = make_shared<mParticle::Bracket>(-(LONG_MAX - 271828182), 40, 41);
     XCTAssertFalse(bracket == *bracketPtr, @"Brackets should have been different.");
     

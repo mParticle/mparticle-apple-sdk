@@ -25,6 +25,8 @@
 #import "MPUpload.h"
 #import "MPStandaloneUpload.h"
 #import "MPStateMachine.h"
+#import "MPIntegrationAttributes.h"
+#import "MPPersistenceController.h"
 
 @interface MPUploadBuilderTests : XCTestCase
 
@@ -34,10 +36,26 @@
 
 - (void)setUp {
     [super setUp];
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    
+    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSDictionary<NSString *, NSString *> *attributes = @{@"clientID":@"123abc",
+                                                         @"key":@"value"};
+    
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    [persistence saveIntegrationAttributes:integrationAttributes];
+
+    kitCode = @(MPKitInstanceButton);
+    attributes = @{@"keyB":@"valueB"};
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    [persistence saveIntegrationAttributes:integrationAttributes];
 }
 
 - (void)tearDown {
     [super tearDown];
+    
+    [[MPPersistenceController sharedInstance] deleteAllIntegrationAttributes];
 }
 
 - (void)configureCustomModules {
@@ -154,12 +172,12 @@
         NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
         XCTAssertNotNil(uploadDictionary);
 
-        NSDictionary *referenceUserAttributes = @{@"Dinosaur":@"T-Rex",
+        NSDictionary *referenceUserDictionary = @{@"Dinosaur":@"T-Rex",
                                                   @"Arm length":@"Short",
                                                   @"Height":@"20",
                                                   @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
 
-        XCTAssertEqualObjects(uploadDictionary[@"ua"], referenceUserAttributes);
+        XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
         
         [expectation fulfill];
     }];

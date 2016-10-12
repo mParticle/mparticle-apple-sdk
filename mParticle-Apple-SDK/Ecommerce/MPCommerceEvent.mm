@@ -331,6 +331,7 @@ static NSArray *actionNames;
         copyObject->_userDefinedAttributes = _userDefinedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_userDefinedAttributes copy]] : nil;
         copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
+        copyObject->_timestamp = [_timestamp copy];
     }
     
     return copyObject;
@@ -368,6 +369,10 @@ static NSArray *actionNames;
     if (_userDefinedAttributes) {
         [coder encodeObject:_userDefinedAttributes forKey:@"userDefinedAttributes"];
     }
+    
+    if (_timestamp) {
+        [coder encodeObject:_timestamp forKey:@"timestamp"];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -400,6 +405,8 @@ static NSArray *actionNames;
     if (array.count > 0) {
         self->_productsList = [[NSMutableArray alloc] initWithArray:array];
     }
+    
+    self->_timestamp = [coder decodeObjectForKey:@"timestamp"];
     
     self.promotionContainer = [coder decodeObjectForKey:@"promotionContainer"];
     self.transactionAttributes = [coder decodeObjectForKey:@"transactionAttributes"];
@@ -723,6 +730,14 @@ static NSArray *actionNames;
     }];
     
     return copyProductImpressions;
+}
+
+- (NSDate *)timestamp {
+    return _timestamp;
+}
+
+- (void)setTimestamp:(NSDate *)timestamp {
+    _timestamp = timestamp;
 }
 
 #pragma mark Public accessors

@@ -33,6 +33,8 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
+#import "MPUserAttributeChange.h"
+#import "MPUserIdentityChange.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -42,6 +44,12 @@ NSString *const kMPVerticalAccuracyKey = @"vacc";
 NSString *const kMPRequestedAccuracy = @"racc";
 NSString *const kMPDistanceFilter = @"mdst";
 NSString *const kMPIsForegroung = @"fg";
+NSString *const kMPUserAttributeWasDeletedKey = @"d";
+NSString *const kMPUserAttributeNewValueKey = @"nv";
+NSString *const kMPUserAttributeOldValueKey = @"ov";
+NSString *const kMPUserAttributeNewlyAddedKey = @"na";
+NSString *const kMPUserIdentityNewValueKey = @"ni";
+NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 @implementation MPMessageBuilder
 
@@ -133,14 +141,49 @@ NSString *const kMPIsForegroung = @"fg";
     return shouldBuildMessage;
 }
 
+- (MPMessageBuilder *)withCurrentState {
+    MPCurrentState *currentState = [[MPCurrentState alloc] init];
+    messageDictionary[kMPStateInformationKey] = [currentState dictionaryRepresentation];
+    
+    return self;
+}
+
+- (MPMessageBuilder *)withUserAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
+    messageDictionary[kMPUserAttributeWasDeletedKey] = userAttributeChange.deleted ? @YES : @NO;
+    messageDictionary[kMPEventNameKey] = userAttributeChange.key;
+    
+    id oldValue = userAttributeChange.userAttributes[userAttributeChange.key];
+    messageDictionary[kMPUserAttributeOldValueKey] = oldValue ? oldValue : [NSNull null];
+    messageDictionary[kMPUserAttributeNewValueKey] = userAttributeChange.valueToLog && !userAttributeChange.deleted ? userAttributeChange.valueToLog : [NSNull null];
+    messageDictionary[kMPUserAttributeNewlyAddedKey] = oldValue ? @NO : @YES;
+    
+    return self;
+}
+
+- (MPMessageBuilder *)withUserIdentityChange:(MPUserIdentityChange *)userIdentityChange {
+    NSDictionary *dictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+    if (dictionary) {
+        messageDictionary[kMPUserIdentityNewValueKey] = dictionary;
+    }
+    
+    dictionary = [userIdentityChange.userIdentityOld dictionaryRepresentation];
+    if (dictionary) {
+        messageDictionary[kMPUserIdentityOldValueKey] = dictionary;
+    }
+    
+    return self;
+}
+
 #pragma mark Public class methods
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session commerceEvent:commerceEvent];
+    [messageBuilder withCurrentState];
     return messageBuilder;
 }
 
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
+    [messageBuilder withCurrentState];
     return messageBuilder;
 }
 
@@ -155,6 +198,21 @@ NSString *const kMPIsForegroung = @"fg";
                                                                            action:[NSString stringWithCString:actionDescription.action.c_str() encoding:NSUTF8StringEncoding]];
 
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
+    [messageBuilder withCurrentState];
+    
+    return messageBuilder;
+}
+
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
+    [messageBuilder withUserAttributeChange:userAttributeChange];
+    
+    return messageBuilder;
+}
+
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange {
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
+    [messageBuilder withUserIdentityChange:userIdentityChange];
     
     return messageBuilder;
 }
@@ -209,9 +267,6 @@ NSString *const kMPIsForegroung = @"fg";
 
 - (MPDataModelAbstract *)build {
     MPDataModelAbstract *message = nil;
-    
-    MPCurrentState *currentState = [[MPCurrentState alloc] init];
-    messageDictionary[kMPStateInformationKey] = [currentState dictionaryRepresentation];
     
     messageDictionary[kMPMessageTypeKey] = _messageType;
     messageDictionary[kMPMessageIdKey] = uuid ? uuid : [[NSUUID UUID] UUIDString];

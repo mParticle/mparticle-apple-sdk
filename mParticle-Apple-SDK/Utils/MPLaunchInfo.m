@@ -19,6 +19,8 @@
 #import "MPLaunchInfo.h"
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
+#import "MPDateFormatter.h"
+#import "MPILogger.h"
 
 @interface MPLaunchInfo() {
     NSString *sourceApp;
@@ -106,46 +108,76 @@
 
 #pragma mark Public accessors
 - (void)setAnnotation:(id)annotation {
-    BOOL (^shouldIncludeObject)(id) = ^(id obj) {
-        BOOL shouldInclude = NO;
-        if ([obj isKindOfClass:[NSString class]]) {
-            shouldInclude = [obj length] <= 1024;
-        } else if ([obj isKindOfClass:[NSNumber class]]) {
-            shouldInclude = YES;
+    Class NSDateClass = [NSDate class];
+    Class NSDataClass = [NSData class];
+    Class NSDictionaryClass = [NSDictionary class];
+    Class NSArrayClass = [NSArray class];
+    Class NSSetClass = [NSSet class];
+    
+    id (^valueFromObject)(id) = ^(id obj) {
+        id value = nil;
+        
+        if ([obj isKindOfClass:NSDateClass]) {
+            value = [MPDateFormatter stringFromDateRFC3339:obj];
+        } else if ([obj isKindOfClass:NSDataClass] || [obj isKindOfClass:NSDictionaryClass] || [obj isKindOfClass:NSArrayClass] || [obj isKindOfClass:NSSetClass]) {
+            value = nil;
+        } else {
+            value = obj;
         }
         
-        return shouldInclude;
+        return value;
+    };
+    
+    NSString * (^serializeDataObject)(id) = ^(id annotationObject) {
+        NSData *annotationData = nil;
+        NSError *error = nil;
+        
+        @try {
+            annotationData = [NSJSONSerialization dataWithJSONObject:annotationObject options:0 error:&error];
+        } @catch (NSException *exception) {
+            MPILogError(@"Error serializing annotation from app launch: %@", annotationObject);
+            return (NSString *)nil;
+        }
+        
+        NSString *serializedAnnotation = !error ? [[NSString alloc] initWithData:annotationData encoding:NSUTF8StringEncoding] : nil;
+        
+        if (serializedAnnotation.length > LIMIT_USER_ATTR_LENGTH) {
+            serializedAnnotation = nil;
+        }
+        
+        return serializedAnnotation;
     };
     
     if ([annotation isKindOfClass:[NSDictionary class]]) {
-        NSEnumerator *annotationEnumerator = [annotation keyEnumerator];
-        NSMutableDictionary *paramsDictionary = [[NSMutableDictionary alloc] initWithCapacity:((NSDictionary *)annotation).count];
-        NSString *key;
-        id value;
+        __block NSMutableDictionary *annotationDictionary = [[NSMutableDictionary alloc] initWithCapacity:((NSDictionary *)annotation).count];
         
-        while ((key = [annotationEnumerator nextObject])) {
-            value = annotation[key];
+        [((NSDictionary *)annotation) enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            id value = valueFromObject(obj);
             
-            if (shouldIncludeObject(value)) {
-                paramsDictionary[key] = value;
+            if (value) {
+                annotationDictionary[key] = value;
             }
-        }
+        }];
         
-        _annotation = paramsDictionary.count > 0 ? paramsDictionary : nil;
+        _annotation = serializeDataObject(annotationDictionary);
     } else if ([annotation isKindOfClass:[NSArray class]]) {
-        NSMutableArray *items = [[NSMutableArray alloc] initWithCapacity:[annotation count]];
+        __block NSMutableArray *annotationArray = [[NSMutableArray alloc] initWithCapacity:((NSArray *)annotation).count];
         
-        for (id obj in annotation) {
-            if (shouldIncludeObject(obj)) {
-                [items addObject:obj];
+        [((NSArray *)annotation) enumerateObjectsUsingBlock:^(id _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            id value = valueFromObject(obj);
+            
+            if (value) {
+                [annotationArray addObject:value];
             }
-        }
+        }];
         
-        _annotation = items.count > 0 ? items : nil;
+        _annotation = serializeDataObject(annotationArray);
     } else if ([annotation isKindOfClass:[NSString class]]) {
-        _annotation = shouldIncludeObject(annotation) ? annotation : nil;
+        _annotation = [annotation length] < LIMIT_USER_ATTR_LENGTH ? annotation : nil;
     } else if ([annotation isKindOfClass:[NSNumber class]]) {
-        _annotation = annotation;
+        _annotation = [annotation stringValue];
+    } else if ([annotation isKindOfClass:NSDateClass]) {
+        _annotation = valueFromObject(annotation);
     } else {
         _annotation = nil;
     }
@@ -157,12 +189,7 @@
     if (sourceApp) {
         NSString *urlString = [url absoluteString];
         NSRange appLinksRange = [urlString rangeOfString:@"al_applink_data"];
-        
-        if (appLinksRange.location == NSNotFound) {
-            _sourceApplication = sourceApp;
-        } else {
-            _sourceApplication = [[NSString alloc] initWithFormat:@"AppLink(%@)", sourceApp];
-        }
+        _sourceApplication = appLinksRange.location == NSNotFound ? sourceApp : [[NSString alloc] initWithFormat:@"AppLink(%@)", sourceApp];
     } else {
         _sourceApplication = nil;
     }

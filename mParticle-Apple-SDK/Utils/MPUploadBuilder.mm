@@ -24,6 +24,7 @@
 #import "MPBags+Internal.h"
 #import "MPForwardRecord.h"
 #import "MPDataModelAbstract.h"
+#import "MPIntegrationAttributes.h"
 
 using namespace std;
 
@@ -173,6 +174,17 @@ using namespace std;
         }
     }
     
+    NSArray<MPIntegrationAttributes *> *integrationAttributesArray = [persistence fetchIntegrationAttributes];
+    if (integrationAttributesArray) {
+        NSMutableDictionary *integrationAttributesDictionary = [[NSMutableDictionary alloc] initWithCapacity:integrationAttributesArray.count];
+        
+        for (MPIntegrationAttributes *integrationAttributes in integrationAttributesArray) {
+            [integrationAttributesDictionary addEntriesFromDictionary:[integrationAttributes dictionaryRepresentation]];
+        }
+        
+        uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
+    }
+    
 #ifdef SERVER_ECHO
     uploadDictionary[@"echo"] = @true;
 #endif
@@ -183,7 +195,7 @@ using namespace std;
             
             completionHandler(upload);
             
-            [persistence deleteForwardRecodsIds:forwardRecordsIds];
+            [persistence deleteForwardRecordsIds:forwardRecordsIds];
         };
         
 #if TARGET_OS_IOS == 1

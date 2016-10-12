@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
-    s.version          = "6.2.0"
+    s.version          = "6.9.0"
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
@@ -39,36 +39,20 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
-    s.ios.deployment_target  = "7.0"
+    s.ios.deployment_target  = "8.0"
     s.tvos.deployment_target = "9.0"
 
     s.subspec 'mParticle' do |ss|
-        ss.public_header_files = 'mParticle-Apple-SDK/mParticle.h', 'mParticle-Apple-SDK/MPEnums.h', 'mParticle-Apple-SDK/MPUserSegments.h', \
-                                 'mParticle-Apple-SDK/Event/MPEvent.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerce.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCart.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct.h', 'mParticle-Apple-SDK/Ecommerce/MPPromotion.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes.h', 'mParticle-Apple-SDK/Ecommerce/MPBags.h', \
-                                 'mParticle-Apple-SDK/MPExtensionProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitProtocol.h', 'mParticle-Apple-SDK/Kits/MPKitRegister.h', \
-                                 'mParticle-Apple-SDK/Kits/MPKitExecStatus.h', 'mParticle-Apple-SDK/MPIHasher.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h','mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', 'mParticle-Apple-SDK/Ecommerce/MPCommerceEvent+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Ecommerce/MPCommerceEventInstruction.h', 'mParticle-Apple-SDK/Ecommerce/MPProduct+Dictionary.h', 'mParticle-Apple-SDK/Ecommerce/MPTransactionAttributes+Dictionary.h', \
-                                 'mParticle-Apple-SDK/Utils/MPDateFormatter.h', 'mParticle-Apple-SDK/Utils/NSDictionary+MPCaseInsensitive.h'
+        ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
-        ss.preserve_paths      = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files        = 'mParticle-Apple-SDK/**/*'
-        ss.libraries           = 'c++', 'sqlite3', 'z'
+        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        ss.source_files         = 'mParticle-Apple-SDK/**/*'
+        ss.libraries            = 'c++', 'sqlite3', 'z'
 
-        ss.ios.frameworks      = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
-        ss.ios.weak_framework  = 'AdSupport', 'iAd'
+        ss.ios.frameworks       = 'Accounts', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
+        ss.ios.weak_frameworks  = 'AdSupport', 'iAd', 'UserNotifications'
 
-        ss.tvos.frameworks     = 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-        ss.tvos.weak_framework = 'AdSupport'
-    end
-
-    s.subspec 'CrashReporter' do |ss|
-        ss.ios.dependency 'mParticle-Apple-SDK/mParticle'
-        ss.ios.dependency 'mParticle-CrashReporter', '~> 1.2'
-        ss.ios.prefix_header_contents = "#define MP_CRASH_REPORTER 1"
-        ss.ios.deployment_target      = "7.0"
+        ss.tvos.frameworks      = 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        ss.tvos.weak_frameworks = 'AdSupport'
     end
 end

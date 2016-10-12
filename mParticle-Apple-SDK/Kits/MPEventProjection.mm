@@ -23,6 +23,56 @@
 
 using namespace std;
 
+@implementation MPProjectionMatch
+
+- (BOOL)isEqual:(id)object {
+    BOOL isEqual = !MPIsNull(object) && [object isKindOfClass:[MPProjectionMatch class]];
+    
+    if (isEqual) {
+        MPProjectionMatch *projectionMatch = (MPProjectionMatch *)object;
+        
+        isEqual = ((!_attributeKey && !projectionMatch.attributeKey) || [_attributeKey isEqual:projectionMatch.attributeKey]) &&
+        ((!_attributeValues && !projectionMatch.attributeValues) || [_attributeValues isEqual:projectionMatch.attributeValues]);
+    }
+    
+    return isEqual;
+}
+
+#pragma mark NSCoding
+- (void)encodeWithCoder:(NSCoder *)coder {
+    if (self.attributeKey) {
+        [coder encodeObject:_attributeKey forKey:@"attributeKey"];
+    }
+    
+    if (self.attributeValues) {
+        [coder encodeObject:_attributeValues forKey:@"attributeValues"];
+    }
+}
+
+- (id)initWithCoder:(NSCoder *)coder {
+    self = [super init];
+    if (self) {
+        _attributeKey = [coder decodeObjectForKey:@"attributeKey"];
+        _attributeValues = [coder decodeObjectForKey:@"attributeValues"];
+    }
+    
+    return self;
+}
+
+#pragma mark NSCopying
+- (id)copyWithZone:(NSZone *)zone {
+    MPProjectionMatch *copyObject = [[[self class] alloc] init];
+    
+    if (copyObject) {
+        copyObject.attributeKey = [_attributeKey copy];
+        copyObject.attributeValues = [_attributeValues copy];
+    }
+    
+    return copyObject;
+}
+
+@end
+
 @implementation MPEventProjection
 
 - (id)init {
@@ -41,26 +91,38 @@ using namespace std;
         return nil;
     }
     
-    NSDictionary *matchDictionary = !MPIsNull(configuration[@"match"]) ? configuration[@"match"] : nil;
-    NSString *auxString;
+    NSArray *matches = !MPIsNull(configuration[@"matches"]) ? configuration[@"matches"] : nil;
+    NSDictionary *matchDictionary = !MPIsNull(matches) && matches.count > 0 ? matches[0] : nil;
+    __block NSString *auxString;
     
     auxString = matchDictionary[@"event"];
     _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([auxString cStringUsingEncoding:NSUTF8StringEncoding])) : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     
-    if (_messageType == MPMessageTypeCommerceEvent) {
-        auxString = matchDictionary[@"property_name"];
-        _attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-        
-        auxString = matchDictionary[@"property_value"];
-        _attributeValue = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-    } else {
-        auxString = matchDictionary[@"attribute_key"];
-        _attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
-        
-        auxString = matchDictionary[@"attribute_value"];
-        _attributeValue = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
+    NSMutableArray<MPProjectionMatch *> *projectionMatches = !MPIsNull(matches) && matches.count > 0 ? [NSMutableArray array] : nil;
+    
+    [matches enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull matchDictionary, NSUInteger idx, BOOL * _Nonnull stop) {
+        MPProjectionMatch *projectionMatch = [[MPProjectionMatch alloc] init];
+        if (_messageType == MPMessageTypeCommerceEvent) {
+            auxString = matchDictionary[@"property_name"];
+            projectionMatch.attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
+            
+            NSArray<NSString *> *propertyValues = matchDictionary[@"property_value"];
+            projectionMatch.attributeValues = !MPIsNull(propertyValues) && propertyValues.count > 0 ? propertyValues : nil;
+        } else {
+            auxString = matchDictionary[@"attribute_key"];
+            projectionMatch.attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
+            
+            NSArray<NSString *> *attributeValues = matchDictionary[@"attribute_values"];
+            projectionMatch.attributeValues = !MPIsNull(attributeValues) && attributeValues.count > 0 ? attributeValues : nil;
+        }
+        if (projectionMatch.attributeKey && projectionMatch.attributeValues) {
+            [projectionMatches addObject:projectionMatch];
+        }
+    }];
+    if (!MPIsNull(projectionMatches) && projectionMatches.count > 0) {
+        _projectionMatches = projectionMatches;
     }
     
     NSDictionary *behaviorDictionary = !MPIsNull(configuration[@"behavior"]) ? configuration[@"behavior"] : nil;
@@ -115,8 +177,7 @@ using namespace std;
         if (isEqual) {
             MPEventProjection *eventProjection = (MPEventProjection *)object;
             
-            isEqual = ((!_attributeKey && !eventProjection.attributeKey) || [_attributeKey isEqualToString:eventProjection.attributeKey]) &&
-                      ((!_attributeValue && !eventProjection.attributeValue) || [_attributeValue isEqualToString:eventProjection.attributeValue]) &&
+            isEqual = ((!_projectionMatches && !eventProjection.projectionMatches) || [_projectionMatches isEqual:eventProjection.projectionMatches]) &&
                       _messageType == eventProjection.messageType &&
                       _maxCustomParameters == eventProjection.maxCustomParameters &&
                       _appendAsIs == eventProjection.appendAsIs &&
@@ -135,12 +196,8 @@ using namespace std;
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
     
-    if (self.attributeKey) {
-        [coder encodeObject:_attributeKey forKey:@"attributeKey"];
-    }
-    
-    if (self.attributeValue) {
-        [coder encodeObject:_attributeValue forKey:@"attributeValue"];
+    if (self.projectionMatches) {
+        [coder encodeObject:_projectionMatches forKey:@"projectionMatches"];
     }
     
     if (self.attributeProjections) {
@@ -158,8 +215,7 @@ using namespace std;
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
     if (self) {
-        _attributeKey = [coder decodeObjectForKey:@"attributeKey"];
-        _attributeValue = [coder decodeObjectForKey:@"attributeValue"];
+        _projectionMatches = [coder decodeObjectForKey:@"projectionMatches"];
         _attributeProjections = [coder decodeObjectForKey:@"attributeProjections"];
         _behaviorSelector = (MPProjectionBehaviorSelector)[coder decodeIntegerForKey:@"behaviorSelector"];
         _eventType = (MPEventType)[coder decodeIntegerForKey:@"eventType"];
@@ -182,8 +238,7 @@ using namespace std;
         copyObject.matchType = _matchType;
         copyObject->_projectionType = _projectionType;
         copyObject->_propertyKind = _propertyKind;
-        copyObject.attributeKey = [_attributeKey copy];
-        copyObject.attributeValue = [_attributeValue copy];
+        copyObject.projectionMatches = [_projectionMatches copy];
         copyObject.attributeProjections = [_attributeProjections copy];
         copyObject.behaviorSelector = _behaviorSelector;
         copyObject.eventType = _eventType;

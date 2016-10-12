@@ -31,8 +31,6 @@ The mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mp
 To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guides.cocoapods.org/syntax/podfile.html):
 
 ```ruby
-source 'https://github.com/CocoaPods/Specs.git'
-
 # Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
 # use_frameworks!
 
@@ -48,8 +46,6 @@ Configuring your `Podfile` with the statement above will include only the _Core_
 If you'd like to add any kits, you can do so as follows:
 
 ```ruby
-source 'https://github.com/CocoaPods/Specs.git'
-
 # Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
 # use_frameworks!
 
@@ -70,13 +66,15 @@ pre_install do |pre_i|
 end
 ```
 
-For iOS only, you can also choose to install the crash reporter by including it as a subspec:
+For iOS only, you can also choose to install the crash reporter by including it as a separate pod:
 
 ```ruby
-pod 'mParticle-Apple-SDK/CrashReporter', '~> 6'
+pod 'mParticle-CrashReporter', '~> 1.3'
 ```
 
-> You can't use the crash reporter at the same time as the Apteligent kit.
+You can read detailed instructions for including the Crash Reporter at its repository: [mParticle-CrashReporter](https://github.com/mParticle/mParticle-CrashReporter)
+
+> Note you can't use the crash reporter at the same time as the Apteligent kit.
 
 #### Carthage
 
@@ -99,8 +97,10 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 Kit | CocoaPods | Carthage
 ----|:---------:|:-------:
 [Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)                |  ✓ | ✓
-[Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                |  ✓ |  
+[Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                |  ✓ | ✓
 [AppsFlyer](https://github.com/mparticle-integrations/mparticle-apple-integration-appsflyer)          |  ✓ |  
+[Apptentive](https://github.com/mparticle-integrations/mparticle-apple-integration-apptentive)        |  ✓ |   
+[Apptimize](https://github.com/mparticle-integrations/mparticle-apple-integration-apptimize)          |  ✓ |   
 [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)        |  ✓ |  
 [Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics) |  ✓ | ✓
 [Button](https://github.com/mparticle-integrations/mparticle-apple-integration-button)                |  ✓ |  
@@ -108,8 +108,11 @@ Kit | CocoaPods | Carthage
 [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                |  ✓ |  
 [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)                |  ✓ |  
 [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
+[Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)            |  ✓ |  
 [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ |  
+[Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
 [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                    |  ✓ |  
+[Urban Airship](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship)   |  ✓ |  
 [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)              |  ✓ |  
 
 
@@ -142,11 +145,11 @@ If you are using mParticle as a framework, your import statement will be as foll
 
 ```objective-c
 @import mParticle_Apple_SDK;                // Apple recommended syntax, but requires "Enable Modules (C and Objective-C)" in pbxproj
-#import <mParticle_Apple_SDK/mParticle.h>   // Works regardless of Enable Modules setting
+#import <mParticle_Apple_SDK/mParticle.h>   // Works when modules are not enabled
 
 ```
 
-Otherwise, for CocoaPods without use_frameworks, you can use either of these statements:
+Otherwise, for CocoaPods without `use_frameworks!`, you can use either of these statements:
 
 ```objective-c
 #import <mParticle-Apple-SDK/mParticle.h>
@@ -185,7 +188,7 @@ In order to run either the iOS or tvOS examples, first install the mParticle App
 
 1. Change to the `Examples/CocoaPodsExample` directory
 2. Run `pod install`
-3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run. (In case you want to run on iOS 7, please use the **iOS7_Example** scheme instead)
+3. Open **Example.xcworkspace** in Xcode, select either the **iOS_Example** or **tvOS_Example** scheme, build and run.
 
 
 ## Read More

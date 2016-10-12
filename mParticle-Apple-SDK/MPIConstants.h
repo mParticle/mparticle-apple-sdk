@@ -55,8 +55,6 @@ typedef NS_ENUM(NSInteger, MPDataType) {
     MPDataTypeLong = 5
 };
 
-extern NSUInteger kMPNumberOfMessageTypes;
-
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 
@@ -141,6 +139,7 @@ extern NSString * _Nonnull const kMPPushNotificationCategoryIdentifierKey;
 extern NSString * _Nonnull const kMPSessionLengthKey;                 
 extern NSString * _Nonnull const kMPSessionTotalLengthKey;
 extern NSString * _Nonnull const kMPOptOutStatus;
+extern NSString * _Nonnull const kMPAlwaysTryToCollectIDFA;
 extern NSString * _Nonnull const kMPCrashingSeverity;
 extern NSString * _Nonnull const kMPCrashingClass;
 extern NSString * _Nonnull const kMPCrashWasHandled;
@@ -220,6 +219,8 @@ extern NSString * _Nonnull const kMPRemoteConfigTriggerMessageTypesKey;
 extern NSString * _Nonnull const kMPRemoteConfigInfluencedOpenTimerKey;
 extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
 extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
+extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
+extern NSString * _Nonnull const kMPRemoteConfigIncludeSessionHistory;
 
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
@@ -247,6 +248,7 @@ extern NSString * _Nonnull const kMPConfigEnableCrashReporting;
 extern NSString * _Nonnull const kMPConfigLocationTracking;
 extern NSString * _Nonnull const kMPConfigLocationAccuracy;
 extern NSString * _Nonnull const kMPConfigLocationDistanceFilter;
+extern NSString * _Nonnull const kMPConfigRegisterForSilentNotifications;
 
 // Data connection path/status
 extern NSString * _Nonnull const kDataConnectionOffline;
@@ -268,6 +270,7 @@ extern NSString * _Nonnull const kMPNetworkPerformanceKey;
 
 // Kits
 extern NSString * _Nonnull const MPKitAttributeJailbrokenKey;
+extern NSString * _Nonnull const MPIntegrationAttributesKey;
 
 // Media Track
 extern NSString * _Nonnull const MPMediaTrackActionKey;
