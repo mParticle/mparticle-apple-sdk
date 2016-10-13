@@ -196,11 +196,8 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (id)init {
-    // Serial since read/write lock not appropriate given how mpId is created.
-    dispatch_queue_t newQueue = dispatch_queue_create("com.mParticle.MPCookie.queue", DISPATCH_QUEUE_SERIAL);
-    
     self = [super init];
-    if (self && newQueue) {
+    if (self) {
         _consumerInfoId = 0;
     } else {
         self = nil;
@@ -227,8 +224,6 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    // Serial since read/write lock not appropriate given how mpId is created.
-    dispatch_queue_t newQueue = dispatch_queue_create("com.mParticle.MPCookie.queue", DISPATCH_QUEUE_SERIAL);
     self = [super init];
     if (self) {
         _cookies = [coder decodeObjectForKey:@"cookies"];
