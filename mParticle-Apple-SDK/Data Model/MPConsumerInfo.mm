@@ -177,7 +177,7 @@ NSString *const kMPCKExpiration = @"e";
 
 #pragma mark - MPConsumerInfo
 @interface MPConsumerInfo ()
-@property (nonatomic, strong, nonnull) dispatch_queue_t queue;
+@property (nonatomic, strong, nonnull, readonly) dispatch_queue_t queue;
 @end
 
 @implementation MPConsumerInfo
@@ -186,13 +186,21 @@ NSString *const kMPCKExpiration = @"e";
 @synthesize mpId = _mpId;
 @synthesize uniqueIdentifier = _uniqueIdentifier;
 
+- (dispatch_queue_t)queue {
+    static dispatch_queue_t theQueue = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        theQueue = dispatch_queue_create("com.mParticle.MPCookie.queue", DISPATCH_QUEUE_SERIAL);
+    });
+    return theQueue;
+}
+
 - (id)init {
     // Serial since read/write lock not appropriate given how mpId is created.
     dispatch_queue_t newQueue = dispatch_queue_create("com.mParticle.MPCookie.queue", DISPATCH_QUEUE_SERIAL);
     
     self = [super init];
     if (self && newQueue) {
-        _queue = newQueue;
         _consumerInfoId = 0;
     } else {
         self = nil;
@@ -223,7 +231,6 @@ NSString *const kMPCKExpiration = @"e";
     dispatch_queue_t newQueue = dispatch_queue_create("com.mParticle.MPCookie.queue", DISPATCH_QUEUE_SERIAL);
     self = [super init];
     if (self) {
-        self.queue = newQueue;
         _cookies = [coder decodeObjectForKey:@"cookies"];
         _mpId = [coder decodeObjectForKey:@"mpId"];
         _uniqueIdentifier = [coder decodeObjectForKey:@"uniqueIdentifier"];
