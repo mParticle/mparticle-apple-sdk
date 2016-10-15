@@ -1226,6 +1226,46 @@ const int MaxBreadcrumbs = 50;
     return messages;
 }
 
+- (NSArray<MPMessage *> *)fetchMessagesForUploadingInSession:(MPSession *)session {
+    __block vector<MPMessage *> messagesVector;
+
+    dispatch_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusStream);
+            sqlite3_bind_int(preparedStatement, 3, MPUploadStatusBatch);
+            
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                                                                messageId:int64Value(preparedStatement, 0)
+                                                                     UUID:stringValue(preparedStatement, 1)
+                                                              messageType:stringValue(preparedStatement, 2)
+                                                              messageData:dataValue(preparedStatement, 3)
+                                                                timestamp:doubleValue(preparedStatement, 4)
+                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)];
+                
+                if (message) {
+                    messagesVector.push_back(message);
+                }
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+    
+    if (messagesVector.empty()) {
+        return nil;
+    }
+    
+    NSArray<MPMessage *> *messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    return messages;
+}
+
 - (void)fetchMessagesForUploadingInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
@@ -2367,6 +2407,69 @@ const int MaxBreadcrumbs = 50;
     }
     
     NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    return userNotifications;
+}
+
+- (NSArray<MParticleUserNotification *> *)fetchUserNotificationCampaignHistorySync {
+    __block vector<MParticleUserNotification *> userNotificationsVector;
+
+    dispatch_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT _id, notification_data, campaign_id \
+        FROM remote_notifications \
+        WHERE expiration >= ? AND (command != ? OR (command = ? AND local_alert_time > 0.0 AND local_alert_time < ?)) \
+        ORDER BY campaign_id ASC, receipt_time DESC";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
+            
+            sqlite3_bind_double(preparedStatement, 1, now);
+            sqlite3_bind_int(preparedStatement, 2, MPUserNotificationCommandAlertUserLocalTime);
+            sqlite3_bind_int(preparedStatement, 3, MPUserNotificationCommandAlertUserLocalTime);
+            sqlite3_bind_double(preparedStatement, 4, now);
+            
+            MParticleUserNotification *userNotification;
+            id notificationObject;
+            NSInteger previousCampaignId = 0;
+            Class MParticleUserNotificationClass = [MParticleUserNotification class];
+            
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                NSInteger campaignId = sqlite3_column_int(preparedStatement, 2);
+                
+                if (campaignId != previousCampaignId) {
+                    previousCampaignId = campaignId;
+                    
+                    @try {
+                        notificationObject = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
+                    } @catch (NSException *exception) {
+                        notificationObject = nil;
+                    }
+                    
+                    if ([notificationObject isKindOfClass:MParticleUserNotificationClass]) {
+                        userNotification = (MParticleUserNotification *)notificationObject;
+                    } else {
+                        userNotification = nil;
+                    }
+                    
+                    if (userNotification) {
+                        userNotification.userNotificationId = sqlite3_column_int64(preparedStatement, 0);
+                        userNotificationsVector.push_back(userNotification);
+                    }
+                }
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+    
+    if (userNotificationsVector.empty()) {
+        return nil;
+    }
+    
+    NSArray<MParticleUserNotification *> *userNotifications = [NSArray arrayWithObjects:&userNotificationsVector[0] count:userNotificationsVector.size()];
+    
     return userNotifications;
 }
 

@@ -272,12 +272,8 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSString *)version {
-#ifndef MP_UNIT_TESTING
     NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
     return bundleInfoDictionary[@"CFBundleShortVersionString"];
-#else
-    return kMParticleSDKVersion;
-#endif
 }
 
 #if TARGET_OS_IOS == 1

@@ -1299,23 +1299,20 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:_session messageInfo:@{kMPAppStateTransitionType:kMPASTExitKey}];
-    
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *archivedMessagesDirectoryPath = ARCHIVED_MESSAGES_DIRECTORY_PATH;
-    if (![fileManager fileExistsAtPath:archivedMessagesDirectoryPath]) {
-        [fileManager createDirectoryAtPath:archivedMessagesDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
+    [persistence saveMessage:message];
     
-    NSString *messagePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%.0f.arcmsg", message.uuid, message.timestamp]];
-    BOOL messageArchived = [NSKeyedArchiver archiveRootObject:message toFile:messagePath];
-    if (!messageArchived) {
-        MPILogError(@"Application Will Terminate message not archived.");
-    }
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:self.session];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:messages sessionTimeout:self.sessionTimeout uploadInterval:self.uploadInterval];
+    [uploadBuilder withUserAttributes:self.userAttributes deletedUserAttributes:deletedUserAttributes];
+    [uploadBuilder withUserIdentities:self.userIdentities];
+    [uploadBuilder buildAsync:NO completionHandler:^(MPDataModelAbstract * _Nullable upload) {
+        [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+    }];
     
     if (persistence.databaseOpen) {
         if (_session) {
@@ -1325,7 +1322,7 @@ static BOOL appBackgrounded = NO;
         
         [persistence closeDatabase];
     }
-    
+
     [self endBackgroundTask];
 }
 

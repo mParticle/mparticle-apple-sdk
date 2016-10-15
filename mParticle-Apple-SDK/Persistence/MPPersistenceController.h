@@ -84,6 +84,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes;
 - (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(nonnull MPSession *)session;
+- (nullable NSArray<MPMessage *> *)fetchMessagesForUploadingInSession:(nonnull MPSession *)session;
 - (void)fetchMessagesForUploadingInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (void)fetchPreviousSession:(void (^ _Nonnull)(MPSession * _Nullable previousSession))completionHandler;
@@ -116,6 +117,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedRemoteUserNotifications;
 - (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedLocalUserNotificationsSince:(NSTimeInterval)referenceDate;
 - (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedRemoteUserNotificationsSince:(NSTimeInterval)referenceDate;
+- (nullable NSArray<MParticleUserNotification *> *)fetchUserNotificationCampaignHistorySync;
 - (void)fetchUserNotificationCampaignHistory:(void (^ _Nonnull)(NSArray<MParticleUserNotification *> * _Nullable userNotificationCampaignHistory))completionHandler;
 - (nullable NSArray<MParticleUserNotification *> *)fetchUserNotifications;
 - (void)saveUserNotification:(nonnull MParticleUserNotification *)userNotification;
