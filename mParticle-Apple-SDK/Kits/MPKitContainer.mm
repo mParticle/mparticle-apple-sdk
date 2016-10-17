@@ -1672,6 +1672,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         MPEvent *projectedEvent;
         MPEventProjection *defaultProjection = nil;
         NSDictionary *projectedAttributes;
+        NSDictionary<NSString *, NSString *> *eventInfo = [event.info transformValuesToString];
         
         if (projections.count > 0) {
             int eventNameHash = 0;
@@ -1685,7 +1686,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if (eventProjection.projectionMatches) {
                                 __block BOOL foundNonMatch = NO;
                                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[event.info valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
+                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
                                         foundNonMatch = YES;
                                         *stop = YES;
                                     }
@@ -1708,7 +1709,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if (eventProjection.projectionMatches) {
                                 __block BOOL foundNonMatch = NO;
                                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[event.info valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
+                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
                                         foundNonMatch = YES;
                                         *stop = YES;
                                     }
@@ -1740,7 +1741,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             if (eventProjection.projectionMatches) {
                                 __block BOOL foundNonMatch = NO;
                                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[event.info valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
+                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
                                         foundNonMatch = YES;
                                         *stop = YES;
                                     }

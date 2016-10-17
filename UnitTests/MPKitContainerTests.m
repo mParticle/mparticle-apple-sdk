@@ -1204,19 +1204,29 @@
                                               { \
                                                   \"id\":144, \
                                                   \"pmmid\":24, \
-                                                  \"matches\":[{ \
-                                                      \"message_type\":4, \
-                                                      \"event_match_type\":\"String\", \
-                                                      \"event\":\"Subscription_success\", \
-                                                      \"attribute_key\":\"Plan\", \
-                                                      \"attribute_values\":[\"extra-premium\", \"Premium\"] \
-                                                  }, { \
-                                                      \"message_type\":4, \
-                                                      \"event_match_type\":\"String\", \
-                                                      \"event\":\"subscription_success\", \
-                                                      \"attribute_key\":\"plan_color\", \
-                                                      \"attribute_values\":[\"gold\", \"platinum\"] \
-                                                  }], \
+                                                  \"matches\":[ \
+                                                      { \
+                                                          \"message_type\":4, \
+                                                          \"event_match_type\":\"String\", \
+                                                          \"event\":\"Subscription_success\", \
+                                                          \"attribute_key\":\"Plan\", \
+                                                          \"attribute_values\":[\"extra-premium\", \"Premium\"] \
+                                                      }, \
+                                                      { \
+                                                          \"message_type\":4, \
+                                                          \"event_match_type\":\"String\", \
+                                                          \"event\":\"subscription_success\", \
+                                                          \"attribute_key\":\"plan_color\", \
+                                                          \"attribute_values\":[\"gold\", \"platinum\"] \
+                                                      }, \
+                                                      { \
+                                                          \"message_type\":4, \
+                                                          \"event_match_type\":\"String\", \
+                                                          \"event\":\"subscription_success\", \
+                                                          \"attribute_key\":\"boolean\", \
+                                                          \"attribute_values\":[\"Y\"] \
+                                                      } \
+                                                  ], \
                                                   \"behavior\":{ \
                                                       \"append_unmapped_as_is\":true \
                                                   }, \
@@ -1280,7 +1290,7 @@
     [kitContainer configureKits:configurations];
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"subscription_success" type:MPEventTypeTransaction];
-    event.info = @{@"plan":@"premium", @"plan_color":@"gold"};
+    event.info = @{@"plan":@"premium", @"plan_color":@"gold", @"boolean":@YES};
     
     [kitContainer forwardSDKCall:@selector(logEvent:)
                            event:event
@@ -1291,7 +1301,7 @@
                               XCTAssertNotNil(forwardEvent);
                               XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
                               XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
+                              XCTAssertEqual(forwardEvent.info.count, 4);
                               XCTAssertEqualObjects(forwardEvent.info[@"af_customer_user_id"], @"trex@shortarmsdinosaurs.com");
                               
                               [expectation fulfill];
