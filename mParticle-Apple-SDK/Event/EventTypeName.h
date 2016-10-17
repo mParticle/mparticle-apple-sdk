@@ -63,7 +63,7 @@ namespace mParticle {
         Refund,
         /** Internal. Used when a promotion is displayed */
         PromotionView,
-        /** Internal. Used when a is clicked */
+        /** Internal. Used when a promotion is clicked */
         PromotionClick,
         /** Internal. Used when a product is added to the wishlist */
         AddToWishlist,

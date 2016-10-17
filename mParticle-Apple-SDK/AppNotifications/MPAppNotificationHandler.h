@@ -49,7 +49,7 @@
 #endif
 
 + (nonnull instancetype)sharedInstance;
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler;
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ __nonnull)(NSArray * __nullable restorableObjects))restorationHandler;
 - (void)openURL:(nonnull NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
 - (void)openURL:(nonnull NSURL *)url sourceApplication:(nullable NSString *)sourceApplication annotation:(nullable id)annotation;
 

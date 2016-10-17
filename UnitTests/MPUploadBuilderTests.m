@@ -153,7 +153,7 @@
     
     NSArray *userIdentities = @[@{
                                     @"n":@7,
-                                    @"i":@"trex@shortarmsdinoraus.com",
+                                    @"i":@"trex@shortarmsdinosaurs.com",
                                     @"dfs":MPCurrentEpochInMilliseconds,
                                     @"f":@NO
                                     }
@@ -216,7 +216,7 @@
     
     NSArray *userIdentities = @[@{
                                     @"n":@7,
-                                    @"i":@"trex@shortarmsdinoraus.com",
+                                    @"i":@"trex@shortarmsdinosaurs.com",
                                     @"dfs":MPCurrentEpochInMilliseconds,
                                     @"f":@NO
                                     }

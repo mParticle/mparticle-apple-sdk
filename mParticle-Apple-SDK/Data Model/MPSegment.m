@@ -62,8 +62,8 @@ NSString *const kMPSegmentMembershipListKey = @"c";
             [memberships addObject:segmentMembership];
         }
         
-        NSSortDescriptor *sortDesciptor = [NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES];
-        [memberships sortUsingDescriptors:@[sortDesciptor]];
+        NSSortDescriptor *sortDescriptor = [NSSortDescriptor sortDescriptorWithKey:@"timestamp" ascending:YES];
+        [memberships sortUsingDescriptors:@[sortDescriptor]];
     }
 
     return [self initWithSegmentId:@(segmentId)

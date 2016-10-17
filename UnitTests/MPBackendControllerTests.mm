@@ -284,7 +284,7 @@
                                       completionHandler:^(NSArray *messages) {
                                           MPMessage *message = [messages lastObject];
                                           
-                                          XCTAssertEqualObjects(message.messageType, @"ss", @"Message tipe is not session start.");
+                                          XCTAssertEqualObjects(message.messageType, @"ss", @"Message type is not session start.");
                                           
                                           [expectation fulfill];
                                       }];

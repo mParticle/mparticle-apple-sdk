@@ -2933,7 +2933,7 @@ static BOOL appBackgrounded = NO;
 }
 #endif
 
-#pragma mark Public media traking methods
+#pragma mark Public media tracking methods
 - (void)beginPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot play prior to starting the mParticle SDK.\n****\n");
     

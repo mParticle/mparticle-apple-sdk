@@ -27,7 +27,7 @@
  
  Using the methods and properties of this class should be done through the instance provided in the mParticle singleton.
  
- Note that all operations provided here can be accomplished throught the <b>logCommerceEvent:</b> method.
+ Note that all operations provided here can be accomplished through the <b>logCommerceEvent:</b> method.
  
  <b>Usage:</b>
  

@@ -381,7 +381,7 @@
 }
 #endif
 
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^__nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ __nonnull)(NSArray * __nullable restorableObjects))restorationHandler {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     if (stateMachine.optOut) {
         return NO;

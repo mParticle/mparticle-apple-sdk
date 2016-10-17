@@ -19,7 +19,7 @@
 #import <Foundation/Foundation.h>
 /**
  This class is used to describe a product used in a commerce event.
- Since this class behaves similarly to a NSMutableDictionary, custom key/value pairs can be specified, in addition to the
+ Since this class behaves similarly to an NSMutableDictionary, custom key/value pairs can be specified, in addition to the
  ones listed as class properties.
  
  <b>For example:</b>

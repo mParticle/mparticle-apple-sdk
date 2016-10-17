@@ -186,7 +186,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 /**
  Associates a custom dictionary of key/value pairs to the commerce event.
  
- Alternatively you can set custom attributes using the regular notation for setting key/value pairs in a NSMutableDictionary.
+ Alternatively you can set custom attributes using the regular notation for setting key/value pairs in an NSMutableDictionary.
  
  <b>For example:</b>
  

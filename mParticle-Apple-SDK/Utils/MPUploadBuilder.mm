@@ -47,19 +47,19 @@ using namespace std;
     _session = session;
     
     NSUInteger numberOfMessages = messages.count;
-    NSMutableArray *messageDictionariess = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
+    NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
     
     __block vector<int64_t> prepMessageIds;
     prepMessageIds.reserve(numberOfMessages);
     
     for (NSUInteger i = 0; i < numberOfMessages; ++i) {
-        [messageDictionariess addObject:[NSNull null]];
+        [messageDictionaries addObject:[NSNull null]];
     }
     
     [messages enumerateObjectsWithOptions:NSEnumerationConcurrent
                                usingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
                                    prepMessageIds[idx] = message.messageId;
-                                   messageDictionariess[idx] = [message dictionaryRepresentation];
+                                   messageDictionaries[idx] = [message dictionaryRepresentation];
                                }];
     
     _preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
@@ -81,8 +81,8 @@ using namespace std;
                           kMPLifeTimeValueKey:ltv}
                         mutableCopy];
 
-    if (messageDictionariess) {
-        uploadDictionary[kMPMessagesKey] = messageDictionariess;
+    if (messageDictionaries) {
+        uploadDictionary[kMPMessagesKey] = messageDictionaries;
     }
 
     if (sessionTimeout > 0) {

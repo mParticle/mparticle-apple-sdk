@@ -245,7 +245,7 @@ NS_ASSUME_NONNULL_BEGIN
         SDK auto-detect the environment for you. Once the app is deployed to the App Store, setting this parameter will have no effect, since the SDK will set
         the environment to production.
  @param proxyAppDelegate Flag indicating whether the mParticle SDK should handle logging remote notifications, app launches, and actions automatically. If you set to NO, 
-        your app is resposible to calling required methods. Default is YES
+        your app is responsible for calling required methods. Default is YES
  @see MPInstallationType
  @see MPEnvironment
  */
@@ -506,7 +506,7 @@ NS_ASSUME_NONNULL_BEGIN
  
  This method is only applicable to kits that allocate themselves as an object instance or a singleton. For the cases
  where kits are implemented with class methods, you can call those class methods directly
- @param kitCode A NSNumber representing the kit to be retrieved
+ @param kitCode An NSNumber representing the kit to be retrieved
  @returns The internal instance of the kit, or nil, if the kit is not active
  */
 - (nullable id const)kitInstance:(NSNumber *)kitCode;
@@ -514,7 +514,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Returns whether a kit is active or not. You can retrieve if a kit has been already initialized and
  can be used.
- @param kitCode A NSNumber representing the kit to be checked
+ @param kitCode An NSNumber representing the kit to be checked
  @returns Whether the kit is active or not.
  */
 - (BOOL)isKitActive:(NSNumber *)kitCode;

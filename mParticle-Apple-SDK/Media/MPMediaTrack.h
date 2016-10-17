@@ -47,19 +47,19 @@ typedef NS_ENUM(NSUInteger, MPMediaTrackQuality) {
 
 /**
  Contains HLS timed metadata used to log information. Internally this property is exactly the same as timedMetadata.
- This parameter accepts a NSString or a NSDictionary containing the "info" key with a corresponding value
+ This parameter accepts an NSString or an NSDictionary containing the "info" key with a corresponding value
  */
 @property (nonatomic, strong, nullable) id id3;
 
 /**
- Contains CMS metadata used to log information. This parameter accepts a NSDictionary
+ Contains CMS metadata used to log information. This parameter accepts an NSDictionary
  or an instance of one of the MPMediaMetadata (Digital Audio, DPR, OCR, or TVR) classes.
  */
 @property (nonatomic, strong, nullable) id metadata;
 
 /**
- Contains HLS timed metadata used to log information (ID3). This parameter accepts a NSString or
- a NSDictionary containing the "info" key with a corresponding value.
+ Contains HLS timed metadata used to log information (ID3). This parameter accepts an NSString or
+ an NSDictionary containing the "info" key with a corresponding value.
  */
 @property (nonatomic, strong, nullable) id timedMetadata;
 

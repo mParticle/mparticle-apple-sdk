@@ -25,7 +25,7 @@
  E-commerce transactions logged using the MPCommerce class or the logCommerceEvent: method will keep the state of the respective products in here.
 
  Once products are added to the cart, its contents are persisted through the lifetime of the app. Therefore it is important that after completing an ecommerce transaction
- (purchase, refund, etc) that you call the cart's <b>clear</b> method to empty its content and remove the whatever data was persisted.
+ (purchase, refund, etc) that you call the cart's <b>clear</b> method to empty its content and remove whatever data was persisted.
  
  <b>Usage:</b>
  
