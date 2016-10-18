@@ -52,6 +52,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 
 + (nonnull instancetype)sharedInstance;
 - (void)archiveSession:(nonnull MPSession *)session completionHandler:(void (^ _Nullable)(MPSession * _Nullable archivedSession))completionHandler;
+- (nullable MPSession *)archiveSessionSync:(nonnull MPSession *)session;
 - (BOOL)closeDatabase;
 - (NSUInteger)countMesssagesForUploadInSession:(nonnull MPSession *)session;
 - (NSUInteger)countStandaloneMessages;
@@ -71,6 +72,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp;
 - (void)deleteSegments;
 - (void)deleteSession:(nonnull MPSession *)session;
+- (void)deleteSessionSync:(nonnull MPSession *)session;
 - (void)deleteUpload:(nonnull MPUpload *)upload;
 - (void)deleteUploadId:(int64_t)uploadId;
 - (void)deleteStandaloneMessage:(nonnull MPStandaloneMessage *)standaloneMessage;
@@ -88,11 +90,14 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)fetchMessagesForUploadingInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (void)fetchPreviousSession:(void (^ _Nonnull)(MPSession * _Nullable previousSession))completionHandler;
+- (nullable MPSession *)fetchPreviousSessionSync;
 - (nullable NSArray<MPProductBag *> *)fetchProductBags;
 - (nullable NSArray<MPSegment *> *)fetchSegments;
 - (nullable MPMessage *)fetchSessionEndMessageInSession:(nonnull MPSession *)session;
 - (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler;
 - (void)fetchUploadedMessagesInSession:(nonnull MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
+- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSessionSync:(nonnull MPSession *)session;
+- (void)fetchUploadsExceptInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (void)fetchUploadsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessages;
 - (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads;

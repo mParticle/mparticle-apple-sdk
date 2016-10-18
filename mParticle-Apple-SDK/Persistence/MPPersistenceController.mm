@@ -560,6 +560,52 @@ const int MaxBreadcrumbs = 50;
     }];
 }
 
+- (nullable MPSession *)archiveSessionSync:(nonnull MPSession *)session {
+    MPSession *previousSession = [self fetchPreviousSessionSync];
+    if (previousSession) {
+        if (session.sessionId == previousSession.sessionId && [session.uuid isEqualToString:previousSession.uuid]) {
+            return nil;
+        } else {
+            [self deletePreviousSession];
+        }
+    }
+    
+    dispatch_barrier_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            
+            string uuid = string([session.uuid UTF8String]);
+            sqlite3_bind_text(preparedStatement, 2, uuid.c_str(), (int)uuid.size(), SQLITE_STATIC);
+            
+            sqlite3_bind_double(preparedStatement, 3, session.startTime);
+            sqlite3_bind_double(preparedStatement, 4, session.endTime);
+            sqlite3_bind_double(preparedStatement, 5, session.backgroundTime);
+            
+            NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
+            sqlite3_bind_blob(preparedStatement, 6, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+            
+            sqlite3_bind_int64(preparedStatement, 7, [session.sessionNumber integerValue]);
+            sqlite3_bind_int(preparedStatement, 8, session.numberOfInterruptions);
+            sqlite3_bind_int(preparedStatement, 9, session.eventCounter);
+            sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
+            sqlite3_bind_double(preparedStatement, 11, session.length);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+    
+    return session;
+}
+
 - (BOOL)closeDatabase {
     if (!databaseOpen) {
         return YES;
@@ -881,6 +927,41 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteSession:(MPSession *)session {
     dispatch_barrier_async(dbQueue, ^{
+        // Delete messages
+        sqlite3_stmt *preparedStatement;
+        string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+        
+        // Delete session
+        sqlStatement = "DELETE FROM sessions WHERE _id = ?";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting session: %s", sqlite3_errmsg(mParticleDB));
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+}
+
+- (void)deleteSessionSync:(nonnull MPSession *)session {
+    dispatch_barrier_sync(dbQueue, ^{
         // Delete messages
         sqlite3_stmt *preparedStatement;
         string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
@@ -1378,6 +1459,36 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
+- (nullable MPSession *)fetchPreviousSessionSync {
+    __block MPSession *previousSession = nil;
+    
+    dispatch_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length FROM previous_session";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
+                                                                  UUID:stringValue(preparedStatement, 1)
+                                                        backgroundTime:doubleValue(preparedStatement, 2)
+                                                             startTime:doubleValue(preparedStatement, 3)
+                                                               endTime:doubleValue(preparedStatement, 4)
+                                                            attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
+                                                         sessionNumber:@(int64Value(preparedStatement, 6))
+                                                 numberOfInterruptions:intValue(preparedStatement, 7)
+                                                          eventCounter:intValue(preparedStatement, 8)
+                                                           suspendTime:doubleValue(preparedStatement, 9)];
+                
+                previousSession.length = doubleValue(preparedStatement, 10);
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+    
+    return previousSession;
+}
+
 - (nullable NSArray<MPProductBag *> *)fetchProductBags {
     __block vector<MPProductBag *> productBagsVector;
     
@@ -1594,6 +1705,80 @@ const int MaxBreadcrumbs = 50;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             completionHandler(messages);
+        });
+    });
+}
+
+- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSessionSync:(nonnull MPSession *)session {
+    __block NSArray<MPMessage *> *messages = nil;
+
+    dispatch_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? AND upload_status = ? ORDER BY timestamp";
+        
+        vector<MPMessage *> messagesVector;
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
+            
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                                                                messageId:int64Value(preparedStatement, 0)
+                                                                     UUID:stringValue(preparedStatement, 1)
+                                                              messageType:stringValue(preparedStatement, 2)
+                                                              messageData:dataValue(preparedStatement, 3)
+                                                                timestamp:doubleValue(preparedStatement, 4)
+                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)];
+                
+                messagesVector.push_back(message);
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+        
+        if (!messagesVector.empty()) {
+            messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+        }
+    });
+    
+    return messages;
+}
+
+- (void)fetchUploadsExceptInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
+    dispatch_async(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads WHERE session_id != ? ORDER BY session_id, _id";
+        
+        vector<MPUpload *> uploadsVector;
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                MPUpload *upload = [[MPUpload alloc] initWithSessionId:int64Value(preparedStatement, 4)
+                                                              uploadId:int64Value(preparedStatement, 0)
+                                                                  UUID:stringValue(preparedStatement, 1)
+                                                            uploadData:dataValue(preparedStatement, 2)
+                                                             timestamp:doubleValue(preparedStatement, 3)];
+                
+                uploadsVector.push_back(upload);
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+        
+        NSArray<MPUpload *> *uploads = nil;
+        if (!uploadsVector.empty()) {
+            uploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completionHandler(uploads);
         });
     });
 }
