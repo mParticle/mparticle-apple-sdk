@@ -6,6 +6,15 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.10.0
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you need to collect attribution details from Search Ads
+
+* [NEW] Collect attribute details from search ads
+* [FIX] Compare custom mapping keys in a case insensitive manner
+* [FIX] Convert event attributes to <string, string> prior to matching custom mappings
+* [FIX] Generate the upload batch when the app is terminated by the user or OS. This way app version and build will always be correctly attributed to app events
+
 ## 6.9.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you forward data to Apptimize
