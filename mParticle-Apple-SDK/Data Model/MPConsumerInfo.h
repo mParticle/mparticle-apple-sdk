@@ -44,7 +44,7 @@ extern NSString * _Nonnull const kMPCKExpiration;
 
 @property (nonatomic, unsafe_unretained) int64_t consumerInfoId;
 @property (nonatomic, strong, nullable) NSArray<MPCookie *> *cookies;
-@property (nonatomic, strong, nonnull) NSNumber *mpId;
+@property (atomic, strong, nonnull) NSNumber *mpId;
 @property (nonatomic, strong, nullable) NSString *uniqueIdentifier;
 
 - (nullable NSDictionary *)cookiesDictionaryRepresentation;
