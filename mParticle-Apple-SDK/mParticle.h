@@ -409,7 +409,7 @@ NS_ASSUME_NONNULL_BEGIN
  Checks for deferred deep link information.
  @param completionHandler A block to be called when deep link checking is finished.
  */
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary<NSString *, NSString *> * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
+- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
 
 #pragma mark - Error, Exception, and Crash Handling
 /**
