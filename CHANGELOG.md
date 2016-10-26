@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.10.2
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you use deep-linking and implement your app in Swift
+
+* [FIX] Remove the use of generics from the `checkForDeferredDeepLinkWithCompletionHandler:` method. The received parameter signature is now `NSDictionary`, previously it was `NSDictionary<NSString *, NSString *>`
+
 ## 6.10.0
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you need to collect attribution details from Search Ads
