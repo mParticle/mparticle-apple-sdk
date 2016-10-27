@@ -254,12 +254,7 @@ NSString *const kMParticleWebViewPathSetSessionAttribute = @"setSessionAttribute
 //
 // Primitive data type constants
 //
-const NSTimeInterval MINIMUM_SESSION_TIMEOUT =
-    #if TARGET_OS_TV == 1
-        1.0;
-    #else
-        10.0;
-    #endif
+const NSTimeInterval MINIMUM_SESSION_TIMEOUT = 1.0;
 
 const NSTimeInterval MAXIMUM_SESSION_TIMEOUT =
     #if TARGET_OS_TV == 1

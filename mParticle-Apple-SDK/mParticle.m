@@ -1357,7 +1357,7 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MParticle *strongSelf = weakSelf;
         
-        MPExecStatus execStatus = [strongSelf.backendController upload];
+        MPExecStatus execStatus = [strongSelf.backendController uploadWithCompletionHandler:nil];
         
         if (execStatus == MPExecStatusSuccess) {
             MPILogDebug(@"Forcing Upload");

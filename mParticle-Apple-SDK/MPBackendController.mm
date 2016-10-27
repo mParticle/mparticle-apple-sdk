@@ -331,11 +331,12 @@ static BOOL appBackgrounded = NO;
     
     if (backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
         backendBackgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-            __strong MPBackendController *strongSelf = weakSelf;
-            
+            MPILogDebug(@"SDK has ended background activity together with the app.");
+
             [MPStateMachine setRunningInBackground:NO];
             [[MPPersistenceController sharedInstance] purgeMemory];
-            MPILogDebug(@"SDK has become dormant with the app.");
+            
+            __strong MPBackendController *strongSelf = weakSelf;
             
             if (strongSelf) {
                 [strongSelf endBackgroundTimer];
@@ -355,8 +356,7 @@ static BOOL appBackgrounded = NO;
                     }
                 }
                 
-                [[UIApplication sharedApplication] endBackgroundTask:strongSelf->backendBackgroundTaskIdentifier];
-                strongSelf->backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
+                [strongSelf endBackgroundTask];
             }
         }];
     }
@@ -1065,13 +1065,19 @@ static BOOL appBackgrounded = NO;
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(BOOL success))completionHandler {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
+    void (^invokeCompletionHandler)(BOOL) = ^(BOOL success) {
+        if ([NSThread isMainThread]) {
+            completionHandler(success);
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completionHandler(success);
+            });
+        }
+    };
+    
     if (!openSessions || openSessions.count == 0) {
         [persistence deleteMessagesWithNoSession];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(YES);
-        });
-        
+        invokeCompletionHandler(YES);
         return;
     }
     
@@ -1104,34 +1110,31 @@ static BOOL appBackgrounded = NO;
     
     [self requestConfig:^(BOOL uploadBatch) {
         if (!uploadBatch) {
+            invokeCompletionHandler(NO);
             return;
         }
         
         __strong MPBackendController *strongSelf = weakSelf;
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        BOOL shouldTryToUploadSessionMessages = (session != nil) ? [persistence countMesssagesForUploadInSession:session] > 0 : NO;
         
-        if (shouldTryToUploadSessionMessages) {
+        if ([MPStateMachine sharedInstance].shouldUploadSessionHistory) {
             [strongSelf uploadBatchesFromSession:session
                                completionHandler:^(MPSession *uploadedSession) {
                                    session = nil;
                                    
                                    if (uploadedSession) {
-                                       [self uploadSessionHistory:uploadedSession completionHandler:^(BOOL sessionHistorySuccess) {
+                                       [strongSelf uploadSessionHistory:uploadedSession completionHandler:^(BOOL sessionHistorySuccess) {
                                            if (sessionHistorySuccess) {
-                                               [self uploadOpenSessions:openSessions completionHandler:completionHandler];
+                                               [strongSelf uploadOpenSessions:openSessions completionHandler:completionHandler];
                                            } else {
-                                               dispatch_async(dispatch_get_main_queue(), ^{
-                                                   completionHandler(NO);
-                                               });
+                                               invokeCompletionHandler(NO);
                                            }
                                        }];
                                    } else {
-                                       dispatch_async(dispatch_get_main_queue(), ^{
-                                           completionHandler(NO);
-                                       });
+                                       invokeCompletionHandler(NO);
                                    }
                                }];
+        } else {
+            invokeCompletionHandler(NO);
         }
     }];
 }
@@ -1293,6 +1296,8 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
+    MPILogVerbose(@"Application Did Enter Background");
+    
     appBackgrounded = YES;
     [MPStateMachine setRunningInBackground:YES];
     
@@ -1318,12 +1323,11 @@ static BOOL appBackgrounded = NO;
     
     [self.session suspendSession];
     [self saveMessage:message updateSession:YES];
-    
-    MPILogVerbose(@"Application Did Enter Background");
-    
-    [self upload];
-    [self beginBackgroundTimer];
     [self beginBackgroundTask];
+
+    [self uploadWithCompletionHandler:^{
+        [self beginBackgroundTimer];
+    }];
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
@@ -1507,13 +1511,13 @@ static BOOL appBackgrounded = NO;
                                           return;
                                       }
                                       
-                                      if (backgroundTimeRemaining < kMPRemainingBackgroundTimeMinimumThreshold) {
+                                      strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
+                                      
+                                      if (!strongSelf->longSession) {
                                           NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
                                           
                                           void(^processSession)(NSTimeInterval) = ^(NSTimeInterval timeout) {
-                                              dispatch_source_cancel(strongSelf->backgroundSource);
-                                              strongSelf->longSession = NO;
-                                              
+                                              [strongSelf endBackgroundTimer];
                                               strongSelf.session.backgroundTime += timeout;
                                               
                                               [strongSelf processOpenSessionsIncludingCurrent:YES
@@ -1529,6 +1533,9 @@ static BOOL appBackgrounded = NO;
                                                                                 if (strongSelf.mediaTrackContainer.count == 0) {
                                                                                     strongSelf->_mediaTrackContainer = nil;
                                                                                 }
+                                                                                
+                                                                                MPILogDebug(@"SDK has ended background activity.");
+                                                                                [strongSelf endBackgroundTask];
                                                                             }];
                                           };
                                           
@@ -1541,9 +1548,8 @@ static BOOL appBackgrounded = NO;
                                           }
                                       } else {
                                           backgroundStartTime = 0;
-                                          longSession = YES;
-                                          
-                                          if (!uploadSource) {
+
+                                          if (!strongSelf->uploadSource) {
                                               [strongSelf beginUploadTimer];
                                           }
                                       }
@@ -1571,7 +1577,7 @@ static BOOL appBackgrounded = NO;
         
         strongSelf->uploadSource = [strongSelf createSourceTimer:strongSelf.uploadInterval
                                                     eventHandler:^{
-                                                        [strongSelf upload];
+                                                        [strongSelf uploadWithCompletionHandler:nil];
                                                     } cancelHandler:^{
                                                         strongSelf->uploadSource = nil;
                                                     }];
@@ -1731,10 +1737,17 @@ static BOOL appBackgrounded = NO;
         }
         
         __strong MPBackendController *strongSelf = weakSelf;
+        if (!strongSelf) {
+            return;
+        }
         
         [strongSelf uploadBatchesFromSession:endSession
                            completionHandler:^(MPSession *uploadedSession) {
-                               [self uploadSessionHistory:uploadedSession completionHandler:nil];
+                               if (!strongSelf) {
+                                   return;
+                               }
+                               
+                               [strongSelf uploadSessionHistory:uploadedSession completionHandler:nil];
                            }];
     }];
     
@@ -2616,7 +2629,7 @@ static BOOL appBackgrounded = NO;
                 message.uploadStatus = MPUploadStatusBatch;
                 
                 [strongSelf saveMessage:message updateSession:YES];
-                [strongSelf upload];
+                [strongSelf uploadWithCompletionHandler:nil];
 
                 MPILogDebug(@"Application First Run");
             }
@@ -2684,17 +2697,21 @@ static BOOL appBackgrounded = NO;
             
             if (shouldUpload) {
                 __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf upload];
+                [strongSelf uploadWithCompletionHandler:nil];
             }
         });
     } else if ([abstractMessage isKindOfClass:[MPStandaloneMessage class]]) {
         [persistence saveStandaloneMessage:(MPStandaloneMessage *)abstractMessage];
-        [self upload];
+        [self uploadWithCompletionHandler:nil];
     }
 }
 
-- (MPExecStatus)upload {
+- (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
     if (_initializationStatus != MPInitializationStatusStarted) {
+        if (completionHandler) {
+            completionHandler();
+        }
+        
         return MPExecStatusDelayedExecution;
     }
     
@@ -2704,6 +2721,10 @@ static BOOL appBackgrounded = NO;
         
         [strongSelf requestConfig:^(BOOL uploadBatch) {
             if (!uploadBatch) {
+                if (completionHandler) {
+                    completionHandler();
+                }
+                
                 return;
             }
             
@@ -2718,9 +2739,17 @@ static BOOL appBackgrounded = NO;
                                        if (shouldTryToUploadStandaloneMessages) {
                                            [strongSelf uploadStandaloneMessages];
                                        }
+                                       
+                                       if (completionHandler) {
+                                           completionHandler();
+                                       }
                                    }];
             } else if (shouldTryToUploadStandaloneMessages) {
                 [strongSelf uploadStandaloneMessages];
+
+                if (completionHandler) {
+                    completionHandler();
+                }
             }
         }];
     };
