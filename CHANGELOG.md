@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.10.3
+
+>Upgrade suggestion: **HIGH**. Upgrade due to a bug handling when users force quit an app
+
+* [FIX] Fix crash when an app is being force quit.
+
 ## 6.10.2
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you use deep-linking and implement your app in Swift
