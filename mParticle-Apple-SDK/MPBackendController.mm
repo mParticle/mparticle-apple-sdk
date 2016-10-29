@@ -1334,53 +1334,57 @@ static BOOL appBackgrounded = NO;
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
 
-    // App exit message
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:_session messageInfo:@{kMPAppStateTransitionType:kMPASTExitKey}];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
-    [persistence saveMessage:message];
-    
-    // Session end message
-    _session.endTime = [[NSDate date] timeIntervalSince1970];
-    
-    NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(_session.foregroundTime),
-                                          kMPSessionTotalLengthKey:MPMilliseconds(_session.length),
-                                          kMPEventCounterKey:@(_session.eventCounter)}
-                                        mutableCopy];
-    
-    NSDictionary *sessionAttributesDictionary = [_session.attributesDictionary transformValuesToString];
-    if (sessionAttributesDictionary) {
-        messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
-    }
-    
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:_session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-    if ([MPLocationManager trackingLocation]) {
-        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-    }
-#endif
-    message = (MPMessage *)[[messageBuilder withTimestamp:_session.endTime] build];
-    [persistence saveMessage:message];
-
-    // Generate the upload batch
-    NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:_session];
-    if (messages) {
-        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:_session
-                                                                       messages:messages
-                                                                 sessionTimeout:self.sessionTimeout
-                                                                 uploadInterval:self.uploadInterval];
+    if (_session) {
+        MPSession *sessionCopy = [_session copy];
         
-        [uploadBuilder withUserAttributes:self.userAttributes deletedUserAttributes:deletedUserAttributes];
-        [uploadBuilder withUserIdentities:self.userIdentities];
-        [uploadBuilder buildAsync:NO completionHandler:^(MPDataModelAbstract * _Nullable upload) {
-            [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
-        }];
-    }
-    
-    // Archive session
-    MPSession *archivedSession = [persistence archiveSessionSync:_session];
-    if (archivedSession) {
-        [persistence deleteSessionSync:archivedSession];
+        // App exit message
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:sessionCopy messageInfo:@{kMPAppStateTransitionType:kMPASTExitKey}];
+        MPMessage *message = (MPMessage *)[messageBuilder build];
+        
+        [persistence saveMessage:message];
+        
+        // Session end message
+        sessionCopy.endTime = [[NSDate date] timeIntervalSince1970];
+        
+        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(sessionCopy.foregroundTime),
+                                              kMPSessionTotalLengthKey:MPMilliseconds(sessionCopy.length),
+                                              kMPEventCounterKey:@(sessionCopy.eventCounter)}
+                                            mutableCopy];
+        
+        NSDictionary *sessionAttributesDictionary = [sessionCopy.attributesDictionary transformValuesToString];
+        if (sessionAttributesDictionary) {
+            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
+        }
+        
+        messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:sessionCopy messageInfo:messageInfo];
+#if TARGET_OS_IOS == 1
+        if ([MPLocationManager trackingLocation]) {
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
+        }
+#endif
+        message = (MPMessage *)[[messageBuilder withTimestamp:sessionCopy.endTime] build];
+        [persistence saveMessage:message];
+        
+        // Generate the upload batch
+        NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:sessionCopy];
+        if (messages) {
+            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:sessionCopy
+                                                                           messages:messages
+                                                                     sessionTimeout:self.sessionTimeout
+                                                                     uploadInterval:self.uploadInterval];
+            
+            [uploadBuilder withUserAttributes:self.userAttributes deletedUserAttributes:deletedUserAttributes];
+            [uploadBuilder withUserIdentities:self.userIdentities];
+            [uploadBuilder buildAsync:NO completionHandler:^(MPDataModelAbstract * _Nullable upload) {
+                [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
+            }];
+        }
+        
+        // Archive session
+        MPSession *archivedSession = [persistence archiveSessionSync:sessionCopy];
+        if (archivedSession) {
+            [persistence deleteSessionSync:archivedSession];
+        }
     }
     
     // Close the database
