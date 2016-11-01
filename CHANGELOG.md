@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.10.4
+
+>Upgrade suggestion: **HIGH**. Upgrade due to a race potential condition beginning sessions
+
+* [FIX] Fix potential race condition beginning sessions
+* [FIX] End background task when batches are finished
+
 ## 6.10.3
 
 >Upgrade suggestion: **HIGH**. Upgrade due to a bug handling when users force quit an app

@@ -19,7 +19,7 @@
 #import "MPIConstants.h"
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"6.10.3";
+NSString *const kMParticleSDKVersion = @"6.10.4";
 
 // Session Upload Settings
 NSString *const kMPSessionHistoryValue = @"sh";
