@@ -113,9 +113,7 @@
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
     [[MPPersistenceController sharedInstance] openDatabase];
-    [self.backendController beginSession:^(MPSession *session, MPSession *previousSession, MPExecStatus execStatus) {
-        _session = session;
-    }];
+    _session = self.backendController.session;
     
     [self notificationController];
 }
@@ -1089,7 +1087,7 @@
     XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session];
+    NSArray *messages = [persistence fetchMessagesInSession:self.session];
     XCTAssertNotNil(messages);
     XCTAssertEqual(messages.count, 1);
 
@@ -1103,8 +1101,8 @@
     XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
     XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
 
-    [persistence deleteSession:self.backendController.session];
-    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    [persistence deleteSession:self.session];
+    messages = [persistence fetchMessagesInSession:self.session];
     XCTAssertNil(messages);
 
     XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
@@ -1117,11 +1115,12 @@
     userIdentity = [[self.backendController.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
     XCTAssertNil(userIdentity);
 
-    messages = [persistence fetchMessagesInSession:self.backendController.session];
+    messages = [persistence fetchMessagesInSession:self.session];
     XCTAssertNotNil(messages);
-    XCTAssertEqual(messages.count, 1);
+    XCTAssertEqual(messages.count, 2);
     
-    message = [messages firstObject];
+    predicate = [NSPredicate predicateWithFormat:@"messageType == %@", @"uic"];
+    message = [[messages filteredArrayUsingPredicate:predicate] firstObject];
     XCTAssertNotNil(message);
     
     messageDictionary = [message dictionaryRepresentation];

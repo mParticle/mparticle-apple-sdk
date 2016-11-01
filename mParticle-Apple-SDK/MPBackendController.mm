@@ -90,6 +90,7 @@ static BOOL appBackgrounded = NO;
     dispatch_source_t backgroundSource;
     dispatch_source_t uploadSource;
     UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
+    dispatch_semaphore_t backendSemaphore;
     BOOL sdkIsLaunching;
     BOOL longSession;
     BOOL originalAppDelegateProxied;
@@ -136,6 +137,7 @@ static BOOL appBackgrounded = NO;
         backgroundSource = nil;
         uploadSource = nil;
         originalAppDelegateProxied = NO;
+        backendSemaphore = dispatch_semaphore_create(1);
         
         backendQueue = dispatch_queue_create("com.mParticle.BackendQueue", DISPATCH_QUEUE_SERIAL);
         notificationsQueue = dispatch_queue_create("com.mParticle.NotificationsQueue", DISPATCH_QUEUE_CONCURRENT);
@@ -261,11 +263,21 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPSession *)session {
-    if (_session) {
-        return _session;
+    dispatch_semaphore_wait(backendSemaphore, DISPATCH_TIME_FOREVER);
+    
+    bool isNewSession = NO;
+    if (!_session) {
+        [self willChangeValueForKey:@"session"];
+        
+        [self beginSession:nil];
+        isNewSession = YES;
     }
     
-    [self beginSession:nil];
+    dispatch_semaphore_signal(backendSemaphore);
+
+    if (isNewSession) {
+        [self didChangeValueForKey:@"session"];
+    }
     
     return _session;
 }
@@ -737,8 +749,6 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPExecStatus execStatus = MPExecStatusFail;
-    
     switch (_initializationStatus) {
         case MPInitializationStatusStarted: {
             if ([MPStateMachine sharedInstance].optOut) {
@@ -757,66 +767,72 @@ static BOOL appBackgrounded = NO;
                 return;
             }
             
-            id<NSObject> userAttributeValue = nil;
-            NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
-            NSError *error = nil;
-            NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
-            BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
-            
-            if (userAttributeChange.isArray) {
-                userAttributeValue = userAttributeChange.value;
-                userAttributeChange.deleted = error.code == kInvalidValue && self.userAttributes[localKey];
-            } else {
-                if (!validAttributes && error.code == kInvalidValue) {
-                    userAttributeValue = [NSNull null];
-                    validAttributes = YES;
-                    error = nil;
-                } else {
+            dispatch_sync(backendQueue, ^{
+                id<NSObject> userAttributeValue = nil;
+                NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
+                NSError *error = nil;
+                NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
+                BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
+                
+                if (userAttributeChange.isArray) {
                     userAttributeValue = userAttributeChange.value;
-                }
-                
-                userAttributeChange.deleted = error.code == kEmptyValueAttribute && self.userAttributes[localKey];
-            }
-            
-            if (validAttributes) {
-                self.userAttributes[localKey] = userAttributeValue;
-            } else if (userAttributeChange.deleted) {
-                [self.userAttributes removeObjectForKey:localKey];
-                
-                if (!deletedUserAttributes) {
-                    deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
-                }
-                [deletedUserAttributes addObject:userAttributeChange.key];
-            } else {
-                if (completionHandler) {
-                    completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
-                }
-                
-                return;
-            }
-            
-            userAttributeChange.valueToLog = userAttributeValue;
-            NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
-            NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
-            NSString *aKey;
-            
-            while ((aKey = [attributeEnumerator nextObject])) {
-                if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
-                    userAttributes[aKey] = kMPNullUserAttributeString;
+                    userAttributeChange.deleted = error.code == kInvalidValue && self.userAttributes[localKey];
                 } else {
-                    userAttributes[aKey] = self.userAttributes[aKey];
+                    if (!validAttributes && error.code == kInvalidValue) {
+                        userAttributeValue = [NSNull null];
+                        validAttributes = YES;
+                        error = nil;
+                    } else {
+                        userAttributeValue = userAttributeChange.value;
+                    }
+                    
+                    userAttributeChange.deleted = error.code == kEmptyValueAttribute && self.userAttributes[localKey];
                 }
-            }
-            
-            [self logUserAttributeChange:userAttributeChange];
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                userDefaults[kMPUserAttributeKey] = userAttributes;
-                [userDefaults synchronize];
+                
+                if (validAttributes) {
+                    self.userAttributes[localKey] = userAttributeValue;
+                } else if (userAttributeChange.deleted) {
+                    [self.userAttributes removeObjectForKey:localKey];
+                    
+                    if (!deletedUserAttributes) {
+                        deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
+                    }
+                    [deletedUserAttributes addObject:userAttributeChange.key];
+                } else {
+                    if (completionHandler) {
+                        completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
+                    }
+                    
+                    return;
+                }
+                
+                userAttributeChange.valueToLog = userAttributeValue;
+                NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
+                NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
+                NSString *aKey;
+                
+                while ((aKey = [attributeEnumerator nextObject])) {
+                    if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
+                        userAttributes[aKey] = kMPNullUserAttributeString;
+                    } else {
+                        userAttributes[aKey] = self.userAttributes[aKey];
+                    }
+                }
+                
+                [self logUserAttributeChange:userAttributeChange];
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                    userDefaults[kMPUserAttributeKey] = userAttributes;
+                    [userDefaults synchronize];
+                });
+                
+                if (completionHandler) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);
+                    });
+                }
             });
-            
-            execStatus = MPExecStatusSuccess;
         }
             break;
             
@@ -831,17 +847,19 @@ static BOOL appBackgrounded = NO;
                 [strongSelf setUserAttributeChange:userAttributeChange attempt:(attempt + 1) completionHandler:completionHandler];
             });
             
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
+            if (completionHandler) {
+                MPExecStatus execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
+                completionHandler(userAttributeChange.key, userAttributeChange.value, execStatus);
+            }
         }
             break;
             
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
+        case MPInitializationStatusNotStarted: {
+            if (completionHandler) {
+                completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSDKNotStarted);
+            }
+        }
             break;
-    }
-    
-    if (completionHandler) {
-        completionHandler(userAttributeChange.key, userAttributeChange.value, execStatus);
     }
 }
 
@@ -854,92 +872,94 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPExecStatus execStatus = MPExecStatusFail;
-    
     switch (_initializationStatus) {
         case MPInitializationStatusStarted: {
-            NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
-            
-            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
-            NSDictionary *userIdentity = [[self.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
-            
-            if (userIdentity &&
-                [userIdentity[kMPUserIdentityIdKey] caseInsensitiveCompare:userIdentityChange.userIdentityNew.value] == NSOrderedSame &&
-                ![userIdentity[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.userIdentityNew.value])
-            {
-                return;
-            }
-            
-            BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
-                NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
-                BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
+            dispatch_sync(backendQueue, ^{
+                NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
                 
-                if (foundMatch) {
-                    *stop = YES;
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
+                NSDictionary *userIdentity = [[self.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+                
+                if (userIdentity &&
+                    [userIdentity[kMPUserIdentityIdKey] caseInsensitiveCompare:userIdentityChange.userIdentityNew.value] == NSOrderedSame &&
+                    ![userIdentity[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.userIdentityNew.value])
+                {
+                    return;
                 }
                 
-                return foundMatch;
-            };
-            
-            NSMutableDictionary<NSString *, id> *identityDictionary;
-            NSUInteger existingEntryIndex;
-            BOOL persistUserIdentities = NO;
-            
-            if (userIdentityChange.userIdentityNew.value == nil || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
-                existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
-                
-                if (existingEntryIndex != NSNotFound) {
-                    identityDictionary = [self.userIdentities[existingEntryIndex] mutableCopy];
-                    userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
-                    userIdentityChange.userIdentityNew = nil;
+                BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
+                    NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
+                    BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
                     
-                    [self.userIdentities removeObjectAtIndex:existingEntryIndex];
-                    persistUserIdentities = YES;
-                }
-            } else {
-                identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
-                
-                NSError *error = nil;
-                if ([self checkAttribute:identityDictionary key:kMPUserIdentityIdKey value:userIdentityChange.userIdentityNew.value error:&error] &&
-                    [self checkAttribute:identityDictionary key:kMPUserIdentityTypeKey value:[identityTypeNumber stringValue] error:&error]) {
-                    
-                    existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
-                    
-                    if (existingEntryIndex == NSNotFound) {
-                        userIdentityChange.userIdentityNew.dateFirstSet = [NSDate date];
-                        userIdentityChange.userIdentityNew.isFirstTimeSet = YES;
-                        
-                        identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
-                        
-                        [self.userIdentities addObject:identityDictionary];
-                    } else {
-                        userIdentity = self.userIdentities[existingEntryIndex];
-                        userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
-
-                        NSNumber *timeIntervalMilliseconds = userIdentity[kMPDateUserIdentityWasFirstSet];
-                        userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
-                        userIdentityChange.userIdentityNew.isFirstTimeSet = NO;
-
-                        identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
-
-                        [self.userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                    if (foundMatch) {
+                        *stop = YES;
                     }
                     
-                    persistUserIdentities = YES;
+                    return foundMatch;
+                };
+                
+                NSMutableDictionary<NSString *, id> *identityDictionary;
+                NSUInteger existingEntryIndex;
+                BOOL persistUserIdentities = NO;
+                
+                if (userIdentityChange.userIdentityNew.value == nil || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
+                    existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
+                    
+                    if (existingEntryIndex != NSNotFound) {
+                        identityDictionary = [self.userIdentities[existingEntryIndex] mutableCopy];
+                        userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
+                        userIdentityChange.userIdentityNew = nil;
+                        
+                        [self.userIdentities removeObjectAtIndex:existingEntryIndex];
+                        persistUserIdentities = YES;
+                    }
+                } else {
+                    identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+                    
+                    NSError *error = nil;
+                    if ([self checkAttribute:identityDictionary key:kMPUserIdentityIdKey value:userIdentityChange.userIdentityNew.value error:&error] &&
+                        [self checkAttribute:identityDictionary key:kMPUserIdentityTypeKey value:[identityTypeNumber stringValue] error:&error]) {
+                        
+                        existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
+                        
+                        if (existingEntryIndex == NSNotFound) {
+                            userIdentityChange.userIdentityNew.dateFirstSet = [NSDate date];
+                            userIdentityChange.userIdentityNew.isFirstTimeSet = YES;
+                            
+                            identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+                            
+                            [self.userIdentities addObject:identityDictionary];
+                        } else {
+                            userIdentity = self.userIdentities[existingEntryIndex];
+                            userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
+                            
+                            NSNumber *timeIntervalMilliseconds = userIdentity[kMPDateUserIdentityWasFirstSet];
+                            userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
+                            userIdentityChange.userIdentityNew.isFirstTimeSet = NO;
+                            
+                            identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+                            
+                            [self.userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                        }
+                        
+                        persistUserIdentities = YES;
+                    }
                 }
-            }
-            
-            if (persistUserIdentities) {
-                [self logUserIdentityChange:userIdentityChange];
+                
+                if (persistUserIdentities) {
+                    [self logUserIdentityChange:userIdentityChange];
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                        userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
+                        [userDefaults synchronize];
+                    });
+                }
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                    userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
-                    [userDefaults synchronize];
+                    completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, MPExecStatusSuccess);
                 });
-            }
-            
-            execStatus = MPExecStatusSuccess;
+            });
         }
             break;
             
@@ -954,16 +974,15 @@ static BOOL appBackgrounded = NO;
                 [strongSelf setUserIdentityChange:userIdentityChange attempt:(attempt + 1) completionHandler:completionHandler];
             });
             
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
+            MPExecStatus execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
+            completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, execStatus);
         }
             break;
             
         case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
+            completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, MPExecStatusSDKNotStarted);
             break;
     }
-    
-    completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, execStatus);
 }
 
 - (void)uploadBatchesFromSession:(MPSession *)session completionHandler:(void(^)(MPSession *uploadedSession))completionHandler {
@@ -1635,8 +1654,6 @@ static BOOL appBackgrounded = NO;
         [self endSession];
     }
     
-    [self willChangeValueForKey:@"session"];
-    
     _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
@@ -1665,8 +1682,6 @@ static BOOL appBackgrounded = NO;
     [persistence saveSession:_session];
     
     stateMachine.currentSession = _session;
-    
-    [self didChangeValueForKey:@"session"];
     
     [self broadcastSessionDidBegin:_session];
     
