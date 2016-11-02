@@ -1133,4 +1133,27 @@
     self.backendController.initializationStatus = originalInitializationStatus;
 }
 
+- (void)testIncrementUserAttribute {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+
+    NSString *userAttributeKey = @"Number of time travels";
+    NSNumber *userAttributeValue = self.backendController.userAttributes[userAttributeKey];
+    XCTAssertNil(userAttributeValue);
+    
+    userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@1];
+    XCTAssertNotNil(userAttributeValue);
+    XCTAssertEqualObjects(userAttributeValue, @1);
+
+    userAttributeValue = self.backendController.userAttributes[userAttributeKey];
+    XCTAssertNotNil(userAttributeValue);
+    XCTAssertEqualObjects(userAttributeValue, @1);
+
+    [self.backendController setUserAttribute:userAttributeKey value:@"" attempt:0 completionHandler:{}];
+    userAttributeValue = self.backendController.userAttributes[userAttributeKey];
+    XCTAssertNil(userAttributeValue);
+    
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
 @end

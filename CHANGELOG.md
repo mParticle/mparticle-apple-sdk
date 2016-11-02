@@ -8,7 +8,7 @@
 
 ## 6.10.4
 
->Upgrade suggestion: **HIGH**. Upgrade due to a race potential condition beginning sessions
+>Upgrade suggestion: **HIGH**. Upgrade due to a potential race condition beginning sessions
 
 * [FIX] Fix potential race condition beginning sessions
 * [FIX] End background task when batches are finished

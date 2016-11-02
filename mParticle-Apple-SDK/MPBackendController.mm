@@ -2019,8 +2019,10 @@ static BOOL appBackgrounded = NO;
     }
     
     id currentValue = self.userAttributes[localKey];
-    if (![currentValue isKindOfClass:[NSNumber class]]) {
+    if (currentValue && ![currentValue isKindOfClass:[NSNumber class]]) {
         return nil;
+    } else if (MPIsNull(currentValue)) {
+        currentValue = @0;
     }
     
     NSDecimalNumber *incrementValue = [[NSDecimalNumber alloc] initWithString:[value stringValue]];
