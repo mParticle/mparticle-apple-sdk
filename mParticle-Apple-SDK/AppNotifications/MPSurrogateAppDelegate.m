@@ -62,12 +62,12 @@
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
-    if ([_appDelegateProxy.originalAppDelegate respondsToSelector:@selector(userNotificationCenter:willPresentNotification:withCompletionHandler:)]) {
-        return;
+    if ([[UIDevice currentDevice].systemVersion floatValue] >= 10.0) {
+        if ([_appDelegateProxy.originalAppDelegate respondsToSelector:@selector(userNotificationCenter:willPresentNotification:withCompletionHandler:)]) {
+            return;
+        }
     }
-#endif
-    
+
     void (^userNotificationCompletionHandler)(UIBackgroundFetchResult) = ^(UIBackgroundFetchResult fetchResult) {
         dispatch_async(userNotificationQueue, ^{
             completionHandler(fetchResult);
