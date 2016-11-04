@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.10.5
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you were trying to increment user attribute prior to initializing them
+
+* [FIX] Increment user attribute when not set previously
+* [FIX] Runtime iOS 10 verification of push notifications
+
 ## 6.10.4
 
 >Upgrade suggestion: **HIGH**. Upgrade due to a potential race condition beginning sessions
