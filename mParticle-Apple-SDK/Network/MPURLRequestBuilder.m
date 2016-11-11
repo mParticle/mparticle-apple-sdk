@@ -24,6 +24,7 @@
 #import "NSUserDefaults+mParticle.h"
 #import "MPKitContainer.h"
 #import "MPExtensionProtocol.h"
+#import "MPILogger.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
@@ -89,9 +90,18 @@ static NSTimeInterval requestTimeout = 30.0;
     if (!mpUserAgent) {
 #if TARGET_OS_IOS == 1
         dispatch_block_t getUserAgent = ^{
-            UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-            
-            mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+            @try {
+                UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+                
+                mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+            } @catch (NSException *exception) {
+                NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
+                [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
+                
+                mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
+
+                MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
+            }
         };
         
         if ([NSThread isMainThread]) {
@@ -100,10 +110,13 @@ static NSTimeInterval requestTimeout = 30.0;
             dispatch_sync(dispatch_get_main_queue(), getUserAgent);
         }
 #elif TARGET_OS_TV == 1
-        mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS 9_0 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Mobile/12F70 mParticle/%@", kMParticleSDKVersion];
+        NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
+        [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
+        
+        mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
 #endif
     }
-    
+
     return mpUserAgent;
 }
 
