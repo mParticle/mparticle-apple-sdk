@@ -6,6 +6,15 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.11.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you need to use the Reveal Mobile integration
+
+* [NEW] Support for [Reveal Mobile](http://www.revealmobile.com/) as a kit
+* [NEW] Wrap the capture of the user-agent in a try/catch
+* [FIX] Adjust CommerceEvent property serialization: currency, screen name, and non-interactive are now located at the root of serialized CommerceEvent messages
+* [FIX] Simplify session management when app becomes active
+
 ## 6.10.5
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you were trying to increment user attribute prior to initializing them
