@@ -303,6 +303,9 @@
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
     commerceEvent[@"key_number"] = @3.14;
+    commerceEvent.currency = @"bitcoins";
+    commerceEvent.nonInteractive = YES;
+    commerceEvent.screenName = @"time machine screen";
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
@@ -324,9 +327,12 @@
     
     NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
     XCTAssertNotNil(commerceEventDictionary, @"Commerce event dictionary representation should not have been nil.");
-    XCTAssertEqual(commerceEventDictionary.count, 2, @"Incorrect number of entries.");
+    XCTAssertEqual(commerceEventDictionary.count, 5, @"Incorrect number of entries.");
     XCTAssertNotNil(commerceEventDictionary[@"attrs"], @"There should have been a key/value pair.");
     XCTAssertNotNil(commerceEventDictionary[@"pd"], @"There should have been a key/value pair.");
+    XCTAssertEqualObjects(commerceEventDictionary[@"cu"], @"bitcoins", @"Currency should have been present.");
+    XCTAssertEqualObjects(commerceEventDictionary[@"sn"], @"time machine screen", @"Screen name should have been present.");
+    XCTAssertEqualObjects(commerceEventDictionary[@"ni"], @YES, @"Non-interactive should have been present.");
 }
 
 - (void)testCommerceEventPromotion {

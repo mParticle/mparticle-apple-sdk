@@ -85,6 +85,9 @@ static NSArray *actionNames;
 
 @synthesize beautifiedAttributes = _beautifiedAttributes;
 @synthesize userDefinedAttributes = _userDefinedAttributes;
+@synthesize currency = _currency;
+@synthesize screenName = _screenName;
+@synthesize nonInteractive = _nonInteractive;
 
 + (void)initialize {
     actionNames = @[@"add_to_cart", @"remove_from_cart", @"add_to_wishlist", @"remove_from_wishlist", @"checkout", @"checkout_option", @"click", @"view_detail", @"purchase", @"refund"];
@@ -373,6 +376,18 @@ static NSArray *actionNames;
     if (_timestamp) {
         [coder encodeObject:_timestamp forKey:@"timestamp"];
     }
+    
+    if (_currency) {
+        [coder encodeObject:_currency forKey:@"currency"];
+    }
+    
+    if (_screenName) {
+        [coder encodeObject:_screenName forKey:@"screenName"];
+    }
+    
+    if (_nonInteractive) {
+        [coder encodeBool:_nonInteractive forKey:@"nonInteractive"];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -407,6 +422,9 @@ static NSArray *actionNames;
     }
     
     self->_timestamp = [coder decodeObjectForKey:@"timestamp"];
+    self->_currency = [coder decodeObjectForKey:@"currency"];
+    self->_screenName = [coder decodeObjectForKey:@"screenName"];
+    self->_nonInteractive = [coder decodeBoolForKey:@"nonInteractive"];
     
     self.promotionContainer = [coder decodeObjectForKey:@"promotionContainer"];
     self.transactionAttributes = [coder decodeObjectForKey:@"transactionAttributes"];
@@ -446,6 +464,18 @@ static NSArray *actionNames;
     NSDictionary *cartDictionary = [[MPCart sharedInstance] dictionaryRepresentation];
     if (cartDictionary) {
         dictionary[kMPCEShoppingCartState] = cartDictionary;
+    }
+    
+    if (_currency) {
+        dictionary[kMPCECurrency] = _currency;
+    }
+
+    if (_screenName) {
+        dictionary[kMPCEScreenName] = _screenName;
+    }
+    
+    if (_nonInteractive) {
+        dictionary[kMPCENonInteractive] = @(_nonInteractive);
     }
     
     // Product/Promotion
@@ -756,15 +786,14 @@ static NSArray *actionNames;
 }
 
 - (NSString *)currency {
-    return self.attributes[kMPCECurrency];
+    return _currency;
 }
 
 - (void)setCurrency:(NSString *)currency {
+    _currency = currency;
     if (currency) {
-        self.attributes[kMPCECurrency] = currency;
         self.beautifiedAttributes[kMPExpCECurrency] = currency;
     } else {
-        [self.attributes removeObjectForKey:kMPCECurrency];
         [self.beautifiedAttributes removeObjectForKey:kMPExpCECurrency];
     }
 }
@@ -832,30 +861,6 @@ static NSArray *actionNames;
     NSNumber *checkoutStepNumber = @(checkoutStep);
     self.attributes[kMPCECheckoutStep] = checkoutStepNumber;
     self.beautifiedAttributes[kMPExpCECheckoutStep] = checkoutStepNumber;
-}
-
-- (NSString *)screenName {
-    return self.attributes[kMPCEScreenName];
-}
-
-- (void)setScreenName:(NSString *)screenName {
-    if (screenName) {
-        self.attributes[kMPCEScreenName] = screenName;
-    } else {
-        [self.attributes removeObjectForKey:kMPCEScreenName];
-    }
-}
-
-- (BOOL)nonInteractive {
-    return [self.attributes[kMPCENonInteractive] boolValue];
-}
-
-- (void)setNonInteractive:(BOOL)nonInteractive {
-    if (nonInteractive) {
-        self.attributes[kMPCENonInteractive] = @(nonInteractive);
-    } else {
-        [self.attributes removeObjectForKey:kMPCENonInteractive];
-    }
 }
 
 #pragma mark Public methods

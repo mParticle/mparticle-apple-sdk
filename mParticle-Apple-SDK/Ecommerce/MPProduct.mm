@@ -146,7 +146,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 
 #pragma mark Private methods
 - (void)calculateTotalAmount {
-    double quantity = [self.quantity doubleValue] > 0 ? : 1;
+    double quantity = [self.quantity doubleValue] > 0 ? [self.quantity doubleValue] : 1;
     NSNumber *totalAmount = @(quantity * [self.price doubleValue]);
     
     self.objectDictionary[kMPProductTotalAmount] = totalAmount;
