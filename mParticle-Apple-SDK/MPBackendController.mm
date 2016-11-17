@@ -1451,43 +1451,28 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
-    BOOL sessionExpired = backgroundedTime > self.sessionTimeout && !longSession;
-    
-    void (^appStateTransition)(MPSession *, MPSession *, BOOL) = ^(MPSession *session, MPSession *previousSession, BOOL sessionExpired) {
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:session messageInfo:@{kMPAppStateTransitionType:kMPASTForegroundKey}];
-        messageBuilder = [messageBuilder withStateTransition:sessionExpired previousSession:previousSession];
-#if TARGET_OS_IOS == 1
-        if ([MPLocationManager trackingLocation]) {
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-        }
-#endif
-        
-        MPMessage *message = (MPMessage *)[messageBuilder build];
-        
-        [self saveMessage:message updateSession:YES];
-        
-        MPILogVerbose(@"Application Did Become Active");
-    };
-    
-    if (sessionExpired) {
-        [self beginSession:^(MPSession *session, MPSession *previousSession, MPExecStatus execStatus) {
-            [self processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {
-                [self beginUploadTimer];
-            }];
-            
-            appStateTransition(session, previousSession, sessionExpired);
-        }];
-    } else {
-        self.session.backgroundTime += currentTime - timeAppWentToBackground;
+    BOOL sessionExpired = _session == nil;
+    if (!sessionExpired) {
+        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+        _session.backgroundTime += currentTime - timeAppWentToBackground;
         timeAppWentToBackground = 0.0;
         _session.endTime = currentTime;
         [[MPPersistenceController sharedInstance] updateSession:_session];
-        
-        appStateTransition(self.session, nil, sessionExpired);
-        [self beginUploadTimer];
     }
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:@{kMPAppStateTransitionType:kMPASTForegroundKey}];
+    messageBuilder = [messageBuilder withStateTransition:sessionExpired previousSession:nil];
+#if TARGET_OS_IOS == 1
+    if ([MPLocationManager trackingLocation]) {
+        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
+    }
+#endif
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    [self saveMessage:message updateSession:YES];
+    
+    [self beginUploadTimer];
+
+    MPILogVerbose(@"Application Did Become Active");
 }
 
 - (void)handleEventCounterLimitReached:(NSNotification *)notification {
