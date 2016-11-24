@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.11.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you use `checkForDeferredDeepLinkWithCompletionHandler:` or `openURL:options:` with launch parameters
+
+* [NEW] Queue launch parameters. The app notification handler now takes advantage of the forwarding queue mechanism. If kits have not been initialized yet (config not received from server), the data will be held in a queue and once the configuration has been received and kits initialized, the queued items are replayed to kits
+
 ## 6.11.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you need to use the Reveal Mobile integration
