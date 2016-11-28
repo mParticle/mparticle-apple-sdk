@@ -299,7 +299,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     BOOL isCrashReport = messageTypeValue == MPMessageTypeCrashReport;
     BOOL isOptOutMessage = messageTypeValue == MPMessageTypeOptOut;
     
-    if (location && [CLLocationManager authorizationStatus] && [CLLocationManager locationServicesEnabled] && !isCrashReport && !isOptOutMessage) {
+    if (location && !isCrashReport && !isOptOutMessage) {
         messageDictionary[kMPLocationKey] = @{kMPHorizontalAccuracyKey:@(location.horizontalAccuracy),
                                               kMPVerticalAccuracyKey:@(location.verticalAccuracy),
                                               kMPLatitudeKey:@(location.coordinate.latitude),

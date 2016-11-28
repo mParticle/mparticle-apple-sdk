@@ -26,7 +26,7 @@
 #import "MPEvent.h"
 #import "MPForwardQueueParameters.h"
 
-#define FORWARD_QUEUE_ITEM_TESTS_EXPECATIONS_TIMEOUT 1
+#define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 1
 
 #pragma mark
 @interface MPKitMockTest : NSObject <MPKitProtocol>
@@ -99,7 +99,7 @@
         forwardQueueItem.commerceEventCompletionHandler(kitMockTest, kitFilter, &execStatus);
     });
     
-    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testEventInstance {
@@ -127,7 +127,7 @@
         forwardQueueItem.eventCompletionHandler(kitMockTest, forwardQueueItem.event, &execStatus);
     });
     
-    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testInvalidInstances {
@@ -202,7 +202,7 @@
         forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, queueParameters, &execStatus);
     });
     
-    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 @end

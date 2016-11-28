@@ -735,7 +735,7 @@
 		C9DD209C1D8A190600D3ABBE /* MPDataModelTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDataModelTests.m; sourceTree = "<group>"; };
 		C9DD209D1D8A190600D3ABBE /* MPDateFormatterTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDateFormatterTests.m; sourceTree = "<group>"; };
 		C9DD209E1D8A190600D3ABBE /* MPEventTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEventTests.mm; sourceTree = "<group>"; };
-		C9DD209F1D8A190600D3ABBE /* MPForwardQueueItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueItemTests.m; sourceTree = "<group>"; };
+		C9DD209F1D8A190600D3ABBE /* MPForwardQueueItemTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = MPForwardQueueItemTests.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		C9DD20A01D8A190600D3ABBE /* MPForwardRecordTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardRecordTests.m; sourceTree = "<group>"; };
 		C9DD20A11D8A190600D3ABBE /* MPIntegrationAttributesTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIntegrationAttributesTest.m; sourceTree = "<group>"; };
 		C9DD20A21D8A190600D3ABBE /* MPKitAppsFlyerTest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitAppsFlyerTest.h; sourceTree = "<group>"; };
@@ -752,7 +752,7 @@
 		C9DD20AD1D8A190600D3ABBE /* MPNetworkCommunication+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNetworkCommunication+Tests.h"; sourceTree = "<group>"; };
 		C9DD20AE1D8A190600D3ABBE /* MPNotificationController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNotificationController+Tests.h"; sourceTree = "<group>"; };
 		C9DD20AF1D8A190600D3ABBE /* MPNotificationControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNotificationControllerTests.m; sourceTree = "<group>"; };
-		C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; };
+		C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		C9DD20B11D8A190600D3ABBE /* MPProductBagTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPProductBagTests.m; sourceTree = "<group>"; };
 		C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfigTests.m; sourceTree = "<group>"; };
 		C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPStateMachineTests.mm; sourceTree = "<group>"; };

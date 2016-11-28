@@ -23,7 +23,6 @@
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
-#import <CoreLocation/CoreLocation.h>
 #import "MPUpload.h"
 #import "MPNotificationController.h"
 #import "MPEvent.h"
@@ -37,7 +36,11 @@
 #import "MPKitConfiguration.h"
 #import "MPKitInstanceValidator.h"
 
-#define BACKEND_TESTS_EXPECATIONS_TIMEOUT 10
+#if TARGET_OS_IOS == 1
+    #import <CoreLocation/CoreLocation.h>
+#endif
+
+#define BACKEND_TESTS_EXPECTATIONS_TIMEOUT 10
 
 #pragma mark - MParticle+Tests category
 @interface MParticle(Tests)
@@ -134,7 +137,7 @@
         }];
     }];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
     
     [persistence closeDatabase];
     
@@ -287,7 +290,7 @@
                                       }];
     }];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testEndSession {
@@ -342,7 +345,7 @@
                                       }];
     }];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testCheckAttribute {
@@ -421,7 +424,6 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [persistence fetchMessagesForUploadingInSession:self.session
                                       completionHandler:^(NSArray *messages) {
-                                          NSLog(@"messages.count: %d", (int)messages.count);
                                           XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
                                           
                                           for (MPMessage *message in messages) {
@@ -467,7 +469,7 @@
                                       }];
     });
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
     
     self.backendController.initializationStatus = originalInitializationStatus;
 }
@@ -546,7 +548,7 @@
                                       }];
                                   }];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testDidBecomeActiveWithAppLink {
@@ -590,7 +592,7 @@
                                                                    [expectation fulfill];
                                                                }];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 #endif
 }
 
@@ -638,7 +640,7 @@
                                                                    [expectation fulfill];
                                                                }];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 #endif
 }
 
@@ -770,7 +772,7 @@
                                       }];
     });
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
     
     self.backendController.initializationStatus = originalInitializationStatus;
 }
@@ -1152,6 +1154,46 @@
     userAttributeValue = self.backendController.userAttributes[userAttributeKey];
     XCTAssertNil(userAttributeValue);
     
+    self.backendController.initializationStatus = originalInitializationStatus;
+}
+
+- (void)testSetLocation {
+    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
+    self.backendController.initializationStatus = MPInitializationStatusStarted;
+    
+#if TARGET_OS_IOS == 1
+    CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
+    [MPStateMachine sharedInstance].location = location;
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Set location"];
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    
+    [self.backendController logEvent:event
+                             attempt:0
+                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
+    
+    [persistence fetchMessagesForUploadingInSession:self.session
+                                  completionHandler:^(NSArray *messages) {
+                                      XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+
+                                      MPMessage *message = messages.lastObject;
+                                      NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+                                      NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
+                                      XCTAssertNotEqual(range.location, NSNotFound);
+                                      range = [messageString rangeOfString:@"\"lng\":-73.98738"];
+                                      XCTAssertNotEqual(range.location, NSNotFound);
+                                      
+                                      [persistence deleteMessages:messages];
+                                      
+                                      [expectation fulfill];
+                                  }];
+
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+#endif
+
     self.backendController.initializationStatus = originalInitializationStatus;
 }
 

@@ -36,6 +36,10 @@
 #import "MPSearchAdsAttribution.h"
 #import <UIKit/UIKit.h>
 
+#if TARGET_OS_IOS == 1
+    #import <CoreLocation/CoreLocation.h>
+#endif
+
 NSString *const kCookieDateKey = @"e";
 NSString *const kMinUploadDateKey = @"MinUploadDate";
 
@@ -71,6 +75,10 @@ static BOOL runningInBackground = NO;
 @synthesize storedSDKVersion = _storedSDKVersion;
 @synthesize triggerEventTypes = _triggerEventTypes;
 @synthesize triggerMessageTypes = _triggerMessageTypes;
+
+#if TARGET_OS_IOS == 1
+@synthesize location = _location;
+#endif
 
 - (instancetype)init {
     self = [super init];
@@ -555,6 +563,28 @@ static BOOL runningInBackground = NO;
         lastestSDKWarningShown = YES;
     }
 }
+
+#if TARGET_OS_IOS == 1
+- (CLLocation *)location {
+    if ([MPLocationManager trackingLocation]) {
+        return self.locationManager.location;
+    } else {
+        return _location;
+    }
+}
+
+- (void)setLocation:(CLLocation *)location {
+    if ([MPLocationManager trackingLocation]) {
+        if (self.locationManager) {
+            self.locationManager.location = location;
+        }
+        
+        _location = nil;
+    } else {
+        _location = location;
+    }
+}
+#endif
 
 - (NSString *)locationTrackingMode {
     if (_locationTrackingMode) {

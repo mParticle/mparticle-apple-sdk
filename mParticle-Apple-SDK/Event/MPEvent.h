@@ -29,7 +29,9 @@
 }
 
 /**
- Category is a string with a developer/company defined category of the event.
+ Setting the category of an MPEvent adds a custom attribute using $Category as the key. Several integrations, such as Google Analytics, 
+ will use this key to perform data mapping. Other integrations will receive the attribute as $Category. 
+ Please reference the mParticle doc site for more information.
  */
 @property (nonatomic, strong, nullable) NSString *category;
 

@@ -72,18 +72,11 @@ static BOOL trackingLocation = NO;
 
 #pragma mark CLLocationManager Delegate
 - (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-        trackingLocation = (status == kCLAuthorizationStatusAuthorized) || (status == kCLAuthorizationStatusAuthorizedAlways) || (status == kCLAuthorizationStatusAuthorizedWhenInUse);
-        
-        if (trackingLocation) {
-            [self.locationManager startUpdatingLocation];
-        }
-    } else {
-        trackingLocation = status == kCLAuthorizationStatusAuthorized;
+    trackingLocation = (status == kCLAuthorizationStatusAuthorizedAlways) || (status == kCLAuthorizationStatusAuthorizedWhenInUse);
+    
+    if (trackingLocation) {
+        [self.locationManager startUpdatingLocation];
     }
-#pragma clang diagnostic pop
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {

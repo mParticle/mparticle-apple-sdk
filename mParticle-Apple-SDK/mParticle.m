@@ -1055,7 +1055,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setLocation:(CLLocation *)location {
-    [MPStateMachine sharedInstance].locationManager.location = location;
+    [MPStateMachine sharedInstance].location = location;
     MPILogDebug(@"Set location %@", location);
     
     // Forwarding calls to kits

@@ -549,11 +549,8 @@ static BOOL appBackgrounded = NO;
     messageInfo[kMPAppStateTransitionType] = astType;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
-    
 #if TARGET_OS_IOS == 1
-    if ([MPLocationManager trackingLocation]) {
-        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-    }
+    messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
     messageBuilder = [messageBuilder withStateTransition:sessionFinalized previousSession:nil];
     MPMessage *message = (MPMessage *)[messageBuilder build];
@@ -1096,9 +1093,7 @@ static BOOL appBackgrounded = NO;
     if (!message) {
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
-        if ([MPLocationManager trackingLocation]) {
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-        }
+        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
         message = (MPMessage *)[[messageBuilder withTimestamp:session.endTime] build];
         
@@ -1311,13 +1306,11 @@ static BOOL appBackgrounded = NO;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
-    if ([MPLocationManager trackingLocation]) {
-        if (![MPStateMachine sharedInstance].locationManager.backgroundLocationTracking) {
-            [[MPStateMachine sharedInstance].locationManager.locationManager stopUpdatingLocation];
-        }
-        
-        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
+    if ([MPLocationManager trackingLocation] && ![MPStateMachine sharedInstance].locationManager.backgroundLocationTracking) {
+        [[MPStateMachine sharedInstance].locationManager.locationManager stopUpdatingLocation];
     }
+    
+    messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
@@ -1381,9 +1374,7 @@ static BOOL appBackgrounded = NO;
         
         messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:sessionCopy messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
-        if ([MPLocationManager trackingLocation]) {
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-        }
+        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
         message = (MPMessage *)[[messageBuilder withTimestamp:sessionCopy.endTime] build];
         [persistence saveMessage:message];
@@ -1463,9 +1454,7 @@ static BOOL appBackgrounded = NO;
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:@{kMPAppStateTransitionType:kMPASTForegroundKey}];
     messageBuilder = [messageBuilder withStateTransition:sessionExpired previousSession:nil];
 #if TARGET_OS_IOS == 1
-    if ([MPLocationManager trackingLocation]) {
-        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-    }
+    messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
     MPMessage *message = (MPMessage *)[messageBuilder build];
     [self saveMessage:message updateSession:YES];
@@ -1703,9 +1692,7 @@ static BOOL appBackgrounded = NO;
     if (!message) {
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:endSession messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
-        if ([MPLocationManager trackingLocation]) {
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-        }
+        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
         message = (MPMessage *)[[messageBuilder withTimestamp:endSession.endTime] build];
         
@@ -2111,9 +2098,7 @@ static BOOL appBackgrounded = NO;
                 [messageBuilder withTimestamp:[commerceEvent.timestamp timeIntervalSince1970]];
             }
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -2235,9 +2220,7 @@ static BOOL appBackgrounded = NO;
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *errorMessage = (MPMessage *)[messageBuilder build];
             
@@ -2289,9 +2272,7 @@ static BOOL appBackgrounded = NO;
                 [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
             }
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -2349,9 +2330,7 @@ static BOOL appBackgrounded = NO;
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeNetworkPerformance session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -2409,9 +2388,7 @@ static BOOL appBackgrounded = NO;
                 [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
             }
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -2474,9 +2451,7 @@ static BOOL appBackgrounded = NO;
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeProfile session:self.session messageInfo:profileChangeDictionary];
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -2521,9 +2496,7 @@ static BOOL appBackgrounded = NO;
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -2890,12 +2863,13 @@ static BOOL appBackgrounded = NO;
 - (MPExecStatus)endLocationTracking {
     NSAssert(self.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Location tracking cannot end prior to starting the mParticle SDK.\n****\n");
     
-    if ([[MPStateMachine sharedInstance].locationTrackingMode isEqualToString:kMPRemoteConfigForceTrue]) {
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    if ([stateMachine.locationTrackingMode isEqualToString:kMPRemoteConfigForceTrue]) {
         return MPExecStatusEnabledRemotely;
     }
     
-    [[MPStateMachine sharedInstance].locationManager endLocationTracking];
-    [MPStateMachine sharedInstance].locationManager = nil;
+    [stateMachine.locationManager endLocationTracking];
+    stateMachine.locationManager = nil;
     
     return MPExecStatusSuccess;
 }
@@ -2940,18 +2914,8 @@ static BOOL appBackgrounded = NO;
                                           kMPPushStatusKey:status}
                                         mutableCopy];
     
-    NSUInteger notificationTypes;
-    
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
-        UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
-        notificationTypes = userNotificationSettings.types;
-    } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        notificationTypes = [[UIApplication sharedApplication] enabledRemoteNotificationTypes];
-#pragma clang diagnostic pop
-    }
-    
+    UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+    NSUInteger notificationTypes = userNotificationSettings.types;
     messageInfo[kMPDeviceSupportedPushNotificationTypesKey] = @(notificationTypes);
     
     if ([MPStateMachine sharedInstance].deviceTokenType.length > 0) {
@@ -3022,9 +2986,7 @@ static BOOL appBackgrounded = NO;
     }
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:_session messageInfo:messageInfo];
-    if ([MPLocationManager trackingLocation]) {
-        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-    }
+    messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
     MPDataModelAbstract *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:(_session != nil)];
@@ -3058,9 +3020,7 @@ static BOOL appBackgrounded = NO;
                                                                                mediaAction:MPMediaActionPlay];
             
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -3119,9 +3079,7 @@ static BOOL appBackgrounded = NO;
                                                                                mediaAction:MPMediaActionStop];
             
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -3170,9 +3128,7 @@ static BOOL appBackgrounded = NO;
                                                                                mediaAction:MPMediaActionMetadata];
             
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -3221,9 +3177,7 @@ static BOOL appBackgrounded = NO;
                                                                                mediaAction:MPMediaActionMetadata];
             
 #if TARGET_OS_IOS == 1
-            if ([MPLocationManager trackingLocation]) {
-                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            }
+            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
@@ -3283,9 +3237,7 @@ static BOOL appBackgrounded = NO;
             //                                                                               mediaAction:MPMediaActionPlaybackPosition];
             //
             //#if TARGET_OS_IOS == 1
-            //            if ([MPLocationManager trackingLocation]) {
-            //                messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].locationManager.location];
-            //            }
+            //            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
             //#endif
             //            MPMessage *message = (MPMessage *)[messageBuilder build];
             //
