@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.11.2
+
+>Upgrade suggestion: **HIGH**. Upgrade if you use deep-linking in your app
+
+* [NEW] Set location without the need to call `beginLocationTracking`
+* [FIX] Upload data immediately on first application launch
+
 ## 6.11.1
 
 >Upgrade suggestion: **LOW**. Upgrade if you use `checkForDeferredDeepLinkWithCompletionHandler:` or `openURL:options:` with launch parameters

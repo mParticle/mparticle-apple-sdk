@@ -2580,6 +2580,19 @@ static BOOL appBackgrounded = NO;
     __weak MPBackendController *weakSelf = self;
     
     dispatch_async(backendQueue, ^{
+        void (^initializeSDK)() = ^{
+            static dispatch_once_t initializationToken;
+            
+            dispatch_once(&initializationToken, ^{
+                _initializationStatus = MPInitializationStatusStarted;
+                MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
+                
+                if (firstRun) {
+                    [self uploadWithCompletionHandler:nil];
+                }
+            });
+        };
+        
         __strong MPBackendController *strongSelf = weakSelf;
 
         [stateMachine.searchAttribution requestAttributionDetailsWithBlock:^{
@@ -2597,14 +2610,16 @@ static BOOL appBackgrounded = NO;
             [strongSelf processPendingUploads];
             [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {}];
             [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
+            
+            initializeSDK();
+            
             [strongSelf beginUploadTimer];
         }];
         
         [strongSelf processPendingArchivedMessages];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            strongSelf->_initializationStatus = MPInitializationStatusStarted;
-            MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
+            initializeSDK();
             
             [MPResponseConfig restore];
             
