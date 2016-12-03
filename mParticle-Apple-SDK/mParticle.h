@@ -534,7 +534,7 @@ NS_ASSUME_NONNULL_BEGIN
  Gets/Sets the current location of the active session.
  @see beginLocationTracking:minDistance:
  */
-@property (nonatomic, strong) CLLocation *location;
+@property (nonatomic, strong, nullable) CLLocation *location;
 
 /**
  Begins geographic location tracking.

@@ -1051,7 +1051,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (CLLocation *)location {
-    return [MPStateMachine sharedInstance].locationManager.location;
+    return [MPStateMachine sharedInstance].location;
 }
 
 - (void)setLocation:(CLLocation *)location {
