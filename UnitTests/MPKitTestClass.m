@@ -27,6 +27,7 @@
         return nil;
     }
     
+    _configuration = configuration;
     _started = startImmediately;
     
     return self;
@@ -47,6 +48,14 @@
 
 - (void)start {
     _started = YES;
+
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
+                                                            object:nil
+                                                          userInfo:userInfo];
+    });
 }
 
 - (MPKitExecStatus *)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
@@ -62,6 +71,10 @@
 - (MPKitExecStatus *)logScreen:(MPEvent *)event {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
+}
+
+- (id)providerKitInstance {
+    return _started ? self : nil;
 }
 
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {

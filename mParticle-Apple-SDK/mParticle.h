@@ -16,31 +16,29 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import "MPUserSegments.h"
-#import "MPEvent.h"
-#import "MPEnums.h"
+#import "MPBags.h"
 #import "MPCart.h"
 #import "MPCommerce.h"
 #import "MPCommerceEvent.h"
+#import "MPCommerceEventInstruction.h"
+#import "MPCommerceEvent+Dictionary.h"
+#import "MPDateFormatter.h"
+#import "MPEnums.h"
+#import "MPEvent.h"
+#import "MPExtensionProtocol.h"
+#import <Foundation/Foundation.h>
+#import "MPIHasher.h"
+#import "MPKitExecStatus.h"
+#import "MPKitRegister.h"
 #import "MPProduct.h"
+#import "MPProduct+Dictionary.h"
 #import "MPPromotion.h"
 #import "MPTransactionAttributes.h"
-#import "MPBags.h"
-#import "MPExtensionProtocol.h"
-#import "MPKitRegister.h"
-#import "MPKitExecStatus.h"
-#import "MPIHasher.h"
-#import "MPTransactionAttributes.h"
-#import "MPCommerceEvent+Dictionary.h"
-#import "MPCommerceEventInstruction.h"
-#import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "MPProduct+Dictionary.h"
-#import "MPDateFormatter.h"
-#import "NSDictionary+MPCaseInsensitive.h"
+#import "MPUserSegments.h"
 #import "NSArray+MPCaseInsensitive.h"
+#import "NSDictionary+MPCaseInsensitive.h"
+#import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -503,22 +501,35 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Kits
 /**
- Retrieves the internal instance of a kit, so it can be used to invoke methods and properties of that kit directly.
- 
- This method is only applicable to kits that allocate themselves as an object instance or a singleton. For the cases
- where kits are implemented with class methods, you can call those class methods directly
- @param kitCode An NSNumber representing the kit to be retrieved
- @returns The internal instance of the kit, or nil, if the kit is not active
- */
-- (nullable id const)kitInstance:(NSNumber *)kitCode;
-
-/**
  Returns whether a kit is active or not. You can retrieve if a kit has been already initialized and
  can be used.
  @param kitCode An NSNumber representing the kit to be checked
  @returns Whether the kit is active or not.
  */
 - (BOOL)isKitActive:(NSNumber *)kitCode;
+
+/**
+ Retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.
+ 
+ This method is only applicable to kits that allocate themselves as an object instance or as a singleton. For the cases
+ where kits are implemented with class methods, you can call those class methods directly
+ @param kitCode An NSNumber representing the kit to be retrieved
+ @returns The internal instance of the kit, or nil, if the kit is not active
+ @see MPKitInstance
+ */
+- (nullable id const)kitInstance:(NSNumber *)kitCode;
+
+/**
+ Asynchronously retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.
+ 
+ This method is only applicable to kits that allocate themselves as an object instance or as a singleton. For the cases
+ where kits are implemented with class methods, you can call those class methods directly
+ @param kitCode An NSNumber representing the kit to be retrieved
+ @param completionHandler A block to be called if or when the kit instance becomes available. If the kit never becomes
+ active, the block will never be called. If the kit is class based, the instance will be nil
+ @see MPKitInstance
+ */
+- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;
 
 #pragma mark - Location
 #if TARGET_OS_IOS == 1

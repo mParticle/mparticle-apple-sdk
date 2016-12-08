@@ -17,39 +17,34 @@
 //
 
 #import "mParticle.h"
-#import "MPKitContainer.h"
-#import "MPSession.h"
-#import "MPIConstants.h"
-#import "MPBackendController.h"
-#import "NSUserDefaults+mParticle.h"
-#import "MPStateMachine.h"
-#import "MPKitFilter.h"
-#import "MPDevice.h"
-#import "MPSegment.h"
-#import "MPNetworkPerformance.h"
-#import "MPUserSegments+Setters.h"
-#import "NSURLSession+mParticle.h"
-#import "MPNotificationController.h"
-#import "MPILogger.h"
-#import "MPConsumerInfo.h"
-#import "MPCommerce.h"
-#import "MPProduct+Dictionary.h"
-#import "MPCommerceEvent+Dictionary.h"
-#import "MPCommerceEventInstruction.h"
-#import "MPForwardRecord.h"
-#import "MPPersistenceController.h"
-#import "MPEvent+MessageType.h"
-#import "MPKitExecStatus.h"
 #import "MPAppNotificationHandler.h"
-#import "MPEvent.h"
-#import "MPKitInstanceValidator.h"
-#import "MPIntegrationAttributes.h"
+#import "MPBackendController.h"
+#import "MPConsumerInfo.h"
+#import "MPDevice.h"
+#import "MPEvent+MessageType.h"
 #import "MPForwardQueueParameters.h"
+#import "MPForwardRecord.h"
+#import "MPIConstants.h"
+#import "MPILogger.h"
+#import "MPIntegrationAttributes.h"
+#import "MPKitActivity.h"
+#import "MPKitContainer.h"
+#import "MPKitFilter.h"
+#import "MPKitInstanceValidator.h"
 #import "MPMediaTrack.h"
 #import "MPMediaMetadataDigitalAudio.h"
 #import "MPMediaMetadataDPR.h"
 #import "MPMediaMetadataOCR.h"
 #import "MPMediaMetadataTVR.h"
+#import "MPNetworkPerformance.h"
+#import "MPNotificationController.h"
+#import "MPPersistenceController.h"
+#import "MPSegment.h"
+#import "MPSession.h"
+#import "MPStateMachine.h"
+#import "MPUserSegments+Setters.h"
+#import "NSURLSession+mParticle.h"
+#import "NSUserDefaults+mParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -77,6 +72,7 @@ NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
+@property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic, unsafe_unretained) BOOL initialized;
 
 @end
@@ -101,6 +97,7 @@ NSString *const kMPStateKey = @"state";
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
+    _kitActivity = [[MPKitActivity alloc] init];
     
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
@@ -1016,28 +1013,49 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Kits
+- (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
+    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
+    NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
+    
+    if (!isValidKitCode) {
+        return NO;
+    }
+    
+    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
+        MPILogError(@"Cannot verify whether kit is active. mParticle SDK is not initialized yet.");
+        return NO;
+    }
+
+    return [self.kitActivity isKitActive:kitCode];
+}
+
 - (nullable id const)kitInstance:(nonnull NSNumber *)kitCode {
+    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
+    NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
+
+    if (!isValidKitCode) {
+        return nil;
+    }
+    
     if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
         MPILogError(@"Cannot retrieve kit instance. mParticle SDK is not initialized yet.");
         return nil;
     }
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    id<MPExtensionKitProtocol> kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
-    
-    return [kitRegister.wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [kitRegister.wrapperInstance providerKitInstance] : nil;
+    return [self.kitActivity kitInstance:kitCode];
 }
 
-- (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
-    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPILogError(@"Cannot verify whether kit is active. mParticle SDK is not initialized yet.");
-        return NO;
+- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler {
+    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
+    BOOL isValidCompletionHandler = completionHandler != nil;
+    NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
+    NSAssert(isValidCompletionHandler, @"The parameter completionHandler is required.");
+    
+    if (!isValidKitCode || !isValidCompletionHandler) {
+        return;
     }
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    id<MPExtensionKitProtocol> kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
-    
-    return kitRegister != nil;
+    [self.kitActivity kitInstance:kitCode withHandler:completionHandler];
 }
 
 #pragma mark Location
