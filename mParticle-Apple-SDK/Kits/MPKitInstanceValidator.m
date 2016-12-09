@@ -30,6 +30,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceKochava),
                                       @(MPKitInstanceComScore),
                                       @(MPKitInstanceKahuna),
+                                      @(MPKitInstanceNielsen),
                                       @(MPKitInstanceForesee),
                                       @(MPKitInstanceAdjust),
                                       @(MPKitInstanceBranchMetrics),
@@ -60,6 +61,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceKochava:
             case MPKitInstanceComScore:
             case MPKitInstanceKahuna:
+            case MPKitInstanceNielsen:
             case MPKitInstanceForesee:
             case MPKitInstanceAdjust:
             case MPKitInstanceBranchMetrics:

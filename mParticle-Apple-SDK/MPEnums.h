@@ -156,6 +156,8 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceComScore = 39,
     /** Kit code for Kahuna */
     MPKitInstanceKahuna = 56,
+    /** Kit code for Nielsen */
+    MPKitInstanceNielsen = 63,
     /** Kit code for Foresee */
     MPKitInstanceForesee = 64,
     /** Kit code for Adjust */
