@@ -23,9 +23,7 @@
 #import "MPStandaloneMessage.h"
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
-#import "MPMediaTrack.h"
 #import "MPEnums.h"
-#import "MediaControl.h"
 #import "MPCurrentState.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -184,22 +182,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
     [messageBuilder withCurrentState];
-    return messageBuilder;
-}
-
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session mediaTrack:(MPMediaTrack *)mediaTrack mediaAction:(MPMediaAction)mediaAction {
-    if (!mediaTrack) {
-        return nil;
-    }
-    
-    mParticle::MediaActionDescription actionDescription = mParticle::MediaControl::actionDescriptionForMediaAction(static_cast<mParticle::MediaAction>(mediaAction));
-    
-    NSDictionary *messageInfo = [mediaTrack dictionaryRepresentationWithEventName:[NSString stringWithCString:actionDescription.name.c_str() encoding:NSUTF8StringEncoding]
-                                                                           action:[NSString stringWithCString:actionDescription.action.c_str() encoding:NSUTF8StringEncoding]];
-
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
-    [messageBuilder withCurrentState];
-    
     return messageBuilder;
 }
 

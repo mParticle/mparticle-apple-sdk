@@ -37,12 +37,8 @@
 #import "MPEvent.h"
 #import "MPEvent+Internal.h"
 #import "MParticleUserNotification.h"
-#import "MPMediaContainer.h"
-#import "MPMediaTrack.h"
-#import "MPMediaTrack+Internal.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPHasher.h"
-#import "MediaControl.h"
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
 #import "MPResponseEvents.h"
@@ -98,7 +94,6 @@ static BOOL appBackgrounded = NO;
     BOOL retrievingSegments;
 }
 
-@property (nonatomic, strong) MPMediaContainer *mediaTrackContainer;
 @property (nonatomic, strong) NSMutableArray<NSDictionary<NSString *, id> *> *userIdentities;
 
 @end
@@ -238,18 +233,6 @@ static BOOL appBackgrounded = NO;
     _initializationStatus = initializationStatus;
 }
 
-- (MPMediaContainer *)mediaTrackContainer {
-    if (_mediaTrackContainer) {
-        return _mediaTrackContainer;
-    }
-    
-    [self willChangeValueForKey:@"mediaTrackContainer"];
-    _mediaTrackContainer = [[MPMediaContainer alloc] initWithCapacity:1];
-    [self didChangeValueForKey:@"mediaTrackContainer"];
-    
-    return _mediaTrackContainer;
-}
-
 - (MPNetworkCommunication *)networkCommunication {
     if (_networkCommunication) {
         return _networkCommunication;
@@ -350,10 +333,6 @@ static BOOL appBackgrounded = NO;
                     if (strongSelf.eventSet.count == 0) {
                         strongSelf->_eventSet = nil;
                     }
-                    
-                    if (strongSelf.mediaTrackContainer.count == 0) {
-                        strongSelf->_mediaTrackContainer = nil;
-                    }
                 }
                 
                 [strongSelf endBackgroundTask];
@@ -380,8 +359,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)broadcastSessionDidEnd:(MPSession *)session {
-    [self.mediaTrackContainer pruneMediaTracks];
-    
     [self.delegate sessionDidEnd:session];
     
     __weak MPBackendController *weakSelf = self;
@@ -1502,10 +1479,6 @@ static BOOL appBackgrounded = NO;
                                                                                 
                                                                                 if (strongSelf.eventSet.count == 0) {
                                                                                     strongSelf->_eventSet = nil;
-                                                                                }
-                                                                                
-                                                                                if (strongSelf.mediaTrackContainer.count == 0) {
-                                                                                    strongSelf->_mediaTrackContainer = nil;
                                                                                 }
                                                                                 
                                                                                 MPILogDebug(@"SDK has ended background activity.");
@@ -3007,280 +2980,5 @@ static BOOL appBackgrounded = NO;
     [self saveMessage:message updateSession:(_session != nil)];
 }
 #endif
-
-#pragma mark Public media tracking methods
-- (void)beginPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot play prior to starting the mParticle SDK.\n****\n");
-    
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        completionHandler(mediaTrack, MPExecStatusFail);
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            if (mediaTrack.playbackRate == 0.0) {
-                mediaTrack.playbackRate = 1.0;
-            }
-            
-            if (![self.mediaTrackContainer containsTrack:mediaTrack]) {
-                [self.mediaTrackContainer addTrack:mediaTrack];
-            }
-            
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                                   session:self.session
-                                                                                mediaTrack:mediaTrack
-                                                                               mediaAction:MPMediaActionPlay];
-            
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-#endif
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            
-            [self saveMessage:message updateSession:YES];
-            
-            [self.session incrementCounter];
-            
-            execStatus = MPExecStatusSuccess;
-        }
-            break;
-            
-        case MPInitializationStatusStarting: {
-            __weak MPBackendController *weakSelf = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf beginPlaying:mediaTrack attempt:(attempt + 1) completionHandler:completionHandler];
-            });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
-        }
-            break;
-            
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
-            break;
-    }
-    
-    completionHandler(mediaTrack, execStatus);
-}
-
-- (MPExecStatus)discardMediaTrack:(MPMediaTrack *)mediaTrack {
-    [self.mediaTrackContainer removeTrack:mediaTrack];
-    
-    return MPExecStatusSuccess;
-}
-
-- (void)endPlaying:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot end prior to starting the mParticle SDK.\n****\n");
-    
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        completionHandler(mediaTrack, MPExecStatusFail);
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            if (mediaTrack.playbackRate != 0.0) {
-                mediaTrack.playbackRate = 0.0;
-            }
-            
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                                   session:self.session
-                                                                                mediaTrack:mediaTrack
-                                                                               mediaAction:MPMediaActionStop];
-            
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-#endif
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            
-            [self saveMessage:message updateSession:YES];
-            
-            [self.session incrementCounter];
-            
-            execStatus = MPExecStatusSuccess;
-        }
-            break;
-            
-        case MPInitializationStatusStarting: {
-            __weak MPBackendController *weakSelf = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf endPlaying:mediaTrack attempt:(attempt + 1) completionHandler:completionHandler];
-            });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
-        }
-            break;
-            
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
-            break;
-    }
-    
-    completionHandler(mediaTrack, execStatus);
-}
-
-- (void)logMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot log metadata prior to starting the mParticle SDK.\n****\n");
-    
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        completionHandler(mediaTrack, MPExecStatusFail);
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                                   session:self.session
-                                                                                mediaTrack:mediaTrack
-                                                                               mediaAction:MPMediaActionMetadata];
-            
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-#endif
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            
-            [self saveMessage:message updateSession:YES];
-            
-            [self.session incrementCounter];
-            
-            execStatus = MPExecStatusSuccess;
-        }
-            break;
-            
-        case MPInitializationStatusStarting: {
-            __weak MPBackendController *weakSelf = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf logMetadataWithMediaTrack:mediaTrack attempt:(attempt + 1) completionHandler:completionHandler];
-            });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
-        }
-            break;
-            
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
-            break;
-    }
-    
-    completionHandler(mediaTrack, execStatus);
-}
-
-- (void)logTimedMetadataWithMediaTrack:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot log timed metadata prior to starting the mParticle SDK.\n****\n");
-    
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        completionHandler(mediaTrack, MPExecStatusFail);
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                                   session:self.session
-                                                                                mediaTrack:mediaTrack
-                                                                               mediaAction:MPMediaActionMetadata];
-            
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-#endif
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            
-            [self saveMessage:message updateSession:YES];
-            
-            [self.session incrementCounter];
-            
-            execStatus = MPExecStatusSuccess;
-        }
-            break;
-            
-        case MPInitializationStatusStarting: {
-            __weak MPBackendController *weakSelf = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf logTimedMetadataWithMediaTrack:mediaTrack attempt:(attempt + 1) completionHandler:completionHandler];
-            });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
-        }
-            break;
-            
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
-            break;
-    }
-    
-    completionHandler(mediaTrack, execStatus);
-}
-
-- (NSArray *)mediaTracks {
-    NSArray *mediaTracks = [self.mediaTrackContainer allMediaTracks];
-    return mediaTracks;
-}
-
-- (MPMediaTrack *)mediaTrackWithChannel:(NSString *)channel {
-    MPMediaTrack *mediaTrack = [self.mediaTrackContainer trackWithChannel:channel];
-    return mediaTrack;
-}
-
-- (void)updatePlaybackPosition:(MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^)(MPMediaTrack *mediaTrack, MPExecStatus execStatus))completionHandler {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Media track cannot update playback position prior to starting the mParticle SDK.\n****\n");
-    
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        completionHandler(mediaTrack, MPExecStatusFail);
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            // At the moment we will only forward playback position to kits but not log a message
-            //            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-            //                                                                                   session:self.session
-            //                                                                                mediaTrack:mediaTrack
-            //                                                                               mediaAction:MPMediaActionPlaybackPosition];
-            //
-            //#if TARGET_OS_IOS == 1
-            //            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-            //#endif
-            //            MPMessage *message = (MPMessage *)[messageBuilder build];
-            //
-            //            [self saveMessage:message updateSession:YES];
-            //
-            //            [self.session incrementCounter];
-            
-            execStatus = MPExecStatusSuccess;
-        }
-            break;
-            
-        case MPInitializationStatusStarting: {
-            __weak MPBackendController *weakSelf = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf updatePlaybackPosition:mediaTrack attempt:(attempt + 1) completionHandler:completionHandler];
-            });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
-        }
-            break;
-            
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
-            break;
-    }
-    
-    completionHandler(mediaTrack, execStatus);
-}
 
 @end

@@ -22,7 +22,6 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPStandaloneMessage.h"
-#import "MPMediaTrack.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "MPPromotion.h"
@@ -126,37 +125,6 @@
     standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
     XCTAssertNotNil(standaloneMessage);
     XCTAssertTrue([standaloneMessage isKindOfClass:[MPStandaloneMessage class]], @"Returning the wrong kind of class instance.");
-}
-
-- (void)testBuildMediaTrackMessage {
-    MPMediaTrack *mediaTrack = [[MPMediaTrack alloc] initWithChannel:@"Jurassic Park"];
-    mediaTrack.format = MPMediaTrackFormatVideo;
-    mediaTrack.quality = MPMediaTrackQualityMediumDefinition;
-    mediaTrack.metadata = @{@"$Director":@[@"Steven Spielberg"],
-                            @"$Cast":@[@"Sam Neill", @"Laura Dern", @"Jeff Goldblum"],
-                            @"$Genre":@[@"Adventure", @"Sci-Fi"]};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:self.session
-                                                                        mediaTrack:mediaTrack
-                                                                       mediaAction:MPMediaActionPlay];
-    
-    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
-    XCTAssertEqualObjects(messageBuilder.messageType, @"e", @"Message type not being set properly.");
-    
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    XCTAssertNotNil(message, @"MPMessage is not being built.");
-    XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
-    XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
-    
-    MPMediaTrack *nilTrack = nil;
-    
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                         session:self.session
-                                                      mediaTrack:nilTrack
-                                                     mediaAction:MPMediaActionPlay];
-    
-    XCTAssertNil(messageBuilder, @"Message builder should have been nil.");
 }
 
 - (void)testBuildCommerceEventProduct {

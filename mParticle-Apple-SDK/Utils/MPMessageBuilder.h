@@ -16,8 +16,8 @@
 //  limitations under the License.
 //
 
+#import "MPEnums.h"
 #import "MPIConstants.h"
-#import "MPMediaTrack+Internal.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -43,7 +43,6 @@
 
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session mediaTrack:(nonnull MPMediaTrack *)mediaTrack mediaAction:(MPMediaAction)mediaAction;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session;

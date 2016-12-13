@@ -30,47 +30,46 @@ namespace mParticle {
         /** Use for navigation related events */
         Navigation = 1,
         /** Use for location related events */
-        Location,
+        Location = 2,
         /** Use for search related events */
-        Search,
+        Search = 3,
         /** Use for transaction related events */
-        Transaction,
+        Transaction = 4,
         /** Use for user content related events */
-        Content,
+        Content = 5,
         /** Use for user preference related events */
-        Preference,
+        Preference = 6,
         /** Use for social related events */
-        Social,
+        Social = 7,
         /** Use for other types of events not contained in this enum */
-        Other,
-        /** Use for media related events */
-        Media,
+        Other = 8,
+        /** 9 used to be Media. It has been discontinued */
         /** Internal. Used when a product is added to the cart */
-        AddToCart,
+        AddToCart = 10,
         /** Internal. Used when a product is removed from the cart */
-        RemoveFromCart,
+        RemoveFromCart = 11,
         /** Internal. Used when the cart goes to checkout */
-        Checkout,
+        Checkout = 12,
         /** Internal. Used when the cart goes to checkout with options */
-        CheckoutOption,
+        CheckoutOption = 13,
         /** Internal. Used when a product is clicked */
-        Click,
+        Click = 14,
         /** Internal. Used when user views the details of a product */
-        ViewDetail,
+        ViewDetail = 15,
         /** Internal. Used when a product is purchased */
-        Purchase,
+        Purchase = 16,
         /** Internal. Used when a product refunded */
-        Refund,
+        Refund = 17,
         /** Internal. Used when a promotion is displayed */
-        PromotionView,
+        PromotionView = 18,
         /** Internal. Used when a promotion is clicked */
-        PromotionClick,
+        PromotionClick = 19,
         /** Internal. Used when a product is added to the wishlist */
-        AddToWishlist,
+        AddToWishlist = 20,
         /** Internal. Used when a product is removed from the wishlist */
-        RemoveFromWishlist,
+        RemoveFromWishlist = 21,
         /** Internal. Used when a product is displayed in a promotion */
-        Impression
+        Impression = 22
     };
     
     class EventTypeName final {

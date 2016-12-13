@@ -31,7 +31,6 @@
 @class MPNetworkPerformance;
 @class MPNotificationController;
 @class MPEvent;
-@class MPMediaTrack;
 @class MPCommerceEvent;
 @class MPDataModelAbstract;
 
@@ -118,15 +117,6 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
 - (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
-// Media Tracking
-- (void)beginPlaying:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
-- (MPExecStatus)discardMediaTrack:(nonnull MPMediaTrack *)mediaTrack;
-- (void)endPlaying:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
-- (void)logMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
-- (void)logTimedMetadataWithMediaTrack:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
-- (nullable NSArray *)mediaTracks;
-- (nullable MPMediaTrack *)mediaTrackWithChannel:(nonnull NSString *)channel;
-- (void)updatePlaybackPosition:(nonnull MPMediaTrack *)mediaTrack attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPMediaTrack * _Nonnull mediaTrack, MPExecStatus execStatus))completionHandler;
 
 @end
 

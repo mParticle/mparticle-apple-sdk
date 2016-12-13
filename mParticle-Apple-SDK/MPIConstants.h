@@ -273,10 +273,6 @@ extern NSString * _Nonnull const kMPNetworkPerformanceKey;
 extern NSString * _Nonnull const MPKitAttributeJailbrokenKey;
 extern NSString * _Nonnull const MPIntegrationAttributesKey;
 
-// Media Track
-extern NSString * _Nonnull const MPMediaTrackActionKey;
-extern NSString * _Nonnull const MPMediaTrackPlaybackRateKey;
-
 // mParticle Javascript SDK paths
 extern NSString * _Nonnull const kMParticleWebViewSdkScheme;
 extern NSString * _Nonnull const kMParticleWebViewPathLogEvent;

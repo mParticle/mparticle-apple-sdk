@@ -163,10 +163,6 @@
     eventType = (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([hashString cStringUsingEncoding:NSUTF8StringEncoding]));
     XCTAssertEqual(eventType, MPEventTypeOther, @"Should have been equal.");
     
-    hashString = @"57";
-    eventType = (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([hashString cStringUsingEncoding:NSUTF8StringEncoding]));
-    XCTAssertEqual(eventType, MPEventTypeMedia, @"Should have been equal.");
-    
     hashString = @"1567";
     eventType = (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([hashString cStringUsingEncoding:NSUTF8StringEncoding]));
     XCTAssertEqual(eventType, MPEventTypeAddToCart, @"Should have been equal.");
@@ -248,9 +244,6 @@
     
     hashString = mParticle::EventTypeName::hashForEventType(mParticle::EventType::Other);
     XCTAssertEqual(hashString, "56", @"Should have been equal.");
-    
-    hashString = mParticle::EventTypeName::hashForEventType(mParticle::EventType::Media);
-    XCTAssertEqual(hashString, "57", @"Should have been equal.");
     
     hashString = mParticle::EventTypeName::hashForEventType(mParticle::EventType::AddToCart);
     XCTAssertEqual(hashString, "1567", @"Should have been equal.");

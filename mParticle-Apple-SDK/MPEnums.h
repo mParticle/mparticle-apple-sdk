@@ -36,47 +36,46 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     /** Use for navigation related events */
     MPEventTypeNavigation = 1,
     /** Use for location related events */
-    MPEventTypeLocation,
+    MPEventTypeLocation = 2,
     /** Use for search related events */
-    MPEventTypeSearch,
+    MPEventTypeSearch = 3,
     /** Use for transaction related events */
-    MPEventTypeTransaction,
+    MPEventTypeTransaction = 4,
     /** Use for user content related events */
-    MPEventTypeUserContent,
+    MPEventTypeUserContent = 5,
     /** Use for user preference related events */
-    MPEventTypeUserPreference,
+    MPEventTypeUserPreference = 6,
     /** Use for social related events */
-    MPEventTypeSocial,
+    MPEventTypeSocial = 7,
     /** Use for other types of events not contained in this enum */
-    MPEventTypeOther,
-    /** Use for media related events */
-    MPEventTypeMedia,
+    MPEventTypeOther = 8,
+    /** 9 used to be MPEventTypeMedia. It has been discontinued */
     /** Internal. Used when a product is added to the cart */
-    MPEventTypeAddToCart,
+    MPEventTypeAddToCart = 10,
     /** Internal. Used when a product is removed from the cart */
-    MPEventTypeRemoveFromCart,
+    MPEventTypeRemoveFromCart = 11,
     /** Internal. Used when the cart goes to checkout */
-    MPEventTypeCheckout,
+    MPEventTypeCheckout = 12,
     /** Internal. Used when the cart goes to checkout with options */
-    MPEventTypeCheckoutOption,
+    MPEventTypeCheckoutOption = 13,
     /** Internal. Used when a product is clicked */
-    MPEventTypeClick,
+    MPEventTypeClick = 14,
     /** Internal. Used when user views the details of a product */
-    MPEventTypeViewDetail,
+    MPEventTypeViewDetail = 15,
     /** Internal. Used when a product is purchased */
-    MPEventTypePurchase,
+    MPEventTypePurchase = 16,
     /** Internal. Used when a product refunded */
-    MPEventTypeRefund,
+    MPEventTypeRefund = 17,
     /** Internal. Used when a promotion is displayed */
-    MPEventTypePromotionView,
+    MPEventTypePromotionView = 18,
     /** Internal. Used when a promotion is clicked */
-    MPEventTypePromotionClick,
+    MPEventTypePromotionClick = 19,
     /** Internal. Used when a product is added to the wishlist */
-    MPEventTypeAddToWishlist,
+    MPEventTypeAddToWishlist = 20,
     /** Internal. Used when a product is removed from the wishlist */
-    MPEventTypeRemoveFromWishlist,
+    MPEventTypeRemoveFromWishlist = 21,
     /** Internal. Used when a product is displayed in a promotion */
-    MPEventTypeImpression
+    MPEventTypeImpression = 22
 };
 
 /// Installation Types

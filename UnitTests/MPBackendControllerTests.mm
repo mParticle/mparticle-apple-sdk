@@ -27,8 +27,6 @@
 #import "MPNotificationController.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
-#import "MPMediaContainer.h"
-#import "MPMediaTrack.h"
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
 #import "mParticle.h"
@@ -66,7 +64,6 @@
 #pragma mark - MPBackendController+Tests category
 @interface MPBackendController(Tests)
 
-@property (nonatomic, strong, readonly) MPMediaContainer *mediaTrackContainer;
 @property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
@@ -655,126 +652,6 @@
     }
     
     XCTAssertNotEqualObjects(session, self.session, @"New session has not began after reaching the maximum number of events limit.");
-}
-
-- (void)testMediaTrackContainerBasics {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    MPMediaTrack *mediaTrack = [[MPMediaTrack alloc] initWithChannel:@"Jurassic Park"];
-    XCTAssertNotNil(mediaTrack, @"Instance should not have been nil.");
-    mediaTrack.metadata = @{@"type":@"content", @"assetid":@"112358"};
-    mediaTrack.timedMetadata = @"2468";
-    mediaTrack.playbackPosition = 3.14159;
-    
-    [self.backendController beginPlaying:mediaTrack attempt:0 completionHandler:^(MPMediaTrack *mediaTrack, MPExecStatus execStatus) {}];
-    XCTAssertTrue(mediaTrack.playing, @"Media track should have been marked as playing.");
-    XCTAssertEqual(self.backendController.mediaTrackContainer.count, 1, @"There should have been 1 media track in the container.");
-    
-    [self.backendController endPlaying:mediaTrack attempt:0 completionHandler:^(MPMediaTrack *mediaTrack, MPExecStatus execStatus) {}];
-    XCTAssertFalse(mediaTrack.playing, @"Media track should have been marked as not playing.");
-    
-    mediaTrack = [self.backendController mediaTrackWithChannel:@"Jurassic Fart"];
-    XCTAssertNil(mediaTrack, @"There should be no such media track.");
-    
-    mediaTrack = [self.backendController mediaTrackWithChannel:@"Jurassic Park"];
-    XCTAssertNotNil(mediaTrack, @"There should have been a media track returned.");
-    
-    NSArray *mediaTracks = [self.backendController mediaTracks];
-    XCTAssertEqual(mediaTracks.count, 1, @"There should have been 1 media track in the array.");
-    XCTAssertEqualObjects(mediaTrack, [mediaTracks firstObject], @"Media tracks should have been equal.");
-    
-    [self.backendController discardMediaTrack:mediaTrack];
-    XCTAssertEqual(self.backendController.mediaTrackContainer.count, 0, @"There should have been no media tracks in the container.");
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
-}
-
-- (void)testPlayMediaTrack {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    MPMediaTrack *mediaTrack = [[MPMediaTrack alloc] initWithChannel:@"Jurassic Park"];
-    mediaTrack.format = MPMediaTrackFormatVideo;
-    mediaTrack.quality = MPMediaTrackQualityMediumDefinition;
-    
-    mediaTrack.metadata = @{@"dataSrc":@"cms",
-                            @"type":@"content",
-                            @"assetid":@"AkamaiVOD1",
-                            @"tv":@"true",
-                            @"title":@"Akamai VOD 1",
-                            @"category":@"Test Program Akamai",
-                            @"length":@"3141"};
-    
-    [self.backendController beginPlaying:mediaTrack attempt:0 completionHandler:^(MPMediaTrack *mediaTrack, MPExecStatus execStatus) {}];
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Play media track test"];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [persistence fetchMessagesForUploadingInSession:self.session
-                                      completionHandler:^(NSArray *messages) {
-                                          XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-                                          
-                                          BOOL containsMediaTrackMessage = NO;
-                                          for (MPMessage *message in messages) {
-                                              if ([message.messageType isEqualToString:@"e"]) {
-                                                  containsMediaTrackMessage = YES;
-                                                  NSDictionary *messageDictionary = [message dictionaryRepresentation];
-                                                  NSDictionary *mediaInfo = messageDictionary[MPMediaTrackMediaInfoKey];
-                                                  
-                                                  XCTAssertNotNil(messageDictionary, @"Not able to deserialize message dictionary.");
-                                                  XCTAssertEqualObjects(mediaInfo[MPMediaTrackChannelKey], mediaTrack.channel, @"Channel does not match.");
-                                                  XCTAssertEqualObjects(mediaInfo[MPMediaTrackMetadataKey], mediaTrack.metadata, @"Metadata does not match.");
-                                                  XCTAssertNil(mediaInfo[MPMediaTrackTimedMetadataKey], @"Timed metadata should have been empty.");
-                                                  XCTAssertEqualObjects(mediaInfo[MPMediaTrackPlaybackPositionKey], @0, @"Playback position is not being initialized.");
-                                                  XCTAssertEqualObjects(mediaInfo[MPMediaTrackFormatKey], @(MPMediaTrackFormatVideo), @"Media format should have been 'video.'");
-                                                  XCTAssertEqualObjects(mediaInfo[MPMediaTrackQualityKey], @(MPMediaTrackQualityMediumDefinition), @"Media quality should have been 'medium.'");
-                                              }
-                                          }
-                                          
-                                          XCTAssertTrue(containsMediaTrackMessage, @"Not logging playing of a media track.");
-                                          
-                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:messages sessionTimeout:100 uploadInterval:100];
-                                          XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
-                                          
-                                          if (!uploadBuilder) {
-                                              return;
-                                          }
-                                          
-                                          [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
-                                          [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-                                          [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                              [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                                              
-                                              NSArray *messages = [persistence fetchMessagesInSession:self.session];
-                                              
-                                              XCTAssertNotNil(messages, @"There are no messages in session.");
-                                              
-                                              for (MPMessage *message in messages) {
-                                                  XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
-                                              }
-                                              
-                                              [persistence deleteUpload:(MPUpload *)upload];
-                                              
-                                              [persistence fetchUploadsInSession:self.session
-                                                               completionHandler:^(NSArray *uploads) {
-                                                                   XCTAssertNil(uploads, @"Uploads are not being deleted.");
-                                                                   
-                                                                   [self.backendController discardMediaTrack:mediaTrack];
-                                                                   MPMediaTrack *retrievedMediaTrack = [self.backendController mediaTrackWithChannel:@"Jurassic Park"];
-                                                                   XCTAssertNil(retrievedMediaTrack, @"There should be no media track left.");
-                                                                   
-                                                                   [expectation fulfill];
-                                                               }];
-                                          }];
-                                      }];
-    });
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
 }
 
 - (void)testCheckAttributes {

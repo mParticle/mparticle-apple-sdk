@@ -236,10 +236,6 @@ NSString *const kMPNetworkPerformanceKey = @"MPNetworkPerformance";
 NSString *const MPKitAttributeJailbrokenKey = @"jailbroken";
 NSString *const MPIntegrationAttributesKey = @"ia";
 
-// Media Track
-NSString *const MPMediaTrackActionKey = @"act";
-NSString *const MPMediaTrackPlaybackRateKey = @"pbr";
-
 // mParticle Javascript SDK paths
 NSString *const kMParticleWebViewSdkScheme = @"mp-sdk";
 NSString *const kMParticleWebViewPathLogEvent = @"logEvent";
