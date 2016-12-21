@@ -408,7 +408,7 @@ static int64_t launchNotificationHash = 0;
     NSNumber *influencedOpenNumber = nil;
 #ifndef MP_UNIT_TESTING
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    influencedOpenNumber = userDefaults[kMPInfluencedOpenTimerKey];
+    influencedOpenNumber = [userDefaults mpObjectForKey: kMPInfluencedOpenTimerKey];
 #endif
     
     if (influencedOpenNumber) {
@@ -430,9 +430,9 @@ static int64_t launchNotificationHash = 0;
                 [userDefaults removeMPObjectForKey:kMPInfluencedOpenTimerKey];
                 [userDefaults synchronize];
             } else {
-                NSNumber *udInfOpenTimer = userDefaults[kMPInfluencedOpenTimerKey];
+                NSNumber *udInfOpenTimer = [userDefaults mpObjectForKey: kMPInfluencedOpenTimerKey];
                 if (!udInfOpenTimer || ![udInfOpenTimer isEqualToNumber:infOpenTimer]) {
-                    userDefaults[kMPInfluencedOpenTimerKey] = infOpenTimer;
+                    [userDefaults setMPKey: kMPInfluencedOpenTimerKey value: infOpenTimer];
                     [userDefaults synchronize];
                 }
             }
@@ -471,7 +471,7 @@ static int64_t launchNotificationHash = 0;
     
 #ifndef MP_UNIT_TESTING
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    deviceToken = userDefaults[kMPDeviceTokenKey];
+    deviceToken = [userDefaults mpObjectForKey: kMPDeviceTokenKey];
 #else
     deviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
 #endif
@@ -541,7 +541,7 @@ static int64_t launchNotificationHash = 0;
         
 #ifndef MP_UNIT_TESTING
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        userDefaults[kMPDeviceTokenKey] = deviceToken;
+        [userDefaults setMPKey: kMPDeviceTokenKey value: deviceToken];
         [userDefaults synchronize];
 #endif
     });

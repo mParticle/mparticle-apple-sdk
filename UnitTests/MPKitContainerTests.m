@@ -130,7 +130,7 @@
                                      @"Height":@20,
                                      @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
     
-    userDefaults[@"ua"] = userAttributes;
+    [userDefaults setMPKey:@"ua" value: userAttributes];
     
     NSArray *userIdentities = @[@{
                                     @"n":@(MPUserIdentityEmail),
@@ -146,7 +146,7 @@
                                     }
                                 ];
     
-    userDefaults[@"ui"] = userIdentities;
+    [userDefaults setMPKey:@"ui" value: userIdentities];
     
     [userDefaults synchronize];
 }

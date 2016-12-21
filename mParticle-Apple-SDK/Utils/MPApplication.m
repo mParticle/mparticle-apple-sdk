@@ -176,11 +176,11 @@ static NSString *kMPAppStoreReceiptString = nil;
         return _initialLaunchTime;
     }
     
-    _initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
+    _initialLaunchTime = [userDefaults mpObjectForKey: kMPAppInitialLaunchTimeKey];
     
     if (!_initialLaunchTime) {
         _initialLaunchTime = MPCurrentEpochInMilliseconds;
-        userDefaults[kMPAppInitialLaunchTimeKey] = _initialLaunchTime;
+        [userDefaults setMPKey: kMPAppInitialLaunchTimeKey value: _initialLaunchTime];
         syncUserDefaults = YES;
     }
 
@@ -193,7 +193,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSNumber *)lastUseDate {
-    NSNumber *lastUseDate = userDefaults[kMPAppLastUseDateKey];
+    NSNumber *lastUseDate = [userDefaults mpObjectForKey: kMPAppLastUseDateKey];
     if (!lastUseDate) {
         lastUseDate = MPMilliseconds([[MPStateMachine sharedInstance].launchDate timeIntervalSince1970]);
     }
@@ -202,27 +202,27 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (void)setLastUseDate:(NSNumber *)lastUseDate {
-    userDefaults[kMPAppLastUseDateKey] = lastUseDate;
+    [userDefaults setMPKey: kMPAppLastUseDateKey value: lastUseDate];
     syncUserDefaults = YES;
 }
 
 - (NSNumber *)launchCount {
-    NSNumber *launchCount = userDefaults[kMPAppLaunchCountKey];
+    NSNumber *launchCount = [userDefaults mpObjectForKey: kMPAppLaunchCountKey];
     return launchCount;
 }
 
 - (void)setLaunchCount:(NSNumber *)launchCount {
-    userDefaults[kMPAppLaunchCountKey] = launchCount;
+    [userDefaults setMPKey: kMPAppLaunchCountKey value: launchCount];
     syncUserDefaults = YES;
 }
 
 - (NSNumber *)launchCountSinceUpgrade {
-    NSNumber *launchCount = userDefaults[kMPAppLaunchCountSinceUpgradeKey];
+    NSNumber *launchCount = [userDefaults mpObjectForKey: kMPAppLaunchCountSinceUpgradeKey];
     return launchCount;
 }
 
 - (void)setLaunchCountSinceUpgrade:(NSNumber *)launchCountSinceUpgrade {
-    userDefaults[kMPAppLaunchCountSinceUpgradeKey] = launchCountSinceUpgrade;
+    [userDefaults setMPKey: kMPAppLaunchCountSinceUpgradeKey value: launchCountSinceUpgrade];
     syncUserDefaults = YES;
 }
 
@@ -232,13 +232,13 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSString *)storedBuild {
-    NSString *storedBuild = userDefaults[kMPAppStoredBuildKey];
+    NSString *storedBuild = [userDefaults mpObjectForKey: kMPAppStoredBuildKey];
     return storedBuild;
 }
 
 - (void)setStoredBuild:(NSString *)storedBuild {
     if (storedBuild) {
-        userDefaults[kMPAppStoredBuildKey] = storedBuild;
+        [userDefaults setMPKey: kMPAppStoredBuildKey value: storedBuild];
     } else {
         [userDefaults removeMPObjectForKey:kMPAppStoredBuildKey];
     }
@@ -247,13 +247,13 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSString *)storedVersion {
-    NSString *storedBuild = userDefaults[kMPAppStoredVersionKey];
+    NSString *storedBuild = [userDefaults mpObjectForKey: kMPAppStoredVersionKey];
     return storedBuild;
 }
 
 - (void)setStoredVersion:(NSString *)storedVersion {
     if (storedVersion) {
-        userDefaults[kMPAppStoredVersionKey] = storedVersion;
+        [userDefaults setMPKey: kMPAppStoredVersionKey value: storedVersion];
     } else {
         [userDefaults removeMPObjectForKey:kMPAppStoredVersionKey];
     }
@@ -262,12 +262,12 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSNumber *)upgradeDate {
-    NSNumber *upgradeDate = userDefaults[kMPAppUpgradeDateKey];
+    NSNumber *upgradeDate = [userDefaults mpObjectForKey: kMPAppUpgradeDateKey];
     return upgradeDate;
 }
 
 - (void)setUpgradeDate:(NSNumber *)upgradeDate {
-    userDefaults[kMPAppUpgradeDateKey] = upgradeDate;
+    [userDefaults setMPKey: kMPAppUpgradeDateKey value: upgradeDate];
     syncUserDefaults = YES;
 }
 
@@ -328,11 +328,11 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 + (void)markInitialLaunchTime {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
+    NSNumber *initialLaunchTime = [userDefaults mpObjectForKey: kMPAppInitialLaunchTimeKey];
     
     if (!initialLaunchTime) {
         initialLaunchTime = MPCurrentEpochInMilliseconds;
-        userDefaults[kMPAppInitialLaunchTimeKey] = initialLaunchTime;
+        [userDefaults setMPKey: kMPAppInitialLaunchTimeKey value: initialLaunchTime];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [userDefaults synchronize];

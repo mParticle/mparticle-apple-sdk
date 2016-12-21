@@ -69,7 +69,7 @@ using namespace std;
     
     NSNumber *ltv;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    ltv = userDefaults[kMPLifeTimeValueKey];
+    ltv = [userDefaults mpObjectForKey: kMPLifeTimeValueKey];
     if (!ltv) {
         ltv = @0;
     }

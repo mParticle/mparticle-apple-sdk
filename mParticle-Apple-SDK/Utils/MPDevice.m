@@ -222,10 +222,10 @@ int main(int argc, char *argv[]);
     }
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    _deviceIdentifier = userDefaults[kMPDeviceIdentifierKey];
+    _deviceIdentifier = [userDefaults mpObjectForKey:kMPDeviceIdentifierKey];
     if (!_deviceIdentifier) {
         _deviceIdentifier = [[NSUUID UUID] UUIDString];
-        userDefaults[kMPDeviceIdentifierKey] = _deviceIdentifier;
+        [userDefaults setMPKey: kMPDeviceIdentifierKey value: _deviceIdentifier];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [userDefaults synchronize];

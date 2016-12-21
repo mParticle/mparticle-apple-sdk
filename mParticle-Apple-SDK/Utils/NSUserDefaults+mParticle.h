@@ -23,7 +23,6 @@
 - (nullable id)mpObjectForKey:(nonnull NSString *)defaultName;
 - (void)setMPObject:(nullable id)value forKey:(nonnull NSString *)defaultName;
 - (void)removeMPObjectForKey:(nonnull NSString *)defaultName;
-- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
-- (void)setObject:(nullable id)obj forKeyedSubscript:(nonnull NSString *)key;
+- (void)setMPKey:(nonnull NSString *)key value:(nullable id)obj;
 
 @end

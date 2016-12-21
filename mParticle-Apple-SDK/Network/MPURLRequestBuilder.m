@@ -229,7 +229,7 @@ static NSTimeInterval requestTimeout = 30.0;
                 [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
                 
                 NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
+                NSString *eTag = [userDefaults mpObjectForKey:kMPHTTPETagHeaderKey];
                 if (eTag) {
                     [urlRequest setValue:eTag forHTTPHeaderField:@"If-None-Match"];
                 }

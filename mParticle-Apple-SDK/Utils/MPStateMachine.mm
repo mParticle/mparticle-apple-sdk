@@ -193,7 +193,7 @@ static BOOL runningInBackground = NO;
     }
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    _storedSDKVersion = userDefaults[@"storedSDKVersion"];
+    _storedSDKVersion = [userDefaults mpObjectForKey: @"storedSDKVersion"];
     
     return _storedSDKVersion;
 }
@@ -216,7 +216,7 @@ static BOOL runningInBackground = NO;
     if (MPIsNull(_storedSDKVersion)) {
         [userDefaults removeMPObjectForKey:@"storedSDKVersion"];
     } else {
-        userDefaults[@"storedSDKVersion"] = _storedSDKVersion;
+        [userDefaults setMPKey: @"storedSDKVersion" value: _storedSDKVersion];
     }
     
     [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
@@ -474,7 +474,7 @@ static BOOL runningInBackground = NO;
     }
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *firstSeenInstallation = userDefaults[kMPAppFirstSeenInstallationKey];
+    NSNumber *firstSeenInstallation = [userDefaults mpObjectForKey: kMPAppFirstSeenInstallationKey];
     if (firstSeenInstallation) {
         _firstSeenInstallation = firstSeenInstallation;
     } else {
@@ -483,7 +483,7 @@ static BOOL runningInBackground = NO;
         [self didChangeValueForKey:@"firstSeenInstallation"];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = _firstSeenInstallation;
+            [userDefaults setMPKey: kMPAppFirstSeenInstallationKey value: _firstSeenInstallation];
             [userDefaults synchronize];
         });
     }
@@ -497,14 +497,14 @@ static BOOL runningInBackground = NO;
     }
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *fsi = userDefaults[kMPAppFirstSeenInstallationKey];
+    NSNumber *fsi = [userDefaults mpObjectForKey: kMPAppFirstSeenInstallationKey];
     if (!fsi) {
         [self willChangeValueForKey:@"firstSeenInstallation"];
         _firstSeenInstallation = firstSeenInstallation;
         [self didChangeValueForKey:@"firstSeenInstallation"];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = _firstSeenInstallation;
+            [userDefaults setMPKey: kMPAppFirstSeenInstallationKey value: _firstSeenInstallation];
             [userDefaults synchronize];
         });
     }
@@ -592,7 +592,7 @@ static BOOL runningInBackground = NO;
     }
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
+    NSString *locationTrackingMode = [userDefaults mpObjectForKey: kMPRemoteConfigLocationModeKey];
     
     [self willChangeValueForKey:@"locationTrackingMode"];
     
@@ -617,7 +617,7 @@ static BOOL runningInBackground = NO;
     [self didChangeValueForKey:@"locationTrackingMode"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
+    [userDefaults setMPKey: kMPRemoteConfigLocationModeKey value: _locationTrackingMode];
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
     });
@@ -631,7 +631,7 @@ static BOOL runningInBackground = NO;
     [self willChangeValueForKey:@"minUploadDate"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSDate *minUploadDate = userDefaults[kMinUploadDateKey];
+    NSDate *minUploadDate = [userDefaults mpObjectForKey: kMinUploadDateKey];
     if (minUploadDate) {
         if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
             _minUploadDate = minUploadDate;
@@ -652,8 +652,8 @@ static BOOL runningInBackground = NO;
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-        userDefaults[kMinUploadDateKey] = minUploadDate;
-    } else if (userDefaults[kMinUploadDateKey]) {
+        [userDefaults setMPKey: kMinUploadDateKey value: minUploadDate];
+    } else if ([userDefaults mpObjectForKey: kMinUploadDateKey]) {
         [userDefaults removeMPObjectForKey:kMinUploadDateKey];
     }
 }
@@ -668,12 +668,12 @@ static BOOL runningInBackground = NO;
     optOutSet = YES;
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
+    NSNumber *optOutNumber = [userDefaults mpObjectForKey: kMPOptOutStatus];
     if (optOutNumber) {
         _optOut = [optOutNumber boolValue];
     } else {
         _optOut = NO;
-        userDefaults[kMPOptOutStatus] = @(_optOut);
+        [userDefaults setMPKey: kMPOptOutStatus value: @(_optOut)];
         dispatch_async(dispatch_get_main_queue(), ^{
             [userDefaults synchronize];
         });
@@ -689,7 +689,7 @@ static BOOL runningInBackground = NO;
     optOutSet = YES;
 
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    userDefaults[kMPOptOutStatus] = @(_optOut);
+    [userDefaults setMPKey: kMPOptOutStatus value: @(_optOut)];
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
     });
@@ -705,14 +705,14 @@ static BOOL runningInBackground = NO;
     alwaysTryToCollectIDFASet = YES;
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSNumber *alwaysTryToCollectIDFANumber = userDefaults[kMPAlwaysTryToCollectIDFA];
+    NSNumber *alwaysTryToCollectIDFANumber = [userDefaults mpObjectForKey: kMPAlwaysTryToCollectIDFA];
     
     if (alwaysTryToCollectIDFANumber) {
         _alwaysTryToCollectIDFA = [alwaysTryToCollectIDFANumber boolValue];
     }
     else {
         _alwaysTryToCollectIDFA = NO;
-        userDefaults[kMPAlwaysTryToCollectIDFA] = @(_alwaysTryToCollectIDFA);
+        [userDefaults setMPKey: kMPAlwaysTryToCollectIDFA value: @(_alwaysTryToCollectIDFA)];
         dispatch_async(dispatch_get_main_queue(), ^{
             [userDefaults synchronize];
         });
@@ -728,7 +728,7 @@ static BOOL runningInBackground = NO;
     alwaysTryToCollectIDFASet = YES;
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    userDefaults[kMPAlwaysTryToCollectIDFA] = @(alwaysTryToCollectIDFA);
+    [userDefaults setMPKey: kMPAlwaysTryToCollectIDFA value: @(alwaysTryToCollectIDFA)];
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
     });
@@ -742,7 +742,7 @@ static BOOL runningInBackground = NO;
     [self willChangeValueForKey:@"pushNotificationMode"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSString *pushNotificationMode = userDefaults[kMPRemoteConfigPushNotificationModeKey];
+    NSString *pushNotificationMode = [userDefaults mpObjectForKey: kMPRemoteConfigPushNotificationModeKey];
     if (pushNotificationMode) {
         _pushNotificationMode = pushNotificationMode;
     } else {
@@ -764,7 +764,7 @@ static BOOL runningInBackground = NO;
     [self didChangeValueForKey:@"pushNotificationMode"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
+    [userDefaults setMPKey: kMPRemoteConfigPushNotificationModeKey value: _pushNotificationMode];
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
     });

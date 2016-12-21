@@ -292,7 +292,7 @@ NSString *const kMPCKExpiration = @"e";
 
 - (NSDictionary *)localCookiesDictionary {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *localCookies = userDefaults[kMPRemoteConfigCookiesKey];
+    NSDictionary *localCookies = [userDefaults mpObjectForKey: kMPRemoteConfigCookiesKey];
     
     if (!localCookies) {
         return nil;
@@ -321,7 +321,7 @@ NSString *const kMPCKExpiration = @"e";
         [self willChangeValueForKey:@"mpId"];
         
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
+        NSString *mpIdString = [userDefaults mpObjectForKey: kMPRemoteConfigMPIDKey];
         
         if (mpIdString) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -372,8 +372,8 @@ NSString *const kMPCKExpiration = @"e";
     }
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    if (userDefaults[kMPRemoteConfigUniqueIdentifierKey]) {
-        _uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
+    if ([userDefaults mpObjectForKey: kMPRemoteConfigUniqueIdentifierKey]) {
+        _uniqueIdentifier = [userDefaults mpObjectForKey: kMPRemoteConfigUniqueIdentifierKey];
         [userDefaults removeMPObjectForKey:kMPRemoteConfigUniqueIdentifierKey];
 
         if (MPIsNull(_uniqueIdentifier)) {

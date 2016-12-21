@@ -416,7 +416,7 @@ NSString *const kMPStateKey = @"state";
     
     __weak MParticle *weakSelf = self;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
+    BOOL firstRun = [userDefaults mpObjectForKey: kMParticleFirstRun] == nil;
     BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
     
@@ -442,7 +442,7 @@ NSString *const kMPStateKey = @"state";
                            }
                            
                            if (firstRun) {
-                               userDefaults[kMParticleFirstRun] = @NO;
+                               [userDefaults setMPKey: kMParticleFirstRun value: @NO];
                                [userDefaults synchronize];
                            }
                            
@@ -1387,7 +1387,7 @@ NSString *const kMPStateKey = @"state";
     
     NSMutableDictionary *userAttributes = nil;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
+    NSDictionary *savedUserAttributes = [userDefaults mpObjectForKey: kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];
         NSEnumerator *attributeEnumerator = [savedUserAttributes keyEnumerator];

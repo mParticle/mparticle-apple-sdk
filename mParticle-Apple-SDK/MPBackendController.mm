@@ -289,7 +289,7 @@ static BOOL appBackgrounded = NO;
     
     _userAttributes = [[NSMutableDictionary alloc] initWithCapacity:2];
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
+    NSDictionary *userAttributes = [userDefaults mpObjectForKey: kMPUserAttributeKey];
     if (userAttributes) {
         NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
         NSString *key;
@@ -317,7 +317,7 @@ static BOOL appBackgrounded = NO;
     
     _userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = userDefaults[kMPUserIdentityArrayKey];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey: kMPUserIdentityArrayKey];
     if (userIdentityArray) {
         [_userIdentities addObjectsFromArray:userIdentityArray];
     }
@@ -820,7 +820,7 @@ static BOOL appBackgrounded = NO;
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                    userDefaults[kMPUserAttributeKey] = userAttributes;
+                    [userDefaults setMPKey: kMPUserAttributeKey value: userAttributes];
                     [userDefaults synchronize];
                 });
                 
@@ -948,7 +948,7 @@ static BOOL appBackgrounded = NO;
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                        userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
+                        [userDefaults setMPKey: kMPUserIdentityArrayKey value: self.userIdentities];
                         [userDefaults synchronize];
                     });
                 }
@@ -2017,7 +2017,7 @@ static BOOL appBackgrounded = NO;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-        userDefaults[kMPUserAttributeKey] = userAttributes;
+        [userDefaults setMPKey: kMPUserAttributeKey value: userAttributes];
         [userDefaults synchronize];
     });
     
