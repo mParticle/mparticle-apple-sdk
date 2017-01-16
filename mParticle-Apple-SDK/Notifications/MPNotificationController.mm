@@ -455,14 +455,6 @@ static int64_t launchNotificationHash = 0;
     }
 }
 
-- (BOOL)registeredForSilentNotifications {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 8.0) {
-        return NO;
-    }
-    
-    return [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-}
-
 #pragma mark Public static methods
 + (NSData *)deviceToken {
     if (deviceToken) {
@@ -560,65 +552,6 @@ static int64_t launchNotificationHash = 0;
                                                                            runningMode:MPUserNotificationRunningModeForeground];
     
     return userNotification;
-}
-
-- (void)scheduleNotification:(MParticleUserNotification *)userNotification {
-    if (!userNotification || userNotification.mode != MPUserNotificationModeLocal || [userNotification.localAlertDate compare:[NSDate date]] != NSOrderedDescending) {
-        return;
-    }
-    
-    UIApplication *app = [UIApplication sharedApplication];
-    
-    UILocalNotification *localNotification = [[UILocalNotification alloc] init];
-    localNotification.fireDate = userNotification.localAlertDate;
-    localNotification.timeZone = [NSTimeZone defaultTimeZone];
-    
-    NSMutableDictionary *userInfo = [@{kMPUserNotificationCampaignIdKey:userNotification.campaignId,
-                                       kMPUserNotificationContentIdKey:userNotification.contentId}
-                                     mutableCopy];
-    
-    if (userNotification.uniqueIdentifier) {
-        userInfo[kMPUserNotificationUniqueIdKey] = userNotification.uniqueIdentifier;
-    }
-    
-    localNotification.userInfo = userInfo;
-
-    NSDictionary *apsDictionary = userNotification.deferredPayload[kMPUserNotificationApsKey];
-    
-    id alert = apsDictionary[kMPUserNotificationAlertKey];
-    NSString *alertBody = nil;
-    if ([alert isKindOfClass:[NSDictionary class]]) {
-        alertBody = [(NSDictionary *)alert objectForKey:kMPUserNotificationBodyKey];
-    } else if ([alert isKindOfClass:[NSString class]]) {
-        alertBody = (NSString *)alert;
-    }
-    
-    if (alertBody) {
-        localNotification.alertBody = alertBody;
-    }
-    
-    if (apsDictionary[@"badge"]) {
-        localNotification.applicationIconBadgeNumber = [apsDictionary[@"badge"] intValue];
-    }
-    
-    if (apsDictionary[@"sound"]) {
-        localNotification.soundName = apsDictionary[@"sound"];
-    }
-    
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-        UIUserNotificationSettings *notificationSettings = [app currentUserNotificationSettings];
-        if (notificationSettings.types == UIUserNotificationTypeNone) {
-            return;
-        }
-
-        NSString *category = apsDictionary[kMPUserNotificationCategoryKey];
-        
-        if (category) {
-            localNotification.category = category;
-        }
-    }
-    
-    [app scheduleLocalNotification:localNotification];
 }
 #endif
 

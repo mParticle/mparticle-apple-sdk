@@ -28,7 +28,6 @@
 @property (nonatomic, strong, readonly, nullable) NSString *initialRedactedUserNotificationString;
 @property (nonatomic, weak, nullable) id<MPNotificationControllerDelegate> delegate;
 @property (nonatomic, unsafe_unretained) NSTimeInterval influencedOpenTimer;
-@property (nonatomic, unsafe_unretained, readonly) BOOL registeredForSilentNotifications;
 
 + (nullable NSData *)deviceToken;
 + (nullable NSDictionary *)dictionaryFromLocalNotification:(nonnull UILocalNotification *)notification;
@@ -36,7 +35,6 @@
 + (int64_t)launchNotificationHash;
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPNotificationControllerDelegate>)delegate;
 - (nonnull MParticleUserNotification *)newUserNotificationWithDictionary:(nonnull NSDictionary *)notificationDictionary actionIdentifier:(nullable NSString *)actionIdentifier state:(nullable NSString *)state;
-- (void)scheduleNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 
 @end
