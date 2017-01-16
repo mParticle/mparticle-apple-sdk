@@ -72,10 +72,6 @@
     return self;
 }
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"MPCustomModule\n %@", [self dictionaryRepresentation]];
-}
-
 - (BOOL)isEqual:(id)object {
     if (![object isKindOfClass:[self class]]) {
         return NO;

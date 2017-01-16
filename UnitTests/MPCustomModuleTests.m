@@ -168,9 +168,6 @@
             XCTAssertLessThanOrEqual([[preference.defaultValue substringWithRange:NSMakeRange(17, 1)] integerValue], 4, @"OAID's seventeenth digit is too large.");
         }
     }
-    
-    NSString *description = [customModule description];
-    XCTAssertNotNil(description, @"Should not have been nil");
 }
 
 - (void)testInvalidConfiguration {

@@ -72,10 +72,6 @@ NSString *const sessionNumberKey = @"sessionNumber";
     return self;
 }
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"Session\n Id: %lld\n UUID: %@\n Background time: %.0f\n Start: %.0f\n End: %.0f\n Length: %.0f\n EventCounter: %d\n Persisted: %d\n Attributes: %@\n Interruptions: %d\n", self.sessionId, self.uuid, self.backgroundTime, self.startTime, self.endTime, self.length, self.eventCounter, self.persisted, self.attributesDictionary, self.numberOfInterruptions];
-}
-
 - (BOOL)isEqual:(MPSession *)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPSession class]]) {
         return NO;

@@ -51,10 +51,4 @@
     XCTAssertTrue(kitRegister.wrapperInstance.started, @"Should have been true.");
 }
 
-- (void)testDescription {
-    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
-    NSString *description = [kitRegister description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-}
-
 @end

@@ -77,18 +77,7 @@ NSString *const kMPSegmentMembershipListKey = @"c";
     [self removeObserver:self forKeyPath:@"memberships"];
 }
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"MPSegment\n Id: %@\n Name: %@\n Memberships: %@\n", self.segmentId, self.name, self.memberships];
-}
-
 - (BOOL)isEqual:(MPSegment *)object {
-//    unsigned int numberOfProperties;
-//    class_copyPropertyList([self class], &numberOfProperties);
-//    
-//    if (numberOfProperties != 6) {
-//        return NO;
-//    }
-    
     BOOL isEqual = [_segmentId isEqualToNumber:object.segmentId] &&
                    [_name isEqualToString:object.name] &&
                    [_memberships isEqualToArray:object.memberships];

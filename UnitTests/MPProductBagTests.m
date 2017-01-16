@@ -69,9 +69,6 @@
     [productBag2.products addObject:product];
     XCTAssertNotEqualObjects(productBag1, productBag2, @"Instances should have been different.");
     XCTAssertNotEqualObjects(productBag1, [NSNull null], @"Should have been different.");
-    
-    NSString *description = [productBag2 description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
 }
 
 - (void)testProductBagDictionaryRepresentation {

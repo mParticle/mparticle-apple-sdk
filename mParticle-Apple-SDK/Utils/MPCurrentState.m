@@ -44,10 +44,6 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 
 @implementation MPCurrentState
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"%@", [self dictionaryRepresentation]];
-}
-
 #pragma mark Accessors
 - (NSNumber *)applicationMemory {
     struct task_basic_info info;

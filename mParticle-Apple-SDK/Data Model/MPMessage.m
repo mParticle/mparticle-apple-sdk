@@ -55,12 +55,6 @@
                       uploadStatus:uploadStatus];
 }
 
-- (NSString *)description {
-    NSString *serializedString = [self serializedString];
-    
-    return [NSString stringWithFormat:@"Message\n Id: %lld\n UUID: %@\n Session: %lld\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.sessionId, self.messageType, self.timestamp, serializedString];
-}
-
 - (BOOL)isEqual:(MPMessage *)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPMessage class]]) {
         return NO;

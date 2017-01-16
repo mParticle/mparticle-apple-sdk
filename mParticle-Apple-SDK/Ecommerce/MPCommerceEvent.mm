@@ -157,54 +157,6 @@ static NSArray *actionNames;
     return self;
 }
 
-- (NSString *)description {
-    __block NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ {\n", [[self class] description]];
-    
-    if (_attributes.count > 0) {
-        [description appendString:@"  Attributes:{\n"];
-        
-        [_attributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            [description appendFormat:@"    %@:%@\n", key, obj];
-        }];
-        
-        [description appendString:@"  }\n"];
-    }
-    
-    if (_userDefinedAttributes.count > 0) {
-        [description appendString:@"  User Defined Attributes:{\n"];
-        
-        [_userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            [description appendFormat:@"    %@:%@\n", key, obj];
-        }];
-        
-        [description appendString:@"  }\n"];
-    }
-    
-    if (self.transactionAttributes) {
-        [description appendFormat:@"%@", self.transactionAttributes];
-    }
-    
-    if (_productImpressions.count > 0) {
-        [description appendString:@"  Impressions:{\n"];
-        
-        [_productImpressions enumerateKeysAndObjectsUsingBlock:^(NSString *key, NSMutableSet *products, BOOL *stop) {
-            for (MPProduct *product in products) {
-                [description appendFormat:@"    %@:%@\n", key, [product dictionaryRepresentation]];
-            }
-        }];
-        
-        [description appendString:@"  }\n"];
-    }
-    
-    if (_promotionContainer) {
-        [description appendFormat:@"%@", _promotionContainer];
-    }
-    
-    [description appendString:@"}\n"];
-    
-    return (NSString *)description;
-}
-
 #pragma mark Private accessors
 - (NSMutableDictionary *)attributes {
     if (_attributes) {

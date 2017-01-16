@@ -148,15 +148,6 @@ NSString *const kMPFROptOutState = @"s";
     return self;
 }
 
-- (NSString *)description {
-    NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPForwardRecord {\n"];
-    [description appendFormat:@"  forwardRecordId: %llu\n", _forwardRecordId];
-    [description appendFormat:@"  dataDictionary: %@\n", _dataDictionary];
-    [description appendString:@"}"];
-    
-    return description;
-}
-
 - (BOOL)isEqual:(id)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPForwardRecord class]]) {
         return NO;

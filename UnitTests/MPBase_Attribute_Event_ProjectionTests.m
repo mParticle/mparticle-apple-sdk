@@ -104,34 +104,6 @@
     XCTAssertEqual(baseProjection.propertyKind, MPProjectionPropertyKindEventField, @"Should have been equal.");
 }
 
-- (void)testBaseDescription {
-    NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"
-                                                },
-                                    @"id":@"314",
-                                    @"matches":@[@{@"event":@"Non-projected event",
-                                               @"event_match_type":@"Hash",
-                                               @"property":@"ProductField"
-                                               }]
-                                    };
-    
-    MPBaseProjection *baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeEvent attributeIndex:0];
-    NSString *description = [baseProjection description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-    
-    configuration = @{@"action":@{@"attribute_maps":@[@{@"value":@"original attribute",
-                                                        @"projected_attribute_name":@"projected attribute",
-                                                        @"property":@"ProductAttribute",
-                                                        @"match_type":@"Hash"
-                                                        }
-                                                      ]
-                                  }
-                      };
-    
-    baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeAttribute attributeIndex:0];
-    description = [baseProjection description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-}
-
 - (void)testAttributeInstance {
     NSDictionary *configuration = @{@"action":@{@"attribute_maps":@[@{@"value":@"original attribute",
                                                                       @"projected_attribute_name":@"projected attribute",

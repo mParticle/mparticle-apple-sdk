@@ -62,9 +62,6 @@
     XCTAssertNotNil(productDictionary, @"Product dictionary representation should not have been nil.");
     XCTAssertEqual(productDictionary.count, 13, @"Incorrect number of attributes.");
     
-    NSString *description = [product description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-    
     __block NSArray *keys = @[@"br", @"ca", @"cc", @"nm", @"ps", @"qt",
                               @"id", @"pr", @"va", @"key1", @"key_bool", @"key_number"];
     
@@ -159,9 +156,6 @@
     
     promotionDictionary = [promotion beautifiedDictionaryRepresentation];
     XCTAssertEqual(promotionDictionary.count, 4, @"Incorrect number of attributes");
-    
-    NSString *description = [promotion description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
     
     MPPromotion *promotionCopy  = [promotion copy];
     XCTAssertEqualObjects(promotion, promotionCopy, @"Should have been equal.");
@@ -265,9 +259,6 @@
     
     transactionattributesDictionary = [transactionAttributes beautifiedDictionaryRepresentation];
     XCTAssertNotNil(transactionattributesDictionary, @"Should not have been nil.");
-    
-    NSString *description = [transactionAttributes description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
     
     MPTransactionAttributes *transactionAttributesCopy = [transactionAttributes copy];
     XCTAssertNotNil(transactionAttributesCopy, @"Should not have been nil.");

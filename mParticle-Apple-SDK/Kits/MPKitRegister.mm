@@ -56,13 +56,4 @@
     return self;
 }
 
-- (NSString *)description {
-    NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ {\n", [self class]];
-    [description appendFormat:@"    code: %@,\n", _code];
-    [description appendFormat:@"    name: %@,\n", _name];
-    [description appendString:@"}"];
-    
-    return description;
-}
-
 @end

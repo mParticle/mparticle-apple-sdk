@@ -69,27 +69,6 @@
     return self;
 }
 
-- (NSString *)description {
-    NSString *nameAndType = [[NSString alloc] initWithFormat:@"Event:{\n  Name: %@\n  Type: %@\n", self.name, self.typeName];
-    NSMutableString *description = [[NSMutableString alloc] initWithString:nameAndType];
-    
-    if (self.info) {
-        [description appendFormat:@"  Info: %@\n", self.info];
-    }
-    
-    if (self.duration) {
-        [description appendFormat:@"  Duration: %@\n", self.duration];
-    }
-    
-    if (_customFlagsDictionary.count > 0) {
-        [description appendFormat:@"  Custom Flags: %@\n", _customFlagsDictionary];
-    }
-    
-    [description appendString:@"}"];
-    
-    return description;
-}
-
 - (BOOL)isEqual:(MPEvent *)object {
     BOOL isEqual = _type == object.type &&
                    [_name isEqualToString:object.name] &&

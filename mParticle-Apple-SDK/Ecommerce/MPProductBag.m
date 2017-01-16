@@ -42,22 +42,6 @@
     return self;
 }
 
-- (NSString *)description {
-    NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPProductBag:{\n"];
-    
-    [description appendFormat:@"  name:%@\n", _name];
-    
-    [description appendString:@"  products:[\n"];
-    for (MPProduct *product in self.products) {
-        [description appendFormat:@"    %@\n", [product description]];
-    }
-    
-    [description appendString:@"  ]\n"];
-    [description appendString:@"}\n"];
-    
-    return (NSString *)description;
-}
-
 - (BOOL)isEqual:(id)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPProductBag class]]) {
         return NO;

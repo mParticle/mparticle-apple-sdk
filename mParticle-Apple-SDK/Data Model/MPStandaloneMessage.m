@@ -45,12 +45,6 @@
                       uploadStatus:uploadStatus];
 }
 
-- (NSString *)description {
-    NSString *serializedString = [self serializedString];
-    
-    return [NSString stringWithFormat:@"StandaloneMessage\n Id: %lld\n UUID: %@\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.messageType, self.timestamp, serializedString];
-}
-
 - (BOOL)isEqual:(MPStandaloneMessage *)object {
     BOOL isEqual = _messageId == object.messageId &&
                    _timestamp == object.timestamp &&

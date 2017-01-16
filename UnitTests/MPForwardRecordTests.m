@@ -224,15 +224,4 @@
     XCTAssertNil(dataRepresentation, @"Should have been nil.");
 }
 
-- (void)testDescription {
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
-    
-    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
-                                                                       execStatus:execStatus
-                                                                        stateFlag:YES];
-    
-    NSString *description = [forwardRecord description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-}
-
 @end

@@ -111,11 +111,6 @@ int main(int argc, char *argv[]);
     return self;
 }
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"%@", [self dictionaryRepresentation]];
-}
-
-
 #pragma mark Accessors
 - (NSString *)advertiserId {
     if (_advertiserId) {

@@ -282,12 +282,6 @@
     XCTAssertEqualObjects(event2, event1, @"Should have been equal.");
 }
 
-- (void)testDescription {
-    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Jogging" type:MPEventTypeNavigation];
-    NSString *description = [event description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-}
-
 - (void)testEventWithProduct {
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     

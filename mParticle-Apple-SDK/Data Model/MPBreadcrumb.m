@@ -43,10 +43,6 @@
     return self;
 }
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"Breadcrumb\n UUID: %@\n Content: %@\n timestamp: %.0f\n Session number: %@\n", self.uuid, self.content, self.timestamp, self.sessionNumber];
-}
-
 - (BOOL)isEqual:(MPBreadcrumb *)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPBreadcrumb class]]) {
         return NO;
