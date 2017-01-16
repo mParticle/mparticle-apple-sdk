@@ -36,7 +36,6 @@
 + (int64_t)launchNotificationHash;
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPNotificationControllerDelegate>)delegate;
 - (nonnull MParticleUserNotification *)newUserNotificationWithDictionary:(nonnull NSDictionary *)notificationDictionary actionIdentifier:(nullable NSString *)actionIdentifier state:(nullable NSString *)state;
-- (void)registerForSilentNotifications;
 - (void)scheduleNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 

@@ -409,23 +409,13 @@ NSString *const kMPStateKey = @"state";
     __weak MParticle *weakSelf = self;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
-    BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
-    
-    if (self.configSettings) {
-        NSNumber *configRegisterForSilentNotifications = self.configSettings[kMPConfigRegisterForSilentNotifications];
-        
-        if (configRegisterForSilentNotifications) {
-            registerForSilentNotifications = [configRegisterForSilentNotifications boolValue];
-        }
-    }
     
     [self.backendController startWithKey:apiKey
                                   secret:secret
                                 firstRun:firstRun
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
-          registerForSilentNotifications:registerForSilentNotifications
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            
