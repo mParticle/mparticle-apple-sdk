@@ -662,8 +662,6 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    __weak MPBackendController *weakSelf = self;
-    
     [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary) {
         if (!success) {
             if (completionHandler) {
@@ -673,16 +671,8 @@ static BOOL appBackgrounded = NO;
             return;
         }
         
-        __strong MPBackendController *strongSelf = weakSelf;
-        
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
         [MPResponseConfig save:responseConfig];
-        
-        if (responseConfig.influencedOpenTimer && strongSelf) {
-#if TARGET_OS_IOS == 1
-            strongSelf.notificationController.influencedOpenTimer = [responseConfig.influencedOpenTimer doubleValue];
-#endif
-        }
         
         if ([[MPStateMachine sharedInstance].minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
             MPILogDebug(@"Throttling batches");
@@ -1934,18 +1924,18 @@ static BOOL appBackgrounded = NO;
     }
     
     NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
-    if (!localKey) {
+    id existingValue = session.attributesDictionary[localKey];
+    if (!existingValue && [value isKindOfClass:[NSNumber class]]) {
         [self setSessionAttribute:session key:localKey value:value];
         return value;
     }
     
-    id currentValue = session.attributesDictionary[localKey];
-    if (![currentValue isKindOfClass:[NSNumber class]]) {
+    if (![existingValue isKindOfClass:[NSNumber class]]) {
         return nil;
     }
     
     NSDecimalNumber *incrementValue = [[NSDecimalNumber alloc] initWithString:[value stringValue]];
-    NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)currentValue stringValue]];
+    NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)existingValue stringValue]];
     newValue = [newValue decimalNumberByAdding:incrementValue];
     
     session.attributesDictionary[localKey] = newValue;

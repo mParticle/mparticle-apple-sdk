@@ -26,7 +26,6 @@
 - (instancetype)init {
     self = [super init];
     if (self) {
-        _kitCode = nil;
         _returnCode = MPKitReturnCodeFail;
         _forwardCount = 0;
     }

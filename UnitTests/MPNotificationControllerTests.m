@@ -139,39 +139,4 @@
     self.userNotification = userNotification;
 }
 
-- (void)testDidFinishLaunchingWithRemoteNotification {
-    NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:NO];
-    
-    NSNotification *notification = [[NSNotification alloc] initWithName:@"Testing did finish launching"
-                                                                 object:nil
-                                                               userInfo:@{UIApplicationLaunchOptionsRemoteNotificationKey:remoteNotificationDictionary}];
-    
-    [self.notificationController handleApplicationDidFinishLaunching:notification];
-    
-    XCTAssertNotNil(self.userNotification, @"User notification should not have been nil.");
-    XCTAssertEqualObjects(self.userNotification.contentId, @3, @"Content id is incorrect.");
-    XCTAssertEqualObjects(self.userNotification.campaignId, @2, @"Campaign id is incorrect.");
-    XCTAssertNotNil(self.userNotification.redactedUserNotificationString, @"Redacted notification should not have been nil.");
-    XCTAssertEqual(self.userNotification.behavior, (MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead), @"Behavior is incorrect.");
-}
-
-- (void)testDidFinishLaunchingNotInfluencedOpen {
-    NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:YES];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                        object:self
-                                                      userInfo:@{kMPUserNotificationDictionaryKey:remoteNotificationDictionary}];
-    
-    sleep(1);
-    
-    NSNotification *notification = [[NSNotification alloc] initWithName:@"Testing did finish launching"
-                                                                 object:nil
-                                                               userInfo:nil];
-    
-    [self.notificationController handleApplicationDidFinishLaunching:notification];
-    
-    XCTAssertFalse(self.userNotification.hasBeenUsedInInfluencedOpen, @"User notification should not have been marked as influenced open.");
-    XCTAssertFalse(self.userNotification.hasBeenUsedInDirectOpen, @"User notification should not have been marked as direct open.");
-}
-
 @end

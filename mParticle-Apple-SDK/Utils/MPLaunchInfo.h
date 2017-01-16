@@ -21,7 +21,7 @@
 @interface MPLaunchInfo : NSObject
 
 @property (nonatomic, strong, readonly, nonnull) NSURL *url;
-@property (nonatomic, strong, readonly, nonnull) NSString *sourceApplication;
+@property (nonatomic, strong, readonly, nullable) NSString *sourceApplication;
 @property (nonatomic, strong, readonly, nullable) NSString *annotation;
 @property (nonatomic, strong, readonly, nullable) NSDictionary<NSString *, id> *options;
 
