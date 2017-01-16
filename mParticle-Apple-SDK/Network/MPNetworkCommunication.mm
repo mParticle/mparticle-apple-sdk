@@ -237,9 +237,8 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         }
     }];
     
-    MPConnector *connector = [[MPConnector alloc] init];
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
+    MPConnector *connector = [[MPConnector alloc] initWithConnectionId:connectionId];
     
     [connector asyncGetDataFromURL:self.configURL
                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
@@ -576,9 +575,8 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     
     MPUpload *upload = uploads[index];
     NSString *uploadString = [upload serializedString];
-    MPConnector *connector = [[MPConnector alloc] init];
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
+    MPConnector *connector = [[MPConnector alloc] initWithConnectionId:connectionId];
     
     MPILogVerbose(@"Source Batch Id: %@", upload.uuid);
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -722,9 +720,8 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     }
     
     NSString *jsonString = [[NSString alloc] initWithData:sessionHistoryData encoding:NSUTF8StringEncoding];
-    MPConnector *connector = [[MPConnector alloc] init];
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
+    MPConnector *connector = [[MPConnector alloc] initWithConnectionId:connectionId];
     
     [connector asyncPostDataFromURL:self.eventURL
                             message:jsonString

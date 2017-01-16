@@ -41,8 +41,9 @@ typedef NS_ENUM(NSInteger, HTTPStatusCode) {
 
 @property (nonatomic, unsafe_unretained, readonly) BOOL active;
 @property (nonatomic, unsafe_unretained, readonly, getter = characterEncoding) NSStringEncoding characterEncoding;
-@property (nonatomic, strong, nonnull) NSString *connectionId;
+@property (nonatomic, strong, nonnull, readonly) NSString *connectionId;
 
+- (nonnull instancetype)initWithConnectionId:(nonnull NSString *)connectionId;
 - (void)asyncGetDataFromURL:(nonnull NSURL *)url completionHandler:(void (^ _Nonnull)(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse))completionHandler;
 - (void)asyncPostDataFromURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams completionHandler:(void (^ _Nonnull)(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse))completionHandler;
 - (void)cancelRequest;

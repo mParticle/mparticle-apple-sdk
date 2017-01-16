@@ -22,7 +22,6 @@
 @interface MPResponseConfig : NSObject <NSCoding>
 
 @property (nonatomic, copy, nonnull, readonly) NSDictionary *configuration;
-@property (nonatomic, strong, readonly, nullable) NSNumber *influencedOpenTimer;
 
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration;
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration dataReceivedFromServer:(BOOL)dataReceivedFromServer;

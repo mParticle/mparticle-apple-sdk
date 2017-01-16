@@ -88,7 +88,6 @@ NSString *const kMPStateKey = @"state";
         return nil;
     }
 
-    _commerce = nil;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
@@ -389,7 +388,9 @@ NSString *const kMPStateKey = @"state";
         appSecret = self.configSettings[kMPConfigSecret];
     }
     
-    [self startWithKey:appAPIKey secret:appSecret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
+    if (appAPIKey && appSecret) {
+        [self startWithKey:appAPIKey secret:appSecret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
+    }
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret {

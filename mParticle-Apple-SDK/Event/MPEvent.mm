@@ -64,7 +64,6 @@
     _name = name;
     _startTime = nil;
     _duration = @0;
-    _customFlagsDictionary = nil;
     self.type = type;
 
     return self;
@@ -228,7 +227,9 @@
         _type = type;
     }
     
-    _typeName = nil;
+    mParticle::EventType eventType = static_cast<mParticle::EventType>(_type);
+    _typeName = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(eventType).c_str()
+                                   encoding:NSUTF8StringEncoding];
 }
 
 - (NSString *)typeName {

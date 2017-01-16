@@ -25,9 +25,7 @@
 @interface MPNotificationController : NSObject
 
 #if TARGET_OS_IOS == 1
-@property (nonatomic, strong, readonly, nullable) NSString *initialRedactedUserNotificationString;
 @property (nonatomic, weak, nullable) id<MPNotificationControllerDelegate> delegate;
-@property (nonatomic, unsafe_unretained) NSTimeInterval influencedOpenTimer;
 
 + (nullable NSData *)deviceToken;
 + (nullable NSDictionary *)dictionaryFromLocalNotification:(nonnull UILocalNotification *)notification;
