@@ -2921,28 +2921,6 @@ static BOOL appBackgrounded = NO;
 
 #pragma mark MPNotificationControllerDelegate
 - (void)receivedUserNotification:(MParticleUserNotification *)userNotification {
-    switch (userNotification.command) {
-        case MPUserNotificationCommandConfigRefresh:
-            [self requestConfig:nil];
-            break;
-            
-            
-        case MPUserNotificationCommandDoNothing:
-            return;
-            break;
-            
-        default:
-            break;
-    }
-    
-    if (userNotification.shouldPersist) {
-        if (userNotification.userNotificationId) {
-            [[MPPersistenceController sharedInstance] updateUserNotification:userNotification];
-        } else {
-            [[MPPersistenceController sharedInstance] saveUserNotification:userNotification];
-        }
-    }
-    
     NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", [MPNotificationController deviceToken]],
                                           kMPPushNotificationStateKey:userNotification.state,
                                           kMPPushMessageProviderKey:kMPPushMessageProviderValue,
@@ -2960,10 +2938,6 @@ static BOOL appBackgrounded = NO;
     
     if (userNotification.actionTitle) {
         messageInfo[kMPPushNotificationActionTileKey] = userNotification.actionTitle;
-    }
-    
-    if (userNotification.behavior > 0) {
-        messageInfo[kMPPushNotificationBehaviorKey] = @(userNotification.behavior);
     }
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:_session messageInfo:messageInfo];
