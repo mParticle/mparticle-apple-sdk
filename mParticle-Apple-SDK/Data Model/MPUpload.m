@@ -45,12 +45,6 @@
     return self;
 }
 
-- (NSString *)description {
-    NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
-    
-    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp];
-}
-
 - (BOOL)isEqual:(MPUpload *)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPUpload class]]) {
         return NO;

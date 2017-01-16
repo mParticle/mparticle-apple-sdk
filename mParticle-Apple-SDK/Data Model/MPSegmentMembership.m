@@ -59,11 +59,6 @@ NSString *const kMPSegmentMembershipDrop = @"drop";
                   membershipAction:action];
 }
 
-- (NSString *)description {
-    NSString *actionString = self.action == MPSegmentMembershipActionAdd ? kMPSegmentMembershipAdd : kMPSegmentMembershipDrop;
-    return [NSString stringWithFormat:@"  MPSegmentMembership Timestamp: %.4f Action: %@", self.timestamp, actionString];
-}
-
 - (BOOL)isEqual:(MPSegmentMembership *)object {
     BOOL isEqual = _segmentMembershipId == object.segmentMembershipId &&
                    _timestamp == object.timestamp &&

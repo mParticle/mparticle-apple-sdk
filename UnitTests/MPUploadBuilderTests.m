@@ -161,9 +161,6 @@
     
     [uploadBuilder withUserIdentities:userIdentities];
     
-    NSString *description = [uploadBuilder description];
-    XCTAssertNotNil(description);
-    
     [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
         XCTAssertNotNil(upload);
         Class uploadClass = [MPUpload class];
@@ -223,9 +220,6 @@
                                 ];
     
     [uploadBuilder withUserIdentities:userIdentities];
-    
-    NSString *description = [uploadBuilder description];
-    XCTAssertNotNil(description);
     
     [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
         XCTAssertNotNil(upload);

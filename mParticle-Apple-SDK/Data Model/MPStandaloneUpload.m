@@ -44,20 +44,7 @@
     return self;
 }
 
-- (NSString *)description {
-    NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
-    
-    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp];
-}
-
 - (BOOL)isEqual:(MPStandaloneUpload *)object {
-//    unsigned int numberOfProperties;
-//    class_copyPropertyList([self class], &numberOfProperties);
-//    
-//    if (numberOfProperties != 5) {
-//        return NO;
-//    }
-    
     BOOL isEqual = _uploadId == object.uploadId &&
                    _timestamp == object.timestamp &&
                    [_uploadData isEqualToData:object.uploadData];

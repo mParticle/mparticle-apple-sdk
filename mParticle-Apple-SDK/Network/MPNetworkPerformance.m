@@ -147,12 +147,6 @@ NSString *const GoogleAnalyticsPlainURL = @"http://www.google-analytics.com/coll
 }
 
 #pragma mark Public methods
-- (NSString *)description {
-    NSString *description = [NSString stringWithFormat:@"Network Performance \nURL: %@ \nHTTP Method: %@ \nStart Time: %.2f \nEnd Time: %.2f \nElapsedTime: %.2f \nBytes In: %ld \nBytes Out: %ld \nResponseCode: %ld\n\n",
-                             [urlRequest.URL absoluteString], _httpMethod, _startTime, _endTime, _elapsedTime, (long)_bytesIn, (long)_bytesOut, (long)_responseCode];
-    return description;
-}
-
 - (void)setStartDate:(NSDate *)date {
     self.startTime = [date timeIntervalSince1970] * 1000;
 }

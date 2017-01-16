@@ -96,18 +96,6 @@ using namespace std;
     return self;
 }
 
-- (NSString *)description {
-    NSString *description;
-    
-    if (_session) {
-        description = [NSString stringWithFormat:@"MPUploadBuilder\n Session Id: %lld\n UploadDictionary: %@", self.session.sessionId, uploadDictionary];
-    } else {
-        description = [NSString stringWithFormat:@"MPUploadBuilder\n UploadDictionary: %@", uploadDictionary];
-    }
-    
-    return description;
-}
-
 #pragma mark Public class methods
 + (MPUploadBuilder *)newBuilderWithMessages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];

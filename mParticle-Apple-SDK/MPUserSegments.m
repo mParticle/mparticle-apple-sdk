@@ -23,10 +23,6 @@
 
 @implementation MPUserSegments
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"MPUserSegments\n Ids: %@\n Expiration: %@", [self commaSeparatedSegments], [MPDateFormatter stringFromDateRFC3339:self.expiration]];
-}
-
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPUserSegments *copyObject = [[[self class] alloc] init];

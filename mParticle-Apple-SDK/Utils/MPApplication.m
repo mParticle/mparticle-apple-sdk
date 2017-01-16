@@ -95,10 +95,6 @@ static NSString *kMPAppStoreReceiptString = nil;
     }
 }
 
-- (NSString *)description {
-    return [NSString stringWithFormat:@"%@", [self dictionaryRepresentation]];
-}
-
 #pragma mark Accessors
 - (NSString *)architecture {
     if (_architecture) {

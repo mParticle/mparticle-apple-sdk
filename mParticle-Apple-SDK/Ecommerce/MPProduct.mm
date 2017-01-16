@@ -91,23 +91,6 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return self;
 }
 
-- (NSString *)description {
-    NSMutableString *description = [[NSMutableString alloc] init];
-    [description appendString:@"MPProduct {\n"];
-    
-    [_objectDictionary enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        [description appendFormat:@"  %@ : %@\n", key, obj];
-    }];
-    
-    [_userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        [description appendFormat:@"  %@ : %@\n", key, obj];
-    }];
-    
-    [description appendString:@"}\n"];
-
-    return description;
-}
-
 - (BOOL)isEqual:(id)object {
     if (MPIsNull(object) || ![object isKindOfClass:[MPProduct class]]) {
         return NO;

@@ -59,9 +59,6 @@
     [session suspendSession];
     XCTAssertEqual(session.numberOfInterruptions, 1, @"Should have been equal.");
     
-    NSString *description = [session description];
-    XCTAssertNotNil(description, @"Should not have been nil");
-    
     XCTAssertEqual(session.sessionId, 0, @"Should have been equal");
     XCTAssertFalse(session.persisted, @"Should have been false");
     
@@ -87,9 +84,6 @@
     
     MPMessage *message = (MPMessage *)[messageBuilder build];
     XCTAssertNotNil(message, @"Should not have been nil.");
-    
-    NSString *description = [message description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
     
     MPMessage *messageCopy = [message copy];
     XCTAssertNotNil(messageCopy, @"Should not have been nil.");
@@ -135,11 +129,8 @@
     MPUpload *upload = [[MPUpload alloc] initWithSession:session uploadDictionary:uploadDictionary];
     XCTAssertNotNil(upload, @"Should not have been nil.");
     
-    NSString *description = [upload description];
-    XCTAssertNotNil(description, @"Should not have been nil.");
-    
-    description = [upload serializedString];
-    XCTAssertNotNil(description, @"Should not have been nil.");
+    NSString *serializedString = [upload serializedString];
+    XCTAssertNotNil(serializedString, @"Should not have been nil.");
     
     MPUpload *uploadCopy = [upload copy];
     XCTAssertNotNil(uploadCopy, @"Should not have been nil.");

@@ -46,18 +46,6 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 @implementation MPTransactionAttributes
 
-- (NSString *)description {
-    __block NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ {\n", [[self class] description]];
-    
-    [_attributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-        [description appendFormat:@"  %@ : %@\n", key, obj];
-    }];
-    
-    [description appendString:@"}\n"];
-    
-    return (NSString *)description;
-}
-
 - (BOOL)isEqual:(id)object {
     if (![object isKindOfClass:[MPTransactionAttributes class]]) {
         return NO;
