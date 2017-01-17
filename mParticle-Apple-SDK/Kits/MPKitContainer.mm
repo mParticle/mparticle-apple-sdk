@@ -302,15 +302,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (MPForwardQueueItem *forwardQueueItem in _forwardQueue) {
         switch (forwardQueueItem.queueItemType) {
             case MPQueueItemTypeEvent:
-                [self forwardSDKCall:forwardQueueItem.selector event:(MPEvent *)forwardQueueItem.queueParameters[0] messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.generalPurposeCompletionHandler];
+                [self forwardSDKCall:forwardQueueItem.selector event:(MPEvent *)forwardQueueItem.queueParameters[0] messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.completionHandler];
                 break;
                 
             case MPQueueItemTypeEcommerce:
-                [self forwardCommerceEventCall:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] kitHandler:forwardQueueItem.generalPurposeCompletionHandler];
+                [self forwardCommerceEventCall:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] kitHandler:forwardQueueItem.completionHandler];
                 break;
                 
             case MPQueueItemTypeGeneralPurpose:
-                [self forwardSDKCall:forwardQueueItem.selector parameters:forwardQueueItem.queueParameters messageType:forwardQueueItem.messageType kitHandler:forwardQueueItem.generalPurposeCompletionHandler];
+                [self forwardSDKCall:forwardQueueItem.selector parameters:forwardQueueItem.queueParameters messageType:forwardQueueItem.messageType kitHandler:forwardQueueItem.completionHandler];
                 break;
         }
     }

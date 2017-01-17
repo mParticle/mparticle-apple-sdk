@@ -136,29 +136,21 @@
     
     XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
+    NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:session];
     
-    [persistence fetchMessagesForUploadingInSession:session
-                                  completionHandler:^(NSArray<MPMessage *> *messages) {
-                                      MPMessage *fetchedMessage = [messages lastObject];
-                                      
-                                      XCTAssertEqualObjects(message, fetchedMessage, @"Message and fetchedMessage are not equal.");
-                                      
-                                      [persistence deleteSession:session];
-                                      
-                                      [persistence fetchMessagesForUploadingInSession:session
-                                                                    completionHandler:^(NSArray *messages) {
-                                                                        if (messages) {
-                                                                            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageId == %lld", fetchedMessage.messageId];
-                                                                            messages = [messages filteredArrayUsingPredicate:predicate];
-                                                                            XCTAssertTrue(messages.count == 0, @"Message is not being deleted.");
-                                                                        }
-                                                                        
-                                                                        [expectation fulfill];
-                                                                    }];
-                                  }];
+    MPMessage *fetchedMessage = [messages lastObject];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    XCTAssertEqualObjects(message, fetchedMessage);
+    
+    [persistence deleteSession:session];
+    
+    messages = [persistence fetchMessagesForUploadingInSession:session];
+    
+    if (messages) {
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageId == %lld", fetchedMessage.messageId];
+        messages = [messages filteredArrayUsingPredicate:predicate];
+        XCTAssertTrue(messages.count == 0, @"Message is not being deleted.");
+    }
 }
 
 - (void)testDeleteMessages {
@@ -176,21 +168,15 @@
         [persistence saveMessage:message];
     }
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
+    NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:session];
+
+    XCTAssertNotNil(messages);
+
+    [persistence deleteMessages:messages];
     
-    [persistence fetchMessagesForUploadingInSession:session
-                                  completionHandler:^(NSArray<MPMessage *> *messages) {
-                                      [persistence deleteMessages:messages];
-                                      
-                                      [persistence fetchMessagesForUploadingInSession:session
-                                                                    completionHandler:^(NSArray *messages) {
-                                                                        XCTAssertNil(messages, @"Should have been nil.");
-                                                                        
-                                                                        [expectation fulfill];
-                                                                    }];
-                                  }];
+    messages = [persistence fetchMessagesForUploadingInSession:session];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    XCTAssertNil(messages);
 }
 
 - (void)testUpload {
@@ -431,7 +417,7 @@
     XCTAssertNotNil(integrationAttributesArray);
     XCTAssertEqual(integrationAttributesArray.count, 2);
 
-    [persistence deleteIntegrationAttributes:integrationAttributes2];
+    [persistence deleteIntegrationAttributesForKitCode:integrationAttributes2.kitCode];
     integrationAttributesArray = [persistence fetchIntegrationAttributes];
     XCTAssertNotNil(integrationAttributesArray);
     XCTAssertEqual(integrationAttributesArray.count, 1);
@@ -537,16 +523,9 @@
     [persistence saveConsumerInfo:consumerInfo];
     [persistence updateConsumerInfo:consumerInfo];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
-    
-    [persistence fetchConsumerInfo:^(MPConsumerInfo * _Nullable consumerInfo) {
-        XCTAssertNotNil(consumerInfo);
-        [persistence deleteConsumerInfo];
-        
-        [expectation fulfill];
-    }];
-    
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    consumerInfo = [persistence fetchConsumerInfo];
+    XCTAssertNotNil(consumerInfo);
+    [persistence deleteConsumerInfo];
 }
 
 - (void)testForwardRecord {

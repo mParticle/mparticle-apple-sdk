@@ -93,14 +93,14 @@
     
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], commerceEvent);
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
+    XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
         MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] shouldFilter:NO];
         MPKitExecStatus *execStatus = nil;
         
-        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, nil, kitFilter, &execStatus);
+        forwardQueueItem.completionHandler(kitMockTest, nil, kitFilter, &execStatus);
     });
     
     [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -124,7 +124,7 @@
     
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], event);
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
+    XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
@@ -132,7 +132,7 @@
         
         MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
         
-        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, forwardQueueItem.queueParameters, kitFilter, &execStatus);
+        forwardQueueItem.completionHandler(kitMockTest, forwardQueueItem.queueParameters, kitFilter, &execStatus);
     });
     
     [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -211,14 +211,14 @@
     MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:queueParameters messageType:MPMessageTypePushRegistration completionHandler:kitHandler];
     
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler, @"Should have been equal.");
+    XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters, @"Should have been equal.");
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
         MPKitExecStatus *execStatus = nil;
         
-        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, queueParameters, nil, &execStatus);
+        forwardQueueItem.completionHandler(kitMockTest, queueParameters, nil, &execStatus);
     });
     
     [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];

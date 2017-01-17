@@ -378,7 +378,6 @@ static BOOL appBackgrounded = NO;
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     if (nextCleanUpTime < currentTime) {
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        [persistence deleteExpiredUserNotifications];
         [persistence deleteRecordsOlderThan:(currentTime - ONE_HUNDRED_EIGHTY_DAYS)];
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
@@ -960,70 +959,68 @@ static BOOL appBackgrounded = NO;
     __weak MPBackendController *weakSelf = self;
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
-    [persistence fetchMessagesForUploadingInSession:uploadSession
-                                  completionHandler:^(NSArray<MPMessage *> *messages) {
-                                      if (!messages) {
-                                          sessionBeingUploaded = nil;
-                                          completionHandlerCopy(uploadSession);
-                                          return;
-                                      }
-                                      
-                                      __strong MPBackendController *strongSelf = weakSelf;
-                                      MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
-                                      
-                                      if (!uploadBuilder || !strongSelf) {
-                                          sessionBeingUploaded = nil;
-                                          completionHandlerCopy(uploadSession);
-                                          return;
-                                      }
-                                      
-                                      [uploadBuilder withUserAttributes:strongSelf.userAttributes deletedUserAttributes:deletedUserAttributes];
-                                      [uploadBuilder withUserIdentities:strongSelf.userIdentities];
-                                      [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                          [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                                          [strongSelf resetUserIdentitiesFirstTimeUseFlag];
-                                          
-                                          [persistence fetchUploadsInSession:session
-                                                           completionHandler:^(NSArray<MPUpload *> *uploads) {
-                                                               if (!uploads) {
-                                                                   sessionBeingUploaded = nil;
-                                                                   completionHandlerCopy(uploadSession);
-                                                                   return;
-                                                               }
-                                                               
-                                                               if ([MPStateMachine sharedInstance].dataRamped) {
-                                                                   for (MPUpload *upload in uploads) {
-                                                                       [persistence deleteUpload:upload];
-                                                                   }
-                                                                   
-                                                                   [persistence deleteNetworkPerformanceMessages];
-                                                                   [persistence deleteMessages:messages];
-                                                                   return;
-                                                               }
-                                                               
-                                                               [strongSelf.networkCommunication upload:uploads
-                                                                                                 index:0
-                                                                                     completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
-                                                                                         if (!success) {
-                                                                                             return;
-                                                                                         }
-                                                                                         
-                                                                                         [MPResponseEvents parseConfiguration:responseDictionary session:uploadSession];
-                                                                                         
-                                                                                         [persistence deleteUpload:upload];
-                                                                                         
-                                                                                         if (!finished) {
-                                                                                             return;
-                                                                                         }
-                                                                                         
-                                                                                         sessionBeingUploaded = nil;
-                                                                                         completionHandlerCopy(uploadSession);
-                                                                                     }];
-                                                           }];
-                                      }];
-                                      
-                                      deletedUserAttributes = nil;
-                                  }];
+    NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:uploadSession];
+    if (!messages) {
+        sessionBeingUploaded = nil;
+        completionHandlerCopy(uploadSession);
+        return;
+    }
+    
+    __strong MPBackendController *strongSelf = weakSelf;
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
+    
+    if (!uploadBuilder || !strongSelf) {
+        sessionBeingUploaded = nil;
+        completionHandlerCopy(uploadSession);
+        return;
+    }
+    
+    [uploadBuilder withUserAttributes:strongSelf.userAttributes deletedUserAttributes:deletedUserAttributes];
+    [uploadBuilder withUserIdentities:strongSelf.userIdentities];
+    [uploadBuilder build:^(MPDataModelAbstract *upload) {
+        [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+        [strongSelf resetUserIdentitiesFirstTimeUseFlag];
+        
+        [persistence fetchUploadsInSession:session
+                         completionHandler:^(NSArray<MPUpload *> *uploads) {
+                             if (!uploads) {
+                                 sessionBeingUploaded = nil;
+                                 completionHandlerCopy(uploadSession);
+                                 return;
+                             }
+                             
+                             if ([MPStateMachine sharedInstance].dataRamped) {
+                                 for (MPUpload *upload in uploads) {
+                                     [persistence deleteUpload:upload];
+                                 }
+                                 
+                                 [persistence deleteNetworkPerformanceMessages];
+                                 [persistence deleteMessages:messages];
+                                 return;
+                             }
+                             
+                             [strongSelf.networkCommunication upload:uploads
+                                                               index:0
+                                                   completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
+                                                       if (!success) {
+                                                           return;
+                                                       }
+                                                       
+                                                       [MPResponseEvents parseConfiguration:responseDictionary session:uploadSession];
+                                                       
+                                                       [persistence deleteUpload:upload];
+                                                       
+                                                       if (!finished) {
+                                                           return;
+                                                       }
+                                                       
+                                                       sessionBeingUploaded = nil;
+                                                       completionHandlerCopy(uploadSession);
+                                                   }];
+                         }];
+    }];
+    
+    deletedUserAttributes = nil;
 }
 
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(BOOL success))completionHandler {
@@ -1040,7 +1037,6 @@ static BOOL appBackgrounded = NO;
     };
     
     if (!openSessions || openSessions.count == 0) {
-        [persistence deleteMessagesWithNoSession];
         invokeCompletionHandler(YES);
         return;
     }
@@ -1151,15 +1147,12 @@ static BOOL appBackgrounded = NO;
                                                                
                                                                [persistence deleteMessages:messages];
                                                                [persistence deleteNetworkPerformanceMessages];
+                                                               MPSession *archivedSession = [persistence archiveSession:session];
+                                                               [persistence deleteSession:archivedSession];
                                                                
-                                                               [persistence archiveSession:session
-                                                                         completionHandler:^(MPSession *archivedSession) {
-                                                                             [persistence deleteSession:archivedSession];
-                                                                             
-                                                                             if (completionHandler) {
-                                                                                 completionHandler(NO);
-                                                                             }
-                                                                         }];
+                                                               if (completionHandler) {
+                                                                   completionHandler(NO);
+                                                               }
                                                                
                                                                return;
                                                            }
@@ -1190,15 +1183,13 @@ static BOOL appBackgrounded = NO;
                                                                                                        [persistence deleteUploadId:[uploadId intValue]];
                                                                                                    }
                                                                                                    
-                                                                                                   [persistence archiveSession:session
-                                                                                                             completionHandler:^(MPSession *archivedSession) {
-                                                                                                                 [persistence deleteSession:archivedSession];
-                                                                                                                 [persistence deleteNetworkPerformanceMessages];
-                                                                                                                 
-                                                                                                                 if (completionHandler) {
-                                                                                                                     completionHandler(YES);
-                                                                                                                 }
-                                                                                                             }];
+                                                                                                   MPSession *archivedSession = [persistence archiveSession:session];
+                                                                                                   [persistence deleteSession:archivedSession];
+                                                                                                   [persistence deleteNetworkPerformanceMessages];
+                                                                                                   
+                                                                                                   if (completionHandler) {
+                                                                                                       completionHandler(YES);
+                                                                                                   }
                                                                                                }];
                                                        }];
                                   }];
@@ -1362,9 +1353,9 @@ static BOOL appBackgrounded = NO;
         }
         
         // Archive session
-        MPSession *archivedSession = [persistence archiveSessionSync:sessionCopy];
+        MPSession *archivedSession = [persistence archiveSession:sessionCopy];
         if (archivedSession) {
-            [persistence deleteSessionSync:archivedSession];
+            [persistence deleteSession:archivedSession];
         }
     }
     
@@ -1665,7 +1656,7 @@ static BOOL appBackgrounded = NO;
         [self saveMessage:message updateSession:NO];
     }
     
-    [persistence archiveSession:endSession completionHandler:nil];
+    [persistence archiveSession:endSession];
     
     __weak MPBackendController *weakSelf = self;
     

@@ -277,14 +277,12 @@
         
         XCTAssertEqualObjects(session, self.session, @"Sessions are not equal.");
         
-        [persistence fetchMessagesForUploadingInSession:session
-                                      completionHandler:^(NSArray *messages) {
-                                          MPMessage *message = [messages lastObject];
-                                          
-                                          XCTAssertEqualObjects(message.messageType, @"ss", @"Message type is not session start.");
-                                          
-                                          [expectation fulfill];
-                                      }];
+        NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:session];
+        MPMessage *message = [messages lastObject];
+        
+        XCTAssertEqualObjects(message.messageType, @"ss", @"Message type is not session start.");
+        
+        [expectation fulfill];
     }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -300,46 +298,45 @@
         MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
-        [persistence fetchMessagesForUploadingInSession:session
-                                      completionHandler:^(NSArray *messages) {
-                                          BOOL containsSessionStart = NO;
-                                          
-                                          for (MPMessage *message in messages) {
-                                              if ([message.messageType isEqualToString:@"ss"]) {
-                                                  containsSessionStart = YES;
-                                              }
-                                          }
-                                          
-                                          XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
-                                          
-                                          [self.backendController endSession];
-                                          [self.backendController endSession];
-                                          [self.backendController endSession];
-                                          [self.backendController endSession];
-                                          [self.backendController endSession];
-                                          [self.backendController endSession];
-                                          [self.backendController endSession];
-                                          
-                                          [persistence fetchMessagesForUploadingInSession:session
-                                                                        completionHandler:^(NSArray *messages) {
-                                                                            NSUInteger endSessionCount = 0;
-                                                                            for (MPMessage *message in messages) {
-                                                                                if ([message.messageType isEqualToString:@"se"]) {
-                                                                                    ++endSessionCount;
-                                                                                }
-                                                                            }
-                                                                            
-                                                                            XCTAssertEqual(endSessionCount, 1, @"Logging session end multiple times.");
-                                                                            
-                                                                            [persistence deletePreviousSession];
-                                                                            
-                                                                            [persistence fetchPreviousSession:^(MPSession *previousSession) {
-                                                                                XCTAssertNil(previousSession, @"Previous session is not being removed.");
-                                                                                
-                                                                                [expectation fulfill];
-                                                                            }];
-                                                                        }];
-                                      }];
+        NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:session];
+
+        BOOL containsSessionStart = NO;
+        
+        for (MPMessage *message in messages) {
+            if ([message.messageType isEqualToString:@"ss"]) {
+                containsSessionStart = YES;
+            }
+        }
+        
+        XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
+        
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        
+        messages = [persistence fetchMessagesForUploadingInSession:session];
+        
+        
+        NSUInteger endSessionCount = 0;
+        for (MPMessage *message in messages) {
+            if ([message.messageType isEqualToString:@"se"]) {
+                ++endSessionCount;
+            }
+        }
+        
+        XCTAssertEqual(endSessionCount, 1, @"Logging session end multiple times.");
+        
+        [persistence deletePreviousSession];
+        
+        [persistence fetchPreviousSession:^(MPSession *previousSession) {
+            XCTAssertNil(previousSession, @"Previous session is not being removed.");
+            
+            [expectation fulfill];
+        }];
     }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -419,51 +416,50 @@
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [persistence fetchMessagesForUploadingInSession:self.session
-                                      completionHandler:^(NSArray *messages) {
-                                          XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-                                          
-                                          for (MPMessage *message in messages) {
-                                              XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
-                                          }
-                                          
-                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:messages sessionTimeout:100 uploadInterval:100];
-                                          XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
-                                          
-                                          if (!uploadBuilder) {
-                                              return;
-                                          }
-                                          
-                                          [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
-                                          [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-                                          [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                              [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                                              
-                                              NSArray *messages = [persistence fetchMessagesInSession:self.session];
-                                              
-                                              XCTAssertNotNil(messages, @"There are no messages in session.");
-                                              
-                                              for (MPMessage *message in messages) {
-                                                  XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
-                                              }
-                                              
-                                              [persistence fetchUploadsInSession:self.session
-                                                               completionHandler:^(NSArray *uploads) {
-                                                                   XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
-                                                                   
-                                                                   for (MPUpload *upload in uploads) {
-                                                                       [persistence deleteUpload:upload];
-                                                                   }
-                                                                   
-                                                                   [persistence fetchUploadsInSession:self.session
-                                                                                    completionHandler:^(NSArray *uploads) {
-                                                                                        XCTAssertNil(uploads, @"Uploads are not being deleted.");
-                                                                                        
-                                                                                        [expectation fulfill];
-                                                                                    }];
-                                                               }];
-                                          }];
-                                      }];
+        NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:self.session];
+
+        XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+        
+        for (MPMessage *message in messages) {
+            XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        }
+        
+        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:messages sessionTimeout:100 uploadInterval:100];
+        XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+        
+        if (!uploadBuilder) {
+            return;
+        }
+        
+        [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
+        [uploadBuilder withUserIdentities:self.backendController.userIdentities];
+        [uploadBuilder build:^(MPDataModelAbstract *upload) {
+            [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+            
+            NSArray *messages = [persistence fetchMessagesInSession:self.session];
+            
+            XCTAssertNotNil(messages, @"There are no messages in session.");
+            
+            for (MPMessage *message in messages) {
+                XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
+            }
+            
+            [persistence fetchUploadsInSession:self.session
+                             completionHandler:^(NSArray *uploads) {
+                                 XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
+                                 
+                                 for (MPUpload *upload in uploads) {
+                                     [persistence deleteUpload:upload];
+                                 }
+                                 
+                                 [persistence fetchUploadsInSession:self.session
+                                                  completionHandler:^(NSArray *uploads) {
+                                                      XCTAssertNil(uploads, @"Uploads are not being deleted.");
+                                                      
+                                                      [expectation fulfill];
+                                                  }];
+                             }];
+        }];
     });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -485,65 +481,64 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Ramp upload test"];
     
-    [persistence fetchMessagesForUploadingInSession:session
-                                  completionHandler:^(NSArray *persistedMessages) {
-                                      MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
-                                      XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
-                                      
-                                      if (!uploadBuilder) {
-                                          return;
-                                      }
-                                      
-                                      [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
-                                      [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-                                      [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                          [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                                          
-                                          [persistence fetchUploadsInSession:session
-                                                           completionHandler:^(NSArray *uploads) {
-                                                               XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
-                                                               
-                                                               MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-                                                               [stateMachine configureRampPercentage:@100];
-                                                               
-                                                               XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
-                                                               
-                                                               for (MPUpload *upload in uploads) {
-                                                                   [persistence deleteUpload:upload];
-                                                               }
-                                                               
-                                                               [persistence fetchUploadsInSession:session
-                                                                                completionHandler:^(NSArray *uploads) {
-                                                                                    XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
+    NSArray<MPMessage *> *persistedMessages = [persistence fetchMessagesForUploadingInSession:session];
+
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+    XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+    
+    if (!uploadBuilder) {
+        return;
+    }
+    
+    [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
+    [uploadBuilder withUserIdentities:self.backendController.userIdentities];
+    [uploadBuilder build:^(MPDataModelAbstract *upload) {
+        [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+        
+        [persistence fetchUploadsInSession:session
+                         completionHandler:^(NSArray *uploads) {
+                             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
+                             
+                             MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+                             [stateMachine configureRampPercentage:@100];
+                             
+                             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
+                             
+                             for (MPUpload *upload in uploads) {
+                                 [persistence deleteUpload:upload];
+                             }
+                             
+                             [persistence fetchUploadsInSession:session
+                                              completionHandler:^(NSArray *uploads) {
+                                                  XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
+                                                  
+                                                  [persistence fetchUploadedMessagesInSession:session
+                                                            excludeNetworkPerformanceMessages:NO
+                                                                            completionHandler:^(NSArray *persistedMessages) {
+                                                                                MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+                                                                                XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+                                                                                
+                                                                                if (!uploadBuilder) {
+                                                                                    return;
+                                                                                }
+                                                                                
+                                                                                [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
+                                                                                [uploadBuilder withUserIdentities:self.backendController.userIdentities];
+                                                                                [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                                                                    [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                                                                                     
                                                                                     [persistence fetchUploadedMessagesInSession:session
                                                                                               excludeNetworkPerformanceMessages:NO
                                                                                                               completionHandler:^(NSArray *persistedMessages) {
-                                                                                                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
-                                                                                                                  XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+                                                                                                                  XCTAssertNil(persistedMessages, @"Messages are not being deleted are being moved to the uploads table.");
                                                                                                                   
-                                                                                                                  if (!uploadBuilder) {
-                                                                                                                      return;
-                                                                                                                  }
-                                                                                                                  
-                                                                                                                  [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
-                                                                                                                  [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-                                                                                                                  [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                                                                                                      [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
-                                                                                                                      
-                                                                                                                      [persistence fetchUploadedMessagesInSession:session
-                                                                                                                                excludeNetworkPerformanceMessages:NO
-                                                                                                                                                completionHandler:^(NSArray *persistedMessages) {
-                                                                                                                                                    XCTAssertNil(persistedMessages, @"Messages are not being deleted are being moved to the uploads table.");
-                                                                                                                                                    
-                                                                                                                                                    [expectation fulfill];
-                                                                                                                                                }];
-                                                                                                                  }];
+                                                                                                                  [expectation fulfill];
                                                                                                               }];
                                                                                 }];
-                                                           }];
-                                      }];
-                                  }];
+                                                                            }];
+                                              }];
+                         }];
+    }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
@@ -563,33 +558,26 @@
     [self.backendController forceAppFinishedLaunching];
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active with AppLink test"];
+    NSArray<MPMessage *> *messages = [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session];
+
+    XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
     
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session
-                                                               completionHandler:^(NSArray *messages) {
-                                                                   XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-                                                                   
-                                                                   for (MPMessage *message in messages) {
-                                                                       if ([message.messageType isEqualToString:@"ast"]) {
-                                                                           NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-                                                                           NSRange testRange = [messageString rangeOfString:@"al_applink_data"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"AppLinks is not in the launch URL.");
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"\"src\":\"AppLink(com.mParticle.UnitTest)\""];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"\"nsi\""];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"lpr"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
-                                                                       }
-                                                                   }
-                                                                   
-                                                                   [expectation fulfill];
-                                                               }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    for (MPMessage *message in messages) {
+        if ([message.messageType isEqualToString:@"ast"]) {
+            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+            NSRange testRange = [messageString rangeOfString:@"al_applink_data"];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"AppLinks is not in the launch URL.");
+            
+            testRange = [messageString rangeOfString:@"\"src\":\"AppLink(com.mParticle.UnitTest)\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
+            
+            testRange = [messageString rangeOfString:@"\"nsi\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
+            
+            testRange = [messageString rangeOfString:@"lpr"];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
+        }
+    }
 #endif
 }
 
@@ -608,36 +596,29 @@
     [self.backendController forceAppFinishedLaunching];
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active test"];
+    NSArray<MPMessage *> *messages = [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session];
+
+    XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
     
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session
-                                                               completionHandler:^(NSArray *messages) {
-                                                                   XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-                                                                   
-                                                                   for (MPMessage *message in messages) {
-                                                                       if ([message.messageType isEqualToString:@"ast"]) {
-                                                                           NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-                                                                           NSRange testRange = [messageString rangeOfString:@"particlebox"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"particlebox is not in the launch URL.");
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"\"src\":\"com.mParticle.UnitTest\""];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"\"nsi\""];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"lpr"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
-                                                                           
-                                                                           testRange = [messageString rangeOfString:@"key2"];
-                                                                           XCTAssertNotEqual(testRange.location, NSNotFound);
-                                                                       }
-                                                                   }
-                                                                   
-                                                                   [expectation fulfill];
-                                                               }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    for (MPMessage *message in messages) {
+        if ([message.messageType isEqualToString:@"ast"]) {
+            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+            NSRange testRange = [messageString rangeOfString:@"particlebox"];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"particlebox is not in the launch URL.");
+            
+            testRange = [messageString rangeOfString:@"\"src\":\"com.mParticle.UnitTest\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
+            
+            testRange = [messageString rangeOfString:@"\"nsi\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
+            
+            testRange = [messageString rangeOfString:@"lpr"];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
+            
+            testRange = [messageString rangeOfString:@"key2"];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
+        }
+    }
 #endif
 }
 
@@ -1044,31 +1025,24 @@
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Set location"];
-    
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     [self.backendController logEvent:event
                              attempt:0
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
     
-    [persistence fetchMessagesForUploadingInSession:self.session
-                                  completionHandler:^(NSArray *messages) {
-                                      XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    NSArray<MPMessage *> *messages = [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session];
 
-                                      MPMessage *message = messages.lastObject;
-                                      NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-                                      NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
-                                      XCTAssertNotEqual(range.location, NSNotFound);
-                                      range = [messageString rangeOfString:@"\"lng\":-73.98738"];
-                                      XCTAssertNotEqual(range.location, NSNotFound);
-                                      
-                                      [persistence deleteMessages:messages];
-                                      
-                                      [expectation fulfill];
-                                  }];
-
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    MPMessage *message = messages.lastObject;
+    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+    NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
+    XCTAssertNotEqual(range.location, NSNotFound);
+    range = [messageString rangeOfString:@"\"lng\":-73.98738"];
+    XCTAssertNotEqual(range.location, NSNotFound);
+    
+    [persistence deleteMessages:messages];
 #endif
 
     self.backendController.initializationStatus = originalInitializationStatus;

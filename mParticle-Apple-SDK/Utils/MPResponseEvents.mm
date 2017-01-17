@@ -38,9 +38,7 @@
         MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;
         [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
         [persistence updateConsumerInfo:consumerInfo];
-        [persistence fetchConsumerInfo:^(MPConsumerInfo *consumerInfo) {
-            [MPStateMachine sharedInstance].consumerInfo = consumerInfo;
-        }];
+        [MPStateMachine sharedInstance].consumerInfo = [persistence fetchConsumerInfo];
     }
     
     // LTV
