@@ -34,7 +34,7 @@ typedef NS_ENUM(NSUInteger, MPQueueItemType) {
 
 @interface MPForwardQueueItem : NSObject
 
-@property (nonatomic, copy, readonly, nullable) void (^generalPurposeCompletionHandler)(_Nonnull id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus);
+@property (nonatomic, copy, readonly, nullable) void (^completionHandler)(_Nonnull id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus);
 
 @property (nonatomic, unsafe_unretained, readonly) MPMessageType messageType;
 @property (nonatomic, unsafe_unretained) MPQueueItemType queueItemType;

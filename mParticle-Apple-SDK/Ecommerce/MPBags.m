@@ -137,7 +137,12 @@
 }
 
 - (void)removeAllProductBags {
-    [[MPPersistenceController sharedInstance] deleteAllProductBags];
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    NSArray<MPProductBag *> *productBags = [persistence fetchProductBags];
+    for (MPProductBag *productBag in productBags) {
+        [persistence deleteProductBag:productBag];
+    }
+    
     _productBagsArray = nil;
 }
 

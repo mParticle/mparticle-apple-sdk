@@ -474,7 +474,7 @@
     XCTAssertEqual(kitContainer.forwardQueue.count, 1);
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], commerceEvent);
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
+    XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
 
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -497,7 +497,7 @@
     XCTAssertEqual(kitContainer.forwardQueue.count, 1);
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], event);
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
+    XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -543,7 +543,7 @@
     XCTAssertEqual(kitContainer.forwardQueue.count, 1);
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters);
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
+    XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0);

@@ -54,7 +54,7 @@
     }
     
     _selector = selector;
-    _generalPurposeCompletionHandler = [completionHandler copy];
+    _completionHandler = [completionHandler copy];
     _queueParameters = parameters;
     _messageType = messageType;
     
