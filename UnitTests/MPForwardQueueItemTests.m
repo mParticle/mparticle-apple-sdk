@@ -78,25 +78,29 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
     
-    void (^kitHandler)(id<MPKitProtocol>, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
-        XCTAssertEqual(kit.started, YES, @"Should have been equal.");
-        XCTAssertEqualObjects(kitFilter.forwardCommerceEvent, commerceEvent, @"Should have been equal.");
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
+        XCTAssertEqual(kit.started, YES);
+        XCTAssertEqualObjects(kitFilter.forwardCommerceEvent, commerceEvent);
         [expectation fulfill];
     };
     
-    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithCommerceEvent:commerceEvent completionHandler:kitHandler];
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.commerceEvent, commerceEvent, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.commerceEventCompletionHandler, kitHandler, @"Should have been equal.");
-    XCTAssertNil(forwardQueueItem.event, @"Should have been nil.");
-    XCTAssertNil(forwardQueueItem.eventCompletionHandler, @"Should have been nil.");
+    SEL commerceEventSelector = @selector(logCommerceEvent:);
+    
+    MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+    [parameters addParameter:commerceEvent];
+    
+    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:commerceEventSelector parameters:parameters messageType:MPMessageTypeCommerceEvent completionHandler:kitHandler];
+    
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce);
+    XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], commerceEvent);
+    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
-        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:forwardQueueItem.commerceEvent shouldFilter:NO];
+        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] shouldFilter:NO];
         MPKitExecStatus *execStatus = nil;
         
-        forwardQueueItem.commerceEventCompletionHandler(kitMockTest, kitFilter, &execStatus);
+        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, nil, kitFilter, &execStatus);
     });
     
     [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -107,24 +111,28 @@
     SEL selector = @selector(logEvent:);
     MPEvent *event = [[MPEvent alloc] initWithName:@"Time travel" type:MPEventTypeNavigation];
     
-    void (^kitHandler)(id<MPKitProtocol>, MPEvent *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-        XCTAssertEqual(kit.started, YES, @"Should have been equal.");
-        XCTAssertEqualObjects(forwardEvent, event, @"Should have been equal.");
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *forwardKitFilter, MPKitExecStatus **execStatus) {
+        XCTAssertTrue(kit.started);
+        XCTAssertEqualObjects(forwardKitFilter.forwardEvent, event);
         [expectation fulfill];
     };
     
-    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:MPMessageTypeEvent completionHandler:kitHandler];
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.event, event, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.eventCompletionHandler, kitHandler, @"Should have been equal.");
-    XCTAssertNil(forwardQueueItem.commerceEvent, @"Should have been nil.");
-    XCTAssertNil(forwardQueueItem.commerceEventCompletionHandler, @"Should have been nil.");
+    MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+    [parameters addParameter:event];
+    
+    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:MPMessageTypeEvent completionHandler:kitHandler];
+    
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent);
+    XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], event);
+    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
         MPKitExecStatus *execStatus = nil;
         
-        forwardQueueItem.eventCompletionHandler(kitMockTest, forwardQueueItem.event, &execStatus);
+        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
+        
+        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, forwardQueueItem.queueParameters, kitFilter, &execStatus);
     });
     
     [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -134,49 +142,64 @@
     // Ecommerce
     MPCommerceEvent *commerceEvent = nil;
     
-    void (^ecommerceKitHandler)(id<MPKitProtocol>, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
+    void (^ecommerceKitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
     };
 
-    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithCommerceEvent:commerceEvent completionHandler:ecommerceKitHandler];
-    XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+    SEL commerceEventSelector = @selector(logCommerceEvent:);
+    
+    MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+    [parameters addParameter:commerceEvent];
+    
+    MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:commerceEventSelector parameters:parameters messageType:MPMessageTypeCommerceEvent completionHandler:ecommerceKitHandler];
+
+    XCTAssertNil(forwardQueueItem);
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
 
     ecommerceKitHandler = nil;
-    
-    forwardQueueItem = [[MPForwardQueueItem alloc] initWithCommerceEvent:commerceEvent completionHandler:ecommerceKitHandler];
-    XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+
+    [parameters addParameter:commerceEvent];
+
+    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:commerceEventSelector parameters:parameters messageType:MPMessageTypeCommerceEvent completionHandler:ecommerceKitHandler];
+    XCTAssertNil(forwardQueueItem);
     
     // Event
     SEL selector = nil;
     MPEvent *event = [[MPEvent alloc] initWithName:@"Time travel" type:MPEventTypeNavigation];
     
-    void (^eventKitHandler)(id<MPKitProtocol>, MPEvent *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
+    void (^eventKitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *forwardKitFilter, MPKitExecStatus **execStatus) {
     };
     
-    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
-    XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+    parameters = [[MPForwardQueueParameters alloc] init];
+    [parameters addParameter:event];
+    
+    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
+    forwardQueueItem.queueItemType = MPQueueItemTypeEvent;
+
+    XCTAssertNil(forwardQueueItem);
     
     selector = @selector(logEvent:);
     event = nil;
+    parameters = [[MPForwardQueueParameters alloc] init];
+    [parameters addParameter:event];
     
-    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
-    XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
+    XCTAssertNil(forwardQueueItem);
     
     selector = @selector(logEvent:);
     event = [[MPEvent alloc] initWithName:@"Time travel" type:MPEventTypeNavigation];
     eventKitHandler = nil;
     
-    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
-    XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+    forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
+    XCTAssertNil(forwardQueueItem);
 }
 
 - (void)testGeneralPurposeInstance {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Forward Queue Item Test (General)"];
     SEL selector = @selector(openURL:options:);
     
-    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *queueParameters, MPKitExecStatus **execStatus) {
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *queueParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
         XCTAssertEqual(kit.started, YES, @"Should have been equal.");
         [expectation fulfill];
     };
@@ -190,16 +213,12 @@
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters, @"Should have been equal.");
-    XCTAssertNil(forwardQueueItem.commerceEvent, @"Should have been nil.");
-    XCTAssertNil(forwardQueueItem.commerceEventCompletionHandler, @"Should have been nil.");
-    XCTAssertNil(forwardQueueItem.event, @"Should have been nil.");
-    XCTAssertNil(forwardQueueItem.eventCompletionHandler, @"Should have been nil.");
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
         MPKitExecStatus *execStatus = nil;
         
-        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, queueParameters, &execStatus);
+        forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, queueParameters, nil, &execStatus);
     });
     
     [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];

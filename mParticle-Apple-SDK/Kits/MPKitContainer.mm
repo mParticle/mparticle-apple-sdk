@@ -302,11 +302,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (MPForwardQueueItem *forwardQueueItem in _forwardQueue) {
         switch (forwardQueueItem.queueItemType) {
             case MPQueueItemTypeEvent:
-                [self forwardSDKCall:forwardQueueItem.selector event:forwardQueueItem.event messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.eventCompletionHandler];
+                [self forwardSDKCall:forwardQueueItem.selector event:(MPEvent *)forwardQueueItem.queueParameters[0] messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.generalPurposeCompletionHandler];
                 break;
                 
             case MPQueueItemTypeEcommerce:
-                [self forwardCommerceEventCall:forwardQueueItem.commerceEvent kitHandler:forwardQueueItem.commerceEventCompletionHandler];
+                [self forwardCommerceEventCall:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] kitHandler:forwardQueueItem.generalPurposeCompletionHandler];
                 break;
                 
             case MPQueueItemTypeGeneralPurpose:
@@ -2025,9 +2025,14 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 #pragma mark Forward methods
-- (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler {
+- (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler {
     if (!self.kitsInitialized) {
-        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithCommerceEvent:commerceEvent completionHandler:kitHandler];
+        SEL commerceEventSelector = @selector(logCommerceEvent:);
+        
+        MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+        [parameters addParameter:commerceEvent];
+
+        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:commerceEventSelector parameters:parameters messageType:MPMessageTypeCommerceEvent completionHandler:kitHandler];
         
         if (forwardQueueItem) {
             [self.forwardQueue addObject:forwardQueueItem];
@@ -2073,7 +2078,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if (kitFilter.forwardCommerceEvent || kitFilter.forwardEvent) {
                 MPKitExecStatus *execStatus = nil;
                 
-                kitHandler(kitRegister.wrapperInstance, kitFilter, &execStatus);
+                kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
                 
                 NSNumber *currentKit = kitRegister.code;
                 if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
@@ -2093,15 +2098,19 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 }
 
-- (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler {
+- (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus **execStatus))kitHandler {
     if (!self.kitsInitialized) {
         if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
             return;
         }
         
-        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:messageType completionHandler:kitHandler];
+        MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
+        [parameters addParameter:event];
+        
+        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:messageType completionHandler:kitHandler];
         
         if (forwardQueueItem) {
+            forwardQueueItem.queueItemType = MPQueueItemTypeEvent;
             [self.forwardQueue addObject:forwardQueueItem];
         }
         
@@ -2121,7 +2130,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if (kitFilter.forwardEvent) {
                 MPKitExecStatus *execStatus = nil;
                 
-                kitHandler(kitRegister.wrapperInstance, kitFilter.forwardEvent, &execStatus);
+                kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
                 
                 NSNumber *currentKit = kitRegister.code;
                 if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && kitFilter.forwardEvent && messageType != MPMessageTypeUnknown) {
@@ -2273,7 +2282,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 }
 
-- (void)forwardSDKCall:(SEL)selector parameters:(MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitExecStatus **execStatus))kitHandler {
+- (void)forwardSDKCall:(SEL)selector parameters:(MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter * _Nullable kitFilter, MPKitExecStatus **execStatus))kitHandler {
     if (!self.kitsInitialized) {
         MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:messageType completionHandler:kitHandler];
         
@@ -2294,7 +2303,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 MPKitExecStatus *execStatus = nil;
                 NSNumber *currentKit = kitRegister.code;
                 
-                kitHandler(kitRegister.wrapperInstance, parameters, &execStatus);
+                kitHandler(kitRegister.wrapperInstance, parameters, nil, &execStatus);
                 
                 if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
                     lastKit = currentKit;

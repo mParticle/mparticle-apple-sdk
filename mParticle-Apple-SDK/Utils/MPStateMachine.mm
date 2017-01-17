@@ -756,9 +756,7 @@ static BOOL runningInBackground = NO;
         return;
     }
     
-    [self willChangeValueForKey:@"pushNotificationMode"];
     _pushNotificationMode = pushNotificationMode;
-    [self didChangeValueForKey:@"pushNotificationMode"];
     
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
