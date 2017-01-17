@@ -19,6 +19,7 @@
 #import "MPForwardQueueItem.h"
 #import "MPEvent.h"
 #import "MPCommerceEvent.h"
+#import "MPIConstants.h"
 #import "MPKitFilter.h"
 #import "MPKitExecStatus.h"
 #import "MPForwardQueueParameters.h"
@@ -27,41 +28,31 @@
 
 @synthesize queueItemType = _queueItemType;
 
-- (nullable instancetype)initWithCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent completionHandler:(void (^ _Nonnull)(_Nonnull id<MPKitProtocol> kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))completionHandler {
-    self = [super init];
-    if (!self || !commerceEvent || !completionHandler) {
-        return nil;
-    }
-    
-    _queueItemType = MPQueueItemTypeEcommerce;
-    _commerceEvent = commerceEvent;
-    _commerceEventCompletionHandler = [completionHandler copy];
-    
-    return self;
-}
-
-- (nullable instancetype)initWithSelector:(nonnull SEL)selector event:(nonnull MPEvent *)event messageType:(MPMessageType)messageType completionHandler:(void (^ _Nonnull)(_Nonnull id<MPKitProtocol> kit, MPEvent * _Nonnull forwardEvent, MPKitExecStatus * _Nonnull * _Nonnull execStatus))completionHandler {
-    self = [super init];
-    if (!self || !selector || !event || !completionHandler) {
-        return nil;
-    }
-    
-    _queueItemType = MPQueueItemTypeEvent;
-    _selector = selector;
-    _event = event;
-    _messageType = messageType;
-    _eventCompletionHandler = [completionHandler copy];
-    
-    return self;
-}
-
-- (nullable instancetype)initWithSelector:(nonnull SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType completionHandler:(void (^ _Nonnull)(_Nonnull id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus * _Nonnull * _Nonnull execStatus))completionHandler {
+- (nullable instancetype)initWithSelector:(nonnull SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType completionHandler:(void (^ _Nonnull)(_Nonnull id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))completionHandler {
     self = [super init];
     if (!self || !selector || !completionHandler) {
         return nil;
     }
+
+    SEL logCommerceEventSelector = @selector(logCommerceEvent:);
+    SEL logEventSelector = @selector(logEvent:);
     
-    _queueItemType = MPQueueItemTypeGeneralPurpose;
+    if (selector == logEventSelector) {
+        _queueItemType = MPQueueItemTypeEvent;
+        
+        if (MPIsNull(parameters) || parameters.count == 0 || MPIsNull(parameters[0])) {
+            return nil;
+        }
+    } else if (selector == logCommerceEventSelector) {
+        _queueItemType = MPQueueItemTypeEcommerce;
+        
+        if (MPIsNull(parameters) || parameters.count == 0 || MPIsNull(parameters[0])) {
+            return nil;
+        }
+    } else {
+        _queueItemType = MPQueueItemTypeGeneralPurpose;
+    }
+    
     _selector = selector;
     _generalPurposeCompletionHandler = [completionHandler copy];
     _queueParameters = parameters;

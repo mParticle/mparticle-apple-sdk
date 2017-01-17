@@ -466,15 +466,15 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
     
-    void (^kitHandler)(id<MPKitProtocol>, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
     };
 
     [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:kitHandler];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
-    XCTAssertEqual(kitContainer.forwardQueue.count, 1, @"Should have been equal.");
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.commerceEvent, commerceEvent, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.commerceEventCompletionHandler, kitHandler, @"Should have been equal.");
+    XCTAssertEqual(kitContainer.forwardQueue.count, 1);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce);
+    XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], commerceEvent);
+    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
 
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -489,15 +489,15 @@
     SEL selector = @selector(logEvent:);
     MPEvent *event = [[MPEvent alloc] initWithName:@"Time travel" type:MPEventTypeNavigation];
     
-    void (^kitHandler)(id<MPKitProtocol>, MPEvent *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *forwardKitFilter, MPKitExecStatus **execStatus) {
     };
     
     [kitContainer forwardSDKCall:selector event:event messageType:MPMessageTypeEvent userInfo:nil kitHandler:kitHandler];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
-    XCTAssertEqual(kitContainer.forwardQueue.count, 1, @"Should have been equal.");
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.event, event, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.eventCompletionHandler, kitHandler, @"Should have been equal.");
+    XCTAssertEqual(kitContainer.forwardQueue.count, 1);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent);
+    XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], event);
+    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
     
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -511,12 +511,12 @@
     
     SEL selector = @selector(logEvent:);
     MPEvent *event = nil;
-    void (^kitHandler)(id<MPKitProtocol>, MPEvent *, MPKitExecStatus **) = nil;
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = nil;
     
     [kitContainer forwardSDKCall:selector event:event messageType:MPMessageTypeEvent userInfo:nil kitHandler:kitHandler];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
-    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
-    XCTAssertNil(forwardQueueItem, @"Should have been nil.");
+    XCTAssertEqual(kitContainer.forwardQueue.count, 0);
+    XCTAssertNil(forwardQueueItem);
 }
 
 - (void)testForwardQueueItem {
@@ -525,7 +525,7 @@
     
     kitContainer.kitsInitialized = NO;
     
-    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitExecStatus **execStatus) {
+    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *queueParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
     };
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -546,7 +546,7 @@
     XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
     
     kitContainer.kitsInitialized = YES;
-    XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
+    XCTAssertEqual(kitContainer.forwardQueue.count, 0);
 }
 
 - (void)testAssortedItems {
@@ -1327,13 +1327,13 @@
                            event:event
                      messageType:MPMessageTypeEvent
                         userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 4);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_customer_user_id"], @"trex@shortarmsdinosaurs.com");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent);
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.name, @"new_premium_subscriber");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent.info);
+                              XCTAssertEqual(forwardKitFilter.forwardEvent.info.count, 4);
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.info[@"af_customer_user_id"], @"trex@shortarmsdinosaurs.com");
                               
                               [expectation fulfill];
                           }
@@ -1504,7 +1504,7 @@
     commerceEvent.transactionAttributes = transactionAttributes;
 
     [kitContainer forwardCommerceEventCall:commerceEvent
-                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                                     if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
                                         MPEvent *event = kitFilter.forwardEvent;
                                         NSString *customerUserId = event.info[@"af_customer_user_id"];
@@ -1612,13 +1612,13 @@
                            event:event
                      messageType:MPMessageTypeEvent
                         userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent);
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent.info);
+                              XCTAssertEqual(forwardKitFilter.forwardEvent.info.count, 3);
                               
-                              [foundEventNames addObject:forwardEvent.name];
+                              [foundEventNames addObject:forwardKitFilter.forwardEvent.name];
                               
                               if (foundEventNames.count == 2) {
                                   XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
@@ -1695,11 +1695,11 @@
                            event:event
                      messageType:MPMessageTypeEvent
                         userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent);
+                              XCTAssertNotEqualObjects(forwardKitFilter.forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.name, @"SUBSCRIPTION_END");
                               [expectation fulfill];
                           }
                       }];
@@ -1762,11 +1762,11 @@
                            event:event
                      messageType:MPMessageTypeEvent
                         userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent);
+                              XCTAssertNotEqualObjects(forwardKitFilter.forwardEvent.name, @"X_NEW_SUBSCRIPTION");
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.name, @"SUBSCRIPTION_END");
                               [expectation fulfill];
                           }
                       }];
@@ -1833,13 +1833,13 @@
                            event:event
                      messageType:MPMessageTypeEvent
                         userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent);
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.name, @"af_add_payment_info");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent.info);
+                              XCTAssertEqual(forwardKitFilter.forwardEvent.info.count, 3);
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.info[@"af_success"], @"True");
                               
                               [expectation fulfill];
                           }
@@ -1907,13 +1907,13 @@
                            event:event
                      messageType:MPMessageTypeEvent
                         userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent);
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.name, @"af_achievement_unlocked");
+                              XCTAssertNotNil(forwardKitFilter.forwardEvent.info);
+                              XCTAssertEqual(forwardKitFilter.forwardEvent.info.count, 2);
+                              XCTAssertEqualObjects(forwardKitFilter.forwardEvent.info[@"af_description"], @"this is a description");
                               
                               [expectation fulfill];
                           }
