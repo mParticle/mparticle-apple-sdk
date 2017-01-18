@@ -16,6 +16,7 @@
 //  limitations under the License.
 //
 
+#import <Foundation/Foundation.h>
 #import "MPDataModelAbstract.h"
 
 @interface MPSession : MPDataModelAbstract <NSCopying>
@@ -31,6 +32,7 @@
 @property (nonatomic, unsafe_unretained, readonly) uint eventCounter;
 @property (nonatomic, unsafe_unretained, readonly) uint numberOfInterruptions;
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
+@property (nonatomic, unsafe_unretained) BOOL isNullSession;
 @property (nonatomic, unsafe_unretained, readonly) BOOL persisted;
 
 - (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp;
@@ -47,6 +49,8 @@
                               suspendTime:(NSTimeInterval)suspendTime __attribute__((objc_designated_initializer));
 
 - (void)incrementCounter;
+- (nullable NSNumber *)incrementAttributeWithKey:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
+- (BOOL)setAttributeWithKey:(nonnull NSString *)key value:(nonnull id)value;
 - (void)suspendSession;
 
 @end

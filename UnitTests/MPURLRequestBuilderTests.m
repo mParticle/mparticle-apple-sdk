@@ -17,16 +17,16 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPURLRequestBuilder.h"
-#import "MPStateMachine.h"
-#import "MPIConstants.h"
 #import "MPConsumerInfo.h"
+#import "MPIConstants.h"
+#import "MPKitContainer.h"
+#import "MPKitRegister.h"
+#import "MPKitTestClass.h"
+#import "MPMessage.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
-#import "MPStandaloneMessage.h"
-#import "MPKitRegister.h"
-#import "MPKitContainer.h"
-#import "MPKitTestClass.h"
+#import "MPStateMachine.h"
+#import "MPURLRequestBuilder.h"
 #import "NSUserDefaults+mParticle.h"
 
 #pragma mark - MPURLRequestBuilder category
@@ -69,14 +69,15 @@
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
-    MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageType:@"e"
-                                                                                  messageInfo:@{@"key":@"value"}
-                                                                                 uploadStatus:MPUploadStatusBatch
-                                                                                         UUID:[[NSUUID UUID] UUIDString]
-                                                                                    timestamp:[[NSDate date] timeIntervalSince1970]];
+    MPMessage *message = [[MPMessage alloc] initWithSession:[MPStateMachine sharedInstance].nullSession
+                                                messageType:@"e"
+                                                messageInfo:@{@"key":@"value"}
+                                               uploadStatus:MPUploadStatusBatch
+                                                       UUID:[[NSUUID UUID] UUIDString]
+                                                  timestamp:[[NSDate date] timeIntervalSince1970]];
     
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
-                                                                            message:[standaloneMessage serializedString]
+                                                                            message:[message serializedString]
                                                                          httpMethod:@"POST"];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -297,14 +298,15 @@
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
-    MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageType:@"e"
-                                                                                  messageInfo:@{@"key":@"value"}
-                                                                                 uploadStatus:MPUploadStatusBatch
-                                                                                         UUID:[[NSUUID UUID] UUIDString]
-                                                                                    timestamp:[[NSDate date] timeIntervalSince1970]];
+    MPMessage *message = [[MPMessage alloc] initWithSession:[MPStateMachine sharedInstance].nullSession
+                                                messageType:@"e"
+                                                messageInfo:@{@"key":@"value"}
+                                               uploadStatus:MPUploadStatusBatch
+                                                       UUID:[[NSUUID UUID] UUIDString]
+                                                  timestamp:[[NSDate date] timeIntervalSince1970]];
     
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
-                                                                            message:[standaloneMessage serializedString]
+                                                                            message:[message serializedString]
                                                                          httpMethod:@"POST"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
     

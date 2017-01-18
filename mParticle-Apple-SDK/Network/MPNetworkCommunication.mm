@@ -17,27 +17,25 @@
 //
 
 #import "MPNetworkCommunication.h"
-#import "MPMessage.h"
-#import "MPSession.h"
-#import <UIKit/UIKit.h>
+#import "MPApplication.h"
+#import "MParticleReachability.h"
 #import "MPConnector.h"
+#import "MPConsumerInfo.h"
+#import "MPDateFormatter.h"
+#import "MPDevice.h"
+#import "MPIConstants.h"
+#import "MPILogger.h"
+#import "MPMessage.h"
+#import "MPPersistenceController.h"
+#import "MPSession.h"
+#import "MPSessionHistory.h"
 #import "MPStateMachine.h"
 #import "MPUpload.h"
-#import "MPDevice.h"
-#import "MPApplication.h"
 #import "MPSegment.h"
-#import "MPIConstants.h"
-#import "MPStandaloneUpload.h"
-#import "MPZip.h"
 #import "MPURLRequestBuilder.h"
-#import "MParticleReachability.h"
-#import "MPILogger.h"
-#import "MPConsumerInfo.h"
-#import "MPPersistenceController.h"
-#import "MPDataModelAbstract.h"
+#import "MPZip.h"
 #import "NSUserDefaults+mParticle.h"
-#import "MPSessionHistory.h"
-#import "MPDateFormatter.h"
+#import <UIKit/UIKit.h>
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const kMPConfigVersion = @"/v4";
@@ -136,21 +134,15 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 }
 
 #pragma mark Private methods
-- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPDataModelAbstract *)batchObject {
-    [self processNetworkResponseAction:responseAction batchObject:batchObject httpResponse:nil];
+- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction uploadInstance:(MPUpload *)upload {
+    [self processNetworkResponseAction:responseAction uploadInstance:upload httpResponse:nil];
 }
 
-- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPDataModelAbstract *)batchObject httpResponse:(NSHTTPURLResponse *)httpResponse {
+- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction uploadInstance:(MPUpload *)upload httpResponse:(NSHTTPURLResponse *)httpResponse {
     switch (responseAction) {
         case MPNetworkResponseActionDeleteBatch:
-            if (!batchObject) {
-                return;
-            }
-            
-            if ([batchObject isMemberOfClass:[MPUpload class]]) {
-                [[MPPersistenceController sharedInstance] deleteUpload:(MPUpload *)batchObject];
-            } else if ([batchObject isMemberOfClass:[MPStandaloneUpload class]]) {
-                [[MPPersistenceController sharedInstance] deleteStandaloneUpload:(MPStandaloneUpload *)batchObject];
+            if (upload && [upload isMemberOfClass:[MPUpload class]]) {
+                [[MPPersistenceController sharedInstance] deleteUpload:upload];
             }
             
             break;
@@ -297,7 +289,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                          }
                      }
                      
-                     [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
+                     [strongSelf processNetworkResponseAction:responseAction uploadInstance:nil httpResponse:httpResponse];
                      
                      completionHandler(success, configurationDictionary);
                      strongSelf->retrievingConfig = NO;
@@ -451,107 +443,6 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     });
 }
 
-- (void)standaloneUploads:(NSArray<MPStandaloneUpload *> *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler {
-    if (standaloneUploading) {
-        return;
-    }
-    
-    standaloneUploading = YES;
-    
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }];
-    
-    MPStandaloneUpload *standaloneUpload = standaloneUploads[index];
-    NSString *uploadString = [standaloneUpload serializedString];
-    MPConnector *connector = [[MPConnector alloc] init];
-    __weak MPNetworkCommunication *weakSelf = self;
-    
-    NSData *zipUploadData = nil;
-    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[standaloneUpload.uploadData bytes], (unsigned int)[standaloneUpload.uploadData length]);
-    if (get<0>(zipData) != nullptr) {
-        zipUploadData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
-        delete [] get<0>(zipData);
-    } else {
-        [self processNetworkResponseAction:MPNetworkResponseActionDeleteBatch batchObject:standaloneUpload];
-        completionHandler(NO, standaloneUpload, nil, YES);
-        standaloneUploading = NO;
-        return;
-    }
-    
-    [connector asyncPostDataFromURL:self.eventURL
-                            message:uploadString
-                   serializedParams:zipUploadData
-                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                      BOOL finished = index == standaloneUploads.count - 1;
-                      
-                      __strong MPNetworkCommunication *strongSelf = weakSelf;
-                      if (!strongSelf) {
-                          completionHandler(NO, standaloneUpload, nil, finished);
-                          return;
-                      }
-                      
-                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                      }
-                      
-                      NSDictionary *responseDictionary = nil;
-                      MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-                      NSInteger responseCode = [httpResponse statusCode];
-                      BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-                      
-                      if (!data && success) {
-                          completionHandler(NO, standaloneUpload, nil, finished);
-                          
-                          strongSelf->standaloneUploading = NO;
-                          if (!finished) {
-                              [strongSelf standaloneUploads:standaloneUploads index:(index + 1) completionHandler:completionHandler];
-                          }
-                          
-                          return;
-                      }
-                      
-                      success = success && [data length] > 0;
-                      
-                      if (success) {
-                          NSError *serializationError = nil;
-                          
-                          @try {
-                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                              success = serializationError == nil;
-                              MPILogVerbose(@"Stand-alone Uploaded Message: %@\n", uploadString);
-                              MPILogVerbose(@"Stand-alone Upload Response Code: %ld", (long)responseCode);
-                          } @catch (NSException *exception) {
-                              responseDictionary = nil;
-                              success = NO;
-                              MPILogError(@"Stand-alone Upload Error: %@", [exception reason]);
-                          }
-                      } else {
-                          if (responseCode == HTTPStatusCodeBadRequest) {
-                              responseAction = MPNetworkResponseActionDeleteBatch;
-                          } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-                              responseAction = MPNetworkResponseActionThrottle;
-                          }
-                          
-                          MPILogWarning(@"Stand-alone Uploads Error - Response Code: %ld", (long)responseCode);
-                      }
-                      
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:standaloneUpload httpResponse:httpResponse];
-                      
-                      completionHandler(success, standaloneUpload, responseDictionary, finished);
-                      
-                      strongSelf->standaloneUploading = NO;
-                      if (!finished) {
-                          [strongSelf standaloneUploads:standaloneUploads index:(index + 1) completionHandler:completionHandler];
-                      }
-                  }];
-}
-
 - (void)upload:(NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler {
     if (uploading) {
         return;
@@ -587,7 +478,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         zipUploadData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
         delete [] get<0>(zipData);
     } else {
-        [self processNetworkResponseAction:MPNetworkResponseActionDeleteBatch batchObject:upload];
+        [self processNetworkResponseAction:MPNetworkResponseActionDeleteBatch uploadInstance:upload];
         completionHandler(NO, upload, nil, YES);
         uploading = NO;
         return;
@@ -648,7 +539,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       
                       MPILogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:upload httpResponse:httpResponse];
+                      [strongSelf processNetworkResponseAction:responseAction uploadInstance:upload httpResponse:httpResponse];
                       
                       completionHandler(success, upload, responseDictionary, finished);
                       
@@ -752,7 +643,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       
                       MPILogVerbose(@"Session History Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
+                      [strongSelf processNetworkResponseAction:responseAction uploadInstance:nil httpResponse:httpResponse];
                       
                       completionHandler(success);
                       

@@ -23,9 +23,9 @@
     #import <CoreLocation/CoreLocation.h>
 #endif
 
-@class MPSession;
-@class MPDataModelAbstract;
 @class MPCommerceEvent;
+@class MPMessage;
+@class MPSession;
 @class MPUserAttributeChange;
 @class MPUserIdentityChange;
 
@@ -51,7 +51,7 @@
 - (nonnull MPMessageBuilder *)withLaunchInfo:(nonnull NSDictionary *)launchInfo;
 - (nonnull MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;
 - (nonnull MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
-- (nonnull MPDataModelAbstract *)build;
+- (nonnull MPMessage *)build;
 
 #if TARGET_OS_IOS == 1
 - (nonnull MPMessageBuilder *)withLocation:(nonnull CLLocation *)location;
