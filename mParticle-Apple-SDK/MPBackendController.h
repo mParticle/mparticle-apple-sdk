@@ -93,7 +93,6 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
 - (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
 - (MPExecStatus)fetchSegments:(NSTimeInterval)timeout endpointId:(nullable NSString *)endpointId completionHandler:(void (^ _Nonnull)(NSArray * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error))completionHandler;
-- (nullable NSNumber *)incrementSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (void)leaveBreadcrumb:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 - (void)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPCommerceEvent * _Nonnull commerceEvent, MPExecStatus execStatus))completionHandler;

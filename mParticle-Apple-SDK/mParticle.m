@@ -1174,12 +1174,19 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Session management
 - (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value {
+    NSAssert(_backendController.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Incrementing session attribute cannot happen prior to starting the mParticle SDK.\n****\n");
+
     if (!_backendController || _backendController.initializationStatus != MPInitializationStatusStarted) {
         MPILogError(@"Cannot increment session attribute. SDK is not initialized yet.");
         return nil;
     }
-    
-    NSNumber *newValue = [self.backendController incrementSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key byValue:value];
+
+    MPSession *currentSession = [MPStateMachine sharedInstance].currentSession;
+    if (!currentSession) {
+        return nil;
+    }
+
+    NSNumber *newValue = [currentSession incrementAttributeWithKey:key byValue:value];
     
     MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
     

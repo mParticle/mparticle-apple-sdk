@@ -45,23 +45,24 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 @property (nonatomic, weak, nullable) MPSession *currentSession;
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;
+@property (nonatomic, strong, readonly, nullable) NSString *deviceTokenType;
 @property (nonatomic, strong, nullable) NSString *exceptionHandlingMode;
-@property (nonatomic, strong, nullable) NSString *locationTrackingMode;
+@property (nonatomic, strong, readonly, nonnull) NSNumber *firstSeenInstallation;
 @property (nonatomic, strong, nullable) NSString *latestSDKVersion;
+@property (nonatomic, strong, readonly, nullable) NSDate *launchDate;
+@property (nonatomic, strong, nullable) MPLaunchInfo *launchInfo;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, nullable) CLLocation *location;
 #endif
 @property (nonatomic, strong, nullable) MPLocationManager *locationManager;
+@property (nonatomic, strong, nullable) NSString *locationTrackingMode;
 @property (nonatomic, strong, nonnull) NSDate *minUploadDate;
 @property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;
+@property (nonatomic, strong, nonnull) MPSession *nullSession;
 @property (nonatomic, strong, nullable) NSString *pushNotificationMode;
 @property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
 @property (nonatomic, strong, nonnull) NSDate *startTime;
-@property (nonatomic, strong, nullable) MPLaunchInfo *launchInfo;
-@property (nonatomic, strong, readonly, nullable) NSString *deviceTokenType;
-@property (nonatomic, strong, readonly, nonnull) NSNumber *firstSeenInstallation;
-@property (nonatomic, strong, readonly, nullable) NSDate *launchDate;
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerEventTypes;
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerMessageTypes;
 @property (nonatomic, unsafe_unretained) MPConsoleLogging consoleLogging;

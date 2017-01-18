@@ -20,7 +20,6 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPStateMachine.h"
-#import "MPStandaloneMessage.h"
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
 #import "MPEnums.h"
@@ -66,7 +65,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     _messageType = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(messageType)).c_str() encoding:NSUTF8StringEncoding];
     
     _session = session;
-    if (session) {
+    if (_session != [MPStateMachine sharedInstance].nullSession) {
         if (messageType == MPMessageTypeSessionStart) {
             uuid = _session.uuid;
         } else {
@@ -247,27 +246,16 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (MPDataModelAbstract *)build {
-    MPDataModelAbstract *message = nil;
-    
+- (MPMessage *)build {
     messageDictionary[kMPMessageTypeKey] = _messageType;
     messageDictionary[kMPMessageIdKey] = uuid ? uuid : [[NSUUID UUID] UUIDString];
 
-    if (_session) {
-        message = [[MPMessage alloc] initWithSession:_session
-                                         messageType:_messageType
-                                         messageInfo:messageDictionary
-                                        uploadStatus:MPUploadStatusBatch
-                                                UUID:messageDictionary[kMPMessageIdKey]
-                                           timestamp:_timestamp];
-    } else {
-        message = [[MPStandaloneMessage alloc] initWithMessageType:_messageType
-                                                       messageInfo:messageDictionary
-                                                      uploadStatus:MPUploadStatusBatch
-                                                              UUID:messageDictionary[kMPMessageIdKey]
-                                                         timestamp:_timestamp];
-    }
-    
+    MPMessage *message = [[MPMessage alloc] initWithSession:_session
+                                                messageType:_messageType
+                                                messageInfo:messageDictionary
+                                               uploadStatus:MPUploadStatusBatch
+                                                       UUID:messageDictionary[kMPMessageIdKey]
+                                                  timestamp:_timestamp];
     return message;
 }
 

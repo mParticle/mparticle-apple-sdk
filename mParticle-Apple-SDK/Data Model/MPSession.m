@@ -18,6 +18,8 @@
 
 #import "MPSession.h"
 #import "MPIConstants.h"
+#import "MPPersistenceController.h"
+#import "NSDictionary+MPCaseInsensitive.h"
 
 NSString *const sessionNumberFileName = @"SessionNumber";
 NSString *const sessionUUIDKey = @"sessionId";
@@ -64,10 +66,9 @@ NSString *const sessionNumberKey = @"sessionNumber";
     _persisted = sessionId != 0;
     _numberOfInterruptions = numberOfInterruptions;
     _suspendTime = suspendTime;
-    
     _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
-    
     _sessionNumber = sessionNumber != nil ? sessionNumber : [self sessionNumber];
+    _isNullSession = NO;
 
     return self;
 }
@@ -97,6 +98,8 @@ NSString *const sessionNumberKey = @"sessionNumber";
                                            numberOfInterruptions:_numberOfInterruptions
                                                     eventCounter:_eventCounter
                                                      suspendTime:_suspendTime];
+    
+    copyObject.isNullSession = _isNullSession;
     
     return copyObject;
 }
@@ -182,6 +185,46 @@ NSString *const sessionNumberKey = @"sessionNumber";
     if (_eventCounter > EVENT_LIMIT) {
         [notificationCenter postNotificationName:kMPEventCounterLimitReachedNotification object:self userInfo:nil];
     }
+}
+
+- (NSNumber *)incrementAttributeWithKey:(NSString *)key byValue:(NSNumber *)value {
+    NSString *localKey = [self.attributesDictionary caseInsensitiveKey:key];
+    id existingValue = self.attributesDictionary[localKey];
+    if (!existingValue && [value isKindOfClass:[NSNumber class]]) {
+        [self setAttributeWithKey:localKey value:value];
+        return value;
+    }
+    
+    if (![existingValue isKindOfClass:[NSNumber class]]) {
+        return nil;
+    }
+    
+    NSDecimalNumber *incrementValue = [[NSDecimalNumber alloc] initWithString:[value stringValue]];
+    NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)existingValue stringValue]];
+    newValue = [newValue decimalNumberByAdding:incrementValue];
+    
+    self.attributesDictionary[localKey] = newValue;
+    
+    [[MPPersistenceController sharedInstance] updateSession:self];
+    
+    return (NSNumber *)newValue;
+}
+
+- (BOOL)setAttributeWithKey:(NSString *)key value:(id)value {
+    if (![value isKindOfClass:[NSString class]] && ![value isKindOfClass:[NSNumber class]]) {
+        return NO;
+    }
+    
+    NSString *localKey = [self.attributesDictionary caseInsensitiveKey:key];
+    if ([self.attributesDictionary[localKey] isEqual:value]) {
+        return NO;
+    }
+    
+    self.attributesDictionary[localKey] = value;
+    
+    [[MPPersistenceController sharedInstance] updateSession:self];
+    
+    return YES;
 }
 
 - (void)suspendSession {

@@ -21,7 +21,6 @@
 #import "MPIConstants.h"
 #import "MPSession.h"
 #import "MPMessage.h"
-#import "MPStandaloneMessage.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "MPPromotion.h"
@@ -90,41 +89,10 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     XCTAssertNotEqual(messageBuilder.timestamp, timestamp, @"Timestamp is not being updated.");
     
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
-    
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                         session:nil
-                                                     messageInfo:messageInfo];
-    
-    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
-    
-    message = (MPMessage *)[messageBuilder build];
-    XCTAssertFalse([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
-}
-
-- (void)testBuildStandaloneMessage {
-    NSDictionary *messageInfo = @{@"ride_type":@"T-Rex"};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:nil
-                                                                       messageInfo:messageInfo];
-    
-    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
-    MPStandaloneMessage *standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
-    XCTAssertNotNil(standaloneMessage);
-    XCTAssertTrue([standaloneMessage isKindOfClass:[MPStandaloneMessage class]], @"Returning the wrong kind of class instance.");
-    
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                         session:nil
-                                                     messageInfo:nil];
-    
-    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
-    standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
-    XCTAssertNotNil(standaloneMessage);
-    XCTAssertTrue([standaloneMessage isKindOfClass:[MPStandaloneMessage class]], @"Returning the wrong kind of class instance.");
 }
 
 - (void)testBuildCommerceEventProduct {

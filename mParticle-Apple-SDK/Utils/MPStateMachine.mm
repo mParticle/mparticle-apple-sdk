@@ -17,23 +17,24 @@
 //
 
 #import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
-#import "MPIConstants.h"
-#import "MPApplication.h"
-#import "MPCustomModule.h"
-#import "MPDevice.h"
-#include <sys/sysctl.h>
-#import "MPNotificationController.h"
-#import "MPDateFormatter.h"
-#import "MPHasher.h"
-#import "MPILogger.h"
-#import "MPConsumerInfo.h"
-#import "MPPersistenceController.h"
-#import "MPBags.h"
 #include "MessageTypeName.h"
-#import "MPLocationManager.h"
+#import "MPApplication.h"
+#import "MPBags.h"
+#import "MPConsumerInfo.h"
+#import "MPCustomModule.h"
+#import "MPDateFormatter.h"
+#import "MPDevice.h"
+#import "MPHasher.h"
+#import "MPIConstants.h"
+#import "MPILogger.h"
 #import "MPKitContainer.h"
+#import "MPLocationManager.h"
+#import "MPNotificationController.h"
+#import "MPPersistenceController.h"
 #import "MPSearchAdsAttribution.h"
+#import "MPSession.h"
+#import "NSUserDefaults+mParticle.h"
+#include <sys/sysctl.h>
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
@@ -618,6 +619,26 @@ static BOOL runningInBackground = NO;
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
     });
+}
+
+- (MPSession *)nullSession {
+    if (_nullSession) {
+        return _nullSession;
+    }
+    
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    _nullSession = [persistence fetchNullSession];
+    
+    if (!_nullSession) {
+        _nullSession = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+        _nullSession.isNullSession = YES;
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [persistence saveSession:_nullSession];
+        });
+    }
+    
+    return _nullSession;
 }
 
 - (NSDate *)minUploadDate {

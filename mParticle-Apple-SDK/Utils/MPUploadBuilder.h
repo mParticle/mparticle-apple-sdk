@@ -18,20 +18,18 @@
 
 #import <Foundation/Foundation.h>
 
-@class MPDataModelAbstract;
-@class MPUpload;
+@class MPMessage;
 @class MPSession;
+@class MPUpload;
 
 @interface MPUploadBuilder : NSObject
 
 @property (nonatomic, strong, readonly, nullable) MPSession *session;
 @property (nonatomic, strong, readonly, nonnull) NSMutableArray<NSNumber *> *preparedMessageIds;
 
-+ (nonnull MPUploadBuilder *)newBuilderWithMessages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval;
-+ (nonnull MPUploadBuilder *)newBuilderWithSession:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval;
-- (nonnull instancetype)initWithSession:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval;
-- (void)build:(void (^ _Nonnull)(MPDataModelAbstract * _Nullable upload))completionHandler;
-- (void)buildAsync:(BOOL)asyncBuild completionHandler:(void (^ _Nonnull)(MPDataModelAbstract * _Nullable upload))completionHandler;
++ (nonnull MPUploadBuilder *)newBuilderWithSession:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval;
+- (nonnull instancetype)initWithSession:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval;
+- (nullable MPUpload *)build;
 - (nonnull MPUploadBuilder *)withUserAttributes:(nonnull NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(nullable NSSet<NSString *> *)deletedUserAttributes;
 - (nonnull MPUploadBuilder *)withUserIdentities:(nonnull NSArray<NSDictionary<NSString *, id> *> *)userIdentities;
 

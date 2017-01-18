@@ -7,24 +7,22 @@
 //
 
 #import "MPUploadBuilder.h"
-#include <vector>
-#import "MPMessage.h"
-#import "MPSession.h"
-#import "MPUpload.h"
-#import "MPStateMachine.h"
-#import "MPIConstants.h"
-#import "NSUserDefaults+mParticle.h"
-#import "MPPersistenceController.h"
-#import "MPCustomModule.h"
-#import "MPStandaloneUpload.h"
-#import "MPConsumerInfo.h"
 #import "MPApplication.h"
-#import "MPDevice.h"
 #import "MPBags.h"
 #import "MPBags+Internal.h"
+#import "MPConsumerInfo.h"
+#import "MPCustomModule.h"
+#import "MPDevice.h"
 #import "MPForwardRecord.h"
-#import "MPDataModelAbstract.h"
+#import "MPIConstants.h"
 #import "MPIntegrationAttributes.h"
+#import "MPMessage.h"
+#import "MPPersistenceController.h"
+#import "MPSession.h"
+#import "MPStateMachine.h"
+#import "MPUpload.h"
+#import "NSUserDefaults+mParticle.h"
+#include <vector>
 
 using namespace std;
 
@@ -36,15 +34,17 @@ using namespace std;
 
 @implementation MPUploadBuilder
 
-- (instancetype)initWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+- (instancetype)initWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     NSAssert(messages, @"Messages cannot be nil.");
     
     self = [super init];
     if (!self || !messages) {
         return nil;
     }
+
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
-    _session = session;
+    _session = session ? session : stateMachine.nullSession;
     
     NSUInteger numberOfMessages = messages.count;
     NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
@@ -65,8 +65,6 @@ using namespace std;
     if (!ltv) {
         ltv = @0;
     }
-    
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     uploadDictionary = [@{kMPOptOutKey:@(stateMachine.optOut),
                           kMPUploadIntervalKey:@(uploadInterval),
@@ -97,22 +95,13 @@ using namespace std;
 }
 
 #pragma mark Public class methods
-+ (MPUploadBuilder *)newBuilderWithMessages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
-    return uploadBuilder;
-}
-
-+ (MPUploadBuilder *)newBuilderWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
++ (MPUploadBuilder *)newBuilderWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:session messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
 #pragma mark Public instance methods
-- (void)build:(void (^)(MPDataModelAbstract *upload))completionHandler {
-    [self buildAsync:YES completionHandler:completionHandler];
-}
-
-- (void)buildAsync:(BOOL)asyncBuild completionHandler:(void (^ _Nonnull)(MPDataModelAbstract * _Nullable upload))completionHandler {
+- (nullable MPUpload *)build {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
@@ -173,21 +162,11 @@ using namespace std;
     uploadDictionary[@"echo"] = @true;
 #endif
     
-    if (_session) { // MPUpload
-        dispatch_block_t completeBuild = ^{
-            MPUpload *upload = [[MPUpload alloc] initWithSession:_session uploadDictionary:uploadDictionary];
-            
-            completionHandler(upload);
-            
-            [persistence deleteForwardRecordsIds:forwardRecordsIds];
-        };
-
-        completeBuild();
-    } else { // MPStandaloneUpload
-        MPStandaloneUpload *standaloneUpload = [[MPStandaloneUpload alloc] initWithUploadDictionary:uploadDictionary];
-        
-        completionHandler(standaloneUpload);
-    }
+    MPUpload *upload = [[MPUpload alloc] initWithSession:_session uploadDictionary:uploadDictionary];
+    
+    [persistence deleteForwardRecordsIds:forwardRecordsIds];
+    
+    return upload;
 }
 
 - (MPUploadBuilder *)withUserAttributes:(NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(NSSet<NSString *> *)deletedUserAttributes {
