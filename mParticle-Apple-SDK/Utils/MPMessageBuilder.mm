@@ -64,8 +64,9 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     messageTypeValue = messageType;
     _messageType = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(messageType)).c_str() encoding:NSUTF8StringEncoding];
     
-    _session = session;
-    if (_session != [MPStateMachine sharedInstance].nullSession) {
+    MPSession *nullSession = [MPStateMachine sharedInstance].nullSession;
+    _session = session ? session : nullSession;
+    if (_session != nullSession) {
         if (messageType == MPMessageTypeSessionStart) {
             uuid = _session.uuid;
         } else {

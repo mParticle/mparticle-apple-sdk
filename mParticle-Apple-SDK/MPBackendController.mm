@@ -17,56 +17,50 @@
 //
 
 #import "MPBackendController.h"
+#include "MessageTypeName.h"
 #import "MPAppDelegateProxy.h"
-#import "MPPersistenceController.h"
-#import "MPMessage.h"
-#import "MPSession.h"
-#import "MPIConstants.h"
-#import "MPStateMachine.h"
-#import "MPNetworkPerformance.h"
-#import "NSUserDefaults+mParticle.h"
-#import "MPBreadcrumb.h"
-#import "MPExceptionHandler.h"
-#import "MPUpload.h"
-#import "MPSegment.h"
 #import "MPApplication.h"
-#import "MPCustomModule.h"
-#import "MPMessageBuilder.h"
-#import "MPEvent.h"
-#import "MPEvent+Internal.h"
 #import "MParticleUserNotification.h"
-#import "NSDictionary+MPCaseInsensitive.h"
-#import "MPHasher.h"
-#import "MPUploadBuilder.h"
-#import "MPILogger.h"
-#import "MPResponseEvents.h"
-#import "MPConsumerInfo.h"
-#import "MPResponseConfig.h"
-#import "MPSessionHistory.h"
-#import "MPCommerceEvent.h"
-#import "MPCommerceEvent+Dictionary.h"
+#import "MPAttributeValidator.h"
+#import "MPBreadcrumb.h"
 #import "MPCart.h"
 #import "MPCart+Dictionary.h"
+#import "MPCommerceEvent.h"
+#import "MPCommerceEvent+Dictionary.h"
+#import "MPConsumerInfo.h"
+#import "MPCustomModule.h"
+#import "MPEvent.h"
+#import "MPEvent+Internal.h"
 #import "MPEvent+MessageType.h"
-#include "MessageTypeName.h"
+#import "MPExceptionHandler.h"
+#import "MPHasher.h"
+#import "MPIConstants.h"
+#import "MPILogger.h"
 #import "MPKitContainer.h"
+#import "MPMessage.h"
+#import "MPMessageBuilder.h"
+#import "MPNetworkPerformance.h"
+#import "MPNotificationController.h"
+#import "MPPersistenceController.h"
+#import "MPResponseConfig.h"
+#import "MPResponseEvents.h"
+#import "MPSearchAdsAttribution.h"
+#import "MPSegment.h"
+#import "MPSession.h"
+#import "MPSessionHistory.h"
+#import "MPStateMachine.h"
+#import "MPUpload.h"
+#import "MPUploadBuilder.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
-#import "MPSearchAdsAttribution.h"
+#import "NSDictionary+MPCaseInsensitive.h"
+#import "NSUserDefaults+mParticle.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
 #endif
 
 #define METHOD_EXEC_MAX_ATTEMPT 10
-
-const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 1000;
-const NSInteger kInvalidValue = 101;
-const NSInteger kEmptyValueAttribute = 102;
-const NSInteger kExceededNumberOfAttributesLimit = 103;
-const NSInteger kExceededAttributeMaximumLength = 104;
-const NSInteger kExceededKeyMaximumLength = 105;
-const NSInteger kInvalidDataType = 106;
 
 static NSArray *execStatusDescriptions;
 static BOOL appBackgrounded = NO;
@@ -476,12 +470,9 @@ static BOOL appBackgrounded = NO;
     NSDictionary *userInfo = [notification userInfo];
     BOOL sessionFinalized = YES;
     
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
-        NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
-        
-        if (userActivity) {
-            stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
-        }
+    NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
+    if (userActivity) {
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
     }
     
 #if TARGET_OS_IOS == 1
@@ -733,7 +724,7 @@ static BOOL appBackgrounded = NO;
                 NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
                 NSError *error = nil;
                 NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
-                BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
+                BOOL validAttributes = [MPAttributeValidator checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
                 
                 if (userAttributeChange.isArray) {
                     userAttributeValue = userAttributeChange.value;
@@ -878,8 +869,8 @@ static BOOL appBackgrounded = NO;
                     identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                     
                     NSError *error = nil;
-                    if ([self checkAttribute:identityDictionary key:kMPUserIdentityIdKey value:userIdentityChange.userIdentityNew.value error:&error] &&
-                        [self checkAttribute:identityDictionary key:kMPUserIdentityTypeKey value:[identityTypeNumber stringValue] error:&error]) {
+                    if ([MPAttributeValidator checkAttribute:identityDictionary key:kMPUserIdentityIdKey value:userIdentityChange.userIdentityNew.value error:&error] &&
+                        [MPAttributeValidator checkAttribute:identityDictionary key:kMPUserIdentityTypeKey value:[identityTypeNumber stringValue] error:&error]) {
                         
                         existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
                         
@@ -1085,8 +1076,6 @@ static BOOL appBackgrounded = NO;
         }
     };
     
-    __weak MPBackendController *weakSelf = self;
-
     if (!isRecurring) {
         [self requestConfig:^(BOOL uploadBatch) {
             if (!uploadBatch) {
@@ -1195,6 +1184,8 @@ static BOOL appBackgrounded = NO;
                                                                                   completionHandler(YES);
                                                                               }
                                                                           }];
+                                  } else if (completionHandler) {
+                                      completionHandler(NO);
                                   }
                               }];
 }
@@ -1679,102 +1670,6 @@ static BOOL appBackgrounded = NO;
     }
     
     completionHandler(event, execStatus);
-}
-
-- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error {
-    return [self checkAttribute:attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:error];
-}
-
-- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error {
-    static NSString *attributeValidationErrorDomain = @"Attribute Validation";
-    NSString *errorMessage = nil;
-    Class NSStringClass = [NSString class];
-    
-    if (!value) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidValue userInfo:nil];
-        }
-        
-        errorMessage = @"The 'value' parameter is invalid.";
-    }
-    
-    if ([value isKindOfClass:NSStringClass]) {
-        if ([value isEqualToString:@""]) {
-            if (error != NULL) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kEmptyValueAttribute userInfo:nil];
-            }
-            
-            errorMessage = @"The 'value' parameter is an empty string.";
-        }
-        
-        if (((NSString *)value).length > maxValueLength) {
-            if (error != NULL) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
-            }
-            
-            errorMessage = [NSString stringWithFormat:@"The parameter: %@ is longer than the maximum allowed.", value];
-        }
-    } else if ([value isKindOfClass:[NSArray class]]) {
-        NSArray *values = (NSArray *)value;
-        if (values.count > MAX_USER_ATTR_LIST_SIZE) {
-            if (error != NULL) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
-            }
-            
-            errorMessage = @"The 'values' parameter contains more entries than the maximum allowed.";
-        }
-
-        if (!errorMessage) {
-            for (id entryValue in values) {
-                if (![entryValue isKindOfClass:NSStringClass]) {
-                    if (error != NULL) {
-                        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
-                    }
-                    
-                    errorMessage = [NSString stringWithFormat:@"All user attribute entries in the array must be of type string. Error entry: %@", entryValue];
-                    
-                    break;
-                } else if (((NSString *)entryValue).length > maxValueLength) {
-                    if (error != NULL) {
-                        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeMaximumLength userInfo:nil];
-                    }
-                    
-                    errorMessage = [NSString stringWithFormat:@"The values entry: %@ is longer than the maximum allowed.", entryValue];
-                    
-                    break;
-                }
-            }
-        }
-    }
-    
-    if (attributesDictionary.count >= LIMIT_ATTR_COUNT) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededNumberOfAttributesLimit userInfo:nil];
-        }
-        
-        errorMessage = @"There are more attributes than the maximum number allowed.";
-    }
-
-    if (MPIsNull(key)) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidValue userInfo:nil];
-        }
-        
-        errorMessage = @"The 'key' parameter cannot be nil.";
-    } else if (key.length > LIMIT_NAME) {
-        if (error != NULL) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededKeyMaximumLength userInfo:nil];
-        }
-        
-        errorMessage = @"The 'key' parameter is longer than the maximum allowed length.";
-    }
-
-    if (errorMessage == nil) {
-        return YES;
-    } else {
-        MPILogError(@"%@", errorMessage);
-        return NO;
-    }
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
@@ -2414,27 +2309,6 @@ static BOOL appBackgrounded = NO;
     completionHandler(optOutStatus, execStatus);
 }
 
-- (MPExecStatus)setSessionAttribute:(MPSession *)session key:(NSString *)key value:(id)value {
-    NSAssert(session != nil, @"session cannot be nil.");
-    NSAssert([key isKindOfClass:[NSString class]], @"'key' must be a string.");
-    NSAssert([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]], @"'value' must be a string or number.");
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting session attribute cannot be done prior to starting the mParticle SDK.\n****\n");
-
-    if (!session) {
-        return MPExecStatusMissingParam;
-    }
-
-    NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
-    NSError *error = nil;
-    BOOL validAttributes = [self checkAttribute:session.attributesDictionary key:localKey value:value error:&error];
-    if (!validAttributes) {
-        return MPExecStatusInvalidDataType;
-    }
-
-    BOOL isAttributeSet = [session setAttributeWithKey:key value:value];
-    return isAttributeSet ? MPExecStatusSuccess : MPExecStatusInvalidDataType;
-}
-
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate completionHandler:(dispatch_block_t)completionHandler {
     sdkIsLaunching = YES;
     _initializationStatus = MPInitializationStatusStarting;
@@ -2461,7 +2335,9 @@ static BOOL appBackgrounded = NO;
                 _initializationStatus = MPInitializationStatusStarted;
                 MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
                 
+#if TARGET_OS_IOS == 1
                 [self notificationController];
+#endif
                 
                 if (firstRun) {
                     [self uploadWithCompletionHandler:nil];
@@ -2847,9 +2723,7 @@ static BOOL appBackgrounded = NO;
         messageInfo[kMPPushNotificationActionTileKey] = userNotification.actionTitle;
     }
     
-    MPSession *session = _session ? _session : [MPStateMachine sharedInstance].nullSession;
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:session messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:_session messageInfo:messageInfo];
     messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
     MPDataModelAbstract *message = [messageBuilder build];
     
