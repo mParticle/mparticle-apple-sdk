@@ -89,7 +89,6 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)beginSession:(void (^ _Nullable)(MPSession * _Nullable session, MPSession * _Nullable previousSession, MPExecStatus execStatus))completionHandler;
 - (void)endSession;
 - (void)beginTimedEvent:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
-- (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
 - (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
 - (MPExecStatus)fetchSegments:(NSTimeInterval)timeout endpointId:(nullable NSString *)endpointId completionHandler:(void (^ _Nonnull)(NSArray * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error))completionHandler;
@@ -102,7 +101,6 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)logScreen:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 - (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPProfileChange profile, MPExecStatus execStatus))completionHandler;
 - (void)setOptOut:(BOOL)optOutStatus attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
-- (MPExecStatus)setSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key value:(nonnull id)value;
 - (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus))completionHandler;
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler;
 - (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;

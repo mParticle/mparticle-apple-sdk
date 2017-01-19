@@ -1188,22 +1188,31 @@ NSString *const kMPStateKey = @"state";
 
     NSNumber *newValue = [currentSession incrementAttributeWithKey:key byValue:value];
     
+    [[MPPersistenceController sharedInstance] updateSession:currentSession];
+    
     MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
     
     return newValue;
 }
 
 - (void)setSessionAttribute:(NSString *)key value:(id)value {
+    MPSession *currentSession = [MPStateMachine sharedInstance].currentSession;
+    NSAssert(currentSession != nil, @"session cannot be nil.");
+    NSAssert([key isKindOfClass:[NSString class]], @"'key' must be a string.");
+    NSAssert([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]], @"'value' must be a string or number.");
+    NSAssert(_backendController.initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting session attribute cannot be done prior to starting the mParticle SDK.\n****\n");
+
     if (!_backendController || _backendController.initializationStatus != MPInitializationStatusStarted) {
         MPILogError(@"Cannot set session attribute. SDK is not initialized yet.");
         return;
     }
     
-    MPExecStatus execStatus = [self.backendController setSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key value:value];
-    if (execStatus == MPExecStatusSuccess) {
+    if ([currentSession setAttributeWithKey:key value:value]) {
+        [[MPPersistenceController sharedInstance] updateSession:currentSession];
+        
         MPILogDebug(@"Set session attribute - %@:%@", key, value);
     } else {
-        MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not set session attribute - %@:%@", key, value);
     }
 }
 

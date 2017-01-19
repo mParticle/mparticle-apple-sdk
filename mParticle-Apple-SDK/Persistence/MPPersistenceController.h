@@ -83,7 +83,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler;
 - (void)fetchUploadedMessagesInSession:(nonnull MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (void)fetchUploadsExceptInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
-- (nullable NSArray<MPUpload *> *)fetchUploadsInSession:(MPSession *)session;
+- (nullable NSArray<MPUpload *> *)fetchUploadsInSession:(nonnull MPSession *)session;
 - (void)purgeMemory;
 - (BOOL)openDatabase;
 - (void)saveBreadcrumb:(nonnull MPMessage *)message session:(nonnull MPSession *)session;

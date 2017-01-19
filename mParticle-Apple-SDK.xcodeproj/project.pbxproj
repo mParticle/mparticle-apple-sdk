@@ -221,6 +221,10 @@
 		C935A7771D8A2E4000A1EE2F /* MPIHasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CFA1D8A112B00D3ABBE /* MPIHasher.mm */; };
 		C935A7781D8A2E4000A1EE2F /* MPUserSegments.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CFB1D8A112B00D3ABBE /* MPUserSegments.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A7791D8A2E4000A1EE2F /* MPUserSegments.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CFC1D8A112B00D3ABBE /* MPUserSegments.m */; };
+		C97C60861E3180D900FA3081 /* MPAttributeValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = C97C60841E3180D900FA3081 /* MPAttributeValidator.h */; };
+		C97C60871E3180D900FA3081 /* MPAttributeValidator.h in Headers */ = {isa = PBXBuildFile; fileRef = C97C60841E3180D900FA3081 /* MPAttributeValidator.h */; };
+		C97C60881E3180D900FA3081 /* MPAttributeValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C60851E3180D900FA3081 /* MPAttributeValidator.m */; };
+		C97C60891E3180D900FA3081 /* MPAttributeValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = C97C60851E3180D900FA3081 /* MPAttributeValidator.m */; };
 		C9AB50681DFF0C4B0036BEE9 /* MPKitActivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AB50671DFF0C4B0036BEE9 /* MPKitActivityTests.m */; };
 		C9AB50691DFF0C4B0036BEE9 /* MPKitActivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AB50671DFF0C4B0036BEE9 /* MPKitActivityTests.m */; };
 		C9C9DC3A1DAC04670079A05D /* MPForwardQueueParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C9DC381DAC04670079A05D /* MPForwardQueueParameters.h */; };
@@ -475,6 +479,8 @@
 		C92F0F2D1DF9C21D008C5384 /* MPKitActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitActivity.h; sourceTree = "<group>"; };
 		C92F0F2E1DF9C21D008C5384 /* MPKitActivity.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitActivity.m; sourceTree = "<group>"; };
 		C935A6B31D8A2B6B00A1EE2F /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C97C60841E3180D900FA3081 /* MPAttributeValidator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAttributeValidator.h; sourceTree = "<group>"; };
+		C97C60851E3180D900FA3081 /* MPAttributeValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAttributeValidator.m; sourceTree = "<group>"; };
 		C9AB50671DFF0C4B0036BEE9 /* MPKitActivityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitActivityTests.m; sourceTree = "<group>"; };
 		C9C9DC381DAC04670079A05D /* MPForwardQueueParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPForwardQueueParameters.h; sourceTree = "<group>"; };
 		C9C9DC391DAC04670079A05D /* MPForwardQueueParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueParameters.m; sourceTree = "<group>"; };
@@ -577,7 +583,7 @@
 		C9DD1CEE1D8A112B00D3ABBE /* mParticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mParticle.h; sourceTree = "<group>"; };
 		C9DD1CEF1D8A112B00D3ABBE /* mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mParticle.m; sourceTree = "<group>"; };
 		C9DD1CF01D8A112B00D3ABBE /* MPBackendController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
-		C9DD1CF11D8A112B00D3ABBE /* MPBackendController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPBackendController.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C9DD1CF11D8A112B00D3ABBE /* MPBackendController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPBackendController.mm; sourceTree = "<group>"; };
 		C9DD1CF21D8A112B00D3ABBE /* MPEnums.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEnums.h; sourceTree = "<group>"; };
 		C9DD1CF31D8A112B00D3ABBE /* MPEnums.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEnums.m; sourceTree = "<group>"; };
 		C9DD1CF41D8A112B00D3ABBE /* MPExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExceptionHandler.h; sourceTree = "<group>"; };
@@ -605,8 +611,8 @@
 		C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPNotificationController.mm; sourceTree = "<group>"; };
 		C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
 		C9DD1D0F1D8A112B00D3ABBE /* MPDatabaseMigrationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDatabaseMigrationController.m; sourceTree = "<group>"; };
-		C9DD1D101D8A112B00D3ABBE /* MPPersistenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPPersistenceController.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		C9DD1D111D8A112B00D3ABBE /* MPPersistenceController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPPersistenceController.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C9DD1D101D8A112B00D3ABBE /* MPPersistenceController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = MPPersistenceController.h; sourceTree = "<group>"; };
+		C9DD1D111D8A112B00D3ABBE /* MPPersistenceController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPPersistenceController.mm; sourceTree = "<group>"; };
 		C9DD1D131D8A112B00D3ABBE /* MPUserSegments+Setters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPUserSegments+Setters.h"; sourceTree = "<group>"; };
 		C9DD1D151D8A112B00D3ABBE /* MPApplication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPApplication.h; sourceTree = "<group>"; };
 		C9DD1D161D8A112B00D3ABBE /* MPApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPApplication.m; sourceTree = "<group>"; };
@@ -1045,6 +1051,8 @@
 			children = (
 				C9DD1D151D8A112B00D3ABBE /* MPApplication.h */,
 				C9DD1D161D8A112B00D3ABBE /* MPApplication.m */,
+				C97C60841E3180D900FA3081 /* MPAttributeValidator.h */,
+				C97C60851E3180D900FA3081 /* MPAttributeValidator.m */,
 				C9DD1D171D8A112B00D3ABBE /* MPBracket.cpp */,
 				C9DD1D181D8A112B00D3ABBE /* MPBracket.h */,
 				C9DD1D191D8A112B00D3ABBE /* MPCurrentState.h */,
@@ -1229,6 +1237,7 @@
 				C935A6E71D8A2DF400A1EE2F /* MPCart+Dictionary.h in Headers */,
 				C935A7591D8A2E3800A1EE2F /* MPStateMachine.h in Headers */,
 				C935A6C71D8A2DED00A1EE2F /* MParticleUserNotification.h in Headers */,
+				C97C60871E3180D900FA3081 /* MPAttributeValidator.h in Headers */,
 				C935A70F1D8A2E0500A1EE2F /* MPKitContainer.h in Headers */,
 				C935A6FF1D8A2DFD00A1EE2F /* MessageTypeName.h in Headers */,
 				C935A6BF1D8A2DDF00A1EE2F /* MPSurrogateAppDelegate.h in Headers */,
@@ -1346,6 +1355,7 @@
 				C9DD1FAE1D8A13D600D3ABBE /* MPDataModelProtocol.h in Headers */,
 				C9DD1FFD1D8A13FB00D3ABBE /* MPILogger.h in Headers */,
 				DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */,
+				C97C60861E3180D900FA3081 /* MPAttributeValidator.h in Headers */,
 				C9DD1FD31D8A13DC00D3ABBE /* MPProductBag.h in Headers */,
 				C9DD1FA41D8A13D000D3ABBE /* MPCustomModulePreference.h in Headers */,
 				C9DD20591D8A142900D3ABBE /* MPBackendController.h in Headers */,
@@ -1618,6 +1628,7 @@
 				C935A7601D8A2E3800A1EE2F /* MPUserIdentityChange.m in Sources */,
 				C935A6F31D8A2DF400A1EE2F /* MPProduct.mm in Sources */,
 				C935A6D91D8A2DED00A1EE2F /* MPSegmentMembership.m in Sources */,
+				C97C60891E3180D900FA3081 /* MPAttributeValidator.m in Sources */,
 				C935A6FE1D8A2DFD00A1EE2F /* MessageTypeName.cpp in Sources */,
 				C9C9DC3C1DAC05C90079A05D /* MPForwardQueueParameters.m in Sources */,
 				C935A6D71D8A2DED00A1EE2F /* MPSegment.m in Sources */,
@@ -1707,6 +1718,7 @@
 				C9DD1FC21D8A13D600D3ABBE /* MPUpload.m in Sources */,
 				C9DD20221D8A141400D3ABBE /* MPPersistenceController.mm in Sources */,
 				C9DD203D1D8A142000D3ABBE /* MPUserAttributeChange.m in Sources */,
+				C97C60881E3180D900FA3081 /* MPAttributeValidator.m in Sources */,
 				C9DD1FD41D8A13DC00D3ABBE /* MPProductBag.m in Sources */,
 				C9DD1FB21D8A13D600D3ABBE /* MPIntegrationAttributes.m in Sources */,
 				C9C9DC3B1DAC04670079A05D /* MPForwardQueueParameters.m in Sources */,

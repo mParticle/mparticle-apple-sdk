@@ -41,22 +41,18 @@ static BOOL trackingLocation = NO;
     self.locationManager.desiredAccuracy = accuracy;
     self.locationManager.distanceFilter = distance;
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0) {
-        NSDictionary *mainBundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-        
-        if (authorizationRequest == MPLocationAuthorizationRequestAlways &&
-            [self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)] &&
-            mainBundleInfoDictionary[@"NSLocationAlwaysUsageDescription"])
-        {
-            [self.locationManager requestAlwaysAuthorization];
-        } else if (authorizationRequest == MPLocationAuthorizationRequestWhenInUse &&
-                   [self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)] &&
-                   mainBundleInfoDictionary[@"NSLocationWhenInUseUsageDescription"])
-        {
-            [self.locationManager requestWhenInUseAuthorization];
-        } else {
-            [self.locationManager startUpdatingLocation];
-        }
+    NSDictionary *mainBundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
+    
+    if (authorizationRequest == MPLocationAuthorizationRequestAlways &&
+        [self.locationManager respondsToSelector:@selector(requestAlwaysAuthorization)] &&
+        mainBundleInfoDictionary[@"NSLocationAlwaysUsageDescription"])
+    {
+        [self.locationManager requestAlwaysAuthorization];
+    } else if (authorizationRequest == MPLocationAuthorizationRequestWhenInUse &&
+               [self.locationManager respondsToSelector:@selector(requestWhenInUseAuthorization)] &&
+               mainBundleInfoDictionary[@"NSLocationWhenInUseUsageDescription"])
+    {
+        [self.locationManager requestWhenInUseAuthorization];
     } else {
         [self.locationManager startUpdatingLocation];
     }

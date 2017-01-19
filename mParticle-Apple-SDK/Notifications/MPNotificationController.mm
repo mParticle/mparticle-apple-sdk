@@ -178,7 +178,7 @@ static int64_t launchNotificationHash = 0;
         apsDictionary[@"sound"] = notification.soundName;
     }
     
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 8.0 && notification.category) {
+    if (notification.category) {
         apsDictionary[kMPUserNotificationCategoryKey] = notification.category;
     }
     

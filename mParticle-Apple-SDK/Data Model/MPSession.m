@@ -17,8 +17,8 @@
 //
 
 #import "MPSession.h"
+#import "MPAttributeValidator.h"
 #import "MPIConstants.h"
-#import "MPPersistenceController.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 
 NSString *const sessionNumberFileName = @"SessionNumber";
@@ -205,8 +205,6 @@ NSString *const sessionNumberKey = @"sessionNumber";
     
     self.attributesDictionary[localKey] = newValue;
     
-    [[MPPersistenceController sharedInstance] updateSession:self];
-    
     return (NSNumber *)newValue;
 }
 
@@ -216,13 +214,14 @@ NSString *const sessionNumberKey = @"sessionNumber";
     }
     
     NSString *localKey = [self.attributesDictionary caseInsensitiveKey:key];
-    if ([self.attributesDictionary[localKey] isEqual:value]) {
+    NSError *error = nil;
+    BOOL validAttributes = [MPAttributeValidator checkAttribute:self.attributesDictionary key:localKey value:value error:&error];
+    
+    if (!validAttributes || [self.attributesDictionary[localKey] isEqual:value]) {
         return NO;
     }
     
     self.attributesDictionary[localKey] = value;
-    
-    [[MPPersistenceController sharedInstance] updateSession:self];
     
     return YES;
 }
