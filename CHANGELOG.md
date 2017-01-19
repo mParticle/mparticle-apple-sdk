@@ -6,6 +6,15 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.0
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you need to use the Radar integration or want a lighter SDK
+
+* [NEW] Support for [Radar](https://www.onradar.com) as a kit
+* [NEW] Retrieve kit instance asynchronously with a block. Use `- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;` to retrieve a kit instance. The block will be called immediately if the kit is already initialized, or will be called asynchronously as soon as the kit becomes initialized
+* [NEW] Lighter SDK. New Year, new resolution, the core SDK has gone on a diet. Stay tuned, more to come
+* [FIX] Fix location getter and nullability notation
+
 ## 6.11.2
 
 >Upgrade suggestion: **HIGH**. Upgrade if you use deep-linking in your app
