@@ -29,7 +29,7 @@
 
 + (nonnull MPUploadBuilder *)newBuilderWithSession:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval;
 - (nonnull instancetype)initWithSession:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval;
-- (nullable MPUpload *)build;
+- (nonnull MPUpload *)build;
 - (nonnull MPUploadBuilder *)withUserAttributes:(nonnull NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(nullable NSSet<NSString *> *)deletedUserAttributes;
 - (nonnull MPUploadBuilder *)withUserIdentities:(nonnull NSArray<NSDictionary<NSString *, id> *> *)userIdentities;
 
