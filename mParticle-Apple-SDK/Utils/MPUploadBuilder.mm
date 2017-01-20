@@ -101,7 +101,7 @@ using namespace std;
 }
 
 #pragma mark Public instance methods
-- (nullable MPUpload *)build {
+- (nonnull MPUpload *)build {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
