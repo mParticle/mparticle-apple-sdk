@@ -18,6 +18,7 @@
 
 #import "MPMessage.h"
 #import "MPSession.h"
+#import "MPILogger.h"
 
 @interface MPMessage()
 
@@ -112,7 +113,19 @@
 
 #pragma mark Public methods
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary * dictionaryRepresentation = [NSJSONSerialization JSONObjectWithData:_messageData options:0 error:nil];
+    NSError *error = nil;
+    NSDictionary *dictionaryRepresentation = nil;
+    
+    @try {
+        dictionaryRepresentation = [NSJSONSerialization JSONObjectWithData:_messageData options:0 error:&error];
+        
+        if (error != nil) {
+            MPILogError(@"Error serializing message.");
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception serializing message.");
+    }
+    
     return dictionaryRepresentation;
 }
 
