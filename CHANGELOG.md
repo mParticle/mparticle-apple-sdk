@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you see unsupported data types being added to `MPEvent` attributes
+
+* [FIX] A try/catch block added to serialization of MPMessage. Moreover, further conditions were added to assure the values being handled by the MPUploadBuilder are valid
+
 ## 6.12.0
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you need to use the Radar integration or want a lighter SDK
