@@ -24,7 +24,6 @@
 #import "MPSegment.h"
 #import "MPSegmentMembership.h"
 #import "MPIConstants.h"
-#import "MPStandaloneUpload.h"
 #import "MPMessageBuilder.h"
 #import "MParticleUserNotification.h"
 #import "MPIntegrationAttributes.h"
@@ -202,30 +201,19 @@
     
     XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload test"];
+    NSArray<MPUpload *> *uploads = [persistence fetchUploadsInSession:session];
     
-    [persistence fetchUploadsInSession:session
-                     completionHandler:^(NSArray<MPUpload *> *uploads) {
-                         MPUpload *fetchedUpload = [uploads lastObject];
-                         
-                         XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
-                         
-                         [persistence deleteUpload:upload];
-                         
-                         [persistence fetchUploadsInSession:session
-                                          completionHandler:^(NSArray *uploads) {
-                                              if (uploads) {
-                                                  NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", fetchedUpload.uploadId];
-                                                  uploads = [uploads filteredArrayUsingPredicate:predicate];
-                                                  XCTAssertTrue(uploads.count == 0, @"Upload is not being deleted.");
-                                              }
-                                              
-                                              [expectation fulfill];
-                                          }];
-                         
-                     }];
-    
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    MPUpload *fetchedUpload = [uploads lastObject];
+    XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
+
+    [persistence deleteUpload:upload];
+
+    uploads = [persistence fetchUploadsInSession:session];
+    if (uploads) {
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", fetchedUpload.uploadId];
+        uploads = [uploads filteredArrayUsingPredicate:predicate];
+        XCTAssertTrue(uploads.count == 0, @"Upload is not being deleted.");
+    }
 }
 
 - (void)testSegments {

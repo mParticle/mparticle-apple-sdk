@@ -23,7 +23,6 @@
 #import "MPMessageBuilder.h"
 #import "MPIConstants.h"
 #import "MPUpload.h"
-#import "MPStandaloneUpload.h"
 #import "MPStateMachine.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
@@ -118,8 +117,6 @@
 }
 
 - (void)testInstanceWithSession {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
-    
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
 
     NSDictionary *messageInfo = @{@"key1":@"value1",
@@ -160,31 +157,23 @@
                                 ];
     
     [uploadBuilder withUserIdentities:userIdentities];
+    MPUpload *upload = [uploadBuilder build];
+    XCTAssertNotNil(upload);
+    Class uploadClass = [MPUpload class];
+    XCTAssertEqualObjects([upload class], uploadClass);
     
-    [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
-        XCTAssertNotNil(upload);
-        Class uploadClass = [MPUpload class];
-        XCTAssertEqualObjects([upload class], uploadClass);
-        
-        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
-        XCTAssertNotNil(uploadDictionary);
+    NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
+    XCTAssertNotNil(uploadDictionary);
 
-        NSDictionary *referenceUserDictionary = @{@"Dinosaur":@"T-Rex",
-                                                  @"Arm length":@"Short",
-                                                  @"Height":@"20",
-                                                  @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+    NSDictionary *referenceUserDictionary = @{@"Dinosaur":@"T-Rex",
+                                              @"Arm length":@"Short",
+                                              @"Height":@"20",
+                                              @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
 
-        XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
-        
-        [expectation fulfill];
-    }];
-    
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
 }
 
 - (void)testInstanceWithoutSession {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (no session)"];
-    
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
@@ -198,7 +187,10 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMessages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:[MPStateMachine sharedInstance].nullSession
+                                                                   messages:@[message]
+                                                             sessionTimeout:0
+                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -220,26 +212,20 @@
                                 ];
     
     [uploadBuilder withUserIdentities:userIdentities];
+    MPUpload *upload = [uploadBuilder build];
+    XCTAssertNotNil(upload);
+    Class uploadClass = [MPUpload class];
+    XCTAssertEqualObjects([upload class], uploadClass);
     
-    [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
-        XCTAssertNotNil(upload);
-        Class uploadClass = [MPStandaloneUpload class];
-        XCTAssertEqualObjects([upload class], uploadClass);
-        
-        NSDictionary *uploadDictionary = [(MPStandaloneUpload *)upload dictionaryRepresentation];
-        XCTAssertNotNil(uploadDictionary);
-        
-        NSDictionary *referenceUserAttributes = @{@"Dinosaur":@"T-Rex",
-                                                  @"Arm length":@"Short",
-                                                  @"Height":@"20",
-                                                  @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
-        
-        XCTAssertEqualObjects(uploadDictionary[@"ua"], referenceUserAttributes);
-        
-        [expectation fulfill];
-    }];
+    NSDictionary *uploadDictionary = [upload dictionaryRepresentation];
+    XCTAssertNotNil(uploadDictionary);
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    NSDictionary *referenceUserAttributes = @{@"Dinosaur":@"T-Rex",
+                                              @"Arm length":@"Short",
+                                              @"Height":@"20",
+                                              @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+    
+    XCTAssertEqualObjects(uploadDictionary[@"ua"], referenceUserAttributes);
 }
 
 @end

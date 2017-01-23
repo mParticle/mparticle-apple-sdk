@@ -2012,7 +2012,7 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
     
-    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
         if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
             XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
             
