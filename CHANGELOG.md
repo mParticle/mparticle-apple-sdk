@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.2
+
+>Upgrade suggestion: **LOW**. Upgrade if you see unsupported data types being added to `MPEvent` attributes
+
+* [NEW] Remove eTag when app version or build changes
+* [FIX] Enumeration to generate upload batches is done non-concurrently
+
 ## 6.12.1
 
 >Upgrade suggestion: **LOW**. Upgrade if you see unsupported data types being added to `MPEvent` attributes
