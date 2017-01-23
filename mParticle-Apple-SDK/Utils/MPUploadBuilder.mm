@@ -48,24 +48,16 @@ using namespace std;
     
     NSUInteger numberOfMessages = messages.count;
     NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
-    
-    __block vector<int64_t> prepMessageIds;
-    prepMessageIds.reserve(numberOfMessages);
-    
-    [messages enumerateObjectsWithOptions:NSEnumerationConcurrent
-                               usingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
-                                   prepMessageIds[idx] = message.messageId;
-                                   
-                                   NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
-                                   if (messageDictionaryRepresentation) {
-                                       [messageDictionaries addObject:messageDictionaryRepresentation];
-                                   }
-                               }];
-    
     _preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
-    for (NSUInteger i = 0; i < numberOfMessages; ++i) {
-        [_preparedMessageIds addObject:@(prepMessageIds[i])];
-    }
+
+    [messages enumerateObjectsUsingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
+        [_preparedMessageIds addObject:@(message.messageId)];
+        
+        NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
+        if (messageDictionaryRepresentation) {
+            [messageDictionaries addObject:messageDictionaryRepresentation];
+        }
+    }];
     
     NSNumber *ltv;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
