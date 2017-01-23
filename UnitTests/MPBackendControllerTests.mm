@@ -33,6 +33,7 @@
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
 #import "MPKitInstanceValidator.h"
+#import "MPAttributeValidator.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -86,8 +87,6 @@
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession;
 - (void)uploadMessagesFromSession:(MPSession *)session completionHandler:(void(^)(MPSession *uploadedSession))completionHandler;
 - (void)uploadSessionHistory:(MPSession *)session completionHandler:(dispatch_block_t)completionHandler;
-- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
-- (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error;
 
 @end
 
@@ -310,6 +309,24 @@
         
         XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
         
+        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(session.foregroundTime),
+                                              kMPSessionTotalLengthKey:MPMilliseconds(session.length),
+                                              kMPEventCounterKey:@(session.eventCounter)}
+                                            mutableCopy];
+        
+        NSDictionary *sessionAttributesDictionary = [session.attributesDictionary transformValuesToString];
+        if (sessionAttributesDictionary) {
+            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
+        }
+        
+        MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
+        if (!message) {
+            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
+            message = [[messageBuilder withTimestamp:session.endTime] build];
+            
+            [self.backendController saveMessage:message updateSession:NO];
+        }
+        
         [self.backendController endSession];
         [self.backendController endSession];
         [self.backendController endSession];
@@ -319,7 +336,6 @@
         [self.backendController endSession];
         
         messages = [persistence fetchMessagesForUploadingInSession:session];
-        
         
         NSUInteger endSessionCount = 0;
         for (MPMessage *message in messages) {
@@ -355,7 +371,7 @@
         key = [NSString stringWithFormat:@"Key%d", i];
         value = [NSString stringWithFormat:@"Value%d", i];
         error = nil;
-        validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+        validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
         XCTAssertTrue(validAttributes, @"Checking attributes did not work.");
         self.session.attributesDictionary[key] = value;
     }
@@ -365,7 +381,7 @@
     value = [NSString stringWithFormat:@"Value%d", quantityLimit];
     self.session.attributesDictionary[key] = value;
     error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
     XCTAssertFalse(validAttributes, @"Checking attributes count limit did not work.");
     
     // Removes most attributes
@@ -380,7 +396,7 @@
     }
     value = [NSString stringWithFormat:@"Value%d", 0];
     error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
     XCTAssertFalse(validAttributes, @"Accepting keys that are too long.");
     
     // Builds and tests a long value
@@ -389,14 +405,14 @@
     }
     key = [NSString stringWithFormat:@"Key%d", 0];
     error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
     XCTAssertFalse(validAttributes, @"Accepting values that are too long.");
     
     // Nil values
     key = [NSString stringWithFormat:@"Key%d", 0];
     value = nil;
     error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
     XCTAssertFalse(validAttributes, @"Accepting nil values.");
 }
 
@@ -433,33 +449,28 @@
         
         [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
         [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-        [uploadBuilder build:^(MPDataModelAbstract *upload) {
-            [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-            
-            NSArray *messages = [persistence fetchMessagesInSession:self.session];
-            
-            XCTAssertNotNil(messages, @"There are no messages in session.");
-            
-            for (MPMessage *message in messages) {
-                XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
-            }
-            
-            [persistence fetchUploadsInSession:self.session
-                             completionHandler:^(NSArray *uploads) {
-                                 XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
-                                 
-                                 for (MPUpload *upload in uploads) {
-                                     [persistence deleteUpload:upload];
-                                 }
-                                 
-                                 [persistence fetchUploadsInSession:self.session
-                                                  completionHandler:^(NSArray *uploads) {
-                                                      XCTAssertNil(uploads, @"Uploads are not being deleted.");
-                                                      
-                                                      [expectation fulfill];
-                                                  }];
-                             }];
-        }];
+        MPUpload *upload = [uploadBuilder build];
+        [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+        
+        messages = [persistence fetchMessagesInSession:self.session];
+        
+        XCTAssertNotNil(messages, @"There are no messages in session.");
+        
+        for (MPMessage *message in messages) {
+            XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
+        }
+        
+        NSArray *uploads = [persistence fetchUploadsInSession:self.session];
+        XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
+        
+        for (MPUpload *upload in uploads) {
+            [persistence deleteUpload:upload];
+        }
+        
+        uploads = [persistence fetchUploadsInSession:self.session];
+        XCTAssertNil(uploads, @"Uploads are not being deleted.");
+        
+        [expectation fulfill];
     });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
@@ -492,53 +503,48 @@
     
     [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
     [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-    [uploadBuilder build:^(MPDataModelAbstract *upload) {
-        [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-        
-        [persistence fetchUploadsInSession:session
-                         completionHandler:^(NSArray *uploads) {
-                             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
-                             
-                             MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-                             [stateMachine configureRampPercentage:@100];
-                             
-                             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
-                             
-                             for (MPUpload *upload in uploads) {
-                                 [persistence deleteUpload:upload];
-                             }
-                             
-                             [persistence fetchUploadsInSession:session
-                                              completionHandler:^(NSArray *uploads) {
-                                                  XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
-                                                  
-                                                  [persistence fetchUploadedMessagesInSession:session
-                                                            excludeNetworkPerformanceMessages:NO
-                                                                            completionHandler:^(NSArray *persistedMessages) {
-                                                                                MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
-                                                                                XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
-                                                                                
-                                                                                if (!uploadBuilder) {
-                                                                                    return;
-                                                                                }
-                                                                                
-                                                                                [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
-                                                                                [uploadBuilder withUserIdentities:self.backendController.userIdentities];
-                                                                                [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                                                                    [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
-                                                                                    
-                                                                                    [persistence fetchUploadedMessagesInSession:session
-                                                                                              excludeNetworkPerformanceMessages:NO
-                                                                                                              completionHandler:^(NSArray *persistedMessages) {
-                                                                                                                  XCTAssertNil(persistedMessages, @"Messages are not being deleted are being moved to the uploads table.");
-                                                                                                                  
-                                                                                                                  [expectation fulfill];
-                                                                                                              }];
-                                                                                }];
-                                                                            }];
-                                              }];
-                         }];
-    }];
+    MPUpload *upload = [uploadBuilder build];
+    
+    [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+    
+    NSArray *uploads = [persistence fetchUploadsInSession:session];
+    XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
+    
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    [stateMachine configureRampPercentage:@100];
+    
+    XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
+    
+    for (MPUpload *upload in uploads) {
+        [persistence deleteUpload:upload];
+    }
+    
+    uploads = [persistence fetchUploadsInSession:session];
+    XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
+    
+    [persistence fetchUploadedMessagesInSession:session
+              excludeNetworkPerformanceMessages:NO
+                              completionHandler:^(NSArray *persistedMessages) {
+                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+                                  XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+                                  
+                                  if (!uploadBuilder) {
+                                      return;
+                                  }
+                                  
+                                  [uploadBuilder withUserAttributes:self.backendController.userAttributes deletedUserAttributes:nil];
+                                  [uploadBuilder withUserIdentities:self.backendController.userIdentities];
+                                  MPUpload *upload = [uploadBuilder build];
+                                  [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
+                                  
+                                  [persistence fetchUploadedMessagesInSession:session
+                                            excludeNetworkPerformanceMessages:NO
+                                                            completionHandler:^(NSArray *persistedMessages) {
+                                                                XCTAssertNil(persistedMessages, @"Messages are not being deleted are being moved to the uploads table.");
+                                                                
+                                                                [expectation fulfill];
+                                                            }];
+                              }];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
@@ -641,11 +647,11 @@
                                          @"Keywords":@[@"It is bigger on the inside", @"Looks like a police callbox", @"It is blue"]} mutableCopy];
     
     NSError *error = nil;
-    BOOL validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    BOOL validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertTrue(validAttributes);
     
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"Temperamental" error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@"Temperamental" error:&error];
     XCTAssertTrue(validAttributes);
     
     NSMutableString *invalidLengthString = [[NSMutableString alloc] initWithCapacity:(MAX_USER_ATTR_LIST_ENTRY_LENGTH + 1)];
@@ -653,7 +659,7 @@
         [invalidLengthString appendString:@"T"];
     }
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@[invalidLengthString] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@[invalidLengthString] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     NSMutableArray *invalidValues = [[NSMutableArray alloc] initWithCapacity:(MAX_USER_ATTR_LIST_SIZE + 1)];
@@ -661,29 +667,29 @@
         [invalidValues addObject:@"Use the stabilisers"];
     }
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:invalidValues maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:invalidValues maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:nil maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:nil maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@"" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:invalidLengthString maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:invalidLengthString maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     NSString *key = nil;
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:key value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:key value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     key = (NSString *)[NSNull null];
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:key value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:key value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     invalidLengthString = [[NSMutableString alloc] initWithCapacity:(LIMIT_NAME + 1)];
@@ -691,7 +697,7 @@
         [invalidLengthString appendString:@"K"];
     }
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:invalidLengthString value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:invalidLengthString value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
     
     for (int i = 0; i < LIMIT_ATTR_COUNT; ++i) {
@@ -699,7 +705,7 @@
         dictionary[key] = key;
     }
     error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
     XCTAssertFalse(validAttributes);
 }
 

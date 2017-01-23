@@ -972,7 +972,8 @@ static BOOL appBackgrounded = NO;
     // If needed to end session
     if (shouldEndSession && uploadSession != stateMachine.nullSession) {
         NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(uploadSession.foregroundTime),
-                                              kMPSessionTotalLengthKey:MPMilliseconds(uploadSession.length)}
+                                              kMPSessionTotalLengthKey:MPMilliseconds(uploadSession.length),
+                                              kMPEventCounterKey:@(uploadSession.eventCounter)}
                                             mutableCopy];
         
         NSDictionary *sessionAttributesDictionary = [uploadSession.attributesDictionary transformValuesToString];
@@ -1560,13 +1561,7 @@ static BOOL appBackgrounded = NO;
     }
     
     _session.endTime = [[NSDate date] timeIntervalSince1970];
-    
     MPSession *endSession = [_session copy];
-    NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(endSession.foregroundTime),
-                                          kMPSessionTotalLengthKey:MPMilliseconds(endSession.length),
-                                          kMPEventCounterKey:@(endSession.eventCounter)}
-                                        mutableCopy];
-    
     __weak MPBackendController *weakSelf = self;
     
     [self requestConfig:^(BOOL uploadBatch) {
