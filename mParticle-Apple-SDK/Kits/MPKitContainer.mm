@@ -1446,14 +1446,26 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 
                 // The collection of projected dictionaries become events or commerce events
                 if (requirementsMet) {
-                    for (auto &projectedDictionary : projectedDictionaries) {
+                    if (!projectedDictionaries.empty()) {
+                        for (auto &projectedDictionary : projectedDictionaries) {
+                            if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
+                                MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
+                                [projectedCommerceEvent setUserDefinedAttributes:projectedDictionary];
+                                projectedCommerceEvents.push_back(projectedCommerceEvent);
+                            } else {
+                                MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
+                                projectedEvent.info = projectedDictionary;
+                                projectedEvents.push_back(projectedEvent);
+                            }
+                            
+                            appliedProjections.push_back(eventProjection);
+                        }
+                    } else {
                         if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
                             MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                            [projectedCommerceEvent setUserDefinedAttributes:projectedDictionary];
                             projectedCommerceEvents.push_back(projectedCommerceEvent);
                         } else {
                             MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                            projectedEvent.info = projectedDictionary;
                             projectedEvents.push_back(projectedEvent);
                         }
                         

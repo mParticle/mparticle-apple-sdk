@@ -1937,4 +1937,64 @@
     [self waitForExpectationsWithTimeout:1.01 handler:nil];
 }
 
+- (void)testExpandedCommerceEventProjection {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expanded commerve event projection"];
+    
+    [self setUserAttributesAndIdentities];
+    
+    NSString *configurationStr =  @"{ \
+                                        \"id\":92, \
+                                        \"as\":{ \
+                                            \"devKey\":\"INVALID_DEV_KEY\", \
+                                            \"appleAppId\":\"INVALID_APPLE_APP_ID\" \
+                                        }, \
+                                        \"hs\":{ \
+                                        }, \
+                                        \"pr\":[ \
+                                          { \
+                                            \"id\": 157, \
+                                            \"pmid\": 504, \
+                                            \"behavior\": { \
+                                              \"append_unmapped_as_is\": true \
+                                            }, \
+                                            \"action\": { \
+                                              \"projected_event_name\": \"af_content_view\", \
+                                              \"attribute_maps\": [ \
+                                              ], \
+                                              \"outbound_message_type\": 4 \
+                                            }, \
+                                            \"matches\": [ \
+                                              { \
+                                                \"message_type\": 16, \
+                                                \"event_match_type\": \"Hash\", \
+                                                \"event\": \"1572\" \
+                                              } \
+                                            ] \
+                                          } \
+                                        ] \
+                                    }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
+    
+    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+        if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+            XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
+            
+            [expectation fulfill];
+        }
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    [self resetUserAttributesAndIdentities];
+}
+
 @end
