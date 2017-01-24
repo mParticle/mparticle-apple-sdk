@@ -971,18 +971,19 @@ static BOOL appBackgrounded = NO;
     
     // If needed to end session
     if (shouldEndSession && uploadSession != stateMachine.nullSession) {
-        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(uploadSession.foregroundTime),
-                                              kMPSessionTotalLengthKey:MPMilliseconds(uploadSession.length),
-                                              kMPEventCounterKey:@(uploadSession.eventCounter)}
-                                            mutableCopy];
-        
-        NSDictionary *sessionAttributesDictionary = [uploadSession.attributesDictionary transformValuesToString];
-        if (sessionAttributesDictionary) {
-            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
-        }
-        
         MPMessage *message = [persistence fetchSessionEndMessageInSession:uploadSession];
+
         if (!message) {
+            NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(uploadSession.foregroundTime),
+                                                  kMPSessionTotalLengthKey:MPMilliseconds(uploadSession.length),
+                                                  kMPEventCounterKey:@(uploadSession.eventCounter)}
+                                                mutableCopy];
+            
+            NSDictionary *sessionAttributesDictionary = [uploadSession.attributesDictionary transformValuesToString];
+            if (sessionAttributesDictionary) {
+                messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
+            }
+            
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:uploadSession messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
             messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
@@ -1562,8 +1563,28 @@ static BOOL appBackgrounded = NO;
     
     _session.endTime = [[NSDate date] timeIntervalSince1970];
     MPSession *endSession = [_session copy];
-    __weak MPBackendController *weakSelf = self;
     
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPMessage *message = [persistence fetchSessionEndMessageInSession:endSession];
+    if (!message) {
+        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(endSession.foregroundTime),
+                                              kMPSessionTotalLengthKey:MPMilliseconds(endSession.length),
+                                              kMPEventCounterKey:@(endSession.eventCounter)}
+                                            mutableCopy];
+        
+        NSDictionary *sessionAttributesDictionary = [endSession.attributesDictionary transformValuesToString];
+        if (sessionAttributesDictionary) {
+            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
+        }
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:endSession messageInfo:messageInfo];
+        message = [[messageBuilder withTimestamp:endSession.endTime] build];
+        
+        [self saveMessage:message updateSession:NO];
+    }
+    
+    __weak MPBackendController *weakSelf = self;
+
     [self requestConfig:^(BOOL uploadBatch) {
         if (!uploadBatch) {
             return;

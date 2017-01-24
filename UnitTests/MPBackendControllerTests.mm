@@ -309,24 +309,6 @@
         
         XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
         
-        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(session.foregroundTime),
-                                              kMPSessionTotalLengthKey:MPMilliseconds(session.length),
-                                              kMPEventCounterKey:@(session.eventCounter)}
-                                            mutableCopy];
-        
-        NSDictionary *sessionAttributesDictionary = [session.attributesDictionary transformValuesToString];
-        if (sessionAttributesDictionary) {
-            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
-        }
-        
-        MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
-        if (!message) {
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
-            message = [[messageBuilder withTimestamp:session.endTime] build];
-            
-            [self.backendController saveMessage:message updateSession:NO];
-        }
-        
         [self.backendController endSession];
         [self.backendController endSession];
         [self.backendController endSession];
