@@ -17,37 +17,37 @@
 //
 
 #import "MPKitContainer.h"
-#import "MPKitExecStatus.h"
-#import "MPEnums.h"
-#include "MessageTypeName.h"
-#import "MPStateMachine.h"
-#include "MPHasher.h"
-#import "MPKitConfiguration.h"
-#import <UIKit/UIKit.h>
-#import "MPForwardRecord.h"
-#import "MPPersistenceController.h"
-#import "MPILogger.h"
-#import "MPKitFilter.h"
 #include "EventTypeName.h"
-#import "MPEvent.h"
+#include <map>
+#include "MessageTypeName.h"
+#import "MPAttributeProjection.h"
+#include "MPBracket.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
+#import "MPConsumerInfo.h"
+#import "MPEnums.h"
+#import "MPEvent.h"
 #import "MPEventProjection.h"
-#include <map>
-#import "MPAttributeProjection.h"
-#import "MPPromotion.h"
-#import "MPPromotion+Dictionary.h"
+#import "MPForwardQueueItem.h"
+#import "MPForwardQueueParameters.h"
+#import "MPForwardRecord.h"
+#include "MPHasher.h"
+#import "MPILogger.h"
+#import "MPKitConfiguration.h"
+#import "MPKitExecStatus.h"
+#import "MPKitFilter.h"
+#import "MPPersistenceController.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
-#import "NSDictionary+MPCaseInsensitive.h"
-#import "NSArray+MPCaseInsensitive.h"
-#import "NSUserDefaults+mParticle.h"
-#include "MPBracket.h"
-#import "MPConsumerInfo.h"
-#import "MPForwardQueueItem.h"
+#import "MPPromotion.h"
+#import "MPPromotion+Dictionary.h"
+#import "MPStateMachine.h"
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "MPForwardQueueParameters.h"
+#import "NSArray+MPCaseInsensitive.h"
+#import "NSDictionary+MPCaseInsensitive.h"
+#import "NSUserDefaults+mParticle.h"
+#import <UIKit/UIKit.h>
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -138,11 +138,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 #pragma mark Private accessors
 - (NSMutableArray<MPForwardQueueItem *> *)forwardQueue {
-    if (_forwardQueue) {
-        return _forwardQueue;
+    if (!_forwardQueue) {
+        _forwardQueue = [[NSMutableArray alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     }
     
-    _forwardQueue = [[NSMutableArray alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     return _forwardQueue;
 }
 
@@ -216,7 +215,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
                 MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
                 self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
-                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration];
+                
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitConfiguration.kitCode];
+                id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+                
+                [self startKitRegister:kitRegister configuration:kitConfiguration];
+
                 initializedArchivedKits = YES;
             }
         } @catch (NSException *exception) {
@@ -343,17 +347,17 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
-    shared_ptr<mParticle::Bracket> localBracket;
     if (!bracketConfiguration) {
         return NO;
     }
+    
     NSString *const MPKitBracketLowKey = @"lo";
     NSString *const MPKitBracketHighKey = @"hi";
     
     long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
     short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
     short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
-    localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
+    shared_ptr<mParticle::Bracket> localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
     return !localBracket->shouldForward();
 }
 
@@ -376,7 +380,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
     BOOL disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
-    if (disabled) {
+    if (disabled || !kitRegister || kitRegister.wrapperInstance) {
         return;
     }
     

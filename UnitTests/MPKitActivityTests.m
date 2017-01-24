@@ -21,6 +21,7 @@
 #import "MPKitActivity.h"
 #import "MPKitConfiguration.h"
 #import "MPKitContainer.h"
+#import "MPKitInstanceValidator.h"
 #import "MPKitRegister.h"
 #import "MPKitTestClass.h"
 #import "MPStateMachine.h"
@@ -29,7 +30,14 @@
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
 
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+- (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration;
+
+@end
+
+#pragma mark - MPKitInstanceValidator category for unit tests
+@interface MPKitInstanceValidator(BackendControllerTests)
+
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
 
 @end
 
@@ -53,6 +61,8 @@
     stateMachine.secret = @"unit_test_secret";
     stateMachine.consumerInfo.mpId = @(-986700791391657968);
     
+    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
+    
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
@@ -66,7 +76,7 @@
                                         };
         
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-        [[MPKitContainer sharedInstance] startKit:@42 configuration:kitConfiguration];
+        [[MPKitContainer sharedInstance] startKitRegister:kitRegister configuration:kitConfiguration];
     }
 }
 
@@ -105,7 +115,11 @@
     [[MPKitContainer sharedInstance] configureKits:kitConfigs];
 
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [[MPKitContainer sharedInstance] startKit:@42 configuration:kitConfiguration];
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", @42];
+    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
+    
+    [[MPKitContainer sharedInstance] startKitRegister:kitRegister configuration:kitConfiguration];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -125,7 +139,10 @@
     [[MPKitContainer sharedInstance] configureKits:kitConfigs];
     
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [[MPKitContainer sharedInstance] startKit:@42 configuration:kitConfiguration];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", @42];
+    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
+    
+    [[MPKitContainer sharedInstance] startKitRegister:kitRegister configuration:kitConfiguration];
     
     BOOL isKitActive = [self.kitActivity isKitActive:@42];
     XCTAssertTrue(isKitActive);
