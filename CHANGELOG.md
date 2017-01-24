@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.3
+
+>Upgrade suggestion: **LOW**. Upgrade if you have custom mappings for commerce events
+
+* [FIX] Execute projection when the commerce event has no mapped attributes
+
 ## 6.12.2
 
 >Upgrade suggestion: **LOW**. Upgrade if you see unsupported data types being added to `MPEvent` attributes

@@ -1938,7 +1938,7 @@
 }
 
 - (void)testExpandedCommerceEventProjection {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Expanded commerve event projection"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Expanded commerce event projection"];
     
     [self setUserAttributesAndIdentities];
     
@@ -1960,6 +1960,34 @@
                                             \"action\": { \
                                               \"projected_event_name\": \"af_content_view\", \
                                               \"attribute_maps\": [ \
+                                                 { \
+                                                    \"projected_attribute_name\":\"af_price\", \
+                                                    \"match_type\":\"Hash\", \
+                                                    \"value\":\"-1000582050\", \
+                                                    \"data_type\":\"Float\", \
+                                                    \"property\":\"ProductAttribute\" \
+                                                 }, \
+                                                 { \
+                                                    \"projected_attribute_name\":\"af_content_type\", \
+                                                    \"match_type\":\"Hash\", \
+                                                    \"value\":\"-1702675751\", \
+                                                    \"data_type\":\"String\", \
+                                                    \"property\":\"ProductAttribute\" \
+                                                 }, \
+                                                 { \
+                                                    \"projected_attribute_name\":\"af_currency\", \
+                                                    \"match_type\":\"Hash\", \
+                                                    \"value\":\"881337592\", \
+                                                    \"data_type\":\"String\", \
+                                                    \"property\":\"EventField\" \
+                                                 }, \
+                                                 { \
+                                                    \"projected_attribute_name\":\"af_content_id\", \
+                                                    \"match_type\":\"Hash\", \
+                                                    \"value\":\"1788759301\", \
+                                                    \"data_type\":\"String\", \
+                                                    \"property\":\"ProductAttribute\" \
+                                                 } \
                                               ], \
                                               \"outbound_message_type\": 4 \
                                             }, \
