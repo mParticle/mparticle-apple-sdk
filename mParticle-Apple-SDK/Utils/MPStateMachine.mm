@@ -202,11 +202,21 @@ static BOOL runningInBackground = NO;
     if (self.storedSDKVersion && storedSDKVersion && [_storedSDKVersion isEqualToString:storedSDKVersion]) {
         return;
     }
-    
+
+    // If needed, remove all kit configurations
     NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
     NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
     if (newSDKMajorVersion && ![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
-        [[MPKitContainer sharedInstance] removeAllKitConfigurations];
+        NSArray *directoryContents = [[MPKitContainer sharedInstance] fetchKitConfigurationFileNames];
+        
+        if (directoryContents.count > 0) {
+            NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+            
+            for (NSString *fileName in directoryContents) {
+                NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+                [[MPKitContainer sharedInstance] removeKitConfigurationAtPath:kitPath];
+            }
+        }
     }
 
     _storedSDKVersion = storedSDKVersion;

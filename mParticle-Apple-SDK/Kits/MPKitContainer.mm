@@ -154,6 +154,43 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 #pragma mark Private methods
+// If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
+// commerce event user defined attributes (prior to filtering and projections)
+- (id)applyAppsFlyerAugmentationsToEvent:(id)event {
+    id surrogateEvent = nil;
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+    Class eventClass = [event class];
+    Class MPEventClass = [MPEvent class];
+    Class MPCommerEventClass = [MPCommerceEvent class];
+    
+    for (NSDictionary *userIdentity in userIdentities) {
+        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
+        
+        if (identityType == MPUserIdentityCustomerId) {
+            NSString *identityString = userIdentity[kMPUserIdentityIdKey];
+            surrogateEvent = [event copy];
+            
+            if (eventClass == MPEventClass) {
+                NSMutableDictionary *eventInfo = [((MPEvent *)surrogateEvent).info mutableCopy];
+                if (!eventInfo) {
+                    eventInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
+                }
+                
+                eventInfo[@"af_customer_user_id"] = identityString;
+                ((MPEvent *)surrogateEvent).info = eventInfo;
+            } else if (eventClass == MPCommerEventClass) {
+                NSString *identityString = userIdentity[kMPUserIdentityIdKey];
+                ((MPCommerceEvent *)surrogateEvent).userDefinedAttributes[@"af_customer_user_id"] = identityString;
+            }
+            
+            break;
+        }
+    }
+    
+    return surrogateEvent ? surrogateEvent : event;
+}
+
 - (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
     NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
     
@@ -164,18 +201,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return bracket;
 }
 
-- (void)flushSerializedKits {
-    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
-        [self freeKit:kitRegister.code];
-    }
-}
-
-- (void)freeKit:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
-
+- (void)freeKitRegister:(id<MPExtensionKitProtocol>)kitRegister {
     if (kitRegister.wrapperInstance) {
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(deinit)]) {
             [kitRegister.wrapperInstance deinit];
@@ -183,16 +209,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         kitRegister.wrapperInstance = nil;
         
-        NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
-        
-        if ([fileManager fileExistsAtPath:kitPath]) {
-            [fileManager removeItemAtPath:kitPath error:nil];
-        }
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitRegister.code, kitFileExtension]];
+
+        [self removeKitConfigurationAtPath:kitPath];
 
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode};
+            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitRegister.code};
             
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
                                                                 object:nil
@@ -232,42 +255,45 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         self.kitsInitialized = YES;
     }
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
-            NSArray<NSNumber *> *supportedKits = [self supportedKits];
-            
-            if (supportedKits.count > 0) {
-                NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
-                for (NSNumber *supportedKit in supportedKits) {
-                    [listOfKits appendFormat:@"%@, ", [self nameForKitCode:supportedKit]];
-                }
-                
-                [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
-                [listOfKits appendString:@"}"];
-                
-                MPILogDebug(@"%@", listOfKits);
-            }
-        }
-    });
+    [self logIncludedKitsToConsole];
 }
 
-- (NSArray<NSString *> *)fetchKitConfigurationFileNames {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSArray<NSString *> *directoryContents = nil;
-    
-    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
-        
-        if (directoryContents.count == 0) {
-            directoryContents = nil;
-        }
+- (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
+    if (!bracketConfiguration) {
+        return NO;
     }
     
-    return directoryContents;
+    NSString *const MPKitBracketLowKey = @"lo";
+    NSString *const MPKitBracketHighKey = @"hi";
+    
+    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    short low = [bracketConfiguration[MPKitBracketLowKey] shortValue];
+    short high = [bracketConfiguration[MPKitBracketHighKey] shortValue];
+    
+    mParticle::Bracket localBracket(mpId, low, high);
+    return !localBracket.shouldForward();
+}
+
+- (void)logIncludedKitsToConsole {
+    if ([MPStateMachine sharedInstance].logLevel < MPILogLevelDebug) {
+        return;
+    }
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        NSArray<NSNumber *> *supportedKits = [self supportedKits];
+        
+        if (supportedKits) {
+            NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
+            for (NSNumber *kitCode in supportedKits) {
+                [listOfKits appendFormat:@"%@, ", [self nameForKitCode:kitCode]];
+            }
+            
+            [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
+            [listOfKits appendString:@"}"];
+            
+            MPILogDebug(@"%@", listOfKits);
+        }
+    });
 }
 
 - (NSDictionary *)methodMessageTypeMapping {
@@ -322,6 +348,23 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     _forwardQueue = nil;
 }
 
+- (void)saveKitConfiguration:(MPKitConfiguration *)kitConfiguration forKitCode:(NSNumber *)kitCode {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+
+    if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+        [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
+    NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
+    
+    if ([fileManager fileExistsAtPath:kitPath]) {
+        [fileManager removeItemAtPath:kitPath error:nil];
+    }
+    
+    [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
+}
+
 - (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
     if (!configuration.attributeValueFilteringIsActive) {
         return YES;
@@ -346,115 +389,107 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return shouldInclude;
 }
 
-- (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration {
-    if (!bracketConfiguration) {
-        return NO;
-    }
-    
-    NSString *const MPKitBracketLowKey = @"lo";
-    NSString *const MPKitBracketHighKey = @"hi";
-    
-    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
-    short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
-    short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
-    shared_ptr<mParticle::Bracket> localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
-    return !localBracket->shouldForward();
-}
-
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
-    
-    if (!kitRegister) {
-        return nil;
-    }
-    
-    if (kitRegister.wrapperInstance) {
-        return kitRegister.wrapperInstance;
-    }
-    
-    [self startKitRegister:kitRegister configuration:kitConfiguration];
-    
-    return kitRegister.wrapperInstance;
-}
-
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
     BOOL disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
-    if (disabled || !kitRegister || kitRegister.wrapperInstance) {
+    NSDictionary *configuration = [self validateAndTransformToSafeConfiguration:kitConfiguration.configuration];
+
+    if (disabled || !kitRegister || !configuration) {
+        return;
+    }
+
+    // Instantiate and start kit
+    id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+    if (kitInstance) {
+        if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
+            [kitInstance setConfiguration:kitConfiguration.configuration];
+        }
+    } else {
+        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
+        kitInstance = kitRegister.wrapperInstance;
+    }
+    
+    if (kitInstance) {
+        if (![kitInstance started]) {
+            if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
+                [kitInstance performSelector:@selector(setLaunchOptions:) withObject:[MPStateMachine sharedInstance].launchOptions];
+            }
+            
+            if ([kitInstance respondsToSelector:@selector(start)]) {
+                [kitInstance start];
+            }
+        }
+        
+        // Synchronizes user attributes
+        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        NSDictionary<NSString *, id> *userAttributes = userDefaults[kMPUserAttributeKey];
+        [self syncUserAttributes:userAttributes withKitRegister:kitRegister];
+        
+        // Synchronizes user identities
+        NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+        [self syncUserIdentities:userIdentities withKitRegister:kitRegister];
+    }
+}
+
+- (void)syncUserAttributes:(NSDictionary *)userAttributes withKitRegister:(id<MPExtensionKitProtocol>)kitRegister {
+    id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+    if (MPIsNull(userAttributes) || userAttributes.count == 0 || !kitInstance) {
         return;
     }
     
-    NSDictionary * configuration = kitConfiguration.configuration;
-    configuration = [self validateAndTransformToSafeConfiguration:configuration];
-    
-    if (configuration) {
-        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
+    MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
+    NSDictionary *filteredUserAttributes = nil;
+    BOOL supportsUserAttributeLists = [kitInstance respondsToSelector:@selector(setUserAttribute:values:)];
+    Class NSStringClass = [NSString class];
+    Class NSNumberClass = [NSNumber class];
+    Class NSArrayClass = [NSArray class];
+
+    if (!kitFilter.shouldFilter) {
+        filteredUserAttributes = userAttributes;
+    } else if (kitFilter.shouldFilter && kitFilter.filteredAttributes.count > 0) {
+        filteredUserAttributes = kitFilter.filteredAttributes;
     }
+
+    BOOL kitInstanceRespondesToSetUserAttributeValue = [kitInstance respondsToSelector:@selector(setUserAttribute:value:)];
+    BOOL kitInstanceRespondesToSetUserAttributeValues = [kitInstance respondsToSelector:@selector(setUserAttribute:values:)];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    
-    // Synchronizes user attributes
-    NSDictionary<NSString *, id> *userAttributes = userDefaults[kMPUserAttributeKey];
-    if (!MPIsNull(userAttributes) && userAttributes.count > 0 && [kitRegister.wrapperInstance respondsToSelector:@selector(setUserAttributes:)]) {
-        MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
-        NSDictionary *filteredUserAttributes = nil;
-        Class NSArrayClass = [NSArray class];
-        Class NSNumberClass = [NSNumber class];
-        Class NSStringClass = [NSString class];
-        BOOL supportsUserAttributeLists = [kitRegister.wrapperInstance respondsToSelector:@selector(setUserAttribute:values:)];
+    [filteredUserAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+        id value = nil;
         
+        if ([obj isKindOfClass:NSStringClass]) {
+            value = obj;
+        } else if ([obj isKindOfClass:NSArrayClass]) {
+            if (supportsUserAttributeLists) {
+                value = obj;
+            } else {
+                value = [obj componentsJoinedByString:@","];
+            }
+        } else if ([obj isKindOfClass:NSNumberClass]) {
+            value = [obj stringValue];
+        }
+        
+        if (value) {
+            if (kitInstanceRespondesToSetUserAttributeValue && [value isKindOfClass:NSStringClass]) {
+                [kitInstance setUserAttribute:key value:value];
+            } else if (kitInstanceRespondesToSetUserAttributeValues && [value isKindOfClass:NSArrayClass]) {
+                [kitInstance setUserAttribute:key values:value];
+            }
+        }
+    }];
+}
+
+- (void)syncUserIdentities:(NSArray *)userIdentities withKitRegister:(id<MPExtensionKitProtocol>)kitRegister {
+    id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+    if (MPIsNull(userIdentities) || userIdentities.count == 0 || ![kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)]) {
+        return;
+    }
+
+    for (NSDictionary *userIdentity in userIdentities) {
+        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
+        NSString *identityString = userIdentity[kMPUserIdentityIdKey];
+        MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
+
         if (!kitFilter.shouldFilter) {
-            filteredUserAttributes = userAttributes;
-        } else if (kitFilter.shouldFilter && kitFilter.filteredAttributes.count > 0) {
-            filteredUserAttributes = kitFilter.filteredAttributes;
-        }
-        
-        if (filteredUserAttributes) {
-            __block NSMutableDictionary<NSString *, id> *forwardUserAttributes = [[NSMutableDictionary alloc] initWithCapacity:filteredUserAttributes.count];
-            
-            [filteredUserAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-                id value = nil;
-                
-                if ([obj isKindOfClass:NSStringClass]) {
-                    value = obj;
-                } else if ([obj isKindOfClass:NSArrayClass]) {
-                    if (supportsUserAttributeLists) {
-                        value = obj;
-                    } else {
-                        value = [obj componentsJoinedByString:@","];
-                    }
-                } else if ([obj isKindOfClass:NSNumberClass]) {
-                    value = [obj stringValue];
-                }
-                
-                if (value) {
-                    forwardUserAttributes[key] = value;
-                }
-            }];
-            
-            if (forwardUserAttributes.count > 0) {
-                [kitRegister.wrapperInstance setUserAttributes:forwardUserAttributes];
-            }
-        }
-    }
-    
-    // Synchronizes user identities
-    NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-    if (!MPIsNull(userIdentities) && userIdentities.count > 0 && [kitRegister.wrapperInstance respondsToSelector:@selector(setUserIdentities:)]) {
-        __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
-        
-        [userIdentities enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            MPUserIdentity identityType = (MPUserIdentity)[obj[kMPUserIdentityTypeKey] integerValue];
-            NSString *identityString = obj[kMPUserIdentityIdKey];
-            MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
-            
-            if (!kitFilter.shouldFilter) {
-                [forwardUserIdentities addObject:obj];
-            }
-        }];
-        
-        if (forwardUserIdentities.count > 0) {
-            [kitRegister.wrapperInstance setUserIdentities:forwardUserIdentities];
+            [kitInstance setUserIdentity:identityString identityType:identityType];
         }
     }
 }
@@ -475,7 +510,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }];
     
     if (configurationModified) {
-        return safeConfiguration.count > 0 ? [safeConfiguration copy] : nil;
+        return safeConfiguration.count > 0 ? (NSDictionary *)safeConfiguration : nil;
     } else {
         return configuration;
     }
@@ -605,11 +640,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 #pragma mark Public accessors
 - (NSMutableDictionary<NSNumber *, MPKitConfiguration *> *)kitConfigurations {
-    if (_kitConfigurations) {
-        return _kitConfigurations;
+    if (!_kitConfigurations) {
+        _kitConfigurations = [[NSMutableDictionary alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     }
-    
-    _kitConfigurations = [[NSMutableDictionary alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     
     return _kitConfigurations;
 }
@@ -1842,7 +1875,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     if (MPIsNull(kitConfigurations) || stateMachine.optOut) {
-        [self flushSerializedKits];
+        for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+            [self freeKitRegister:kitRegister];
+        }
+        
         self.kitsInitialized = YES;
         
         return;
@@ -1850,20 +1886,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     
-    NSPredicate *predicate;
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSString *kitPath;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
-    NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     id<MPExtensionKitProtocol>kitRegister;
-    id<MPKitProtocol> kitInstance;
-    Class NSStringClass = [NSString class];
-    Class NSNumberClass = [NSNumber class];
-    Class NSArrayClass = [NSArray class];
 
     // Adds all currently configured kits to a list
     vector<NSNumber *> deactivateKits;
@@ -1873,90 +1898,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     // Configure kits according to server instructions
     for (NSDictionary *kitConfigurationDictionary in kitConfigurations) {
-        MPKitConfiguration *kitConfiguration = nil;
-        BOOL shouldPersistKit = YES;
-        
         NSNumber *kitCode = kitConfigurationDictionary[@"id"];
-        
-        predicate = [NSPredicate predicateWithFormat:@"SELF == %@", kitCode];
-        BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
+        BOOL isKitSupported = [supportedKits containsObject:kitCode];
 
         if (isKitSupported) {
-            predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-            kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
-            kitInstance = kitRegister.wrapperInstance;
-            kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-            self.kitConfigurations[kitCode] = kitConfiguration;
-            
-            if (kitInstance) {
-                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
-                
-                if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
-                    [kitInstance setConfiguration:kitConfiguration.configuration];
-                }
-            } else {
-                [self startKitRegister:kitRegister configuration:kitConfiguration];
-                kitInstance = kitRegister.wrapperInstance;
-                
-                if (kitInstance) {
-                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
-                    if (![kitInstance started]) {
-                        if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
-                            [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
-                        }
-                        
-                        if ([kitInstance respondsToSelector:@selector(start)]) {
-                            [kitInstance start];
-                        }
-                    }
-                }
-                
-                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
-            }
-            
-            if (kitInstance) {
-                if (userAttributes) {
-                    NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
-                    NSString *key;
-                    id value;
-                    
-                    while ((key = [attributeEnumerator nextObject])) {
-                        value = userAttributes[key];
-                        
-                        if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
-                            [kitInstance setUserAttribute:key value:value];
-                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
-                            value = [value stringValue];
-                            [kitInstance setUserAttribute:key value:value];
-                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
-                            [kitInstance setUserAttribute:key values:value];
-                        }
-                    }
-                }
-                
-                if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)]) {
-                    for (NSDictionary *userIdentity in userIdentities) {
-                        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                        NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                        
-                        [kitInstance setUserIdentity:identityString identityType:identityType];
-                    }
-                }
-            }
-            
-            if (shouldPersistKit) {
-                if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-                    [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-                }
-                
-                kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
-                
-                if ([fileManager fileExistsAtPath:kitPath]) {
-                    [fileManager removeItemAtPath:kitPath error:nil];
-                }
-                
-                [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
-            }
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
+            [self saveKitConfiguration:kitConfiguration forKitCode:kitCode];
         } else {
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", kitCode);
         }
@@ -1974,15 +1922,34 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     // Remove currently configured kits that were not in the instructions from the server
     if (!deactivateKits.empty()) {
         for (vector<NSNumber *>::iterator ekIterator = deactivateKits.begin(); ekIterator != deactivateKits.end(); ++ekIterator) {
-            predicate = [NSPredicate predicateWithFormat:@"code == %@", *ekIterator];
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", *ekIterator];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
-            [self freeKit:kitRegister.code];
+            [self freeKitRegister:kitRegister];
         }
     }
     
-    self.kitsInitialized = YES;
+    [self initializeKits];
 
     dispatch_semaphore_signal(kitsSemaphore);
+}
+
+- (NSArray<NSString *> *)fetchKitConfigurationFileNames {
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSArray<NSString *> *directoryContents = nil;
+    
+    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
+        directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
+        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
+        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
+        
+        if (directoryContents.count == 0) {
+            directoryContents = nil;
+        }
+    }
+    
+    return directoryContents;
 }
 
 - (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath {
@@ -1991,27 +1958,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     if ([fileManager fileExistsAtPath:kitPath]) {
         [fileManager removeItemAtPath:kitPath error:nil];
         [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
-    }
-}
-
-- (void)removeAllKitConfigurations {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    
-    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        NSArray *directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
-        
-        if (directoryContents.count > 0) {
-            [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
-            
-            for (NSString *fileName in directoryContents) {
-                NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
-                [fileManager removeItemAtPath:kitPath error:nil];
-            }
-        }
     }
 }
 
@@ -2046,33 +1992,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+    NSNumber *appsFlyerCode = @(MPKitInstanceAppsFlyer);
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        __block NSNumber *lastKit = nil;
+        __block NSNumber *previousKit = nil;
         
-        MPCommerceEvent *surrogateCommerceEvent = nil;
-        
-        // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
-        // commerce event user defined attributes (prior to filtering and projections)
-        if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-            NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-            
-            for (NSDictionary *userIdentity in userIdentities) {
-                MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                
-                if (identityType == MPUserIdentityCustomerId) {
-                    surrogateCommerceEvent = [commerceEvent copy];
-                    NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                    surrogateCommerceEvent.userDefinedAttributes[@"af_customer_user_id"] = identityString;
-                    break;
-                }
-            }
-        }
-        
-        if (!surrogateCommerceEvent) {
-            surrogateCommerceEvent = commerceEvent;
-        }
+        MPCommerceEvent *surrogateCommerceEvent = [kitRegister.code isEqualToNumber:appsFlyerCode] ? (MPCommerceEvent *)[self applyAppsFlyerAugmentationsToEvent:commerceEvent] : commerceEvent;
         
         [self filter:kitRegister forCommerceEvent:surrogateCommerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
             if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
@@ -2084,9 +2009,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 
                 kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
                 
-                NSNumber *currentKit = kitRegister.code;
-                if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
-                    lastKit = currentKit;
+                if (execStatus.success && ![previousKit isEqualToNumber:kitRegister.code]) {
+                    previousKit = kitRegister.code;
                     
                     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
                                                                                        execStatus:execStatus
@@ -2103,11 +2027,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus **execStatus))kitHandler {
-    if (!self.kitsInitialized) {
-        if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
-            return;
-        }
-        
+    if (!self.kitsInitialized && messageType != MPMessageTypeOptOut && messageType != MPMessageTypePushRegistration) {
         MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
         [parameters addParameter:event];
         
@@ -2122,24 +2042,22 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-    
+    NSNumber *appsFlyerCode = @(MPKitInstanceAppsFlyer);
+
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        __block NSNumber *lastKit = nil;
+        __block NSNumber *previousKit = nil;
         
         void (^forwardWithFilter)(MPKitFilter *const) = ^(MPKitFilter *const kitFilter) {
             if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
                 return;
             }
             
+            MPKitExecStatus *execStatus = nil;
+            kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
+            
             if (kitFilter.forwardEvent) {
-                MPKitExecStatus *execStatus = nil;
-                
-                kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
-                
-                NSNumber *currentKit = kitRegister.code;
-                if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && kitFilter.forwardEvent && messageType != MPMessageTypeUnknown) {
-                    lastKit = currentKit;
-                    
+                if (execStatus.success && ![previousKit isEqualToNumber:kitRegister.code] && kitFilter.forwardEvent && messageType != MPMessageTypeUnknown) {
+                    previousKit = kitRegister.code;
                     MPForwardRecord *forwardRecord = nil;
                     
                     if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
@@ -2162,36 +2080,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             if (event) {
-                MPEvent *surrogateEvent = nil;
-                
-                // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
-                // event attributes (prior to filtering and projections)
-                if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                    NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-                    
-                    for (NSDictionary *userIdentity in userIdentities) {
-                        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                        
-                        if (identityType == MPUserIdentityCustomerId) {
-                            surrogateEvent = [event copy];
-                            NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                            
-                            NSMutableDictionary *eventInfo = [surrogateEvent.info mutableCopy];
-                            if (!eventInfo) {
-                                eventInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
-                            }
-                            
-                            eventInfo[@"af_customer_user_id"] = identityString;
-                            surrogateEvent.info = eventInfo;
-                            break;
-                        }
-                    }
-                }
-                
-                if (!surrogateEvent) {
-                    surrogateEvent = event;
-                }
+                MPEvent *surrogateEvent = [kitRegister.code isEqualToNumber:appsFlyerCode] ? (MPEvent *)[self applyAppsFlyerAugmentationsToEvent:event] : event;
                 
                 [self filter:kitRegister forEvent:surrogateEvent selector:selector completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
                     forwardWithFilter(kitFilter);
@@ -2209,10 +2098,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     SEL setUserAttributeSelector = @selector(setUserAttribute:value:);
     SEL setUserAttributeListSelector = @selector(setUserAttribute:values:);
-    SEL otherUserAttributeSelector = selector == setUserAttributeListSelector ? setUserAttributeSelector : setUserAttributeListSelector;
+    SEL alternativeUserAttributeSelector = selector == setUserAttributeListSelector ? setUserAttributeSelector : setUserAttributeListSelector;
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:selector] || [kitRegister.wrapperInstance respondsToSelector:otherUserAttributeSelector]) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector] || [kitRegister.wrapperInstance respondsToSelector:alternativeUserAttributeSelector]) {
             MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributeKey:key value:value];
             
             if (!kitFilter.shouldFilter) {

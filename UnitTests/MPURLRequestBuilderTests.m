@@ -332,8 +332,17 @@
             XCTAssertEqualObjects(headerValue, @"42");
         }
     }
-    
-    [[MPKitContainer sharedInstance] removeAllKitConfigurations];
+
+    // Remove all kit configurations
+    NSArray *directoryContents = [[MPKitContainer sharedInstance] fetchKitConfigurationFileNames];
+    if (directoryContents.count > 0) {
+        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+        
+        for (NSString *fileName in directoryContents) {
+            NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+            [[MPKitContainer sharedInstance] removeKitConfigurationAtPath:kitPath];
+        }
+    }
 }
 
 @end
