@@ -188,7 +188,8 @@
     NSArray *kitConfigs = @[configuration1];
     [kitContainer configureKits:nil];
     [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+    MPKitConfiguration *kitConfiguration = [kitContainer.kitConfigurations objectForKey:@(42)];
+    XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
     
     NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
@@ -215,7 +216,8 @@
     
     kitConfigs = @[configuration2];
     [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"cool app key 2", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+    kitConfiguration = [kitContainer.kitConfigurations objectForKey:@(42)];
+    XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
     
     for (NSString *fileName in directoryContents) {
         NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
@@ -247,7 +249,7 @@
     
     [kitContainer configureKits:nil];
     [kitContainer configureKits:@[configuration]];
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", @42];
     id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
@@ -277,8 +279,8 @@
     NSArray *kitConfigs = @[configuration1, configuration2];
     [kitContainer configureKits:nil];
     [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
-    XCTAssertEqual(@"unique id", [kitContainer.kitConfigurations objectForKey:@314].configuration[@"appId"]);
+    XCTAssertEqualObjects(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
+    XCTAssertEqualObjects(@"unique id", [kitContainer.kitConfigurations objectForKey:@314].configuration[@"appId"]);
     
     NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
@@ -309,7 +311,7 @@
     found = NO;
     kitConfigs = @[configuration1];
     [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
+    XCTAssertEqualObjects(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
     
     for (NSString *fileName in directoryContents) {
         NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
@@ -567,6 +569,12 @@
 }
 
 - (void)testAssortedItems {
+    NSNotification *notification = [[NSNotification alloc] initWithName:@"Test Launching"
+                                                                 object:self
+                                                               userInfo:@{@"deep":@"linking"}];
+    
+    [kitContainer handleApplicationDidFinishLaunching:notification];
+    
     NSDictionary *configuration = @{
                                     @"id":@42,
                                     @"as":@{
@@ -574,18 +582,9 @@
                                             }
                                     };
     
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", @42];
-    id<MPExtensionKitProtocol>kitRegister = [[[MPKitContainer registeredKits] filteredSetUsingPredicate:predicate] anyObject];
-    
-    [kitContainer startKitRegister:kitRegister configuration:kitConfiguration];
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:@[configuration]];
 
-    NSNotification *notification = [[NSNotification alloc] initWithName:@"Test Launching"
-                                                                 object:self
-                                                               userInfo:@{@"deep":@"linking"}];
-    
-    [kitContainer handleApplicationDidFinishLaunching:notification];
-    
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     id kit;
     for (kit in registeredKits) {
@@ -598,13 +597,13 @@
         }
         
         NSString *name = [kitContainer nameForKitCode:kitCode];
-        XCTAssertEqualObjects(name, [kit name], @"Should have been equal.");
+        XCTAssertEqualObjects(name, [kit name]);
     }
     
     [kitContainer handleApplicationDidBecomeActive:nil];
     
     NSDictionary *mapping = [kitContainer methodMessageTypeMapping];
-    XCTAssertNotNil(mapping, @"Should not have been nil.");
+    XCTAssertNotNil(mapping);
 }
 
 - (void)testFilterEventType {
