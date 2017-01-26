@@ -309,13 +309,13 @@
         
         XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
         
-        [self.backendController endSession];
-        [self.backendController endSession];
-        [self.backendController endSession];
-        [self.backendController endSession];
-        [self.backendController endSession];
-        [self.backendController endSession];
-        [self.backendController endSession];
+        [self.backendController endSession:session];
+        [self.backendController endSession:session];
+        [self.backendController endSession:session];
+        [self.backendController endSession:session];
+        [self.backendController endSession:session];
+        [self.backendController endSession:session];
+        [self.backendController endSession:session];
         
         messages = [persistence fetchMessagesForUploadingInSession:session];
         

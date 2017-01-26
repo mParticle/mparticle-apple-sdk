@@ -37,6 +37,8 @@
 #import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 
+//#define MP_NETWORK_SEMAPHORES 1
+
 typedef NS_ENUM(NSUInteger, MPNetworkUploadType) {
     MPNetworkUploadTypeBatch = 0,
     MPNetworkUploadTypeSessionHistory
@@ -55,6 +57,10 @@ NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 @interface MPNetworkCommunication() {
+#ifdef MP_NETWORK_SEMAPHORES
+    dispatch_semaphore_t configSemaphore;
+    dispatch_semaphore_t eventSemaphore;
+#endif
     UIBackgroundTaskIdentifier backgroundTaskIdentifier;
     BOOL retrievingConfig;
     BOOL retrievingSegments;
@@ -76,6 +82,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     self = [super init];
     
     if (self) {
+#ifdef MP_NETWORK_SEMAPHORES
+        configSemaphore = dispatch_semaphore_create(1);
+        eventSemaphore = dispatch_semaphore_create(1);
+#endif
         backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         retrievingConfig = NO;
         retrievingSegments = NO;
@@ -152,9 +162,21 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                 return;
             }
 
-            strongSelf->retrievingConfig = NO;
+            if (strongSelf->retrievingConfig) {
+                strongSelf->retrievingConfig = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+                dispatch_semaphore_signal(configSemaphore);
+#endif
+            }
+            
+            if (strongSelf->uploading) {
+                strongSelf->uploading = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+                dispatch_semaphore_signal(eventSemaphore);
+#endif
+            }
+            
             strongSelf->retrievingSegments = NO;
-            strongSelf->uploading = NO;
             [[UIApplication sharedApplication] endBackgroundTask:strongSelf->backgroundTaskIdentifier];
             strongSelf->backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
@@ -171,26 +193,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 }
 
 - (void)uploadData:(NSData *)data batchId:(NSString *)batchId uploadType:(MPNetworkUploadType)uploadType completionHandler:(void(^ _Nonnull)(BOOL success, NSDictionary *responseDictionary, MPNetworkResponseAction responseAction, NSHTTPURLResponse *httpResponse))completionHandler {
-    if (uploading) {
+    if (!data || data.length == 0) {
+        completionHandler(NO, nil, MPNetworkResponseActionNone, nil);
         return;
     }
     
-    if (!data || data.length == 0) {
-        completionHandler(NO, nil, MPNetworkResponseActionNone, nil);
-    }
-    
-    uploading = YES;
-    __weak MPNetworkCommunication *weakSelf = self;
-    
-    [self beginBackgroundTask];
-    
     NSString *jsonString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-    NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    MPConnector *connector = [[MPConnector alloc] initWithConnectionId:connectionId];
-    
-    MPILogVerbose(@"Source Batch Id: %@", batchId);
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
     NSData *zipUploadData = nil;
     std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[data bytes], (unsigned int)[data length]);
     if (get<0>(zipData) != nullptr) {
@@ -198,11 +206,23 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         delete [] get<0>(zipData);
     } else {
         completionHandler(NO, nil, MPNetworkResponseActionDeleteBatch, nil);
-        uploading = NO;
         return;
     }
     
+#ifdef MP_NETWORK_SEMAPHORES
+    dispatch_semaphore_wait(eventSemaphore, DISPATCH_TIME_FOREVER);
+#endif
+    uploading = YES;
+    __weak MPNetworkCommunication *weakSelf = self;
     NSString *uploadTypeString = uploadType == MPNetworkUploadTypeBatch ? @"Upload" : @"Session History";
+    
+    MPILogVerbose(@"Source Batch Id: %@", batchId);
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    [self beginBackgroundTask];
+    
+    NSString *const connectionId = [[NSUUID UUID] UUIDString];
+    MPConnector *connector = [[MPConnector alloc] initWithConnectionId:connectionId];
     
     [connector asyncPostDataFromURL:self.eventURL
                             message:jsonString
@@ -246,9 +266,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       
                       MPILogVerbose(@"%@ Batch Execution Time: %.2fms", uploadTypeString, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                       
-                      completionHandler(success, responseDictionary, responseAction, httpResponse);
-                      
                       strongSelf->uploading = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+                      dispatch_semaphore_signal(strongSelf->eventSemaphore);
+#endif
+
+                      completionHandler(success, responseDictionary, responseAction, httpResponse);
                   }];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -264,6 +287,9 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         __strong MPNetworkCommunication *strongSelf = weakSelf;
         if (strongSelf) {
             strongSelf->uploading = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+            dispatch_semaphore_signal(strongSelf->eventSemaphore);
+#endif
         }
         
         [connector cancelRequest];
@@ -324,23 +350,33 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 #pragma mark Notification handlers
 - (void)handleReachabilityChanged:(NSNotification *)notification {
-    retrievingConfig = retrievingSegments = uploading = NO;
+    if (retrievingConfig) {
+        retrievingConfig = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+        dispatch_semaphore_signal(configSemaphore);
+#endif
+    }
+    
+    if (uploading) {
+        uploading = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+        dispatch_semaphore_signal(eventSemaphore);
+#endif
+    }
+
+    retrievingSegments = NO;
 }
 
 #pragma mark Public accessors
-- (BOOL)inUse {
-    return retrievingConfig || retrievingSegments || uploading;
-}
-
 - (BOOL)retrievingSegments {
     return retrievingSegments;
 }
 
 #pragma mark Public methods
 - (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary))completionHandler {
-    if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
-        return;
-    }
+#ifdef MP_NETWORK_SEMAPHORES
+    dispatch_semaphore_wait(configSemaphore, DISPATCH_TIME_FOREVER);
+#endif
     
     retrievingConfig = YES;
     __weak MPNetworkCommunication *weakSelf = self;
@@ -367,8 +403,11 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                      
                      if (responseCode == HTTPStatusCodeNotModified) {
-                         completionHandler(YES, nil);
                          strongSelf->retrievingConfig = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+                         dispatch_semaphore_signal(strongSelf->configSemaphore);
+#endif
+                         completionHandler(YES, nil);
                          return;
                      }
                      
@@ -403,9 +442,12 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      
                      [strongSelf processNetworkResponseAction:responseAction uploadInstance:nil httpResponse:httpResponse];
                      
-                     completionHandler(success, configurationDictionary);
-                     
                      strongSelf->retrievingConfig = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+                     dispatch_semaphore_signal(strongSelf->configSemaphore);
+#endif
+                     
+                     completionHandler(success, configurationDictionary);
                  }];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
@@ -423,6 +465,9 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         __strong MPNetworkCommunication *strongSelf = weakSelf;
         if (strongSelf) {
             strongSelf->retrievingConfig = NO;
+#ifdef MP_NETWORK_SEMAPHORES
+            dispatch_semaphore_signal(strongSelf->configSemaphore);
+#endif
         }
     });
 }
