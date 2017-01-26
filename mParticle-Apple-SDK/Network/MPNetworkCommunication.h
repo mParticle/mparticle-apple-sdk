@@ -43,7 +43,6 @@ typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nu
 
 @interface MPNetworkCommunication : NSObject
 
-@property (nonatomic, unsafe_unretained, readonly) BOOL inUse;
 @property (nonatomic, unsafe_unretained, readonly) BOOL retrievingSegments;
 
 - (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary))completionHandler;

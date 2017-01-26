@@ -87,7 +87,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPBackendControllerDelegate>)delegate;
 - (void)beginSession:(void (^ _Nullable)(MPSession * _Nullable session, MPSession * _Nullable previousSession, MPExecStatus execStatus))completionHandler;
-- (void)endSession;
+- (void)endSession:(nonnull MPSession *)session;
 - (void)beginTimedEvent:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
 - (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
