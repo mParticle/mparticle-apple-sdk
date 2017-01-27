@@ -18,15 +18,13 @@
 
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
+#import "MPEventAbstract.h"
 
 /**
  This class contains the information and represents an event to be logged using
  the mParticle SDK.
  */
-@interface MPEvent : NSObject <NSCopying> {
-@protected
-    NSDate *_timestamp;
-}
+@interface MPEvent : MPEventAbstract <NSCopying>
 
 /**
  Setting the category of an MPEvent adds a custom attribute using $Category as the key. Several integrations, such as Google Analytics, 
@@ -77,14 +75,6 @@
  String representation of the event type to be logged.
  */
 @property (nonatomic, strong, readonly, nonnull) NSString *typeName;
-
-/**
- An enum value that indicates the type of event to be logged. If logging a screen event, this 
- property will be overridden to MPEventTypeNavigation. In all other cases the SDK will honor the type
- assigned to this property.
- @see MPEventType
- */
-@property (nonatomic, unsafe_unretained) MPEventType type;
 
 /**
  Initializes an instance of MPEvent

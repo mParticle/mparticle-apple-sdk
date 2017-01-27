@@ -29,15 +29,6 @@ NSString *const kMPEventCustomFlags = @"flags";
 
 @implementation MPEvent(Internal)
 
-#pragma mark Public accessors
-- (NSDate *)timestamp {
-    return _timestamp;
-}
-
-- (void)setTimestamp:(NSDate *)timestamp {
-    _timestamp = timestamp;
-}
-
 #pragma mark Public methods
 - (void)beginTiming {
     self.startTime = [NSDate date];

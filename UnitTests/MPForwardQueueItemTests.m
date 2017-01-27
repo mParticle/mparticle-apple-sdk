@@ -91,7 +91,7 @@
     
     MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:commerceEventSelector parameters:parameters messageType:MPMessageTypeCommerceEvent completionHandler:kitHandler];
     
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeAppEvent);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], commerceEvent);
     XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
@@ -122,7 +122,7 @@
     
     MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:MPMessageTypeEvent completionHandler:kitHandler];
     
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeAppEvent);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], event);
     XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
@@ -175,7 +175,7 @@
     [parameters addParameter:event];
     
     forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:MPMessageTypeEvent completionHandler:eventKitHandler];
-    forwardQueueItem.queueItemType = MPQueueItemTypeEvent;
+    forwardQueueItem.queueItemType = MPQueueItemTypeAppEvent;
 
     XCTAssertNil(forwardQueueItem);
     

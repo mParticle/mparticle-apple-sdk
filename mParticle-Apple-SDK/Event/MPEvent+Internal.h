@@ -21,8 +21,6 @@
 
 @interface MPEvent(Internal)
 
-@property (nonatomic, strong, nullable) NSDate *timestamp;
-
 - (void)beginTiming;
 - (nullable NSDictionary *)breadcrumbDictionaryRepresentation;
 - (nullable NSDictionary<NSString *, id> *)dictionaryRepresentation;

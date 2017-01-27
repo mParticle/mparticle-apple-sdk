@@ -28,6 +28,7 @@
 #import "MPKitAppsFlyerTest.h"
 #import "MPKitConfiguration.h"
 #import "MPKitContainer.h"
+#import "MPKitDataTransformation.h"
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
 #import "MPKitInstanceValidator.h"
@@ -43,6 +44,7 @@
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
 
+@property (nonatomic, strong) MPKitDataTransformation *dataTransformation;
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
@@ -58,12 +60,9 @@
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration;
 - (void)flushSerializedKits;
 - (NSDictionary *)methodMessageTypeMapping;
-- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler;
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forSelector:(SEL)selector;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributes:(NSDictionary *)userAttributes;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType;
-- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler;
 
 @end
 
@@ -383,99 +382,6 @@
     XCTAssertNil(validatedConfiguration, @"Should have been nil.");
 }
 
-- (void)testValueTransformation {
-    id transformedValue;
-    
-    // String
-    transformedValue = [kitContainer transformValue:@"The quick brown fox jumps over the lazy dog" dataType:MPDataTypeString];
-    XCTAssertEqual(transformedValue, @"The quick brown fox jumps over the lazy dog", @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSString class]], @"Should have been true.");
-    
-    // Boolean
-    transformedValue = [kitContainer transformValue:@"TRue" dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @YES, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"FaLSe" dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"Just a String" dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    // Integer
-    transformedValue = [kitContainer transformValue:@"1618033" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @1618033, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"1.618033" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @1, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"An Int string" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-    
-    // Long
-    transformedValue = [kitContainer transformValue:@"161803398875" dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, @161803398875, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"1.618033" dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @1, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"A Long string" dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-    
-    // Float
-    transformedValue = [kitContainer transformValue:@"1.5" dataType:MPDataTypeFloat];
-    XCTAssertEqualObjects(transformedValue, @1.5, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:@"A Float string" dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-    
-    // Invalid values
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeString];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeString];
-    XCTAssertEqualObjects(transformedValue, nil, @"Should have been equal.");
-
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeBool];
-    XCTAssertEqualObjects(transformedValue, @NO, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeInt];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeLong];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:nil dataType:MPDataTypeFloat];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-    
-    transformedValue = [kitContainer transformValue:(NSString *)[NSNull null] dataType:MPDataTypeFloat];
-    XCTAssertEqualObjects(transformedValue, @0, @"Should have been equal.");
-    XCTAssertTrue([transformedValue isKindOfClass:[NSNumber class]], @"Should have been true.");
-}
-
 - (void)testForwardQueueEcommerce {
     XCTAssertNotNil(kitContainer.forwardQueue, @"Should not have been nil.");
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -488,10 +394,15 @@
     void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
     };
 
-    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:kitHandler];
+    [kitContainer forwardSDKCall:@selector(logCommerceEvent:)
+                           event:commerceEvent
+                     messageType:MPMessageTypeCommerceEvent
+                        userInfo:nil
+                      kitHandler:kitHandler];
+    
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 1);
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeAppEvent);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], commerceEvent);
     XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
 
@@ -514,7 +425,7 @@
     [kitContainer forwardSDKCall:selector event:event messageType:MPMessageTypeEvent userInfo:nil kitHandler:kitHandler];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 1);
-    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent);
+    XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeAppEvent);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters[0], event);
     XCTAssertEqualObjects(forwardQueueItem.completionHandler, kitHandler);
     
@@ -601,9 +512,6 @@
     }
     
     [kitContainer handleApplicationDidBecomeActive:nil];
-    
-    NSDictionary *mapping = [kitContainer methodMessageTypeMapping];
-    XCTAssertNotNil(mapping);
 }
 
 - (void)testFilterEventType {
@@ -634,17 +542,20 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
 
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:event
+                                   selector:@selector(logEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+                              XCTAssertNil(kitFilter.filteredAttributes);
+                          }];
 }
 
 - (void)testFilterMessageType {
@@ -675,17 +586,20 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
     
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:event
+                                   selector:@selector(logEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+                              XCTAssertNil(kitFilter.filteredAttributes);
+                          }];
 }
 
 - (void)testFilterEventNameAndAttributes {
@@ -711,16 +625,19 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
     
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:event
+                                   selector:@selector(logEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+                          }];
     
     configurations = @[
                        @{
@@ -744,17 +661,16 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
-           XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
-       }];
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:event
+                                   selector:@selector(logEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+                              XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
+                              XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
+                          }];
 }
 
 - (void)testFilterForSelector {
@@ -779,12 +695,19 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
-    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol> registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
-    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forSelector:@selector(logScreen:)];
-    XCTAssertNotNil(kitFilter, @"Should not have been nil.");
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:nil
+                                   selector:@selector(logScreen:)
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                          }];
 }
 
 - (void)testFilterForUserAttribute {
@@ -806,29 +729,52 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
-    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol> registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     NSString *key = @"Shoe Size";
     NSString *value = @"11";
-    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
-    XCTAssertNotNil(kitFilter);
-    XCTAssertTrue(kitFilter.shouldFilter);
     
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                   kitConfiguration:kitConfiguration
+                forUserAttributeKey:key
+                              value:value
+                  completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                      XCTAssertNotNil(kitFilter);
+                      XCTAssertTrue(kitFilter.shouldFilter);
+                  }];
+
     key = @"teeth";
     value = @"sharp";
-    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
-    XCTAssertNil(kitFilter);
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                        forUserAttributeKey:key
+                                      value:value
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNil(kitFilter);
+                          }];
     
     key = nil;
-    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
-    XCTAssertNil(kitFilter);
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                        forUserAttributeKey:key
+                                      value:value
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNil(kitFilter);
+                          }];
     
     key = @"Shoe Size";
     NSMutableArray *values = [@[@"9", @"10", @"11"] mutableCopy];
-    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:values];
-    XCTAssertNotNil(kitFilter);
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                        forUserAttributeKey:key
+                                      value:values
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                          }];
     
     key = @"Dinosaur";
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
@@ -913,28 +859,44 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
-    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol> registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
-    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserAttributes:userAttributes];
-    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter user attribute.");
-    XCTAssertEqual(kitFilter.filteredAttributes[@"arms"], @"short", @"User attribute should not have been filtered.");
-    XCTAssertEqual(kitFilter.filteredAttributes[@"growl"], @"loud", @"User attribute should not have been filtered.");
-    XCTAssertEqual(kitFilter.filteredAttributes[@"teeth"], @"sharp", @"User attribute should not have been filtered.");
-    XCTAssertNil(kitFilter.filteredAttributes[@"$Age"], @"User attribute should have been filtered.");
-    XCTAssertNil(kitFilter.filteredAttributes[@"member_since"], @"User attribute should have been filtered.");
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                          forUserAttributes:userAttributes
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertTrue(kitFilter.shouldFilter);
+                              XCTAssertEqual(kitFilter.filteredAttributes[@"arms"], @"short", @"User attribute should not have been filtered.");
+                              XCTAssertEqual(kitFilter.filteredAttributes[@"growl"], @"loud", @"User attribute should not have been filtered.");
+                              XCTAssertEqual(kitFilter.filteredAttributes[@"teeth"], @"sharp", @"User attribute should not have been filtered.");
+                              XCTAssertNil(kitFilter.filteredAttributes[@"$Age"], @"User attribute should have been filtered.");
+                              XCTAssertNil(kitFilter.filteredAttributes[@"member_since"], @"User attribute should have been filtered.");
+                          }];
 
     userAttributes = @{@"$Age":@24,
                        @"member_since":[NSDate date]
                        };
     
-    kitFilter = [kitContainer filter:registeredKit forUserAttributes:userAttributes];
-    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                          forUserAttributes:userAttributes
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNil(kitFilter);
+                          }];
     
-    kitFilter = [kitContainer filter:registeredKit forUserAttributes:nil];
-    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+    userAttributes = nil;
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                          forUserAttributes:userAttributes
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNil(kitFilter);
+                          }];
 }
 
 - (void)testFilterForUserIdentity {
@@ -956,20 +918,32 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
-    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol> registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     NSString *identityString = @"earl.sinclair@shortarmsdinosaurs.com";
     MPUserIdentity identityType = MPUserIdentityEmail;
     
-    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserIdentityKey:identityString identityType:identityType];
-    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter user identity.");
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
     
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                         forUserIdentityKey:identityString
+                               identityType:identityType
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter user identity.");
+                          }];
+
     identityType = MPUserIdentityCustomerId;
-    kitFilter = [kitContainer filter:registeredKit forUserIdentityKey:identityString identityType:identityType];
-    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                         forUserIdentityKey:identityString
+                               identityType:identityType
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              XCTAssertNil(kitFilter);
+                          }];
 }
 
 - (void)testFilterCommerceEvent_EventType {
@@ -989,8 +963,8 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     product.brand = @"DLC";
@@ -1021,11 +995,15 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
 
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:commerceEvent
+                                   selector:@selector(logCommerceEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                          }];
 }
 
 - (void)testFilterCommerceEvent_EntityType {
@@ -1045,8 +1023,8 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     product.brand = @"DLC";
@@ -1086,11 +1064,15 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
 
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                   kitConfiguration:kitConfiguration
+                           forEvent:commerceEvent
+                           selector:@selector(logCommerceEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                          }];
 }
 
 - (void)testFilterCommerceEvent_Other {
@@ -1112,8 +1094,8 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     product.brand = @"DLC";
@@ -1153,11 +1135,15 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
     
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:commerceEvent
+                                   selector:@selector(logCommerceEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                          }];
 }
 
 - (void)testFilterCommerceEvent_TransactionAttributes {
@@ -1182,9 +1168,9 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
-    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    id<MPExtensionKitProtocol> registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     product.brand = @"DLC";
@@ -1219,20 +1205,24 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes);
     
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter);
-           XCTAssertNotNil(kitFilter.forwardCommerceEvent);
-           XCTAssertNotNil(kitFilter.forwardCommerceEvent.transactionAttributes);
-           XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.affiliation);
-           XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.revenue);
-           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.shipping, @3);
-           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.tax, @4.56);
-           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.transactionId, @"42");
-           
-           [expectation fulfill];
-       }];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    
+    [kitContainer.dataTransformation filter:registeredKit
+                           kitConfiguration:kitConfiguration
+                                   forEvent:commerceEvent
+                                   selector:@selector(logCommerceEvent:)
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              XCTAssertNotNil(kitFilter);
+                              XCTAssertNotNil(kitFilter.forwardCommerceEvent);
+                              XCTAssertNotNil(kitFilter.forwardCommerceEvent.transactionAttributes);
+                              XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.affiliation);
+                              XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.revenue);
+                              XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.shipping, @3);
+                              XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.tax, @4.56);
+                              XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.transactionId, @"42");
+                              
+                              [expectation fulfill];
+                          }];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
@@ -1522,22 +1512,23 @@
     transactionAttributes.transactionId = @"42";
     commerceEvent.transactionAttributes = transactionAttributes;
 
-    [kitContainer forwardCommerceEventCall:commerceEvent
-                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                    if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                        MPEvent *event = kitFilter.forwardEvent;
-                                        NSString *customerUserId = event.info[@"af_customer_user_id"];
-                                        XCTAssertNotNil(customerUserId);
-                                        XCTAssertEqualObjects(customerUserId, @"trex@shortarmsdinosaurs.com");
-                                        
-                                        XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
-                                        XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
-                                        XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
-                                        XCTAssertEqualObjects(event.name, @"af_add_to_cart");
-                                        
-                                        [expectation fulfill];
-                                    }
-                                }];
+    [kitContainer forwardSDKCall:@selector(logCommerceEvent:)
+                           event:commerceEvent
+                     messageType:MPMessageTypeCommerceEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+                          MPEvent *event = forwardKitFilter.forwardEvent;
+                          NSString *customerUserId = event.info[@"af_customer_user_id"];
+                          XCTAssertNotNil(customerUserId);
+                          XCTAssertEqualObjects(customerUserId, @"trex@shortarmsdinosaurs.com");
+                          
+                          XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
+                          XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
+                          XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
+                          XCTAssertEqualObjects(event.name, @"af_add_to_cart");
+                          
+                          [expectation fulfill];
+                      }];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -2031,13 +2022,15 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
     
-    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
-        if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-            XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
-            
-            [expectation fulfill];
-        }
-    }];
+    [kitContainer forwardSDKCall:@selector(logCommerceEvent:)
+                           event:commerceEvent
+                     messageType:MPMessageTypeCommerceEvent
+                        userInfo:nil
+                      kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+                          XCTAssertEqualObjects(forwardKitFilter.forwardEvent.name, @"af_content_view");
+                          
+                          [expectation fulfill];
+                      }];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
