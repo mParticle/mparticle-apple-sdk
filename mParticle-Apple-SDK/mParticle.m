@@ -700,9 +700,13 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Deep linking
 - (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary * linkInfo, NSError *error))completionHandler {
-    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
-        [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
-    }];
+    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:)
+                                              event:nil
+                                        messageType:MPMessageTypeEvent
+                                           userInfo:nil
+                                         kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+                                             [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
+                                         }];
 }
 
 #pragma mark Error, Exception, and Crash Handling
@@ -870,26 +874,29 @@ NSString *const kMPStateKey = @"state";
                                    SEL logCommerceEventSelector = @selector(logCommerceEvent:);
                                    SEL logEventSelector = @selector(logEvent:);
                                    
-                                   [[MPKitContainer sharedInstance] forwardCommerceEventCall:commerceEvent
-                                                                                  kitHandler:^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
-                                                                                      if (kitFilter.forwardCommerceEvent) {
-                                                                                          if ([kit respondsToSelector:logCommerceEventSelector]) {
-                                                                                              *execStatus = [kit logCommerceEvent:kitFilter.forwardCommerceEvent];
-                                                                                          } else if ([kit respondsToSelector:logEventSelector]) {
-                                                                                              NSArray *expandedInstructions = [kitFilter.forwardCommerceEvent expandedInstructions];
-                                                                                              
-                                                                                              for (MPCommerceEventInstruction *commerceEventInstruction in expandedInstructions) {
-                                                                                                  [kit logEvent:commerceEventInstruction.event];
-                                                                                              }
-                                                                                              
-                                                                                              *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[kit class] kitCode] returnCode:MPKitReturnCodeSuccess];
-                                                                                          }
-                                                                                      }
-                                                                                      
-                                                                                      if (kitFilter.forwardEvent && [kit respondsToSelector:logEventSelector]) {
-                                                                                          *execStatus = [kit logEvent:kitFilter.forwardEvent];
-                                                                                      }
-                                                                                  }];
+                                   [[MPKitContainer sharedInstance] forwardSDKCall:logCommerceEventSelector
+                                                                             event:commerceEvent
+                                                                       messageType:MPMessageTypeCommerceEvent
+                                                                          userInfo:nil
+                                                                        kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+                                                                            if (forwardKitFilter.forwardCommerceEvent) {
+                                                                                if ([kit respondsToSelector:logCommerceEventSelector]) {
+                                                                                    *execStatus = [kit logCommerceEvent:forwardKitFilter.forwardCommerceEvent];
+                                                                                } else if ([kit respondsToSelector:logEventSelector]) {
+                                                                                    NSArray *expandedInstructions = [forwardKitFilter.forwardCommerceEvent expandedInstructions];
+                                                                                    
+                                                                                    for (MPCommerceEventInstruction *commerceEventInstruction in expandedInstructions) {
+                                                                                        [kit logEvent:commerceEventInstruction.event];
+                                                                                    }
+                                                                                    
+                                                                                    *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[kit class] kitCode] returnCode:MPKitReturnCodeSuccess];
+                                                                                }
+                                                                            }
+                                                                            
+                                                                            if (forwardKitFilter.forwardEvent && [kit respondsToSelector:logEventSelector]) {
+                                                                                *execStatus = [kit logEvent:forwardKitFilter.forwardEvent];
+                                                                            }
+                                                                        }];
                                } else if (execStatus == MPExecStatusDelayedExecution) {
                                    MPILogWarning(@"Delayed commerce event: %@\n Reason: %@", commerceEvent, [strongSelf.backendController execStatusDescription:execStatus]);
                                } else if (execStatus != MPExecStatusContinuedDelayedExecution) {

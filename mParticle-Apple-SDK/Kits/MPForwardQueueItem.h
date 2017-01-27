@@ -27,8 +27,7 @@
 @class MPForwardQueueParameters;
 
 typedef NS_ENUM(NSUInteger, MPQueueItemType) {
-    MPQueueItemTypeEvent = 0,
-    MPQueueItemTypeEcommerce,
+    MPQueueItemTypeAppEvent = 0,
     MPQueueItemTypeGeneralPurpose
 };
 

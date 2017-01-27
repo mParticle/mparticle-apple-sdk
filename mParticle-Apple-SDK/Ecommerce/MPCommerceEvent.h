@@ -17,6 +17,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPEventAbstract.h"
 
 @class MPProduct;
 @class MPPromotionContainer;
@@ -61,10 +62,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  
  @see mParticle
  */
-@interface MPCommerceEvent : NSObject <NSCopying, NSCoding> {
-@protected
-    NSDate *_timestamp;
-}
+@interface MPCommerceEvent : MPEventAbstract <NSCopying, NSCoding>
 
 /**
  Checkout option string describing what the options are.

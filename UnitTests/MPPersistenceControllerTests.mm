@@ -373,6 +373,8 @@
     consumerInfo = [persistence fetchConsumerInfo];
     XCTAssertNotNil(consumerInfo);
     [persistence deleteConsumerInfo];
+    fetchedConsumerInfo = [persistence fetchConsumerInfo];
+    XCTAssertNil(fetchedConsumerInfo);
 }
 
 - (void)testForwardRecord {

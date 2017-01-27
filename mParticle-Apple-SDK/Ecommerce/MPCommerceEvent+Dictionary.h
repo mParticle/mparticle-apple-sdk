@@ -40,7 +40,6 @@ typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
 - (void)removeProducts:(NSArray<MPProduct *> *)products;
 - (NSArray<MPProduct *> *const)removedProducts;
 - (void)resetLatestProducts;
-- (MPEventType)type;
 - (NSMutableDictionary *)beautifiedAttributes;
 - (void)setBeautifiedAttributes:(NSMutableDictionary *)beautifiedAttributes;
 - (NSMutableDictionary *)userDefinedAttributes;

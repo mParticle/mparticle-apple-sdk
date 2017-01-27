@@ -17,37 +17,25 @@
 //
 
 #import "MPKitContainer.h"
-#include "EventTypeName.h"
 #include <map>
-#include "MessageTypeName.h"
-#import "MPAttributeProjection.h"
 #include "MPBracket.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPConsumerInfo.h"
 #import "MPEnums.h"
 #import "MPEvent.h"
-#import "MPEventProjection.h"
 #import "MPForwardQueueItem.h"
 #import "MPForwardQueueParameters.h"
 #import "MPForwardRecord.h"
 #include "MPHasher.h"
 #import "MPILogger.h"
 #import "MPKitConfiguration.h"
+#import "MPKitDataTransformation.h"
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
 #import "MPPersistenceController.h"
-#import "MPProduct.h"
-#import "MPProduct+Dictionary.h"
-#import "MPPromotion.h"
-#import "MPPromotion+Dictionary.h"
 #import "MPStateMachine.h"
-#import "MPTransactionAttributes.h"
-#import "MPTransactionAttributes+Dictionary.h"
-#import "NSArray+MPCaseInsensitive.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "NSUserDefaults+mParticle.h"
-#import <UIKit/UIKit.h>
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -59,6 +47,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
 }
 
+@property (nonatomic, strong) MPKitDataTransformation *dataTransformation;
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
@@ -137,6 +126,14 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 #pragma mark Private accessors
+- (MPKitDataTransformation *)dataTransformation {
+    if (!_dataTransformation) {
+        _dataTransformation = [[MPKitDataTransformation alloc] init];
+    }
+    
+    return _dataTransformation;
+}
+
 - (NSMutableArray<MPForwardQueueItem *> *)forwardQueue {
     if (!_forwardQueue) {
         _forwardQueue = [[NSMutableArray alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
@@ -156,13 +153,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 #pragma mark Private methods
 // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
 // commerce event user defined attributes (prior to filtering and projections)
-- (id)applyAppsFlyerAugmentationsToEvent:(id)event {
-    id surrogateEvent = nil;
+- (MPEventAbstract *)applyAppsFlyerAugmentationsToEvent:(MPEventAbstract *)event {
+    MPEventAbstract *surrogateEvent = nil;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-    Class eventClass = [event class];
-    Class MPEventClass = [MPEvent class];
-    Class MPCommerEventClass = [MPCommerceEvent class];
     
     for (NSDictionary *userIdentity in userIdentities) {
         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
@@ -171,7 +165,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             NSString *identityString = userIdentity[kMPUserIdentityIdKey];
             surrogateEvent = [event copy];
             
-            if (eventClass == MPEventClass) {
+            if (event.kind == MPEventKindAppEvent) {
                 NSMutableDictionary *eventInfo = [((MPEvent *)surrogateEvent).info mutableCopy];
                 if (!eventInfo) {
                     eventInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
@@ -179,7 +173,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 
                 eventInfo[@"af_customer_user_id"] = identityString;
                 ((MPEvent *)surrogateEvent).info = eventInfo;
-            } else if (eventClass == MPCommerEventClass) {
+            } else if (event.kind == MPEventKindCommerceEvent) {
                 NSString *identityString = userIdentity[kMPUserIdentityIdKey];
                 ((MPCommerceEvent *)surrogateEvent).userDefinedAttributes[@"af_customer_user_id"] = identityString;
             }
@@ -296,28 +290,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     });
 }
 
-- (NSDictionary *)methodMessageTypeMapping {
-    NSString *messageTypeEvent = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Event).c_str() encoding:NSUTF8StringEncoding];
-    
-    NSDictionary *methodMessageTypeDictionary = @{@"logEvent:":messageTypeEvent,
-                                                  @"logScreen:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::ScreenView).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logScreenEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::ScreenView).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"beginSession":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::SessionStart).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"endSession":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::SessionEnd).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logTransaction:":messageTypeEvent,
-                                                  @"logLTVIncrease:eventName:eventInfo:":messageTypeEvent,
-                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logError:exception:topmostContext:eventInfo:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CrashReport).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logNetworkPerformanceMeasurement:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::NetworkPerformance).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"profileChange:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Profile).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"setOptOut:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::OptOut).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logCommerceEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding]
-                                                  };
-    
-    return methodMessageTypeDictionary;
-}
-
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)kitCode {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
@@ -331,12 +303,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (MPForwardQueueItem *forwardQueueItem in _forwardQueue) {
         switch (forwardQueueItem.queueItemType) {
-            case MPQueueItemTypeEvent:
-                [self forwardSDKCall:forwardQueueItem.selector event:(MPEvent *)forwardQueueItem.queueParameters[0] messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.completionHandler];
-                break;
-                
-            case MPQueueItemTypeEcommerce:
-                [self forwardCommerceEventCall:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] kitHandler:forwardQueueItem.completionHandler];
+            case MPQueueItemTypeAppEvent:
+                [self forwardSDKCall:forwardQueueItem.selector event:(MPEventAbstract *)forwardQueueItem.queueParameters[0] messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.completionHandler];
                 break;
                 
             case MPQueueItemTypeGeneralPurpose:
@@ -363,30 +331,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
-}
-
-- (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
-    if (!configuration.attributeValueFilteringIsActive) {
-        return YES;
-    }
-    
-    __block BOOL isMatch = NO;
-    [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-        if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
-            *stop = YES;
-            if ([obj isKindOfClass:[NSString class]]) {
-                NSString *value = (NSString *)obj;
-                NSString *hashedValue = [NSString stringWithCString:mParticle::Hasher::hashString([[value lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-                if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
-                    isMatch = YES;
-                }
-            }
-        }
-    }];
-    
-    BOOL shouldInclude = configuration.attributeValueFilteringShouldIncludeMatches ? isMatch : !isMatch;
-    return shouldInclude;
 }
 
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
@@ -436,7 +380,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return;
     }
     
-    MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
+    __block MPKitFilter *kitFilter = nil;
+    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
+    
+    [self.dataTransformation filter:kitRegister
+                   kitConfiguration:kitConfiguration
+                  forUserAttributes:userAttributes
+                  completionHandler:^(MPKitFilter * _Nonnull kitFilterTransformed, BOOL finished) {
+                      kitFilter = kitFilterTransformed;
+                  }];
+
     NSDictionary *filteredUserAttributes = nil;
     BOOL supportsUserAttributeLists = [kitInstance respondsToSelector:@selector(setUserAttribute:values:)];
     Class NSStringClass = [NSString class];
@@ -486,11 +439,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (NSDictionary *userIdentity in userIdentities) {
         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
         NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-        MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
-
-        if (!kitFilter.shouldFilter) {
-            [kitInstance setUserIdentity:identityString identityType:identityType];
-        }
+        
+        MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
+        
+        [self.dataTransformation filter:kitRegister
+                       kitConfiguration:kitConfiguration
+                     forUserIdentityKey:identityString
+                           identityType:identityType
+                      completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                          if (!kitFilter.shouldFilter) {
+                              [kitInstance setUserIdentity:identityString identityType:identityType];
+                          }
+                      }];
     }
 }
 
@@ -514,76 +474,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     } else {
         return configuration;
     }
-}
-
-- (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType {
-    id value = nil;
-    
-    switch (dataType) {
-        case MPDataTypeString:
-            if (MPIsNull(originalValue)) {
-                return nil;
-            }
-            
-            value = originalValue;
-            break;
-            
-        case MPDataTypeInt:
-        case MPDataTypeLong: {
-            if (MPIsNull(originalValue)) {
-                return @0;
-            }
-            
-            NSInteger integerValue = [originalValue integerValue];
-            
-            if (integerValue != 0) {
-                value = @(integerValue);
-            } else {
-                if ([originalValue isEqualToString:@"0"]) {
-                    value = @(integerValue);
-                } else {
-                    value = nil;
-                    MPILogError(@"Value '%@' was expected to be a number string.", originalValue);
-                }
-            }
-        }
-            break;
-            
-        case MPDataTypeFloat: {
-            if (MPIsNull(originalValue)) {
-                return @0.0;
-            }
-            
-            float floatValue = [originalValue floatValue];
-            
-            if (floatValue != HUGE_VAL && floatValue != -HUGE_VAL && floatValue != 0.0) {
-                value = @(floatValue);
-            } else {
-                if ([originalValue isEqualToString:@"0"] || [originalValue isEqualToString:@"0.0"] || [originalValue isEqualToString:@".0"]) {
-                    value = @(floatValue);
-                } else {
-                    value = [NSNull null];
-                    MPILogError(@"Attribute '%@' was expected to be a number string.", originalValue);
-                }
-            }
-        }
-            break;
-            
-        case MPDataTypeBool: {
-            if (MPIsNull(originalValue)) {
-                return @NO;
-            }
-            
-            if ([originalValue caseInsensitiveCompare:@"true"] == NSOrderedSame) {
-                value = @YES;
-            } else {
-                value = @NO;
-            }
-        }
-            break;
-    }
-    
-    return value;
 }
 
 - (void)updateBracketsWithConfiguration:(NSDictionary *)configuration kitCode:(NSNumber *)kitCode {
@@ -645,1210 +535,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     return _kitConfigurations;
-}
-
-#pragma mark Filtering methods
-- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    NSNumber *zero = @0;
-    __block MPKitFilter *kitFilter;
-    void (^completionHandlerCopy)(MPKitFilter *, BOOL finished) = [completionHandler copy];
-    
-    // Attribute value filtering
-    if (![self shouldIncludeEventWithAttributes:commerceEvent.userDefinedAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
-        kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:YES];
-        completionHandlerCopy(kitFilter, YES);
-        return;
-    }
-    
-    // Event type filter
-    __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>([commerceEvent type])).c_str() encoding:NSUTF8StringEncoding];
-    
-    __block BOOL shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-        completionHandlerCopy(kitFilter, YES);
-        return;
-    }
-    
-    __block MPCommerceEvent *forwardCommerceEvent = [commerceEvent copy];
-    
-    // Entity type filter
-    MPCommerceEventKind commerceEventKind = [commerceEvent kind];
-    NSString *commerceEventKindValue = [@(commerceEventKind) stringValue];
-    shouldFilter = [kitConfiguration.commerceEventEntityTypeFilters[commerceEventKindValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        switch (commerceEventKind) {
-            case MPCommerceEventKindProduct:
-            case MPCommerceEventKindImpression:
-                [forwardCommerceEvent setProducts:nil];
-                [forwardCommerceEvent setImpressions:nil];
-                break;
-                
-            case MPCommerceEventKindPromotion:
-                [forwardCommerceEvent.promotionContainer setPromotions:nil];
-                break;
-                
-            default:
-                forwardCommerceEvent = nil;
-                break;
-        }
-        
-        if (forwardCommerceEvent) {
-            kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:forwardCommerceEvent shouldFilter:NO];
-            completionHandlerCopy(kitFilter, YES);
-        } else {
-            kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
-            completionHandlerCopy(kitFilter, YES);
-        }
-        
-        return;
-    } else { // App family attribute and Commerce event attribute filters
-        // App family attribute filter
-        NSDictionary *appFamilyFilter = kitConfiguration.commerceEventAppFamilyAttributeFilters[commerceEventKindValue];
-        
-        if (appFamilyFilter.count > 0) {
-            switch (commerceEventKind) {
-                case MPCommerceEventKindProduct: {
-                    __block NSMutableArray *products = [[NSMutableArray alloc] init];
-                    
-                    [commerceEvent.products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
-                        MPProduct *filteredProduct = [product copyMatchingHashedProperties:appFamilyFilter];
-                        
-                        if (filteredProduct) {
-                            [products addObject:filteredProduct];
-                        }
-                    }];
-                    
-                    if (products.count > 0) {
-                        [forwardCommerceEvent setProducts:products];
-                    }
-                }
-                    break;
-                    
-                case MPCommerceEventKindImpression:
-                    forwardCommerceEvent.impressions = [commerceEvent copyImpressionsMatchingHashedProperties:appFamilyFilter];
-                    break;
-                    
-                case MPCommerceEventKindPromotion:
-                    forwardCommerceEvent.promotionContainer = [commerceEvent.promotionContainer copyMatchingHashedProperties:appFamilyFilter];
-                    break;
-                    
-                default:
-                    break;
-            }
-        }
-        
-        NSDictionary *commerceEventAttributeFilters = kitConfiguration.commerceEventAttributeFilters;
-        if (commerceEventAttributeFilters) {
-            // Commerce event attribute filter (expanded attributes)
-            __block NSString *auxString;
-            __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] init];
-            
-            [[forwardCommerceEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-                
-                id filterValue = commerceEventAttributeFilters[hashValue];
-                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
-                
-                if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                    filteredAttributes[key] = obj;
-                }
-            }];
-            
-            [forwardCommerceEvent setBeautifiedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
-            
-            // Commerce event attribute filter (user defined attributes)
-            filteredAttributes = [[NSMutableDictionary alloc] init];
-            
-            [[forwardCommerceEvent userDefinedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-                
-                id filterValue = commerceEventAttributeFilters[hashValue];
-                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
-                
-                if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                    filteredAttributes[key] = obj;
-                }
-            }];
-            
-            [forwardCommerceEvent setUserDefinedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
-            
-            // Transaction attributes
-            __block MPTransactionAttributes *filteredTransactionAttributes = [[MPTransactionAttributes alloc] init];
-            
-            [[forwardCommerceEvent.transactionAttributes beautifiedDictionaryRepresentation] enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-                
-                id filterValue = commerceEventAttributeFilters[hashValue];
-                BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
-                
-                if (!filterValue || (filterValue && !filterValueIsFalse)) {
-                    if ([key isEqualToString:kMPExpTAAffiliation]) {
-                        filteredTransactionAttributes.affiliation = forwardCommerceEvent.transactionAttributes.affiliation;
-                    } else if ([key isEqualToString:kMPExpTAShipping]) {
-                        filteredTransactionAttributes.shipping = forwardCommerceEvent.transactionAttributes.shipping;
-                    } else if ([key isEqualToString:kMPExpTATax]) {
-                        filteredTransactionAttributes.tax = forwardCommerceEvent.transactionAttributes.tax;
-                    } else if ([key isEqualToString:kMPExpTARevenue]) {
-                        filteredTransactionAttributes.revenue = forwardCommerceEvent.transactionAttributes.revenue;
-                    } else if ([key isEqualToString:kMPExpTATransactionId]) {
-                        filteredTransactionAttributes.transactionId = forwardCommerceEvent.transactionAttributes.transactionId;
-                    } else if ([key isEqualToString:kMPExpTACouponCode]) {
-                        filteredTransactionAttributes.couponCode = forwardCommerceEvent.transactionAttributes.couponCode;
-                    }
-                }
-            }];
-            
-            forwardCommerceEvent.transactionAttributes = filteredTransactionAttributes;
-        }
-    }
-    
-    [self project:kitRegister commerceEvent:forwardCommerceEvent completionHandler:^(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
-        NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
-        
-        if (!projectedEvents.empty()) {
-            const auto lastProjectedEvent = projectedEvents.back();
-            
-            for (auto &projectedEvent : projectedEvents) {
-                kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
-                completionHandlerCopy(kitFilter, lastProjectedEvent == projectedEvent);
-            }
-        }
-        
-        if (!projectedCommerceEvents.empty()) {
-            const auto lastProjectedCommerceEvent = projectedCommerceEvents.back();
-            
-            for (auto &projectedCommerceEvent : projectedCommerceEvents) {
-                kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:projectedCommerceEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
-                completionHandlerCopy(kitFilter, lastProjectedCommerceEvent == projectedCommerceEvent);
-            }
-        }
-    }];
-}
-
-- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler {
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    NSNumber *zero = @0;
-    __block MPKitFilter *kitFilter;
-    void (^completionHandlerCopy)(MPKitFilter *, BOOL) = [completionHandler copy];
-    
-    // Attribute value filtering
-    if (![self shouldIncludeEventWithAttributes:event.info afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
-        completionHandlerCopy(kitFilter, YES);
-        return;
-    }
-    
-    // Event type filter
-    __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>(event.type)).c_str() encoding:NSUTF8StringEncoding];
-    
-    __block BOOL shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-        completionHandlerCopy(kitFilter, YES);
-        return;
-    }
-    
-    // Message type filter
-    NSString *selectorString = NSStringFromSelector(selector);
-    NSString *messageType = [self methodMessageTypeMapping][selectorString];
-    if (messageType) {
-        shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:zero];
-        
-        if (shouldFilter) {
-            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-            completionHandlerCopy(kitFilter, YES);
-            return;
-        }
-    }
-    
-    NSDictionary *attributeFilters;
-    NSDictionary *nameFilters;
-    NSString *eventTypeString;
-    
-    if ([selectorString isEqualToString:@"logScreen:"]) { // Screen name and screen attribute filters
-        eventTypeString = @"0";
-        nameFilters = kitConfiguration.screenNameFilters;
-        attributeFilters = kitConfiguration.screenAttributeFilters;
-    } else { // Event name and event attribute filters
-        eventTypeString = [@(event.type) stringValue];
-        nameFilters = kitConfiguration.eventNameFilters;
-        attributeFilters = kitConfiguration.eventAttributeFilters;
-    }
-    
-    __block NSString *auxString = [[NSString stringWithFormat:@"%@%@", eventTypeString, event.name] lowercaseString];
-    hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                   encoding:NSUTF8StringEncoding];
-    
-    shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-        completionHandlerCopy(kitFilter, YES);
-        return;
-    }
-    
-    // Attributes
-    MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([messageType UTF8String]));
-    if (messageTypeCode != MPMessageTypeEvent && messageTypeCode != MPMessageTypeScreenView) {
-        messageTypeCode = MPMessageTypeUnknown;
-    }
-    
-    MPEvent *forwardEvent = [event copy];
-    
-    if (event.info) {
-        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.info.count];
-        
-        [forwardEvent.info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-            auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key];
-            hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                           encoding:NSUTF8StringEncoding];
-            
-            id attributeFilterValue = attributeFilters[hashValue];
-            BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
-            
-            if (!attributeFilterValue || (attributeFilterValue && !attributeFilterIsFalse)) {
-                filteredAttributes[key] = obj;
-            } else if (attributeFilterValue && attributeFilterIsFalse) {
-                shouldFilter = YES;
-            }
-        }];
-        
-        forwardEvent.info = filteredAttributes.count > 0 ? filteredAttributes : nil;
-    }
-    
-    [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
-        __weak auto lastProjectedEvent = projectedEvents.back();
-        NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
-        
-        for (auto &projectedEvent : projectedEvents) {
-            BOOL finished = projectedEvent == lastProjectedEvent;
-            kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray];
-            completionHandlerCopy(kitFilter, finished);
-        }
-    }];
-}
-
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forSelector:(SEL)selector {
-    MPKitFilter *kitFilter = nil;
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (kitConfiguration) {
-        NSString *selectorString = NSStringFromSelector(selector);
-        NSString *messageType = [self methodMessageTypeMapping][selectorString];
-        
-        if (messageType) {
-            BOOL shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:@0];
-            
-            kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
-        }
-    }
-    
-    return kitFilter;
-}
-
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributes:(NSDictionary *)userAttributes {
-    if (!userAttributes) {
-        return nil;
-    }
-    
-    MPKitFilter *kitFilter = nil;
-    __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (kitConfiguration) {
-        [userAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-            NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                     encoding:NSUTF8StringEncoding];
-            
-            BOOL shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
-            if (!shouldFilter) {
-                filteredAttributes[key] = [value copy];
-            }
-        }];
-    }
-    
-    if (filteredAttributes.count > 0) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:YES filteredAttributes:filteredAttributes];
-    }
-    
-    return kitFilter;
-}
-
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value {
-    if (!key) {
-        return nil;
-    }
-    
-    NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                             encoding:NSUTF8StringEncoding];
-    
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    MPKitFilter *kitFilter = nil;
-    BOOL shouldFilter = NO;
-    
-    if (kitConfiguration) {
-        shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
-        
-        kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
-    }
-    
-    return kitFilter;
-}
-
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType {
-    NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)identityType];
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    MPKitFilter *kitFilter = nil;
-    BOOL shouldFilter = NO;
-    
-    if (kitConfiguration) {
-        shouldFilter = kitConfiguration.userIdentityFilters[identityTypeString] && [kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
-        
-        kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
-    }
-    
-    return kitFilter;
-}
-
-#pragma mark Projection methods
-- (void)project:(id<MPExtensionKitProtocol>)kitRegister commerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(vector<MPCommerceEvent *> projectedCommerceEvents, vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (!kitConfiguration.configuredMessageTypeProjections ||
-        !(kitConfiguration.configuredMessageTypeProjections.count > MPMessageTypeCommerceEvent) ||
-        ![kitConfiguration.configuredMessageTypeProjections[MPMessageTypeCommerceEvent] boolValue])
-    {
-        vector<MPCommerceEvent *> projectedCommerceEvents;
-        vector<MPEvent *> projectedEvents;
-        vector<MPEventProjection *> appliedProjections;
-        
-        projectedCommerceEvents.push_back(commerceEvent);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
-        });
-        
-        return;
-    }
-    
-    __weak MPKitContainer *weakSelf = self;
-    
-    // Projections are executed on a background thread
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        __strong MPKitContainer *strongSelf = weakSelf;
-        if (strongSelf) {
-            dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
-        }
-        
-        // Filter projections only to those of 'messageType'
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType == %ld", (long)MPMessageTypeCommerceEvent];
-        NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
-        
-        // Priming projections
-        vector<MPCommerceEvent *> projectedCommerceEvents;
-        vector<MPEvent *> projectedEvents;
-        vector<MPEventProjection *> appliedProjections;
-        __block vector<MPEventProjection *> applicableEventProjections;
-        MPEventType typeOfCommerceEvent = [commerceEvent type];
-        MPCommerceEventKind kindOfCommerceEvent = [commerceEvent kind];
-        
-        NSArray *const products = [&commerceEvent] {
-            return [commerceEvent kind] == MPCommerceEventKindProduct ? commerceEvent.products : (NSArray *)nil;
-        }();
-        
-        NSArray *const promotions = [&commerceEvent] {
-            return [commerceEvent kind] == MPCommerceEventKindPromotion ? commerceEvent.promotionContainer.promotions : (NSArray *)nil;
-        }();
-        
-        BOOL (^isApplicableEventProjection)(MPEventProjection *, NSDictionary *) = ^ BOOL (MPEventProjection *eventProjection, NSDictionary *sourceDictionary) {
-            
-            __block BOOL foundNonMatch = NO;
-            [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                __block BOOL isApplicable = NO;
-                [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                    NSString *keyHash = [NSString stringWithCString:mParticle::Hasher::hashString(to_string(typeOfCommerceEvent) + string([[key lowercaseString] UTF8String])).c_str()
-                                                           encoding:NSUTF8StringEncoding];
-                    
-                    isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
-                    *stop = isApplicable;
-                }];
-                foundNonMatch = !isApplicable;
-                *stop = foundNonMatch;
-            }];
-            
-            return !foundNonMatch;
-        };
-        
-        if (projections.count > 0) {
-            // Identifying which projections are applicable
-            for (MPEventProjection *eventProjection in projections) {
-                if (eventProjection.eventType == typeOfCommerceEvent) {
-                    if (!MPIsNull(eventProjection.projectionMatches)) {
-                        switch (eventProjection.propertyKind) {
-                            case MPProjectionPropertyKindEventField:
-                                if (isApplicableEventProjection(eventProjection, [[commerceEvent beautifiedAttributes] transformValuesToString])) {
-                                    applicableEventProjections.push_back(eventProjection);
-                                }
-                                break;
-                                
-                            case MPProjectionPropertyKindEventAttribute:
-                                if (isApplicableEventProjection(eventProjection, [[commerceEvent userDefinedAttributes] transformValuesToString])) {
-                                    applicableEventProjections.push_back(eventProjection);
-                                }
-                                break;
-                                
-                            case MPProjectionPropertyKindProductField:
-                                if (kindOfCommerceEvent == MPCommerceEventKindProduct) {
-                                    [products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
-                                        *stop = isApplicableEventProjection(eventProjection, [[product beautifiedAttributes] transformValuesToString]);
-                                        if (*stop) {
-                                            applicableEventProjections.push_back(eventProjection);
-                                        }
-                                    }];
-                                } else if (kindOfCommerceEvent == MPCommerceEventKindImpression) {
-                                    NSDictionary *impressions = commerceEvent.impressions;
-                                    __block BOOL stopIteration = NO;
-                                    
-                                    [impressions enumerateKeysAndObjectsUsingBlock:^(NSString *listName, NSSet *productImpressions, BOOL *stop) {
-                                        [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
-                                            stopIteration = isApplicableEventProjection(eventProjection, [[productImpression beautifiedAttributes] transformValuesToString]);
-                                            if (stopIteration) {
-                                                applicableEventProjections.push_back(eventProjection);
-                                                *stop = YES;
-                                            }
-                                        }];
-                                        
-                                        if (stopIteration) {
-                                            *stop = YES;
-                                        }
-                                    }];
-                                }
-                                break;
-                                
-                            case MPProjectionPropertyKindProductAttribute:
-                                if (kindOfCommerceEvent == MPCommerceEventKindProduct) {
-                                    [products enumerateObjectsUsingBlock:^(MPProduct *product, NSUInteger idx, BOOL *stop) {
-                                        *stop = isApplicableEventProjection(eventProjection, [[product userDefinedAttributes] transformValuesToString]);
-                                        if (*stop) {
-                                            applicableEventProjections.push_back(eventProjection);
-                                        }
-                                    }];
-                                } else if (kindOfCommerceEvent == MPCommerceEventKindImpression) {
-                                    NSDictionary *impressions = commerceEvent.impressions;
-                                    __block BOOL stopIteration = NO;
-                                    
-                                    [impressions enumerateKeysAndObjectsUsingBlock:^(NSString *listName, NSSet *productImpressions, BOOL *stop) {
-                                        [productImpressions enumerateObjectsUsingBlock:^(MPProduct *productImpression, BOOL *stop) {
-                                            stopIteration = isApplicableEventProjection(eventProjection, [[productImpression userDefinedAttributes] transformValuesToString]);
-                                            if (stopIteration) {
-                                                applicableEventProjections.push_back(eventProjection);
-                                                *stop = YES;
-                                            }
-                                        }];
-                                        
-                                        if (stopIteration) {
-                                            *stop = YES;
-                                        }
-                                    }];
-                                }
-                                break;
-                                
-                            case MPProjectionPropertyKindPromotionField: {
-                                if (kindOfCommerceEvent == MPCommerceEventKindPromotion) {
-                                    [promotions enumerateObjectsUsingBlock:^(MPPromotion *promotion, NSUInteger idx, BOOL *stop) {
-                                        *stop = isApplicableEventProjection(eventProjection, [[promotion beautifiedAttributes] transformValuesToString]);
-                                        if (*stop) {
-                                            applicableEventProjections.push_back(eventProjection);
-                                        }
-                                    }];
-                                }
-                            }
-                                break;
-                                
-                            case MPProjectionPropertyKindPromotionAttribute:
-                                break;
-                        }
-                    } else {
-                        applicableEventProjections.push_back(eventProjection);
-                    }
-                }
-            } // for
-        } // If (projection.count)
-        
-        // Block to project a dictionary according to an attribute projection
-        NSDictionary * (^projectDictionaryWithAttributeProjection)(NSDictionary *, MPAttributeProjection *) = ^(NSDictionary *sourceDictionary, MPAttributeProjection *attributeProjection) {
-            NSMutableDictionary *projectedDictionary = [[NSMutableDictionary alloc] init];
-            id value;
-            
-            switch (attributeProjection.matchType) {
-                case MPProjectionMatchTypeHash: {
-                    map<int, NSString *> hashKeyMap;
-                    NSString *key;
-                    NSEnumerator *keyEnumerator = [sourceDictionary keyEnumerator];
-                    while ((key = [keyEnumerator nextObject])) {
-                        string attributeToHash = to_string(typeOfCommerceEvent) + string([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-                        
-                        int hashValue = mParticle::Hasher::hashFromString(attributeToHash);
-                        hashKeyMap[hashValue] = key;
-                    }
-                    
-                    key = hashKeyMap[[attributeProjection.name intValue]];
-                    
-                    if (!MPIsNull(key)) {
-                        value = [strongSelf transformValue:sourceDictionary[key] dataType:attributeProjection.dataType];
-                        
-                        if (value) {
-                            projectedDictionary[attributeProjection.projectedName] = value;
-                        }
-                    } else if (attributeProjection.required) {
-                        return (NSDictionary *)[NSNull null];
-                    }
-                }
-                    break;
-                    
-                case MPProjectionMatchTypeField:
-                case MPProjectionMatchTypeString:
-                    if ([sourceDictionary valueForCaseInsensitiveKey:attributeProjection.name]) {
-                        value = [strongSelf transformValue:[sourceDictionary valueForCaseInsensitiveKey:attributeProjection.name] dataType:attributeProjection.dataType];
-                        
-                        if (value) {
-                            projectedDictionary[attributeProjection.projectedName] = value;
-                        }
-                    } else if (attributeProjection.required) {
-                        return (NSDictionary *)[NSNull null];
-                    }
-                    break;
-                    
-                case MPProjectionMatchTypeStatic:
-                    value = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
-                    
-                    if (value) {
-                        projectedDictionary[attributeProjection.projectedName] = value;
-                    }
-                    break;
-                    
-                case MPProjectionMatchTypeNotSpecified:
-                    break;
-            }
-            
-            if (projectedDictionary.count == 0) {
-                projectedDictionary = nil;
-            }
-            
-            return (NSDictionary *)projectedDictionary;
-        };
-        
-        // Block to project a commerce event according to attribute projections
-        NSDictionary * (^projectCommerceEventWithAttributes)(MPCommerceEvent *, NSArray *) = ^(MPCommerceEvent *commerceEvent, NSArray<MPAttributeProjection *> *attributeProjections) {
-            NSMutableDictionary *projectedCommerceEventDictionary = [[NSMutableDictionary alloc] init];
-            NSDictionary *sourceDictionary;
-            NSDictionary *projectedDictionary;
-            NSPredicate *predicate;
-            NSArray<MPAttributeProjection *> *filteredAttributeProjections;
-            
-            vector<MPProjectionPropertyKind> propertyKinds = {MPProjectionPropertyKindEventField, MPProjectionPropertyKindEventAttribute};
-            
-            for (auto propertyKind : propertyKinds) {
-                predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)propertyKind];
-                filteredAttributeProjections = [attributeProjections filteredArrayUsingPredicate:predicate];
-                
-                if (filteredAttributeProjections.count > 0) {
-                    if (propertyKind == MPProjectionPropertyKindEventField) {
-                        sourceDictionary = [[commerceEvent beautifiedAttributes] transformValuesToString];
-                    } else if (propertyKind == MPProjectionPropertyKindEventAttribute) {
-                        sourceDictionary = [[commerceEvent userDefinedAttributes] transformValuesToString];
-                    } else {
-                        continue;
-                    }
-                }
-                
-                for (MPAttributeProjection *attributeProjection in attributeProjections) {
-                    projectedDictionary = projectDictionaryWithAttributeProjection(sourceDictionary, attributeProjection);
-                    
-                    if (projectedDictionary) {
-                        if ((NSNull *)projectedDictionary != [NSNull null]) {
-                            [projectedCommerceEventDictionary addEntriesFromDictionary:projectedDictionary];
-                        } else {
-                            return (NSDictionary *)[NSNull null];
-                        }
-                    }
-                }
-            }
-            
-            if (projectedCommerceEventDictionary.count == 0) {
-                projectedCommerceEventDictionary = nil;
-            }
-            
-            return (NSDictionary *)projectedCommerceEventDictionary;
-        };
-        
-        // Block to project a product according to attribute projections
-        NSDictionary * (^projectProductWithAttributes)(MPProduct *, NSArray *) = ^(MPProduct *product, NSArray<MPAttributeProjection *> *attributeProjections) {
-            NSMutableDictionary *projectedProductDictionary = [[NSMutableDictionary alloc] init];
-            NSDictionary *sourceDictionary;
-            NSDictionary *projectedDictionary;
-            NSPredicate *predicate;
-            NSArray<MPAttributeProjection *> *filteredAttributeProjections;
-            
-            vector<MPProjectionPropertyKind> propertyKinds = {MPProjectionPropertyKindProductField, MPProjectionPropertyKindProductAttribute};
-            
-            for (auto propertyKind : propertyKinds) {
-                predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)propertyKind];
-                filteredAttributeProjections = [attributeProjections filteredArrayUsingPredicate:predicate];
-                
-                if (filteredAttributeProjections.count > 0) {
-                    if (propertyKind == MPProjectionPropertyKindProductField) {
-                        sourceDictionary = [[product beautifiedAttributes] transformValuesToString];
-                    } else if (propertyKind == MPProjectionPropertyKindProductAttribute) {
-                        sourceDictionary = [[product userDefinedAttributes] transformValuesToString];
-                    } else {
-                        continue;
-                    }
-                    
-                    for (MPAttributeProjection *attributeProjection in filteredAttributeProjections) {
-                        projectedDictionary = projectDictionaryWithAttributeProjection(sourceDictionary, attributeProjection);
-                        
-                        if (projectedDictionary) {
-                            if ((NSNull *)projectedDictionary != [NSNull null]) {
-                                [projectedProductDictionary addEntriesFromDictionary:projectedDictionary];
-                            } else {
-                                return (NSDictionary *)[NSNull null];
-                            }
-                        }
-                    }
-                }
-            }
-            
-            if (projectedProductDictionary.count == 0) {
-                return (NSDictionary *)nil;
-            }
-            
-            return (NSDictionary *)projectedProductDictionary;
-        };
-        
-        // Block to apply maximum custom attributes to the projected dictionary
-        void (^applyMaxCustomAttributes)(MPCommerceEvent *, MPEventProjection *, NSMutableDictionary *) = ^(MPCommerceEvent *commerceEvent, MPEventProjection *eventProjection, NSMutableDictionary *projectedDictionary) {
-            NSUInteger maxCustomParams = eventProjection.maxCustomParameters;
-            NSDictionary *userDictionary = [[commerceEvent userDefinedAttributes] transformValuesToString];
-            
-            if (eventProjection.appendAsIs && maxCustomParams > 0) {
-                if (userDictionary.count > maxCustomParams) {
-                    NSMutableArray *keys = [[userDictionary allKeys] mutableCopy];
-                    
-                    [keys sortUsingComparator:^NSComparisonResult(NSString *key1, NSString *key2) {
-                        return [key1 compare:key2];
-                    }];
-                    
-                    NSRange deletionRange = NSMakeRange(maxCustomParams - 1, maxCustomParams - userDictionary.count);
-                    [keys removeObjectsInRange:deletionRange];
-                    
-                    for (NSString *key in keys) {
-                        projectedDictionary[key] = userDictionary[key];
-                    }
-                } else {
-                    [projectedDictionary addEntriesFromDictionary:userDictionary];
-                }
-            }
-        };
-        
-        // Applying projections
-        if (!applicableEventProjections.empty()) {
-            for (auto &eventProjection : applicableEventProjections) {
-                NSMutableDictionary *projectedCommerceEventDictionary = [[NSMutableDictionary alloc] init];
-                NSDictionary *projectedDictionary;
-                vector<NSMutableDictionary *> projectedDictionaries;
-                BOOL requirementsMet = YES;
-                
-                // Projecting commerce event fields and attributes
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d || propertyKind == %d", (int)MPProjectionPropertyKindEventField, (int)MPProjectionPropertyKindEventAttribute];
-                NSArray<MPAttributeProjection *> *attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
-                
-                if (attributeProjections.count > 0) {
-                    projectedDictionary = projectCommerceEventWithAttributes(commerceEvent, attributeProjections);
-                    
-                    if (projectedDictionary) {
-                        if ((NSNull *)projectedDictionary != [NSNull null]) {
-                            [projectedCommerceEventDictionary addEntriesFromDictionary:projectedDictionary];
-                        } else {
-                            requirementsMet = NO;
-                        }
-                    }
-                }
-                
-                // Projecting products/promotions attributes
-                switch (kindOfCommerceEvent) {
-                    case MPCommerceEventKindProduct: {
-                        vector<NSUInteger> productIndexes;
-                        NSUInteger numberOfProducts = products.count;
-                        
-                        if (numberOfProducts > 0) {
-                            if (eventProjection.behaviorSelector == MPProjectionBehaviorSelectorForEach) {
-                                productIndexes.reserve(numberOfProducts);
-                                
-                                for (NSUInteger idx = 0; idx < numberOfProducts; ++idx) {
-                                    productIndexes.push_back(idx);
-                                }
-                            } else {
-                                productIndexes.push_back(numberOfProducts - 1);
-                            }
-                            
-                            predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d || propertyKind == %d", (int)MPProjectionPropertyKindProductField, (int)MPProjectionPropertyKindProductAttribute];
-                            attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
-                            
-                            for (auto idx : productIndexes) {
-                                MPProduct *product = products[idx];
-                                projectedDictionary = projectProductWithAttributes(product, attributeProjections);
-                                
-                                if (projectedDictionary) {
-                                    if ((NSNull *)projectedDictionary != [NSNull null]) {
-                                        NSMutableDictionary *projectedProductDictionary = [[NSMutableDictionary alloc] initWithDictionary:projectedDictionary];
-                                        
-                                        if (projectedCommerceEventDictionary.count > 0) {
-                                            [projectedProductDictionary addEntriesFromDictionary:projectedCommerceEventDictionary];
-                                        }
-                                        
-                                        applyMaxCustomAttributes(commerceEvent, eventProjection, projectedProductDictionary);
-                                        
-                                        projectedDictionaries.push_back(projectedProductDictionary);
-                                    } else {
-                                        requirementsMet = NO;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                        break;
-                        
-                    case MPCommerceEventKindPromotion: {
-                        vector<NSUInteger> promotionIndexes;
-                        NSUInteger numberOfPromotions = promotions.count;
-                        
-                        if (numberOfPromotions > 0) {
-                            if (eventProjection.behaviorSelector == MPProjectionBehaviorSelectorForEach) {
-                                promotionIndexes.reserve(numberOfPromotions);
-                                
-                                for (NSUInteger index = 0; index < numberOfPromotions; ++index) {
-                                    promotionIndexes.push_back(index);
-                                }
-                            } else {
-                                promotionIndexes.push_back(numberOfPromotions - 1);
-                            }
-                            
-                            predicate = [NSPredicate predicateWithFormat:@"propertyKind == %d", (int)MPProjectionPropertyKindPromotionField];
-                            attributeProjections = [eventProjection.attributeProjections filteredArrayUsingPredicate:predicate];
-                            
-                            for (auto idx : promotionIndexes) {
-                                MPPromotion *promotion = promotions[idx];
-                                NSDictionary *sourceDictionary = [[promotion beautifiedAttributes] transformValuesToString];
-                                
-                                for (MPAttributeProjection *attributeProjection in attributeProjections) {
-                                    NSDictionary *projectedDictionary = projectDictionaryWithAttributeProjection(sourceDictionary, attributeProjection);
-                                    
-                                    if (projectedDictionary) {
-                                        if ((NSNull *)projectedDictionary != [NSNull null]) {
-                                            NSMutableDictionary *projectedPromotionDictionary = [[NSMutableDictionary alloc] initWithDictionary:projectedDictionary];
-                                            
-                                            if (projectedCommerceEventDictionary.count > 0) {
-                                                [projectedPromotionDictionary addEntriesFromDictionary:projectedCommerceEventDictionary];
-                                            }
-                                            
-                                            applyMaxCustomAttributes(commerceEvent, eventProjection, projectedPromotionDictionary);
-                                            
-                                            projectedDictionaries.push_back(projectedPromotionDictionary);
-                                        } else {
-                                            requirementsMet = NO;
-                                            break;
-                                        }
-                                    }
-                                }
-                                
-                                if (!requirementsMet) {
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                        break;
-                        
-                    default:
-                        break;
-                }
-                
-                // The collection of projected dictionaries become events or commerce events
-                if (requirementsMet) {
-                    if (!projectedDictionaries.empty()) {
-                        for (auto &projectedDictionary : projectedDictionaries) {
-                            if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
-                                MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                                [projectedCommerceEvent setUserDefinedAttributes:projectedDictionary];
-                                projectedCommerceEvents.push_back(projectedCommerceEvent);
-                            } else {
-                                MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                                projectedEvent.info = projectedDictionary;
-                                projectedEvents.push_back(projectedEvent);
-                            }
-                            
-                            appliedProjections.push_back(eventProjection);
-                        }
-                    } else {
-                        if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
-                            MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                            projectedCommerceEvents.push_back(projectedCommerceEvent);
-                        } else {
-                            MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                            projectedEvents.push_back(projectedEvent);
-                        }
-                        
-                        appliedProjections.push_back(eventProjection);
-                    }
-                } else {
-                    projectedCommerceEvents.push_back(commerceEvent);
-                }
-            } // for (event projection)
-        } // If (applying projections)
-        
-        // If no projection was applied, uses the original commerce event.
-        if (projectedCommerceEvents.empty() && projectedEvents.empty()) {
-            projectedCommerceEvents.push_back(commerceEvent);
-        }
-        
-        if (strongSelf) {
-            dispatch_semaphore_signal(strongSelf->kitsSemaphore);
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(projectedCommerceEvents, projectedEvents, appliedProjections);
-        });
-    });
-}
-
-- (void)project:(id<MPExtensionKitProtocol>)kitRegister event:(MPEvent *const)event messageType:(MPMessageType)messageType completionHandler:(void (^)(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections))completionHandler {
-    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-    
-    if (!kitConfiguration.configuredMessageTypeProjections ||
-        !(kitConfiguration.configuredMessageTypeProjections.count > messageType) ||
-        ![kitConfiguration.configuredMessageTypeProjections[messageType] boolValue])
-    {
-        vector<MPEvent *> projectedEvents;
-        vector<MPEventProjection *> appliedProjections;
-        projectedEvents.push_back(event);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(projectedEvents, appliedProjections);
-        });
-        
-        return;
-    }
-    
-    __weak MPKitContainer *weakSelf = self;
-    
-    // Projections are executed on a background thread
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        __strong MPKitContainer *strongSelf = weakSelf;
-        if (strongSelf) {
-            dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
-        }
-        
-        // Attribute projection lambda function
-        NSDictionary * (^projectAttributes)(MPEvent *const, MPEventProjection *const) = ^(MPEvent *const event, MPEventProjection *const eventProjection) {
-            NSDictionary *eventInfo = event.info;
-            if (!eventInfo) {
-                return (NSDictionary *)nil;
-            }
-            
-            NSMutableArray<MPAttributeProjection *> *attributeProjections = [[NSMutableArray alloc] initWithArray:eventProjection.attributeProjections];
-            NSUInteger maxCustomParams = eventProjection.maxCustomParameters;
-            NSMutableArray *projectedKeys = [[NSMutableArray alloc] init];
-            NSMutableArray *nonProjectedKeys = [[NSMutableArray alloc] init];
-            __block NSMutableDictionary *projectedAttributes = [[NSMutableDictionary alloc] init];
-            
-            if (eventInfo.count > 0) {
-                [nonProjectedKeys addObjectsFromArray:[eventInfo allKeys]];
-                [projectedAttributes addEntriesFromDictionary:[eventInfo copy]];
-            }
-            
-            __block BOOL doesNotContainRequiredAttribute = NO;
-            __block NSMutableArray<MPAttributeProjection *> *removeAttributeProjections = [[NSMutableArray alloc] init];
-            
-            // Building a map between keys and their respective hashes
-            __block std::map<NSString *, int> keyHashMap;
-            __block std::map<int, NSString *> hashKeyMap;
-            NSString *key;
-            NSEnumerator *keyEnumerator = [eventInfo keyEnumerator];
-            while ((key = [keyEnumerator nextObject])) {
-                string attributeToHash = messageType == MPMessageTypeScreenView ? "0" : to_string(event.type);
-                attributeToHash += string([[event.name lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-                attributeToHash += string([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-                
-                int hashValue = mParticle::Hasher::hashFromString(attributeToHash);
-                keyHashMap[key] = hashValue;
-                hashKeyMap[hashValue] = key;
-            }
-            
-            [eventInfo enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                [removeAttributeProjections removeAllObjects];
-                NSString *projectedAttributeKey;
-                id projectedAttributeValue;
-                
-                for (MPAttributeProjection *attributeProjection in attributeProjections) {
-                    BOOL stopInnerLoop = NO;
-                    
-                    switch (attributeProjection.matchType) {
-                        case MPProjectionMatchTypeString: {
-                            if ([key caseInsensitiveCompare:attributeProjection.name] == NSOrderedSame) {
-                                projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
-                                
-                                if (projectedAttributeValue) {
-                                    projectedAttributeKey = attributeProjection.projectedName ? : key;
-                                    [projectedAttributes removeObjectForKey:key];
-                                    projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
-                                    [projectedKeys addObject:projectedAttributeValue];
-                                    [removeAttributeProjections addObject:attributeProjection];
-                                } else if (attributeProjection.required) {
-                                    doesNotContainRequiredAttribute = YES;
-                                    *stop = YES;
-                                    stopInnerLoop = YES;
-                                }
-                            } else if (attributeProjection.required && MPIsNull(eventInfo[attributeProjection.name])) {
-                                doesNotContainRequiredAttribute = YES;
-                                *stop = YES;
-                                stopInnerLoop = YES;
-                            }
-                        }
-                            break;
-                            
-                        case MPProjectionMatchTypeHash: {
-                            int hashValue = keyHashMap[key];
-                            
-                            if (hashValue == [attributeProjection.name integerValue]) {
-                                projectedAttributeValue = [strongSelf transformValue:obj dataType:attributeProjection.dataType];
-                                
-                                if (projectedAttributeValue) {
-                                    projectedAttributeKey = attributeProjection.projectedName ? : key;
-                                    [projectedAttributes removeObjectForKey:key];
-                                    projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
-                                    [projectedKeys addObject:projectedAttributeValue];
-                                    [removeAttributeProjections addObject:attributeProjection];
-                                } else if (attributeProjection.required) {
-                                    doesNotContainRequiredAttribute = YES;
-                                    *stop = YES;
-                                    stopInnerLoop = YES;
-                                }
-                            } else if (attributeProjection.required) {
-                                auto iterator = hashKeyMap.find([attributeProjection.name intValue]);
-                                
-                                if (iterator == hashKeyMap.end()) {
-                                    doesNotContainRequiredAttribute = YES;
-                                    *stop = YES;
-                                    stopInnerLoop = YES;
-                                }
-                            }
-                        }
-                            break;
-                            
-                        case MPProjectionMatchTypeField:
-                            projectedAttributeKey = attributeProjection.projectedName ? : key;
-                            projectedAttributes[projectedAttributeKey] = event.name;
-                            [projectedKeys addObject:projectedAttributeKey];
-                            [removeAttributeProjections addObject:attributeProjection];
-                            break;
-                            
-                        case MPProjectionMatchTypeStatic:
-                            projectedAttributeKey = attributeProjection.projectedName ? : key;
-                            projectedAttributeValue = [strongSelf transformValue:attributeProjection.name dataType:attributeProjection.dataType];
-                            
-                            if (projectedAttributeValue) {
-                                projectedAttributes[projectedAttributeKey] = projectedAttributeValue;
-                                [projectedKeys addObject:projectedAttributeKey];
-                            }
-                            [removeAttributeProjections addObject:attributeProjection];
-                            break;
-                            
-                        case MPProjectionMatchTypeNotSpecified:
-                            break;
-                    }
-                    
-                    if (stopInnerLoop) {
-                        break;
-                    }
-                }
-                
-                if (removeAttributeProjections.count > 0) {
-                    [attributeProjections removeObjectsInArray:removeAttributeProjections];
-                }
-            }];
-            
-            if (doesNotContainRequiredAttribute) {
-                return (NSDictionary *)[NSNull null];
-            }
-            
-            // If the number of attributes is greater than the max number allowed, sort the keys and remove the excess from the bottom of the list
-            [nonProjectedKeys removeObjectsInArray:projectedKeys];
-            
-            if (eventProjection.appendAsIs && maxCustomParams > 0) {
-                if (nonProjectedKeys.count > maxCustomParams) {
-                    NSInteger numberOfRemainingSlots = maxCustomParams - projectedKeys.count;
-                    
-                    if (numberOfRemainingSlots > 0) {
-                        [nonProjectedKeys sortUsingComparator:^NSComparisonResult(NSString *obj1, NSString *obj2) {
-                            return [obj1 compare:obj2];
-                        }];
-                        
-                        [nonProjectedKeys removeObjectsInRange:NSMakeRange(0, numberOfRemainingSlots)];
-                        [projectedAttributes removeObjectsForKeys:nonProjectedKeys];
-                    }
-                }
-            } else {
-                [projectedAttributes removeObjectsForKeys:nonProjectedKeys];
-            }
-            
-            if (projectedAttributes.count == 0) {
-                projectedAttributes = nil;
-            }
-            
-            return (NSDictionary *)projectedAttributes;
-        }; // End of attribute projection lambda function
-        
-        // Filter projections only to those of 'messageType'
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageType == %ld", (long)messageType];
-        NSArray *projections = [kitConfiguration.projections filteredArrayUsingPredicate:predicate];
-        
-        // Apply projections
-        vector<MPEvent *> projectedEvents;
-        vector<MPEventProjection *> appliedProjections;
-        MPEvent *projectedEvent;
-        MPEventProjection *defaultProjection = nil;
-        NSDictionary *projectedAttributes;
-        NSDictionary<NSString *, NSString *> *eventInfo = [event.info transformValuesToString];
-        
-        if (projections.count > 0) {
-            int eventNameHash = 0;
-            
-            for (MPEventProjection *eventProjection in projections) {
-                BOOL shouldProjectEvent = NO;
-                
-                switch (eventProjection.matchType) {
-                    case MPProjectionMatchTypeString:
-                        if ([event.name caseInsensitiveCompare:eventProjection.name] == NSOrderedSame) {
-                            if (eventProjection.projectionMatches) {
-                                __block BOOL foundNonMatch = NO;
-                                [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
-                                        foundNonMatch = YES;
-                                        *stop = YES;
-                                    }
-                                }];
-                                shouldProjectEvent = !foundNonMatch;
-                            } else {
-                                shouldProjectEvent = YES;
-                            }
-                        }
-                        break;
-                        
-                    case MPProjectionMatchTypeHash: {
-                        if (eventNameHash == 0) {
-                            string nameToHash = messageType == MPMessageTypeScreenView ? "0" : to_string(event.type);
-                            nameToHash += string([[event.name lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-                            eventNameHash = mParticle::Hasher::hashFromString(nameToHash);
-                        }
-                        
-                        if (eventNameHash == [eventProjection.name integerValue]) {
-                            if (eventProjection.projectionMatches) {
-                                __block BOOL foundNonMatch = NO;
-                                [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
-                                        foundNonMatch = YES;
-                                        *stop = YES;
-                                    }
-                                }];
-                                shouldProjectEvent = !foundNonMatch;
-                            } else {
-                                shouldProjectEvent = YES;
-                            }
-                        }
-                    }
-                        break;
-                        
-                    case MPProjectionMatchTypeNotSpecified:
-                        shouldProjectEvent = YES;
-                        break;
-                        
-                    default: // Filter and Static... only applicable to attributes
-                        break;
-                }
-                
-                if (shouldProjectEvent) {
-                    projectedEvent = [event copy];
-                    projectedAttributes = projectAttributes(projectedEvent, eventProjection);
-                    
-                    if ((NSNull *)projectedAttributes != [NSNull null]) {
-                        projectedEvent.info = projectedAttributes;
-                        
-                        if (eventProjection.projectedName) {
-                            if (eventProjection.projectionMatches) {
-                                __block BOOL foundNonMatch = NO;
-                                [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
-                                    if (![projectionMatch.attributeValues caseInsensitiveContainsObject:[eventInfo valueForCaseInsensitiveKey:projectionMatch.attributeKey]]) {
-                                        foundNonMatch = YES;
-                                        *stop = YES;
-                                    }
-                                }];
-                                if (!foundNonMatch) {
-                                    projectedEvent.name = eventProjection.projectedName;
-                                }
-                                
-                            } else {
-                                projectedEvent.name = eventProjection.projectedName;
-                            }
-                        }
-                        
-                        projectedEvents.push_back(projectedEvent);
-                        appliedProjections.push_back(eventProjection);
-                    }
-                }
-            }
-        }
-        
-        // Default projection, applied only if no other projection was applicable
-        if (projectedEvents.empty()) {
-            defaultProjection = kitConfiguration.defaultProjections[messageType];
-            
-            if (!MPIsNull(defaultProjection)) {
-                projectedEvent = [event copy];
-                projectedAttributes = projectAttributes(projectedEvent, defaultProjection);
-                
-                if ((NSNull *)projectedAttributes != [NSNull null]) {
-                    projectedEvent.info = projectedAttributes;
-                    
-                    if (defaultProjection.projectedName && defaultProjection.projectionType == MPProjectionTypeEvent) {
-                        projectedEvent.name = defaultProjection.projectedName;
-                    }
-                    
-                    projectedEvents.push_back(projectedEvent);
-                    appliedProjections.push_back(defaultProjection);
-                }
-            }
-            
-            if (projectedEvents.empty()) {
-                projectedEvents.push_back(event);
-            }
-        }
-        
-        if (strongSelf) {
-            dispatch_semaphore_signal(strongSelf->kitsSemaphore);
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(projectedEvents, appliedProjections);
-        });
-    });
 }
 
 #pragma mark Public methods
@@ -1975,58 +661,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 #pragma mark Forward methods
-- (void)forwardCommerceEventCall:(MPCommerceEvent *)commerceEvent kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter *kitFilter, MPKitExecStatus **execStatus))kitHandler {
-    if (!self.kitsInitialized) {
-        SEL commerceEventSelector = @selector(logCommerceEvent:);
-        
-        MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
-        [parameters addParameter:commerceEvent];
-
-        MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:commerceEventSelector parameters:parameters messageType:MPMessageTypeCommerceEvent completionHandler:kitHandler];
-        
-        if (forwardQueueItem) {
-            [self.forwardQueue addObject:forwardQueueItem];
-        }
-        
-        return;
-    }
-    
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-    NSNumber *appsFlyerCode = @(MPKitInstanceAppsFlyer);
-    
-    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        __block NSNumber *previousKit = nil;
-        
-        MPCommerceEvent *surrogateCommerceEvent = [kitRegister.code isEqualToNumber:appsFlyerCode] ? (MPCommerceEvent *)[self applyAppsFlyerAugmentationsToEvent:commerceEvent] : commerceEvent;
-        
-        [self filter:kitRegister forCommerceEvent:surrogateCommerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-            if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
-                return;
-            }
-            
-            if (kitFilter.forwardCommerceEvent || kitFilter.forwardEvent) {
-                MPKitExecStatus *execStatus = nil;
-                
-                kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
-                
-                if (execStatus.success && ![previousKit isEqualToNumber:kitRegister.code]) {
-                    previousKit = kitRegister.code;
-                    
-                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
-                                                                                       execStatus:execStatus
-                                                                                        kitFilter:kitFilter
-                                                                                    originalEvent:commerceEvent];
-                    
-                    [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                    
-                    MPILogDebug(@"Forwarded logCommerceEvent call to kit: %@", kitRegister.name);
-                }
-            }
-        }];
-    }
-}
-
-- (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus **execStatus))kitHandler {
+- (void)forwardSDKCall:(SEL)selector event:(MPEventAbstract *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus **execStatus))kitHandler {
     if (!self.kitsInitialized && messageType != MPMessageTypeOptOut && messageType != MPMessageTypePushRegistration) {
         MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] init];
         [parameters addParameter:event];
@@ -2034,7 +669,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector parameters:parameters messageType:messageType completionHandler:kitHandler];
         
         if (forwardQueueItem) {
-            forwardQueueItem.queueItemType = MPQueueItemTypeEvent;
+            forwardQueueItem.queueItemType = MPQueueItemTypeAppEvent;
             [self.forwardQueue addObject:forwardQueueItem];
         }
         
@@ -2043,52 +678,53 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     NSNumber *appsFlyerCode = @(MPKitInstanceAppsFlyer);
-
+    __block NSNumber *previousKit = nil;
+    
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        __block NSNumber *previousKit = nil;
+        previousKit = nil;
         
-        void (^forwardWithFilter)(MPKitFilter *const) = ^(MPKitFilter *const kitFilter) {
-            if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
-                return;
-            }
+        if ([kitRegister.wrapperInstance respondsToSelector:selector] || (messageType == MPMessageTypeCommerceEvent && [kitRegister.wrapperInstance respondsToSelector:@selector(logEvent:)])) {
+            MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
-            MPKitExecStatus *execStatus = nil;
-            kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
-            
-            if (kitFilter.forwardEvent) {
-                if (execStatus.success && ![previousKit isEqualToNumber:kitRegister.code] && kitFilter.forwardEvent && messageType != MPMessageTypeUnknown) {
-                    previousKit = kitRegister.code;
-                    MPForwardRecord *forwardRecord = nil;
-                    
-                    if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
-                        forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
-                                                                          execStatus:execStatus
-                                                                           stateFlag:[userInfo[@"state"] boolValue]];
-                    } else {
-                        forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
-                                                                          execStatus:execStatus
-                                                                           kitFilter:kitFilter
-                                                                       originalEvent:event];
-                    }
-                    
-                    [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                    
-                    MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
-                }
-            }
-        };
-        
-        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+            MPEventAbstract *surrogateEvent = nil;
             if (event) {
-                MPEvent *surrogateEvent = [kitRegister.code isEqualToNumber:appsFlyerCode] ? (MPEvent *)[self applyAppsFlyerAugmentationsToEvent:event] : event;
-                
-                [self filter:kitRegister forEvent:surrogateEvent selector:selector completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-                    forwardWithFilter(kitFilter);
-                }];
-            } else {
-                MPKitFilter *kitFilter = [self filter:kitRegister forSelector:selector];
-                forwardWithFilter(kitFilter);
+                surrogateEvent = [kitRegister.code isEqualToNumber:appsFlyerCode] ? [self applyAppsFlyerAugmentationsToEvent:event] : event;
             }
+            
+            [self.dataTransformation filter:kitRegister
+                           kitConfiguration:kitConfiguration
+                                   forEvent:surrogateEvent
+                                   selector:selector
+                          completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                              if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
+                                  return;
+                              }
+                              
+                              MPKitExecStatus *execStatus = nil;
+                              kitHandler(kitRegister.wrapperInstance, nil, kitFilter, &execStatus);
+                              
+                              if (kitFilter.forwardEvent || kitFilter.forwardCommerceEvent) {
+                                  if (execStatus.success && ![previousKit isEqualToNumber:kitRegister.code] && messageType != MPMessageTypeUnknown) {
+                                      previousKit = kitRegister.code;
+                                      MPForwardRecord *forwardRecord = nil;
+                                      
+                                      if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
+                                          forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
+                                                                                            execStatus:execStatus
+                                                                                             stateFlag:[userInfo[@"state"] boolValue]];
+                                      } else {
+                                          forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
+                                                                                            execStatus:execStatus
+                                                                                             kitFilter:kitFilter
+                                                                                         originalEvent:event];
+                                      }
+                                      
+                                      [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                                      
+                                      MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                                  }
+                              }
+                          }];
         }
     }
 }
@@ -2102,13 +738,19 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector] || [kitRegister.wrapperInstance respondsToSelector:alternativeUserAttributeSelector]) {
-            MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributeKey:key value:value];
+            MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
-            if (!kitFilter.shouldFilter) {
-                kitHandler(kitRegister.wrapperInstance);
-                
-                MPILogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, kitRegister.name);
-            }
+            [self.dataTransformation filter:kitRegister
+                           kitConfiguration:kitConfiguration
+                        forUserAttributeKey:key
+                                      value:value
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              if (!kitFilter.shouldFilter) {
+                                  kitHandler(kitRegister.wrapperInstance);
+                                  
+                                  MPILogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, kitRegister.name);
+                              }
+                          }];
         }
     }
 }
@@ -2118,11 +760,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-            MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
+            MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
-            kitHandler(kitRegister.wrapperInstance, kitFilter.filteredAttributes);
-            
-            MPILogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
+            [self.dataTransformation filter:kitRegister
+                           kitConfiguration:kitConfiguration
+                          forUserAttributes:userAttributes
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              kitHandler(kitRegister.wrapperInstance, kitFilter.filteredAttributes);
+                              
+                              MPILogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
+                          }];
         }
     }
 }
@@ -2132,13 +779,19 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-            MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
-            
-            if (!kitFilter.shouldFilter) {
-                kitHandler(kitRegister.wrapperInstance);
-                
-                MPILogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, kitRegister.name);
-            }
+            MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
+
+            [self.dataTransformation filter:kitRegister
+                           kitConfiguration:kitConfiguration
+                         forUserIdentityKey:identityString
+                               identityType:identityType
+                          completionHandler:^(MPKitFilter * _Nonnull kitFilter, BOOL finished) {
+                              if (!kitFilter.shouldFilter) {
+                                  kitHandler(kitRegister.wrapperInstance);
+                                  
+                                  MPILogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, kitRegister.name);
+                              }
+                          }];
         }
     }
 }
@@ -2157,20 +810,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 
                 MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
             }
-        }
-    }
-}
-
-- (void)forwardSDKCall:(SEL)selector kitHandler:(void (^)(id<MPKitProtocol> kit, MPKitExecStatus **execStatus))kitHandler {
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-    
-    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-            MPKitExecStatus *execStatus = nil;
-            
-            kitHandler(kitRegister.wrapperInstance, &execStatus);
-            
-            MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
         }
     }
 }

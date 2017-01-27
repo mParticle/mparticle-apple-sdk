@@ -17,14 +17,12 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <Foundation/Foundation.h>
 #import "MPExtensionProtocol.h"
 #import "MPKitProtocol.h"
 
 @class MPKitFilter;
 @class MPKitExecStatus;
-@class MPCommerceEvent;
-@class MPEvent;
+@class MPEventAbstract;
 @class MPForwardQueueParameters;
 
 @interface MPKitContainer : NSObject
@@ -39,9 +37,7 @@
 - (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath;
 - (nullable NSArray<NSNumber *> *)supportedKits;
 
-- (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
-
-- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPEvent *)event messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPEventAbstract *)event messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable forwardKitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 
 - (void)forwardSDKCall:(nonnull SEL)selector userAttributeKey:(nonnull NSString *)key value:(nullable id)value kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit))kitHandler;
 
@@ -50,8 +46,6 @@
 - (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit))kitHandler;
 
 - (void)forwardSDKCall:(nonnull SEL)selector errorMessage:(nullable NSString *)errorMessage exception:(nullable NSException *)exception eventInfo:(nullable NSDictionary *)eventInfo kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
-
-- (void)forwardSDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 
 - (void)forwardSDKCall:(nonnull SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitFilter * _Nullable kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;
 

@@ -68,7 +68,6 @@ static NSArray *actionNames;
 
 @interface MPCommerceEvent() {
     MPCommerceEventKind commerceEventKind;
-    MPEventType type;
 }
 
 @property (nonatomic, strong) NSMutableDictionary *attributes;
@@ -95,11 +94,10 @@ static NSArray *actionNames;
 
 - (id)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        commerceEventKind = MPCommerceEventKindUnknown;
+        _kind = MPEventKindCommerceEvent;
     }
-    
-    commerceEventKind = MPCommerceEventKindUnknown;
     
     return self;
 }
@@ -114,6 +112,7 @@ static NSArray *actionNames;
         return nil;
     }
 
+    _kind = MPEventKindCommerceEvent;
     commerceEventKind = MPCommerceEventKindProduct;
     self.action = action;
     [self setEventType];
@@ -131,6 +130,7 @@ static NSArray *actionNames;
         return nil;
     }
     
+    _kind = MPEventKindCommerceEvent;
     commerceEventKind = MPCommerceEventKindImpression;
     [self setEventType];
 
@@ -147,6 +147,7 @@ static NSArray *actionNames;
         return nil;
     }
     
+    _kind = MPEventKindCommerceEvent;
     commerceEventKind = MPCommerceEventKindPromotion;
 
     if (!MPIsNull(promotionContainer)) {
@@ -228,19 +229,19 @@ static NSArray *actionNames;
     
     switch (commerceEventKind) {
         case MPCommerceEventKindProduct:
-            type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
+            _type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
             break;
             
         case MPCommerceEventKindPromotion:
-            type = _promotionContainer ? static_cast<MPEventType>(promotionActionEventType[(NSUInteger)self.promotionContainer.action]) : MPEventTypeOther;
+            _type = _promotionContainer ? static_cast<MPEventType>(promotionActionEventType[(NSUInteger)self.promotionContainer.action]) : MPEventTypeOther;
             break;
             
         case MPCommerceEventKindImpression:
-            type = static_cast<MPEventType>(Impression);
+            _type = static_cast<MPEventType>(Impression);
             break;
 
         default:
-            type = static_cast<MPEventType>(Other);
+            _type = static_cast<MPEventType>(Other);
             break;
     }
 }
@@ -284,7 +285,7 @@ static NSArray *actionNames;
         copyObject.promotionContainer = [_promotionContainer copy];
         copyObject.transactionAttributes = [_transactionAttributes copy];
         copyObject->_userDefinedAttributes = _userDefinedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_userDefinedAttributes copy]] : nil;
-        copyObject->type = type;
+        copyObject->_type = _type;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];
     }
@@ -294,7 +295,7 @@ static NSArray *actionNames;
 
 #pragma mark NSCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeInteger:type forKey:@"type"];
+    [coder encodeInteger:_type forKey:@"type"];
     [coder encodeInteger:commerceEventKind forKey:@"commerceEventKind"];
     
     if (_attributes) {
@@ -380,7 +381,7 @@ static NSArray *actionNames;
     
     self.promotionContainer = [coder decodeObjectForKey:@"promotionContainer"];
     self.transactionAttributes = [coder decodeObjectForKey:@"transactionAttributes"];
-    type = (MPEventType)[coder decodeIntegerForKey:@"type"];
+    _type = (MPEventType)[coder decodeIntegerForKey:@"type"];
     commerceEventKind = (MPCommerceEventKind)[coder decodeIntegerForKey:@"commerceEventKind"];
     
     return self;
@@ -682,10 +683,6 @@ static NSArray *actionNames;
     _latestRemovedProducts = nil;
 }
 
-- (MPEventType)type {
-    return type;
-}
-
 - (void)setImpressions:(NSDictionary *)impressions {
     self.productImpressions = impressions ? [[NSMutableDictionary alloc] initWithDictionary:impressions] : nil;
 }
@@ -712,14 +709,6 @@ static NSArray *actionNames;
     }];
     
     return copyProductImpressions;
-}
-
-- (NSDate *)timestamp {
-    return _timestamp;
-}
-
-- (void)setTimestamp:(NSDate *)timestamp {
-    _timestamp = timestamp;
 }
 
 #pragma mark Public accessors

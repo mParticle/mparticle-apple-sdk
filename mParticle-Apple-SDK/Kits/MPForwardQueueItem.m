@@ -37,14 +37,8 @@
     SEL logCommerceEventSelector = @selector(logCommerceEvent:);
     SEL logEventSelector = @selector(logEvent:);
     
-    if (selector == logEventSelector) {
-        _queueItemType = MPQueueItemTypeEvent;
-        
-        if (MPIsNull(parameters) || parameters.count == 0 || MPIsNull(parameters[0])) {
-            return nil;
-        }
-    } else if (selector == logCommerceEventSelector) {
-        _queueItemType = MPQueueItemTypeEcommerce;
+    if (selector == logEventSelector || selector == logCommerceEventSelector) {
+        _queueItemType = MPQueueItemTypeAppEvent;
         
         if (MPIsNull(parameters) || parameters.count == 0 || MPIsNull(parameters[0])) {
             return nil;
