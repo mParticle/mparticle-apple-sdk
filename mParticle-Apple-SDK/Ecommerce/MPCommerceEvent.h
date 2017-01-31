@@ -62,7 +62,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  
  @see mParticle
  */
-@interface MPCommerceEvent : MPEventAbstract <NSCopying, NSCoding>
+@interface MPCommerceEvent : MPEventAbstract <NSCopying>
 
 /**
  Checkout option string describing what the options are.

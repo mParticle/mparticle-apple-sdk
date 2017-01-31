@@ -17,26 +17,26 @@
 //
 
 #import "MPEvent.h"
-#import "MPIConstants.h"
-#import "MPStateMachine.h"
-#import "MPSession.h"
 #import "EventTypeName.h"
+#import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
+#import "MPSession.h"
+#import "MPStateMachine.h"
+
+NSString *const kMPEventCategoryKey = @"$Category";
+NSString *const kMPAttrsEventLengthKey = @"EventLength";
+NSString *const kMPEventCustomFlags = @"flags";
 
 @interface MPEvent()
 
 @property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlagsDictionary;
-@property (nonatomic, unsafe_unretained) MPMessageType messageType;
 
 @end
 
 
 @implementation MPEvent
-
-@synthesize messageType = _messageType;
-@synthesize typeName = _typeName;
 
 - (instancetype)init {
     MPILogError(@"%@ should NOT be initialized using the standard initializer.", [self class]);
@@ -59,10 +59,7 @@
         return nil;
     }
     
-    _info = nil;
-    _endTime = nil;
     _name = name;
-    _startTime = nil;
     _duration = @0;
     self.type = type;
 
@@ -88,38 +85,24 @@
 
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPEvent *copyObject = [[MPEvent alloc] initWithName:[_name copy] type:_type];
+    MPEvent *copyObject = [super copyWithZone:zone];
     
     if (copyObject) {
-        copyObject.duration = [_duration copy];
-        copyObject.endTime = [_endTime copy];
-        copyObject.info = [_info copy];
-        copyObject.startTime = [_startTime copy];
-        copyObject.category = [_category copy];
-        copyObject.messageType = _messageType;
-        copyObject.customFlagsDictionary = [_customFlagsDictionary mutableCopy];
-        copyObject->_timestamp = [_timestamp copy];
+        copyObject->_category = [_category copy];
+        copyObject->_customFlagsDictionary = [_customFlagsDictionary mutableCopy];
+        copyObject->_info = [_info copy];
+        copyObject->_name = [_name copy];
     }
     
     return copyObject;
 }
 
-#pragma mark MPEvent+MessageType
-- (MPMessageType)messageType {
-    return _messageType;
-}
-
-- (void)setMessageType:(MPMessageType)messageType {
-    _messageType = messageType;
-}
-
 #pragma mark Private accessors
 - (NSMutableDictionary *)customFlagsDictionary {
-    if (_customFlagsDictionary) {
-        return _customFlagsDictionary;
+    if (!_customFlagsDictionary) {
+        _customFlagsDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
     }
     
-    _customFlagsDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
     return _customFlagsDictionary;
 }
 
@@ -195,9 +178,7 @@
 }
 
 - (void)setType:(MPEventType)type {
-    if (_type == type) {
-        return;
-    }
+    [super setType:type];
     
     if (type < MPEventTypeNavigation || type > MPEventTypeOther) {
         MPILogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
@@ -205,27 +186,6 @@
     } else {
         _type = type;
     }
-    
-    mParticle::EventType eventType = static_cast<mParticle::EventType>(_type);
-    _typeName = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(eventType).c_str()
-                                   encoding:NSUTF8StringEncoding];
-}
-
-- (NSString *)typeName {
-    if (_typeName) {
-        return _typeName;
-    }
-    
-    [self willChangeValueForKey:@"typeName"];
-    
-    mParticle::EventType eventType = static_cast<mParticle::EventType>(_type);
-    
-    _typeName = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(eventType).c_str()
-                                   encoding:NSUTF8StringEncoding];
-    
-    [self didChangeValueForKey:@"typeName"];
-    
-    return _typeName;
 }
 
 #pragma mark Public methods
@@ -277,6 +237,70 @@
     
     [flags addObjectsFromArray:customFlags];
     self.customFlagsDictionary[key] = flags;
+}
+
+- (nullable NSDictionary<NSString *, id> *)dictionaryRepresentation {
+    NSMutableDictionary<NSString *, id> *eventDictionary = [[NSMutableDictionary alloc] initWithCapacity:8];
+    
+    NSDictionary *info = self.info;
+    NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithCapacity:2];
+    
+    if (self.startTime) {
+        eventDictionary[kMPEventStartTimestamp] = MPMilliseconds([self.startTime timeIntervalSince1970]);
+    } else {
+        eventDictionary[kMPEventStartTimestamp] = MPCurrentEpochInMilliseconds;
+    }
+    
+    if (info) {
+        [attributes addEntriesFromDictionary:info];
+    }
+    
+    if (self.messageType != MPMessageTypeBreadcrumb) {
+        if (self.duration) {
+            eventDictionary[kMPEventLength] = self.duration;
+            
+            if (!info || info[kMPAttrsEventLengthKey] == nil) { // Does not override "EventLength" if it already exists
+                attributes[kMPAttrsEventLengthKey] = self.duration;
+            }
+        } else {
+            eventDictionary[kMPEventLength] = @0;
+        }
+    }
+    
+    if (attributes.count > 0) {
+        eventDictionary[kMPAttributesKey] = attributes;
+    }
+    
+    // Return here if message type is breadcrumb
+    if (self.messageType == MPMessageTypeBreadcrumb) {
+        eventDictionary[kMPLeaveBreadcrumbsKey] = self.name;
+        return eventDictionary;
+    }
+    
+    eventDictionary[kMPEventNameKey] = self.name;
+    
+    if (self.customFlags) {
+        eventDictionary[kMPEventCustomFlags] = self.customFlags;
+    }
+    
+    // Return here if message type is screen view
+    if (_messageType == MPMessageTypeScreenView) {
+        return eventDictionary;
+    }
+    
+    eventDictionary[kMPEventCounterKey] = @([MPStateMachine sharedInstance].currentSession.eventCounter);
+    eventDictionary[kMPEventTypeKey] = self.typeName;
+    
+    NSString *category = self.category;
+    if (category) {
+        if (category.length <= LIMIT_NAME) {
+            attributes[kMPEventCategoryKey] = category;
+        } else {
+            MPILogError(@"The event category is too long. Discarding category.");
+        }
+    }
+    
+    return eventDictionary;
 }
 
 @end

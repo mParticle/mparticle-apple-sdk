@@ -603,6 +603,8 @@
 }
 
 - (void)testFilterEventNameAndAttributes {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Filter event name and attributes"];
+    
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),
@@ -625,10 +627,11 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
+    NSNumber *kitCode = @42;
     NSSet<id<MPExtensionKitProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id<MPExtensionKitProtocol> registeredKit = [registeredKits anyObject];
-    
-    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[registeredKit.code];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+    id<MPExtensionKitProtocol> registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    MPKitConfiguration *kitConfiguration = kitContainer.kitConfigurations[kitCode];
     
     [kitContainer.dataTransformation filter:registeredKit
                            kitConfiguration:kitConfiguration
@@ -654,6 +657,7 @@
     
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
+    kitConfiguration = kitContainer.kitConfigurations[kitCode];
     
     event = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
     event.duration = @2;
@@ -670,7 +674,11 @@
                               XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
                               XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
                               XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
+                              
+                              [expectation fulfill];
                           }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testFilterForSelector {

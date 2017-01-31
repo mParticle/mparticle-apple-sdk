@@ -118,9 +118,6 @@
 		C935A6FD1D8A2DFD00A1EE2F /* EventTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */; };
 		C935A6FE1D8A2DFD00A1EE2F /* MessageTypeName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */; };
 		C935A6FF1D8A2DFD00A1EE2F /* MessageTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */; };
-		C935A7001D8A2DFD00A1EE2F /* MPEvent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */; };
-		C935A7011D8A2DFD00A1EE2F /* MPEvent+Internal.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */; };
-		C935A7021D8A2DFD00A1EE2F /* MPEvent+MessageType.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB81D8A112B00D3ABBE /* MPEvent+MessageType.h */; };
 		C935A7031D8A2DFD00A1EE2F /* MPEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB91D8A112B00D3ABBE /* MPEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A7041D8A2DFD00A1EE2F /* MPEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CBA1D8A112B00D3ABBE /* MPEvent.mm */; };
 		C935A7051D8A2E0500A1EE2F /* MPAttributeProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CBC1D8A112B00D3ABBE /* MPAttributeProjection.h */; };
@@ -229,8 +226,8 @@
 		C9AB50691DFF0C4B0036BEE9 /* MPKitActivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9AB50671DFF0C4B0036BEE9 /* MPKitActivityTests.m */; };
 		C9BF72861E3B85380066E0DB /* MPEventAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = C9BF72841E3B85380066E0DB /* MPEventAbstract.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9BF72871E3B85380066E0DB /* MPEventAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = C9BF72841E3B85380066E0DB /* MPEventAbstract.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C9BF72881E3B85380066E0DB /* MPEventAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C9BF72851E3B85380066E0DB /* MPEventAbstract.m */; };
-		C9BF72891E3B85380066E0DB /* MPEventAbstract.m in Sources */ = {isa = PBXBuildFile; fileRef = C9BF72851E3B85380066E0DB /* MPEventAbstract.m */; };
+		C9BF72881E3B85380066E0DB /* MPEventAbstract.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9BF72851E3B85380066E0DB /* MPEventAbstract.mm */; };
+		C9BF72891E3B85380066E0DB /* MPEventAbstract.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9BF72851E3B85380066E0DB /* MPEventAbstract.mm */; };
 		C9BF728C1E3B9C440066E0DB /* MPKitDataTransformation.h in Headers */ = {isa = PBXBuildFile; fileRef = C9BF728A1E3B9C440066E0DB /* MPKitDataTransformation.h */; };
 		C9BF728D1E3B9C440066E0DB /* MPKitDataTransformation.h in Headers */ = {isa = PBXBuildFile; fileRef = C9BF728A1E3B9C440066E0DB /* MPKitDataTransformation.h */; };
 		C9BF728E1E3B9C440066E0DB /* MPKitDataTransformation.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9BF728B1E3B9C440066E0DB /* MPKitDataTransformation.mm */; };
@@ -305,9 +302,6 @@
 		C9DD1FDC1D8A13E200D3ABBE /* EventTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */; };
 		C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */; };
 		C9DD1FDE1D8A13E200D3ABBE /* MessageTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */; };
-		C9DD1FDF1D8A13E200D3ABBE /* MPEvent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */; };
-		C9DD1FE01D8A13E200D3ABBE /* MPEvent+Internal.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */; };
-		C9DD1FE11D8A13E200D3ABBE /* MPEvent+MessageType.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB81D8A112B00D3ABBE /* MPEvent+MessageType.h */; };
 		C9DD1FE21D8A13E200D3ABBE /* MPEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB91D8A112B00D3ABBE /* MPEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FE31D8A13E200D3ABBE /* MPEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CBA1D8A112B00D3ABBE /* MPEvent.mm */; };
 		C9DD1FE41D8A13EA00D3ABBE /* MPAttributeProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CBC1D8A112B00D3ABBE /* MPAttributeProjection.h */; };
@@ -493,7 +487,7 @@
 		C97C60851E3180D900FA3081 /* MPAttributeValidator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAttributeValidator.m; sourceTree = "<group>"; };
 		C9AB50671DFF0C4B0036BEE9 /* MPKitActivityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitActivityTests.m; sourceTree = "<group>"; };
 		C9BF72841E3B85380066E0DB /* MPEventAbstract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEventAbstract.h; sourceTree = "<group>"; };
-		C9BF72851E3B85380066E0DB /* MPEventAbstract.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEventAbstract.m; sourceTree = "<group>"; };
+		C9BF72851E3B85380066E0DB /* MPEventAbstract.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEventAbstract.mm; sourceTree = "<group>"; };
 		C9BF728A1E3B9C440066E0DB /* MPKitDataTransformation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitDataTransformation.h; sourceTree = "<group>"; };
 		C9BF728B1E3B9C440066E0DB /* MPKitDataTransformation.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPKitDataTransformation.mm; sourceTree = "<group>"; };
 		C9BF72901E3BE0340066E0DB /* MPKitDataTransformationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitDataTransformationTests.m; sourceTree = "<group>"; };
@@ -564,9 +558,6 @@
 		C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventTypeName.h; sourceTree = "<group>"; };
 		C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MessageTypeName.cpp; sourceTree = "<group>"; };
 		C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageTypeName.h; sourceTree = "<group>"; };
-		C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPEvent+Internal.h"; sourceTree = "<group>"; };
-		C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = "MPEvent+Internal.mm"; sourceTree = "<group>"; };
-		C9DD1CB81D8A112B00D3ABBE /* MPEvent+MessageType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPEvent+MessageType.h"; sourceTree = "<group>"; };
 		C9DD1CB91D8A112B00D3ABBE /* MPEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEvent.h; sourceTree = "<group>"; };
 		C9DD1CBA1D8A112B00D3ABBE /* MPEvent.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPEvent.mm; sourceTree = "<group>"; };
 		C9DD1CBC1D8A112B00D3ABBE /* MPAttributeProjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAttributeProjection.h; sourceTree = "<group>"; };
@@ -882,7 +873,7 @@
 				C9DD1C821D8A112B00D3ABBE /* MPDataModelAbstract.m */,
 				C9DD1C831D8A112B00D3ABBE /* MPDataModelProtocol.h */,
 				C9BF72841E3B85380066E0DB /* MPEventAbstract.h */,
-				C9BF72851E3B85380066E0DB /* MPEventAbstract.m */,
+				C9BF72851E3B85380066E0DB /* MPEventAbstract.mm */,
 				C9DD1C841D8A112B00D3ABBE /* MPForwardRecord.h */,
 				C9DD1C851D8A112B00D3ABBE /* MPForwardRecord.mm */,
 				C9DD1C861D8A112B00D3ABBE /* MPIntegrationAttributes.h */,
@@ -906,30 +897,30 @@
 		C9DD1C981D8A112B00D3ABBE /* Ecommerce */ = {
 			isa = PBXGroup;
 			children = (
-				C9DD1C991D8A112B00D3ABBE /* MPBags+Internal.h */,
 				C9DD1C9A1D8A112B00D3ABBE /* MPBags.h */,
 				C9DD1C9B1D8A112B00D3ABBE /* MPBags.m */,
-				C9DD1C9C1D8A112B00D3ABBE /* MPCart+Dictionary.h */,
+				C9DD1C991D8A112B00D3ABBE /* MPBags+Internal.h */,
 				C9DD1C9D1D8A112B00D3ABBE /* MPCart.h */,
 				C9DD1C9E1D8A112B00D3ABBE /* MPCart.m */,
+				C9DD1C9C1D8A112B00D3ABBE /* MPCart+Dictionary.h */,
 				C9DD1C9F1D8A112B00D3ABBE /* MPCommerce.h */,
 				C9DD1CA01D8A112B00D3ABBE /* MPCommerce.m */,
-				C9DD1CA11D8A112B00D3ABBE /* MPCommerceEvent+Dictionary.h */,
 				C9DD1CA21D8A112B00D3ABBE /* MPCommerceEvent.h */,
 				C9DD1CA31D8A112B00D3ABBE /* MPCommerceEvent.mm */,
+				C9DD1CA11D8A112B00D3ABBE /* MPCommerceEvent+Dictionary.h */,
 				C9DD1CA41D8A112B00D3ABBE /* MPCommerceEventInstruction.h */,
 				C9DD1CA51D8A112B00D3ABBE /* MPCommerceEventInstruction.m */,
-				C9DD1CA61D8A112B00D3ABBE /* MPProduct+Dictionary.h */,
 				C9DD1CA71D8A112B00D3ABBE /* MPProduct.h */,
 				C9DD1CA81D8A112B00D3ABBE /* MPProduct.mm */,
+				C9DD1CA61D8A112B00D3ABBE /* MPProduct+Dictionary.h */,
 				C9DD1CA91D8A112B00D3ABBE /* MPProductBag.h */,
 				C9DD1CAA1D8A112B00D3ABBE /* MPProductBag.m */,
-				C9DD1CAB1D8A112B00D3ABBE /* MPPromotion+Dictionary.h */,
 				C9DD1CAC1D8A112B00D3ABBE /* MPPromotion.h */,
 				C9DD1CAD1D8A112B00D3ABBE /* MPPromotion.mm */,
-				C9DD1CAE1D8A112B00D3ABBE /* MPTransactionAttributes+Dictionary.h */,
+				C9DD1CAB1D8A112B00D3ABBE /* MPPromotion+Dictionary.h */,
 				C9DD1CAF1D8A112B00D3ABBE /* MPTransactionAttributes.h */,
 				C9DD1CB01D8A112B00D3ABBE /* MPTransactionAttributes.m */,
+				C9DD1CAE1D8A112B00D3ABBE /* MPTransactionAttributes+Dictionary.h */,
 			);
 			path = Ecommerce;
 			sourceTree = "<group>";
@@ -941,9 +932,6 @@
 				C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */,
 				C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */,
 				C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */,
-				C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */,
-				C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */,
-				C9DD1CB81D8A112B00D3ABBE /* MPEvent+MessageType.h */,
 				C9DD1CB91D8A112B00D3ABBE /* MPEvent.h */,
 				C9DD1CBA1D8A112B00D3ABBE /* MPEvent.mm */,
 			);
@@ -1236,7 +1224,6 @@
 				C935A7511D8A2E3800A1EE2F /* MPLaunchInfo.h in Headers */,
 				C935A7181D8A2E0500A1EE2F /* MPKitRegister.h in Headers */,
 				C935A71E1D8A2E1500A1EE2F /* MPILogger.h in Headers */,
-				C935A7021D8A2DFD00A1EE2F /* MPEvent+MessageType.h in Headers */,
 				C935A7441D8A2E3200A1EE2F /* MPUserSegments+Setters.h in Headers */,
 				C935A6CF1D8A2DED00A1EE2F /* MPDataModelProtocol.h in Headers */,
 				C935A74D1D8A2E3800A1EE2F /* MPDevice.h in Headers */,
@@ -1264,7 +1251,6 @@
 				C935A6FF1D8A2DFD00A1EE2F /* MessageTypeName.h in Headers */,
 				C935A6BF1D8A2DDF00A1EE2F /* MPSurrogateAppDelegate.h in Headers */,
 				C935A7631D8A2E3800A1EE2F /* NSDictionary+MPCaseInsensitive.h in Headers */,
-				C935A7001D8A2DFD00A1EE2F /* MPEvent+Internal.h in Headers */,
 				C935A71A1D8A2E0D00A1EE2F /* MParticleReachability.h in Headers */,
 				C935A7071D8A2E0500A1EE2F /* MPBaseProjection.h in Headers */,
 				C935A6FA1D8A2DF400A1EE2F /* MPTransactionAttributes.h in Headers */,
@@ -1341,7 +1327,6 @@
 				C9DD1FCE1D8A13DC00D3ABBE /* MPCommerceEventInstruction.h in Headers */,
 				C9DD201B1D8A140800D3ABBE /* NSURLSession+mParticle.h in Headers */,
 				C9DD201F1D8A141400D3ABBE /* MPDatabaseMigrationController.h in Headers */,
-				C9DD1FDF1D8A13E200D3ABBE /* MPEvent+Internal.h in Headers */,
 				C9DD20571D8A142900D3ABBE /* mParticle.h in Headers */,
 				C9DD20461D8A142000D3ABBE /* NSString+MPPercentEscape.h in Headers */,
 				C9DD20601D8A142900D3ABBE /* MPIConstants.h in Headers */,
@@ -1366,7 +1351,6 @@
 				C9DD202F1D8A142000D3ABBE /* MPHasher.h in Headers */,
 				C9DD20131D8A140800D3ABBE /* MPNetworkCommunication.h in Headers */,
 				C9DD1FF91D8A13F100D3ABBE /* MParticleReachability.h in Headers */,
-				C9DD1FE11D8A13E200D3ABBE /* MPEvent+MessageType.h in Headers */,
 				C9DD1F9A1D8A13CA00D3ABBE /* MPAppDelegateProxy.h in Headers */,
 				C9DD1FF61D8A13EA00D3ABBE /* MPKitProtocol.h in Headers */,
 				C9DD1FC61D8A13DC00D3ABBE /* MPCart+Dictionary.h in Headers */,
@@ -1604,7 +1588,6 @@
 				C935A6F51D8A2DF400A1EE2F /* MPProductBag.m in Sources */,
 				C935A7641D8A2E3800A1EE2F /* NSDictionary+MPCaseInsensitive.m in Sources */,
 				C935A7391D8A2E2200A1EE2F /* MPURLConnectionAssociate.m in Sources */,
-				C935A7011D8A2DFD00A1EE2F /* MPEvent+Internal.mm in Sources */,
 				C935A73F1D8A2E2700A1EE2F /* MPNotificationController.mm in Sources */,
 				C935A6EB1D8A2DF400A1EE2F /* MPCommerce.m in Sources */,
 				C935A6C41D8A2DE700A1EE2F /* MPCustomModule.m in Sources */,
@@ -1627,7 +1610,7 @@
 				C935A6BC1D8A2DDF00A1EE2F /* MPAppDelegateProxy.m in Sources */,
 				C935A75C1D8A2E3800A1EE2F /* MPUploadBuilder.mm in Sources */,
 				C9BF728F1E3B9C440066E0DB /* MPKitDataTransformation.mm in Sources */,
-				C9BF72891E3B85380066E0DB /* MPEventAbstract.m in Sources */,
+				C9BF72891E3B85380066E0DB /* MPEventAbstract.mm in Sources */,
 				C935A71B1D8A2E0D00A1EE2F /* MParticleReachability.m in Sources */,
 				C935A7541D8A2E3800A1EE2F /* MPMessageBuilder.mm in Sources */,
 				C935A7061D8A2E0500A1EE2F /* MPAttributeProjection.m in Sources */,
@@ -1719,7 +1702,7 @@
 				C9DD1FCA1D8A13DC00D3ABBE /* MPCommerce.m in Sources */,
 				C9DD203B1D8A142000D3ABBE /* MPUploadBuilder.mm in Sources */,
 				C9BF728E1E3B9C440066E0DB /* MPKitDataTransformation.mm in Sources */,
-				C9BF72881E3B85380066E0DB /* MPEventAbstract.m in Sources */,
+				C9BF72881E3B85380066E0DB /* MPEventAbstract.mm in Sources */,
 				C9DD1F9B1D8A13CA00D3ABBE /* MPAppDelegateProxy.m in Sources */,
 				C9DD1FF81D8A13EA00D3ABBE /* MPKitRegister.mm in Sources */,
 				C9DD20181D8A140800D3ABBE /* MPURLConnectionAssociate.m in Sources */,
@@ -1755,7 +1738,6 @@
 				C9DD1FAB1D8A13D600D3ABBE /* MPConsumerInfo.mm in Sources */,
 				C9DD20651D8A142900D3ABBE /* MPUserSegments.m in Sources */,
 				C9DD1FB81D8A13D600D3ABBE /* MPSegmentMembership.m in Sources */,
-				C9DD1FE01D8A13E200D3ABBE /* MPEvent+Internal.mm in Sources */,
 				C9DD1FAD1D8A13D600D3ABBE /* MPDataModelAbstract.m in Sources */,
 				C9DD20431D8A142000D3ABBE /* NSDictionary+MPCaseInsensitive.m in Sources */,
 				C9DD20471D8A142000D3ABBE /* NSString+MPPercentEscape.m in Sources */,

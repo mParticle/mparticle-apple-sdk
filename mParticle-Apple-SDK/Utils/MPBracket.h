@@ -33,8 +33,8 @@ namespace mParticle {
         short high = 100;
         bool shouldForward();
         
-        Bracket(const long mpId, const short low, const short high) :
-        mpId(mpId), low(low), high(high)
+        Bracket(const long mpId, const short low, const short high)
+            : mpId(mpId), low(low), high(high)
         {}
         
         inline bool operator==(const Bracket &bracket) const {

@@ -22,10 +22,6 @@
 
 @implementation MPAttributeValidator
 
-+ (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error {
-    return [MPAttributeValidator checkAttribute:attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:error];
-}
-
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
     NSString *errorMessage = nil;

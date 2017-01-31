@@ -55,11 +55,10 @@
 }
 
 - (NSMutableArray *)productsList {
-    if (_productsList) {
-        return _productsList;
+    if (!_productsList) {
+        _productsList = [[NSMutableArray alloc] init];
     }
     
-    _productsList = [[NSMutableArray alloc] init];
     return _productsList;
 }
 

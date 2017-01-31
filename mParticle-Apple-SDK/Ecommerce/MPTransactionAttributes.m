@@ -56,20 +56,18 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 #pragma mark Private accessors
 - (NSMutableDictionary *)attributes {
-    if (_attributes) {
-        return _attributes;
+    if (!_attributes) {
+        _attributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     }
     
-    _attributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     return _attributes;
 }
 
 - (NSMutableDictionary *)beautifiedAttributes {
-    if (_beautifiedAttributes) {
-        return _beautifiedAttributes;
+    if (!_beautifiedAttributes) {
+        _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     }
     
-    _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     return _beautifiedAttributes;
 }
 
@@ -114,22 +112,12 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 
 #pragma mark MPTransactionAttributes+Dictionary
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary *dictionary = nil;
-    
-    if (_attributes.count > 0) {
-        dictionary = [_attributes transformValuesToString];
-    }
-    
+    NSDictionary *dictionary = _attributes.count > 0 ? [_attributes transformValuesToString] : nil;
     return dictionary;
 }
 
 - (NSDictionary *)beautifiedDictionaryRepresentation {
-    NSDictionary *dictionary = nil;
-    
-    if (_beautifiedAttributes.count > 0) {
-        dictionary = [_beautifiedAttributes transformValuesToString];
-    }
-    
+    NSDictionary *dictionary = _beautifiedAttributes.count > 0 ? [_beautifiedAttributes transformValuesToString] : nil;
     return dictionary;
 }
 

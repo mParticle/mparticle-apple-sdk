@@ -22,7 +22,6 @@
 #import "MPConnector.h"
 #import "MPConsumerInfo.h"
 #import "MPDateFormatter.h"
-#import "MPDevice.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPMessage.h"

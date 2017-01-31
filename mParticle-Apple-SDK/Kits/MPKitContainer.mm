@@ -202,20 +202,20 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
         
         kitRegister.wrapperInstance = nil;
-        
-        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitRegister.code, kitFileExtension]];
-
-        [self removeKitConfigurationAtPath:kitPath];
-
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitRegister.code};
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                                object:nil
-                                                              userInfo:userInfo];
-        });
     }
+    
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitRegister.code, kitFileExtension]];
+    
+    [self removeKitConfigurationAtPath:kitPath];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSDictionary *userInfo = @{mParticleKitInstanceKey:kitRegister.code};
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
+                                                            object:nil
+                                                          userInfo:userInfo];
+    });
 }
 
 - (void)initializeKits {
@@ -679,11 +679,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     NSNumber *appsFlyerCode = @(MPKitInstanceAppsFlyer);
     __block NSNumber *previousKit = nil;
+    SEL logEventSelector = @selector(logEvent:);
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         previousKit = nil;
         
-        if ([kitRegister.wrapperInstance respondsToSelector:selector] || (messageType == MPMessageTypeCommerceEvent && [kitRegister.wrapperInstance respondsToSelector:@selector(logEvent:)])) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector] || (messageType == MPMessageTypeCommerceEvent && [kitRegister.wrapperInstance respondsToSelector:logEventSelector])) {
             MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
             MPEventAbstract *surrogateEvent = nil;
@@ -801,7 +802,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-            MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithFilter:NO];
+            MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithFilter:NO filteredAttributes:nil];
             
             if (!kitFilter.shouldFilter) {
                 MPKitExecStatus *execStatus = nil;

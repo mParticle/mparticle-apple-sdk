@@ -69,20 +69,18 @@ static NSArray *actionNames;
 
 #pragma mark Private accessors
 - (NSMutableDictionary<NSString *, NSString *> *)attributes {
-    if (_attributes) {
-        return _attributes;
+    if (!_attributes) {
+        _attributes = [[NSMutableDictionary alloc] initWithCapacity:4];
     }
     
-    _attributes = [[NSMutableDictionary alloc] initWithCapacity:4];
     return _attributes;
 }
 
 - (NSMutableDictionary<NSString *, NSString *> *)beautifiedAttributes {
-    if (_beautifiedAttributes) {
-        return _beautifiedAttributes;
+    if (!_beautifiedAttributes) {
+        _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     }
     
-    _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     return _beautifiedAttributes;
 }
 
@@ -253,11 +251,10 @@ static NSArray *actionNames;
 
 #pragma mark Private accessors
 - (NSMutableArray *)promotionsArray {
-    if (_promotionsArray) {
-        return _promotionsArray;
+    if (!_promotionsArray) {
+        _promotionsArray = [[NSMutableArray alloc] initWithCapacity:1];
     }
     
-    _promotionsArray = [[NSMutableArray alloc] initWithCapacity:1];
     return _promotionsArray;
 }
 

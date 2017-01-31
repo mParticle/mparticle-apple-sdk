@@ -194,6 +194,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     NSMutableDictionary<NSString *, id> *stateInfo = [@{kMPStateAppMemoryTotalKey:self.applicationMemory,
                                                         kMPStateDataConnectionKey:self.dataConnectionStatus,
                                                         kMPStateFreeDiskSpaceKey:self.diskSpaceInfo[kMPStateFreeDiskSpaceKey],
+                                                        kMPStateTotalDiskSpaceKey:self.diskSpaceInfo[kMPStateTotalDiskSpaceKey],
                                                         kMPStateTimeSinceStartKey:self.timeSinceStart}
                                                       mutableCopy];
     

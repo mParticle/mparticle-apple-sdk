@@ -77,12 +77,10 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 - (id)init {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        userDefaults = [NSUserDefaults standardUserDefaults];
+        syncUserDefaults = NO;
     }
-    
-    userDefaults = [NSUserDefaults standardUserDefaults];
-    syncUserDefaults = NO;
     
     return self;
 }
@@ -293,20 +291,6 @@ static NSString *kMPAppStoreReceiptString = nil;
 - (NSDictionary *)searchAdsAttribution {
     MPSearchAdsAttribution *searchAttribution = [MPStateMachine sharedInstance].searchAttribution;
     return [searchAttribution dictionaryRepresentation];
-}
-
-#pragma mark NSCopying
-- (instancetype)copyWithZone:(NSZone *)zone {
-    MPApplication *copyObject = [[[self class] alloc] init];
-    
-    if (copyObject) {
-        copyObject->_architecture = [_architecture copy];
-        copyObject->_buildUUID = [_buildUUID copy];
-        copyObject->_initialLaunchTime = [_initialLaunchTime copy];
-        copyObject->_pirated = [_pirated copy];
-    }
-    
-    return copyObject;
 }
 
 #pragma mark Class methods

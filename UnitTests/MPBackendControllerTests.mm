@@ -26,6 +26,7 @@
 #import "MPUpload.h"
 #import "MPNotificationController.h"
 #import "MPEvent.h"
+#import "MPEventAbstract.h"
 #import "MParticleUserNotification.h"
 #import "MPUploadBuilder.h"
 #import "MPMessageBuilder.h"
@@ -353,7 +354,7 @@
         key = [NSString stringWithFormat:@"Key%d", i];
         value = [NSString stringWithFormat:@"Value%d", i];
         error = nil;
-        validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+        validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:&error];
         XCTAssertTrue(validAttributes, @"Checking attributes did not work.");
         self.session.attributesDictionary[key] = value;
     }
@@ -363,7 +364,7 @@
     value = [NSString stringWithFormat:@"Value%d", quantityLimit];
     self.session.attributesDictionary[key] = value;
     error = nil;
-    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:&error];
     XCTAssertFalse(validAttributes, @"Checking attributes count limit did not work.");
     
     // Removes most attributes
@@ -378,7 +379,7 @@
     }
     value = [NSString stringWithFormat:@"Value%d", 0];
     error = nil;
-    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:&error];
     XCTAssertFalse(validAttributes, @"Accepting keys that are too long.");
     
     // Builds and tests a long value
@@ -387,14 +388,14 @@
     }
     key = [NSString stringWithFormat:@"Key%d", 0];
     error = nil;
-    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:&error];
     XCTAssertFalse(validAttributes, @"Accepting values that are too long.");
     
     // Nil values
     key = [NSString stringWithFormat:@"Key%d", 0];
     value = nil;
     error = nil;
-    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:self.session.attributesDictionary key:key value:value maxValueLength:LIMIT_ATTR_LENGTH error:&error];
     XCTAssertFalse(validAttributes, @"Accepting nil values.");
 }
 
@@ -411,7 +412,7 @@
     
     [self.backendController logEvent:event
                              attempt:0
-                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
+                   completionHandler:^(MPEventAbstract *event, MPExecStatus execStatus) {}];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:self.session];
@@ -633,7 +634,7 @@
     XCTAssertTrue(validAttributes);
     
     error = nil;
-    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@"Temperamental" error:&error];
+    validAttributes = [MPAttributeValidator checkAttribute:dictionary key:@"New Attributes" value:@"Temperamental" maxValueLength:LIMIT_ATTR_LENGTH error:&error];
     XCTAssertTrue(validAttributes);
     
     NSMutableString *invalidLengthString = [[NSMutableString alloc] initWithCapacity:(MAX_USER_ATTR_LIST_ENTRY_LENGTH + 1)];
@@ -1017,7 +1018,7 @@
     
     [self.backendController logEvent:event
                              attempt:0
-                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
+                   completionHandler:^(MPEventAbstract *event, MPExecStatus execStatus) {}];
     
     NSArray<MPMessage *> *messages = [[MPPersistenceController sharedInstance] fetchMessagesForUploadingInSession:self.session];
 

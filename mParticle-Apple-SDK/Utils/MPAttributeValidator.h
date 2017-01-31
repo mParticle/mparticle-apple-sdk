@@ -29,7 +29,6 @@ extern const NSInteger kInvalidDataType;
 
 @interface MPAttributeValidator : NSObject
 
-+ (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error;
 
 @end

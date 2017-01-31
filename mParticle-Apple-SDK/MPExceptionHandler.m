@@ -94,26 +94,24 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 - (instancetype)initWithSession:(MPSession *)session {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _session = session;
+        
+        [self registerCallback];
+        
+        NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(handleCrashReportOccurred:)
+                                   name:kMPCrashReportOccurredNotification
+                                 object:nil];
+        
+        [notificationCenter addObserver:self
+                               selector:@selector(handleConfigureExceptionHandling:)
+                                   name:kMPConfigureExceptionHandlingNotification
+                                 object:nil];
+        
+        [self processPendingCrashReport];
     }
-    
-    _session = session;
-    
-    [self registerCallback];
-    
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter addObserver:self
-                           selector:@selector(handleCrashReportOccurred:)
-                               name:kMPCrashReportOccurredNotification
-                             object:nil];
-    
-    [notificationCenter addObserver:self
-                           selector:@selector(handleConfigureExceptionHandling:)
-                               name:kMPConfigureExceptionHandlingNotification
-                             object:nil];
-    
-    [self processPendingCrashReport];
     
     return self;
 }

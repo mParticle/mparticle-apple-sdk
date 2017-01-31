@@ -145,9 +145,9 @@
     
     MPEvent *originalEvent = [[MPEvent alloc] initWithName:@"Original" type:MPEventTypeOther];
     
-    MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:originalEvent shouldFilter:NO];
-    XCTAssertNil(kitFilter.forwardCommerceEvent, @"Should have been nil.");
-    XCTAssertEqualObjects(originalEvent, kitFilter.forwardEvent, @"Should have been equal.");
+    MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:originalEvent shouldFilter:NO appliedProjections:nil];
+    XCTAssertNil(kitFilter.forwardCommerceEvent);
+    XCTAssertEqualObjects(originalEvent, kitFilter.forwardEvent);
     
     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeEvent
                                                                        execStatus:execStatus
@@ -155,14 +155,14 @@
                                                                     originalEvent:originalEvent];
     
     XCTAssertNotNil(forwardRecord, @"Should not have been nil.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"dt"], expectedDataDictionary[@"dt"], @"Does not match.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"], @"Does not match.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"et"], expectedDataDictionary[@"et"], @"Does not match.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"n"], expectedDataDictionary[@"n"], @"Does not match.");
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"dt"], expectedDataDictionary[@"dt"]);
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"]);
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"et"], expectedDataDictionary[@"et"]);
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"n"], expectedDataDictionary[@"n"]);
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
-    kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
+    kitFilter = [[MPKitFilter alloc] initWithEvent:commerceEvent shouldFilter:NO appliedProjections:nil];
     
     forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
                                                       execStatus:execStatus

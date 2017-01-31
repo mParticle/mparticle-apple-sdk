@@ -39,20 +39,6 @@
 @property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
 
 /**
- The duration, in milliseconds, of an event. This property can be set by a developer, or
- it can be calculated automatically by the mParticle SDK using the beginTiming/endTiming
- methods.
- @see beginTiming
- */
-@property (nonatomic, strong, nullable) NSNumber *duration;
-
-/**
- If using the beginTiming/endTiming methods, this property contains the time the
- event ended. Otherwise it is nil.
- */
-@property (nonatomic, strong, nullable) NSDate *endTime;
-
-/**
  A dictionary containing further information about the event. The number of entries is 
  limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values 
  can be strings (up to 255 characters), numbers, booleans, or dates
@@ -64,17 +50,6 @@
  more than 255 characters.
  */
 @property (nonatomic, strong, nonnull) NSString *name;
-
-/**
- If using the beginTiming/endTiming methods, this property contains the time the
- event started. Otherwise it is nil.
- */
-@property (nonatomic, strong, nullable) NSDate *startTime;
-
-/**
- String representation of the event type to be logged.
- */
-@property (nonatomic, strong, readonly, nonnull) NSString *typeName;
 
 /**
  Initializes an instance of MPEvent

@@ -303,11 +303,9 @@ int main(int argc, char *argv[]);
 }
 
 - (NSString *)vendorId {
-    if (_vendorId) {
-        return _vendorId;
+    if (!_vendorId) {
+        _vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     }
-    
-    _vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
     
     return _vendorId;
 }
@@ -322,21 +320,6 @@ int main(int argc, char *argv[]);
 	_screenSize = CGSizeMake(bounds.size.width * scale, bounds.size.height * scale);
     
     return _screenSize;
-}
-
-#pragma mark NSCopying
-- (instancetype)copyWithZone:(NSZone *)zone {
-    MPDevice *copyObject = [[[self class] alloc] init];
-    
-    if (copyObject) {
-        copyObject->_advertiserId = [_advertiserId copy];
-        copyObject->_architecture = [_architecture copy];
-        copyObject->_model = [_model copy];
-        copyObject->_vendorId = [_vendorId copy];
-        copyObject->_screenSize = _screenSize;
-    }
-    
-    return copyObject;
 }
 
 #pragma mark Public class methods

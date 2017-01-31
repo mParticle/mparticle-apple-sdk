@@ -50,7 +50,6 @@
     _className = className;
     _startImmediately = startImmediately;
     _code = [(id<MPKitProtocol>)NSClassFromString(_className) kitCode];
-    
     _wrapperInstance = nil;
 
     return self;

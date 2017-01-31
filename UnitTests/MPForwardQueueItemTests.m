@@ -97,7 +97,7 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
-        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] shouldFilter:NO];
+        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:(MPCommerceEvent *)forwardQueueItem.queueParameters[0] shouldFilter:NO appliedProjections:nil];
         MPKitExecStatus *execStatus = nil;
         
         forwardQueueItem.completionHandler(kitMockTest, nil, kitFilter, &execStatus);
@@ -130,7 +130,7 @@
         MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
         MPKitExecStatus *execStatus = nil;
         
-        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
+        MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO appliedProjections:nil];
         
         forwardQueueItem.completionHandler(kitMockTest, forwardQueueItem.queueParameters, kitFilter, &execStatus);
     });

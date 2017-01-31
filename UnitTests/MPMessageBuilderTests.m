@@ -137,9 +137,8 @@
     transactionAttributes.transactionId = @"42";
     commerceEvent.transactionAttributes = transactionAttributes;
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent
-                                                                           session:self.session
-                                                                     commerceEvent:commerceEvent];
+    NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent session:self.session messageInfo:commerceEventDictionary];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");
@@ -163,9 +162,8 @@
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithPromotionContainer:promotionContainer];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent
-                                                                           session:self.session
-                                                                     commerceEvent:commerceEvent];
+    NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent session:self.session messageInfo:commerceEventDictionary];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");

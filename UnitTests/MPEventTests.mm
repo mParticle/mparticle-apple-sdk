@@ -18,7 +18,6 @@
 
 #import <XCTest/XCTest.h>
 #import "MPEvent.h"
-#import "MPEvent+Internal.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
@@ -179,8 +178,9 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
     event.info = @{@"speed":@25,
                    @"modality":@"sprinting"};
+    event.messageType = MPMessageTypeBreadcrumb;
     
-    NSDictionary *dictionaryRepresentation = [event breadcrumbDictionaryRepresentation];
+    NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
     XCTAssertNotNil(dictionaryRepresentation, @"Breadcrumb dictionary representation should not have been nil.");
     XCTAssertEqualObjects(dictionaryRepresentation[kMPLeaveBreadcrumbsKey], @"Dinosaur Run", @"Name is not correct.");
     XCTAssertNotNil(dictionaryRepresentation[kMPEventStartTimestamp], @"Start timestamp should not have been nil.");
@@ -192,8 +192,9 @@
 
 - (void)testScreenDictionaryRepresentation {
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
+    event.messageType = MPMessageTypeScreenView;
     
-    NSDictionary *dictionaryRepresentation = [event screenDictionaryRepresentation];
+    NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
     XCTAssertNotNil(dictionaryRepresentation, @"Screen dictionary representation should not have been nil.");
     XCTAssertEqualObjects(dictionaryRepresentation[kMPEventNameKey], @"Dinosaur Run", @"Name is not correct.");
     XCTAssertNotNil(dictionaryRepresentation[kMPEventStartTimestamp], @"Start timestamp should not have been nil.");

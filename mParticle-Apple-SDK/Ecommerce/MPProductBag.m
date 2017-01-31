@@ -67,11 +67,10 @@
 }
 
 - (nonnull NSMutableArray<MPProduct *> *)products {
-    if (_products) {
-        return _products;
+    if (!_products) {
+        _products = [[NSMutableArray alloc] initWithCapacity:1];
     }
     
-    _products = [[NSMutableArray alloc] initWithCapacity:1];
     return _products;
 }
 
