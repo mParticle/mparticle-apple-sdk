@@ -17,21 +17,19 @@
 //
 
 #import "MPMessageBuilder.h"
-#import "MPSession.h"
-#import "MPMessage.h"
-#import "MPStateMachine.h"
-#import "MPDateFormatter.h"
-#import <UIKit/UIKit.h>
-#import "MPEnums.h"
-#import "MPCurrentState.h"
+#include "MessageTypeName.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
+#import "MPCurrentState.h"
+#import "MPEnums.h"
 #import "MPILogger.h"
-#import "NSDictionary+MPCaseInsensitive.h"
-#include "MessageTypeName.h"
 #import "MPLocationManager.h"
+#import "MPMessage.h"
+#import "MPSession.h"
+#import "MPStateMachine.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
+#import "NSDictionary+MPCaseInsensitive.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -98,23 +96,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
-    self = [self initWithMessageType:messageType session:session];
-    if (self) {
-        NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
-        if (commerceEventDictionary) {
-            [messageDictionary addEntriesFromDictionary:commerceEventDictionary];
-            
-            NSDictionary *messageAttributes = messageDictionary[kMPAttributesKey];
-            if (messageAttributes) {
-                messageDictionary[kMPAttributesKey] = [messageAttributes transformValuesToString];
-            }
-        }
-    }
-    
-    return self;
-}
-
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     self = [self initWithMessageType:messageType session:session];
     if (self) {
@@ -173,12 +154,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 }
 
 #pragma mark Public class methods
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session commerceEvent:commerceEvent];
-    [messageBuilder withCurrentState];
-    return messageBuilder;
-}
-
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
     [messageBuilder withCurrentState];

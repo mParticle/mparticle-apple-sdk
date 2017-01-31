@@ -17,16 +17,16 @@
 //
 
 #import "MPForwardRecord.h"
-#import "MPIConstants.h"
-#import "MPILogger.h"
-#import "MPKitFilter.h"
 #include "EventTypeName.h"
 #include "MessageTypeName.h"
-#import "MPEvent.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
+#import "MPEvent.h"
 #import "MPEventProjection.h"
+#import "MPIConstants.h"
+#import "MPILogger.h"
 #import "MPKitExecStatus.h"
+#import "MPKitFilter.h"
 
 NSString *const kMPFRModuleId = @"mid";
 NSString *const kMPFRProjections = @"proj";
@@ -39,20 +39,18 @@ NSString *const kMPFROptOutState = @"s";
 
 - (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _forwardRecordId = forwardRecordId;
-    
-    if (!MPIsNull(data)) {
-        NSError *error = nil;
-        NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    if (self) {
+        _forwardRecordId = forwardRecordId;
         
-        if (!error) {
-            _dataDictionary = [NSMutableDictionary dictionaryWithDictionary:jsonDictionary];
-        } else {
-            MPILogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
+        if (!MPIsNull(data)) {
+            NSError *error = nil;
+            NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+            
+            if (!error) {
+                _dataDictionary = [NSMutableDictionary dictionaryWithDictionary:jsonDictionary];
+            } else {
+                MPILogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
+            }
         }
     }
     
@@ -75,7 +73,7 @@ NSString *const kMPFROptOutState = @"s";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(id)originalEvent {
+- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(MPEventAbstract *)originalEvent {
     self = [super init];
     
     BOOL validMessageType = messageType > MPMessageTypeUnknown && messageType <= MPMessageTypeCommerceEvent;
@@ -87,7 +85,7 @@ NSString *const kMPFROptOutState = @"s";
     BOOL validKitFilter = MPIsNull(kitFilter) || [kitFilter isKindOfClass:[MPKitFilter class]];
     NSAssert(validKitFilter, @"The 'kitFilter' variable is not valid.");
     
-    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]];
+    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEventAbstract class]];
     NSAssert(validOriginalEvent, @"The 'originalEvent' variable is not valid.");
     
     if (!self || !validMessageType || !validExecStatus || !validKitFilter || !validOriginalEvent) {
@@ -105,13 +103,9 @@ NSString *const kMPFROptOutState = @"s";
         return self;
     }
     
-    if (messageType == MPMessageTypeCommerceEvent || messageType == MPMessageTypeEvent) {
-        NSString *eventTypeString = nil;
-        if ([originalEvent isKindOfClass:[MPEvent class]]) {
-            eventTypeString = ((MPEvent *)originalEvent).typeName;
-        } else if ([originalEvent isKindOfClass:[MPCommerceEvent class]]) {
-            eventTypeString = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(static_cast<mParticle::EventType>([((MPCommerceEvent *)originalEvent) type])).c_str()
-                                                 encoding:NSUTF8StringEncoding];
+    if (originalEvent && (kitFilter.forwardEvent || kitFilter.forwardCommerceEvent)) {
+        if (originalEvent.kind == MPEventKindAppEvent) {
+            _dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
         }
         
         if (eventTypeString) {
@@ -171,15 +165,20 @@ NSString *const kMPFROptOutState = @"s";
         return nil;
     }
     
-    NSError *error = nil;
-    NSData *data = [NSJSONSerialization dataWithJSONObject:_dataDictionary options:0 error:&error];
+    NSData *data = nil;
     
-    if (!error) {
-        return data;
-    } else {
-        MPILogError(@"Error serializing the dictionary into a data representation: %@", [error localizedDescription]);
-        return nil;
+    @try {
+        NSError *error = nil;
+        data = [NSJSONSerialization dataWithJSONObject:_dataDictionary options:0 error:&error];
+        
+        if (error) {
+            MPILogError(@"Error serializing the dictionary into a data representation: %@", [error localizedDescription]);
+        }
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception serializing the dictionary into a data representation: %@", [exception reason]);
     }
+    
+    return data;
 }
 
 @end

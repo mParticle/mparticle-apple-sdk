@@ -24,10 +24,6 @@
     return [self initWithInstruction:MPCommerceInstructionEvent event:nil product:nil];
 }
 
-- (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event {
-    return [self initWithInstruction:instruction event:event product:nil];
-}
-
 - (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event product:(MPProduct *)product {
     self = [super init];
     if (!self) {

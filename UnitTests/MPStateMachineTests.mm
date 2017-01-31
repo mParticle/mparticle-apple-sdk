@@ -198,7 +198,6 @@
     });
     
     [stateMachine handleApplicationWillTerminate:nil];
-    [stateMachine handleMemoryWarningNotification:nil];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }

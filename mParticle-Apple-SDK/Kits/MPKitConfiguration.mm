@@ -111,9 +111,6 @@
     NSDictionary *configurationDictionary = [coder decodeObjectForKey:@"configurationDictionary"];
     
     self = [self initWithDictionary:configurationDictionary];
-    if (!self) {
-        return nil;
-    }
     
     return self;
 }

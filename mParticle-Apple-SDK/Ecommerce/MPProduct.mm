@@ -101,29 +101,26 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
 
 #pragma mark Private accessors
 - (NSMutableDictionary<NSString *, id> *)beautifiedAttributes {
-    if (_beautifiedAttributes) {
-        return _beautifiedAttributes;
+    if (!_beautifiedAttributes) {
+        _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:4];
     }
     
-    _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:4];
     return _beautifiedAttributes;
 }
 
 - (NSMutableDictionary<NSString *, id> *)objectDictionary {
-    if (_objectDictionary) {
-        return _objectDictionary;
+    if (!_objectDictionary) {
+        _objectDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
     }
     
-    _objectDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
     return _objectDictionary;
 }
 
 - (NSMutableDictionary<NSString *, id> *)userDefinedAttributes {
-    if (_userDefinedAttributes) {
-        return _userDefinedAttributes;
+    if (!_userDefinedAttributes) {
+        _userDefinedAttributes = [[NSMutableDictionary alloc] initWithCapacity:1];
     }
     
-    _userDefinedAttributes = [[NSMutableDictionary alloc] initWithCapacity:1];
     return _userDefinedAttributes;
 }
 

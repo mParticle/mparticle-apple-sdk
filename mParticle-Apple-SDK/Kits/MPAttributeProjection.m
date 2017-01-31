@@ -27,16 +27,14 @@
 
 - (instancetype)initWithConfiguration:(NSDictionary *)configuration projectionType:(MPProjectionType)projectionType attributeIndex:(NSUInteger)attributeIndex {
     self = [super initWithConfiguration:configuration projectionType:projectionType attributeIndex:attributeIndex];
-    if (!self) {
-        return nil;
+    if (self) {
+        NSDictionary *actionDictionary = configuration[@"action"];
+        NSArray *attributeMaps = actionDictionary[@"attribute_maps"];
+        NSDictionary *attributeMap = attributeMaps[attributeIndex];
+        
+        self.dataType = !MPIsNull(attributeMap[@"data_type"]) ? (MPDataType)[attributeMap[@"data_type"] integerValue] : MPDataTypeString;
+        _required = !MPIsNull(attributeMap[@"is_required"]) ? [attributeMap[@"is_required"] boolValue] : NO;
     }
-    
-    NSDictionary *actionDictionary = configuration[@"action"];
-    NSArray *attributeMaps = actionDictionary[@"attribute_maps"];
-    NSDictionary *attributeMap = attributeMaps[attributeIndex];
-    
-    self.dataType = !MPIsNull(attributeMap[@"data_type"]) ? (MPDataType)[attributeMap[@"data_type"] integerValue] : MPDataTypeString;
-    _required = !MPIsNull(attributeMap[@"is_required"]) ? [attributeMap[@"is_required"] boolValue] : NO;
     
     return self;
 }
@@ -66,12 +64,10 @@
 
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super initWithCoder:coder];
-    if (!self) {
-        return nil;
+    if (self) {
+        self.dataType = (MPDataType)[coder decodeIntegerForKey:@"dataType"];
+        _required = [coder decodeBoolForKey:@"required"];
     }
-
-    self.dataType = (MPDataType)[coder decodeIntegerForKey:@"dataType"];
-    _required = [coder decodeBoolForKey:@"required"];
     
     return self;
 }

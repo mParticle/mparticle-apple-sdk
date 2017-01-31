@@ -21,7 +21,6 @@
 
 static NSDateFormatter *dateFormatterRFC3339;
 static NSDateFormatter *dateFormatterRFC1123; // HTTP-date
-static NSDateFormatter *dateFormatterRFC850;
 
 @implementation MPDateFormatter
 
@@ -36,34 +35,9 @@ static NSDateFormatter *dateFormatterRFC850;
     dateFormatterRFC1123.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
     dateFormatterRFC1123.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
     dateFormatterRFC1123.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss z";
-    
-    dateFormatterRFC850 = [[NSDateFormatter alloc] init];
-    dateFormatterRFC850.locale = dateFormatterRFC1123.locale;
-    dateFormatterRFC850.timeZone = dateFormatterRFC1123.timeZone;
-    dateFormatterRFC850.dateFormat = @"EEEE',' dd'-'MMM'-'yy HH':'mm':'ss z";
 }
 
 #pragma mark Public static methods
-+ (NSDate *)dateFromString:(NSString *)dateString {
-    if (MPIsNull(dateString)) {
-        return nil;
-    }
-    
-    NSDate *date = [dateFormatterRFC3339 dateFromString:dateString];
-    if (date) {
-        return date;
-    }
-    
-    date = [dateFormatterRFC1123 dateFromString:dateString];
-    if (date) {
-        return date;
-    }
-    
-    date = [dateFormatterRFC850 dateFromString:dateString];
-    
-    return date;
-}
-
 + (NSDate *)dateFromStringRFC3339:(NSString *)dateString {
     if (MPIsNull(dateString)) {
         return nil;

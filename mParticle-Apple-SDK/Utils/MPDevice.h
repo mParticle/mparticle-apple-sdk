@@ -27,7 +27,7 @@
 extern NSString * _Nonnull const kMPDeviceInformationKey;
 
 
-@interface MPDevice : NSObject <NSCopying> 
+@interface MPDevice : NSObject
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, readonly, nullable) CTCarrier *carrier;

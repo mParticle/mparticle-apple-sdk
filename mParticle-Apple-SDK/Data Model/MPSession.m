@@ -215,7 +215,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
     
     NSString *localKey = [self.attributesDictionary caseInsensitiveKey:key];
     NSError *error = nil;
-    BOOL validAttributes = [MPAttributeValidator checkAttribute:self.attributesDictionary key:localKey value:value error:&error];
+    BOOL validAttributes = [MPAttributeValidator checkAttribute:self.attributesDictionary key:localKey value:value maxValueLength:LIMIT_ATTR_LENGTH error:&error];
     
     if (!validAttributes || [self.attributesDictionary[localKey] isEqual:value]) {
         return NO;

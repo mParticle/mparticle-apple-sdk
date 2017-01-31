@@ -33,10 +33,9 @@ typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
 - (NSString *)actionNameForAction:(MPCommerceEventAction)action;
 - (MPCommerceEventAction)actionWithName:(NSString *)actionName;
 - (void)addProducts:(NSArray<MPProduct *> *)products;
-- (NSDictionary *)dictionaryRepresentation;
 - (NSArray<MPCommerceEventInstruction *> *)expandedInstructions;
 - (NSArray<MPProduct *> *const)addedProducts;
-- (MPCommerceEventKind)kind;
+- (MPCommerceEventKind)commerceEventKind;
 - (void)removeProducts:(NSArray<MPProduct *> *)products;
 - (NSArray<MPProduct *> *const)removedProducts;
 - (void)resetLatestProducts;
@@ -47,7 +46,5 @@ typedef NS_ENUM(NSInteger, MPCommerceEventKind) {
 - (void)setImpressions:(NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions;
 - (void)setProducts:(NSArray<MPProduct *> *)products;
 - (NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)copyImpressionsMatchingHashedProperties:(NSDictionary *)hashedMap;
-- (NSDate *)timestamp;
-- (void)setTimestamp:(NSDate *)timestamp;
 
 @end

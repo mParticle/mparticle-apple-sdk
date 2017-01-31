@@ -87,7 +87,6 @@ static BOOL runningInBackground = NO;
         optOutSet = NO;
         _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
         _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
-        _uploadStatus = MPUploadStatusBatch;
         _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
         _backgrounded = NO;
         _consoleLogging = MPConsoleLoggingAutoDetect;
@@ -127,11 +126,6 @@ static BOOL runningInBackground = NO;
                                      object:nil];
             
             [notificationCenter addObserver:strongSelf
-                                   selector:@selector(handleMemoryWarningNotification:)
-                                       name:UIApplicationDidReceiveMemoryWarningNotification
-                                     object:nil];
-            
-            [notificationCenter addObserver:strongSelf
                                    selector:@selector(handleReachabilityChanged:)
                                        name:MParticleReachabilityChangedNotification
                                      object:nil];
@@ -149,19 +143,14 @@ static BOOL runningInBackground = NO;
     [notificationCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
 }
 
 #pragma mark Private accessors
 - (MParticleReachability *)reachability {
-    if (_reachability) {
-        return _reachability;
+    if (!_reachability) {
+        _reachability = [MParticleReachability reachabilityForInternetConnection];
     }
-    
-    [self willChangeValueForKey:@"reachability"];
-    _reachability = [MParticleReachability reachabilityForInternetConnection];
-    [self didChangeValueForKey:@"reachability"];
     
     return _reachability;
 }
@@ -204,8 +193,9 @@ static BOOL runningInBackground = NO;
     }
 
     // If needed, remove all kit configurations
-    NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
-    NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
+    NSRange range = NSMakeRange(0, 1);
+    NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:range];
+    NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:range];
     if (newSDKMajorVersion && ![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
         NSArray *directoryContents = [[MPKitContainer sharedInstance] fetchKitConfigurationFileNames];
         
@@ -314,9 +304,6 @@ static BOOL runningInBackground = NO;
     [MPApplication updateStoredVersionAndBuildNumbers];
 }
 
-- (void)handleMemoryWarningNotification:(NSNotification *)notification {
-}
-
 - (void)handleReachabilityChanged:(NSNotification *)notification {
     MParticleReachability *currentReachability = [notification object];
     
@@ -388,11 +375,10 @@ static BOOL runningInBackground = NO;
 
 #pragma mark Public accessors
 - (MPBags *)bags {
-    if (_bags) {
-        return _bags;
+    if (!_bags) {
+        _bags = [[MPBags alloc] init];
     }
     
-    _bags = [[MPBags alloc] init];
     return _bags;
 }
 

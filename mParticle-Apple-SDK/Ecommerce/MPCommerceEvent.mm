@@ -97,6 +97,7 @@ static NSArray *actionNames;
     if (self) {
         commerceEventKind = MPCommerceEventKindUnknown;
         _kind = MPEventKindCommerceEvent;
+        _messageType = MPMessageTypeCommerceEvent;
     }
     
     return self;
@@ -108,17 +109,16 @@ static NSArray *actionNames;
 
 - (instancetype)initWithAction:(MPCommerceEventAction)action product:(MPProduct *)product {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-
-    _kind = MPEventKindCommerceEvent;
-    commerceEventKind = MPCommerceEventKindProduct;
-    self.action = action;
-    [self setEventType];
-
-    if (product) {
-        [self addProduct:product];
+    if (self) {
+        _kind = MPEventKindCommerceEvent;
+        _messageType = MPMessageTypeCommerceEvent;
+        commerceEventKind = MPCommerceEventKindProduct;
+        self.action = action;
+        [self setEventType];
+        
+        if (product) {
+            [self addProduct:product];
+        }
     }
     
     return self;
@@ -126,16 +126,15 @@ static NSArray *actionNames;
 
 - (instancetype)initWithImpressionName:(NSString *)listName product:(MPProduct *)product {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _kind = MPEventKindCommerceEvent;
-    commerceEventKind = MPCommerceEventKindImpression;
-    [self setEventType];
-
-    if (listName && product) {
-        [self addImpression:product listName:listName];
+    if (self) {
+        _kind = MPEventKindCommerceEvent;
+        _messageType = MPMessageTypeCommerceEvent;
+        commerceEventKind = MPCommerceEventKindImpression;
+        [self setEventType];
+        
+        if (listName && product) {
+            [self addImpression:product listName:listName];
+        }
     }
     
     return self;
@@ -143,16 +142,15 @@ static NSArray *actionNames;
 
 - (instancetype)initWithPromotionContainer:(MPPromotionContainer *)promotionContainer {
     self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    _kind = MPEventKindCommerceEvent;
-    commerceEventKind = MPCommerceEventKindPromotion;
-
-    if (!MPIsNull(promotionContainer)) {
-        _promotionContainer = promotionContainer;
-        [self setEventType];
+    if (self) {
+        _kind = MPEventKindCommerceEvent;
+        _messageType = MPMessageTypeCommerceEvent;
+        commerceEventKind = MPCommerceEventKindPromotion;
+        
+        if (!MPIsNull(promotionContainer)) {
+            _promotionContainer = promotionContainer;
+            [self setEventType];
+        }
     }
     
     return self;
@@ -160,65 +158,58 @@ static NSArray *actionNames;
 
 #pragma mark Private accessors
 - (NSMutableDictionary *)attributes {
-    if (_attributes) {
-        return _attributes;
+    if (!_attributes) {
+        _attributes = [[NSMutableDictionary alloc] initWithCapacity:3];
     }
     
-    _attributes = [[NSMutableDictionary alloc] initWithCapacity:3];
     return _attributes;
 }
 
 - (NSMutableDictionary *)beautifiedAttributes {
-    if (_beautifiedAttributes) {
-        return _beautifiedAttributes;
+    if (!_beautifiedAttributes) {
+        _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     }
     
-    _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
     return _beautifiedAttributes;
 }
 
 - (NSMutableArray<MPProduct *> *)latestAddedProducts {
-    if (_latestAddedProducts) {
-        return _latestAddedProducts;
+    if (!_latestAddedProducts) {
+        _latestAddedProducts = [[NSMutableArray alloc] initWithCapacity:1];
     }
     
-    _latestAddedProducts = [[NSMutableArray alloc] initWithCapacity:1];
     return _latestAddedProducts;
 }
 
 - (NSMutableArray<MPProduct *> *)latestRemovedProducts {
-    if (_latestRemovedProducts) {
-        return _latestRemovedProducts;
+    if (!_latestRemovedProducts) {
+        _latestRemovedProducts = [[NSMutableArray alloc] initWithCapacity:1];
     }
     
-    _latestRemovedProducts = [[NSMutableArray alloc] initWithCapacity:1];
     return _latestRemovedProducts;
 }
 
 - (NSMutableDictionary *)productImpressions {
-    if (_productImpressions) {
-        return _productImpressions;
+    if (!_productImpressions) {
+        _productImpressions = [[NSMutableDictionary alloc] initWithCapacity:1];
     }
     
-    _productImpressions = [[NSMutableDictionary alloc] initWithCapacity:1];
     return _productImpressions;
 }
 
 - (NSMutableArray *)productsList {
-    if (_productsList) {
-        return _productsList;
+    if (!_productsList) {
+        _productsList = [[NSMutableArray alloc] initWithCapacity:1];
     }
     
-    _productsList = [[NSMutableArray alloc] initWithCapacity:1];
     return _productsList;
 }
 
 - (NSMutableDictionary *)userDefinedAttributes {
-    if (_userDefinedAttributes) {
-        return _userDefinedAttributes;
+    if (!_userDefinedAttributes) {
+        _userDefinedAttributes = [[NSMutableDictionary alloc] initWithCapacity:1];
     }
     
-    _userDefinedAttributes = [[NSMutableDictionary alloc] initWithCapacity:1];
     return _userDefinedAttributes;
 }
 
@@ -275,116 +266,21 @@ static NSArray *actionNames;
 
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPCommerceEvent *copyObject = [[[self class] alloc] init];
+    MPCommerceEvent *copyObject = [super copyWithZone:zone];
 
     if (copyObject) {
         copyObject->_attributes = _attributes ? [[NSMutableDictionary alloc] initWithDictionary:[_attributes copy]] : nil;
         copyObject->_beautifiedAttributes = _beautifiedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_beautifiedAttributes copy]] : nil;
+        copyObject->commerceEventKind = commerceEventKind;
         copyObject->_productsList = _productsList ? [[NSMutableArray alloc] initWithArray:[_productsList copy]] : nil;
         copyObject->_productImpressions = _productImpressions ? [[NSMutableDictionary alloc] initWithDictionary:[_productImpressions copy]] : nil;
-        copyObject.promotionContainer = [_promotionContainer copy];
+        copyObject->_promotionContainer = [_promotionContainer copy];
+        copyObject->_startTime = [_startTime copy];
         copyObject.transactionAttributes = [_transactionAttributes copy];
         copyObject->_userDefinedAttributes = _userDefinedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_userDefinedAttributes copy]] : nil;
-        copyObject->_type = _type;
-        copyObject->commerceEventKind = commerceEventKind;
-        copyObject->_timestamp = [_timestamp copy];
     }
     
     return copyObject;
-}
-
-#pragma mark NSCoding
-- (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeInteger:_type forKey:@"type"];
-    [coder encodeInteger:commerceEventKind forKey:@"commerceEventKind"];
-    
-    if (_attributes) {
-        [coder encodeObject:_attributes forKey:@"attributes"];
-    }
-    
-    if (_beautifiedAttributes) {
-        [coder encodeObject:_beautifiedAttributes forKey:@"beautifiedAttributes"];
-    }
-    
-    if (_productsList) {
-        [coder encodeObject:_productsList forKey:@"productsList"];
-    }
-    
-    if (_productImpressions) {
-        [coder encodeObject:_productImpressions forKey:@"productImpressions"];
-    }
-    
-    if (_promotionContainer) {
-        [coder encodeObject:_promotionContainer forKey:@"promotionContainer"];
-    }
-    
-    if (_transactionAttributes) {
-        [coder encodeObject:_transactionAttributes forKey:@"transactionAttributes"];
-    }
-    
-    if (_userDefinedAttributes) {
-        [coder encodeObject:_userDefinedAttributes forKey:@"userDefinedAttributes"];
-    }
-    
-    if (_timestamp) {
-        [coder encodeObject:_timestamp forKey:@"timestamp"];
-    }
-    
-    if (_currency) {
-        [coder encodeObject:_currency forKey:@"currency"];
-    }
-    
-    if (_screenName) {
-        [coder encodeObject:_screenName forKey:@"screenName"];
-    }
-    
-    if (_nonInteractive) {
-        [coder encodeBool:_nonInteractive forKey:@"nonInteractive"];
-    }
-}
-
-- (id)initWithCoder:(NSCoder *)coder {
-    self = [self init];
-    if (!self) {
-        return nil;
-    }
-    
-    NSDictionary *dictionary = [coder decodeObjectForKey:@"attributes"];
-    if (dictionary.count > 0) {
-        self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-    
-    dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
-    if (dictionary) {
-        self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-
-    dictionary = [coder decodeObjectForKey:@"productImpressions"];
-    if (dictionary.count > 0) {
-        self->_productImpressions = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-    
-    dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
-    if (dictionary.count > 0) {
-        self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-    
-    NSArray *array = [coder decodeObjectForKey:@"productsList"];
-    if (array.count > 0) {
-        self->_productsList = [[NSMutableArray alloc] initWithArray:array];
-    }
-    
-    self->_timestamp = [coder decodeObjectForKey:@"timestamp"];
-    self->_currency = [coder decodeObjectForKey:@"currency"];
-    self->_screenName = [coder decodeObjectForKey:@"screenName"];
-    self->_nonInteractive = [coder decodeBoolForKey:@"nonInteractive"];
-    
-    self.promotionContainer = [coder decodeObjectForKey:@"promotionContainer"];
-    self.transactionAttributes = [coder decodeObjectForKey:@"transactionAttributes"];
-    _type = (MPEventType)[coder decodeIntegerForKey:@"type"];
-    commerceEventKind = (MPCommerceEventKind)[coder decodeIntegerForKey:@"commerceEventKind"];
-    
-    return self;
 }
 
 #pragma mark MPCommerceEvent+Dictionary
@@ -406,7 +302,7 @@ static NSArray *actionNames;
     }
 }
 
-- (NSDictionary *)dictionaryRepresentation {
+- (nullable NSDictionary<NSString *, id> *)dictionaryRepresentation {
     NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
     
     if (_userDefinedAttributes.count > 0) {
@@ -605,7 +501,7 @@ static NSArray *actionNames;
                 
                 event.info = eventInfo;
                 
-                commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
+                commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event product:nil];
                 expansionInstructions.push_back(commerceEventInstruction);
             }
         }
@@ -620,7 +516,7 @@ static NSArray *actionNames;
                 event.info = promotionDictionary;
             }
 
-            commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
+            commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event product:nil];
             expansionInstructions.push_back(commerceEventInstruction);
         }
             break;
@@ -642,7 +538,7 @@ static NSArray *actionNames;
                             }
                             
                             event.info = eventInfo;
-                            commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
+                            commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event product:nil];
                             expansionInstructions.push_back(commerceEventInstruction);
                         }
                     }
@@ -664,7 +560,7 @@ static NSArray *actionNames;
     return commerceEventKind == MPCommerceEventKindProduct ? (NSArray *)_latestAddedProducts : nil;
 }
 
-- (MPCommerceEventKind)kind {
+- (MPCommerceEventKind)commerceEventKind {
     return commerceEventKind;
 }
 

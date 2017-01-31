@@ -19,6 +19,7 @@
 #import "MPEnums.h"
 #import "MPIConstants.h"
 
+@class MPEventAbstract;
 @class MPKitFilter;
 @class MPKitExecStatus;
 
@@ -30,7 +31,7 @@
 - (nonnull instancetype)initWithId:(int64_t)forwardRecordId data:(nonnull NSData *)data;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
-- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable id)originalEvent;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable MPEventAbstract *)originalEvent;
 - (nullable NSData *)dataRepresentation;
 
 @end

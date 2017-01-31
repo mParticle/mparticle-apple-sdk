@@ -128,14 +128,14 @@
             MPCommerceEvent *commerceEvent = (MPCommerceEvent *)event;
             // Priming projections
             __block vector<MPEventProjection *> applicableEventProjections;
-            MPCommerceEventKind kindOfCommerceEvent = [commerceEvent kind];
+            MPCommerceEventKind kindOfCommerceEvent = [commerceEvent commerceEventKind];
             
             NSArray *const products = [&commerceEvent] {
-                return [commerceEvent kind] == MPCommerceEventKindProduct ? commerceEvent.products : (NSArray *)nil;
+                return [commerceEvent commerceEventKind] == MPCommerceEventKindProduct ? commerceEvent.products : (NSArray *)nil;
             }();
             
             NSArray *const promotions = [&commerceEvent] {
-                return [commerceEvent kind] == MPCommerceEventKindPromotion ? commerceEvent.promotionContainer.promotions : (NSArray *)nil;
+                return [commerceEvent commerceEventKind] == MPCommerceEventKindPromotion ? commerceEvent.promotionContainer.promotions : (NSArray *)nil;
             }();
             
             BOOL (^isApplicableEventProjection)(MPEventProjection *, NSDictionary *) = ^ BOOL (MPEventProjection *eventProjection, NSDictionary *sourceDictionary) {
@@ -993,7 +993,7 @@
     // No event filter
     if (!event) {
         shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:zero];
-        MPKitFilter *kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
+        MPKitFilter *kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter filteredAttributes:nil] : nil;
         
         completionHandler(kitFilter, YES);
         return;
@@ -1002,9 +1002,9 @@
     // Attribute value filtering
     if (![self shouldIncludeEventAttributes:event afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
         if (event.kind == MPEventKindCommerceEvent) {
-            kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:(MPCommerceEvent *)event shouldFilter:YES];
+            kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:YES appliedProjections:nil];
         } else {
-            kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
+            kitFilter = [[MPKitFilter alloc] initWithFilter:YES filteredAttributes:nil];
         }
         
         completionHandlerCopy(kitFilter, YES);
@@ -1016,7 +1016,7 @@
     
     shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
     if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
+        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter filteredAttributes:nil];
         completionHandlerCopy(kitFilter, YES);
         return;
     }
@@ -1024,7 +1024,7 @@
     // Message type filter
     shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:zero];
     if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
+        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter filteredAttributes:nil];
         completionHandlerCopy(kitFilter, YES);
         return;
     }
@@ -1033,7 +1033,7 @@
         MPCommerceEvent *commerceEvent = (MPCommerceEvent *)event;
         
         // Entity type filter
-        MPCommerceEventKind commerceEventKind = [commerceEvent kind];
+        MPCommerceEventKind commerceEventKind = [commerceEvent commerceEventKind];
         NSString *commerceEventKindValue = [@(commerceEventKind) stringValue];
         shouldFilter = [kitConfiguration.commerceEventEntityTypeFilters[commerceEventKindValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -1053,13 +1053,11 @@
                     break;
             }
             
-            if (forwardEvent) {
-                kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:(MPCommerceEvent *)forwardEvent shouldFilter:NO];
-                completionHandlerCopy(kitFilter, YES);
-            } else {
-                kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
-                completionHandlerCopy(kitFilter, YES);
-            }
+            kitFilter = [[MPKitFilter alloc] initWithEvent:(forwardEvent ? forwardEvent : commerceEvent)
+                                              shouldFilter:NO
+                                        appliedProjections:nil];
+            
+            completionHandlerCopy(kitFilter, YES);
             
             return;
         } else { // App family attribute and Commerce event attribute filters
@@ -1186,7 +1184,7 @@
         
         shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
-            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
+            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter filteredAttributes:nil];
             completionHandlerCopy(kitFilter, YES);
             return;
         }
@@ -1196,7 +1194,7 @@
             __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:((MPEvent *)forwardEvent).info.count];
             
             [((MPEvent *)forwardEvent).info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, ((MPEvent *)event).name, key];
+                auxString = [[NSString stringWithFormat:@"%@%@%@", eventTypeString, ((MPEvent *)event).name, key] lowercaseString];
                 hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
                                                encoding:NSUTF8StringEncoding];
                 
@@ -1226,7 +1224,7 @@
             __weak auto lastProjectedEvent = projectedEvents.back();
             
             for (auto &projectedEvent : projectedEvents) {
-                kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
+                kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray];
                 completionHandlerCopy(kitFilter, lastProjectedEvent == projectedEvent);
             }
         }
@@ -1235,7 +1233,7 @@
             const auto lastProjectedCommerceEvent = projectedCommerceEvents.back();
             
             for (auto &projectedCommerceEvent : projectedCommerceEvents) {
-                kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:projectedCommerceEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
+                kitFilter = [[MPKitFilter alloc] initWithEvent:projectedCommerceEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
                 completionHandlerCopy(kitFilter, lastProjectedCommerceEvent == projectedCommerceEvent);
             }
         }
@@ -1280,7 +1278,7 @@
     
     BOOL shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
     
-    kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
+    kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter filteredAttributes:nil] : nil;
     
     completionHandler(kitFilter, YES);
 }
@@ -1290,7 +1288,7 @@
     
     BOOL shouldFilter = kitConfiguration.userIdentityFilters[identityTypeString] && [kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
         
-    MPKitFilter *kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
+    MPKitFilter *kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter filteredAttributes:nil] : nil;
     
     completionHandler(kitFilter, YES);
 }

@@ -32,7 +32,6 @@ typedef NS_ENUM(NSUInteger, MPCommerceInstruction) {
 @property (nonatomic, strong, readonly) MPProduct *product;
 @property (nonatomic, unsafe_unretained, readonly) MPCommerceInstruction instruction;
 
-- (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event;
 - (instancetype)initWithInstruction:(MPCommerceInstruction)instruction event:(MPEvent *)event product:(MPProduct *)product __attribute__((objc_designated_initializer));
 
 @end

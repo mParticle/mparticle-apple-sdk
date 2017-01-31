@@ -18,15 +18,15 @@
 
 #import "MPURLRequestBuilder.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import "MPStateMachine.h"
-#import "MPIConstants.h"
-#import <UIKit/UIKit.h>
-#import "NSUserDefaults+mParticle.h"
-#import "MPKitContainer.h"
+#import "MPDateFormatter.h"
 #import "MPExtensionProtocol.h"
+#import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPKitContainer.h"
+#import "MPStateMachine.h"
+#import "NSUserDefaults+mParticle.h"
+#import <UIKit/UIKit.h>
 
-static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
 
 @interface MPURLRequestBuilder() {
@@ -40,13 +40,6 @@ static NSTimeInterval requestTimeout = 30.0;
 
 
 @implementation MPURLRequestBuilder
-
-+ (void)initialize {
-    RFC1123DateFormatter = [[NSDateFormatter alloc] init];
-    RFC1123DateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
-    RFC1123DateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
-    RFC1123DateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
-}
 
 - (instancetype)initWithURL:(NSURL *)url {
     self = [super init];
@@ -150,23 +143,16 @@ static NSTimeInterval requestTimeout = 30.0;
 #pragma mark Public instance methods
 - (MPURLRequestBuilder *)withHeaderData:(NSData *)headerData {
     _headerData = headerData;
-    
     return self;
 }
 
 - (MPURLRequestBuilder *)withHttpMethod:(NSString *)httpMethod {
-    if (httpMethod) {
-        _httpMethod = httpMethod;
-    } else {
-        _httpMethod = kMPHTTPMethodGet;
-    }
-    
+    _httpMethod = httpMethod ? httpMethod : kMPHTTPMethodGet;
     return self;
 }
 
 - (MPURLRequestBuilder *)withPostData:(NSData *)postData {
     _postData = postData;
-    
     return self;
 }
 
@@ -184,7 +170,7 @@ static NSTimeInterval requestTimeout = 30.0;
         NSString *kits = nil;
         NSString *relativePath = [_url relativePath];
         NSString *signatureMessage;
-        NSString *date = [RFC1123DateFormatter stringFromDate:[NSDate date]];
+        NSString *date = [MPDateFormatter stringFromDateRFC1123:[NSDate date]];
         NSTimeZone *timeZone = [NSTimeZone defaultTimeZone];
         NSString *secondsFromGMT = [NSString stringWithFormat:@"%ld", (unsigned long)[timeZone secondsFromGMT]];
         NSRange range;
@@ -199,7 +185,7 @@ static NSTimeInterval requestTimeout = 30.0;
                 kits = nil;
             }
             
-            NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+            NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [kitContainer activeKitsRegistry];
             if (activeKitsRegistry.count > 0) {
                 NSMutableArray<NSNumber *> *activeKitIds = [[NSMutableArray alloc] initWithCapacity:activeKitsRegistry.count];
                 

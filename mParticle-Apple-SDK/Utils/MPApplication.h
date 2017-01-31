@@ -21,7 +21,7 @@
 
 extern NSString * _Nonnull const kMPApplicationInformationKey;
 
-@interface MPApplication : NSObject <NSCopying>
+@interface MPApplication : NSObject
 
 @property (nonatomic, strong, nonnull) NSNumber *lastUseDate;
 @property (nonatomic, strong, nullable) NSNumber *launchCount;

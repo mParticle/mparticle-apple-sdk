@@ -16,18 +16,20 @@
 //  limitations under the License.
 //
 
-#import "MPIConstants.h"
-#import "MPEnums.h"
-#import "MPLaunchInfo.h"
+#import <Foundation/Foundation.h>
 #import "MParticleReachability.h"
+#import "MPEnums.h"
+#import "MPIConstants.h"
+#import "MPLaunchInfo.h"
 
-@class MPSession;
-@class MPNotificationController;
-@class MPConsumerInfo;
 @class MPBags;
-@class MPLocationManager;
+@class MPConsumerInfo;
 @class MPCustomModule;
+@class MPLocationManager;
+@class MPNotificationController;
 @class MPSearchAdsAttribution;
+@class MPSession;
+
 #if TARGET_OS_IOS == 1
     @class CLLocation;
 #endif
@@ -69,7 +71,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
 @property (nonatomic, unsafe_unretained) MPInstallationType installationType;
 @property (nonatomic, unsafe_unretained, readonly) MParticleNetworkStatus networkStatus;
-@property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 @property (nonatomic, unsafe_unretained, readonly) BOOL backgrounded;
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
