@@ -1,7 +1,7 @@
 //
-//  MPURLConnectionAssociate.h
+//  MPNetworkPerformanceMeasurementProtocol.m
 //
-//  Copyright 2016 mParticle, Inc.
+//  Copyright 2017 mParticle, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -16,12 +16,8 @@
 //  limitations under the License.
 //
 
-#import <Foundation/Foundation.h>
 #import "MPNetworkPerformanceMeasurementProtocol.h"
 
-@interface MPURLConnectionAssociate : NSObject
-
-@property (nonatomic, strong) id delegate;
-@property (nonatomic, strong) id<MPNetworkPerformanceMeasurementProtocol> networkPerformance;
-
-@end
+NSString *const kMPNetworkPerformanceMeasurementNotification = @"MPNetworkPerformanceMeasurement";
+NSString *const kMPNetworkPerformanceKey = @"MPNetworkPerformance";
+NSString *const kMPMessageTypeNetworkPerformance = @"npe";

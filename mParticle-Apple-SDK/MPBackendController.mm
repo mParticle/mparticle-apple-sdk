@@ -37,7 +37,7 @@
 #import "MPKitContainer.h"
 #import "MPMessage.h"
 #import "MPMessageBuilder.h"
-#import "MPNetworkPerformance.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPResponseConfig.h"
@@ -55,7 +55,7 @@
 #import "NSUserDefaults+mParticle.h"
 
 #if TARGET_OS_IOS == 1
-#import "MPLocationManager.h"
+    #import "MPLocationManager.h"
 #endif
 
 #define METHOD_EXEC_MAX_ATTEMPT 10
@@ -151,11 +151,6 @@ static BOOL appBackgrounded = NO;
                                  object:nil];
         
         [notificationCenter addObserver:self
-                               selector:@selector(handleNetworkPerformanceNotification:)
-                                   name:kMPNetworkPerformanceMeasurementNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:self
                                selector:@selector(handleMemoryWarningNotification:)
                                    name:UIApplicationDidReceiveMemoryWarningNotification
                                  object:nil];
@@ -186,6 +181,14 @@ static BOOL appBackgrounded = NO;
                                    name:kMPRemoteNotificationDeviceTokenNotification
                                  object:nil];
 #endif
+        
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
+        [notificationCenter addObserver:self
+                               selector:@selector(handleNetworkPerformanceNotification:)
+                                   name:kMPNetworkPerformanceMeasurementNotification
+                                 object:nil];
+#endif
+        
     }
     
     return self;
@@ -197,7 +200,6 @@ static BOOL appBackgrounded = NO;
     [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
-    [notificationCenter removeObserver:self name:kMPNetworkPerformanceMeasurementNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -207,7 +209,10 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     [notificationCenter removeObserver:self name:kMPRemoteNotificationDeviceTokenNotification object:nil];
 #endif
-    
+
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
+    [notificationCenter removeObserver:self name:kMPNetworkPerformanceMeasurementNotification object:nil];
+#endif
     [self endUploadTimer];
 }
 
@@ -1266,16 +1271,18 @@ static BOOL appBackgrounded = NO;
     self.userIdentities = nil;
 }
 
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
 - (void)handleNetworkPerformanceNotification:(NSNotification *)notification {
     if (!_session) {
         return;
     }
     
     NSDictionary *userInfo = [notification userInfo];
-    MPNetworkPerformance *networkPerformance = userInfo[kMPNetworkPerformanceKey];
+    id<MPNetworkPerformanceMeasurementProtocol> networkPerformance = userInfo[kMPNetworkPerformanceKey];
     
     [self logNetworkPerformanceMeasurement:networkPerformance attempt:0 completionHandler:nil];
 }
+#endif
 
 - (void)handleSignificantTimeChange:(NSNotification *)notification {
     if (_session) {
@@ -1906,7 +1913,8 @@ static BOOL appBackgrounded = NO;
     completionHandler(event, execStatus);
 }
 
-- (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {
+- (void)logNetworkPerformanceMeasurement:(id<MPNetworkPerformanceMeasurementProtocol>)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^)(id<MPNetworkPerformanceMeasurementProtocol> networkPerformance, MPExecStatus execStatus))completionHandler {
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Network performance measurement cannot be logged prior to starting the mParticle SDK.\n****\n");
     
     if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
@@ -1954,6 +1962,7 @@ static BOOL appBackgrounded = NO;
     if (completionHandler) {
         completionHandler(networkPerformance, execStatus);
     }
+#endif
 }
 
 - (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^)(MPProfileChange profile, MPExecStatus execStatus))completionHandler {

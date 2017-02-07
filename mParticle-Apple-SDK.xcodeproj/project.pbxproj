@@ -150,14 +150,10 @@
 		C935A7331D8A2E2200A1EE2F /* MPConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CFF1D8A112B00D3ABBE /* MPConnector.m */; };
 		C935A7341D8A2E2200A1EE2F /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D001D8A112B00D3ABBE /* MPNetworkCommunication.h */; };
 		C935A7351D8A2E2200A1EE2F /* MPNetworkCommunication.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D011D8A112B00D3ABBE /* MPNetworkCommunication.mm */; };
-		C935A7361D8A2E2200A1EE2F /* MPNetworkPerformance.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D021D8A112B00D3ABBE /* MPNetworkPerformance.h */; };
-		C935A7371D8A2E2200A1EE2F /* MPNetworkPerformance.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D031D8A112B00D3ABBE /* MPNetworkPerformance.m */; };
 		C935A7381D8A2E2200A1EE2F /* MPURLConnectionAssociate.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D041D8A112B00D3ABBE /* MPURLConnectionAssociate.h */; };
 		C935A7391D8A2E2200A1EE2F /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */; };
 		C935A73A1D8A2E2200A1EE2F /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */; };
 		C935A73B1D8A2E2200A1EE2F /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */; };
-		C935A73C1D8A2E2200A1EE2F /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */; };
-		C935A73D1D8A2E2200A1EE2F /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */; };
 		C935A73E1D8A2E2700A1EE2F /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0B1D8A112B00D3ABBE /* MPNotificationController.h */; };
 		C935A73F1D8A2E2700A1EE2F /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */; };
 		C935A7401D8A2E2D00A1EE2F /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */; };
@@ -237,6 +233,8 @@
 		C9C9DC3A1DAC04670079A05D /* MPForwardQueueParameters.h in Headers */ = {isa = PBXBuildFile; fileRef = C9C9DC381DAC04670079A05D /* MPForwardQueueParameters.h */; };
 		C9C9DC3B1DAC04670079A05D /* MPForwardQueueParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C9DC391DAC04670079A05D /* MPForwardQueueParameters.m */; };
 		C9C9DC3C1DAC05C90079A05D /* MPForwardQueueParameters.m in Sources */ = {isa = PBXBuildFile; fileRef = C9C9DC391DAC04670079A05D /* MPForwardQueueParameters.m */; };
+		C9CA1C8F1E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CA1C8E1E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m */; };
+		C9CA1C901E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m in Sources */ = {isa = PBXBuildFile; fileRef = C9CA1C8E1E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m */; };
 		C9DD1F9A1D8A13CA00D3ABBE /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C6D1D8A112B00D3ABBE /* MPAppDelegateProxy.h */; };
 		C9DD1F9B1D8A13CA00D3ABBE /* MPAppDelegateProxy.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C6E1D8A112B00D3ABBE /* MPAppDelegateProxy.m */; };
 		C9DD1F9C1D8A13CA00D3ABBE /* MPAppNotificationHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C6F1D8A112B00D3ABBE /* MPAppNotificationHandler.h */; };
@@ -334,14 +332,10 @@
 		C9DD20121D8A140800D3ABBE /* MPConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CFF1D8A112B00D3ABBE /* MPConnector.m */; };
 		C9DD20131D8A140800D3ABBE /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D001D8A112B00D3ABBE /* MPNetworkCommunication.h */; };
 		C9DD20141D8A140800D3ABBE /* MPNetworkCommunication.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D011D8A112B00D3ABBE /* MPNetworkCommunication.mm */; };
-		C9DD20151D8A140800D3ABBE /* MPNetworkPerformance.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D021D8A112B00D3ABBE /* MPNetworkPerformance.h */; };
-		C9DD20161D8A140800D3ABBE /* MPNetworkPerformance.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D031D8A112B00D3ABBE /* MPNetworkPerformance.m */; };
 		C9DD20171D8A140800D3ABBE /* MPURLConnectionAssociate.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D041D8A112B00D3ABBE /* MPURLConnectionAssociate.h */; };
 		C9DD20181D8A140800D3ABBE /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */; };
 		C9DD20191D8A140800D3ABBE /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */; };
 		C9DD201A1D8A140800D3ABBE /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */; };
-		C9DD201B1D8A140800D3ABBE /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */; };
-		C9DD201C1D8A140800D3ABBE /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */; };
 		C9DD201D1D8A140D00D3ABBE /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0B1D8A112B00D3ABBE /* MPNotificationController.h */; };
 		C9DD201E1D8A140D00D3ABBE /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */; };
 		C9DD201F1D8A141400D3ABBE /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */; };
@@ -449,6 +443,12 @@
 		C9DD21011D8A203D00D3ABBE /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
+		C9F35B771E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9F35B761E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9F35B781E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = C9F35B761E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9F35B7B1E4A519C00D63C71 /* MPNetworkPerformanceFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = C9F35B791E4A519C00D63C71 /* MPNetworkPerformanceFactory.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9F35B7C1E4A519C00D63C71 /* MPNetworkPerformanceFactory.h in Headers */ = {isa = PBXBuildFile; fileRef = C9F35B791E4A519C00D63C71 /* MPNetworkPerformanceFactory.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C9F35B7D1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F35B7A1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m */; };
+		C9F35B7E1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m in Sources */ = {isa = PBXBuildFile; fileRef = C9F35B7A1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m */; };
 		DB47D5BE1DAC308C0070D192 /* MPSearchAdsAttributionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */; };
 		DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
 		DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
@@ -493,6 +493,7 @@
 		C9BF72901E3BE0340066E0DB /* MPKitDataTransformationTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitDataTransformationTests.m; sourceTree = "<group>"; };
 		C9C9DC381DAC04670079A05D /* MPForwardQueueParameters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPForwardQueueParameters.h; sourceTree = "<group>"; };
 		C9C9DC391DAC04670079A05D /* MPForwardQueueParameters.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPForwardQueueParameters.m; sourceTree = "<group>"; };
+		C9CA1C8E1E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformanceMeasurementProtocol.m; sourceTree = "<group>"; };
 		C9DD1C6D1D8A112B00D3ABBE /* MPAppDelegateProxy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppDelegateProxy.h; sourceTree = "<group>"; };
 		C9DD1C6E1D8A112B00D3ABBE /* MPAppDelegateProxy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppDelegateProxy.m; sourceTree = "<group>"; };
 		C9DD1C6F1D8A112B00D3ABBE /* MPAppNotificationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppNotificationHandler.h; sourceTree = "<group>"; };
@@ -605,14 +606,10 @@
 		C9DD1CFF1D8A112B00D3ABBE /* MPConnector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConnector.m; sourceTree = "<group>"; };
 		C9DD1D001D8A112B00D3ABBE /* MPNetworkCommunication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
 		C9DD1D011D8A112B00D3ABBE /* MPNetworkCommunication.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPNetworkCommunication.mm; sourceTree = "<group>"; };
-		C9DD1D021D8A112B00D3ABBE /* MPNetworkPerformance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
-		C9DD1D031D8A112B00D3ABBE /* MPNetworkPerformance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformance.m; sourceTree = "<group>"; };
 		C9DD1D041D8A112B00D3ABBE /* MPURLConnectionAssociate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPURLConnectionAssociate.h; sourceTree = "<group>"; };
 		C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLConnectionAssociate.m; sourceTree = "<group>"; };
 		C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPURLRequestBuilder.h; sourceTree = "<group>"; };
 		C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilder.m; sourceTree = "<group>"; };
-		C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLSession+mParticle.h"; sourceTree = "<group>"; };
-		C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLSession+mParticle.m"; sourceTree = "<group>"; };
 		C9DD1D0B1D8A112B00D3ABBE /* MPNotificationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNotificationController.h; sourceTree = "<group>"; };
 		C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPNotificationController.mm; sourceTree = "<group>"; };
 		C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
@@ -713,6 +710,9 @@
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		C9F35B761E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformanceMeasurementProtocol.h; sourceTree = "<group>"; };
+		C9F35B791E4A519C00D63C71 /* MPNetworkPerformanceFactory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformanceFactory.h; sourceTree = "<group>"; };
+		C9F35B7A1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformanceFactory.m; sourceTree = "<group>"; };
 		DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttributionTests.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
 		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
@@ -1013,14 +1013,14 @@
 				C9DD1CFF1D8A112B00D3ABBE /* MPConnector.m */,
 				C9DD1D001D8A112B00D3ABBE /* MPNetworkCommunication.h */,
 				C9DD1D011D8A112B00D3ABBE /* MPNetworkCommunication.mm */,
-				C9DD1D021D8A112B00D3ABBE /* MPNetworkPerformance.h */,
-				C9DD1D031D8A112B00D3ABBE /* MPNetworkPerformance.m */,
+				C9F35B791E4A519C00D63C71 /* MPNetworkPerformanceFactory.h */,
+				C9F35B7A1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m */,
+				C9F35B761E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h */,
+				C9CA1C8E1E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m */,
 				C9DD1D041D8A112B00D3ABBE /* MPURLConnectionAssociate.h */,
 				C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */,
 				C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */,
 				C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */,
-				C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */,
-				C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1186,11 +1186,9 @@
 				C935A70D1D8A2E0500A1EE2F /* MPKitConfiguration.h in Headers */,
 				C935A6E51D8A2DF400A1EE2F /* MPBags.h in Headers */,
 				C935A6D41D8A2DED00A1EE2F /* MPMessage.h in Headers */,
-				C935A7361D8A2E2200A1EE2F /* MPNetworkPerformance.h in Headers */,
 				C935A7761D8A2E4000A1EE2F /* MPIHasher.h in Headers */,
 				C935A6C31D8A2DE700A1EE2F /* MPCustomModule.h in Headers */,
 				C935A7491D8A2E3800A1EE2F /* MPCurrentState.h in Headers */,
-				C935A73C1D8A2E2200A1EE2F /* NSURLSession+mParticle.h in Headers */,
 				C935A6F21D8A2DF400A1EE2F /* MPProduct.h in Headers */,
 				C935A6C11D8A2DE700A1EE2F /* MPAppboy.h in Headers */,
 				C935A6BB1D8A2DDF00A1EE2F /* MPAppDelegateProxy.h in Headers */,
@@ -1250,6 +1248,7 @@
 				C935A70F1D8A2E0500A1EE2F /* MPKitContainer.h in Headers */,
 				C935A6FF1D8A2DFD00A1EE2F /* MessageTypeName.h in Headers */,
 				C935A6BF1D8A2DDF00A1EE2F /* MPSurrogateAppDelegate.h in Headers */,
+				C9F35B7C1E4A519C00D63C71 /* MPNetworkPerformanceFactory.h in Headers */,
 				C935A7631D8A2E3800A1EE2F /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				C935A71A1D8A2E0D00A1EE2F /* MParticleReachability.h in Headers */,
 				C935A7071D8A2E0500A1EE2F /* MPBaseProjection.h in Headers */,
@@ -1258,6 +1257,7 @@
 				C935A7691D8A2E3800A1EE2F /* NSUserDefaults+mParticle.h in Headers */,
 				DBB491621DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */,
 				C935A6D01D8A2DED00A1EE2F /* MPForwardRecord.h in Headers */,
+				C9F35B781E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h in Headers */,
 				C935A76F1D8A2E4000A1EE2F /* MPEnums.h in Headers */,
 				C935A7651D8A2E3800A1EE2F /* NSNumber+MPFormatter.h in Headers */,
 				DB7ABA191DA6ED7F00367A6D /* MPSearchAdsAttribution.h in Headers */,
@@ -1306,6 +1306,7 @@
 				C9DD1FB11D8A13D600D3ABBE /* MPIntegrationAttributes.h in Headers */,
 				C9DD1FAA1D8A13D600D3ABBE /* MPConsumerInfo.h in Headers */,
 				C9DD1FF41D8A13EA00D3ABBE /* MPKitInstanceValidator.h in Headers */,
+				C9F35B7B1E4A519C00D63C71 /* MPNetworkPerformanceFactory.h in Headers */,
 				C9DD1FA01D8A13D000D3ABBE /* MPAppboy.h in Headers */,
 				C9DD20301D8A142000D3ABBE /* MPLaunchInfo.h in Headers */,
 				C9DD1FD01D8A13DC00D3ABBE /* MPProduct+Dictionary.h in Headers */,
@@ -1325,7 +1326,6 @@
 				C9DD1FDE1D8A13E200D3ABBE /* MessageTypeName.h in Headers */,
 				C9DD20361D8A142000D3ABBE /* MPResponseEvents.h in Headers */,
 				C9DD1FCE1D8A13DC00D3ABBE /* MPCommerceEventInstruction.h in Headers */,
-				C9DD201B1D8A140800D3ABBE /* NSURLSession+mParticle.h in Headers */,
 				C9DD201F1D8A141400D3ABBE /* MPDatabaseMigrationController.h in Headers */,
 				C9DD20571D8A142900D3ABBE /* mParticle.h in Headers */,
 				C9DD20461D8A142000D3ABBE /* NSString+MPPercentEscape.h in Headers */,
@@ -1346,7 +1346,6 @@
 				C9DD1FE21D8A13E200D3ABBE /* MPEvent.h in Headers */,
 				C9DD202A1D8A142000D3ABBE /* MPDateFormatter.h in Headers */,
 				C9DD20321D8A142000D3ABBE /* MPMessageBuilder.h in Headers */,
-				C9DD20151D8A140800D3ABBE /* MPNetworkPerformance.h in Headers */,
 				C9DD1FB91D8A13D600D3ABBE /* MPSession.h in Headers */,
 				C9DD202F1D8A142000D3ABBE /* MPHasher.h in Headers */,
 				C9DD20131D8A140800D3ABBE /* MPNetworkCommunication.h in Headers */,
@@ -1363,6 +1362,7 @@
 				C9DD1FFD1D8A13FB00D3ABBE /* MPILogger.h in Headers */,
 				DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */,
 				C97C60861E3180D900FA3081 /* MPAttributeValidator.h in Headers */,
+				C9F35B771E4A491300D63C71 /* MPNetworkPerformanceMeasurementProtocol.h in Headers */,
 				C9DD1FD31D8A13DC00D3ABBE /* MPProductBag.h in Headers */,
 				C9DD1FA41D8A13D000D3ABBE /* MPCustomModulePreference.h in Headers */,
 				C9DD20591D8A142900D3ABBE /* MPBackendController.h in Headers */,
@@ -1607,8 +1607,10 @@
 				C935A74F1D8A2E3800A1EE2F /* MPHasher.cpp in Sources */,
 				C935A6C21D8A2DE700A1EE2F /* MPAppboy.m in Sources */,
 				C935A6DD1D8A2DED00A1EE2F /* MPSessionHistory.mm in Sources */,
+				C9F35B7E1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m in Sources */,
 				C935A6BC1D8A2DDF00A1EE2F /* MPAppDelegateProxy.m in Sources */,
 				C935A75C1D8A2E3800A1EE2F /* MPUploadBuilder.mm in Sources */,
+				C9CA1C901E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m in Sources */,
 				C9BF728F1E3B9C440066E0DB /* MPKitDataTransformation.mm in Sources */,
 				C9BF72891E3B85380066E0DB /* MPEventAbstract.mm in Sources */,
 				C935A71B1D8A2E0D00A1EE2F /* MParticleReachability.m in Sources */,
@@ -1649,7 +1651,6 @@
 				C935A7611D8A2E3800A1EE2F /* MPZip.cpp in Sources */,
 				C935A7081D8A2E0500A1EE2F /* MPBaseProjection.m in Sources */,
 				C935A73B1D8A2E2200A1EE2F /* MPURLRequestBuilder.m in Sources */,
-				C935A73D1D8A2E2200A1EE2F /* NSURLSession+mParticle.m in Sources */,
 				C935A6D11D8A2DED00A1EE2F /* MPForwardRecord.mm in Sources */,
 				C935A7771D8A2E4000A1EE2F /* MPIHasher.mm in Sources */,
 				C935A6E91D8A2DF400A1EE2F /* MPCart.m in Sources */,
@@ -1662,7 +1663,6 @@
 				C935A7661D8A2E3800A1EE2F /* NSNumber+MPFormatter.m in Sources */,
 				C935A7411D8A2E2D00A1EE2F /* MPDatabaseMigrationController.m in Sources */,
 				C935A7461D8A2E3800A1EE2F /* MPApplication.m in Sources */,
-				C935A7371D8A2E2200A1EE2F /* MPNetworkPerformance.m in Sources */,
 				C935A7351D8A2E2200A1EE2F /* MPNetworkCommunication.mm in Sources */,
 				C935A74E1D8A2E3800A1EE2F /* MPDevice.m in Sources */,
 				C935A7161D8A2E0500A1EE2F /* MPKitInstanceValidator.m in Sources */,
@@ -1698,8 +1698,10 @@
 				C9DD1FBA1D8A13D600D3ABBE /* MPSession.m in Sources */,
 				C9DD1FC51D8A13DC00D3ABBE /* MPBags.m in Sources */,
 				C9DD1FF51D8A13EA00D3ABBE /* MPKitInstanceValidator.m in Sources */,
+				C9F35B7D1E4A519C00D63C71 /* MPNetworkPerformanceFactory.m in Sources */,
 				C9DD1FA51D8A13D000D3ABBE /* MPCustomModulePreference.m in Sources */,
 				C9DD1FCA1D8A13DC00D3ABBE /* MPCommerce.m in Sources */,
+				C9CA1C8F1E4BCD5000FB0588 /* MPNetworkPerformanceMeasurementProtocol.m in Sources */,
 				C9DD203B1D8A142000D3ABBE /* MPUploadBuilder.mm in Sources */,
 				C9BF728E1E3B9C440066E0DB /* MPKitDataTransformation.mm in Sources */,
 				C9BF72881E3B85380066E0DB /* MPEventAbstract.mm in Sources */,
@@ -1720,7 +1722,6 @@
 				C9DD203F1D8A142000D3ABBE /* MPUserIdentityChange.m in Sources */,
 				C9DD20261D8A142000D3ABBE /* MPBracket.cpp in Sources */,
 				C9DD1FA71D8A13D600D3ABBE /* MParticleUserNotification.m in Sources */,
-				C9DD201C1D8A140800D3ABBE /* NSURLSession+mParticle.m in Sources */,
 				C9DD1FF31D8A13EA00D3ABBE /* MPKitFilter.m in Sources */,
 				C9DD1FDA1D8A13DC00D3ABBE /* MPTransactionAttributes.m in Sources */,
 				C9DD1FE91D8A13EA00D3ABBE /* MPEventProjection.mm in Sources */,
@@ -1755,7 +1756,6 @@
 				C9DD1FEB1D8A13EA00D3ABBE /* MPForwardQueueItem.m in Sources */,
 				C9DD1FD71D8A13DC00D3ABBE /* MPPromotion.mm in Sources */,
 				C9DD1FB41D8A13D600D3ABBE /* MPMessage.m in Sources */,
-				C9DD20161D8A140800D3ABBE /* MPNetworkPerformance.m in Sources */,
 				C9DD1FCF1D8A13DC00D3ABBE /* MPCommerceEventInstruction.m in Sources */,
 				C9DD20451D8A142000D3ABBE /* NSNumber+MPFormatter.m in Sources */,
 			);

@@ -26,6 +26,7 @@
 #import "MPILogger.h"
 #import "MPIntegrationAttributes.h"
 #import "MPMessage.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 #import "MPProductBag.h"
 #import "MPSegment.h"
 #import "MPSegmentMembership.h"
@@ -672,6 +673,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)deleteNetworkPerformanceMessages {
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
     dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "DELETE FROM messages WHERE message_type = '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "'";
@@ -684,6 +686,7 @@ const int MaxBreadcrumbs = 50;
         
         sqlite3_finalize(preparedStatement);
     });
+#endif
 }
 
 - (void)deletePreviousSession {
@@ -1383,9 +1386,11 @@ const int MaxBreadcrumbs = 50;
         sqlite3_stmt *preparedStatement;
         
         string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status FROM messages WHERE session_id = ? AND upload_status = ? ";
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
         if (excludeNetworkPerformance) {
             sqlStatement += "AND message_type != '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "' ";
         }
+#endif
         sqlStatement += "ORDER BY timestamp";
         
         vector<MPMessage *> messagesVector;

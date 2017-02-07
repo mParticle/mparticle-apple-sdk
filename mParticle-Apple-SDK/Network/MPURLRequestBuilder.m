@@ -23,6 +23,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPKitContainer.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 #import "MPStateMachine.h"
 #import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
@@ -196,10 +197,12 @@ static NSTimeInterval requestTimeout = 30.0;
                 kits = [activeKitIds componentsJoinedByString:@","];
             }
             
+#if defined(MP_NETWORK_PERFORMANCE_MEASUREMENT)
             range = [_message rangeOfString:kMPMessageTypeNetworkPerformance];
             if (range.location != NSNotFound) {
                 [urlRequest setValue:kMPMessageTypeNetworkPerformance forHTTPHeaderField:kMPMessageTypeNetworkPerformance];
             }
+#endif
             
             signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, _message];
         } else { // /config and /audience
