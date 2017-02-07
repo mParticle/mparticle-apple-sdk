@@ -16,6 +16,7 @@
 //  limitations under the License.
 //
 
+#import <Foundation/Foundation.h>
 #import "MPBags.h"
 #import "MPCart.h"
 #import "MPCommerce.h"
@@ -26,10 +27,11 @@
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "MPExtensionProtocol.h"
-#import <Foundation/Foundation.h>
 #import "MPIHasher.h"
 #import "MPKitExecStatus.h"
 #import "MPKitRegister.h"
+#import "MPNetworkPerformanceFactory.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "MPPromotion.h"

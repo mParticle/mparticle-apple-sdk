@@ -18,6 +18,7 @@
 
 #import "MPEnums.h"
 #import "MPNetworkCommunication.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -26,13 +27,10 @@
     @class MParticleUserNotification;
 #endif
 
-@class MPCommerceEvent;
 @class MPDataModelAbstract;
 @class MPEvent;
 @class MPEventAbstract;
-@class MPNetworkPerformance;
 @class MPNotificationController;
-@class MPMessage;
 @class MPSession;
 
 @protocol MPBackendControllerDelegate;
@@ -96,7 +94,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (void)logError:(nullable NSString *)message exception:(nullable NSException *)exception topmostContext:(nullable id)topmostContext eventInfo:(nullable NSDictionary *)eventInfo attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus))completionHandler;
 - (void)logEvent:(nonnull MPEventAbstract *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEventAbstract * _Nonnull event, MPExecStatus execStatus))completionHandler;
-- (void)logNetworkPerformanceMeasurement:(nonnull MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(MPNetworkPerformance * _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
+- (void)logNetworkPerformanceMeasurement:(nonnull id<MPNetworkPerformanceMeasurementProtocol>)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(id<MPNetworkPerformanceMeasurementProtocol> _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
 - (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPProfileChange profile, MPExecStatus execStatus))completionHandler;
 - (void)setOptOut:(BOOL)optOutStatus attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(BOOL optOut, MPExecStatus execStatus))completionHandler;
 - (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus))completionHandler;

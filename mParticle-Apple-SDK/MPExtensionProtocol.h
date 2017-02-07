@@ -21,13 +21,14 @@
 
 #import <Foundation/Foundation.h>
 #import "MPKitProtocol.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 
-#pragma mark Extension protocol
+#pragma mark - Extension protocol
 @protocol MPExtensionProtocol <NSObject>
 
 @end
 
-#pragma mark Extension protocol especialization for kits
+#pragma mark - Extension protocol specialization for kits
 @protocol MPExtensionKitProtocol <MPExtensionProtocol>
 
 /**
@@ -66,6 +67,31 @@
  @returns An instance of a kit register or nil if a kit register could not be instantiated
  */
 - (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately;
+
+@end
+
+#pragma mark - Extension protocol specialization for network performance measurement
+@protocol MPExtensionNetworkPerformanceProtocol <MPExtensionProtocol>
+
+/**
+ Name of the class implementing the network performance measurement
+ */
+@property (nonatomic, strong, nonnull, readonly) NSString *className;
+
+/**
+ Creates and returns an instance of the class to measure network performance
+ @returns An instance of the network performance measurement
+ */
++ (nonnull id<MPNetworkPerformanceMeasurementProtocol>)createNetworkPerformanceMeasurementWithURLRequest:(nonnull NSURLRequest *)request networkMeasurementMode:(MPNetworkMeasurementMode)networkMeasurementMode;
+
++ (nullable Class)networkPerformanceMeasurementClass;
+
++ (BOOL)registerExtension:(nonnull id<MPExtensionNetworkPerformanceProtocol>)extension;
+
+/**
+ Initializes with the name of the class that will measure network performance
+ */
+- (nonnull instancetype)initWithNPMClassName:(nonnull NSString *)className;
 
 @end
 

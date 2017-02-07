@@ -29,7 +29,6 @@ NSString *const kMPMessageTypeKey = @"dt";
 NSString *const kMPMessageTypeRequestHeader = @"h";
 NSString *const kMPMessageTypeResponseHeader = @"rh";
 NSString *const kMPMessageTypeConfig = @"ac";
-NSString *const kMPMessageTypeNetworkPerformance = @"npe";
 NSString *const kMPMessageTypeLeaveBreadcrumbs = @"bc";
 
 // Request Header Keys
@@ -226,10 +225,6 @@ NSString *const kMPASTForegroundKey = @"app_fore";
 NSString *const kMPASTIsFirstRunKey = @"ifr";
 NSString *const kMPASTIsUpgradeKey = @"iu";
 NSString *const kMPASTPreviousSessionSuccessfullyClosedKey = @"sc";
-
-// Network performance
-NSString *const kMPNetworkPerformanceMeasurementNotification = @"MPNetworkPerformanceMeasurement";
-NSString *const kMPNetworkPerformanceKey = @"MPNetworkPerformance";
 
 // Kits
 NSString *const MPKitAttributeJailbrokenKey = @"jailbroken";

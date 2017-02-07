@@ -1,7 +1,7 @@
 //
-//  NSURLSession+mParticle.h
+//  MPNetworkPerformanceFactory.h
 //
-//  Copyright 2016 mParticle, Inc.
+//  Copyright 2017 mParticle, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,15 +17,9 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPExtensionProtocol.h"
+#import "MPNetworkPerformanceMeasurementProtocol.h"
 
-@interface NSURLSession(mParticle)
-
-+ (void)freeResources;
-+ (BOOL)methodsSwizzled;
-+ (void)swizzleMethods;
-+ (void)restoreMethods;
-+ (void)excludeURLFromNetworkPerformanceMeasuring:(NSURL *)url;
-+ (void)preserveQueryMeasuringNetworkPerformance:(NSString *)queryString;
-+ (void)resetNetworkPerformanceExclusionsAndFilters;
+@interface MPNetworkPerformanceFactory : NSObject <MPExtensionNetworkPerformanceProtocol>
 
 @end
