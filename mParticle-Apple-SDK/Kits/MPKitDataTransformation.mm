@@ -39,9 +39,12 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "NSArray+MPCaseInsensitive.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSString+MPUtils.h"
 #import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 #include <vector>
+
+using namespace mParticle;
 
 @interface MPKitDataTransformation() {
     dispatch_semaphore_t projectionSemaphore;
@@ -62,23 +65,23 @@
 
 #pragma mark Private methods
 - (NSDictionary *)methodMessageTypeMapping {
-    NSString *messageTypeEvent = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Event).c_str() encoding:NSUTF8StringEncoding];
+    NSString *messageTypeEvent = [NSString stringWithCPPString:MessageTypeName::nameForMessageType(Event)];
     
     NSDictionary *methodMessageTypeDictionary = @{@"logEvent:":messageTypeEvent,
-                                                  @"logScreen:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::ScreenView).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logScreenEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::ScreenView).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"beginSession":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::SessionStart).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"endSession":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::SessionEnd).c_str() encoding:NSUTF8StringEncoding],
+                                                  @"logScreen:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(ScreenView)],
+                                                  @"logScreenEvent:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(ScreenView)],
+                                                  @"beginSession":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(SessionStart)],
+                                                  @"endSession":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(SessionEnd)],
                                                   @"logTransaction:":messageTypeEvent,
                                                   @"logLTVIncrease:eventName:eventInfo:":messageTypeEvent,
-                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logError:exception:topmostContext:eventInfo:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CrashReport).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logNetworkPerformanceMeasurement:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::NetworkPerformance).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"profileChange:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Profile).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"setOptOut:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::OptOut).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logCommerceEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"checkForDeferredDeepLinkWithCompletionHandler:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::AppStateTransition).c_str() encoding:NSUTF8StringEncoding]
+                                                  @"leaveBreadcrumb:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(Breadcrumb)],
+                                                  @"logError:exception:topmostContext:eventInfo:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(CrashReport)],
+                                                  @"logNetworkPerformanceMeasurement:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(NetworkPerformance)],
+                                                  @"profileChange:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(Profile)],
+                                                  @"setOptOut:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(OptOut)],
+                                                  @"logCommerceEvent:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(CommerceEvent)],
+                                                  @"leaveBreadcrumb:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(Breadcrumb)],
+                                                  @"checkForDeferredDeepLinkWithCompletionHandler:":[NSString stringWithCPPString:MessageTypeName::nameForMessageType(AppStateTransition)]
                                                   };
     
     return methodMessageTypeDictionary;
@@ -144,8 +147,7 @@
                 [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
                     __block BOOL isApplicable = NO;
                     [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                        NSString *keyHash = [NSString stringWithCString:mParticle::Hasher::hashString(to_string(event.type) + string([[key lowercaseString] UTF8String])).c_str()
-                                                               encoding:NSUTF8StringEncoding];
+                        NSString *keyHash = [NSString stringWithCPPString:Hasher::hashString(to_string(event.type) + string([[key lowercaseString] UTF8String]))];
                         
                         isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
                         *stop = isApplicable;
@@ -891,12 +893,12 @@
     
     __block BOOL isMatch = NO;
     [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        NSString *hashedAttribute = [NSString stringWithCPPString:Hasher::hashString([[key lowercaseString] UTF8String])];
         if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
             *stop = YES;
             if ([obj isKindOfClass:[NSString class]]) {
                 NSString *value = (NSString *)obj;
-                NSString *hashedValue = [NSString stringWithCString:mParticle::Hasher::hashString([[value lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                NSString *hashedValue = [NSString stringWithCPPString:Hasher::hashString([[value lowercaseString] UTF8String])];
                 if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
                     isMatch = YES;
                 }
@@ -1012,7 +1014,7 @@
     }
     
     // Event type filter
-    __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>(event.type)).c_str() encoding:NSUTF8StringEncoding];
+    __block NSString *hashValue = [NSString stringWithCPPString:EventTypeName::hashForEventType(static_cast<EventType>(event.type))];
     
     shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
     if (shouldFilter) {
@@ -1104,7 +1106,7 @@
                 
                 [[(MPCommerceEvent *)forwardEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
                     auxString = [NSString stringWithFormat:@"%@%@", [@(event.type) stringValue], key];
-                    hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                    hashValue = [NSString stringWithCPPString:Hasher::hashString([[auxString lowercaseString] UTF8String])];
                     
                     id filterValue = commerceEventAttributeFilters[hashValue];
                     BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -1121,7 +1123,7 @@
                 
                 [[(MPCommerceEvent *)forwardEvent userDefinedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
                     auxString = [NSString stringWithFormat:@"%@%@", [@(event.type) stringValue], key];
-                    hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                    hashValue = [NSString stringWithCPPString:Hasher::hashString([[auxString lowercaseString] UTF8String])];
                     
                     id filterValue = commerceEventAttributeFilters[hashValue];
                     BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -1138,7 +1140,7 @@
                 
                 [[((MPCommerceEvent *)forwardEvent).transactionAttributes beautifiedDictionaryRepresentation] enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
                     auxString = [NSString stringWithFormat:@"%@%@", [@(event.type) stringValue], key];
-                    hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                    hashValue = [NSString stringWithCPPString:Hasher::hashString([[auxString lowercaseString] UTF8String])];
                     
                     id filterValue = commerceEventAttributeFilters[hashValue];
                     BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -1179,8 +1181,7 @@
         }
         
         __block NSString *auxString = [[NSString stringWithFormat:@"%@%@", eventTypeString, ((MPEvent *)event).name] lowercaseString];
-        hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                       encoding:NSUTF8StringEncoding];
+        hashValue = [NSString stringWithCPPString:Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding])];
         
         shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -1195,8 +1196,7 @@
             
             [((MPEvent *)forwardEvent).info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
                 auxString = [[NSString stringWithFormat:@"%@%@%@", eventTypeString, ((MPEvent *)event).name, key] lowercaseString];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                               encoding:NSUTF8StringEncoding];
+                hashValue = [NSString stringWithCPPString:Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding])];
                 
                 id attributeFilterValue = attributeFilters[hashValue];
                 BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
@@ -1250,8 +1250,7 @@
     __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
     
     [userAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-        NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                 encoding:NSUTF8StringEncoding];
+        NSString *hashValue = [NSString stringWithCPPString:Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding])];
         
         BOOL shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
         if (!shouldFilter) {
@@ -1273,8 +1272,7 @@
         return;
     }
     
-    NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                             encoding:NSUTF8StringEncoding];
+    NSString *hashValue = [NSString stringWithCPPString:Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding])];
     
     BOOL shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
     

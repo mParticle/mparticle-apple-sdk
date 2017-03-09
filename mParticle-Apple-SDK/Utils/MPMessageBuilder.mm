@@ -30,6 +30,7 @@
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSString+MPUtils.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -46,6 +47,8 @@ NSString *const kMPUserAttributeNewlyAddedKey = @"na";
 NSString *const kMPUserIdentityNewValueKey = @"ni";
 NSString *const kMPUserIdentityOldValueKey = @"oi";
 
+using namespace mParticle;
+
 @implementation MPMessageBuilder
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session {
@@ -60,7 +63,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     messageDictionary[kMPTimestampKey] = MPMilliseconds(_timestamp);
     
     messageTypeValue = messageType;
-    _messageType = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(messageType)).c_str() encoding:NSUTF8StringEncoding];
+    _messageType = [NSString stringWithCPPString:MessageTypeName::nameForMessageType(static_cast<MessageType>(messageType))];
     
     MPSession *nullSession = [MPStateMachine sharedInstance].nullSession;
     _session = session ? session : nullSession;

@@ -19,6 +19,9 @@
 #import "MPEventAbstract.h"
 #import "EventTypeName.h"
 #import "MPIConstants.h"
+#import "NSString+MPUtils.h"
+
+using namespace mParticle;
 
 @implementation MPEventAbstract
 
@@ -101,10 +104,8 @@
 
 - (NSString *)typeName {
     if (!_typeName) {
-        mParticle::EventType eventType = static_cast<mParticle::EventType>(_type);
-        
-        _typeName = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(eventType).c_str()
-                                       encoding:NSUTF8StringEncoding];
+        EventType eventType = static_cast<EventType>(_type);
+        _typeName = [NSString stringWithCPPString:EventTypeName::nameForEventType(eventType)];
     }
     
     return _typeName;

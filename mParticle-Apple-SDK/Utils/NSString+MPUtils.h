@@ -1,5 +1,5 @@
 //
-//  NSString+MPPercentEscape.h
+//  NSString+MPUtils.h
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -18,9 +18,18 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSString(MPPercentEscape)
+#ifdef __cplusplus
+    #include <string>
+#endif
+
+@interface NSString(MPUtils)
 
 + (nonnull NSString *)percentEscapeString:(nonnull NSString *)stringToEscape;
+
+#ifdef __cplusplus
++ (nullable NSString *)stringWithCPPString:(const std::string)cppString;
+#endif
+
 - (nonnull NSString *)percentEscape;
 
 @end

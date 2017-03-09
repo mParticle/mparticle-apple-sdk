@@ -27,6 +27,7 @@
 #import "MPILogger.h"
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
+#import "NSString+MPUtils.h"
 
 NSString *const kMPFRModuleId = @"mid";
 NSString *const kMPFRProjections = @"proj";
@@ -34,6 +35,8 @@ NSString *const kMPFRProjectionId = @"pid";
 NSString *const kMPFRProjectionName = @"name";
 NSString *const kMPFRPushRegistrationState = @"r";
 NSString *const kMPFROptOutState = @"s";
+
+using namespace mParticle;
 
 @implementation MPForwardRecord
 
@@ -96,8 +99,7 @@ NSString *const kMPFROptOutState = @"s";
     _dataDictionary = [[NSMutableDictionary alloc] init];
     _dataDictionary[kMPFRModuleId] = execStatus.kitCode;
     _dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;
-    _dataDictionary[kMPMessageTypeKey] = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(messageType)).c_str()
-                                                            encoding:NSUTF8StringEncoding];
+    _dataDictionary[kMPMessageTypeKey] = [NSString stringWithCPPString:MessageTypeName::nameForMessageType(static_cast<MessageType>(messageType))];
 
     if (!kitFilter) {
         return self;
@@ -123,11 +125,9 @@ NSString *const kMPFROptOutState = @"s";
         for (MPEventProjection *eventProjection in kitFilter.appliedProjections) {
             projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
             projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);
-            projectionDictionary[kMPMessageTypeKey] = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(eventProjection.messageType)).c_str()
-                                                                         encoding:NSUTF8StringEncoding];
+            projectionDictionary[kMPMessageTypeKey] = [NSString stringWithCPPString:MessageTypeName::nameForMessageType(static_cast<MessageType>(eventProjection.messageType))];
             
-            projectionDictionary[kMPEventTypeKey] = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(static_cast<mParticle::EventType>(eventProjection.eventType)).c_str()
-                                                                       encoding:NSUTF8StringEncoding];
+            projectionDictionary[kMPEventTypeKey] = [NSString stringWithCPPString:EventTypeName::nameForEventType(static_cast<EventType>(eventProjection.eventType))];
             
             if (eventProjection.projectedName) {
                 projectionDictionary[kMPFRProjectionName] = eventProjection.projectedName;
