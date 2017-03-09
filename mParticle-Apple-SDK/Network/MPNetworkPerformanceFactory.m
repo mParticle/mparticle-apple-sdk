@@ -25,12 +25,12 @@ static id<MPExtensionNetworkPerformanceProtocol> networkPerformanceFactory = nil
 
 @synthesize className = _className;
 
-+ (nonnull id<MPNetworkPerformanceMeasurementProtocol>)createNetworkPerformanceMeasurementWithURLRequest:(nonnull NSURLRequest *)request networkMeasurementMode:(MPNetworkMeasurementMode)networkMeasurementMode {
-    if (!networkPerformanceFactory) {
-        return nil;
++ (nullable id<MPNetworkPerformanceMeasurementProtocol>)createNetworkPerformanceMeasurementWithURLRequest:(nonnull NSURLRequest *)request networkMeasurementMode:(MPNetworkMeasurementMode)networkMeasurementMode {
+    id<MPNetworkPerformanceMeasurementProtocol> npmInstance = nil;
+    if (networkPerformanceFactory) {
+        npmInstance = [[nPMClass alloc] initWithURLRequest:request networkMeasurementMode:networkMeasurementMode];
     }
-    
-    id<MPNetworkPerformanceMeasurementProtocol> npmInstance = [[nPMClass alloc] initWithURLRequest:request networkMeasurementMode:networkMeasurementMode];
+
     return npmInstance;
 }
 
@@ -50,7 +50,7 @@ static id<MPExtensionNetworkPerformanceProtocol> networkPerformanceFactory = nil
 }
 
 - (nonnull instancetype)initWithNPMClassName:(nonnull NSString *)className {
-    self  = [super init];
+    self = [super init];
     if (self) {
         Class classToRegister = NSClassFromString(className);
         if ([classToRegister conformsToProtocol:@protocol(MPNetworkPerformanceMeasurementProtocol)]) {

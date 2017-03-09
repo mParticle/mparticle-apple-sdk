@@ -82,7 +82,7 @@
  Creates and returns an instance of the class to measure network performance
  @returns An instance of the network performance measurement
  */
-+ (nonnull id<MPNetworkPerformanceMeasurementProtocol>)createNetworkPerformanceMeasurementWithURLRequest:(nonnull NSURLRequest *)request networkMeasurementMode:(MPNetworkMeasurementMode)networkMeasurementMode;
++ (nullable id<MPNetworkPerformanceMeasurementProtocol>)createNetworkPerformanceMeasurementWithURLRequest:(nonnull NSURLRequest *)request networkMeasurementMode:(MPNetworkMeasurementMode)networkMeasurementMode;
 
 + (nullable Class)networkPerformanceMeasurementClass;
 
