@@ -874,7 +874,7 @@
         }
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
     
     self.backendController.initializationStatus = originalInitializationStatus;
     
@@ -903,7 +903,7 @@
         }
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
     
     self.backendController.initializationStatus = originalInitializationStatus;
     
@@ -988,7 +988,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 
     userIdentity = [[self.backendController.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
     XCTAssertNil(userIdentity);
