@@ -1,5 +1,5 @@
 //
-//  NSString+MPPercentEscape.m
+//  NSString+MPUtils.mm
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,9 +16,9 @@
 //  limitations under the License.
 //
 
-#import "NSString+MPPercentEscape.h"
+#import "NSString+MPUtils.h"
 
-@implementation NSString(MPPercentEscape)
+@implementation NSString(MPUtils)
 
 + (NSString *)percentEscapeString:(NSString *)stringToEscape {
 #pragma clang diagnostic push
@@ -31,6 +31,12 @@
 #pragma clang diagnostic pop
     
     return escapedString;
+}
+
++ (nullable NSString *)stringWithCPPString:(const std::string)cppString {
+    const char *cString = cppString.c_str();
+    NSString *objcString = [NSString stringWithCString:cString encoding:NSUTF8StringEncoding];
+    return objcString;
 }
 
 - (NSString *)percentEscape {

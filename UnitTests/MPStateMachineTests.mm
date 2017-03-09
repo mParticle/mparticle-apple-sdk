@@ -21,6 +21,9 @@
 #import "MPHasher.h"
 #import "MPConsumerInfo.h"
 #import "MPLaunchInfo.h"
+#import "NSString+MPUtils.h"
+
+using namespace mParticle;
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine(Tests)
@@ -95,11 +98,9 @@
 - (void)testConfigureTriggers {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
-    NSString *hashEvent1 = [NSString stringWithCString:mParticle::Hasher::hashEvent([@"Button Tapped" cStringUsingEncoding:NSUTF8StringEncoding], [@"Transaction" cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                              encoding:NSUTF8StringEncoding];
+    NSString *hashEvent1 = [NSString stringWithCPPString:Hasher::hashEvent([@"Button Tapped" cStringUsingEncoding:NSUTF8StringEncoding], [@"Transaction" cStringUsingEncoding:NSUTF8StringEncoding])];
     
-    NSString *hashEvent2 = [NSString stringWithCString:mParticle::Hasher::hashEvent([@"Post Liked" cStringUsingEncoding:NSUTF8StringEncoding], [@"Social" cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                              encoding:NSUTF8StringEncoding];
+    NSString *hashEvent2 = [NSString stringWithCPPString:Hasher::hashEvent([@"Post Liked" cStringUsingEncoding:NSUTF8StringEncoding], [@"Social" cStringUsingEncoding:NSUTF8StringEncoding])];
     
     NSDictionary *triggerDictionary = @{@"tri":@{@"dts":@[@"e", @"pm"],
                                                  @"evts":@[hashEvent1, hashEvent2]
@@ -123,11 +124,9 @@
 - (void)testNullConfigureTriggers {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
-    NSString *hashEvent1 = [NSString stringWithCString:mParticle::Hasher::hashEvent([@"Button Tapped" cStringUsingEncoding:NSUTF8StringEncoding], [@"Transaction" cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                              encoding:NSUTF8StringEncoding];
+    NSString *hashEvent1 = [NSString stringWithCPPString:Hasher::hashEvent([@"Button Tapped" cStringUsingEncoding:NSUTF8StringEncoding], [@"Transaction" cStringUsingEncoding:NSUTF8StringEncoding])];
     
-    NSString *hashEvent2 = [NSString stringWithCString:mParticle::Hasher::hashEvent([@"Post Liked" cStringUsingEncoding:NSUTF8StringEncoding], [@"Social" cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                              encoding:NSUTF8StringEncoding];
+    NSString *hashEvent2 = [NSString stringWithCPPString:Hasher::hashEvent([@"Post Liked" cStringUsingEncoding:NSUTF8StringEncoding], [@"Social" cStringUsingEncoding:NSUTF8StringEncoding])];
     
     NSDictionary *triggerDictionary = @{@"tri":[NSNull null]
                                         };

@@ -17,10 +17,13 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "MPHasher.h"
+#import "EventTypeName.h"
 #import "MPEnums.h"
 #import "MPEvent.h"
-#import "EventTypeName.h"
+#import "MPHasher.h"
+#import "NSString+MPUtils.h"
+
+using namespace mParticle;
 
 @interface HasherTests : XCTestCase
 
@@ -38,33 +41,31 @@
 
 - (void)testHashingString {
     NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-    NSString *hashedString = [NSString stringWithCString:mParticle::Hasher::hashString([[referenceString lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                encoding:NSUTF8StringEncoding];
+    NSString *hashedString = [NSString stringWithCPPString:Hasher::hashString([[referenceString lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding])];
     XCTAssertEqualObjects(hashedString, @"-142870245", @"Hasher is not hashing strings properly.");
     
     referenceString = @"";
-    hashedString = [NSString stringWithCString:mParticle::Hasher::hashString([referenceString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                      encoding:NSUTF8StringEncoding];
+    hashedString = [NSString stringWithCPPString:Hasher::hashString([referenceString cStringUsingEncoding:NSUTF8StringEncoding])];
     XCTAssertEqualObjects(hashedString, @"", @"Hashing an empty string.");
     
-    int hash = mParticle::Hasher::hashFromString("");
+    int hash = Hasher::hashFromString("");
     XCTAssertEqual(hash, 0, @"Should have been equal.");
     
-    std::string hashedEvent = mParticle::Hasher::hashEvent("Loaded screen", "Navigation");
+    std::string hashedEvent = Hasher::hashEvent("Loaded screen", "Navigation");
     XCTAssertEqual(hashedEvent, "1247535675", @"Should have been equal.");
 }
 
 - (void)testHashingPerformance {
     [self measureBlock:^{
         NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-        mParticle::Hasher::hashString([referenceString cStringUsingEncoding:NSUTF8StringEncoding]);
+        Hasher::hashString([referenceString cStringUsingEncoding:NSUTF8StringEncoding]);
     }];
 }
 
 - (void)testHashAllEventTypes {
     NSString *hashedEventType;
     
-    vector<string> hashedAllEventTypes = mParticle::Hasher::hashedAllEventTypes();
+    vector<string> hashedAllEventTypes = Hasher::hashedAllEventTypes();
     NSMutableArray *mHashedEventTypes = [[NSMutableArray alloc] initWithCapacity:hashedAllEventTypes.size()];
     
     for_each(hashedAllEventTypes.begin(), hashedAllEventTypes.end(),
@@ -102,11 +103,11 @@
 
 - (void)testHashSomeEventTypes {
     vector<int> eventTypes;
-    vector<string> hashedAllEventTypes = mParticle::Hasher::hashedEventTypes(eventTypes);
+    vector<string> hashedAllEventTypes = Hasher::hashedEventTypes(eventTypes);
     XCTAssertTrue(hashedAllEventTypes.empty(), @"Should have been empty.");
 
     eventTypes = {MPEventTypeNavigation, MPEventTypeTransaction, MPEventTypeOther};
-    hashedAllEventTypes = mParticle::Hasher::hashedEventTypes(eventTypes);
+    hashedAllEventTypes = Hasher::hashedEventTypes(eventTypes);
     NSMutableArray *mHashedEventTypes = [[NSMutableArray alloc] initWithCapacity:hashedAllEventTypes.size()];
     
     for_each(hashedAllEventTypes.begin(), hashedAllEventTypes.end(),
@@ -125,7 +126,7 @@
 - (void)testRampHash {
     NSString *rampString = @"E1492888-3B7C-4FB2-98A5-6C483BF9EBEB";
     NSData *rampData = [rampString dataUsingEncoding:NSUTF8StringEncoding];
-    uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+    uint64_t rampHash = Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
     
     XCTAssertEqual(rampHash, 8288906072899054792, @"Ramp hash is being calculated incorrectly.");
 }

@@ -33,6 +33,7 @@
 #import "MPPersistenceController.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPSession.h"
+#import "NSString+MPUtils.h"
 #import "NSUserDefaults+mParticle.h"
 #include <sys/sysctl.h>
 #import <UIKit/UIKit.h>
@@ -46,6 +47,8 @@ NSString *const kMinUploadDateKey = @"MinUploadDate";
 
 static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
+
+using namespace mParticle;
 
 @interface MPStateMachine() {
     BOOL lastestSDKWarningShown;
@@ -834,7 +837,7 @@ static BOOL runningInBackground = NO;
     MPDevice *device = [[MPDevice alloc] init];
     NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
     
-    uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+    uint64_t rampHash = Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
     NSUInteger modRampHash = rampHash % 100;
     
     BOOL dataRamped = modRampHash > [rampPercentage integerValue];
@@ -872,7 +875,7 @@ static BOOL runningInBackground = NO;
         }
     }
     
-    NSString *messageTypeCommerceEventKey = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding];
+    NSString *messageTypeCommerceEventKey = [NSString stringWithCPPString:MessageTypeName::nameForMessageType(CommerceEvent)];
     NSMutableArray *messageTypes = [@[messageTypeCommerceEventKey] mutableCopy];
     NSArray *configMessageTypes = triggerDictionary[kMPRemoteConfigTriggerMessageTypesKey];
     

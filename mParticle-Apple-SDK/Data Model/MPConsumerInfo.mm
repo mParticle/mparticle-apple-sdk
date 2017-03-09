@@ -23,7 +23,7 @@
 #include "MPHasher.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
-#import "NSString+MPPercentEscape.h"
+#import "NSString+MPUtils.h"
 
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";

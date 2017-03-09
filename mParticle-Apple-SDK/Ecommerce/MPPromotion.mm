@@ -20,6 +20,7 @@
 #import "MPIConstants.h"
 #include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "NSString+MPUtils.h"
 
 // Internal keys
 NSString *const kMPPMAction = @"an";
@@ -36,6 +37,8 @@ NSString *const kMPExpPMPosition = @"Position";
 NSString *const kMPExpPMPromotionId = @"Id";
 
 static NSArray *actionNames;
+
+using namespace mParticle;
 
 #pragma mark - MPPromotion
 @interface MPPromotion()
@@ -138,7 +141,7 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        NSString *hashedKey = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        NSString *hashedKey = [NSString stringWithCPPString:Hasher::hashString([[key lowercaseString] UTF8String])];
         id hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {
