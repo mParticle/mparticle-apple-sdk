@@ -347,17 +347,15 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)start {
-    NSString *appAPIKey;
-    NSString *appSecret;
+    NSString *apiKey = nil;
+    NSString *secret = nil;
     
     if (self.configSettings) {
-        appAPIKey = self.configSettings[kMPConfigApiKey];
-        appSecret = self.configSettings[kMPConfigSecret];
+        apiKey = self.configSettings[kMPConfigApiKey];
+        secret = self.configSettings[kMPConfigSecret];
     }
     
-    if (appAPIKey && appSecret) {
-        [self startWithKey:appAPIKey secret:appSecret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
-    }
+    [self startWithKey:apiKey secret:secret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret {
