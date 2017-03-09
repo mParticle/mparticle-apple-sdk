@@ -72,7 +72,10 @@
 - (nonnull MPKitExecStatus *)setDeviceToken:(nonnull NSData *)deviceToken;
 
 #if TARGET_OS_IOS == 1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (nonnull MPKitExecStatus *)didRegisterUserNotificationSettings:(nonnull UIUserNotificationSettings *)notificationSettings;
+#pragma clang pop
 #endif
 
 #pragma mark User Notifications
