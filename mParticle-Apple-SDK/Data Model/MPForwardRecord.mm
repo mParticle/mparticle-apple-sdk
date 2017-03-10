@@ -104,17 +104,15 @@ using namespace mParticle;
     if (!kitFilter) {
         return self;
     }
-    
-    if (originalEvent && (kitFilter.forwardEvent || kitFilter.forwardCommerceEvent)) {
-        if (originalEvent.kind == MPEventKindAppEvent) {
-            _dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
-        }
-        
+
+    if (messageType == MPMessageTypeCommerceEvent || messageType == MPMessageTypeEvent) {
+        NSString *eventTypeString = [originalEvent typeName];
         if (eventTypeString) {
             _dataDictionary[kMPEventTypeKey] = eventTypeString;
         }
     }
-    if ([originalEvent isKindOfClass:[MPEvent class]] && (messageType == MPMessageTypeScreenView || messageType == MPMessageTypeEvent)) {
+
+    if (originalEvent.kind == MPEventKindAppEvent && (messageType == MPMessageTypeScreenView || messageType == MPMessageTypeEvent)) {
         _dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
     }
     
@@ -126,7 +124,6 @@ using namespace mParticle;
             projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
             projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);
             projectionDictionary[kMPMessageTypeKey] = [NSString stringWithCPPString:MessageTypeName::nameForMessageType(static_cast<MessageType>(eventProjection.messageType))];
-            
             projectionDictionary[kMPEventTypeKey] = [NSString stringWithCPPString:EventTypeName::nameForEventType(static_cast<EventType>(eventProjection.eventType))];
             
             if (eventProjection.projectedName) {

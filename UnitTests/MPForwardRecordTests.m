@@ -118,18 +118,18 @@
     
     MPCommerceEvent *originalEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:nil];
     MPEvent *projectedEvent = [[MPEvent alloc] initWithName:@"foo" type:MPEventTypeOther];
-    MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO];
+    MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:nil];
     
     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
                                                                        execStatus:execStatus
                                                                         kitFilter:kitFilter
                                                                     originalEvent:originalEvent];
     
-    XCTAssertNotNil(forwardRecord, @"Should not have been nil.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"dt"], expectedDataDictionary[@"dt"], @"Does not match.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"], @"Does not match.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"et"], expectedDataDictionary[@"et"], @"Does not match.");
-    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"n"], nil, @"Does not match.");
+    XCTAssertNotNil(forwardRecord);
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"dt"], expectedDataDictionary[@"dt"]);
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"mid"], expectedDataDictionary[@"mid"]);
+    XCTAssertEqualObjects(forwardRecord.dataDictionary[@"et"], expectedDataDictionary[@"et"]);
+    XCTAssertNil(forwardRecord.dataDictionary[@"n"]);
     
 }
 
