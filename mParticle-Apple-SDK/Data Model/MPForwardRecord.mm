@@ -105,40 +105,21 @@ NSString *const kMPFROptOutState = @"s";
         return self;
     }
     
-    NSString * (^eventTypeString)(id) = ^(id event) {
+    if (messageType == MPMessageTypeCommerceEvent || messageType == MPMessageTypeEvent) {
         NSString *eventTypeString = nil;
-        
         if ([originalEvent isKindOfClass:[MPEvent class]]) {
-            eventTypeString = ((MPEvent *)event).typeName;
+            eventTypeString = ((MPEvent *)originalEvent).typeName;
         } else if ([originalEvent isKindOfClass:[MPCommerceEvent class]]) {
-            eventTypeString = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(static_cast<mParticle::EventType>([((MPCommerceEvent *)event) type])).c_str()
+            eventTypeString = [NSString stringWithCString:mParticle::EventTypeName::nameForEventType(static_cast<mParticle::EventType>([((MPCommerceEvent *)originalEvent) type])).c_str()
                                                  encoding:NSUTF8StringEncoding];
         }
         
-        return eventTypeString;
-    };
-    
-    if (kitFilter.forwardEvent) {
-        switch (messageType) {
-            case MPMessageTypeEvent: {
-                NSString *eventString = eventTypeString(originalEvent);
-                if (eventString) {
-                    _dataDictionary[kMPEventTypeKey] = eventString;
-                }
-            }
-                
-            case MPMessageTypeScreenView:
-                _dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
-                break;
-                
-            default:
-                break;
+        if (eventTypeString) {
+            _dataDictionary[kMPEventTypeKey] = eventTypeString;
         }
-    } else if (kitFilter.forwardCommerceEvent) {
-        NSString *eventString = eventTypeString(originalEvent);
-        if (eventString) {
-            _dataDictionary[kMPEventTypeKey] = eventString;
-        }
+    }
+    if ([originalEvent isKindOfClass:[MPEvent class]] && (messageType == MPMessageTypeScreenView || messageType == MPMessageTypeEvent)) {
+        _dataDictionary[kMPEventNameKey] = ((MPEvent *)originalEvent).name;
     }
     
     if (kitFilter.appliedProjections.count > 0) {
