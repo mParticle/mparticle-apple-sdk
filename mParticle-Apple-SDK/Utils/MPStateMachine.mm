@@ -340,13 +340,11 @@ static BOOL runningInBackground = NO;
 }
 
 + (void)setEnvironment:(MPEnvironment)environment {
-    MPEnvironment detectedEnvironment = [MPStateMachine getEnvironment];
-    
-    if (detectedEnvironment == MPEnvironmentProduction) {
-        runningEnvironment = MPEnvironmentProduction;
-    } else {
-        runningEnvironment = environment;
+    if ([MPStateMachine getEnvironment] == MPEnvironmentProduction && environment == MPEnvironmentDevelopment) {
+        MPILogError(@"Please be aware you are forcing the SDK running environment into development; be sure to undo this before submitting to the App Store.");
     }
+
+    runningEnvironment = environment;
 }
 
 + (NSString *)provisioningProfileString {
