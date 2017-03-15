@@ -1623,6 +1623,9 @@ static BOOL appBackgrounded = NO;
         messageInfo[kMPPreviousSessionLengthKey] = @(previousSessionLength);
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionStart session:_session messageInfo:messageInfo];
+#if TARGET_OS_IOS == 1
+        messageBuilder = [messageBuilder withLocation:stateMachine.location];
+#endif
         MPMessage *message = (MPMessage *)[[messageBuilder withTimestamp:_session.startTime] build];
         
         [self saveMessage:message updateSession:YES];
