@@ -6,6 +6,14 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.4
+
+>Upgrade suggestion: **LOW**. Upgrade if you need lat/long in session start or have custom mappings to commerce events
+
+* [NEW] Include latitude and longitude in session start events
+* [NEW] Allow for environment override even for prod apps
+* [FIX] Reporting of commerce events when originated from a custom mapping
+
 ## 6.12.3
 
 >Upgrade suggestion: **LOW**. Upgrade if you have custom mappings for commerce events
