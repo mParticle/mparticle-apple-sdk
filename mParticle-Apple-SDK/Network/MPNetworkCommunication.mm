@@ -36,8 +36,6 @@
 #import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 
-//#define MP_NETWORK_SEMAPHORES 1
-
 typedef NS_ENUM(NSUInteger, MPNetworkUploadType) {
     MPNetworkUploadTypeBatch = 0,
     MPNetworkUploadTypeSessionHistory

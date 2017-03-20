@@ -541,10 +541,6 @@ using namespace mParticle;
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"sessionId == %ld", self.session.sessionId];
             MPSession *currentSession = [[sessions filteredArrayUsingPredicate:predicate] lastObject];
             [sessions removeObject:currentSession];
-            
-            for (MPSession *openSession in sessions) {
-                [self broadcastSessionDidEnd:openSession];
-            }
         }
         
         if (sessions.count == 0) {
@@ -554,6 +550,10 @@ using namespace mParticle;
         
         [self requestConfig:^(BOOL uploadBatch) {
             if (!uploadBatch) {
+                for (MPSession *openSession in sessions) {
+                    [self broadcastSessionDidEnd:openSession];
+                }
+
                 completionHandler(NO, YES);
                 return;
             }
@@ -1361,7 +1361,6 @@ using namespace mParticle;
                                                                             completionHandler:^(BOOL success, BOOL finished) {
                                                                                 if (finished) {
                                                                                     [MPStateMachine setRunningInBackground:NO];
-                                                                                    [strongSelf broadcastSessionDidEnd:strongSelf->_session];
                                                                                     strongSelf->_session = nil;
                                                                                     
                                                                                     if (strongSelf.eventSet.count == 0) {
