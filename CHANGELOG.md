@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.5
+
+>Upgrade suggestion: **LOW**. Upgrade if you're updating user attributes from multiple, concurrent, threads
+
+* [NEW] Use mutable copy of string when setting a user attribute key
+
 ## 6.12.4
 
 >Upgrade suggestion: **LOW**. Upgrade if you need lat/long in session start or have custom mappings to commerce events

@@ -24,16 +24,21 @@
 
 - (NSString *)caseInsensitiveKey:(NSString *)key {
     __block NSString *localKey = nil;
-    NSString *lowerCaseKey = [key lowercaseString];
-    NSArray *keys = [self allKeys];
-    [keys enumerateObjectsWithOptions:NSEnumerationConcurrent
-                           usingBlock:^(NSString *aKey, NSUInteger idx, BOOL *stop) {
-                               if ([lowerCaseKey isEqualToString:[aKey lowercaseString]]) {
-                                   localKey = aKey;
-                                   *stop = YES;
-                               }
-                           }];
-    
+
+    @try {
+        NSString *lowerCaseKey = [key lowercaseString];
+        NSArray *keys = [self allKeys];
+        [keys enumerateObjectsWithOptions:NSEnumerationConcurrent
+                               usingBlock:^(NSString *aKey, NSUInteger idx, BOOL *stop) {
+                                   if ([lowerCaseKey isEqualToString:[aKey lowercaseString]]) {
+                                       localKey = aKey;
+                                       *stop = YES;
+                                   }
+                               }];
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception retrieving case insentitive key: %@", [exception reason]);
+    }
+
     if (!localKey) {
         localKey = key;
     }
@@ -43,16 +48,21 @@
 
 - (id)valueForCaseInsensitiveKey:(NSString *)key {
     __block id value = nil;
-    NSString *lowerCaseKey = [key lowercaseString];
-    NSArray *keys = [self allKeys];
-    [keys enumerateObjectsWithOptions:NSEnumerationConcurrent
-                           usingBlock:^(NSString *aKey, NSUInteger idx, BOOL *stop) {
-                               if ([lowerCaseKey isEqualToString:[aKey lowercaseString]]) {
-                                   value = self[aKey];
-                                   *stop = YES;
-                               }
-                           }];
-    
+
+    @try {
+        NSString *lowerCaseKey = [key lowercaseString];
+        NSArray *keys = [self allKeys];
+        [keys enumerateObjectsWithOptions:NSEnumerationConcurrent
+                               usingBlock:^(NSString *aKey, NSUInteger idx, BOOL *stop) {
+                                   if ([lowerCaseKey isEqualToString:[aKey lowercaseString]]) {
+                                       value = self[aKey];
+                                       *stop = YES;
+                                   }
+                               }];
+    } @catch (NSException *exception) {
+        MPILogError(@"Exception retrieving case insentitive value: %@", [exception reason]);
+    }
+
     return value;
 }
 

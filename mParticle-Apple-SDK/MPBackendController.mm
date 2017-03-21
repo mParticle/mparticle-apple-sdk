@@ -2715,7 +2715,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)setUserAttribute:(NSString *)key value:(id)value attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key copy];
+    NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     
     NSAssert(validKey, @"'key' must be a string.");
@@ -2758,7 +2758,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler {
-    NSString *keyCopy = [key copy];
+    NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     
     NSAssert(validKey, @"'key' must be a string.");
