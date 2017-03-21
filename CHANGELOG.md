@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 7.0.0-beta1
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you want a smaller and faster SDK
+
+* In the New Year we made a resolution to trim down the mParticle-Apple-SDK a few bytes, making it smaller, more modularized, and faster wherever possible. After hitting the refactoring gym and sweating the bits away, the SDK has come down 13% in size. If you are running a version of the SDK prior to 7.0.0 and want to take advantage of the slimmer SDK, now it is your chance to upgrade. We think you are going to like the result. Read more about it at http://blog.mparticle.com/how-much-does-your-sdk-weigh-mparticle/
+
 ## 6.12.5
 
 >Upgrade suggestion: **LOW**. Upgrade if you're updating user attributes from multiple, concurrent, threads
