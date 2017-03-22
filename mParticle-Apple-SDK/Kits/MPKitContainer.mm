@@ -390,7 +390,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
     // Synchronizes user attributes
-    NSDictionary<NSString *, id> *userAttributes = userDefaults[kMPUserAttributeKey];
+    NSDictionary<NSString *, id> *userAttributes = [userDefaults mpObjectForKey: kMPUserAttributeKey];
     if (!MPIsNull(userAttributes) && userAttributes.count > 0 && [kitRegister.wrapperInstance respondsToSelector:@selector(setUserAttributes:)]) {
         MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
         NSDictionary *filteredUserAttributes = nil;
@@ -435,7 +435,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     // Synchronizes user identities
-    NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+    NSArray<NSDictionary<NSString *, id> *> *userIdentities = [userDefaults mpObjectForKey: kMPUserIdentityArrayKey];
     if (!MPIsNull(userIdentities) && userIdentities.count > 0 && [kitRegister.wrapperInstance respondsToSelector:@selector(setUserIdentities:)]) {
         __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
         
@@ -1851,8 +1851,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
     NSString *kitPath;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
-    NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+    NSDictionary *userAttributes = [userDefaults mpObjectForKey:kMPUserAttributeKey];
+    NSArray *userIdentities = [userDefaults mpObjectForKey: kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     id<MPExtensionKitProtocol>kitRegister;
@@ -2047,7 +2047,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         // commerce event user defined attributes (prior to filtering and projections)
         if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
             NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-            NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+            NSArray *userIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey];
             
             for (NSDictionary *userIdentity in userIdentities) {
                 MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
@@ -2155,7 +2155,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 // event attributes (prior to filtering and projections)
                 if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
                     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                    NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+                    NSArray *userIdentities = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey];
                     
                     for (NSDictionary *userIdentity in userIdentities) {
                         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];

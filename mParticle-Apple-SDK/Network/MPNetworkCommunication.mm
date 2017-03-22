@@ -280,7 +280,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      
                      if (!MPIsNull(eTag) && success) {
                          NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-                         userDefaults[kMPHTTPETagHeaderKey] = eTag;
+                         [userDefaults setMPKey: kMPHTTPETagHeaderKey value: eTag];
                      }
                      
                      if (success) {

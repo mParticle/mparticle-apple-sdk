@@ -44,12 +44,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     [self removeObjectForKey:prefixedKey];
 }
 
-#pragma mark Objective-C Literals
-- (id)objectForKeyedSubscript:(NSString *const)key {
-    return [self mpObjectForKey:key];
-}
-
-- (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
+- (void)setMPKey:(NSString *)key value:(id)obj {
     if (obj) {
         [self setMPObject:obj forKey:key];
     } else {

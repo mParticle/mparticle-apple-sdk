@@ -209,15 +209,15 @@
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];
     
-    id valueWithDeprecatedKey = userDefaults[deprecatedKey];
+    id valueWithDeprecatedKey = [userDefaults mpObjectForKey:deprecatedKey];
     if (valueWithDeprecatedKey) {
         _value = valueWithDeprecatedKey;
-        userDefaults[customModuleKey] = _value;
+        [userDefaults setMPKey: customModuleKey value: _value];
         [userDefaults removeMPObjectForKey:deprecatedKey];
         return _value;
     }
     
-    _value = userDefaults[customModuleKey];
+    _value = [userDefaults mpObjectForKey: customModuleKey];
     if (_value) {
         return _value;
     }
@@ -289,7 +289,7 @@
         }
     }
 
-    userDefaults[customModuleKey] = _value;
+    [userDefaults setMPKey: customModuleKey value: _value];
     
     return _value;
 }

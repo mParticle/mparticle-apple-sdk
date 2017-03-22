@@ -156,9 +156,9 @@
 
 - (void)testEtag {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
-    NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
+    NSString *eTag = [userDefaults mpObjectForKey: kMPHTTPETagHeaderKey];
     if (!eTag) {
-        userDefaults[kMPHTTPETagHeaderKey] = @"1.618-2.718-3.141-42";
+        [userDefaults setMPKey:kMPHTTPETagHeaderKey value: @"1.618-2.718-3.141-42"];
     }
 
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
