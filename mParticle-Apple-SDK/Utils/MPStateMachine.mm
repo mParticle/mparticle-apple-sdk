@@ -621,22 +621,22 @@ using namespace mParticle;
 }
 
 - (MPSession *)nullSession {
-    if (_nullSession) {
-        return _nullSession;
-    }
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    _nullSession = [persistence fetchNullSession];
-    
-    if (!_nullSession) {
-        _nullSession = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
-        _nullSession.isNullSession = YES;
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [persistence saveSession:_nullSession];
-        });
-    }
-    
+    static dispatch_once_t nullSessionPredicate;
+
+    dispatch_once(&nullSessionPredicate, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        _nullSession = [persistence fetchNullSession];
+
+        if (!_nullSession) {
+            _nullSession = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+            _nullSession.isNullSession = YES;
+
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [persistence saveSession:_nullSession];
+            });
+        }
+    });
+
     return _nullSession;
 }
 

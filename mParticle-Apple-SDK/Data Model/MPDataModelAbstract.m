@@ -21,6 +21,15 @@
 @implementation MPDataModelAbstract
 
 @synthesize uuid = _uuid;
+@synthesize accessSemaphore = _accessSemaphore;
+
+- (dispatch_semaphore_t)accessSemaphore {
+    if (!_accessSemaphore) {
+        _accessSemaphore = dispatch_semaphore_create(1);
+    }
+
+    return _accessSemaphore;
+}
 
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {

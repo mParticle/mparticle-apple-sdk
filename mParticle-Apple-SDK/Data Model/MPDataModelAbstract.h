@@ -22,9 +22,11 @@
 @interface MPDataModelAbstract : NSObject <NSCopying> {
 @protected
     NSString *_uuid;
+    dispatch_semaphore_t _accessSemaphore;
 }
 
 @property (nonatomic, strong, nonnull) NSString *uuid;
+@property (nonatomic, strong, nonnull, readonly) dispatch_semaphore_t accessSemaphore;
 
 - (nonnull id)copyWithZone:(nullable NSZone *)zone;
 

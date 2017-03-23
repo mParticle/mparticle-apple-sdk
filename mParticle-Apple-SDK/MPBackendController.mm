@@ -80,6 +80,7 @@ using namespace mParticle;
     dispatch_source_t uploadSource;
     UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
     dispatch_semaphore_t sessionSemaphore;
+    dispatch_semaphore_t uploadSemaphore;
     BOOL sdkIsLaunching;
     BOOL longSession;
     BOOL originalAppDelegateProxied;
@@ -128,7 +129,8 @@ using namespace mParticle;
         originalAppDelegateProxied = NO;
         uploading = NO;
         sessionSemaphore = dispatch_semaphore_create(1);
-        
+        uploadSemaphore = dispatch_semaphore_create(1);
+
         backendQueue = dispatch_queue_create("com.mParticle.BackendQueue", DISPATCH_QUEUE_SERIAL);
         notificationsQueue = dispatch_queue_create("com.mParticle.NotificationsQueue", DISPATCH_QUEUE_CONCURRENT);
         
@@ -2207,12 +2209,15 @@ using namespace mParticle;
             completionHandler();
         }
     };
-    
+
+    dispatch_semaphore_wait(uploadSemaphore, DISPATCH_TIME_FOREVER);
     if (uploading) {
+        dispatch_semaphore_signal(uploadSemaphore);
         return MPExecStatusSuccess;
     }
     uploading = YES;
-    
+    dispatch_semaphore_signal(uploadSemaphore);
+
     void (^executeUpload)(MPSession *) = ^(MPSession *session) {
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         BOOL shouldTryToUploadSessionMessages = (session != nil) ? [persistence countMesssagesForUploadInSession:session] > 0 : NO;

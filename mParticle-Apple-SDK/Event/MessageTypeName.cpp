@@ -24,6 +24,8 @@ namespace mParticle {
                                                    "ast", "pm", "npe", "bc", "pro", "pre", "cm", "uac", "uic"}; // 10-17
     
     const size_t MessageTypeName::_size = MessageTypeName::names.size();
+
+    mutex MessageTypeName::messageMutex;
     
     string MessageTypeName::nameForMessageType(const MessageType messageType) {
         auto messageName = MessageTypeName::names[messageType];
@@ -31,8 +33,9 @@ namespace mParticle {
     }
     
     MessageType MessageTypeName::messageTypeForName(const string &messageTypeName) {
+        unique_lock<mutex> lck(messageMutex);
+
         MessageType messageType = Unknown;
-        
         const auto firstMessageType = names.begin();
         const auto lastMessageType = names.end();
         const auto iterator = find(firstMessageType, lastMessageType, messageTypeName);
