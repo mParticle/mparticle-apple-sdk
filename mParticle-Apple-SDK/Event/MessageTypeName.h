@@ -19,6 +19,7 @@
 #ifndef __mParticle__MessageTypeName__
 #define __mParticle__MessageTypeName__
 
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -50,6 +51,7 @@ namespace mParticle {
     class MessageTypeName final {
         static const vector<string> names;
         static const size_t _size;
+        static mutex messageMutex;
         
     public:
         static string nameForMessageType(const MessageType messageType);

@@ -27,6 +27,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
 
 @implementation MPSession
 
+@synthesize endTime = _endTime;
 @synthesize sessionNumber = _sessionNumber;
 
 - (instancetype)init {
@@ -52,23 +53,21 @@ NSString *const sessionNumberKey = @"sessionNumber";
                       suspendTime:(NSTimeInterval)suspendTime
 {
     self = [super init];
-    if (!self) {
-        return nil;
+    if (self) {
+        _sessionId = sessionId;
+        _uuid = uuid;
+        _backgroundTime = backgroundTime;
+        _startTime = startTime;
+        _endTime = endTime;
+        _length = _endTime - _startTime;
+        _eventCounter = eventCounter;
+        _persisted = sessionId != 0;
+        _numberOfInterruptions = numberOfInterruptions;
+        _suspendTime = suspendTime;
+        _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
+        _sessionNumber = sessionNumber != nil ? sessionNumber : [self sessionNumber];
+        _isNullSession = NO;
     }
-    
-    _sessionId = sessionId;
-    _uuid = uuid;
-    _backgroundTime = backgroundTime;
-    _startTime = startTime;
-    _endTime = endTime;
-    _length = _endTime - _startTime;
-    _eventCounter = eventCounter;
-    _persisted = sessionId != 0;
-    _numberOfInterruptions = numberOfInterruptions;
-    _suspendTime = suspendTime;
-    _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
-    _sessionNumber = sessionNumber != nil ? sessionNumber : [self sessionNumber];
-    _isNullSession = NO;
 
     return self;
 }
@@ -105,11 +104,17 @@ NSString *const sessionNumberKey = @"sessionNumber";
 }
 
 #pragma mark Public accessors
-- (NSTimeInterval)foregroundTime {
-    return _length - _backgroundTime;
+- (NSTimeInterval)endTime {
+    dispatch_semaphore_wait(self.accessSemaphore, DISPATCH_TIME_FOREVER);
+    NSTimeInterval endTime = _endTime;
+    dispatch_semaphore_signal(self.accessSemaphore);
+
+    return endTime;
 }
 
 - (void)setEndTime:(NSTimeInterval)endTime {
+    dispatch_semaphore_wait(self.accessSemaphore, DISPATCH_TIME_FOREVER);
+
     if (endTime > _startTime) {
         _endTime = endTime;
         _length = _endTime - _startTime;
@@ -118,6 +123,12 @@ NSString *const sessionNumberKey = @"sessionNumber";
     } else {
         _endTime = _startTime;
     }
+
+    dispatch_semaphore_signal(self.accessSemaphore);
+}
+
+- (NSTimeInterval)foregroundTime {
+    return _length - _backgroundTime;
 }
 
 - (NSTimeInterval)length {
