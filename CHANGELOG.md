@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 7.0.0-beta2
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you want a smaller and faster SDK
+
+* [NEW] Include semaphores and `dispatch_once` initializations to prevent race conditions warned by the thread sanitizer
+
 ## 7.0.0-beta1
 
 >Upgrade suggestion: **MODERATE**. Upgrade if you want a smaller and faster SDK
