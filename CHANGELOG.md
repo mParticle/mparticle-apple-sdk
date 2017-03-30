@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.12.6
+
+>Upgrade suggestion: **LOW**. Upgrade if you've seen a kit configuration be removed from cache by the O.S.
+
+* [FIX] Force refresh the config cache when a kit configuration is absent
+
 ## 6.12.5
 
 >Upgrade suggestion: **LOW**. Upgrade if you're updating user attributes from multiple, concurrent, threads
