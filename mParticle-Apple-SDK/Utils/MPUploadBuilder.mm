@@ -16,12 +16,12 @@
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
 #import "MPIntegrationAttributes.h"
+#import "MPIUserDefaults.h"
 #import "MPMessage.h"
 #import "MPPersistenceController.h"
 #import "MPSession.h"
 #import "MPStateMachine.h"
 #import "MPUpload.h"
-#import "NSUserDefaults+mParticle.h"
 #include <vector>
 
 using namespace std;
@@ -60,7 +60,7 @@ using namespace std;
     }];
     
     NSNumber *ltv;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     ltv = userDefaults[kMPLifeTimeValueKey];
     if (!ltv) {
         ltv = @0;

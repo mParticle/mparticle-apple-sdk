@@ -27,6 +27,7 @@
 #import "MPHasher.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPIUserDefaults.h"
 #import "MPKitContainer.h"
 #import "MPLocationManager.h"
 #import "MPNotificationController.h"
@@ -34,7 +35,6 @@
 #import "MPSearchAdsAttribution.h"
 #import "MPSession.h"
 #import "NSString+MPUtils.h"
-#import "NSUserDefaults+mParticle.h"
 #include <sys/sysctl.h>
 #import <UIKit/UIKit.h>
 
@@ -184,7 +184,7 @@ using namespace mParticle;
         return _storedSDKVersion;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     _storedSDKVersion = userDefaults[@"storedSDKVersion"];
     
     return _storedSDKVersion;
@@ -214,7 +214,7 @@ using namespace mParticle;
 
     _storedSDKVersion = storedSDKVersion;
 
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
 
     if (MPIsNull(_storedSDKVersion)) {
         [userDefaults removeMPObjectForKey:@"storedSDKVersion"];
@@ -470,7 +470,7 @@ using namespace mParticle;
         return _firstSeenInstallation;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *firstSeenInstallation = userDefaults[kMPAppFirstSeenInstallationKey];
     if (firstSeenInstallation) {
         _firstSeenInstallation = firstSeenInstallation;
@@ -493,7 +493,7 @@ using namespace mParticle;
         return;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *fsi = userDefaults[kMPAppFirstSeenInstallationKey];
     if (!fsi) {
         [self willChangeValueForKey:@"firstSeenInstallation"];
@@ -588,7 +588,7 @@ using namespace mParticle;
         return _locationTrackingMode;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
     
     [self willChangeValueForKey:@"locationTrackingMode"];
@@ -613,7 +613,7 @@ using namespace mParticle;
     _locationTrackingMode = locationTrackingMode;
     [self didChangeValueForKey:@"locationTrackingMode"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
@@ -647,7 +647,7 @@ using namespace mParticle;
     
     [self willChangeValueForKey:@"minUploadDate"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDate *minUploadDate = userDefaults[kMinUploadDateKey];
     if (minUploadDate) {
         if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
@@ -667,7 +667,7 @@ using namespace mParticle;
 - (void)setMinUploadDate:(NSDate *)minUploadDate {
     _minUploadDate = minUploadDate;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         userDefaults[kMinUploadDateKey] = minUploadDate;
     } else if (userDefaults[kMinUploadDateKey]) {
@@ -684,7 +684,7 @@ using namespace mParticle;
     
     optOutSet = YES;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
     if (optOutNumber) {
         _optOut = [optOutNumber boolValue];
@@ -705,7 +705,7 @@ using namespace mParticle;
     _optOut = optOut;
     optOutSet = YES;
 
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPOptOutStatus] = @(_optOut);
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
@@ -721,7 +721,7 @@ using namespace mParticle;
     
     alwaysTryToCollectIDFASet = YES;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *alwaysTryToCollectIDFANumber = userDefaults[kMPAlwaysTryToCollectIDFA];
     
     if (alwaysTryToCollectIDFANumber) {
@@ -744,7 +744,7 @@ using namespace mParticle;
     _alwaysTryToCollectIDFA = alwaysTryToCollectIDFA;
     alwaysTryToCollectIDFASet = YES;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPAlwaysTryToCollectIDFA] = @(alwaysTryToCollectIDFA);
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
@@ -758,7 +758,7 @@ using namespace mParticle;
     
     [self willChangeValueForKey:@"pushNotificationMode"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSString *pushNotificationMode = userDefaults[kMPRemoteConfigPushNotificationModeKey];
     if (pushNotificationMode) {
         _pushNotificationMode = pushNotificationMode;
@@ -778,7 +778,7 @@ using namespace mParticle;
     
     _pushNotificationMode = pushNotificationMode;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];

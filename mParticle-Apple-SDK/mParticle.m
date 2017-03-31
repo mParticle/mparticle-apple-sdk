@@ -26,6 +26,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPIntegrationAttributes.h"
+#import "MPIUserDefaults.h"
 #import "MPKitActivity.h"
 #import "MPKitContainer.h"
 #import "MPKitFilter.h"
@@ -38,7 +39,6 @@
 #import "MPSession.h"
 #import "MPStateMachine.h"
 #import "MPUserSegments+Setters.h"
-#import "NSUserDefaults+mParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -373,7 +373,7 @@ NSString *const kMPStateKey = @"state";
     NSAssert((NSNull *)apiKey != [NSNull null] && (NSNull *)secret != [NSNull null], @"mParticle SDK apiKey and secret cannot be null.");
     
     __weak MParticle *weakSelf = self;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
     _proxiedAppDelegate = proxyAppDelegate;
     
@@ -1296,7 +1296,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSMutableDictionary *userAttributes = nil;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];

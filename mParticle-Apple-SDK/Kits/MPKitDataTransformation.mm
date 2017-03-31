@@ -40,7 +40,6 @@
 #import "NSArray+MPCaseInsensitive.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSString+MPUtils.h"
-#import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 #include <vector>
 

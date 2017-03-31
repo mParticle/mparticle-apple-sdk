@@ -20,9 +20,9 @@
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPIUserDefaults.h"
 #import "MPKitContainer.h"
 #import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -142,7 +142,7 @@
     if (!responseConfig || !responseConfig.configuration) {
         // If a kit is registered against the core SDK, there is an eTag present, and there is no corresponding kit configuration, then
         // delete the saved eTag, thus "forcing" a config refresh on the next call to the server
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
         if (!eTag) {
             return;

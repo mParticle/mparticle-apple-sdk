@@ -1,7 +1,7 @@
 //
-//  NSUserDefaults+mParticle.h
+//  MPIUserDefaults.h
 //
-//  Copyright 2016 mParticle, Inc.
+//  Copyright 2017 mParticle, Inc.
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -18,12 +18,19 @@
 
 #import <Foundation/Foundation.h>
 
-@interface NSUserDefaults(mParticle)
+@interface MPIUserDefaults : NSObject
 
-- (nullable id)mpObjectForKey:(nonnull NSString *)defaultName;
-- (void)setMPObject:(nullable id)value forKey:(nonnull NSString *)defaultName;
-- (void)removeMPObjectForKey:(nonnull NSString *)defaultName;
++ (nonnull instancetype)standardUserDefaults;
+- (BOOL)boolForKey:(nonnull NSString *)key;
+- (nullable NSDictionary<NSString *, id> *)dictionaryRepresentation;
+- (float)floatForKey:(nonnull NSString *)key;
+- (NSInteger)integerForKey:(nonnull NSString *)key;
+- (nullable id)mpObjectForKey:(nonnull NSString *)key;
+- (void)setMPObject:(nullable id)value forKey:(nonnull NSString *)key;
+- (nullable id)objectForKey:(nonnull NSString *)key;
+- (void)removeMPObjectForKey:(nonnull NSString *)key;
 - (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
 - (void)setObject:(nullable id)obj forKeyedSubscript:(nonnull NSString *)key;
+- (void)synchronize;
 
 @end

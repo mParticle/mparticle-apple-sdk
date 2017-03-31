@@ -29,13 +29,13 @@
 #import "MPForwardRecord.h"
 #include "MPHasher.h"
 #import "MPILogger.h"
+#import "MPIUserDefaults.h"
 #import "MPKitConfiguration.h"
 #import "MPKitDataTransformation.h"
 #import "MPKitExecStatus.h"
 #import "MPKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -155,7 +155,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 // commerce event user defined attributes (prior to filtering and projections)
 - (MPEventAbstract *)applyAppsFlyerAugmentationsToEvent:(MPEventAbstract *)event {
     MPEventAbstract *surrogateEvent = nil;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     
     for (NSDictionary *userIdentity in userIdentities) {
@@ -364,7 +364,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
         
         // Synchronizes user attributes
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         NSDictionary<NSString *, id> *userAttributes = userDefaults[kMPUserAttributeKey];
         [self syncUserAttributes:userAttributes withKitRegister:kitRegister];
         
@@ -643,7 +643,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     if ([fileManager fileExistsAtPath:kitPath]) {
         [fileManager removeItemAtPath:kitPath error:nil];
-        [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+        [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
     }
 }
 

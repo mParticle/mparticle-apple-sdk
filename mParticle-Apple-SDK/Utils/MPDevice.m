@@ -17,17 +17,17 @@
 //
 
 #import "MPDevice.h"
-#import <UIKit/UIKit.h>
-#import <sys/sysctl.h>
-#import <mach/machine.h>
-#import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
-#import <objc/runtime.h>
-#import <mach-o/ldsyms.h>
 #import <dlfcn.h>
+#import "MPIConstants.h"
+#import "MPIUserDefaults.h"
+#import "MPStateMachine.h"
+#import <mach/machine.h>
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
-#import "MPIConstants.h"
+#import <mach-o/ldsyms.h>
+#import <objc/runtime.h>
+#import <sys/sysctl.h>
+#import <UIKit/UIKit.h>
 
 #if !defined(MP_NO_IDFA)
     #import "AdSupport/ASIdentifierManager.h"
@@ -216,7 +216,7 @@ int main(int argc, char *argv[]);
         return _deviceIdentifier;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     _deviceIdentifier = userDefaults[kMPDeviceIdentifierKey];
     if (!_deviceIdentifier) {
         _deviceIdentifier = [[NSUUID UUID] UUIDString];

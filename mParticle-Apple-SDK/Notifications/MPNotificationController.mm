@@ -18,8 +18,8 @@
 
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
+#import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
-#import "NSUserDefaults+mParticle.h"
 #include "MPHasher.h"
 
 @interface MPNotificationController() {
@@ -149,7 +149,7 @@ static int64_t launchNotificationHash = 0;
     }
     
 #ifndef MP_UNIT_TESTING
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     deviceToken = userDefaults[kMPDeviceTokenKey];
 #else
     deviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];

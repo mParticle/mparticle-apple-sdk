@@ -17,11 +17,11 @@
 //
 
 #import "MPApplication.h"
+#import "MPIUserDefaults.h"
 #import <mach-o/ldsyms.h>
 #import <dlfcn.h>
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
-#import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPSearchAdsAttribution.h"
@@ -51,7 +51,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 @interface MPApplication() {
     NSDictionary *appInfo;
-    NSUserDefaults *userDefaults;
+    MPIUserDefaults *userDefaults;
     BOOL syncUserDefaults;
 }
 
@@ -78,7 +78,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 - (id)init {
     self = [super init];
     if (self) {
-        userDefaults = [NSUserDefaults standardUserDefaults];
+        userDefaults = [MPIUserDefaults standardUserDefaults];
         syncUserDefaults = NO;
     }
     
@@ -88,7 +88,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 - (void)dealloc {
     if (syncUserDefaults) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[NSUserDefaults standardUserDefaults] synchronize];
+            [[MPIUserDefaults standardUserDefaults] synchronize];
         });
     }
 }
@@ -299,7 +299,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 + (void)markInitialLaunchTime {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
     
     if (!initialLaunchTime) {
@@ -325,7 +325,7 @@ static NSString *kMPAppStoreReceiptString = nil;
     if (![application.version isEqualToString:application.storedVersion] || ![application.build isEqualToString:application.storedBuild]) {
         application.launchCountSinceUpgrade = @1;
         application.upgradeDate = MPCurrentEpochInMilliseconds;
-        [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+        [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
     } else {
         application.launchCountSinceUpgrade = @([application.launchCountSinceUpgrade integerValue] + 1);
     }

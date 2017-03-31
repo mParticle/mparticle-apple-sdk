@@ -19,6 +19,7 @@
 #import <XCTest/XCTest.h>
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
+#import "MPIUserDefaults.h"
 #import "MPKitContainer.h"
 #import "MPKitRegister.h"
 #import "MPKitTestClass.h"
@@ -27,7 +28,6 @@
 #import "MPNetworkCommunication+Tests.h"
 #import "MPStateMachine.h"
 #import "MPURLRequestBuilder.h"
-#import "NSUserDefaults+mParticle.h"
 
 #pragma mark - MPURLRequestBuilder category
 @interface MPURLRequestBuilder(Tests)
@@ -156,7 +156,7 @@
 }
 
 - (void)testEtag {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
     if (!eTag) {
         userDefaults[kMPHTTPETagHeaderKey] = @"1.618-2.718-3.141-42";

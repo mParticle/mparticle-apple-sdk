@@ -24,6 +24,7 @@
 #import "MPDateFormatter.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPIUserDefaults.h"
 #import "MPMessage.h"
 #import "MPPersistenceController.h"
 #import "MPSession.h"
@@ -33,7 +34,6 @@
 #import "MPSegment.h"
 #import "MPURLRequestBuilder.h"
 #import "MPZip.h"
-#import "NSUserDefaults+mParticle.h"
 #import <UIKit/UIKit.h>
 
 typedef NS_ENUM(NSUInteger, MPNetworkUploadType) {
@@ -417,7 +417,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                          NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
                          
                          if (!MPIsNull(eTag)) {
-                             NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                             MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                              userDefaults[kMPHTTPETagHeaderKey] = eTag;
                          }
                          
