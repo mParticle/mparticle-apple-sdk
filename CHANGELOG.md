@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 7.0.0-beta3
+
+>Upgrade suggestion: **MODERATE**. Upgrade if you want a smaller and faster SDK
+
+* [NEW] Custom wrapper for NSUserDefaults. The SDK no longer implements the subscript protocol for NSUserDefaults, but instead implements a wrapper class.
+
 ## 6.12.6
 
 >Upgrade suggestion: **LOW**. Upgrade if you've seen a kit configuration be removed from cache by the O.S.
