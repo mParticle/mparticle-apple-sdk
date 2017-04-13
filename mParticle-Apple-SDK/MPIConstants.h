@@ -44,7 +44,8 @@ typedef NS_ENUM(NSUInteger, MPJavascriptMessageType) {
     MPJavascriptMessageTypePageView,     /** Page/Screen view */
     MPJavascriptMessageTypePageEvent,      /** User/transaction event */
     MPJavascriptMessageTypeError,       /** Error event */
-    MPJavascriptMessageTypeOptOut    /** Opt out */
+    MPJavascriptMessageTypeOptOut,    /** Opt out */
+    MPJavascriptMessageTypeCommerce = 16  /** Product action, promotion or impression */
 };
 
 typedef NS_ENUM(NSInteger, MPDataType) {

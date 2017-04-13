@@ -40,6 +40,7 @@
 #import "MPUserSegments+Setters.h"
 #import "NSURLSession+mParticle.h"
 #import "NSUserDefaults+mParticle.h"
+#import "MPConvertJS.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -1573,7 +1574,13 @@ NSString *const kMPStateKey = @"state";
                     [self logScreenEvent:event];
                 }
                     break;
-                    
+
+                case MPJavascriptMessageTypeCommerce: {
+                    MPCommerceEvent *event = [MPConvertJS MPCommerceEvent:eventDictionary];
+                    [self logCommerceEvent:event];
+                }
+                    break;
+
                 case MPJavascriptMessageTypeOptOut:
                     [self setOptOut:[eventDictionary[@"OptOut"] boolValue]];
                     break;
