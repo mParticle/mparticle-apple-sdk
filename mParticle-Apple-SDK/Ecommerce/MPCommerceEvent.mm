@@ -595,26 +595,25 @@ static NSArray *actionNames;
                 
                 for (product in _productsList) {
                     event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
-                    
-                    if (purchaseOrRefund) {
-                        eventInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
-                        
-                        if (self.transactionAttributes.transactionId) {
-                            eventInfo[kMPExpTATransactionId] = self.transactionAttributes.transactionId;
-                        }
-                        
-                        productDictionary = [product beautifiedDictionaryRepresentation];
-                        if (productDictionary) {
-                            [eventInfo addEntriesFromDictionary:productDictionary];
-                        }
-                        
-                        if (eventInfo.count > 0) {
-                            event.info = eventInfo;
-                        }
-                    } else {
-                        event.info = [product beautifiedDictionaryRepresentation];
+                    eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
+
+                    productDictionary = [product beautifiedDictionaryRepresentation];
+                    if (productDictionary) {
+                        [eventInfo addEntriesFromDictionary:productDictionary];
                     }
-                    
+
+                    if (purchaseOrRefund && self.transactionAttributes.transactionId) {
+                        eventInfo[kMPExpTATransactionId] = self.transactionAttributes.transactionId;
+                    }
+
+                    if (_userDefinedAttributes.count > 0) {
+                        [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                    }
+
+                    if (eventInfo.count > 0) {
+                        event.info = eventInfo;
+                    }
+
                     commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:instruction event:event product:product];
                     expansionInstructions.push_back(commerceEventInstruction);
                 }
@@ -625,7 +624,7 @@ static NSArray *actionNames;
                 eventName = [NSString stringWithFormat:@"eCommerce - %@ - Total", actionName];
                 event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
                 
-                eventInfo = [[NSMutableDictionary alloc] initWithCapacity:2];
+                eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
                 eventInfo[kMPExpCECurrency] = self.currency ? : @"USD";
                 eventInfo[kMPExpCEProductCount] = @(productCount);
                 
@@ -650,8 +649,14 @@ static NSArray *actionNames;
                     eventInfo[kMPExpCECheckoutStep] = [@(self.checkoutStep) stringValue];
                 }
                 
-                event.info = eventInfo;
-                
+                if (_userDefinedAttributes.count > 0) {
+                    [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                }
+
+                if (eventInfo.count > 0) {
+                    event.info = eventInfo;
+                }
+
                 commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
                 expansionInstructions.push_back(commerceEventInstruction);
             }
@@ -661,10 +666,19 @@ static NSArray *actionNames;
         case MPCommerceEventKindPromotion: {
             eventName = [NSString stringWithFormat:@"eCommerce - %@ - Item", [self.promotionContainer actionNameForAction:self.promotionContainer.action]];
             event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
-            
+            eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
+
             NSDictionary *promotionDictionary = [self.promotionContainer beautifiedDictionaryRepresentation];
             if (promotionDictionary) {
-                event.info = promotionDictionary;
+                [eventInfo addEntriesFromDictionary:promotionDictionary];
+            }
+
+            if (_userDefinedAttributes.count > 0) {
+                [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+            }
+
+            if (eventInfo.count > 0) {
+                event.info = eventInfo;
             }
 
             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
@@ -680,15 +694,22 @@ static NSArray *actionNames;
                     if (listedProducts.count > 0) {
                         for (product in listedProducts) {
                             event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
-                            
-                            eventInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
+                            eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
                             eventInfo[kMPExpCEProductImpressionList] = listName;
+
                             productDictionary = [product beautifiedDictionaryRepresentation];
                             if (productDictionary) {
                                 [eventInfo addEntriesFromDictionary:productDictionary];
                             }
                             
-                            event.info = eventInfo;
+                            if (_userDefinedAttributes.count > 0) {
+                                [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                            }
+
+                            if (eventInfo.count > 0) {
+                                event.info = eventInfo;
+                            }
+
                             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
                             expansionInstructions.push_back(commerceEventInstruction);
                         }
