@@ -27,10 +27,10 @@
     Class NSStringClass = [NSString class];
     Class NSArrayClass = [NSArray class];
     BOOL validKey = !MPIsNull(key) && [key isKindOfClass:NSStringClass];
-    BOOL isValueAnAray = [value isKindOfClass:NSArrayClass];
+    BOOL isValueAnArray = [value isKindOfClass:NSArrayClass];
     
     NSAssert(validKey, @"'key' must be a string.");
-    NSAssert(value == nil || (value != nil && ([value isKindOfClass:NSStringClass] || [value isKindOfClass:[NSNumber class]] || isValueAnAray) || (NSNull *)value == [NSNull null]), @"'value' must be either nil, string, number, or array of strings.");
+    NSAssert(value == nil || (value != nil && ([value isKindOfClass:NSStringClass] || [value isKindOfClass:[NSNumber class]] || isValueAnArray) || (NSNull *)value == [NSNull null]), @"'value' must be either nil, string, number, or array of strings.");
     
     if (!validKey || (!userAttributes && !value)) {
         return nil;
@@ -41,13 +41,30 @@
         _userAttributes = userAttributes;
         _key = key;
         _value = value;
+        _changed = YES;
         _deleted = NO;
         
         id existingValue = userAttributes[key];
-        _isArray = (existingValue && [existingValue isKindOfClass:NSArrayClass]) || isValueAnAray;
+        if (existingValue) {
+            _isArray = [existingValue isKindOfClass:NSArrayClass] || isValueAnArray;
+
+            BOOL isExistingValueNull = (NSNull *)existingValue == [NSNull null];
+            if (value) {
+                _changed = isExistingValueNull || ![existingValue isEqual:value];
+            } else {
+                _changed = !isExistingValueNull;
+            }
+        } else {
+            _isArray = isValueAnArray;
+        }
     }
     
     return self;
+}
+
+- (void)setDeleted:(BOOL)deleted {
+    _deleted = deleted;
+    _changed = YES;
 }
 
 - (id)valueToLog {

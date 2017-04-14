@@ -780,7 +780,6 @@ static BOOL appBackgrounded = NO;
                     return;
                 }
                 
-                userAttributeChange.valueToLog = userAttributeValue;
                 NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
                 NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
                 NSString *aKey;
@@ -792,9 +791,12 @@ static BOOL appBackgrounded = NO;
                         userAttributes[aKey] = self.userAttributes[aKey];
                     }
                 }
-                
-                [self logUserAttributeChange:userAttributeChange];
-                
+
+                if (userAttributeChange.changed) {
+                    userAttributeChange.valueToLog = userAttributeValue;
+                    [self logUserAttributeChange:userAttributeChange];
+                }
+
                 dispatch_async(dispatch_get_main_queue(), ^{
                     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                     userDefaults[kMPUserAttributeKey] = userAttributes;

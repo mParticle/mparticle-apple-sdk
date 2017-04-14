@@ -25,6 +25,7 @@
 @property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
 @property (nonatomic, strong, nullable) id value;
 @property (nonatomic, strong, nullable) id valueToLog;
+@property (nonatomic, unsafe_unretained, readonly) BOOL changed;
 @property (nonatomic, unsafe_unretained) BOOL deleted;
 @property (nonatomic, unsafe_unretained) BOOL isArray;
 

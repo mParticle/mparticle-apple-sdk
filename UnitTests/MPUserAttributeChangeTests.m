@@ -45,8 +45,9 @@
     XCTAssertEqualObjects(userAttributeChange.userAttributes, userAttributes);
     XCTAssertEqualObjects(userAttributeChange.value, @"val3");
     XCTAssertEqualObjects(userAttributeChange.valueToLog, @"val3");
-    XCTAssertEqual(userAttributeChange.deleted, NO);
-    XCTAssertEqual(userAttributeChange.isArray, NO);
+    XCTAssertTrue(userAttributeChange.changed);
+    XCTAssertFalse(userAttributeChange.deleted);
+    XCTAssertFalse(userAttributeChange.isArray);
     
     userAttributeChange.timestamp = [NSDate date];
     XCTAssertNotNil(userAttributeChange.timestamp);
@@ -59,9 +60,21 @@
     XCTAssertEqualObjects(userAttributeChange.userAttributes, userAttributes);
     XCTAssertNil(userAttributeChange.value);
     XCTAssertEqualObjects(userAttributeChange.valueToLog, [NSNull null]);
-    XCTAssertEqual(userAttributeChange.deleted, YES);
-    XCTAssertEqual(userAttributeChange.isArray, YES);
+    XCTAssertTrue(userAttributeChange.changed);
+    XCTAssertTrue(userAttributeChange.deleted);
+    XCTAssertTrue(userAttributeChange.isArray);
     
+    userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:userAttributes key:@"key2" value:@[@"item1", @"item2"]];
+    XCTAssertNotNil(userAttributeChange);
+    XCTAssertEqualObjects(userAttributeChange.key, @"key2");
+    XCTAssertNil(userAttributeChange.timestamp);
+    XCTAssertNotNil(userAttributeChange.userAttributes);
+    XCTAssertEqualObjects(userAttributeChange.value, val2Array);
+    XCTAssertEqualObjects(userAttributeChange.valueToLog, val2Array);
+    XCTAssertFalse(userAttributeChange.changed);
+    XCTAssertFalse(userAttributeChange.deleted);
+    XCTAssertTrue(userAttributeChange.isArray);
+
     userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:nil key:@"key2" value:@[@"item1", @"item2"]];
     XCTAssertNotNil(userAttributeChange);
     XCTAssertEqualObjects(userAttributeChange.key, @"key2");
@@ -69,9 +82,10 @@
     XCTAssertNil(userAttributeChange.userAttributes);
     XCTAssertEqualObjects(userAttributeChange.value, val2Array);
     XCTAssertEqualObjects(userAttributeChange.valueToLog, val2Array);
-    XCTAssertEqual(userAttributeChange.deleted, NO);
-    XCTAssertEqual(userAttributeChange.isArray, YES);
-    
+    XCTAssertTrue(userAttributeChange.changed);
+    XCTAssertFalse(userAttributeChange.deleted);
+    XCTAssertTrue(userAttributeChange.isArray);
+
     userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:nil key:@"key2" value:nil];
     XCTAssertNil(userAttributeChange);
 }
