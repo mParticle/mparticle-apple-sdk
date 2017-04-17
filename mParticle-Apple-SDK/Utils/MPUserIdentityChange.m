@@ -78,17 +78,31 @@
 #pragma mark - MPUserIdentityChange
 @implementation MPUserIdentityChange
 
-- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew {
+- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew userIdentities:(nullable NSArray<NSDictionary<NSString *, id> *> *)userIdentities {
     self = [super init];
     if (self) {
         _userIdentityNew = userIdentityNew;
+        _changed = YES;
+
+        [userIdentities enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull ui, NSUInteger idx, BOOL * _Nonnull stop) {
+            MPUserIdentity idType = [ui[kMPUserIdentityTypeKey] unsignedIntegerValue];
+            id idValue = ui[kMPUserIdentityIdKey];
+
+            if (idType == _userIdentityNew.type && [idValue isEqual:_userIdentityNew.value]) {
+                _changed = NO;
+            }
+
+            if (!_changed) {
+                *stop = YES;
+            }
+        }];
     }
     
     return self;
 }
 
-- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew oldUserIdentity:(nullable MPUserIdentityInstance *)userIdentityOld timestamp:(nullable NSDate *)timestamp {
-    self = [self initWithNewUserIdentity:userIdentityNew];
+- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew oldUserIdentity:(nullable MPUserIdentityInstance *)userIdentityOld timestamp:(nullable NSDate *)timestamp userIdentities:(nullable NSArray<NSDictionary<NSString *, id> *> *)userIdentities {
+    self = [self initWithNewUserIdentity:userIdentityNew userIdentities:userIdentities];
     if (self) {
         _userIdentityOld = userIdentityOld;
         _timestamp = timestamp;

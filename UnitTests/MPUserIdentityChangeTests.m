@@ -89,17 +89,36 @@
     MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:MPUserIdentityCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:date isFirstTimeSet:NO];
     MPUserIdentityInstance *userIdentityOld = [[MPUserIdentityInstance alloc] initWithType:MPUserIdentityCustomerId value:@"The Least Interesting Man in the World" dateFirstSet:[NSDate distantPast] isFirstTimeSet:YES];
 
-    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew oldUserIdentity:userIdentityOld timestamp:date];
+    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew oldUserIdentity:userIdentityOld timestamp:date userIdentities:nil];
     XCTAssertNotNil(userIdentityChange);
     XCTAssertNotNil(userIdentityChange.userIdentityNew);
     XCTAssertNotNil(userIdentityChange.userIdentityOld);
     XCTAssertNotNil(userIdentityChange.timestamp);
+    XCTAssertTrue(userIdentityChange.changed);
     
-    userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew oldUserIdentity:nil timestamp:nil];
+    userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew oldUserIdentity:nil timestamp:nil userIdentities:nil];
     XCTAssertNotNil(userIdentityChange);
     XCTAssertNotNil(userIdentityChange.userIdentityNew);
     XCTAssertNil(userIdentityChange.userIdentityOld);
     XCTAssertNotNil(userIdentityChange.timestamp);
+    XCTAssertTrue(userIdentityChange.changed);
+}
+
+- (void)testIdenticalUserIdentityChange {
+    NSArray<NSDictionary<NSString *, id> *> *userIdentities = @[
+                                                                @{
+                                                                    kMPUserIdentityTypeKey:@(MPUserIdentityCustomerId),
+                                                                    kMPUserIdentityIdKey:@"The Most Interesting Man in the World"
+                                                                }
+                                                              ];
+
+    MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:MPUserIdentityCustomerId value:@"The Most Interesting Man in the World" dateFirstSet:[NSDate date] isFirstTimeSet:NO];
+    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:userIdentities];
+    XCTAssertNotNil(userIdentityChange);
+    XCTAssertNotNil(userIdentityChange.userIdentityNew);
+    XCTAssertNil(userIdentityChange.userIdentityOld);
+    XCTAssertNotNil(userIdentityChange.timestamp);
+    XCTAssertFalse(userIdentityChange.changed);
 }
 
 @end

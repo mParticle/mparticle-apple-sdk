@@ -923,8 +923,10 @@ static BOOL appBackgrounded = NO;
                 }
                 
                 if (persistUserIdentities) {
-                    [self logUserIdentityChange:userIdentityChange];
-                    
+                    if (userIdentityChange.changed) {
+                        [self logUserIdentityChange:userIdentityChange];
+                    }
+
                     dispatch_async(dispatch_get_main_queue(), ^{
                         NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
                         userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
@@ -2815,7 +2817,7 @@ static BOOL appBackgrounded = NO;
     MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:identityType
                                                                                      value:identityString];
     
-    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew];
+    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:self.userIdentities];
     
     switch (_initializationStatus) {
         case MPInitializationStatusStarted:

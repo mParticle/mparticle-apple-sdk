@@ -40,8 +40,9 @@
 @property (nonatomic, strong, nullable) MPUserIdentityInstance *userIdentityNew;
 @property (nonatomic, strong, nullable) MPUserIdentityInstance *userIdentityOld;
 @property (nonatomic, strong, nullable) NSDate *timestamp;
+@property (nonatomic, unsafe_unretained, readonly) BOOL changed;
 
-- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew;
-- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew oldUserIdentity:(nullable MPUserIdentityInstance *)userIdentityOld timestamp:(nullable NSDate *)timestamp;
+- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew userIdentities:(nullable NSArray<NSDictionary<NSString *, id> *> *)userIdentities;
+- (nonnull instancetype)initWithNewUserIdentity:(nullable MPUserIdentityInstance *)userIdentityNew oldUserIdentity:(nullable MPUserIdentityInstance *)userIdentityOld timestamp:(nullable NSDate *)timestamp userIdentities:(nullable NSArray<NSDictionary<NSString *, id> *> *)userIdentities;
 
 @end
