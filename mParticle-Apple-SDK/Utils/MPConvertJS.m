@@ -83,6 +83,8 @@ typedef NS_ENUM(NSUInteger, MPJSCommerceEventAction) {
             break;
 
         default:
+            action = MPCommerceEventActionAddToCart;
+            NSAssert(NO, @"Invalid commerce event action");
             break;
     }
     return action;
@@ -92,10 +94,14 @@ typedef NS_ENUM(NSUInteger, MPJSCommerceEventAction) {
     BOOL isProductAction = json[@"ProductAction"][@"ProductActionType"] != nil;
     BOOL isPromotion = json[@"PromotionAction"] != nil;
     BOOL isImpression = json[@"ProductImpressions"] != nil;
-
-    NSAssert(isProductAction || isPromotion || isImpression, @"Invalid commerce event");
+    BOOL isValid = isProductAction || isPromotion || isImpression;
 
     MPCommerceEvent *commerceEvent = nil;
+    if (!isValid) {
+        NSAssert(NO, @"Invalid commerce event");
+        return commerceEvent;
+    }
+
     if (isProductAction) {
         id productActionJson = json[@"ProductAction"][@"ProductActionType"];
         MPCommerceEventAction action = [MPConvertJS MPCommerceEventAction:productActionJson];
@@ -111,7 +117,7 @@ typedef NS_ENUM(NSUInteger, MPJSCommerceEventAction) {
 
     commerceEvent.checkoutOptions = json[@"CheckoutOptions"];
     commerceEvent.productListName = json[@"productActionListName"];
-    commerceEvent.productListSource = json[@"productActionListName"];
+    commerceEvent.productListSource = json[@"productActionListSource"];
     commerceEvent.currency = json[@"CurrencyCode"];
     commerceEvent.transactionAttributes = [MPConvertJS MPTransactionAttributes:json[@"ProductAction"]];
     commerceEvent.checkoutStep = [json[@"CheckoutStep"] intValue];
