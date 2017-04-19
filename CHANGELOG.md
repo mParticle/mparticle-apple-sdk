@@ -6,6 +6,14 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.13.0
+
+>Upgrade suggestion: **LOW**. Upgrade if you need to track eCommerce in embedded WebViews
+
+* [NEW] Handle eCommerce events from embedded js sdk
+* [NEW] Optimize user identity and user attribute change messages
+* [NEW] Sync user attributes and identities only once per kit
+
 ## 6.12.6
 
 >Upgrade suggestion: **LOW**. Upgrade if you've seen a kit configuration be removed from cache by the O.S.
