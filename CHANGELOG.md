@@ -6,6 +6,13 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.13.1
+
+>Upgrade suggestion: **LOW**. Upgrade if you need support for Radar.
+
+* [FIX] Support for [Radar](https://www.onradar.com) as a kit
+* [FIX] Support for forcing SDK Environment on start-up
+
 ## 6.13.0
 
 >Upgrade suggestion: **LOW**. Upgrade if you need to track eCommerce in embedded WebViews
