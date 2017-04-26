@@ -419,7 +419,9 @@ NSString *const kMPStateKey = @"state";
             registerForSilentNotifications = [configRegisterForSilentNotifications boolValue];
         }
     }
-    
+
+    [MPStateMachine setEnvironment:environment];
+
     [self.backendController startWithKey:apiKey
                                   secret:secret
                                 firstRun:firstRun
@@ -437,9 +439,7 @@ NSString *const kMPStateKey = @"state";
                                userDefaults[kMParticleFirstRun] = @NO;
                                [userDefaults synchronize];
                            }
-                           
-                           [MPStateMachine setEnvironment:environment];
-                           
+
                            strongSelf->_optOut = [MPStateMachine sharedInstance].optOut;
                            strongSelf->privateOptOut = @(strongSelf->_optOut);
                            
