@@ -113,6 +113,7 @@ Kit | CocoaPods | Carthage
 [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
 [Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                  |  ✓ | 
 [Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)   |  ✓ |  
+[Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)              |  ✓ |  
 [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                    |  ✓ | ✓
 [Urban Airship](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship)   |  ✓ |  
 [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)              |  ✓ |  
