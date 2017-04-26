@@ -413,6 +413,10 @@ NSString *const kMPStateKey = @"state";
     NSAssert([apiKey isKindOfClass:[NSString class]] && [secret isKindOfClass:[NSString class]], @"mParticle SDK apiKey and secret must be of type string.");
     NSAssert(apiKey.length > 0 && secret.length > 0, @"mParticle SDK apiKey and secret cannot be an empty string.");
     NSAssert((NSNull *)apiKey != [NSNull null] && (NSNull *)secret != [NSNull null], @"mParticle SDK apiKey and secret cannot be null.");
+
+    if (self.backendController.initializationStatus != MPInitializationStatusNotStarted) {
+        return;
+    }
     
     __weak MParticle *weakSelf = self;
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
