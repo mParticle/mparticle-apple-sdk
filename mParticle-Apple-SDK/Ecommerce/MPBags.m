@@ -25,7 +25,7 @@
 
 @interface MPBags()
 
-@property (nonatomic, strong, nonnull) NSMutableArray<MPProductBag *> *productBagsArray;
+@property (nonatomic, strong, nullable) NSMutableArray<MPProductBag *> *productBagsArray;
 
 @end
 

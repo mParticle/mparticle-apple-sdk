@@ -26,6 +26,7 @@
 @interface MPEvent : NSObject <NSCopying> {
 @protected
     NSDate *_timestamp;
+    NSString *_typeName;
 }
 
 /**

@@ -1483,6 +1483,7 @@ static BOOL appBackgrounded = NO;
                                                                                 
                                                                                 if (strongSelf.eventSet.count == 0) {
                                                                                     strongSelf->_eventSet = nil;
+
                                                                                 }
                                                                                 
                                                                                 MPILogDebug(@"SDK has ended background activity.");
@@ -1938,12 +1939,12 @@ static BOOL appBackgrounded = NO;
     }
     
     NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
-    if (!localKey) {
+    id currentValue = session.attributesDictionary[localKey];
+    if (!currentValue && [value isKindOfClass:[NSNumber class]]) {
         [self setSessionAttribute:session key:localKey value:value];
         return value;
     }
-    
-    id currentValue = session.attributesDictionary[localKey];
+
     if (![currentValue isKindOfClass:[NSNumber class]]) {
         return nil;
     }

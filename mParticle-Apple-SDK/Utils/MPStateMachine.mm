@@ -93,7 +93,6 @@ static BOOL runningInBackground = NO;
         lastestSDKWarningShown = NO;
         _dataRamped = NO;
         _installationType = MPInstallationTypeAutodetect;
-        _firstSeenInstallation = nil;
         _launchDate = [NSDate date];
         _launchOptions = nil;
         _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
@@ -205,7 +204,7 @@ static BOOL runningInBackground = NO;
     
     NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
     NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
-    if (![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
+    if (newSDKMajorVersion && ![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
         [[MPKitContainer sharedInstance] removeAllKitConfigurations];
     }
 

@@ -77,8 +77,8 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 #endif
 
 @property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
-@property (nonatomic, strong, nonnull) NSMutableSet<MPEvent *> *eventSet;
-@property (nonatomic, strong, nonnull) MPNetworkCommunication *networkCommunication;
+@property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
+@property (nonatomic, strong, nullable) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong, nullable) MPSession *session;
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
 @property (nonatomic, unsafe_unretained, readonly) MPInitializationStatus initializationStatus;

@@ -65,7 +65,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     task_info_count = TASK_INFO_MAX;
     kr = task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)tinfo, &task_info_count);
     if (kr != KERN_SUCCESS) {
-        return nil;
+        return @{kMPStateCPUKey:@"0.0"};
     }
     
 //    task_basic_info_t basic_info;
@@ -81,7 +81,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     // get threads in the task
     kr = task_threads(mach_task_self(), &thread_list, &thread_count);
     if (kr != KERN_SUCCESS) {
-        return nil;
+        return @{kMPStateCPUKey:@"0.0"};
     }
     
 //    if (thread_count > 0)
@@ -96,7 +96,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
         thread_info_count = THREAD_INFO_MAX;
         kr = thread_info(thread_list[j], THREAD_BASIC_INFO, (thread_info_t)thinfo, &thread_info_count);
         if (kr != KERN_SUCCESS) {
-            return nil;
+            return @{kMPStateCPUKey:@"0.0"};
         }
         
         basic_info_th = (thread_basic_info_t)thinfo;

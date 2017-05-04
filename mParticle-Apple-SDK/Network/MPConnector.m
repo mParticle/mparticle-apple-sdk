@@ -59,7 +59,6 @@ static NSArray *mpFiddlerCertificates = nil;
     
     _active = NO;
     _characterEncoding = NSUTF8StringEncoding;
-    _connectionId = nil;
     
     [self cleariVars];
     

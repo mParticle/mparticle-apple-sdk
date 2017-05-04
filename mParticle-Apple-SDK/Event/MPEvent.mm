@@ -36,7 +36,6 @@
 @implementation MPEvent
 
 @synthesize messageType = _messageType;
-@synthesize typeName = _typeName;
 
 - (instancetype)init {
     MPILogError(@"%@ should NOT be initialized using the standard initializer.", [self class]);
@@ -64,7 +63,6 @@
     _name = name;
     _startTime = nil;
     _duration = @0;
-    _customFlagsDictionary = nil;
     self.type = type;
 
     return self;

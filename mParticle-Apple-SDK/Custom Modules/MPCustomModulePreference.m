@@ -82,7 +82,6 @@
     }
     
     _location = location;
-    _value = nil;
     
     return self;
 }

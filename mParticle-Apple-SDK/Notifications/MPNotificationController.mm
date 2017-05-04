@@ -246,7 +246,7 @@ static int64_t launchNotificationHash = 0;
         [self verifyIfInfluencedOpen];
     }
     
-    if (shouldDelegateReceivedRemoteNotification) {
+    if (userNotification && shouldDelegateReceivedRemoteNotification) {
         [self.delegate receivedUserNotification:userNotification];
     }
 }

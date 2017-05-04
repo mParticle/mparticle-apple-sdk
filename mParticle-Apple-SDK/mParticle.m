@@ -89,7 +89,6 @@ NSString *const kMPStateKey = @"state";
         return nil;
     }
 
-    _commerce = nil;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
@@ -382,15 +381,23 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)start {
-    NSString *appAPIKey;
-    NSString *appSecret;
-    
-    if (self.configSettings) {
-        appAPIKey = self.configSettings[kMPConfigApiKey];
-        appSecret = self.configSettings[kMPConfigSecret];
+    NSString *apiKey = nil;
+    NSString *secret = nil;
+
+    if (!self.configSettings) {
+        NSAssert(NO, @"mParticle SDK requires a valid MParticleConfig.plist with an apiKey and secret in order to use the no-args start method.");
+        return;
     }
-    
-    [self startWithKey:appAPIKey secret:appSecret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
+
+    apiKey = self.configSettings[kMPConfigApiKey];
+    secret = self.configSettings[kMPConfigSecret];
+
+    if (!apiKey || !secret) {
+        NSAssert(NO, @"mParticle SDK requires a valid MParticleConfig.plist with an apiKey and secret in order to use the no-args start method.");
+        return;
+    }
+
+    [self startWithKey:apiKey secret:secret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret {
