@@ -16,7 +16,8 @@ before_install:
 - brew install carthage
 script:
 - open -a "simulator" --args -CurrentDeviceUDID $UDID
-- xcodebuild -version | grep "8.0" || ./Scripts/modify_for_older_xcode.rb
+- xcodebuild -version | grep "Xcode 8" || ./Scripts/modify_for_older_xcode.rb
+- xcodebuild -version | grep "Xcode 7" || (xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" clean analyze | grep -B3 "warning generated." || exit 0 && exit 1;)
 - set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" build-for-testing | xcpretty || true
 - set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test-without-building | xcpretty || xctool -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test -only mParticle_iOS_SDKTests
 - osascript -e 'tell app "Simulator" to quit'
