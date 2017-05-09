@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.13.2
+
+>Upgrade suggestion: **LOW**.
+
+* [FIX] Fix clang static analyzer warnings
+
 ## 6.13.1
 
 >Upgrade suggestion: **LOW**. Upgrade if you need support for Radar.
