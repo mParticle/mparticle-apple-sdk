@@ -188,7 +188,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Radar */
     MPKitInstanceRadar = 117,
     /** Kit code for Button */
-    MPKitInstanceButton = 1022
+    MPKitInstanceButton = 1022,
+    /** Kit code for Skyhook */
+    MPKitInstanceSkyhook = 121
 };
 
 /// Log Levels
