@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.13.3
+
+>Upgrade suggestion: **MEDIUM**.
+
+* [FIX] Capture user agent in start, never in background
+
 ## 6.13.2
 
 >Upgrade suggestion: **LOW**.
