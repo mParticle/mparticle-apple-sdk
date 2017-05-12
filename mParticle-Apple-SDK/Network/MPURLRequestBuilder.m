@@ -84,22 +84,34 @@ static NSTimeInterval requestTimeout = 30.0;
     return (NSString *)encodedMessage;
 }
 
+- (NSString *)fallbackUserAgent {
+    NSString *mpUserAgent;
+    NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
+    [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
+
+#if TARGET_OS_IOS == 1
+    mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
+#elif TARGET_OS_TV == 1
+    mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
+#endif
+    return mpUserAgent;
+}
+
 - (NSString *)userAgent {
     static NSString *mpUserAgent = nil;
 
     if (!mpUserAgent) {
 #if TARGET_OS_IOS == 1
+        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+            return [self fallbackUserAgent];
+        }
+
         dispatch_block_t getUserAgent = ^{
             @try {
                 UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-                
                 mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
             } @catch (NSException *exception) {
-                NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
-                [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
-                
-                mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
-
+                mpUserAgent = [self fallbackUserAgent];
                 MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
             }
         };
@@ -110,10 +122,7 @@ static NSTimeInterval requestTimeout = 30.0;
             dispatch_sync(dispatch_get_main_queue(), getUserAgent);
         }
 #elif TARGET_OS_TV == 1
-        NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
-        [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
-        
-        mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
+        mpUserAgent = [self fallbackUserAgent];
 #endif
     }
 
@@ -145,6 +154,12 @@ static NSTimeInterval requestTimeout = 30.0;
 
 + (NSTimeInterval)requestTimeout {
     return requestTimeout;
+}
+
++ (void)tryToCaptureUserAgent {
+    dispatch_async(dispatch_get_main_queue(),^{
+        [[[MPURLRequestBuilder alloc] init] userAgent];
+    });
 }
 
 #pragma mark Public instance methods

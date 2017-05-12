@@ -55,6 +55,7 @@
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
+#import "MPURLRequestBuilder.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -2557,6 +2558,8 @@ static BOOL appBackgrounded = NO;
     stateMachine.secret = secret;
     stateMachine.installationType = installationType;
     [MPStateMachine setRunningInBackground:NO];
+
+    [MPURLRequestBuilder tryToCaptureUserAgent];
     
     __weak MPBackendController *weakSelf = self;
     
