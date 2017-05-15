@@ -187,6 +187,10 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceRevealMobile = 112,
     /** Kit code for Radar */
     MPKitInstanceRadar = 117,
+    /** Kit code for Skyhook */
+    MPKitInstanceSkyhook = 121,
+    /** Kit code for Iterable */
+    MPKitInstanceIterable = 1003,
     /** Kit code for Button */
     MPKitInstanceButton = 1022
 };

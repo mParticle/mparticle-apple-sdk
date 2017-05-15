@@ -46,7 +46,9 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceApptimize),
                                       @(MPKitInstanceButton),
                                       @(MPKitInstanceRevealMobile),
-                                      @(MPKitInstanceRadar)];
+                                      @(MPKitInstanceRadar),
+                                      @(MPKitInstanceSkyhook),
+                                      @(MPKitInstanceIterable)];
 
     validKitCodes = [[NSMutableArray alloc] initWithCapacity:kitCodes.count];
     
@@ -79,6 +81,8 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceButton:
             case MPKitInstanceRevealMobile:
             case MPKitInstanceRadar:
+            case MPKitInstanceSkyhook:
+            case MPKitInstanceIterable:
                 [validKitCodes addObject:kitCode];
                 break;
         }
