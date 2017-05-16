@@ -67,6 +67,7 @@ NSString *const kMPDeviceIsTabletKey = @"it";
 NSString *const kMPDeviceIdentifierKey = @"deviceIdentifier";
 NSString *const kMPDeviceLimitAdTrackingKey = @"lat";
 NSString *const kMPDeviceIsDaylightSavingTime = @"idst";
+NSString *const kMPDeviceInvalidVendorId = @"00000000-0000-0000-0000-000000000000";
 
 static NSDictionary *jailbrokenInfo;
 
@@ -315,6 +316,15 @@ int main(int argc, char *argv[]);
     }
     
     _vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    
+    if (_vendorId && ![_vendorId isEqualToString:kMPDeviceInvalidVendorId]) {
+        userDefaults[kMPDeviceAppVendorIdKey] = _vendorId;
+        [userDefaults synchronize];
+    }
+    else {
+        _vendorId = userDefaults[kMPDeviceAppVendorIdKey];
+    }
     
     return _vendorId;
 }
