@@ -130,7 +130,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
             
             if ([kitInstance respondsToSelector:startSelector]) {
-                [kitInstance start];
+                @try {
+                    [kitInstance start];
+                }
+                @catch (NSException *exception) {
+                    MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
+                }
             }
         }
     }
