@@ -621,6 +621,17 @@ NSString *const kMPStateKey = @"state";
                                                                 kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
                                                                     *execStatus = [kit endTimedEvent:forwardEvent];
                                                                 }];
+
+                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logEvent:)
+                                                                     event:event
+                                                               messageType:MPMessageTypeEvent
+                                                                  userInfo:nil
+                                                                kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
+                                                                    if (![kit respondsToSelector:@selector(endTimedEvent:)]) {
+                                                                        *execStatus = [kit logEvent:forwardEvent];
+                                                                    }
+                                                                }];
+
                        } else if (execStatus == MPExecStatusDelayedExecution) {
                            MPILogWarning(@"Delayed timed event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
                        } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
