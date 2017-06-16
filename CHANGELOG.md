@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.14.1
+
+>Upgrade suggestion: **MEDIUM**.
+
+* [FIX] Retry and increase timeout for search ads
+
 ## 6.14.0
 
 >Upgrade suggestion: **LOW**. Update if you need support for Skyhook or Iterable.
