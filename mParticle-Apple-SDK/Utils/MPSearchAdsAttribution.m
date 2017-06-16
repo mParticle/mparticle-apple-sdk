@@ -69,18 +69,44 @@
         }
     };
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(30 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         onceCompletionBlock();
     });
     
     __weak MPSearchAdsAttribution *weakSelf = self;
-    [MPClientSharedInstance performSelector:requestDetailsSelector withObject:^(NSDictionary *attributionDetails, NSError *error) {
-        __strong MPSearchAdsAttribution *strongSelf = weakSelf;
-        if (strongSelf) {
-            strongSelf.dictionary = attributionDetails;
-            onceCompletionBlock();
+    int numRequests = 4;
+    __block int numRequestsCompleted = 0;
+    
+    void (^requestBlock)() = ^{
+        if (!called) {
+            [MPClientSharedInstance performSelector:requestDetailsSelector withObject:^(NSDictionary *attributionDetails, NSError *error) {
+                ++numRequestsCompleted;
+                
+                __strong MPSearchAdsAttribution *strongSelf = weakSelf;
+                if (!strongSelf) {
+                    return;
+                }
+
+                if (attributionDetails && !error) {
+                    strongSelf.dictionary = attributionDetails;
+                    onceCompletionBlock();
+                }
+                else if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
+                    onceCompletionBlock();
+                }
+                else if (numRequestsCompleted >= numRequests) {
+                    onceCompletionBlock();
+                }
+            }];
         }
-    }];
+    };
+    
+    // Per Apple docs, "Handle any errors you receive and re-poll for data, if required"
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0 * NSEC_PER_SEC)), dispatch_get_main_queue(), requestBlock);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), requestBlock);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(6 * NSEC_PER_SEC)), dispatch_get_main_queue(), requestBlock);
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(9 * NSEC_PER_SEC)), dispatch_get_main_queue(), requestBlock);
+    
 #pragma clang diagnostic pop
 #else
     completionHandler();

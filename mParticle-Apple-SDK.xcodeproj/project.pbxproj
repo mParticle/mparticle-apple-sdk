@@ -449,7 +449,6 @@
 		C9DD21011D8A203D00D3ABBE /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
-		DB47D5BE1DAC308C0070D192 /* MPSearchAdsAttributionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */; };
 		DB58FB011E9FD06800AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
 		DB58FB021E9FD06800AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
 		DB58FB031E9FD07900AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
@@ -717,7 +716,6 @@
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
-		DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttributionTests.m; sourceTree = "<group>"; };
 		DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
 		DB58FB001E9FD06800AB5402 /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
@@ -1178,7 +1176,6 @@
 				C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */,
 				C9DD20B71D8A190600D3ABBE /* MPUserIdentityChangeTests.m */,
 				C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */,
-				DB47D5BD1DAC308C0070D192 /* MPSearchAdsAttributionTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1786,7 +1783,6 @@
 				C9DD20ED1D8A1FA500D3ABBE /* MPEventTests.mm in Sources */,
 				C9DD20E41D8A194D00D3ABBE /* MPAppNotificationHandlerTests.m in Sources */,
 				C9DD20FD1D8A202D00D3ABBE /* MPStateMachineTests.mm in Sources */,
-				DB47D5BE1DAC308C0070D192 /* MPSearchAdsAttributionTests.m in Sources */,
 				C9DD20F41D8A1FF700D3ABBE /* MPKitRegisterTests.m in Sources */,
 				C9DD20E71D8A195D00D3ABBE /* MPCartTests.m in Sources */,
 				C9DD20EB1D8A1F9E00D3ABBE /* MPDataModelTests.m in Sources */,

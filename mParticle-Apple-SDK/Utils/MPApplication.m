@@ -368,7 +368,13 @@ static NSString *kMPAppStoreReceiptString = nil;
 #pragma mark Public methods
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     if (appInfo) {
-        return appInfo;
+        NSMutableDictionary<NSString *, id> *mutableAppInfo = [appInfo mutableCopy];
+        
+        NSDictionary *auxDictionary = self.searchAdsAttribution;
+        if (auxDictionary) {
+            mutableAppInfo[kMPAppSearchAdsAttributionKey] = auxDictionary;
+        }
+        return [mutableAppInfo copy];
     }
     
     NSMutableDictionary<NSString *, id> *applicationInfo;

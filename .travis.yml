@@ -2,7 +2,7 @@ language: objective-c
 osx_image: xcode8.3
 matrix:
   include:
-  - env: IOS_DEVICE="iPhone 7 Plus (10.3)", UDID="99F4F45C-3B72-4473-A6C5-3FD81EF3C25D", IS_XCODE8="true"
+  - env: IOS_DEVICE="iPhone 7 Plus (10.3.1)", UDID="F60B87EC-8969-41A7-90ED-D0826ECC32DB", IS_XCODE8="true"
     osx_image: xcode8.3
     script:
     - (xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" clean analyze | grep -B3 "warning generated." || exit 0 && exit 1)
