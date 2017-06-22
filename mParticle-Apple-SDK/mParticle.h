@@ -35,9 +35,9 @@
 #import "MPPromotion.h"
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "MPUserSegments.h"
 #import "NSArray+MPCaseInsensitive.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "MPIdentityApi.h"
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
@@ -50,6 +50,18 @@
 #endif
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface MParticleOptions : NSObject
+
++ (MParticleOptions*)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
+@property (nonatomic, strong, readwrite) NSString *apiKey;
+@property (nonatomic, strong, readwrite) NSString *apiSecret;
+@property (nonatomic, unsafe_unretained, readwrite) MPInstallationType installType;
+@property (nonatomic, strong, readwrite) MPIdentityApiRequest *initialIdentity;
+@property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
+@property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
+
+@end
 
 /**
  This is the main class of the mParticle SDK. It interfaces your app with the mParticle API
@@ -90,6 +102,13 @@ NS_ASSUME_NONNULL_BEGIN
  @see MPCart
  */
 @property (nonatomic, strong, readonly) MPCommerce *commerce;
+
+/**
+ This property is an instance of MPCommerce. It is used to execute transactional operations on the shopping cart.
+ @see MPCommerce
+ @see MPCart
+ */
+@property (nonatomic, strong, readonly) MPIdentityApi *identity;
 
 /**
  Forwards setting/resetting the debug mode for third party kits.
@@ -176,11 +195,7 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 
-/**
- Gets all user attributes.
- @returns A dictionary containing the collection of user attributes.
- */
-@property (nonatomic, strong, nullable, readonly) NSDictionary<NSString *, id> *userAttributes;
+
 
 /**
  mParticle Apple SDK version
@@ -196,58 +211,15 @@ NS_ASSUME_NONNULL_BEGIN
 + (instancetype)sharedInstance;
 
 /**
- Starts the API with the api_key and api_secret saved in MParticleConfig.plist.  If you
- use startAPI instead of startAPIWithKey:secret: your API key and secret must
- be added to these parameters in the MParticleConfig.plist.
- @see startWithKey:secret:installationType:environment:proxyAppDelegate:
+ *
  */
 - (void)start;
 
 /**
  Starts the API with your API key and a secret.
- It is required that you use either this method or startAPI to authorize the API before
- using the other API methods.  The apiKey and secret that are passed in to this method
- will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
- @param apiKey The API key for your account
- @param secret The API secret for your account
- @see startWithKey:secret:installationType:environment:proxyAppDelegate:
+ @param options SDK startup options
  */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret;
-
-/**
- Starts the API with your API key and a secret and installation type.
- It is required that you use either this method or startAPI to authorize the API before
- using the other API methods.  The apiKey and secret that are passed in to this method
- will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
- @param apiKey The API key for your account
- @param secret The API secret for your account
- @param installationType You can tell the mParticle SDK if this is a new install, an upgrade, or let the SDK detect it automatically.
- @param environment The environment property defining the running SDK environment: Development or Production. You can set it to a specific value, or let the
-        SDK auto-detect the environment for you. Once the app is deployed to the App Store, setting this parameter will have no effect, since the SDK will set
-        the environment to production.
- @see MPInstallationType
- @see MPEnvironment
- @see startWithKey:secret:installationType:environment:proxyAppDelegate:
- */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment;
-
-/**
- Starts the API with your API key and a secret and installation type.
- It is required that you use either this method or startAPI to authorize the API before
- using the other API methods.  The apiKey and secret that are passed in to this method
- will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
- @param apiKey The API key for your account
- @param secret The API secret for your account
- @param installationType You can tell the mParticle SDK if this is a new install, an upgrade, or let the SDK detect it automatically.
- @param environment The environment property defining the running SDK environment: Development or Production. You can set it to a specific value, or let the
-        SDK auto-detect the environment for you. Once the app is deployed to the App Store, setting this parameter will have no effect, since the SDK will set
-        the environment to production.
- @param proxyAppDelegate Flag indicating whether the mParticle SDK should handle logging remote notifications, app launches, and actions automatically. If you set to NO, 
-        your app is responsible for calling required methods. Default is YES
- @see MPInstallationType
- @see MPEnvironment
- */
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate;
+- (void)startWithOptions:(MParticleOptions *)options;
 
 #pragma mark - Application notifications
 #if TARGET_OS_IOS == 1
@@ -659,59 +631,6 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (nullable NSString *)surveyURL:(MPSurveyProvider)surveyProvider;
 
-#pragma mark - User Identity
-/**
- Increments the value of a user attribute by the provided amount. If the key does not
- exist among the current user attributes, this method will add the key to the user attributes
- and set the value to the provided amount. If the key already exists and the existing value is not
- a number, the operation will abort and the returned value will be nil.
- @param key The attribute key
- @param value The increment amount
- @returns The new value amount or nil, in case of failure
- */
-- (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value;
-
-/**
- Logs a user out.
- */
-- (void)logout;
-
-/**
- Sets a single user attribute. The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes. Passing in an empty string value (@"") for an
- existing key will remove the user attribute.
- @param key The user attribute key
- @param value The user attribute value
- */
-- (void)setUserAttribute:(NSString *)key value:(nullable id)value;
-
-/**
- Sets a list of user attributes associated with a key.
- Passing nil to values for an existing key will remove the user attribute.
- @param key The user attribute list key
- @param values An array of user attributes
- */
-- (void)setUserAttribute:(NSString *)key values:(nullable NSArray<NSString *> *)values;
-
-/**
- Sets User/Customer Identity
- @param identityString A string representing the user identity
- @param identityType The user identity type
- */
-- (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
-
-/**
- Sets a single user tag or attribute.  The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes.
- @param tag The user tag/attribute
- */
-- (void)setUserTag:(NSString *)tag;
-
-/**
- Removes a single user attribute.
- @param key The user attribute key
- */
-- (void)removeUserAttribute:(NSString *)key;
 
 #pragma mark - User Notifications
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
@@ -730,16 +649,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response;
 #endif
 
-#pragma mark - User Segments
-/**
- Retrieves user segments from mParticle's servers and returns the result as an array of MPUserSegments objects.
- If the method takes longer than timeout seconds to return, the local cached segments will be returned instead,
- and the newly retrieved segments will update the local cache once the results arrive.
- @param timeout The maximum number of seconds to wait for a response from mParticle's servers. This value can be fractional, like 0.1 (100 milliseconds)
- @param endpointId The endpoint id
- @param completionHandler A block to be called when the results are available. The user segments array is passed to this block
- */
-- (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler;
 
 #pragma mark - Web Views
 #if TARGET_OS_IOS == 1

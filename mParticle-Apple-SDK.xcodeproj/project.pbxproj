@@ -7,6 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04F643F51EFC03E7000FADE3 /* MPIdentityApi.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F643F31EFC03E7000FADE3 /* MPIdentityApi.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F643F61EFC03E7000FADE3 /* MPIdentityApi.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F643F41EFC03E7000FADE3 /* MPIdentityApi.m */; };
+		04F643F71EFC0483000FADE3 /* MPIdentityApi.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F643F41EFC03E7000FADE3 /* MPIdentityApi.m */; };
+		04F643F81EFC0487000FADE3 /* MPIdentityApi.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F643F31EFC03E7000FADE3 /* MPIdentityApi.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F644011EFC2A61000FADE3 /* MPIdentityApiRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F643FF1EFC2A61000FADE3 /* MPIdentityApiRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F644021EFC2A61000FADE3 /* MPIdentityApiRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F643FF1EFC2A61000FADE3 /* MPIdentityApiRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F644031EFC2A61000FADE3 /* MPIdentityApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F644001EFC2A61000FADE3 /* MPIdentityApiRequest.m */; };
+		04F644041EFC2A61000FADE3 /* MPIdentityApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F644001EFC2A61000FADE3 /* MPIdentityApiRequest.m */; };
+		04F6440D1EFC8278000FADE3 /* MParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F6440B1EFC8278000FADE3 /* MParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F6440E1EFC8278000FADE3 /* MParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F6440C1EFC8278000FADE3 /* MParticleUser.m */; };
+		04F6440F1EFC8281000FADE3 /* MParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F6440B1EFC8278000FADE3 /* MParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F644101EFC8284000FADE3 /* MParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F6440C1EFC8278000FADE3 /* MParticleUser.m */; };
+		04F644191EFC85B4000FADE3 /* MPIdentityApiResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F644171EFC85B4000FADE3 /* MPIdentityApiResult.m */; };
+		04F6441A1EFC85B4000FADE3 /* MPIdentityApiResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F644171EFC85B4000FADE3 /* MPIdentityApiResult.m */; };
+		04F6441B1EFC85B4000FADE3 /* MPIdentityApiResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F644181EFC85B4000FADE3 /* MPIdentityApiResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		04F6441C1EFC85B4000FADE3 /* MPIdentityApiResult.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F644181EFC85B4000FADE3 /* MPIdentityApiResult.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C911FD6F1D8A300C002A3516 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206B1D8A147A00D3ABBE /* UIKit.framework */; };
 		C911FD701D8A3014002A3516 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */; };
 		C911FD711D8A301C002A3516 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206F1D8A148C00D3ABBE /* Security.framework */; };
@@ -481,6 +497,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		04F643F31EFC03E7000FADE3 /* MPIdentityApi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityApi.h; path = Identity/MPIdentityApi.h; sourceTree = "<group>"; };
+		04F643F41EFC03E7000FADE3 /* MPIdentityApi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApi.m; path = Identity/MPIdentityApi.m; sourceTree = "<group>"; };
+		04F643FF1EFC2A61000FADE3 /* MPIdentityApiRequest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityApiRequest.h; path = Identity/MPIdentityApiRequest.h; sourceTree = "<group>"; };
+		04F644001EFC2A61000FADE3 /* MPIdentityApiRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApiRequest.m; path = Identity/MPIdentityApiRequest.m; sourceTree = "<group>"; };
+		04F6440B1EFC8278000FADE3 /* MParticleUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MParticleUser.h; path = Identity/MParticleUser.h; sourceTree = "<group>"; };
+		04F6440C1EFC8278000FADE3 /* MParticleUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MParticleUser.m; path = Identity/MParticleUser.m; sourceTree = "<group>"; };
+		04F644171EFC85B4000FADE3 /* MPIdentityApiResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApiResult.m; path = Identity/MPIdentityApiResult.m; sourceTree = "<group>"; };
+		04F644181EFC85B4000FADE3 /* MPIdentityApiResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityApiResult.h; path = Identity/MPIdentityApiResult.h; sourceTree = "<group>"; };
 		C911FD7C1D8A3524002A3516 /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		C92F0F2D1DF9C21D008C5384 /* MPKitActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitActivity.h; sourceTree = "<group>"; };
@@ -781,6 +805,21 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		04F643F21EFC03DA000FADE3 /* Identity */ = {
+			isa = PBXGroup;
+			children = (
+				04F644171EFC85B4000FADE3 /* MPIdentityApiResult.m */,
+				04F644181EFC85B4000FADE3 /* MPIdentityApiResult.h */,
+				04F6440B1EFC8278000FADE3 /* MParticleUser.h */,
+				04F6440C1EFC8278000FADE3 /* MParticleUser.m */,
+				04F643F31EFC03E7000FADE3 /* MPIdentityApi.h */,
+				04F643F41EFC03E7000FADE3 /* MPIdentityApi.m */,
+				04F643FF1EFC2A61000FADE3 /* MPIdentityApiRequest.h */,
+				04F644001EFC2A61000FADE3 /* MPIdentityApiRequest.m */,
+			);
+			name = Identity;
+			sourceTree = "<group>";
+		};
 		C9A7B3BE1D8A109500426CCF = {
 			isa = PBXGroup;
 			children = (
@@ -805,6 +844,7 @@
 		C9A7B3CA1D8A109500426CCF /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
+				04F643F21EFC03DA000FADE3 /* Identity */,
 				C9DD1C6C1D8A112B00D3ABBE /* AppNotifications */,
 				C9DD1C731D8A112B00D3ABBE /* Custom Modules */,
 				C9DD1C7A1D8A112B00D3ABBE /* Data Model */,
@@ -1189,6 +1229,7 @@
 			files = (
 				C935A6C91D8A2DED00A1EE2F /* MPBreadcrumb.h in Headers */,
 				C935A70D1D8A2E0500A1EE2F /* MPKitConfiguration.h in Headers */,
+				04F643F81EFC0487000FADE3 /* MPIdentityApi.h in Headers */,
 				C935A6E51D8A2DF400A1EE2F /* MPBags.h in Headers */,
 				C935A6D41D8A2DED00A1EE2F /* MPMessage.h in Headers */,
 				C935A7361D8A2E2200A1EE2F /* MPNetworkPerformance.h in Headers */,
@@ -1201,6 +1242,7 @@
 				C935A6BB1D8A2DDF00A1EE2F /* MPAppDelegateProxy.h in Headers */,
 				C935A7051D8A2E0500A1EE2F /* MPAttributeProjection.h in Headers */,
 				C935A6E01D8A2DED00A1EE2F /* MPStandaloneUpload.h in Headers */,
+				04F6440F1EFC8281000FADE3 /* MParticleUser.h in Headers */,
 				C935A7091D8A2E0500A1EE2F /* MPEventProjection.h in Headers */,
 				C935A6F11D8A2DF400A1EE2F /* MPProduct+Dictionary.h in Headers */,
 				C935A6FD1D8A2DFD00A1EE2F /* EventTypeName.h in Headers */,
@@ -1213,6 +1255,7 @@
 				C935A6F41D8A2DF400A1EE2F /* MPProductBag.h in Headers */,
 				C935A7131D8A2E0500A1EE2F /* MPKitFilter.h in Headers */,
 				C935A6D61D8A2DED00A1EE2F /* MPSegment.h in Headers */,
+				04F644021EFC2A61000FADE3 /* MPIdentityApiRequest.h in Headers */,
 				C935A7151D8A2E0500A1EE2F /* MPKitInstanceValidator.h in Headers */,
 				C935A7381D8A2E2200A1EE2F /* MPURLConnectionAssociate.h in Headers */,
 				C92F0F301DF9C21D008C5384 /* MPKitActivity.h in Headers */,
@@ -1243,6 +1286,7 @@
 				C935A74B1D8A2E3800A1EE2F /* MPDateFormatter.h in Headers */,
 				C935A7531D8A2E3800A1EE2F /* MPMessageBuilder.h in Headers */,
 				C935A6DC1D8A2DED00A1EE2F /* MPSessionHistory.h in Headers */,
+				04F6441C1EFC85B4000FADE3 /* MPIdentityApiResult.h in Headers */,
 				C935A7501D8A2E3800A1EE2F /* MPHasher.h in Headers */,
 				C935A6DA1D8A2DED00A1EE2F /* MPSession.h in Headers */,
 				C935A6D21D8A2DED00A1EE2F /* MPIntegrationAttributes.h in Headers */,
@@ -1308,6 +1352,7 @@
 				C92F0F2F1DF9C21D008C5384 /* MPKitActivity.h in Headers */,
 				C9DD202C1D8A142000D3ABBE /* MPDevice.h in Headers */,
 				C9DD1FCC1D8A13DC00D3ABBE /* MPCommerceEvent.h in Headers */,
+				04F644011EFC2A61000FADE3 /* MPIdentityApiRequest.h in Headers */,
 				C9DD1FBD1D8A13D600D3ABBE /* MPStandaloneMessage.h in Headers */,
 				C9DD20191D8A140800D3ABBE /* MPURLRequestBuilder.h in Headers */,
 				C9DD1FDC1D8A13E200D3ABBE /* EventTypeName.h in Headers */,
@@ -1349,6 +1394,7 @@
 				C9DD1FA21D8A13D000D3ABBE /* MPCustomModule.h in Headers */,
 				C9DD20271D8A142000D3ABBE /* MPBracket.h in Headers */,
 				C9DD205D1D8A142900D3ABBE /* MPExceptionHandler.h in Headers */,
+				04F643F51EFC03E7000FADE3 /* MPIdentityApi.h in Headers */,
 				C9DD20171D8A140800D3ABBE /* MPURLConnectionAssociate.h in Headers */,
 				C9DD1FEE1D8A13EA00D3ABBE /* MPKitContainer.h in Headers */,
 				C9DD1FC41D8A13DC00D3ABBE /* MPBags.h in Headers */,
@@ -1373,6 +1419,7 @@
 				C9DD1FAE1D8A13D600D3ABBE /* MPDataModelProtocol.h in Headers */,
 				C9DD1FFD1D8A13FB00D3ABBE /* MPILogger.h in Headers */,
 				DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */,
+				04F6440D1EFC8278000FADE3 /* MParticleUser.h in Headers */,
 				C9DD1FD31D8A13DC00D3ABBE /* MPProductBag.h in Headers */,
 				C9DD1FA41D8A13D000D3ABBE /* MPCustomModulePreference.h in Headers */,
 				C9DD20591D8A142900D3ABBE /* MPBackendController.h in Headers */,
@@ -1385,6 +1432,7 @@
 				C9DD20281D8A142000D3ABBE /* MPCurrentState.h in Headers */,
 				C9DD205F1D8A142900D3ABBE /* MPExtensionProtocol.h in Headers */,
 				C9DD1F9E1D8A13CA00D3ABBE /* MPSurrogateAppDelegate.h in Headers */,
+				04F6441B1EFC85B4000FADE3 /* MPIdentityApiResult.h in Headers */,
 				C9DD1FD11D8A13DC00D3ABBE /* MPProduct.h in Headers */,
 				C9DD201D1D8A140D00D3ABBE /* MPNotificationController.h in Headers */,
 			);
@@ -1601,6 +1649,7 @@
 				C935A6EB1D8A2DF400A1EE2F /* MPCommerce.m in Sources */,
 				C935A6C41D8A2DE700A1EE2F /* MPCustomModule.m in Sources */,
 				C935A7191D8A2E0500A1EE2F /* MPKitRegister.mm in Sources */,
+				04F643F71EFC0483000FADE3 /* MPIdentityApi.m in Sources */,
 				DBB491641DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */,
 				C935A7721D8A2E4000A1EE2F /* MPExceptionHandler.m in Sources */,
 				C935A7581D8A2E3800A1EE2F /* MPResponseEvents.mm in Sources */,
@@ -1608,6 +1657,7 @@
 				C935A7431D8A2E2D00A1EE2F /* MPPersistenceController.mm in Sources */,
 				C935A70E1D8A2E0500A1EE2F /* MPKitConfiguration.mm in Sources */,
 				DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */,
+				04F644041EFC2A61000FADE3 /* MPIdentityApiRequest.m in Sources */,
 				C935A7331D8A2E2200A1EE2F /* MPConnector.m in Sources */,
 				C935A6EE1D8A2DF400A1EE2F /* MPCommerceEvent.mm in Sources */,
 				C935A6CC1D8A2DED00A1EE2F /* MPConsumerInfo.mm in Sources */,
@@ -1615,6 +1665,7 @@
 				C935A6FB1D8A2DF400A1EE2F /* MPTransactionAttributes.m in Sources */,
 				C935A74F1D8A2E3800A1EE2F /* MPHasher.cpp in Sources */,
 				C935A6E11D8A2DED00A1EE2F /* MPStandaloneUpload.m in Sources */,
+				04F644101EFC8284000FADE3 /* MParticleUser.m in Sources */,
 				C935A6C21D8A2DE700A1EE2F /* MPAppboy.m in Sources */,
 				C935A6DD1D8A2DED00A1EE2F /* MPSessionHistory.mm in Sources */,
 				C935A6BC1D8A2DDF00A1EE2F /* MPAppDelegateProxy.m in Sources */,
@@ -1629,6 +1680,7 @@
 				C935A71D1D8A2E1200A1EE2F /* MPLocationManager.m in Sources */,
 				C92F0F321DF9C21D008C5384 /* MPKitActivity.m in Sources */,
 				C935A76C1D8A2E4000A1EE2F /* mParticle.m in Sources */,
+				04F6441A1EFC85B4000FADE3 /* MPIdentityApiResult.m in Sources */,
 				C935A7561D8A2E3800A1EE2F /* MPResponseConfig.m in Sources */,
 				C935A6DF1D8A2DED00A1EE2F /* MPStandaloneMessage.m in Sources */,
 				C935A75E1D8A2E3800A1EE2F /* MPUserAttributeChange.m in Sources */,
@@ -1693,6 +1745,7 @@
 				C9DD20371D8A142000D3ABBE /* MPResponseEvents.mm in Sources */,
 				C9DD1FBC1D8A13D600D3ABBE /* MPSessionHistory.mm in Sources */,
 				C9DD20121D8A140800D3ABBE /* MPConnector.m in Sources */,
+				04F643F61EFC03E7000FADE3 /* MPIdentityApi.m in Sources */,
 				DBB491631DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */,
 				C9DD205E1D8A142900D3ABBE /* MPExceptionHandler.m in Sources */,
 				C9DD20311D8A142000D3ABBE /* MPLaunchInfo.m in Sources */,
@@ -1700,6 +1753,7 @@
 				C9DD1FFC1D8A13F700D3ABBE /* MPLocationManager.m in Sources */,
 				C9DD1F9F1D8A13CA00D3ABBE /* MPSurrogateAppDelegate.m in Sources */,
 				C9DD20351D8A142000D3ABBE /* MPResponseConfig.m in Sources */,
+				04F644031EFC2A61000FADE3 /* MPIdentityApiRequest.m in Sources */,
 				DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */,
 				C9DD202D1D8A142000D3ABBE /* MPDevice.m in Sources */,
 				C9DD20401D8A142000D3ABBE /* MPZip.cpp in Sources */,
@@ -1707,6 +1761,7 @@
 				C9DD1FBA1D8A13D600D3ABBE /* MPSession.m in Sources */,
 				C9DD1FC51D8A13DC00D3ABBE /* MPBags.m in Sources */,
 				C9DD1FF51D8A13EA00D3ABBE /* MPKitInstanceValidator.m in Sources */,
+				04F6440E1EFC8278000FADE3 /* MParticleUser.m in Sources */,
 				C9DD1FA51D8A13D000D3ABBE /* MPCustomModulePreference.m in Sources */,
 				C9DD1FCA1D8A13DC00D3ABBE /* MPCommerce.m in Sources */,
 				C9DD203B1D8A142000D3ABBE /* MPUploadBuilder.mm in Sources */,
@@ -1721,6 +1776,7 @@
 				C92F0F311DF9C21D008C5384 /* MPKitActivity.m in Sources */,
 				C9DD20581D8A142900D3ABBE /* mParticle.m in Sources */,
 				C9DD202B1D8A142000D3ABBE /* MPDateFormatter.m in Sources */,
+				04F644191EFC85B4000FADE3 /* MPIdentityApiResult.m in Sources */,
 				C9DD1FED1D8A13EA00D3ABBE /* MPKitConfiguration.mm in Sources */,
 				C9DD1FE71D8A13EA00D3ABBE /* MPBaseProjection.m in Sources */,
 				C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.cpp in Sources */,

@@ -251,6 +251,8 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeUserIdentityChange = 18
 };
 
+
+
 /** Posted immediately after a new session has begun.
  
  @discussion You can register to receive this notification using NSNotificationCenter. This notification contains a userInfo dictionary, you can
@@ -338,6 +340,9 @@ extern NSString * _Nonnull const mParticleEmbeddedSDKDidBecomeInactiveNotificati
  */
 extern NSString * _Nonnull const mParticleKitInstanceKey;
 extern NSString * _Nonnull const mParticleEmbeddedSDKInstanceKey;
+
+extern NSString * _Nonnull const mParticleIdentityStateChangeListenerNotification;
+extern NSString * _Nonnull const mParticleUserKey;
 
 /**
  Constant used to express gender.

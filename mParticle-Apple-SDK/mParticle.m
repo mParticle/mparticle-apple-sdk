@@ -73,10 +73,23 @@ NSString *const kMPStateKey = @"state";
 
 @end
 
+@implementation MParticleOptions
+
++ (id)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret {
+    MParticleOptions *options = [[self alloc] init];
+    options.apiKey = apiKey;
+    options.apiSecret = secret;
+    return options;
+}
+
+@end
+
+
 #pragma mark - MParticle
 @implementation MParticle
 
 @synthesize commerce = _commerce;
+@synthesize identity = _identity;
 @synthesize optOut = _optOut;
 
 + (void)initialize {
@@ -236,6 +249,15 @@ NSString *const kMPStateKey = @"state";
 #pragma mark - Public accessors and methods
 - (MPBags *)bags {
     return [MPStateMachine sharedInstance].bags;
+}
+
+- (MPIdentityApi *)identity {
+    if (_identity) {
+        return _identity;
+    }
+    
+    _identity = [[MPIdentityApi alloc] init];
+    return _identity;
 }
 
 - (MPCommerce *)commerce {

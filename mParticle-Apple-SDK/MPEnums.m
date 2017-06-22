@@ -41,6 +41,9 @@ NSString *const mParticleEmbeddedSDKDidBecomeInactiveNotification = @"mParticleE
 NSString *const mParticleKitInstanceKey = @"mParticleKitInstanceKey";
 NSString *const mParticleEmbeddedSDKInstanceKey = @"mParticleEmbeddedSDKInstanceKey";
 
+NSString *const mParticleIdentityStateChangeListenerNotification = @"mParticleIdentityStateChangeListenerNotification";
+NSString *const mParticleUserKey = @"mParticleUserKey";
+
 NSString *const mParticleGenderMale = @"M";
 NSString *const mParticleGenderFemale = @"F";
 NSString *const mParticleGenderNotAvailable = @"NA";
