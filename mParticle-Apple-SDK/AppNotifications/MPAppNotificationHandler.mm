@@ -239,20 +239,6 @@
     });
     
     if (!actionIdentifier) {
-        if ([MPNotificationController launchNotificationHash] != 0) {
-            NSError *error = nil;
-            NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:userInfo options:0 error:&error];
-            
-            if (!error && remoteNotificationData.length > 0) {
-                int64_t launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
-                BOOL shouldForward = launchNotificationHash != [MPNotificationController launchNotificationHash];
-                
-                if (!shouldForward) {
-                    return;
-                }
-            }
-        }
-        
         SEL receivedNotificationSelector = @selector(receivedUserNotification:);
         
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -262,10 +248,6 @@
                                              parameters:queueParameters
                                             messageType:MPMessageTypePushNotification
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 if (static_cast<MPKitInstance>([[[kit class] kitCode] integerValue]) == MPKitInstanceKahuna) {
-                                                     return;
-                                                 }
-                                                 
                                                  *execStatus = [kit receivedUserNotification:forwardParameters[0]];
                                              }];
     }
