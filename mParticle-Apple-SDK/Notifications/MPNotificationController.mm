@@ -19,7 +19,7 @@
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #include "MPHasher.h"
 
 @interface MPNotificationController() {
@@ -407,7 +407,7 @@ static int64_t launchNotificationHash = 0;
     
     NSNumber *influencedOpenNumber = nil;
 #ifndef MP_UNIT_TESTING
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     influencedOpenNumber = userDefaults[kMPInfluencedOpenTimerKey];
 #endif
     
@@ -424,7 +424,7 @@ static int64_t launchNotificationHash = 0;
     void (^persistInfluencedOpenTimer)(NSNumber *) = ^(NSNumber *infOpenTimer) {
 #ifndef MP_UNIT_TESTING
         dispatch_async(dispatch_get_main_queue(), ^{
-            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
             
             if (!infOpenTimer) {
                 [userDefaults removeMPObjectForKey:kMPInfluencedOpenTimerKey];
@@ -470,7 +470,7 @@ static int64_t launchNotificationHash = 0;
     }
     
 #ifndef MP_UNIT_TESTING
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     deviceToken = userDefaults[kMPDeviceTokenKey];
 #else
     deviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
@@ -540,7 +540,7 @@ static int64_t launchNotificationHash = 0;
                                                           userInfo:deviceTokenDictionary];
         
 #ifndef MP_UNIT_TESTING
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         userDefaults[kMPDeviceTokenKey] = deviceToken;
         [userDefaults synchronize];
 #endif

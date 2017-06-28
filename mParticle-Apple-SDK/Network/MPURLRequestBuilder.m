@@ -21,7 +21,7 @@
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPKitContainer.h"
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
@@ -243,7 +243,7 @@ static NSTimeInterval requestTimeout = 30.0;
                 NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine environment]];
                 [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
                 
-                NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                 NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
                 if (eTag) {
                     [urlRequest setValue:eTag forHTTPHeaderField:@"If-None-Match"];

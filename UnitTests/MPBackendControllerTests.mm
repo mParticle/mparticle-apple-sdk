@@ -765,10 +765,10 @@
     
     [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj isKindOfClass:[NSArray class]]) {
-            [mParticle setUserAttribute:key values:obj];
+            [mParticle.identity.currentUser setUserAttributeList:key values:obj];
             [self.backendController setUserAttribute:key values:obj attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
         } else {
-            [mParticle setUserAttribute:key value:obj];
+            [mParticle.identity.currentUser setUserAttribute:key value:obj];
             [self.backendController setUserAttribute:key value:obj attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
         }
     }];

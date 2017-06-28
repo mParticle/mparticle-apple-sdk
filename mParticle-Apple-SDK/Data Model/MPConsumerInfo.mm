@@ -19,7 +19,7 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #include "MPHasher.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
@@ -234,13 +234,7 @@ NSString *const kMPCKExpiration = @"e";
         mpId = mParticle::Hasher::hashFNV1a((const char *)[uuidData bytes], (int)[uuidData length]);
     }
     
-    NSNumber *generatedMpId;
-    if (sizeof(void *) == 4) { // 32-bit
-        generatedMpId = [NSNumber numberWithLongLong:mpId];
-    } else if (sizeof(void *) == 8) { // 64-bit
-        generatedMpId = [NSNumber numberWithLong:mpId];
-    }
-    
+    NSNumber *generatedMpId = [NSNumber numberWithLongLong:mpId];
     return generatedMpId;
 }
 
@@ -291,7 +285,7 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (NSDictionary *)localCookiesDictionary {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *localCookies = userDefaults[kMPRemoteConfigCookiesKey];
     
     if (!localCookies) {
@@ -320,7 +314,7 @@ NSString *const kMPCKExpiration = @"e";
     if (!_mpId) {
         [self willChangeValueForKey:@"mpId"];
         
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
         
         if (mpIdString) {
@@ -328,11 +322,7 @@ NSString *const kMPCKExpiration = @"e";
                 [userDefaults removeMPObjectForKey:kMPRemoteConfigMPIDKey];
             });
             
-            if (sizeof(void *) == 4) { // 32-bit
-                _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
-            } else if (sizeof(void *) == 8) { // 64-bit
-                _mpId = [NSNumber numberWithLong:(long)[mpIdString longLongValue]];
-            }
+            _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
             
             if ([_mpId isEqualToNumber:@0]) {
                 _mpId = [self generateMpId];
@@ -371,7 +361,7 @@ NSString *const kMPCKExpiration = @"e";
         return _uniqueIdentifier;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     if (userDefaults[kMPRemoteConfigUniqueIdentifierKey]) {
         _uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
         [userDefaults removeMPObjectForKey:kMPRemoteConfigUniqueIdentifierKey];

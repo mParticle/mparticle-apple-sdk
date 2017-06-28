@@ -19,6 +19,8 @@
 #import "MPDatabaseMigrationController.h"
 #import "sqlite3.h"
 #import "MPSession.h"
+#import "MPUtils.h"
+#import "MPIUserDefaults.h"
 
 @interface MPDatabaseMigrationController() {
     dispatch_queue_t dbQueue;
@@ -80,6 +82,13 @@
     return session;
 }
 
+- (void)migrateUserDefaultsWithVersion:(NSNumber *)oldVersion {
+    NSInteger oldVersionValue = [oldVersion integerValue];
+    if (oldVersionValue < 26) {
+        [[MPIUserDefaults standardUserDefaults] migrateUserKeys];
+    }
+}
+
 - (void)migrateSessionsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
@@ -93,11 +102,13 @@
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number FROM sessions ORDER BY _id";
     } else if (oldVersionValue < 20) {
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time FROM sessions ORDER BY _id";
-    } else {
+    } else if (oldVersionValue < 26) {
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length FROM sessions ORDER BY _id";
+    } else {
+        selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid FROM sessions ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -131,6 +142,12 @@
         int eventCount = 0;
         NSTimeInterval suspendTime = 0;
         NSTimeInterval length = 0;
+        NSNumber *mpId;
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 10));
+        }
         if (oldVersionValue > 15) {
             backgroundTime = sqlite3_column_double(selectStatementHandle, 5);
             numberInterruptions = sqlite3_column_int(selectStatementHandle, 6);
@@ -148,6 +165,7 @@
         sqlite3_bind_int(insertStatementHandle, 8, eventCount); // event_count
         sqlite3_bind_double(insertStatementHandle, 9, suspendTime); // suspend_time
         sqlite3_bind_double(insertStatementHandle, 10, length); // length
+        sqlite3_bind_int64(insertStatementHandle, 11, [mpId longLongValue]); // mpid
 
         sqlite3_step(insertStatementHandle);
     }
@@ -162,15 +180,18 @@
     MPSession *session;
     const char *uuid;
     int64_t sessionId;
+    NSNumber *mpId;
     NSInteger oldVersionValue = [oldVersion integerValue];
     
     if (oldVersionValue < 10) {
         selectStatement = "SELECT message_type, session_id, cfuuid, message_time, message, upload_status FROM messages ORDER BY _id";
-    } else {
+    } else if (oldVersionValue < 26) {
         selectStatement = "SELECT message_type, session_id, uuid, timestamp, message, upload_status FROM messages ORDER BY _id";
+    } else {
+        selectStatement = "SELECT message_type, session_id, uuid, timestamp, message, upload_status, mpid FROM messages ORDER BY _id";
     }
 
-    insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message, upload_status) VALUES (?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -190,6 +211,12 @@
             sqlite3_bind_int64(insertStatementHandle, 2, 0); // session_id
         }
         
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
+        }
+        
         sqlite3_bind_double(insertStatementHandle, 4, sqlite3_column_double(selectStatementHandle, 3)); // timestamp
         
         NSString *messageString = [NSString stringWithUTF8String:(const char *)sqlite3_column_text(selectStatementHandle, 4)];
@@ -197,6 +224,8 @@
         sqlite3_bind_blob(insertStatementHandle, 5, [messageData bytes], (int)[messageData length], SQLITE_TRANSIENT);  // message_data
         
         sqlite3_bind_int(insertStatementHandle, 6, sqlite3_column_int(selectStatementHandle, 5)); // upload_status
+        
+        sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -254,18 +283,21 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 13) {
         return;
     }
     
-    if (oldVersionValue > 13) {
+    if (oldVersionValue < 14) {
+        selectStatement = "SELECT audience_id, uuid, name, endpoint_ids FROM audiences ORDER BY audience_id";
+    } else if (oldVersionValue < 26) {
         selectStatement = "SELECT segment_id, uuid, name, endpoint_ids FROM segments ORDER BY segment_id";
     } else {
-        selectStatement = "SELECT audience_id, uuid, name, endpoint_ids FROM audiences ORDER BY audience_id";
+        selectStatement = "SELECT segment_id, uuid, name, endpoint_ids, mpid FROM segments ORDER BY segment_id";
     }
 
-    insertStatement = "INSERT INTO segments (segment_id, uuid, name, endpoint_ids) VALUES (?, ?, ?, ?)";
+    insertStatement = "INSERT INTO segments (segment_id, uuid, name, endpoint_ids, mpid) VALUES (?, ?, ?, ?, ?)";
 
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -275,6 +307,12 @@
         sqlite3_bind_text(insertStatementHandle, 2, (const char *)sqlite3_column_text(selectStatementHandle, 1), -1, SQLITE_TRANSIENT); // uuid
         sqlite3_bind_text(insertStatementHandle, 3, (const char *)sqlite3_column_text(selectStatementHandle, 2), -1, SQLITE_TRANSIENT); // name
         sqlite3_bind_text(insertStatementHandle, 4, (const char *)sqlite3_column_text(selectStatementHandle, 3), -1, SQLITE_TRANSIENT); // endpoint_ids
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 5, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -287,18 +325,21 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 13) {
         return;
     }
     
-    if (oldVersionValue > 13) {
+    if (oldVersionValue < 14) {
+        selectStatement = "SELECT _id, audience_id, timestamp, membership_action FROM audience_memberships ORDER BY _id";
+    } else if (oldVersionValue < 26) {
         selectStatement = "SELECT _id, segment_id, timestamp, membership_action FROM segment_memberships ORDER BY _id";
     } else {
-        selectStatement = "SELECT _id, audience_id, timestamp, membership_action FROM audience_memberships ORDER BY _id";
+        selectStatement = "SELECT _id, segment_id, timestamp, membership_action, mpid FROM segment_memberships ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO segment_memberships (_id, segment_id, timestamp, membership_action) VALUES (?, ?, ?, ?)";
+    insertStatement = "INSERT INTO segment_memberships (_id, segment_id, timestamp, membership_action, mpid) VALUES (?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -308,6 +349,13 @@
         sqlite3_bind_int(insertStatementHandle, 2, sqlite3_column_int(selectStatementHandle, 1)); // segment_id
         sqlite3_bind_double(insertStatementHandle, 3, sqlite3_column_double(selectStatementHandle, 2)); // timestamp
         sqlite3_bind_int(insertStatementHandle, 4, sqlite3_column_int(selectStatementHandle, 3)); // membership_action
+        
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 5, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -320,13 +368,19 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 16) {
         return;
     }
     
-    selectStatement = "SELECT _id, message_type, uuid, timestamp, message_data, upload_status FROM standalone_messages ORDER BY _id";
-    insertStatement = "INSERT INTO standalone_messages (_id, message_type, uuid, timestamp, message_data, upload_status) VALUES (?, ?, ?, ?, ?, ?)";
+    if (oldVersionValue < 26) {
+        selectStatement = "SELECT _id, message_type, uuid, timestamp, message_data, upload_status FROM standalone_messages ORDER BY _id";
+    } else {
+        selectStatement = "SELECT _id, message_type, uuid, timestamp, message_data, upload_status, mpid FROM standalone_messages ORDER BY _id";
+    }
+    
+    insertStatement = "INSERT INTO standalone_messages (_id, message_type, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -338,6 +392,12 @@
         sqlite3_bind_double(insertStatementHandle, 4, sqlite3_column_int64(selectStatementHandle, 3)); // timestamp
         sqlite3_bind_blob(insertStatementHandle, 5, sqlite3_column_blob(selectStatementHandle, 4), sqlite3_column_bytes(selectStatementHandle, 4), SQLITE_TRANSIENT); // message_data
         sqlite3_bind_int(insertStatementHandle, 6, sqlite3_column_int(selectStatementHandle, 5)); // upload_status
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -350,13 +410,19 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 16) {
         return;
     }
     
-    selectStatement = "SELECT _id, uuid, message_data, timestamp FROM standalone_uploads ORDER BY _id";
-    insertStatement = "INSERT INTO standalone_uploads (_id, uuid, message_data, timestamp) VALUES (?, ?, ?, ?)";
+    if (oldVersionValue < 26) {
+        selectStatement = "SELECT _id, uuid, message_data, timestamp FROM standalone_uploads ORDER BY _id";
+    } else {
+        selectStatement = "SELECT _id, uuid, message_data, timestamp, mpid FROM standalone_uploads ORDER BY _id";
+    }
+    
+    insertStatement = "INSERT INTO standalone_uploads (_id, uuid, message_data, timestamp, mpid) VALUES (?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -366,6 +432,13 @@
         sqlite3_bind_text(insertStatementHandle, 2, (const char *)sqlite3_column_text(selectStatementHandle, 1), -1, SQLITE_TRANSIENT); // uuid
         sqlite3_bind_blob(insertStatementHandle, 3, sqlite3_column_blob(selectStatementHandle, 2), sqlite3_column_bytes(selectStatementHandle, 2), SQLITE_TRANSIENT); // message_data
         sqlite3_bind_double(insertStatementHandle, 4, sqlite3_column_int64(selectStatementHandle, 3)); // timestamp
+        
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 5, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -378,13 +451,20 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 17) {
         return;
     }
     
-    selectStatement = "SELECT _id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time FROM remote_notifications";
-    insertStatement = "INSERT INTO remote_notifications (_id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    if (oldVersionValue < 26) {
+        selectStatement = "SELECT _id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time FROM remote_notifications";
+    }
+    else {
+        selectStatement = "SELECT _id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time, mpid FROM remote_notifications";
+    }
+    
+    insertStatement = "INSERT INTO remote_notifications (_id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -399,6 +479,14 @@
         sqlite3_bind_double(insertStatementHandle, 7, sqlite3_column_double(selectStatementHandle, 6)); // local_alert_time
         sqlite3_bind_blob(insertStatementHandle, 8, sqlite3_column_blob(selectStatementHandle, 7), sqlite3_column_bytes(selectStatementHandle, 7), SQLITE_TRANSIENT); // notification_data
         sqlite3_bind_double(insertStatementHandle, 9, sqlite3_column_int64(selectStatementHandle, 8)); // receipt_time
+        
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        }
+        else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 9));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 10, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -439,13 +527,19 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 23) {
         return;
     }
     
-    selectStatement = "SELECT _id, forwarding_data FROM forwarding_records";
-    insertStatement = "INSERT INTO product_bags (_id, forwarding_data) VALUES (?, ?)";
+    if (oldVersionValue < 26) {
+        selectStatement = "SELECT _id, forwarding_data FROM forwarding_records";
+    } else {
+        selectStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records";
+    }
+    
+    insertStatement = "INSERT INTO forwarding_records (_id, forwarding_data, mpid) VALUES (?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -453,7 +547,13 @@
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
         sqlite3_bind_blob(insertStatementHandle, 2, sqlite3_column_blob(selectStatementHandle, 1), sqlite3_column_bytes(selectStatementHandle, 1), SQLITE_TRANSIENT); // forwarding_data
-        
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        }
+        else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 2));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 3, [mpId longLongValue]); // mpid
         sqlite3_step(insertStatementHandle);
     }
     
@@ -465,6 +565,7 @@
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
+    NSNumber *mpId;
     
     if (oldVersionValue < 22) {
         return;
@@ -489,8 +590,13 @@
     sqlite3_finalize(insertStatementHandle);
     
     // Cookies
-    selectStatement = "SELECT _id, consumer_info_id, content, domain, expiration, name FROM cookies";
-    insertStatement = "INSERT INTO cookies (_id, consumer_info_id, content, domain, expiration, name) VALUES (?, ?, ?, ?, ?, ?)";
+    if (oldVersionValue < 26) {
+        selectStatement = "SELECT _id, consumer_info_id, content, domain, expiration, name FROM cookies";
+    } else {
+        selectStatement = "SELECT _id, consumer_info_id, content, domain, expiration, name, mpid FROM cookies";
+    }
+    
+    insertStatement = "INSERT INTO cookies (_id, consumer_info_id, content, domain, expiration, name, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -502,6 +608,12 @@
         sqlite3_bind_text(insertStatementHandle, 4, (const char *)sqlite3_column_text(selectStatementHandle, 3), -1, SQLITE_TRANSIENT); // domain
         sqlite3_bind_text(insertStatementHandle, 5, (const char *)sqlite3_column_text(selectStatementHandle, 4), -1, SQLITE_TRANSIENT); // expiration
         sqlite3_bind_text(insertStatementHandle, 6, (const char *)sqlite3_column_text(selectStatementHandle, 5), -1, SQLITE_TRANSIENT); // name
+        if (oldVersionValue < 26) {
+            mpId = [MPUtils mpId];
+        } else {
+            mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
+        }
+        sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
     }
@@ -564,6 +676,7 @@
             return;
         }
         
+        [self migrateUserDefaultsWithVersion:oldVersion];
         [self migrateSessionsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateMessagesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateUploadsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];

@@ -39,7 +39,7 @@
 #import "MPStateMachine.h"
 #import "MPUserSegments+Setters.h"
 #import "NSURLSession+mParticle.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPConvertJS.h"
 
 #if TARGET_OS_IOS == 1
@@ -419,18 +419,22 @@ NSString *const kMPStateKey = @"state";
         return;
     }
 
-    [self startWithKey:apiKey secret:secret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
+    MParticleOptions *options = [[MParticleOptions alloc] init];
+    options.apiKey = apiKey;
+    options.apiSecret = secret;
+    options.installType = MPInstallationTypeAutodetect;
+    options.environment = MPEnvironmentAutoDetect;
+    options.proxyAppDelegate = YES;
+    [self startWithOptions:options];
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret {
-    [self startWithKey:apiKey secret:secret installationType:MPInstallationTypeAutodetect environment:MPEnvironmentAutoDetect proxyAppDelegate:YES];
-}
-
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment {
-    [self startWithKey:apiKey secret:secret installationType:installationType environment:environment proxyAppDelegate:YES];
-}
-
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate {
+- (void)startWithOptions:(MParticleOptions *)options {
+    NSString *apiKey = options.apiKey;
+    NSString *secret = options.apiSecret;
+    MPInstallationType installationType = options.installType;
+    MPEnvironment environment = options.environment;
+    BOOL proxyAppDelegate = options.proxyAppDelegate;
+    
     NSAssert(apiKey && secret, @"mParticle SDK must be started with an apiKey and secret.");
     NSAssert([apiKey isKindOfClass:[NSString class]] && [secret isKindOfClass:[NSString class]], @"mParticle SDK apiKey and secret must be of type string.");
     NSAssert(apiKey.length > 0 && secret.length > 0, @"mParticle SDK apiKey and secret cannot be an empty string.");
@@ -441,7 +445,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     __weak MParticle *weakSelf = self;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
     BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
@@ -1281,7 +1285,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSMutableDictionary *userAttributes = nil;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];

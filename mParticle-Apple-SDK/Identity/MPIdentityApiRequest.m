@@ -6,6 +6,10 @@
 
 @implementation MPIdentityApiRequest
 
+- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+    //TODO
+}
+
 + (MPIdentityApiRequest*)requestWithEmptyUser {
     return [[self alloc] init];
 }

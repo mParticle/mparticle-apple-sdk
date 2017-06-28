@@ -41,7 +41,7 @@
 #import "MPProduct+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSArray+MPCaseInsensitive.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #include "MPBracket.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardQueueItem.h"
@@ -392,7 +392,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     // Synchronizes user attributes
     NSArray *alreadySynchedUserAttributes = userDefaults[kMPSynchedUserAttributesKey];
@@ -1867,7 +1867,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
     NSString *kitPath;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
@@ -2014,7 +2014,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     if ([fileManager fileExistsAtPath:kitPath]) {
         [fileManager removeItemAtPath:kitPath error:nil];
-        [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+        [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
     }
 }
 
@@ -2029,7 +2029,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
         
         if (directoryContents.count > 0) {
-            [[NSUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
+            [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
             
             for (NSString *fileName in directoryContents) {
                 NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
@@ -2074,7 +2074,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
         // commerce event user defined attributes (prior to filtering and projections)
         if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-            NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
             NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
             
             for (NSDictionary *userIdentity in userIdentities) {
@@ -2182,7 +2182,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
                 // event attributes (prior to filtering and projections)
                 if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
                     
                     for (NSDictionary *userIdentity in userIdentities) {

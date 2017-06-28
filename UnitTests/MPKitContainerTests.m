@@ -36,7 +36,7 @@
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPForwardQueueParameters.h"
 
 #pragma mark - MPKitContainer category for unit tests
@@ -124,7 +124,7 @@
 }
 
 - (void)setUserAttributesAndIdentities {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
                                      @"Arm length":@"Short",
                                      @"Height":@20,
@@ -152,7 +152,7 @@
 }
 
 - (void)resetUserAttributesAndIdentities {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     [userDefaults removeMPObjectForKey:@"ua"];
     [userDefaults removeMPObjectForKey:@"ui"];
     [userDefaults synchronize];

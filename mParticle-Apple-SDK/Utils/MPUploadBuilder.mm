@@ -13,7 +13,7 @@
 #import "MPUpload.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPCustomModule.h"
 #import "MPStandaloneUpload.h"
@@ -60,7 +60,7 @@ using namespace std;
     }];
     
     NSNumber *ltv;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     ltv = userDefaults[kMPLifeTimeValueKey];
     if (!ltv) {
         ltv = @0;

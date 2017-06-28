@@ -17,7 +17,7 @@
 //
 
 #import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
@@ -191,7 +191,7 @@ static BOOL runningInBackground = NO;
         return _storedSDKVersion;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     _storedSDKVersion = userDefaults[@"storedSDKVersion"];
     
     return _storedSDKVersion;
@@ -210,7 +210,7 @@ static BOOL runningInBackground = NO;
 
     _storedSDKVersion = storedSDKVersion;
 
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
 
     if (MPIsNull(_storedSDKVersion)) {
         [userDefaults removeMPObjectForKey:@"storedSDKVersion"];
@@ -470,7 +470,7 @@ static BOOL runningInBackground = NO;
         return _firstSeenInstallation;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *firstSeenInstallation = userDefaults[kMPAppFirstSeenInstallationKey];
     if (firstSeenInstallation) {
         _firstSeenInstallation = firstSeenInstallation;
@@ -493,7 +493,7 @@ static BOOL runningInBackground = NO;
         return;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *fsi = userDefaults[kMPAppFirstSeenInstallationKey];
     if (!fsi) {
         [self willChangeValueForKey:@"firstSeenInstallation"];
@@ -588,7 +588,7 @@ static BOOL runningInBackground = NO;
         return _locationTrackingMode;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
     
     [self willChangeValueForKey:@"locationTrackingMode"];
@@ -613,7 +613,7 @@ static BOOL runningInBackground = NO;
     _locationTrackingMode = locationTrackingMode;
     [self didChangeValueForKey:@"locationTrackingMode"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
@@ -627,7 +627,7 @@ static BOOL runningInBackground = NO;
     
     [self willChangeValueForKey:@"minUploadDate"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDate *minUploadDate = userDefaults[kMinUploadDateKey];
     if (minUploadDate) {
         if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
@@ -647,7 +647,7 @@ static BOOL runningInBackground = NO;
 - (void)setMinUploadDate:(NSDate *)minUploadDate {
     _minUploadDate = minUploadDate;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         userDefaults[kMinUploadDateKey] = minUploadDate;
     } else if (userDefaults[kMinUploadDateKey]) {
@@ -664,7 +664,7 @@ static BOOL runningInBackground = NO;
     
     optOutSet = YES;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
     if (optOutNumber) {
         _optOut = [optOutNumber boolValue];
@@ -685,7 +685,7 @@ static BOOL runningInBackground = NO;
     _optOut = optOut;
     optOutSet = YES;
 
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPOptOutStatus] = @(_optOut);
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
@@ -701,7 +701,7 @@ static BOOL runningInBackground = NO;
     
     alwaysTryToCollectIDFASet = YES;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *alwaysTryToCollectIDFANumber = userDefaults[kMPAlwaysTryToCollectIDFA];
     
     if (alwaysTryToCollectIDFANumber) {
@@ -724,7 +724,7 @@ static BOOL runningInBackground = NO;
     _alwaysTryToCollectIDFA = alwaysTryToCollectIDFA;
     alwaysTryToCollectIDFASet = YES;
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPAlwaysTryToCollectIDFA] = @(alwaysTryToCollectIDFA);
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];
@@ -738,7 +738,7 @@ static BOOL runningInBackground = NO;
     
     [self willChangeValueForKey:@"pushNotificationMode"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSString *pushNotificationMode = userDefaults[kMPRemoteConfigPushNotificationModeKey];
     if (pushNotificationMode) {
         _pushNotificationMode = pushNotificationMode;
@@ -760,7 +760,7 @@ static BOOL runningInBackground = NO;
     _pushNotificationMode = pushNotificationMode;
     [self didChangeValueForKey:@"pushNotificationMode"];
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
     dispatch_async(dispatch_get_main_queue(), ^{
         [userDefaults synchronize];

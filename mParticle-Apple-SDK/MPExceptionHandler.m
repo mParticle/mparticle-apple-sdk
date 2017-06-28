@@ -30,7 +30,7 @@
 #import <dlfcn.h>
 #import <libkern/OSAtomic.h>
 #import "MPCurrentState.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPMessageBuilder.h"
 #import <UIKit/UIKit.h>
 #import "MPPersistenceController.h"

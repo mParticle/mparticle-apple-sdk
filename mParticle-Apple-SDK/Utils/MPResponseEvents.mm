@@ -21,7 +21,7 @@
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPSession.h"
 
 @implementation MPResponseEvents
@@ -46,7 +46,7 @@
     // LTV
     NSNumber *increasedLTV = !MPIsNull(configuration[kMPIncreasedLifeTimeValueKey]) ? configuration[kMPIncreasedLifeTimeValueKey] : nil;
     if (increasedLTV) {
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         NSNumber *ltv = userDefaults[kMPLifeTimeValueKey];
         
         if (ltv) {
