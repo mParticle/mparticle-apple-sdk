@@ -6,6 +6,12 @@
 >* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
 >* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
 
+## 6.14.3
+
+>Upgrade suggestion: **LOW**.
+
+* [FIX] Revert main thread error fix
+
 ## 6.14.2
 
 >Upgrade suggestion: **LOW**.
