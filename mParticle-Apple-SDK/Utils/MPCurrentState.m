@@ -42,19 +42,6 @@ NSString *const kMPStateGPSKey = @"gps";
 NSString *const kMPStateTotalDiskSpaceKey = @"tds";
 NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 
-id runOnMainQueueWithoutDeadlocking(id (^block)(void)) {
-    __block id returnValue;
-    if ([NSThread isMainThread]) {
-        returnValue = block();
-    }
-    else {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            returnValue = block();
-        });
-    }
-    return returnValue;
-}
-
 @implementation MPCurrentState
 
 - (NSString *)description {
@@ -202,9 +189,7 @@ id runOnMainQueueWithoutDeadlocking(id (^block)(void)) {
 }
 
 - (NSNumber *)statusBarOrientation {
-    return runOnMainQueueWithoutDeadlocking(^id{
-        return @([[UIApplication sharedApplication] statusBarOrientation]);
-    });
+    return @([[UIApplication sharedApplication] statusBarOrientation]);
 }
 #endif
 
