@@ -45,13 +45,12 @@
     
     if (dataReceivedFromServer) {
         [[MPKitContainer sharedInstance] configureKits:_configuration[kMPRemoteConfigKitsKey]];
-        
-        stateMachine.latestSDKVersion = _configuration[kMPRemoteConfigLatestSDKVersionKey];
-        [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];
-        [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
-        [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
-        [stateMachine configureRestrictIDFA:_configuration[kMPRemoteConfigRestrictIDFA]];
     }
+    stateMachine.latestSDKVersion = _configuration[kMPRemoteConfigLatestSDKVersionKey];
+    [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];
+    [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
+    [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
+    [stateMachine configureRestrictIDFA:_configuration[kMPRemoteConfigRestrictIDFA]];
     
     _influencedOpenTimer = !MPIsNull(_configuration[kMPRemoteConfigInfluencedOpenTimerKey]) ? _configuration[kMPRemoteConfigInfluencedOpenTimerKey] : nil;
     
