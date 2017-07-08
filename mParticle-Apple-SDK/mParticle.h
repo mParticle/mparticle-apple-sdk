@@ -104,9 +104,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) MPCommerce *commerce;
 
 /**
- This property is an instance of MPCommerce. It is used to execute transactional operations on the shopping cart.
- @see MPCommerce
- @see MPCart
+ This property is an instance of MPIdentityApi. It allows tracking login, logout, and identity changes.
+ @see MPIdentityApi
+ @see MParticleUser
  */
 @property (nonatomic, strong, readonly) MPIdentityApi *identity;
 

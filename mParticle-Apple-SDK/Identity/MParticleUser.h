@@ -16,10 +16,9 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Gets current user identities (readonly)
  @returns A dictionary containing the collection of user identities
- 
- //TODO - can this be defined somehow as NSDictionary<MPUserIdentity, NSString>, or otherwise obvious?
+ @see MPUserIdentity
  */
-@property (nonatomic, strong, nullable) NSDictionary *userIdentities;
+@property (nonatomic, strong, nullable) NSDictionary<NSNumber *, NSString *> *userIdentities;
 
 /**
  Gets/sets all user attributes.

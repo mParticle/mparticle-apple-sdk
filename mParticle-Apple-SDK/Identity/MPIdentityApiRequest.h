@@ -9,8 +9,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPIdentityApiRequest : NSObject
 
-+ (MPIdentityApiRequest*)requestWithEmptyUser;
-+ (MPIdentityApiRequest*)requestWithUser:(MParticleUser *) user;
++ (MPIdentityApiRequest *)requestWithEmptyUser;
++ (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user;
 
 @property (nonatomic, unsafe_unretained, readwrite) BOOL copyUserAttributes;
 
@@ -18,7 +18,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, nullable) NSString *email;
 @property (nonatomic, strong, nullable) NSString *customerId;
-@property (nonatomic, strong, nullable) NSDictionary *userIdentities;
+@property (nonatomic, strong, nullable) NSDictionary<NSNumber *, NSString *> *userIdentities;
+
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
 
 @end
 

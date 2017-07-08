@@ -191,9 +191,11 @@ static NSTimeInterval requestTimeout = 30.0;
     [urlRequest setTimeoutInterval:requestTimeout];
     [urlRequest setHTTPMethod:_httpMethod];
 
-    if (SDKURLRequest) {
+    BOOL isIdentityRequest = (NSNull *)_message == [NSNull null];
+    
+    if (SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
-        MPKitContainer *kitContainer = [MPKitContainer sharedInstance];
+        MPKitContainer *kitContainer = !isIdentityRequest ? [MPKitContainer sharedInstance] : nil;
         NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
         NSString *contentType = nil;
         NSString *kits = nil;
@@ -205,7 +207,12 @@ static NSTimeInterval requestTimeout = 30.0;
         NSRange range;
         BOOL containsMessage = _message != nil;
         
-        if (containsMessage) { // /events
+        if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
+            contentType = @"application/json";
+            [urlRequest setValue:[MPStateMachine sharedInstance].apiKey forHTTPHeaderField:@"x-mp-key"];
+            [urlRequest setValue:[MPStateMachine sharedInstance].apiKey forHTTPHeaderField:@"x-mp-date"];
+            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, _postData];
+        } else if (containsMessage) { // /events
             contentType = @"application/json";
             
             if (supportedKits) {

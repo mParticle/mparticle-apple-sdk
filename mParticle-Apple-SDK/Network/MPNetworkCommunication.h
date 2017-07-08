@@ -23,6 +23,7 @@
 @class MPStandaloneUpload;
 @class MPSessionHistory;
 @class MPSegment;
+@class MPIdentityApiRequest;
 
 extern NSString * _Nonnull const kMPURLScheme;
 extern NSString * _Nonnull const kMPURLHost;
@@ -42,6 +43,7 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
 typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nullable upload, NSDictionary * _Nullable responseDictionary, BOOL finished);
 typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload * _Nullable standaloneUpload, NSDictionary * _Nullable responseDictionary, BOOL finished);
+typedef void (^MPIdentityApiManagerCallback)(NSNumber *_Nullable newMPID, NSError *_Nullable error);
 
 @interface MPNetworkCommunication : NSObject
 
@@ -53,5 +55,10 @@ typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPSt
 - (void)standaloneUploads:(nonnull NSArray<MPStandaloneUpload *> *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
 - (void)uploadSessionHistory:(nonnull MPSessionHistory *)sessionHistory completionHandler:(void(^ _Nonnull)(BOOL success))completionHandler;
+
+- (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)loginRequest:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 
 @end

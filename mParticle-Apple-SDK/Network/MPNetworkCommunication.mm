@@ -38,18 +38,24 @@
 #import "MPIUserDefaults.h"
 #import "MPSessionHistory.h"
 #import "MPDateFormatter.h"
+#import "MPIdentityApiRequest.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
+NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Version, path
+NSString *const modifyURLFormat = @"%@://%@%@/%@/%@"; // Scheme, URL Host, API Version, mpid, path
 NSString *const kMPConfigVersion = @"/v4";
 NSString *const kMPConfigURL = @"/config";
 NSString *const kMPEventsVersion = @"/v1";
 NSString *const kMPEventsURL = @"/events";
 NSString *const kMPSegmentVersion = @"/v1";
 NSString *const kMPSegmentURL = @"/audience";
+NSString *const kMPIdentityVersion = @"/v1";
+NSString *const kMPIdentityURL = @"";
 
 NSString *const kMPURLScheme = @"https";
 NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
+NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 @interface MPNetworkCommunication() {
     BOOL retrievingConfig;
@@ -57,11 +63,19 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     BOOL standaloneUploading;
     BOOL uploading;
     BOOL uploadingSessionHistory;
+    BOOL identifying;
+    BOOL loggingIn;
+    BOOL loggingOut;
+    BOOL modifying;
 }
 
 @property (nonatomic, strong, readonly) NSURL *segmentURL;
 @property (nonatomic, strong, readonly) NSURL *configURL;
 @property (nonatomic, strong, readonly) NSURL *eventURL;
+@property (nonatomic, strong, readonly) NSURL *identifyURL;
+@property (nonatomic, strong, readonly) NSURL *loginURL;
+@property (nonatomic, strong, readonly) NSURL *logoutURL;
+@property (nonatomic, strong, readonly) NSURL *modifyURL;
 
 @end
 
@@ -69,6 +83,9 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 
 @synthesize configURL = _configURL;
 @synthesize eventURL = _eventURL;
+@synthesize identifyURL = _identifyURL;
+@synthesize loginURL = _loginURL;
+@synthesize logoutURL = _logoutURL;
 
 - (instancetype)init {
     self = [super init];
@@ -81,6 +98,10 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     standaloneUploading = NO;
     uploading = NO;
     uploadingSessionHistory = NO;
+    identifying = NO;
+    loggingIn = NO;
+    loggingOut = NO;
+    modifying = NO;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     
@@ -133,6 +154,52 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
     NSURL *segmentURL = [NSURL URLWithString:urlString];
     
     return segmentURL;
+}
+
+- (NSURL *)identifyURL {
+    if (_identifyURL) {
+        return _identifyURL;
+    }
+    NSString *pathComponent = @"identify";
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    _identifyURL = [NSURL URLWithString:urlString];
+    
+    return _identifyURL;
+}
+
+- (NSURL *)loginURL {
+    if (_loginURL) {
+        return _loginURL;
+    }
+    
+    NSString *pathComponent = @"login";
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    _loginURL = [NSURL URLWithString:urlString];
+    
+    return _loginURL;
+}
+
+- (NSURL *)logoutURL {
+    if (_logoutURL) {
+        return _logoutURL;
+    }
+    
+    NSString *pathComponent = @"logout";
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    _logoutURL = [NSURL URLWithString:urlString];
+    
+    return _logoutURL;
+}
+
+- (NSURL *)modifyURL {
+    NSString *pathComponent = @"modify";
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, stateMachine.consumerInfo.mpId, pathComponent];
+    
+    NSURL *modifyURL = [NSURL URLWithString:urlString];
+    
+    return modifyURL;
 }
 
 #pragma mark Private methods
@@ -784,6 +851,209 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         
         [connector cancelRequest];
     });
+}
+
+- (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+    if (identifying) {
+        return;
+    }
+    
+    identifying = YES;
+    __weak MPNetworkCommunication *weakSelf = self;
+    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    
+    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+            __strong MPNetworkCommunication *strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->identifying = NO;
+            }
+            
+            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        }
+    }];
+    
+    MPConnector *connector = [[MPConnector alloc] init];
+    NSString *const connectionId = [[NSUUID UUID] UUIDString];
+    connector.connectionId = connectionId;
+    
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    NSDictionary *dictionary = [identifyRequest dictionaryRepresentation];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+    
+    [connector asyncPostDataFromURL:self.identifyURL
+                            message:(NSString *)[NSNull null]
+                   serializedParams:data
+                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
+                      __strong MPNetworkCommunication *strongSelf = weakSelf;
+                      
+                      if (!strongSelf) {
+                          //                          completionHandler(NO, upload, nil, YES);
+                          return;
+                      }
+                      
+                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+                      }
+                      
+                      NSDictionary *responseDictionary = nil;
+                      MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
+                      //                      BOOL finished = index == uploads.count - 1;
+                      NSInteger responseCode = [httpResponse statusCode];
+                      BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+                      
+                      if (!data && success) {
+                          //                          completionHandler(NO, upload, nil, finished);
+                          strongSelf->uploading = NO;
+                          return;
+                      }
+                      
+                      success = success && [data length] > 0;
+                      
+                      if (success) {
+                          NSError *serializationError = nil;
+                          
+                          @try {
+                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+                              success = serializationError == nil && [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader];
+//                              MPILogVerbose(@"Uploaded Message: %@\n", uploadString);
+                              MPILogVerbose(@"Upload Response Code: %ld", (long)responseCode);
+                          } @catch (NSException *exception) {
+                              responseDictionary = nil;
+                              success = NO;
+                              MPILogError(@"Uploads Error: %@", [exception reason]);
+                          }
+                      } else {
+                          if (responseCode == HTTPStatusCodeBadRequest) {
+                              responseAction = MPNetworkResponseActionDeleteBatch;
+                          } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
+                              responseAction = MPNetworkResponseActionThrottle;
+                          }
+                          
+                          MPILogWarning(@"Uploads Error - Response Code: %ld", (long)responseCode);
+                      }
+                      
+                      MPILogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+                      
+                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
+                      
+//                      completionHandler(success, upload, responseDictionary, finished);
+                      
+                      strongSelf->uploading = NO;
+                  }];
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
+            return;
+        }
+        
+        if (connector.active) {
+//            MPILogWarning(@"Failed Uploading Source Batch Id: %@", upload.uuid);
+//            completionHandler(NO, upload, nil, YES);
+        }
+        
+        __strong MPNetworkCommunication *strongSelf = weakSelf;
+        if (strongSelf) {
+            strongSelf->uploading = NO;
+        }
+        
+        [connector cancelRequest];
+    });
+    
+    //TODO
+}
+
+- (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+    if (loggingIn) {
+        return;
+    }
+    
+    loggingIn = YES;
+    __weak MPNetworkCommunication *weakSelf = self;
+    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    
+    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+            __strong MPNetworkCommunication *strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->loggingIn = NO;
+            }
+            
+            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        }
+    }];
+    
+    MPConnector *connector = [[MPConnector alloc] init];
+    NSString *const connectionId = [[NSUUID UUID] UUIDString];
+    connector.connectionId = connectionId;
+    
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    //TODO
+}
+
+- (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+    if (loggingOut) {
+        return;
+    }
+    
+    loggingOut = YES;
+    __weak MPNetworkCommunication *weakSelf = self;
+    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    
+    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+            __strong MPNetworkCommunication *strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->loggingOut = NO;
+            }
+            
+            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        }
+    }];
+    
+    MPConnector *connector = [[MPConnector alloc] init];
+    NSString *const connectionId = [[NSUUID UUID] UUIDString];
+    connector.connectionId = connectionId;
+    
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    //TODO
+}
+
+- (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+    if (modifying) {
+        return;
+    }
+    
+    modifying = YES;
+    __weak MPNetworkCommunication *weakSelf = self;
+    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    
+    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+            __strong MPNetworkCommunication *strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->modifying = NO;
+            }
+            
+            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        }
+    }];
+    
+    MPConnector *connector = [[MPConnector alloc] init];
+    NSString *const connectionId = [[NSUUID UUID] UUIDString];
+    connector.connectionId = connectionId;
+    
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    //TODO
 }
 
 @end

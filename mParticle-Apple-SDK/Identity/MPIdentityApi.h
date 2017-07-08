@@ -1,5 +1,5 @@
 //
-//  MPIdentity.h
+//  MPIdentityApi.h
 //
 
 
@@ -10,7 +10,7 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable user, NSError *_Nullable error);
+typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 
 @interface MPIdentityApi : NSObject
 
