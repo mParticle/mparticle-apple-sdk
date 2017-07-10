@@ -1,20 +1,14 @@
 # mParticle Apple SDK CHANGELOG
 
->Upgrade suggestion levels:
->* **LOW**: An upgrade is not needed unless there are new features you want to use
->* **MODERATE**: An upgrade is recommended, but it's not urgent
->* **HIGH**: There is a bug that may affect a subset of users. Upgrade!
->* **CRITICAL**: There is a critical bug affecting _most users_. Upgrade ASAP!
+## 6.14.4
+
+* [FIX] Ensure all server-side configuration settings are reloaded on every app-launch
 
 ## 6.14.3
-
->Upgrade suggestion: **LOW**.
 
 * [FIX] Revert main thread error fix
 
 ## 6.14.2
-
->Upgrade suggestion: **LOW**.
 
 * [FIX] Fix main thread error
 * [FIX] Fix clang pragma
@@ -22,39 +16,27 @@
 
 ## 6.14.1
 
->Upgrade suggestion: **MEDIUM**.
-
 * [FIX] Retry and increase timeout for search ads
 
 ## 6.14.0
-
->Upgrade suggestion: **LOW**. Update if you need support for Skyhook or Iterable.
 
 * [NEW] Add support for Skyhook
 * [NEW] Add support for Iterable
 
 ## 6.13.3
 
->Upgrade suggestion: **MEDIUM**.
-
 * [FIX] Capture user agent in start, never in background
 
 ## 6.13.2
-
->Upgrade suggestion: **LOW**.
 
 * [FIX] Fix clang static analyzer warnings
 
 ## 6.13.1
 
->Upgrade suggestion: **LOW**. Upgrade if you need support for Radar.
-
 * [FIX] Support for [Radar](https://www.onradar.com) as a kit
 * [FIX] Support for forcing SDK Environment on start-up
 
 ## 6.13.0
-
->Upgrade suggestion: **LOW**. Upgrade if you need to track eCommerce in embedded WebViews
 
 * [NEW] Handle eCommerce events from embedded js sdk
 * [NEW] Optimize user identity and user attribute change messages
@@ -62,19 +44,13 @@
 
 ## 6.12.6
 
->Upgrade suggestion: **LOW**. Upgrade if you've seen a kit configuration be removed from cache by the O.S.
-
 * [FIX] Force refresh the config cache when a kit configuration is absent
 
 ## 6.12.5
 
->Upgrade suggestion: **LOW**. Upgrade if you're updating user attributes from multiple, concurrent, threads
-
 * [NEW] Use mutable copy of string when setting a user attribute key
 
 ## 6.12.4
-
->Upgrade suggestion: **LOW**. Upgrade if you need lat/long in session start or have custom mappings to commerce events
 
 * [NEW] Include latitude and longitude in session start events
 * [NEW] Allow for environment override even for prod apps
@@ -82,26 +58,18 @@
 
 ## 6.12.3
 
->Upgrade suggestion: **LOW**. Upgrade if you have custom mappings for commerce events
-
 * [FIX] Execute projection when the commerce event has no mapped attributes
 
 ## 6.12.2
-
->Upgrade suggestion: **LOW**. Upgrade if you see unsupported data types being added to `MPEvent` attributes
 
 * [NEW] Remove eTag when app version or build changes
 * [FIX] Enumeration to generate upload batches is done non-concurrently
 
 ## 6.12.1
 
->Upgrade suggestion: **LOW**. Upgrade if you see unsupported data types being added to `MPEvent` attributes
-
 * [FIX] A try/catch block added to serialization of MPMessage. Moreover, further conditions were added to assure the values being handled by the MPUploadBuilder are valid
 
 ## 6.12.0
-
->Upgrade suggestion: **MODERATE**. Upgrade if you need to use the Radar integration or want a lighter SDK
 
 * [NEW] Support for [Radar](https://www.onradar.com) as a kit
 * [NEW] Retrieve kit instance asynchronously with a block. Use `- (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler;` to retrieve a kit instance. The block will be called immediately if the kit is already initialized, or will be called asynchronously as soon as the kit becomes initialized
@@ -110,20 +78,14 @@
 
 ## 6.11.2
 
->Upgrade suggestion: **HIGH**. Upgrade if you use deep-linking in your app
-
 * [NEW] Set location without the need to call `beginLocationTracking`
 * [FIX] Upload data immediately on first application launch
 
 ## 6.11.1
 
->Upgrade suggestion: **LOW**. Upgrade if you use `checkForDeferredDeepLinkWithCompletionHandler:` or `openURL:options:` with launch parameters
-
 * [NEW] Queue launch parameters. The app notification handler now takes advantage of the forwarding queue mechanism. If kits have not been initialized yet (config not received from server), the data will be held in a queue and once the configuration has been received and kits initialized, the queued items are replayed to kits
 
 ## 6.11.0
-
->Upgrade suggestion: **LOW**. Upgrade if you need to use the Reveal Mobile integration
 
 * [NEW] Support for [Reveal Mobile](http://www.revealmobile.com/) as a kit
 * [NEW] Wrap the capture of the user-agent in a try/catch
@@ -132,33 +94,23 @@
 
 ## 6.10.5
 
->Upgrade suggestion: **MODERATE**. Upgrade if you were trying to increment user attribute prior to initializing them
-
 * [FIX] Increment user attribute when not set previously
 * [FIX] Runtime iOS 10 verification of push notifications
 
 ## 6.10.4
-
->Upgrade suggestion: **HIGH**. Upgrade due to a potential race condition beginning sessions
 
 * [FIX] Fix potential race condition beginning sessions
 * [FIX] End background task when batches are finished
 
 ## 6.10.3
 
->Upgrade suggestion: **HIGH**. Upgrade due to a bug handling when users force quit an app
-
 * [FIX] Fix crash when an app is being force quit.
 
 ## 6.10.2
 
->Upgrade suggestion: **MODERATE**. Upgrade if you use deep-linking and implement your app in Swift
-
 * [FIX] Remove the use of generics from the `checkForDeferredDeepLinkWithCompletionHandler:` method. The received parameter signature is now `NSDictionary`, previously it was `NSDictionary<NSString *, NSString *>`
 
 ## 6.10.0
-
->Upgrade suggestion: **MODERATE**. Upgrade if you need to collect attribution details from Search Ads
 
 * [NEW] Collect attribute details from search ads
 * [FIX] Compare custom mapping keys in a case insensitive manner
@@ -167,15 +119,11 @@
 
 ## 6.9.0
 
->Upgrade suggestion: **LOW**. Upgrade if you forward data to Apptimize
-
 * [NEW] Support for [Apptimize](https://apptimize.com) as a kit
 * [NEW] Collect whether Daylight Savings Time is enabled
 * [NEW] Add notification for when the SDK has finished initializing. Add a flag property indicating whether the SDK has been initialized (KVO compatible)
 
 ## 6.8.0
-
->Upgrade suggestion: **MODERATE**. Upgrade if you need to support iOS 10
 
 * [NEW] Support for [Leanplum](https://www.leanplum.com) as a kit
 * [NEW] When a user identity changes a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user identities were set/present at the moment an app event is logged
@@ -186,51 +134,35 @@
 
 ## 6.7.2
 
->Upgrade suggestion: **LOW**. Upgrade if you forward data to Amplitude
-
 * [FIX] When a user attribute changes (new, update, or delete) a new type of message is added to the batch to be uploaded to the server. This allows for greater control to inform partners about which user attributes were set/present at the moment an app event is logged
 
 ## 6.7.1
 
->Upgrade suggestion: **LOW**. Upgrade if you log events prior to the SDK being fully initialized
-
 * [FIX] Timing of logged events: Events (both app events and commerce events) now have a timestamp property, which gets populated automatically by the SDK, when an event is logged prior to the SDK being fully initialized. If set, this property will override the timestamp of messages when they are about to be persisted
 
 ## 6.7.0
-
->Upgrade suggestion: **MODERATE**. Upgrade if you use custom mappings
 
 * [NEW] Custom mappings now support more advanced matching schemes
 * [NEW] Support for [Urban Airship](https://www.urbanairship.com) as a kit
 
 ## 6.6.1
 
->Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
-
 * [FIX] A newly introduced class was missing from the tvOS Xcode target
 
 ## 6.6.0
-
->Upgrade suggestion: **LOW**. Upgrade if you are a kit partner/developer and need to pass integration attributes to the core SDK
 
 * [NEW] Kits can now pass integration attributes back to the core SDK
 
 ## 6.5.0
 
->Upgrade suggestion: **LOW**. Upgrade if you want to use Primer as a kit
-
 * [NEW] Support for [Primer](https://goprimer.com) as a kit
 
 ## 6.4.0
-
->Upgrade suggestion: **LOW**. Upgrade if you want to use Apptentive as a kit or need to configure the behavior for silent notification registration
 
 * [NEW] Support for [Apptentive](http://www.apptentive.com) as a kit
 * [NEW] MParticleConfig.plist option to opt in/out of automatic silent notification registration. See [mParticle Docs](http://docs.mparticle.com/#apple) for details
 
 ## 6.3.0
-
->Upgrade suggestion: **LOW**. Upgrade if you integrate with AppsFlyer, are writing an integration kit, or want to reduce network traffic
 
 * [NEW] Add the customerId user identity as an event attribute when forwarding to AppsFlyer
 * [NEW] Add new methods to the kit protocol to forward user notification related info to kits
@@ -241,20 +173,14 @@
 
 ## 6.2.0
 
->Upgrade suggestion: **LOW**. Upgrade if you want to use Button as a kit
-
 * [NEW] Support for [Button](https://www.usebutton.com) as a kit
 * [FIX] Server configuration override of crash report initialization is restored
 
 ## 6.1.0
 
->Upgrade suggestion: **LOW**. Upgrade if you need user attribute lists
-
 * [NEW] User attributes can now take arrays as values. The array of values is associated with a user attribute key. The list of all user attributes can be retrieved using the new `userAttributes` property
 
 ## 6.0.7
-
->Upgrade suggestion: **HIGH**. Upgrade if you are filtering transaction attributes in commerce events
 
 * [FIX] Filter transaction attributes in commerce events
 * [FIX] Expand the scope of MPAppDelegateProxy to handle protocol conformance and class hierarchy matching
@@ -263,44 +189,30 @@
 
 ## 6.0.6
 
->Upgrade suggestion: **HIGH**. Upgrade if you are not seeing the source app in deep-linking when running iOS 8
-
 * [FIX] Using a string constant (iOS 9 or above) or a string literal (iOS 8 or below) to log a deep-linking event
 
 ## 6.0.5
-
->Upgrade suggestion: **MODERATE**.
 
 * [FIX] Add additional checks for iOS 9 symbols
 
 ## 6.0.4
 
->Upgrade suggestion: **HIGH**. Upgrade if you are experiencing issues related to kit initialization
-
 * [FIX] More consistent handling of kit initialization and sampling
 
 ## 6.0.3
-
->Upgrade suggestion: **LOW**. Upgrade if you need to use the newly public files.
 
 * [FIX] Expose some files for use by kits
 * [FIX] Add nil check and prevent modifying while enumerating
 
 ## 6.0.2
 
->Upgrade suggestion: **LOW**. Upgrade if you are relying on the queue to hold events to be forwarded to kits before they have been configured.
-
 * [FIX] Set the kits initialized flag only if persisted kits have been initialized
 
 ## 6.0.1
 
->Upgrade suggestion: **MODERATE**. Upgrade if you want to use Carthage, or if you want to queue events for kits.
-
 * [FIX] Correct a condition determining whether variables were valid
 
 ## 6.0.0
-
->Upgrade suggestion: **MODERATE**. Upgrade if you want to use Carthage, or if you want to queue events for kits.
 
 * [NEW] We are introducing the ability to implement extensions for the mParticle SDK. Kits have been the first component to take advantage of this new and more powerful architecture
 * [NEW] A queue was added to hold events to be forwarded to kits until the first configuration is received from the server and kits are initialized
@@ -310,21 +222,15 @@
 
 ## 5.5.2
 
->Upgrade suggestion: **HIGH**. Upgrade if you are using one of the following kits: Appboy, AppsFlyer, comScore, Crittercism, Kahuna, or Localytics. The `podspec` has been changed for those kits
-
 * [NEW] Stripping `$` from event attributes when forwarding to Appboy
 * [FIX] Updated the `podspec` to include paths and flags required to build kits
 
 ## 5.5.1
 
->Upgrade suggestion: **LOW**. Upgrade if you are having an enum conflict with MPLogLevel
-
 * [NEW] Added Branch Metrics support for received push notifications
 * [NEW] Renamed the `MPLogLevel` enum to `MPILogLevel`. The renamed values are: `MPILogLevelNone`, `MPILogLevelError`, `MPILogLevelWarning`, `MPILogLevelDebug`, and `MPILogLevelVerbose`
 
 ## 5.5.0
-
->Upgrade suggestion: **LOW**. Upgrade if you are planning to release a multi-platform app supporting iOS and tvOS
 
 * [NEW] Unification of the SDKs. Now the iOS and tvOS SDKs are combined into one single SDK. Support for more platforms will be coming in the future
 * [NEW] Updated Kahuna kit
@@ -332,14 +238,10 @@
 
 ## 5.4.2
 
->Upgrade suggestion: **LOW**. Upgrade if you are using Kahuna and its delegate methods for push notifications, or if you are adding custom flags to MPEvents
-
 * [NEW] Validating the data type in event custom flags. Making sure that the array of flags is an array and that it only contains string items in it
 * [FIX] Do not forward push information to Kahuna if the app was launched as a result of a user tapping on a push notification, since their SDK is already capturing the contents of the notification. There is no impact on data forwarding/counting/reporting, this just prevents a Kahuna delegate method from being called twice
 
 ## 5.4.1
-
->Upgrade suggestion: **HIGH**. If you are using Appboy, Branch Metrics, Localytics, or Impressions in commerce events
 
 * [NEW] Expanded the Branch Metrics kit to handle `openURL` and `continueUserActivity`
 * [NEW] Custom mapping between mParticle and Appboy user attributes
