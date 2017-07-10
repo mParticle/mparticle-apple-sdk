@@ -56,6 +56,7 @@
 #import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPURLRequestBuilder.h"
+#import "MPUtils.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -2650,7 +2651,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
-    if (_initializationStatus != MPInitializationStatusStarted) {
+    if (_initializationStatus != MPInitializationStatusStarted || [MPUtils mpId].intValue == 0) {
         if (completionHandler) {
             completionHandler();
         }
