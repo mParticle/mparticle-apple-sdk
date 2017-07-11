@@ -22,22 +22,10 @@ NSString *path = @"/v1";
     MPConnector *connector = [[MPConnector alloc] init];
 //    NSString *message = nil;
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    NSMutableDictionary *clientSDK = [NSMutableDictionary dictionary];
     
-#if TARGET_OS_IOS == 1
-    clientSDK[@"platform"] = @"ios";
-#elif TARGET_OS_TVOS == 1
-    clientSDK[@"platform"] = @"tvos";
-#endif
-    
-    clientSDK[@"sdk_vendor"] = @"mparticle";
-    clientSDK[@"sdk_version"] = kMParticleSDKVersion;
-    
-    dictionary[@"client_sdk"] = clientSDK;
+    [self handleUploadDictionary:dictionary];
     
     dictionary[@"known_identities"] = [identityRequest dictionaryRepresentation];
-    
-    dictionary[@"context"] = _context;
     
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     
@@ -53,6 +41,26 @@ NSString *path = @"/v1";
             completion(mpid, nil);
         }
     }];
+}
+
+- (void)handleUploadDictionary:(NSMutableDictionary *)uploadDictionary {
+    NSMutableDictionary *clientSDK = [NSMutableDictionary dictionary];
+#if TARGET_OS_IOS == 1
+    clientSDK[@"platform"] = @"ios";
+#elif TARGET_OS_TVOS == 1
+    clientSDK[@"platform"] = @"tvos";
+#endif
+    
+    clientSDK[@"sdk_vendor"] = @"mparticle";
+    clientSDK[@"sdk_version"] = kMParticleSDKVersion;
+    
+    uploadDictionary[@"client_sdk"] = clientSDK;
+
+    uploadDictionary[@"context"] = _context;
+}
+
+- (void)handleDownloadDictionary:(NSMutableDictionary *)downloadDictionary {
+    _context = downloadDictionary[@"context"];
 }
 
 - (void)identify:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {

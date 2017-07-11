@@ -43,8 +43,7 @@ namespace mParticle {
         Profile = 14,
         PushNotificationInteraction = 15,
         CommerceEvent = 16,
-        UserAttributeChange = 17,
-        UserIdentityChange = 18
+        UserAttributeChange = 17
     };
     
     class MessageTypeName final {

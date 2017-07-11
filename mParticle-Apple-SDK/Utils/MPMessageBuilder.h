@@ -27,7 +27,6 @@
 @class MPDataModelAbstract;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
-@class MPUserIdentityChange;
 
 @interface MPMessageBuilder : NSObject {
 @protected
