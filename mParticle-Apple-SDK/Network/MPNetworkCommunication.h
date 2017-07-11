@@ -57,7 +57,7 @@ typedef void (^MPIdentityApiManagerCallback)(NSNumber *_Nullable newMPID, NSErro
 - (void)uploadSessionHistory:(nonnull MPSessionHistory *)sessionHistory completionHandler:(void(^ _Nonnull)(BOOL success))completionHandler;
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
-- (void)loginRequest:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 

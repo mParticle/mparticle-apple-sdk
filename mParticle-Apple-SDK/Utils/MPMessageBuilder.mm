@@ -32,7 +32,6 @@
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
 #import "MPUserAttributeChange.h"
-#import "MPUserIdentityChange.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -46,8 +45,6 @@ NSString *const kMPUserAttributeWasDeletedKey = @"d";
 NSString *const kMPUserAttributeNewValueKey = @"nv";
 NSString *const kMPUserAttributeOldValueKey = @"ov";
 NSString *const kMPUserAttributeNewlyAddedKey = @"na";
-NSString *const kMPUserIdentityNewValueKey = @"ni";
-NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 @implementation MPMessageBuilder
 
@@ -158,20 +155,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (MPMessageBuilder *)withUserIdentityChange:(MPUserIdentityChange *)userIdentityChange {
-    NSDictionary *dictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
-    if (dictionary) {
-        messageDictionary[kMPUserIdentityNewValueKey] = dictionary;
-    }
-    
-    dictionary = [userIdentityChange.userIdentityOld dictionaryRepresentation];
-    if (dictionary) {
-        messageDictionary[kMPUserIdentityOldValueKey] = dictionary;
-    }
-    
-    return self;
-}
-
 #pragma mark Public class methods
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session commerceEvent:commerceEvent];
@@ -188,13 +171,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
     [messageBuilder withUserAttributeChange:userAttributeChange];
-    
-    return messageBuilder;
-}
-
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange {
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
-    [messageBuilder withUserIdentityChange:userIdentityChange];
     
     return messageBuilder;
 }

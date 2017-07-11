@@ -991,7 +991,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
     connector.connectionId = connectionId;
     
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+//    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     //TODO
 }
@@ -1021,7 +1021,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
     connector.connectionId = connectionId;
     
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+//    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     //TODO
 }
@@ -1051,7 +1051,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
     connector.connectionId = connectionId;
     
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+//    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     //TODO
 }

@@ -14,7 +14,7 @@ NSString *path = @"/v1";
 - (void)sendRequestForAction:(NSString *)action request:(MPIdentityApiRequest *)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@%@", @"https://", identityHost, path, action]];
     MPConnector *connector = [[MPConnector alloc] init];
-    NSString *message = nil;
+//    NSString *message = nil;
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     NSMutableDictionary *clientSDK = [NSMutableDictionary dictionary];
     
