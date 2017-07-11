@@ -14,6 +14,8 @@
 @interface MParticleUser ()
 
 @property (nonatomic, strong) MPBackendController *backendController;
+@property(nonatomic, strong, readwrite, nullable) NSNumber *userId;
+
 
 @end
 

@@ -61,16 +61,6 @@
     XCTAssertNotNil(stateMachine.consumerInfo.mpId, @"mpId is not retaining its value.");
 }
 
-- (void)testGenerateMPID {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.consumerInfo.mpId = @0; // Reset mpId
-    XCTAssertNotNil(stateMachine.consumerInfo.mpId, @"mpId is not being generated.");
-    
-    NSNumber *mpIdCopy = [stateMachine.consumerInfo.mpId copy];
-    stateMachine.consumerInfo.mpId = @0; // Reset mpId
-    XCTAssertNotEqualObjects(mpIdCopy, stateMachine.consumerInfo.mpId, @"Regenerating the same mpId.");
-}
-
 - (void)testOptOut {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.optOut = YES;

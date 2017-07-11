@@ -21,10 +21,8 @@
     [super tearDown];
 }
 
-- (void)testBasicAssumptions {
-    XCTAssert([MParticle sharedInstance].identity);
-    XCTAssert([MParticle sharedInstance].identity.currentUser);
-    XCTAssert([MParticle sharedInstance].identity.currentUser.userId);
+- (void)testExample {
+    
 }
 
 - (void)testPerformanceExample {

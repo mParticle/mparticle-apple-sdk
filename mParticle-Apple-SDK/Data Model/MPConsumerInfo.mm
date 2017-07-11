@@ -226,19 +226,6 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 #pragma mark Private methods
-- (NSNumber *)generateMpId {
-    int64_t mpId = 0;
-    while (!mpId) {
-        NSString *uuidString = [[NSUUID UUID] UUIDString];
-        NSData *uuidData = [uuidString dataUsingEncoding:NSUTF8StringEncoding];
-        
-        mpId = mParticle::Hasher::hashFNV1a((const char *)[uuidData bytes], (int)[uuidData length]);
-    }
-    
-    NSNumber *generatedMpId = [NSNumber numberWithLongLong:mpId];
-    return generatedMpId;
-}
-
 - (void)configureCookiesWithDictionary:(NSDictionary *)cookiesDictionary {
     if (MPIsNull(cookiesDictionary)) {
         return;
@@ -311,6 +298,7 @@ NSString *const kMPCKExpiration = @"e";
 - (NSNumber *)mpId {
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     
+    //TODO
     // If we don't have the id, create it.
     if (!_mpId) {
         [self willChangeValueForKey:@"mpId"];
@@ -326,10 +314,10 @@ NSString *const kMPCKExpiration = @"e";
             _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
             
             if ([_mpId isEqualToNumber:@0]) {
-                _mpId = [self generateMpId];
+//                _mpId = [self generateMpId];
             }
         } else {
-            _mpId = [self generateMpId];
+//            _mpId = [self generateMpId];
         }
         
         [self didChangeValueForKey:@"mpId"];
@@ -349,7 +337,7 @@ NSString *const kMPCKExpiration = @"e";
     }
     
     if ([mpId isEqualToNumber:@0]) {
-        _mpId = [self generateMpId];
+//        _mpId = [self generateMpId];
     } else {
         _mpId = mpId;
     }
