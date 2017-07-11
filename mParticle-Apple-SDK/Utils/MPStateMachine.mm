@@ -34,6 +34,7 @@
 #import "MPLocationManager.h"
 #import "MPKitContainer.h"
 #import "MPSearchAdsAttribution.h"
+#import "MPUtils.h"
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
@@ -414,7 +415,7 @@ static BOOL runningInBackground = NO;
     }
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    _consumerInfo = [persistence fetchConsumerInfo];
+    _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPUtils mpId]];
     
     if (!_consumerInfo) {
         _consumerInfo = [[MPConsumerInfo alloc] init];

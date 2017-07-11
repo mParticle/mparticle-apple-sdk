@@ -23,6 +23,7 @@
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import "MPSession.h"
+#import "MPUtils.h"
 
 @implementation MPResponseEvents
 
@@ -38,7 +39,7 @@
         MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;
         [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
         [persistence updateConsumerInfo:consumerInfo];
-        [persistence fetchConsumerInfo:^(MPConsumerInfo *consumerInfo) {
+        [persistence fetchConsumerInfoForUserId:[MPUtils mpId] completionHandler:^(MPConsumerInfo *consumerInfo) {
             [MPStateMachine sharedInstance].consumerInfo = consumerInfo;
         }];
     }

@@ -24,6 +24,7 @@
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
 #import "NSString+MPPercentEscape.h"
+#import "MPUtils.h"
 
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";
@@ -246,7 +247,7 @@ NSString *const kMPCKExpiration = @"e";
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     NSMutableArray<MPCookie *> *cookies = [[NSMutableArray alloc] init];
-    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookies];
+    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPUtils mpId]];
     if (fetchedCookies) {
         [cookies addObjectsFromArray:fetchedCookies];
     }

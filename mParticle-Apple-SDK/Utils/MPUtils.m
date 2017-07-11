@@ -18,17 +18,28 @@
 
 #import "MPUtils.h"
 #import "mParticle.h"
+#import "MPIUserDefaults.h"
 
 @implementation MPUtils
 
 + (NSNumber *)mpId {
-    NSNumber *mpId;
-    mpId = [MParticle sharedInstance].identity.currentUser.userId;
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSString *mpIdString = userDefaults[@"mpid"];
+    NSNumber *mpId = nil;
+    if (mpIdString) {
+        mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
+    }
+    else {
+        mpId = @0; //TODO
+    }
+    
     return mpId;
 }
 
 + (void)setMpid:(NSNumber *)mpId {
-    //TODO
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults[@"mpid"] = mpId;
+    [userDefaults synchronize];
 }
 
 @end

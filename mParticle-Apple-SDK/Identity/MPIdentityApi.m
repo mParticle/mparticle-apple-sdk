@@ -101,7 +101,7 @@
         return _currentUser;
     }
     
-    NSNumber *mpid = [MPStateMachine sharedInstance].consumerInfo.mpId;;
+    NSNumber *mpid = [MPStateMachine sharedInstance].consumerInfo.mpId;
     _currentUser = [self userFromIdentifier:mpid];
     return _currentUser;
 }

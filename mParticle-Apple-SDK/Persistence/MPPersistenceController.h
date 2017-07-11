@@ -80,8 +80,8 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteStandaloneUpload:(nonnull MPStandaloneUpload *)standaloneUpload;
 - (void)deleteStandaloneUploadId:(int64_t)standaloneUploadId;
 - (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs;
-- (nullable MPConsumerInfo *)fetchConsumerInfo;
-- (void)fetchConsumerInfo:(void (^ _Nonnull)(MPConsumerInfo * _Nullable consumerInfo))completionHandler userId:(NSNumber * _Nonnull)userId;
+- (nullable MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber * _Nonnull)userId;
+- (void)fetchConsumerInfoForUserId:(NSNumber * _Nonnull)userId completionHandler:(void (^ _Nonnull)(MPConsumerInfo * _Nullable consumerInfo))completionHandler;
 - (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber * _Nonnull)userId;
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes;

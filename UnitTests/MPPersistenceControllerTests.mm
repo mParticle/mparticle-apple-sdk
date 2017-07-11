@@ -32,6 +32,7 @@
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPKitExecStatus.h"
+#import "MPUtils.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
@@ -521,7 +522,7 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence saveConsumerInfo:consumerInfo];
     
-    MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfo];
+    MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPUtils mpId]];
     XCTAssertNotNil(fetchedConsumerInfo);
     
     NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
@@ -529,7 +530,7 @@
     XCTAssertEqualObjects(cookiesDictionary, fetchedCookiesDictionary);
     
     [persistence deleteConsumerInfo];
-    fetchedConsumerInfo = [persistence fetchConsumerInfo];
+    fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPUtils mpId]];
     XCTAssertNil(fetchedConsumerInfo);
     
     consumerInfo = [[MPConsumerInfo alloc] init];
@@ -539,7 +540,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
     
-    [persistence fetchConsumerInfo:^(MPConsumerInfo * _Nullable consumerInfo) {
+    [persistence fetchConsumerInfoForUserId:[MPUtils mpId] completionHandler:^(MPConsumerInfo * _Nullable consumerInfo) {
         XCTAssertNotNil(consumerInfo);
         [persistence deleteConsumerInfo];
         

@@ -1144,8 +1144,8 @@ const int MaxBreadcrumbs = 50;
     return breadcrumbs;
 }
 
-- (MPConsumerInfo *)fetchConsumerInfo {
-    NSArray<MPCookie *> *cookies = [self fetchCookies];
+- (MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber *)userId {
+    NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
     
     __block MPConsumerInfo *consumerInfo = nil;
     
@@ -1174,7 +1174,7 @@ const int MaxBreadcrumbs = 50;
     return consumerInfo;
 }
 
-- (void)fetchConsumerInfo:(void (^)(MPConsumerInfo *consumerInfo))completionHandler userId:(NSNumber *)userId {
+- (void)fetchConsumerInfoForUserId:(NSNumber *)userId completionHandler:(void (^)(MPConsumerInfo *consumerInfo))completionHandler {
     NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
     
     dispatch_async(dbQueue, ^{
