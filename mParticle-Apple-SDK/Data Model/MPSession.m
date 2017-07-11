@@ -64,6 +64,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
     _persisted = sessionId != 0;
     _numberOfInterruptions = numberOfInterruptions;
     _suspendTime = suspendTime;
+    _sessionUserIds = [NSMutableArray array];
     
     _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
     
