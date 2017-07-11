@@ -21,5 +21,6 @@
 @interface MPUtils : NSObject
 
 + (NSNumber *)mpId;
++ (void)setMpid:(NSNumber *)mpId;
 
 @end

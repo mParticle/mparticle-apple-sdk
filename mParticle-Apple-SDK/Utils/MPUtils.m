@@ -27,4 +27,8 @@
     return mpId;
 }
 
++ (void)setMpid:(NSNumber *)mpId {
+    //TODO
+}
+
 @end
