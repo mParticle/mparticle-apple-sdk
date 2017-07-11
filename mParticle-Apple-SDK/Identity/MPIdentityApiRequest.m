@@ -124,3 +124,214 @@
 }
 
 @end
+
+
+
+//
+//  MPIdentityRequest.m
+//
+
+@interface MPIdentityRequest : NSObject
+
+@end
+
+@protocol MPIdentityRequesting <NSObject>
+
+- (NSDictionary *)dictionaryRepresentation;
+
+@end
+
+@protocol MPIdentityResponding <NSObject>
+
+- (NSDictionary *)initWithJson:(id)json;
+
+@end
+
+@implementation MPIdentityRequest
+@end
+
+typedef NS_ENUM(NSUInteger, MPIdentityType) {
+    MPIdentityTypeAdvertiserId,
+    MPIdentityTypeVendorId,
+    MPIdentityTypePushToken,
+    MPIdentityTypeCustomerId,
+    MPIdentityTypeEmail,
+    MPIdentityTypeFacebook,
+    MPIdentityTypeFacebookCustomAudienceId,
+    MPIdentityTypeGoogle,
+    MPIdentityTypeMicrosoft,
+    MPIdentityTypeOther,
+    MPIdentityTypeTwitter,
+    MPIdentityTypeYahoo,
+};
+
+@interface MPIdentityUtils : NSObject
+
++ (NSString *)stringForIdentityType:(MPIdentityType)identityType;
+
+@end
+
+@interface MPIdentityChange : NSObject
+
+@property (nonatomic) NSString *oldValue;
+@property (nonatomic) NSString *value;
+@property (nonatomic) MPIdentityType identityType;
+- (NSMutableDictionary *)dictionaryRepresentation;
+
+@end
+
+@implementation MPIdentityChange
+
+- (instancetype)init {
+    return nil;
+}
+
+- (instancetype)initWithOldValue:(NSString *)oldValue value:(NSString *)value identityType:(MPIdentityType)identityType {
+    if (!oldValue || !value || ![MPIdentityUtils stringForIdentityType:identityType]) {
+        return nil;
+    }
+    
+    self = [super init];
+    if (self) {
+        _oldValue = oldValue;
+        _value = value;
+        _identityType = identityType;
+    }
+    return self;
+}
+
+- (NSMutableDictionary *)dictionaryRepresentation {
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    dictionary[@"old_value"] = _oldValue;
+    dictionary[@"new_value"] = _value;
+    dictionary[@"identity_type"] = @(_identityType);
+    return dictionary;
+}
+
+@end
+
+@interface MPIdentityErrorItem : NSObject
+
+- (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary;
+
+@property (nonatomic) NSString *code;
+@property (nonatomic) NSString *message;
+
+@end
+
+@interface MPIdentityErrorResponse : NSObject
+
+@property (nonatomic) NSMutableArray<MPIdentityErrorItem *> *items;
+
+@end
+
+@implementation MPIdentityErrorResponse
+
+- (instancetype)init {
+    return nil;
+}
+
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
+    self = [super init];
+    if (self) {
+        _items = [NSMutableArray array];
+        NSDictionary *errors = dictionary[@"errors"];
+        NSArray *items = errors[@"items"];
+        [items enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            MPIdentityErrorItem *item = [[MPIdentityErrorItem alloc] initWithJsonDictionary:obj];
+            if (item) {
+                [_items addObject:item];
+            }
+        }];
+    }
+    return self;
+}
+
+@end
+
+@implementation MPIdentityErrorItem
+
+- (instancetype)init {
+    return nil;
+}
+
+- (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary {
+    self = [super init];
+    if (self) {
+        _code = dictionary[@"code"];
+        _message = dictionary[@"message"];
+    }
+    return self;
+}
+
+@end
+
+@interface MPIdentifySuccessResponse : NSObject
+
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary;
+
+@property (nonatomic) NSString *context;
+@property (nonatomic) NSString *mpid;
+
+@end
+
+@implementation MPIdentifySuccessResponse
+
+- (instancetype)init {
+    return nil;
+}
+
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
+    self = [super init];
+    if (self) {
+        _context = dictionary[@"context"];
+        _mpid = dictionary[@"mpid"];
+    }
+    return self;
+}
+
+@end
+
+@implementation MPIdentityUtils
+
++ (NSString *)stringForIdentityType:(MPIdentityType)identityType {
+    switch (identityType) {
+        case MPIdentityTypeAdvertiserId:
+            return @"ios_idfa";
+            
+        case MPIdentityTypeCustomerId:
+            return @"customerid";
+            
+        case MPIdentityTypeEmail:
+            return @"email";
+            
+        case MPIdentityTypeFacebook:
+            return @"facebook";
+            
+        case MPIdentityTypeFacebookCustomAudienceId:
+            return @"facebookcustomaudienceid";
+            
+        case MPIdentityTypeGoogle:
+            return @"google";
+            
+        case MPIdentityTypeMicrosoft:
+            return @"microsoft";
+            
+        case MPIdentityTypeOther:
+            return @"other";
+            
+        case MPIdentityTypeTwitter:
+            return @"twitter";
+            
+        case MPIdentityTypeYahoo:
+            return @"yahoo";
+            
+        default:
+            return nil;
+    }
+}
+
+@end
+
+
+
