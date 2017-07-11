@@ -9,6 +9,12 @@
 NSString *identityHost = @"identity.mparticle.com";
 NSString *path = @"/v1";
 
+@interface MPIdentityApiManager ()
+
+@property (nonatomic, strong) NSString *context;
+
+@end
+
 @implementation MPIdentityApiManager
 
 - (void)sendRequestForAction:(NSString *)action request:(MPIdentityApiRequest *)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
@@ -31,6 +37,8 @@ NSString *path = @"/v1";
     
     dictionary[@"known_identities"] = [identityRequest dictionaryRepresentation];
     
+    dictionary[@"context"] = _context;
+    
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     
     [connector asyncPostDataFromURL:url message:(NSString *)[NSNull null] serializedParams:data completionHandler:^(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse) {
@@ -40,6 +48,8 @@ NSString *path = @"/v1";
         }
         if (httpResponse.statusCode > 199 && httpResponse.statusCode < 300) {
             NSNumber *mpid = nil;
+            
+            _context = nil; //TODO
             completion(mpid, nil);
         }
     }];
