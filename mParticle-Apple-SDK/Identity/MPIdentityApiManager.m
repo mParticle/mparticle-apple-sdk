@@ -5,6 +5,7 @@
 #import "MPIdentityApiManager.h"
 #import "MPConnector.h"
 #import "MPIConstants.h"
+#import "MPNetworkCommunication.h"
 
 NSString *identityHost = @"identity.mparticle.com";
 NSString *path = @"/v1";
@@ -17,31 +18,31 @@ NSString *path = @"/v1";
 
 @implementation MPIdentityApiManager
 
-- (void)sendRequestForAction:(NSString *)action request:(MPIdentityApiRequest *)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@%@", @"https://", identityHost, path, action]];
-    MPConnector *connector = [[MPConnector alloc] init];
-//    NSString *message = nil;
-    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    
-    [self handleUploadDictionary:dictionary];
-    
-    dictionary[@"known_identities"] = [identityRequest dictionaryRepresentation];
-    
-    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
-    
-    [connector asyncPostDataFromURL:url message:(NSString *)[NSNull null] serializedParams:data completionHandler:^(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse) {
-        if (error) {
-            completion(nil, error);
-            return;
-        }
-        if (httpResponse.statusCode > 199 && httpResponse.statusCode < 300) {
-            NSNumber *mpid = nil;
-            
-            _context = nil; //TODO
-            completion(mpid, nil);
-        }
-    }];
-}
+//- (void)sendRequestForAction:(NSString *)action request:(MPIdentityApiRequest *)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+//    NSURL *url = [NSURL URLWithString:[NSString stringWithFormat:@"%@%@%@%@", @"https://", identityHost, path, action]];
+//    MPConnector *connector = [[MPConnector alloc] init];
+////    NSString *message = nil;
+//    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+//    
+//    [self handleUploadDictionary:dictionary];
+//    
+//    dictionary[@"known_identities"] = [identityRequest dictionaryRepresentation];
+//    
+//    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+//    
+//    [connector asyncPostDataFromURL:url message:(NSString *)[NSNull null] serializedParams:data completionHandler:^(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse) {
+//        if (error) {
+//            completion(nil, error);
+//            return;
+//        }
+//        if (httpResponse.statusCode > 199 && httpResponse.statusCode < 300) {
+//            NSNumber *mpid = nil;
+//            
+//            _context = nil; //TODO
+//            completion(mpid, nil);
+//        }
+//    }];
+//}
 
 - (void)handleUploadDictionary:(NSMutableDictionary *)uploadDictionary {
     NSMutableDictionary *clientSDK = [NSMutableDictionary dictionary];

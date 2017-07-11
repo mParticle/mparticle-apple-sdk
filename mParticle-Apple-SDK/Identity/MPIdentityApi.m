@@ -10,6 +10,7 @@
 #import "MPConsumerInfo.h"
 #import "MPUtils.h"
 #import "MPIUserDefaults.h"
+#import "MPSession.h"
 
 @interface MPIdentityApi ()
 
@@ -89,6 +90,8 @@
     if (user) {
         NSDictionary *userInfo = @{mParticleUserKey:user};
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
+        MPSession *session = nil; //TODO
+        [session.sessionUserIds addObject:newMPID];
     }
     
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
@@ -107,8 +110,8 @@
     return _currentUser;
 }
 
-- (void)identify:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager identify:loginRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
+- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
+    [_apiManager identify:identifyRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
         [self didChangeToIdentifier:newMPID completion:completion];
     }];
 }
@@ -141,7 +144,9 @@
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
     [_apiManager modify:modifyRequest completion:^(NSError * _Nullable error) {
-        completion(nil, error);
+        if (completion) {
+            completion(nil, error);
+        }
     }];
 }
 
