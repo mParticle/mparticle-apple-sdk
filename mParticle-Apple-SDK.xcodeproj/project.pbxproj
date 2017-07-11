@@ -735,6 +735,7 @@
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
 		DB4552BB1F01895600B6924C /* MPIdentityApiManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityApiManager.h; path = Identity/MPIdentityApiManager.h; sourceTree = "<group>"; };
 		DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApiManager.m; path = Identity/MPIdentityApiManager.m; sourceTree = "<group>"; };
+		DB4F166C1F1511B100D625CD /* MPIdentityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityTests.m; sourceTree = "<group>"; };
 		DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
 		DB58FB001E9FD06800AB5402 /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
@@ -1216,6 +1217,7 @@
 				C9DD20B51D8A190600D3ABBE /* MPURLRequestBuilderTests.m */,
 				C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */,
 				C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */,
+				DB4F166C1F1511B100D625CD /* MPIdentityTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";

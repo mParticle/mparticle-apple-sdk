@@ -1174,8 +1174,8 @@ const int MaxBreadcrumbs = 50;
     return consumerInfo;
 }
 
-- (void)fetchConsumerInfo:(void (^)(MPConsumerInfo *consumerInfo))completionHandler {
-    NSArray<MPCookie *> *cookies = [self fetchCookies];
+- (void)fetchConsumerInfo:(void (^)(MPConsumerInfo *consumerInfo))completionHandler userId:(NSNumber *)userId {
+    NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
     
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
@@ -1205,7 +1205,7 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (nullable NSArray<MPCookie *> *)fetchCookies {
+- (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber *)userId {
     __block vector<MPCookie *> cookiesVector;
     
     dispatch_sync(dbQueue, ^{
@@ -1213,7 +1213,7 @@ const int MaxBreadcrumbs = 50;
         const string sqlStatement = "SELECT _id, content, domain, expiration, name, mpid FROM cookies WHERE mpid = ?";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [userId longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MPCookie *cookie = [[MPCookie alloc] init];
