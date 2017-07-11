@@ -34,7 +34,6 @@
 #import "MPCart+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
-#import "MPUserIdentityChange.h"
 
 @interface MPMessageBuilderTests : XCTestCase
 
