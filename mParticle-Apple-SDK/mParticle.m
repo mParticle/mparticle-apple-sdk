@@ -483,12 +483,6 @@ NSString *const kMPStateKey = @"state";
         }];
     }
     
-    [self.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-        if (error) {
-            MPILogError(@"Identify request failed with error: %@", error);
-        }
-    }];
-    
     if (self.configSettings) {
         NSNumber *configRegisterForSilentNotifications = self.configSettings[kMPConfigRegisterForSilentNotifications];
         
@@ -511,6 +505,12 @@ NSString *const kMPStateKey = @"state";
                            if (!strongSelf) {
                                return;
                            }
+                           
+                           [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                               if (error) {
+                                   MPILogError(@"Identify request failed with error: %@", error);
+                               }
+                           }];
                            
                            if (firstRun) {
                                userDefaults[kMParticleFirstRun] = @NO;

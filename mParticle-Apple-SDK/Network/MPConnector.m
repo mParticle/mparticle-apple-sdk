@@ -100,66 +100,66 @@ static NSArray *mpFiddlerCertificates = nil;
 }
 
 #pragma mark NSURLSessionTaskDelegate
-- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
-    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription]) {
-        return;
-    }
-    
-    NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
-    NSString *autheticationMethod = [protectionSpace authenticationMethod];
-    NSString *host = [protectionSpace host];
-    NSString *protocol = [protectionSpace protocol];
-    __block SecTrustRef serverTrust = [protectionSpace serverTrust];
-    
-    if ([autheticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust] &&
-        [host rangeOfString:@"mparticle.com"].location != NSNotFound &&
-        [protocol isEqualToString:kMPURLScheme] &&
-        [protectionSpace receivesCredentialSecurely] &&
-        serverTrust)
-    {
-        SecTrustCallback evaluateResult = ^(SecTrustRef _Nonnull trustRef, SecTrustResultType trustResult) {
-            BOOL trustChallenge = NO;
-            
-            if (trustResult == kSecTrustResultUnspecified || trustResult == kSecTrustResultProceed) {
-                CFIndex certificateCount = SecTrustGetCertificateCount(trustRef);
-                
-                for (CFIndex certIdx = 1; certIdx < certificateCount; ++certIdx) {
-                    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(trustRef, certIdx);
-                    CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
-                    
-                    if (certificateDataRef != NULL) {
-                        NSData *certificateData = (__bridge NSData *)certificateDataRef;
-                        
-                        if (certificateData) {
-                            NSString *certificateEncodedString = [certificateData base64EncodedStringWithOptions:0];
-                            trustChallenge = [mpStoredCertificates containsObject:certificateEncodedString] || [mpFiddlerCertificates containsObject:certificateEncodedString];
-                        }
-                        
-                        CFRelease(certificateDataRef);
-                    }
-                    
-                    if (!trustChallenge) {
-                        break;
-                    }
-                }
-            }
-            
-            if (trustChallenge) {
-                NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:trustRef];
-                completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
-            } else {
-                if (_active) {
-                    _active = NO;
-                    [self cleariVars];
-                }
-                
-                completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
-            }
-        };
-        
-        SecTrustEvaluateAsync(serverTrust, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), evaluateResult);
-    }
-}
+//- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
+//    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription]) {
+//        return;
+//    }
+//    
+//    NSURLProtectionSpace *protectionSpace = [challenge protectionSpace];
+//    NSString *autheticationMethod = [protectionSpace authenticationMethod];
+//    NSString *host = [protectionSpace host];
+//    NSString *protocol = [protectionSpace protocol];
+//    __block SecTrustRef serverTrust = [protectionSpace serverTrust];
+//    
+//    if ([autheticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust] &&
+//        [host rangeOfString:@"mparticle.com"].location != NSNotFound &&
+//        [protocol isEqualToString:kMPURLScheme] &&
+//        [protectionSpace receivesCredentialSecurely] &&
+//        serverTrust)
+//    {
+//        SecTrustCallback evaluateResult = ^(SecTrustRef _Nonnull trustRef, SecTrustResultType trustResult) {
+//            BOOL trustChallenge = NO;
+//            
+//            if (trustResult == kSecTrustResultUnspecified || trustResult == kSecTrustResultProceed) {
+//                CFIndex certificateCount = SecTrustGetCertificateCount(trustRef);
+//                
+//                for (CFIndex certIdx = 1; certIdx < certificateCount; ++certIdx) {
+//                    SecCertificateRef certificate = SecTrustGetCertificateAtIndex(trustRef, certIdx);
+//                    CFDataRef certificateDataRef = SecCertificateCopyData(certificate);
+//                    
+//                    if (certificateDataRef != NULL) {
+//                        NSData *certificateData = (__bridge NSData *)certificateDataRef;
+//                        
+//                        if (certificateData) {
+//                            NSString *certificateEncodedString = [certificateData base64EncodedStringWithOptions:0];
+//                            trustChallenge = [mpStoredCertificates containsObject:certificateEncodedString] || [mpFiddlerCertificates containsObject:certificateEncodedString];
+//                        }
+//                        
+//                        CFRelease(certificateDataRef);
+//                    }
+//                    
+//                    if (!trustChallenge) {
+//                        break;
+//                    }
+//                }
+//            }
+//            
+//            if (trustChallenge) {
+//                NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:trustRef];
+//                completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
+//            } else {
+//                if (_active) {
+//                    _active = NO;
+//                    [self cleariVars];
+//                }
+//                
+//                completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);
+//            }
+//        };
+//        
+//        SecTrustEvaluateAsync(serverTrust, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), evaluateResult);
+//    }
+//}
 
 - (void)URLSession:(NSURLSession *)session dataTask:(NSURLSessionDataTask *)dataTask didReceiveResponse:(NSURLResponse *)response completionHandler:(void (^)(NSURLSessionResponseDisposition disposition))completionHandler {
     if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription] || ![_dataTask.currentRequest.URL isEqual:dataTask.currentRequest.URL]) {

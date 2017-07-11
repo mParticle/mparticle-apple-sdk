@@ -30,16 +30,32 @@
         mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
     }
     else {
-        mpId = @0; //TODO
+        mpId = @0;
     }
     
     return mpId;
 }
 
++ (void)migrateToMPID:(NSNumber *)mpid {
+    
+}
+
 + (void)setMpid:(NSNumber *)mpId {
+    NSNumber *previousMPID = [MPUtils mpId];
+    
+    if (mpId.intValue == previousMPID.intValue) {
+        return;
+    }
+    
+    [NSNotificationCenter defaultCenter] postNotificationName:<#(nonnull NSNotificationName)#> object:<#(nullable id)#> userInfo:<#(nullable NSDictionary *)#>
+    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[@"mpid"] = mpId;
     [userDefaults synchronize];
+
+    if ([previousMPID intValue] == 0) {
+        [MPUtils migrateToMPID:mpId];
+    }
 }
 
 @end

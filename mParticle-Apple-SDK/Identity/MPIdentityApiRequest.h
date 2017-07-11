@@ -20,8 +20,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) NSString *customerId;
 @property (nonatomic, strong, nullable) NSDictionary<NSNumber *, NSString *> *userIdentities;
 
-- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
-
 @end
 
 NS_ASSUME_NONNULL_END

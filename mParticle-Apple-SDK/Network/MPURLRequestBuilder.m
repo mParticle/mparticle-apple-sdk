@@ -191,7 +191,7 @@ static NSTimeInterval requestTimeout = 30.0;
     [urlRequest setTimeoutInterval:requestTimeout];
     [urlRequest setHTTPMethod:_httpMethod];
 
-    BOOL isIdentityRequest = (NSNull *)_message == [NSNull null];
+    BOOL isIdentityRequest = [urlRequest.URL.host rangeOfString:@"identity"].location != NSNotFound;
     
     if (SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
@@ -210,8 +210,15 @@ static NSTimeInterval requestTimeout = 30.0;
         if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
             contentType = @"application/json";
             [urlRequest setValue:[MPStateMachine sharedInstance].apiKey forHTTPHeaderField:@"x-mp-key"];
-            [urlRequest setValue:[MPStateMachine sharedInstance].apiKey forHTTPHeaderField:@"x-mp-date"];
-            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, _postData];
+            NSString *postDataString = [[NSString alloc] initWithData:_postData encoding:NSUTF8StringEncoding];
+            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, postDataString];
+            
+            //TODO: REMOVE once auth is working properly for identity API
+            NSString *authStr = [NSString stringWithFormat:@"%@:%@", [MPStateMachine sharedInstance].apiKey, [MPStateMachine sharedInstance].secret];
+            NSData *nsdata = [authStr
+                              dataUsingEncoding:NSUTF8StringEncoding];
+            NSString *base64Encoded = [nsdata base64EncodedStringWithOptions:0];
+            [urlRequest setValue:[NSString stringWithFormat:@"Basic %@", base64Encoded] forHTTPHeaderField:@"Authorization"];
         } else if (containsMessage) { // /events
             contentType = @"application/json";
             
