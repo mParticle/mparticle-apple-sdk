@@ -27,6 +27,7 @@
 @class MPDataModelAbstract;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
+@class MPUserIdentityChange;
 
 @interface MPMessageBuilder : NSObject {
 @protected
@@ -43,6 +44,7 @@
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;

@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MParticleUser : NSObject
 
-@property(nonatomic, strong, readonly, nullable) NSNumber *userId;
+@property(nonatomic, strong, readwrite, nullable) NSNumber *userId;
 
 /**
  Gets current user identities (readonly)

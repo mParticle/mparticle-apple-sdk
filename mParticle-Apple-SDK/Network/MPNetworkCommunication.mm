@@ -856,12 +856,13 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityApiRequest *_Nonnull)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
 
     if (identifying) {
-        completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity Error":@"Identity API in progress."}]);
+        if (completion) {
+            completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity Error":@"Identity API in progress."}]);
+        }
         return;
     }
     
     identifying = YES;
-    [MPUtils setMpid:@0];
     __weak MPNetworkCommunication *weakSelf = self;
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
@@ -929,11 +930,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           MPIdentitySuccessResponse *response = [[MPIdentitySuccessResponse alloc] initWithJsonObject:responseDictionary];
                           
                           _context = response.context;
-                          [MPUtils setMpid:response.mpid];
-                          
-                          //parse MPID
-                          //save the context
-                          //switch to new MPID
+                          if (completion) {
+                              completion(response.mpid, nil);
+                          }
                       } else {
                           if (completion) {
                               if (responseDictionary) {

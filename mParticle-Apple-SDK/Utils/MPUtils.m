@@ -19,7 +19,6 @@
 #import "MPUtils.h"
 #import "mParticle.h"
 #import "MPIUserDefaults.h"
-#import "MPPersistenceController.h"
 
 @implementation MPUtils
 
@@ -37,29 +36,10 @@
     return mpId;
 }
 
-+ (void)migrateToMPID:(NSNumber *)mpid {
-    [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:mpid];
-}
-
 + (void)setMpid:(NSNumber *)mpId {
-    NSNumber *previousMPID = [MPUtils mpId];
-    
-    if (mpId.intValue == previousMPID.intValue) {
-        return;
-    }
-    
-    
-    
-    
-//    [NSNotificationCenter defaultCenter] postNotificationName:<#(nonnull NSNotificationName)#> object:<#(nullable id)#> userInfo:<#(nullable NSDictionary *)#>
-    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[@"mpid"] = mpId;
     [userDefaults synchronize];
-
-    if ([previousMPID intValue] == 0) {
-        [MPUtils migrateToMPID:mpId];
-    }
 }
 
 @end

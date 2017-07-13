@@ -7,6 +7,6 @@
 
 @interface MPIdentityApiResult : NSObject
 
-@property(nonatomic, strong, readonly, nonnull) MParticleUser *user;
+@property(nonatomic, strong, readwrite, nonnull) MParticleUser *user;
 
 @end

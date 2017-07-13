@@ -1,4 +1,4 @@
- //
+//
 //  MPIdentityApi.m
 //
 
@@ -16,18 +16,7 @@
 @interface MPIdentityApi ()
 
 @property (nonatomic, strong) MPIdentityApiManager *apiManager;
-
-@end
-
-@interface MPIdentityApiResult ()
-
-@property(nonatomic, strong, readwrite, nonnull) MParticleUser *user;
-
-@end
-
-@interface MParticleUser ()
-
-@property(nonatomic, strong, readwrite, nullable) NSNumber *userId;
+@property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
 
 @end
 
@@ -78,26 +67,35 @@
 }
 
 - (void)didChangeToIdentifier:(NSNumber *)newMPID completion:(MPIdentityApiResultCallback)completion {
-//    NSNumber *currentIdentifier = [MParticle sharedInstance].identity.currentUser.userId;
-//    NSNumber *newIdentifier = apiResult.user.userId;
-//    if (currentIdentifier.intValue != newIdentifier.intValue) {
-//        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-//        userDefaults[@"mpid"] = 
-//    }
     
+    NSNumber *previousMPID = [MPUtils mpId];
+    
+    MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
     MParticleUser *user = [self userFromIdentifier:newMPID];
-    _currentUser = user;
+    apiResult.user = user;
+    self.currentUser = user;
+    
+    if (newMPID.intValue == previousMPID.intValue) {
+        completion(apiResult, nil);
+        return;
+    }
+    
+    [MPUtils setMpid:newMPID];
+    
+    MPSession *session = [MParticle sharedInstance].backendController.session;
+    session.userId = newMPID;
+    [session.sessionUserIds addObject:newMPID];
+    [[MPPersistenceController sharedInstance] updateSession:session];
+    
+    if ([previousMPID intValue] == 0) {
+        [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:newMPID];
+    }
     
     if (user) {
         NSDictionary *userInfo = @{mParticleUserKey:user};
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
-        MPSession *session = [MParticle sharedInstance].backendController.session;
-        [session.sessionUserIds addObject:newMPID];
-        [[MPPersistenceController sharedInstance] updateSession:session];
     }
     
-    MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
-    apiResult.user = user;
     completion(apiResult, nil);
 }
 

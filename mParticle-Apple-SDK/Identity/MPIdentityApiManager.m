@@ -26,20 +26,19 @@
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     [[MParticle sharedInstance].backendController.networkCommunication identify:identifyRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
-        
+        completion(newMPID, error);
     }];
 }
 
 - (void)loginRequest:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     [[MParticle sharedInstance].backendController.networkCommunication login:loginRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
-        
+        completion(newMPID, error);
     }];
-
 }
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     [[MParticle sharedInstance].backendController.networkCommunication logout:logoutRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
-        
+        completion(newMPID, error);
     }];
 }
 

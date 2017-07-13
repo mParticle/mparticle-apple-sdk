@@ -32,7 +32,7 @@
 @property (nonatomic, unsafe_unretained, readonly) uint numberOfInterruptions;
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
 @property (nonatomic, unsafe_unretained, readonly) BOOL persisted;
-@property (nonatomic, strong, readonly, nonnull) NSNumber *userId;
+@property (nonatomic, strong, readwrite, nonnull) NSNumber *userId;
 @property (nonatomic, strong, readonly, nonnull) NSMutableArray<NSNumber *> *sessionUserIds;
 
 - (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp;

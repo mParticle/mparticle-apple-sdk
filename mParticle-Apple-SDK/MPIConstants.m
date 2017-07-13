@@ -143,6 +143,7 @@ NSString *const kMPHTTPETagHeaderKey = @"ETag";
 NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
+NSString *const kMPSessionUserIdsKey = @"smpids";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";

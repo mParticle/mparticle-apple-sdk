@@ -53,9 +53,11 @@
 #include "MessageTypeName.h"
 #import "MPKitContainer.h"
 #import "MPUserAttributeChange.h"
+#import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPURLRequestBuilder.h"
 #import "MPUtils.h"
+
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -413,6 +415,23 @@ static BOOL appBackgrounded = NO;
     [self saveMessage:message updateSession:YES];
 }
 
+- (void)logUserIdentityChange:(MPUserIdentityChange *)userIdentityChange {
+    if (!userIdentityChange) {
+        return;
+    }
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:static_cast<MPMessageType>(mParticle::MessageType::UserIdentityChange)
+                                                                           session:self.session
+                                                                userIdentityChange:userIdentityChange];
+    if (userIdentityChange.timestamp) {
+        [messageBuilder withTimestamp:[userIdentityChange.timestamp timeIntervalSince1970]];
+    }
+    
+    MPDataModelAbstract *message = [messageBuilder build];
+    
+    [self saveMessage:message updateSession:YES];
+}
+
 - (NSNumber *)previousSessionSuccessfullyClosed {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
@@ -428,6 +447,130 @@ static BOOL appBackgrounded = NO;
     }
     
     return previousSessionSuccessfullyClosed;
+}
+
+- (void)setUserIdentityChange:(MPUserIdentityChange *)userIdentityChange attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
+    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
+    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user identity cannot be done prior to starting the mParticle SDK.\n****\n");
+    
+    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
+        completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, MPExecStatusFail);
+        return;
+    }
+    
+    switch (_initializationStatus) {
+        case MPInitializationStatusStarted: {
+            dispatch_sync(backendQueue, ^{
+                NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
+                
+                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
+                NSDictionary *userIdentity = [[self.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+                
+                if (userIdentity &&
+                    [userIdentity[kMPUserIdentityIdKey] caseInsensitiveCompare:userIdentityChange.userIdentityNew.value] == NSOrderedSame &&
+                    ![userIdentity[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.userIdentityNew.value])
+                {
+                    return;
+                }
+                
+                BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
+                    NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
+                    BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
+                    
+                    if (foundMatch) {
+                        *stop = YES;
+                    }
+                    
+                    return foundMatch;
+                };
+                
+                NSMutableDictionary<NSString *, id> *identityDictionary;
+                NSUInteger existingEntryIndex;
+                BOOL persistUserIdentities = NO;
+                
+                if (userIdentityChange.userIdentityNew.value == nil || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
+                    existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
+                    
+                    if (existingEntryIndex != NSNotFound) {
+                        identityDictionary = [self.userIdentities[existingEntryIndex] mutableCopy];
+                        userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
+                        userIdentityChange.userIdentityNew = nil;
+                        
+                        [self.userIdentities removeObjectAtIndex:existingEntryIndex];
+                        persistUserIdentities = YES;
+                    }
+                } else {
+                    identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+                    
+                    NSError *error = nil;
+                    if ([self checkAttribute:identityDictionary key:kMPUserIdentityIdKey value:userIdentityChange.userIdentityNew.value error:&error] &&
+                        [self checkAttribute:identityDictionary key:kMPUserIdentityTypeKey value:[identityTypeNumber stringValue] error:&error]) {
+                        
+                        existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
+                        
+                        if (existingEntryIndex == NSNotFound) {
+                            userIdentityChange.userIdentityNew.dateFirstSet = [NSDate date];
+                            userIdentityChange.userIdentityNew.isFirstTimeSet = YES;
+                            
+                            identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+                            
+                            [self.userIdentities addObject:identityDictionary];
+                        } else {
+                            userIdentity = self.userIdentities[existingEntryIndex];
+                            userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
+                            
+                            NSNumber *timeIntervalMilliseconds = userIdentity[kMPDateUserIdentityWasFirstSet];
+                            userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
+                            userIdentityChange.userIdentityNew.isFirstTimeSet = NO;
+                            
+                            identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+                            
+                            [self.userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                        }
+                        
+                        persistUserIdentities = YES;
+                    }
+                }
+                
+                if (persistUserIdentities) {
+                    if (userIdentityChange.changed) {
+                        [self logUserIdentityChange:userIdentityChange];
+                    }
+                    
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                        userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
+                        [userDefaults synchronize];
+                    });
+                }
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, MPExecStatusSuccess);
+                });
+            });
+        }
+            break;
+            
+        case MPInitializationStatusStarting: {
+            if (!userIdentityChange.timestamp) {
+                userIdentityChange.timestamp = [NSDate date];
+            }
+            
+            __weak MPBackendController *weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong MPBackendController *strongSelf = weakSelf;
+                [strongSelf setUserIdentityChange:userIdentityChange attempt:(attempt + 1) completionHandler:completionHandler];
+            });
+            
+            MPExecStatus execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
+            completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, execStatus);
+        }
+            break;
+            
+        case MPInitializationStatusNotStarted:
+            completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, MPExecStatusSDKNotStarted);
+            break;
+    }
 }
 
 - (void)setPreviousSessionSuccessfullyClosed:(NSNumber *)previousSessionSuccessfullyClosed {
@@ -678,6 +821,22 @@ static BOOL appBackgrounded = NO;
             completionHandler(YES);
         }
     }];
+}
+
+- (void)resetUserIdentitiesFirstTimeUseFlag {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPIsFirstTimeUserIdentityHasBeenSet, @YES];
+    NSArray *userIdentities = [self.userIdentities filteredArrayUsingPredicate:predicate];
+    
+    for (NSDictionary *userIdentity in userIdentities) {
+        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] integerValue];
+        
+        [self setUserIdentity:userIdentity[kMPUserIdentityIdKey]
+                 identityType:identityType
+                      attempt:0
+            completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                
+            }];
+    }
 }
 
 - (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
@@ -2634,6 +2793,44 @@ static BOOL appBackgrounded = NO;
             break;
     }
 }
+
+//TODO: move
+- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
+    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
+    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user identity cannot be done prior to starting the mParticle SDK.\n****\n");
+    
+    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
+        completionHandler(identityString, identityType, MPExecStatusFail);
+        return;
+    }
+    
+    MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:identityType
+                                                                                     value:identityString];
+    
+    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:self.userIdentities];
+    
+    switch (_initializationStatus) {
+        case MPInitializationStatusStarted:
+            [self setUserIdentityChange:userIdentityChange attempt:attempt completionHandler:completionHandler];
+            break;
+            
+        case MPInitializationStatusStarting: {
+            userIdentityChange.timestamp = [NSDate date];
+            
+            __weak MPBackendController *weakSelf = self;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                __strong MPBackendController *strongSelf = weakSelf;
+                [strongSelf setUserIdentityChange:userIdentityChange attempt:(attempt + 1) completionHandler:completionHandler];
+            });
+        }
+            break;
+            
+        case MPInitializationStatusNotStarted:
+            completionHandler(identityString, identityType, MPExecStatusSDKNotStarted);
+            break;
+    }
+}
+
 
 #if TARGET_OS_IOS == 1
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {

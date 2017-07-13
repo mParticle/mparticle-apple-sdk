@@ -1960,7 +1960,11 @@ const int MaxBreadcrumbs = 50;
     [dictionary enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([key rangeOfString:@"mParticle::0"].location == 0) {
             NSString *newKey = [key stringByReplacingOccurrencesOfString:@"mParticle::0" withString:[NSString stringWithFormat:@"mParticle::%@", mpid]];
-            [userDefaults setObject:obj forKey:newKey];
+            if (!dictionary[newKey]) {
+                //TODO: test and make sure this doesn't cause problems with non-object values
+                [userDefaults setObject:obj forKey:newKey];
+            }
+            
             [userDefaults removeObjectForKey:key];
         }
     }];
@@ -1978,7 +1982,8 @@ const int MaxBreadcrumbs = 50;
                                      @"segment_memberships",
                                      @"standalone_messages",
                                      @"remote_notifications",
-                                     @"cookies"
+                                     @"cookies",
+                                     @"consumer_info"
                                      ];
 
         [mpidKeyedTables enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {

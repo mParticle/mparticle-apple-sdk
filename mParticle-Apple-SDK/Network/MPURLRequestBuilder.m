@@ -27,7 +27,10 @@
 #import "MPILogger.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
-static NSTimeInterval requestTimeout = 30.0;
+
+static NSTimeInterval requestTimeout = 120.0;
+//TODO:(external) Restore normal 30s timeout
+//static NSTimeInterval requestTimeout = 30.0;
 
 @interface MPURLRequestBuilder() {
     BOOL SDKURLRequest;
@@ -274,7 +277,9 @@ static NSTimeInterval requestTimeout = 30.0;
 
         [urlRequest setValue:[self userAgent] forHTTPHeaderField:@"User-Agent"];
         [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
-        [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
+        if (!isIdentityRequest) {
+            [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
+        }
         [urlRequest setValue:deviceLocale forHTTPHeaderField:@"locale"];
         [urlRequest setValue:contentType forHTTPHeaderField:@"Content-Type"];
         [urlRequest setValue:[timeZone name] forHTTPHeaderField:@"timezone"];
