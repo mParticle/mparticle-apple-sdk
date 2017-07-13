@@ -238,10 +238,6 @@
 @end
 @implementation MPIdentityModifyRequest
 
-- (instancetype)init {
-    return nil;
-}
-
 - (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges {
     if (!mpid || !identityChanges.count) {
         return nil;
@@ -273,10 +269,6 @@
 
 @implementation MPIdentityErrorResponse
 
-- (instancetype)init {
-    return nil;
-}
-
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
     self = [super init];
     if (self) {
@@ -296,10 +288,6 @@
 @end
 
 @implementation MPIdentityErrorItem
-
-- (instancetype)init {
-    return nil;
-}
 
 - (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary {
     self = [super init];

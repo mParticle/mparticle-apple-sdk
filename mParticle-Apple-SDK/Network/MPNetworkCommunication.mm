@@ -56,6 +56,7 @@ NSString *const kMPSegmentURL = @"/audience";
 NSString *const kMPIdentityVersion = @"/v1";
 NSString *const kMPIdentityURL = @"";
 
+//TODO: change back from QA hosts
 //NSString *const kMPURLScheme = @"https";
 //NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 //NSString *const kMPURLHostConfig = @"config2.mparticle.com";
