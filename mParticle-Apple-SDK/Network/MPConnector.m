@@ -100,7 +100,7 @@ static NSArray *mpFiddlerCertificates = nil;
 }
 
 #pragma mark NSURLSessionTaskDelegate
-//TODO: uncomment when pinning is working
+//TODO(external): uncomment when pinning is working
 //- (void)URLSession:(NSURLSession *)session task:(NSURLSessionTask *)task didReceiveChallenge:(NSURLAuthenticationChallenge *)challenge completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition disposition, NSURLCredential *credential))completionHandler {
 //    if (![_urlSession.sessionDescription isEqualToString:session.sessionDescription]) {
 //        return;

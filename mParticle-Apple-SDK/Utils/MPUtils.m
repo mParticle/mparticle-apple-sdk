@@ -19,6 +19,7 @@
 #import "MPUtils.h"
 #import "mParticle.h"
 #import "MPIUserDefaults.h"
+#import "MPPersistenceController.h"
 
 @implementation MPUtils
 
@@ -37,7 +38,7 @@
 }
 
 + (void)migrateToMPID:(NSNumber *)mpid {
-    
+    [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:mpid];
 }
 
 + (void)setMpid:(NSNumber *)mpId {
@@ -46,6 +47,9 @@
     if (mpId.intValue == previousMPID.intValue) {
         return;
     }
+    
+    
+    
     
 //    [NSNotificationCenter defaultCenter] postNotificationName:<#(nonnull NSNotificationName)#> object:<#(nullable id)#> userInfo:<#(nullable NSDictionary *)#>
     

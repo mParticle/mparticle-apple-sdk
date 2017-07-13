@@ -84,26 +84,25 @@
                 break;
         }
     }];
-    //TODO undo
     
-//    MPDevice *device = [[MPDevice alloc] init];
-//    
-//    NSString *advertiserId = device.advertiserId;
-//    if (advertiserId) {
-//        knownIdentities[@"ios_idfa"] = advertiserId;
-//    }
-//    
-//    NSString *vendorId = device.vendorId;
-//    if (vendorId) {
-//        knownIdentities[@"ios_idfv"] = vendorId;
-//    }
+    MPDevice *device = [[MPDevice alloc] init];
+    
+    NSString *advertiserId = device.advertiserId;
+    if (advertiserId) {
+        knownIdentities[@"ios_idfa"] = advertiserId;
+    }
+    
+    NSString *vendorId = device.vendorId;
+    if (vendorId) {
+        knownIdentities[@"ios_idfv"] = vendorId;
+    }
     knownIdentities[@"customerid"] = @"foo";
     
 #if TARGET_OS_IOS == 1
- //   NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
- //   if (deviceToken) {
- //       knownIdentities[@"push_token"] = deviceToken;
-//}
+    NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
+    if (deviceToken) {
+        knownIdentities[@"push_token"] = deviceToken;
+    }
 #endif
     
     return knownIdentities;

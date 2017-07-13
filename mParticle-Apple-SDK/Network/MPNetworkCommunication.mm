@@ -56,14 +56,10 @@ NSString *const kMPSegmentURL = @"/audience";
 NSString *const kMPIdentityVersion = @"/v1";
 NSString *const kMPIdentityURL = @"";
 
-//TODO: change back from QA hosts
-//NSString *const kMPURLScheme = @"https";
-//NSString *const kMPURLHost = @"nativesdks.mparticle.com";
-//NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 NSString *const kMPURLScheme = @"https";
-NSString *const kMPURLHost = @"api-qa.mparticle.com";
-NSString *const kMPURLHostConfig = @"api-qa.mparticle.com";
-NSString *const kMPURLHostIdentity = @"identity.qa2.corp.mparticle.com";
+NSString *const kMPURLHost = @"nativesdks.mparticle.com";
+NSString *const kMPURLHostConfig = @"config2.mparticle.com";
+NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 @interface MPNetworkCommunication() {
     BOOL retrievingConfig;

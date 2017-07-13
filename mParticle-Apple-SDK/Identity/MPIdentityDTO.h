@@ -83,8 +83,6 @@
 
 @end
 
-
-
 @interface MPIdentityErrorItem : NSObject
 
 - (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary;

@@ -161,19 +161,18 @@
     
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     
-    //TODO: Uncomment these when it no longer creates a 500
     if (_advertiserId) {
-        //dictionary[@"ios_idfa"] = _advertiserId;
+        dictionary[@"ios_idfa"] = _advertiserId;
     }
     
     if (_vendorId) {
-        //dictionary[@"ios_idfv"] = _vendorId;
+        dictionary[@"ios_idfv"] = _vendorId;
     }
     
 #if TARGET_OS_IOS == 1
     
     if (_pushToken) {
-        //dictionary[@"push_token"] = _pushToken;
+        dictionary[@"push_token"] = _pushToken;
     }
     
 #endif

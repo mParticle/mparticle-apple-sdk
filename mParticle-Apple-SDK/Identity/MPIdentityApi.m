@@ -11,6 +11,7 @@
 #import "MPUtils.h"
 #import "MPIUserDefaults.h"
 #import "MPSession.h"
+#import "MPPersistenceController.h"
 
 @interface MPIdentityApi ()
 
@@ -90,8 +91,9 @@
     if (user) {
         NSDictionary *userInfo = @{mParticleUserKey:user};
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
-        MPSession *session = nil; //TODO
+        MPSession *session = [MParticle sharedInstance].backendController.session;
         [session.sessionUserIds addObject:newMPID];
+        [[MPPersistenceController sharedInstance] updateSession:session];
     }
     
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];

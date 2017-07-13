@@ -298,7 +298,7 @@ NSString *const kMPCKExpiration = @"e";
 - (NSNumber *)mpId {
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     
-    //TODO
+    //TODO: remove mpid generation artifacts 
     // If we don't have the id, create it.
     if (!_mpId) {
         [self willChangeValueForKey:@"mpId"];

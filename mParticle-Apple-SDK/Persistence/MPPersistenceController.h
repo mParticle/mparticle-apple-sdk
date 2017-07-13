@@ -101,6 +101,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)fetchUploadsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessages;
 - (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads;
+- (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 - (void)purgeMemory;
 - (BOOL)openDatabase;
 - (void)saveBreadcrumb:(nonnull MPMessage *)message session:(nonnull MPSession *)session;

@@ -212,13 +212,6 @@ static NSTimeInterval requestTimeout = 30.0;
             [urlRequest setValue:[MPStateMachine sharedInstance].apiKey forHTTPHeaderField:@"x-mp-key"];
             NSString *postDataString = [[NSString alloc] initWithData:_postData encoding:NSUTF8StringEncoding];
             signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, postDataString];
-            
-            //TODO: REMOVE once auth is working properly for identity API
-            NSString *authStr = [NSString stringWithFormat:@"%@:%@", [MPStateMachine sharedInstance].apiKey, [MPStateMachine sharedInstance].secret];
-            NSData *nsdata = [authStr
-                              dataUsingEncoding:NSUTF8StringEncoding];
-            NSString *base64Encoded = [nsdata base64EncodedStringWithOptions:0];
-            [urlRequest setValue:[NSString stringWithFormat:@"Basic %@", base64Encoded] forHTTPHeaderField:@"Authorization"];
         } else if (containsMessage) { // /events
             contentType = @"application/json";
             

@@ -1949,6 +1949,60 @@ const int MaxBreadcrumbs = 50;
     return standaloneUploads;
 }
 
+- (void)moveContentFromMpidZeroToMpid:(NSNumber *)mpid {
+    [self moveUserDefaultsFromMpidZeroToMpid:mpid];
+    [self moveDatabasesFromMpidZeroToMpid:mpid];
+}
+
+- (void)moveUserDefaultsFromMpidZeroToMpid:(NSNumber *)mpid {
+    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    NSDictionary<NSString *, id> *dictionary = [userDefaults dictionaryRepresentation];
+    [dictionary enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([key rangeOfString:@"mParticle::0"].location == 0) {
+            NSString *newKey = [key stringByReplacingOccurrencesOfString:@"mParticle::0" withString:[NSString stringWithFormat:@"mParticle::%@", mpid]];
+            [userDefaults setObject:obj forKey:newKey];
+            [userDefaults removeObjectForKey:key];
+        }
+    }];
+}
+
+- (void)moveDatabasesFromMpidZeroToMpid:(NSNumber *)mpid {
+    dispatch_barrier_sync(dbQueue, ^{
+        
+        NSArray *mpidKeyedTables = @[
+                                     @"sessions",
+                                     @"previous_session",
+                                     @"messages",
+                                     @"breadcrumbs",
+                                     @"segments",
+                                     @"segment_memberships",
+                                     @"standalone_messages",
+                                     @"remote_notifications",
+                                     @"cookies"
+                                     ];
+
+        [mpidKeyedTables enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+            
+            sqlite3_stmt *preparedStatement;
+            NSString *sqlString = [NSString stringWithFormat:@"UPDATE %@ SET mpid = ? WHERE mpid = 0", obj];
+            const string sqlStatement = string([sqlString UTF8String]);
+            
+            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+                
+                sqlite3_bind_int64(preparedStatement, 1, [mpid longLongValue]);
+                
+                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                    MPILogError(@"Error while updating zero-mpid table: %s", sqlite3_errmsg(mParticleDB));
+                }
+                
+                sqlite3_clear_bindings(preparedStatement);
+            }
+            
+            sqlite3_finalize(preparedStatement);
+        }];
+    });
+}
+
 - (void)purgeMemory {
     sqlite3_db_release_memory(mParticleDB);
     sqlite3_release_memory(4096);
