@@ -50,6 +50,7 @@ NSString *const kMPLaunchNumberOfSessionInterruptionsKey = @"nsi";
 // Message Keys
 NSString *const kMPMessagesKey = @"msgs";
 NSString *const kMPMessageIdKey = @"id";
+NSString *const kMPMessageUserIdKey = @"mpid";
 NSString *const kMPTimestampKey = @"ct";
 NSString *const kMPSessionIdKey = @"sid";
 NSString *const kMPSessionStartTimestamp = @"sct";

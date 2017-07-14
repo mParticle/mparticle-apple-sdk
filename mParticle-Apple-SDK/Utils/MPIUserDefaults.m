@@ -42,9 +42,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     return globalKey;
 }
 
-- (NSString *)userKeyForKey:(NSString *)key {
-    NSNumber *mpId = [MPUtils mpId];
-    NSString *userKey = [NSString stringWithFormat:@"%@%@::%@", NSUserDefaultsPrefix, mpId, key];
+- (NSString *)userKeyForKey:(NSString *)key userId:(NSNumber *)userId {
+    NSString *userKey = [NSString stringWithFormat:@"%@%@::%@", NSUserDefaultsPrefix, userId, key];
     return userKey;
 }
 
@@ -59,14 +58,14 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
 }
 
-- (NSString *)prefixedKey:(NSString *)keyName {
+- (NSString *)prefixedKey:(NSString *)keyName userId:(NSNumber *)userId {
     NSString *prefixedKey = nil;
     if (![self isUserSpecificKey:keyName]) {
         prefixedKey = [self globalKeyForKey:keyName];
         return prefixedKey;
     }
     else {
-        NSString *prefixedKey = [self userKeyForKey:keyName];
+        NSString *prefixedKey = [self userKeyForKey:keyName userId:userId];
         return prefixedKey;
     }
 }
@@ -84,32 +83,37 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 #pragma mark Public methods
-- (id)mpObjectForKey:(NSString *)key {
-    NSString *prefixedKey = [self prefixedKey:key];
+
+- (id)mpObjectForKey:(NSString *)key userId:(NSNumber *)userId {
+    NSString *prefixedKey = [self prefixedKey:key userId:userId];
     return [[NSUserDefaults standardUserDefaults] objectForKey:prefixedKey];
 }
 
-- (void)setMPObject:(id)value forKey:(NSString *)key {
-    NSString *prefixedKey = [self prefixedKey:key];
+- (void)setMPObject:(id)value forKey:(NSString *)key userId:(nonnull NSNumber *)userId {
+    NSString *prefixedKey = [self prefixedKey:key userId:userId];
     [[NSUserDefaults standardUserDefaults] setObject:value forKey:prefixedKey];
 }
 
-- (void)removeMPObjectForKey:(NSString *)key {
-    NSString *prefixedKey = [self prefixedKey:key];
+- (void)removeMPObjectForKey:(NSString *)key userId:(nonnull NSNumber *)userId {
+    NSString *prefixedKey = [self prefixedKey:key userId:userId];
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:prefixedKey];
+}
+
+- (void)removeMPObjectForKey:(NSString *)key {
+    [self removeMPObjectForKey:key userId:[MPUtils mpId]];
 }
 
 - (void)synchronize {
     [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
-- (void)migrateUserKeys {
+- (void)migrateUserKeysWithUserId:(NSNumber *)userId {
     NSArray<NSString *> *userSpecificKeys = [self userSpecificKeys];
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
     [userSpecificKeys enumerateObjectsUsingBlock:^(NSString * _Nonnull key, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *globalKey = [self globalKeyForKey:key];
-        NSString *userKey = [self userKeyForKey:key];
+        NSString *userKey = [self userKeyForKey:key userId:userId];
         id value = [userDefaults objectForKey:globalKey];
         [userDefaults setObject:value forKey:userKey];
         [userDefaults removeObjectForKey:globalKey];
@@ -119,15 +123,19 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
 #pragma mark Objective-C Literals
 - (id)objectForKeyedSubscript:(NSString *const)key {
-    return [self mpObjectForKey:key];
+    if ([key isEqualToString:@"mpid"]) {
+        return [self mpObjectForKey:key userId:@0];
+    }
+    return [self mpObjectForKey:key userId:[MPUtils mpId]];
 }
 
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
     if (obj) {
-        [self setMPObject:obj forKey:key];
+        [self setMPObject:obj forKey:key userId:[MPUtils mpId]];
     } else {
-        [self removeMPObjectForKey:key];
+        [self removeMPObjectForKey:key userId:[MPUtils mpId]];
     }
 }
+
 
 @end

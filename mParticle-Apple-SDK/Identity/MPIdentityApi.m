@@ -50,7 +50,7 @@
 - (MParticleUser *)userFromIdentifier:(NSNumber *)identifier {
     MParticleUser *user = [[MParticleUser alloc] init];
 
-    NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [MParticle sharedInstance].backendController.userIdentities;
+    NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [[MParticle sharedInstance].backendController userIdentitiesForUserId:identifier];
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
     [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *identity = obj[@"i"];
@@ -58,7 +58,7 @@
         
         [userIdentities setObject:identity forKey:type];
     }];
-    NSDictionary<NSString *, id> *userAttributes = [[MParticle sharedInstance] userAttributes];
+    NSDictionary<NSString *, id> *userAttributes = [[MParticle sharedInstance].backendController userAttributesForUserId:identifier];
     
     user.userId = identifier;
     user.userIdentities = userIdentities;
@@ -84,12 +84,18 @@
     
     MPSession *session = [MParticle sharedInstance].backendController.session;
     session.userId = newMPID;
-    [session.sessionUserIds addObject:newMPID];
+    NSString *userIdsString = session.sessionUserIds;
+    NSMutableArray *userIds = [[userIdsString componentsSeparatedByString:@","] mutableCopy];
+
+    if (![userIds containsObject:newMPID] && newMPID.longLongValue != 0) {
+        [userIds addObject:newMPID];
+    }
+ 
+    session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
+    
     [[MPPersistenceController sharedInstance] updateSession:session];
     
-    if ([previousMPID intValue] == 0) {
-        [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:newMPID];
-    }
+    [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:newMPID];
     
     if (user) {
         NSDictionary *userInfo = @{mParticleUserKey:user};

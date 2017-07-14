@@ -24,12 +24,8 @@
 
 + (NSNumber *)mpId {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSString *mpIdString = userDefaults[@"mpid"];
-    NSNumber *mpId = nil;
-    if (mpIdString) {
-        mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
-    }
-    else {
+    NSNumber *mpId = userDefaults[@"mpid"];
+    if (!mpId) {
         mpId = @0;
     }
     

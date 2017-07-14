@@ -6,6 +6,7 @@
 #import "mParticle.h"
 #import "MPDevice.h"
 #import "MPNotificationController.h"
+#import "MPUtils.h"
 
 @implementation MPIdentityBaseRequest
 
@@ -29,7 +30,7 @@
     
     NSNumber *requestTimestamp = @(floor([[NSDate date] timeIntervalSince1970]));
     if (requestTimestamp) {
-        dictionary[@"request_timestamp_ms"] = requestTimestamp;
+        dictionary[@"request_timestamp_ms"] = @([requestTimestamp intValue] * 1000);
     }
     
     return dictionary;
@@ -43,6 +44,11 @@
     self = [super init];
     if (self) {
         _knownIdentities = [[MPIdentities alloc] initWithIdentities:apiRequest.userIdentities];
+        
+        NSNumber *mpid = [MPUtils mpId];
+        if (mpid.longLongValue != 0) {
+            _previousMPID = [MPUtils mpId].stringValue;
+        }
         
         MPDevice *device = [[MPDevice alloc] init];
         

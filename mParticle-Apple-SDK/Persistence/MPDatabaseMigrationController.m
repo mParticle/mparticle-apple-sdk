@@ -21,6 +21,15 @@
 #import "MPSession.h"
 #import "MPUtils.h"
 #import "MPIUserDefaults.h"
+#import "mParticle.h"
+#import "MPBackendController.h"
+#import "MPPersistenceController.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+
+@end
 
 @interface MPDatabaseMigrationController() {
     dispatch_queue_t dbQueue;
@@ -52,9 +61,14 @@
     NSMutableArray *sessions = [[NSMutableArray alloc] initWithCapacity:1];
     MPSession *session;
     sqlite3_stmt *statementHandle;
-    const char *sqlStatement = "SELECT _id, uuid FROM sessions";
+    const char *sqlStatement = "SELECT _id, uuid, mpid, session_user_ids FROM sessions";
     if (sqlite3_prepare_v2(database, sqlStatement, -1, &statementHandle, NULL) == SQLITE_OK) {
         while (sqlite3_step(statementHandle) == SQLITE_ROW) {
+            const void *sessionUserIds = sqlite3_column_blob(statementHandle, 3);
+            int length = sqlite3_column_bytes(statementHandle, 3);
+            NSData *data = [NSData dataWithBytes:sessionUserIds length:length];
+            NSString *userIdsString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            
             session = [[MPSession alloc] initWithSessionId:sqlite3_column_int(statementHandle, 0)
                                                       UUID:[NSString stringWithUTF8String:(char *)sqlite3_column_text(statementHandle, 1)]
                                             backgroundTime:0
@@ -64,7 +78,9 @@
                                              sessionNumber:@0
                                      numberOfInterruptions:0
                                               eventCounter:0
-                                               suspendTime:0];
+                                               suspendTime:0
+                                                    userId:@(sqlite3_column_int64(statementHandle, 2))
+                       sessionUserIds:userIdsString];
             
             [sessions addObject:session];
         }
@@ -85,7 +101,7 @@
 - (void)migrateUserDefaultsWithVersion:(NSNumber *)oldVersion {
     NSInteger oldVersionValue = [oldVersion integerValue];
     if (oldVersionValue < 26) {
-        [[MPIUserDefaults standardUserDefaults] migrateUserKeys];
+        [[MPIUserDefaults standardUserDefaults] migrateUserKeysWithUserId:[MPUtils mpId]];
     }
 }
 
@@ -105,7 +121,7 @@
     } else if (oldVersionValue < 26) {
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length FROM sessions ORDER BY _id";
     } else {
-        selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid FROM sessions ORDER BY _id";
+        selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM sessions ORDER BY _id";
     }
     
     insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -578,9 +594,11 @@
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
+    int64_t userId;
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
+        userId = sqlite3_column_int64(selectStatementHandle, 1);
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
-        sqlite3_bind_int(insertStatementHandle, 2, sqlite3_column_int(selectStatementHandle, 1)); // mpid
+        sqlite3_bind_int64(insertStatementHandle, 2, userId); // mpid
         sqlite3_bind_text(insertStatementHandle, 3, (const char *)sqlite3_column_text(selectStatementHandle, 2), -1, SQLITE_TRANSIENT); // unique_identifier
         
         sqlite3_step(insertStatementHandle);
@@ -609,10 +627,28 @@
         sqlite3_bind_text(insertStatementHandle, 5, (const char *)sqlite3_column_text(selectStatementHandle, 4), -1, SQLITE_TRANSIENT); // expiration
         sqlite3_bind_text(insertStatementHandle, 6, (const char *)sqlite3_column_text(selectStatementHandle, 5), -1, SQLITE_TRANSIENT); // name
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = @(userId);
+            [MPUtils setMpid:mpId];
+            
+            MPSession *session = [MParticle sharedInstance].backendController.session;
+            session.userId = mpId;
+            NSString *userIdsString = session.sessionUserIds;
+            if (!(userIdsString.length > 0) && ![userIdsString isEqualToString:@"0"]) {
+                session.sessionUserIds = mpId.stringValue;
+            }
+            NSMutableArray *userIds = [[session.sessionUserIds componentsSeparatedByString:@","] mutableCopy];
+
+            if (![userIds containsObject:mpId] && mpId.longLongValue != 0) {
+                [userIds addObject:mpId];
+            }
+
+            session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
+            [[MPPersistenceController sharedInstance] updateSession:session];
+            [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }
+        
         sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
@@ -676,6 +712,7 @@
             return;
         }
         
+        [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateUserDefaultsWithVersion:oldVersion];
         [self migrateSessionsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateMessagesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
@@ -687,7 +724,6 @@
         [self migrateRemoteNotificationsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateProductBagsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateIntegrationAttributesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
 
         sqlite3_close(oldmParticleDB);
@@ -697,6 +733,7 @@
 }
 
 - (NSNumber *)needsMigration {
+    //TODO: called multiple times
     NSMutableArray *oldDatabaseVersions = [self.databaseVersions mutableCopy];
     [oldDatabaseVersions removeLastObject];
     [oldDatabaseVersions sortUsingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {

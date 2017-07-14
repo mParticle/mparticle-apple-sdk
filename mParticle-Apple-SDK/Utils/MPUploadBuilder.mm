@@ -61,7 +61,7 @@ using namespace std;
     
     NSNumber *ltv;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    ltv = userDefaults[kMPLifeTimeValueKey];
+    ltv = [userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:session.userId];
     if (!ltv) {
         ltv = @0;
     }
@@ -91,7 +91,7 @@ using namespace std;
         uploadDictionary[kMPRemoteConfigCustomModuleSettingsKey] = customModulesDictionary;
     }
     
-    uploadDictionary[kMPRemoteConfigMPIDKey] = stateMachine.consumerInfo.mpId;
+    uploadDictionary[kMPRemoteConfigMPIDKey] = session.userId;
     
     return self;
 }

@@ -42,6 +42,7 @@
 #import "MPIUserDefaults.h"
 #import "MPConvertJS.h"
 #import "MPIdentityApi.h"
+#import "MPUtils.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -93,7 +94,7 @@ NSString *const kMPStateKey = @"state";
 
 @interface MPBackendController ()
 
-- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentities;
+- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 
 @end
 
@@ -393,8 +394,8 @@ NSString *const kMPStateKey = @"state";
 #endif
 }
 
-- (nullable NSDictionary <NSString *, id> *)userAttributes {
-    NSDictionary *userAttributes = [self.backendController.userAttributes copy];
+- (NSDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId {
+    NSDictionary *userAttributes = [[self.backendController userAttributesForUserId:userId] copy];
     return userAttributes;
 }
 
@@ -458,7 +459,7 @@ NSString *const kMPStateKey = @"state";
     
     __weak MParticle *weakSelf = self;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
+    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPUtils mpId]] == nil;
     BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
     
@@ -475,7 +476,7 @@ NSString *const kMPStateKey = @"state";
             identifyRequest = [MPIdentityApiRequest requestWithEmptyUser];
         }
         
-        NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = _backendController.userIdentities;
+        NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [_backendController userIdentitiesForUserId:[MPUtils mpId]];
         [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
             NSString *identity = obj[@"i"];
             NSNumber *type = obj[@"n"];
@@ -513,7 +514,7 @@ NSString *const kMPStateKey = @"state";
                            }];
                            
                            if (firstRun) {
-                               userDefaults[kMParticleFirstRun] = @NO;
+                               [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPUtils mpId]];
                                [userDefaults synchronize];
                            }
 

@@ -33,9 +33,9 @@
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
 @property (nonatomic, unsafe_unretained, readonly) BOOL persisted;
 @property (nonatomic, strong, readwrite, nonnull) NSNumber *userId;
-@property (nonatomic, strong, readonly, nonnull) NSMutableArray<NSNumber *> *sessionUserIds;
+@property (nonatomic, strong, readwrite, nonnull) NSString *sessionUserIds;
 
-- (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp;
+- (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
 
 - (nonnull instancetype)initWithSessionId:(int64_t)sessionId
                                      UUID:(nonnull NSString *)uuid
@@ -46,7 +46,9 @@
                             sessionNumber:(nullable NSNumber *)sessionNumber
                     numberOfInterruptions:(uint)numberOfInterruptions
                              eventCounter:(uint)eventCounter
-                              suspendTime:(NSTimeInterval)suspendTime __attribute__((objc_designated_initializer));
+                              suspendTime:(NSTimeInterval)suspendTime
+                                   userId:(nonnull NSNumber *)userId
+                           sessionUserIds:(nonnull NSString *)sessionUserIds __attribute__((objc_designated_initializer));
 
 - (void)incrementCounter;
 - (void)suspendSession;

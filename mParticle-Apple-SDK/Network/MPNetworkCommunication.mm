@@ -49,7 +49,8 @@ NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Ve
 NSString *const modifyURLFormat = @"%@://%@%@/%@/%@"; // Scheme, URL Host, API Version, mpid, path
 NSString *const kMPConfigVersion = @"/v4";
 NSString *const kMPConfigURL = @"/config";
-NSString *const kMPEventsVersion = @"/v2";
+//TODO: events v2
+NSString *const kMPEventsVersion = @"/v1";
 NSString *const kMPEventsURL = @"/events";
 NSString *const kMPSegmentVersion = @"/v1";
 NSString *const kMPSegmentURL = @"/audience";
@@ -915,13 +916,16 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
                       NSError *serializationError = nil;
                       
-                      @try {
-                          responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                          MPILogVerbose(@"Identity Response Code: %ld", (long)responseCode);
-                      } @catch (NSException *exception) {
-                          responseDictionary = nil;
-                          success = NO;
-                          MPILogError(@"Identity response serialization error: %@", [exception reason]);
+                      MPILogVerbose(@"Identity Response Code: %ld", (long)responseCode);
+                      
+                      if (success) {
+                          @try {
+                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+                          } @catch (NSException *exception) {
+                              responseDictionary = nil;
+                              success = NO;
+                              MPILogError(@"Identity response serialization error: %@", [exception reason]);
+                          }
                       }
                       
                       MPILogVerbose(@"Identity Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
@@ -980,7 +984,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
   }
 
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-
+    //TODO: implement modify
 }
 
 @end

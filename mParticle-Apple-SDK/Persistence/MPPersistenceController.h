@@ -85,9 +85,9 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber * _Nonnull)userId;
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes;
-- (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(nonnull MPSession *)session;
-- (nullable NSArray<MPMessage *> *)fetchMessagesForUploadingInSession:(nonnull MPSession *)session;
-- (void)fetchMessagesForUploadingInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
+- (nullable NSMutableDictionary *)fetchMessagesForUploadingInSession:(nonnull MPSession *)session;
+- (void)fetchMessagesForUploadingInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSDictionary * _Nullable messages))completionHandler;
+
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (void)fetchPreviousSession:(void (^ _Nonnull)(MPSession * _Nullable previousSession))completionHandler;
 - (nullable MPSession *)fetchPreviousSessionSync;
@@ -99,7 +99,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSessionSync:(nonnull MPSession *)session;
 - (void)fetchUploadsExceptInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (void)fetchUploadsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
-- (nullable NSArray<MPStandaloneMessage *> *)fetchStandaloneMessages;
+- (nullable NSMutableDictionary *)fetchStandaloneMessages;
 - (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads;
 - (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 - (void)purgeMemory;

@@ -183,7 +183,7 @@ static NSString *kMPAppStoreReceiptString = nil;
         userDefaults[kMPAppInitialLaunchTimeKey] = _initialLaunchTime;
         syncUserDefaults = YES;
     }
-
+    
     return _initialLaunchTime;
 }
 
@@ -456,7 +456,7 @@ static NSString *kMPAppStoreReceiptString = nil;
         applicationInfo[kMPAppBadgeNumberKey] = badgeNumber;
     }
 #endif
-
+    
     appInfo = (NSDictionary *)applicationInfo;
     
     return appInfo;

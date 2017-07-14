@@ -657,10 +657,6 @@ static BOOL runningInBackground = NO;
 }
 
 - (BOOL)optOut {
-    if (optOutSet) {
-        return _optOut;
-    }
-    
     [self willChangeValueForKey:@"optOut"];
     
     optOutSet = YES;

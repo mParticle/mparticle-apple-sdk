@@ -22,6 +22,7 @@
 #import "MPStateMachine.h"
 #import "MPILogger.h"
 #import "MPDateFormatter.h"
+#import "MPUtils.h"
 
 @interface MPCustomModulePreference()
 
@@ -199,24 +200,19 @@
 
 #pragma mark Public methods
 - (id)value {
-    if (_value) {
-        return _value;
-    }
-    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];
-    
-    id valueWithDeprecatedKey = userDefaults[deprecatedKey];
+    NSNumber *mpId = [MPUtils mpId];
+    id valueWithDeprecatedKey = [userDefaults mpObjectForKey:deprecatedKey userId:mpId];
     if (valueWithDeprecatedKey) {
         _value = valueWithDeprecatedKey;
-        userDefaults[customModuleKey] = _value;
-        [userDefaults removeMPObjectForKey:deprecatedKey];
+        [userDefaults setMPObject:_value forKey:customModuleKey userId:mpId];
+        [userDefaults removeMPObjectForKey:deprecatedKey userId:mpId];
         return _value;
     }
-    
-    _value = userDefaults[customModuleKey];
+    _value = [userDefaults mpObjectForKey:customModuleKey userId:mpId];
     if (_value) {
         return _value;
     }
@@ -287,8 +283,7 @@
                 break;
         }
     }
-
-    userDefaults[customModuleKey] = _value;
+    [userDefaults setMPObject:_value forKey:customModuleKey userId:mpId];
     
     return _value;
 }

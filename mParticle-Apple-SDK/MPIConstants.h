@@ -86,7 +86,8 @@ extern NSString * _Nonnull const kMPLaunchSessionFinalizedKey;
 extern NSString * _Nonnull const kMPLaunchNumberOfSessionInterruptionsKey;
 
 // Message Keys
-extern NSString * _Nonnull const kMPMessagesKey;                      
+extern NSString * _Nonnull const kMPMessagesKey;
+extern NSString * _Nonnull const kMPMessageUserIdKey;
 extern NSString * _Nonnull const kMPMessageIdKey;                     
 extern NSString * _Nonnull const kMPTimestampKey;                   
 extern NSString * _Nonnull const kMPSessionIdKey;                     

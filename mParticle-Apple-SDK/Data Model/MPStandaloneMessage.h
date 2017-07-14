@@ -27,6 +27,7 @@
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t messageId;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
+@property (nonatomic, strong, nonnull) NSNumber *userId;
 
 // Designited initializer for fetching data from the database
 - (nonnull instancetype)initWithMessageId:(int64_t)messageId
@@ -34,9 +35,10 @@
                               messageType:(nonnull NSString *)messageType
                               messageData:(nonnull NSData *)messageData
                                 timestamp:(NSTimeInterval)timestamp
-                             uploadStatus:(MPUploadStatus)uploadStatus;
+                             uploadStatus:(MPUploadStatus)uploadStatus
+                                   userId:(nonnull NSNumber *)userId;
 
 // Designated initializers for creating instances (not fetched from the database)
-- (nonnull instancetype)initWithMessageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp;
+- (nonnull instancetype)initWithMessageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
 
 @end

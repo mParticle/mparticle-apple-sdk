@@ -29,6 +29,7 @@
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t messageId;
 @property (nonatomic, unsafe_unretained) int64_t sessionId;
+@property (nonatomic, unsafe_unretained, nonnull) NSNumber *userId;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 
 - (nonnull instancetype)initWithSessionId:(int64_t)sessionId
@@ -37,8 +38,9 @@
                               messageType:(nonnull NSString *)messageType
                               messageData:(nonnull NSData *)messageData
                                 timestamp:(NSTimeInterval)timestamp
-                             uploadStatus:(MPUploadStatus)uploadStatus;
+                             uploadStatus:(MPUploadStatus)uploadStatus
+                                   userId:(nonnull NSNumber *)userId;
 
-- (nonnull instancetype)initWithSession:(nonnull MPSession *)session messageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp;
+- (nonnull instancetype)initWithSession:(nonnull MPSession *)session messageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
 
 @end

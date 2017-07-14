@@ -97,8 +97,6 @@ static BOOL appBackgrounded = NO;
     BOOL retrievingSegments;
 }
 
-@property (nonatomic, strong) NSMutableArray<NSDictionary<NSString *, id> *> *userIdentities;
-
 @end
 
 
@@ -268,14 +266,9 @@ static BOOL appBackgrounded = NO;
     return _session;
 }
 
-- (NSMutableDictionary<NSString *, id> *)userAttributes {
-    if (_userAttributes) {
-        return _userAttributes;
-    }
-    
-    _userAttributes = [[NSMutableDictionary alloc] initWithCapacity:2];
+- (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
+    NSMutableDictionary *userAttributes = [[userDefaults mpObjectForKey:kMPUserAttributeKey userId:userId] mutableCopy];
     if (userAttributes) {
         NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
         NSString *key;
@@ -286,29 +279,26 @@ static BOOL appBackgrounded = NO;
             value = userAttributes[key];
             
             if ([value isKindOfClass:NSStringClass]) {
-                _userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? value : [NSNull null];
+                userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? value : [NSNull null];
             } else {
-                _userAttributes[key] = value;
+                userAttributes[key] = value;
             }
         }
     }
     
-    return _userAttributes;
+    return userAttributes;
 }
 
-- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentities {
-    if (_userIdentities) {
-        return _userIdentities;
-    }
+- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
     
-    _userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
+    NSMutableArray *userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = userDefaults[kMPUserIdentityArrayKey];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
     if (userIdentityArray) {
-        [_userIdentities addObjectsFromArray:userIdentityArray];
+        [userIdentities addObjectsFromArray:userIdentityArray];
     }
     
-    return _userIdentities;
+    return userIdentities;
 }
 
 #pragma mark Private methods
@@ -369,7 +359,7 @@ static BOOL appBackgrounded = NO;
     dispatch_async(notificationsQueue, ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
-        if (strongSelf) {
+        if (strongSelf && sessionId) {
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
                                                                 object:strongSelf.delegate
                                                               userInfo:@{mParticleSessionId:sessionId}];
@@ -464,7 +454,7 @@ static BOOL appBackgrounded = NO;
                 NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
                 
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
-                NSDictionary *userIdentity = [[self.userIdentities filteredArrayUsingPredicate:predicate] lastObject];
+                NSDictionary *userIdentity = [[[self userIdentitiesForUserId:[MPUtils mpId]] filteredArrayUsingPredicate:predicate] lastObject];
                 
                 if (userIdentity &&
                     [userIdentity[kMPUserIdentityIdKey] caseInsensitiveCompare:userIdentityChange.userIdentityNew.value] == NSOrderedSame &&
@@ -488,15 +478,17 @@ static BOOL appBackgrounded = NO;
                 NSUInteger existingEntryIndex;
                 BOOL persistUserIdentities = NO;
                 
+                NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPUtils mpId]];
+                
                 if (userIdentityChange.userIdentityNew.value == nil || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
-                    existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
+                    existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
                     
                     if (existingEntryIndex != NSNotFound) {
-                        identityDictionary = [self.userIdentities[existingEntryIndex] mutableCopy];
+                        identityDictionary = [userIdentities[existingEntryIndex] mutableCopy];
                         userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
                         userIdentityChange.userIdentityNew = nil;
                         
-                        [self.userIdentities removeObjectAtIndex:existingEntryIndex];
+                        [userIdentities removeObjectAtIndex:existingEntryIndex];
                         persistUserIdentities = YES;
                     }
                 } else {
@@ -506,7 +498,7 @@ static BOOL appBackgrounded = NO;
                     if ([self checkAttribute:identityDictionary key:kMPUserIdentityIdKey value:userIdentityChange.userIdentityNew.value error:&error] &&
                         [self checkAttribute:identityDictionary key:kMPUserIdentityTypeKey value:[identityTypeNumber stringValue] error:&error]) {
                         
-                        existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
+                        existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
                         
                         if (existingEntryIndex == NSNotFound) {
                             userIdentityChange.userIdentityNew.dateFirstSet = [NSDate date];
@@ -514,9 +506,9 @@ static BOOL appBackgrounded = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                             
-                            [self.userIdentities addObject:identityDictionary];
+                            [userIdentities addObject:identityDictionary];
                         } else {
-                            userIdentity = self.userIdentities[existingEntryIndex];
+                            userIdentity = userIdentities[existingEntryIndex];
                             userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
                             
                             NSNumber *timeIntervalMilliseconds = userIdentity[kMPDateUserIdentityWasFirstSet];
@@ -525,7 +517,7 @@ static BOOL appBackgrounded = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                             
-                            [self.userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                            [userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
                         }
                         
                         persistUserIdentities = YES;
@@ -539,7 +531,7 @@ static BOOL appBackgrounded = NO;
                     
                     dispatch_async(dispatch_get_main_queue(), ^{
                         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                        userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
+                        userDefaults[kMPUserIdentityArrayKey] = userIdentities;
                         [userDefaults synchronize];
                     });
                 }
@@ -755,8 +747,8 @@ static BOOL appBackgrounded = NO;
                                                              return;
                                                          }
 
-                                                         sessionHistory.userAttributes = self.userAttributes;
-                                                         sessionHistory.userIdentities = self.userIdentities;
+                                                         sessionHistory.userAttributes = [self userAttributesForUserId:previousSession.userId];
+                                                         sessionHistory.userIdentities = [self userIdentitiesForUserId:previousSession.userId];
 
                                                          [strongSelf.networkCommunication uploadSessionHistory:sessionHistory
                                                                                              completionHandler:^(BOOL success) {
@@ -823,22 +815,6 @@ static BOOL appBackgrounded = NO;
     }];
 }
 
-- (void)resetUserIdentitiesFirstTimeUseFlag {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPIsFirstTimeUserIdentityHasBeenSet, @YES];
-    NSArray *userIdentities = [self.userIdentities filteredArrayUsingPredicate:predicate];
-    
-    for (NSDictionary *userIdentity in userIdentities) {
-        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] integerValue];
-        
-        [self setUserIdentity:userIdentity[kMPUserIdentityIdKey]
-                 identityType:identityType
-                      attempt:0
-            completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                
-            }];
-    }
-}
-
 - (void)setUserAttributeChange:(MPUserAttributeChange *)userAttributeChange attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user attribute cannot be done prior to starting the mParticle SDK.\n****\n");
     
@@ -869,15 +845,17 @@ static BOOL appBackgrounded = NO;
             }
             
             dispatch_sync(backendQueue, ^{
+                
+                NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPUtils mpId]];
                 id<NSObject> userAttributeValue = nil;
-                NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
+                NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
                 NSError *error = nil;
                 NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
                 BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
                 
                 if (userAttributeChange.isArray) {
                     userAttributeValue = userAttributeChange.value;
-                    userAttributeChange.deleted = error.code == kInvalidValue && self.userAttributes[localKey];
+                    userAttributeChange.deleted = error.code == kInvalidValue && userAttributes[localKey];
                 } else {
                     if (!validAttributes && error.code == kInvalidValue) {
                         userAttributeValue = [NSNull null];
@@ -887,13 +865,13 @@ static BOOL appBackgrounded = NO;
                         userAttributeValue = userAttributeChange.value;
                     }
                     
-                    userAttributeChange.deleted = error.code == kEmptyValueAttribute && self.userAttributes[localKey];
+                    userAttributeChange.deleted = error.code == kEmptyValueAttribute && userAttributes[localKey];
                 }
                 
                 if (validAttributes) {
-                    self.userAttributes[localKey] = userAttributeValue;
+                    userAttributes[localKey] = userAttributeValue;
                 } else if (userAttributeChange.deleted) {
-                    [self.userAttributes removeObjectForKey:localKey];
+                    [userAttributes removeObjectForKey:localKey];
                     
                     if (!deletedUserAttributes) {
                         deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
@@ -907,15 +885,15 @@ static BOOL appBackgrounded = NO;
                     return;
                 }
                 
-                NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
-                NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
+                NSMutableDictionary *userAttributesCopy = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
+                NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
                 NSString *aKey;
                 
                 while ((aKey = [attributeEnumerator nextObject])) {
-                    if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
-                        userAttributes[aKey] = kMPNullUserAttributeString;
+                    if ((NSNull *)userAttributes[aKey] == [NSNull null]) {
+                        userAttributesCopy[aKey] = kMPNullUserAttributeString;
                     } else {
-                        userAttributes[aKey] = self.userAttributes[aKey];
+                        userAttributesCopy[aKey] = userAttributes[aKey];
                     }
                 }
 
@@ -926,7 +904,7 @@ static BOOL appBackgrounded = NO;
 
                 dispatch_async(dispatch_get_main_queue(), ^{
                     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                    userDefaults[kMPUserAttributeKey] = userAttributes;
+                    userDefaults[kMPUserAttributeKey] = userAttributesCopy;
                     [userDefaults synchronize];
                 });
                 
@@ -978,68 +956,71 @@ static BOOL appBackgrounded = NO;
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     [persistence fetchMessagesForUploadingInSession:uploadSession
-                                  completionHandler:^(NSArray<MPMessage *> *messages) {
-                                      if (!messages) {
+                                  completionHandler:^(NSDictionary *mpidMessages) {
+                                      if (!mpidMessages || mpidMessages.count == 0) {
                                           sessionBeingUploaded = nil;
                                           completionHandlerCopy(uploadSession);
                                           return;
                                       }
-                                      
-                                      __strong MPBackendController *strongSelf = weakSelf;
-                                      MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
-                                      
-                                      if (!uploadBuilder || !strongSelf) {
-                                          sessionBeingUploaded = nil;
-                                          completionHandlerCopy(uploadSession);
-                                          return;
-                                      }
-                                      
-                                      [uploadBuilder withUserAttributes:strongSelf.userAttributes deletedUserAttributes:deletedUserAttributes];
-                                      [uploadBuilder withUserIdentities:strongSelf.userIdentities];
-                                      [uploadBuilder build:^(MPDataModelAbstract *upload) {
-                                          [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+                                      [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
                                           
-                                          [persistence fetchUploadsInSession:session
-                                                           completionHandler:^(NSArray<MPUpload *> *uploads) {
-                                                               if (!uploads) {
-                                                                   sessionBeingUploaded = nil;
-                                                                   completionHandlerCopy(uploadSession);
-                                                                   return;
-                                                               }
-                                                               
-                                                               if ([MPStateMachine sharedInstance].dataRamped) {
-                                                                   for (MPUpload *upload in uploads) {
-                                                                       [persistence deleteUpload:upload];
+                                          
+                                          __strong MPBackendController *strongSelf = weakSelf;
+                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
+                                          
+                                          if (!uploadBuilder || !strongSelf) {
+                                              sessionBeingUploaded = nil;
+                                              completionHandlerCopy(uploadSession);
+                                              return;
+                                          }
+                                          
+                                          [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
+                                          [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
+                                          [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                              [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+                                              
+                                              [persistence fetchUploadsInSession:session
+                                                               completionHandler:^(NSArray<MPUpload *> *uploads) {
+                                                                   if (!uploads) {
+                                                                       sessionBeingUploaded = nil;
+                                                                       completionHandlerCopy(uploadSession);
+                                                                       return;
                                                                    }
                                                                    
-                                                                   [persistence deleteNetworkPerformanceMessages];
-                                                                   [persistence deleteMessages:messages];
-                                                                   return;
-                                                               }
-                                                               
-                                                               [strongSelf.networkCommunication upload:uploads
-                                                                                                 index:0
-                                                                                     completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
-                                                                                         if (!success) {
-                                                                                             return;
-                                                                                         }
-                                                                                         
-                                                                                         [MPResponseEvents parseConfiguration:responseDictionary session:uploadSession];
-                                                                                         
-                                                                                         [persistence deleteUpload:upload];
-                                                                                         
-                                                                                         if (!finished) {
-                                                                                             return;
-                                                                                         }
-                                                                                         
-                                                                                         sessionBeingUploaded = nil;
-                                                                                         completionHandlerCopy(uploadSession);
-                                                                                     }];
-                                                           }];
+                                                                   if ([MPStateMachine sharedInstance].dataRamped) {
+                                                                       for (MPUpload *upload in uploads) {
+                                                                           [persistence deleteUpload:upload];
+                                                                       }
+                                                                       
+                                                                       [persistence deleteNetworkPerformanceMessages];
+                                                                       [persistence deleteMessages:messages];
+                                                                       return;
+                                                                   }
+                                                                   
+                                                                   [strongSelf.networkCommunication upload:uploads
+                                                                                                     index:0
+                                                                                         completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
+                                                                                             if (!success) {
+                                                                                                 return;
+                                                                                             }
+                                                                                             
+                                                                                             [MPResponseEvents parseConfiguration:responseDictionary session:uploadSession];
+                                                                                             
+                                                                                             [persistence deleteUpload:upload];
+                                                                                             
+                                                                                             if (!finished) {
+                                                                                                 return;
+                                                                                             }
+                                                                                             
+                                                                                             sessionBeingUploaded = nil;
+                                                                                             completionHandlerCopy(uploadSession);
+                                                                                         }];
+                                                               }];
+                                          }];
+                                          
+                                          deletedUserAttributes = nil;
                                       }];
-                                      
-                                      deletedUserAttributes = nil;
-                                  }];
+                                      }];
 }
 
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(BOOL success))completionHandler {
@@ -1094,7 +1075,6 @@ static BOOL appBackgrounded = NO;
         
         __strong MPBackendController *strongSelf = weakSelf;
         
-        if ([MPStateMachine sharedInstance].shouldUploadSessionHistory) {
             [strongSelf uploadBatchesFromSession:session
                                completionHandler:^(MPSession *uploadedSession) {
                                    session = nil;
@@ -1111,9 +1091,7 @@ static BOOL appBackgrounded = NO;
                                        invokeCompletionHandler(NO);
                                    }
                                }];
-        } else {
-            invokeCompletionHandler(NO);
-        }
+   
     }];
 }
 
@@ -1152,8 +1130,9 @@ static BOOL appBackgrounded = NO;
                                       return;
                                   }
                                   
-                                  [uploadBuilder withUserAttributes:strongSelf.userAttributes deletedUserAttributes:deletedUserAttributes];
-                                  [uploadBuilder withUserIdentities:strongSelf.userIdentities];
+                                         [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:session.userId]
+                                                     deletedUserAttributes:deletedUserAttributes];
+                                  [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:session.userId]];
                                   [uploadBuilder build:^(MPDataModelAbstract *upload) {
                                       [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                                       
@@ -1181,8 +1160,8 @@ static BOOL appBackgrounded = NO;
                                                            }
                                                            
                                                            MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:session uploads:uploads];
-                                                           sessionHistory.userAttributes = self.userAttributes;
-                                                           sessionHistory.userIdentities = self.userIdentities;
+                                                           sessionHistory.userAttributes = [strongSelf userAttributesForUserId:session.userId];
+                                                           sessionHistory.userIdentities = [strongSelf userIdentitiesForUserId:session.userId];
                                                            
                                                            if (!sessionHistory) {
                                                                if (completionHandler) {
@@ -1223,49 +1202,51 @@ static BOOL appBackgrounded = NO;
 
 - (void)uploadStandaloneMessages {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];
+    NSMutableDictionary *standaloneMessages = [persistence fetchStandaloneMessages];
     
     if (!standaloneMessages) {
         return;
     }
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMessages:standaloneMessages uploadInterval:self.uploadInterval];
-    
-    if (!uploadBuilder) {
-        return;
-    }
-    
-    [uploadBuilder withUserAttributes:self.userAttributes deletedUserAttributes:deletedUserAttributes];
-    [uploadBuilder withUserIdentities:self.userIdentities];
-    [uploadBuilder build:^(MPDataModelAbstract *standaloneUpload) {
-        [persistence saveStandaloneUpload:(MPStandaloneUpload *)standaloneUpload];
-        [persistence deleteStandaloneMessageIds:uploadBuilder.preparedMessageIds];
-    }];
-    
-    NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
-    if (!standaloneUploads) {
-        return;
-    }
-    
-    if ([MPStateMachine sharedInstance].dataRamped) {
-        for (MPStandaloneUpload *standaloneUpload in standaloneUploads) {
-            [persistence deleteStandaloneUpload:standaloneUpload];
+    [standaloneMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber *  _Nonnull mpid, NSArray * _Nonnull messages, BOOL * _Nonnull stop) {
+        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMessages:messages uploadInterval:self.uploadInterval];
+        
+        if (!uploadBuilder) {
+            return;
         }
         
-        return;
-    }
-    
-    [self.networkCommunication standaloneUploads:standaloneUploads
-                                           index:0
-                               completionHandler:^(BOOL success, MPStandaloneUpload *standaloneUpload, NSDictionary *responseDictionary, BOOL finished) {
-                                   if (!success) {
-                                       return;
-                                   }
-                                   
-                                   [MPResponseEvents parseConfiguration:responseDictionary session:nil];
-                                   
-                                   [persistence deleteStandaloneUpload:standaloneUpload];
-                               }];
+        [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
+        [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
+        [uploadBuilder build:^(MPDataModelAbstract *standaloneUpload) {
+            [persistence saveStandaloneUpload:(MPStandaloneUpload *)standaloneUpload];
+            [persistence deleteStandaloneMessageIds:uploadBuilder.preparedMessageIds];
+        }];
+        
+        NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
+        if (!standaloneUploads) {
+            return;
+        }
+        
+        if ([MPStateMachine sharedInstance].dataRamped) {
+            for (MPStandaloneUpload *standaloneUpload in standaloneUploads) {
+                [persistence deleteStandaloneUpload:standaloneUpload];
+            }
+            
+            return;
+        }
+        
+        [self.networkCommunication standaloneUploads:standaloneUploads
+                                               index:0
+                                   completionHandler:^(BOOL success, MPStandaloneUpload *standaloneUpload, NSDictionary *responseDictionary, BOOL finished) {
+                                       if (!success) {
+                                           return;
+                                       }
+                                       
+                                       [MPResponseEvents parseConfiguration:responseDictionary session:nil];
+                                       
+                                       [persistence deleteStandaloneUpload:standaloneUpload];
+                                   }];
+        }];
 }
 
 #pragma mark Notification handlers
@@ -1363,17 +1344,21 @@ static BOOL appBackgrounded = NO;
         [persistence saveMessage:message];
         
         // Generate the upload batch
-        NSArray<MPMessage *> *messages = [persistence fetchMessagesForUploadingInSession:sessionCopy];
-        if (messages) {
-            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:sessionCopy
-                                                                           messages:messages
-                                                                     sessionTimeout:self.sessionTimeout
-                                                                     uploadInterval:self.uploadInterval];
-            
-            [uploadBuilder withUserAttributes:self.userAttributes deletedUserAttributes:deletedUserAttributes];
-            [uploadBuilder withUserIdentities:self.userIdentities];
-            [uploadBuilder buildAsync:NO completionHandler:^(MPDataModelAbstract * _Nullable upload) {
-                [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
+        NSDictionary *mpidMessages = [persistence fetchMessagesForUploadingInSession:sessionCopy];
+        if (mpidMessages) {
+            [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
+                
+                
+                MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:sessionCopy
+                                                                               messages:messages
+                                                                         sessionTimeout:self.sessionTimeout
+                                                                         uploadInterval:self.uploadInterval];
+                
+                [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
+                [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
+                [uploadBuilder buildAsync:NO completionHandler:^(MPDataModelAbstract * _Nullable upload) {
+                    [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
+                }];
             }];
         }
         
@@ -1393,8 +1378,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
-    self.userAttributes = nil;
-    self.userIdentities = nil;
+    
 }
 
 - (void)handleNetworkPerformanceNotification:(NSNotification *)notification {
@@ -1614,7 +1598,7 @@ static BOOL appBackgrounded = NO;
         [self endSession];
     }
     
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
@@ -1967,13 +1951,13 @@ static BOOL appBackgrounded = NO;
     NSAssert([value isKindOfClass:[NSNumber class]], @"'value' must be a number.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Incrementing user attribute cannot happen prior to starting the mParticle SDK.\n****\n");
     
-    NSString *localKey = [self.userAttributes caseInsensitiveKey:key];
+    NSString *localKey = [[self userAttributesForUserId:[MPUtils mpId]] caseInsensitiveKey:key];
     if (!localKey) {
         [self setUserAttribute:key value:value attempt:0 completionHandler:nil];
         return value;
     }
     
-    id currentValue = self.userAttributes[localKey];
+    id currentValue = [self userAttributesForUserId:[MPUtils mpId]][localKey];
     if (currentValue && ![currentValue isKindOfClass:[NSNumber class]]) {
         return nil;
     } else if (MPIsNull(currentValue)) {
@@ -1984,17 +1968,18 @@ static BOOL appBackgrounded = NO;
     NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)currentValue stringValue]];
     newValue = [newValue decimalNumberByAdding:incrementValue];
     
-    self.userAttributes[localKey] = newValue;
+    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPUtils mpId]];
+    userAttributes[localKey] = newValue;
     
-    NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
-    NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
+    NSMutableDictionary *userAttributesCopy = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
+    NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
     NSString *aKey;
     
     while ((aKey = [attributeEnumerator nextObject])) {
-        if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
-            userAttributes[aKey] = kMPNullUserAttributeString;
+        if ((NSNull *)userAttributes[aKey] == [NSNull null]) {
+            userAttributesCopy[aKey] = kMPNullUserAttributeString;
         } else {
-            userAttributes[aKey] = self.userAttributes[aKey];
+            userAttributesCopy[aKey] = userAttributes[aKey];
         }
     }
     
@@ -2651,7 +2636,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
-    if (_initializationStatus != MPInitializationStatusStarted || [MPUtils mpId].intValue == 0) {
+    if (_initializationStatus != MPInitializationStatusStarted) {
         if (completionHandler) {
             completionHandler();
         }
@@ -2723,7 +2708,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[self.userAttributes copy] key:keyCopy value:value];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPUtils mpId]] copy] key:keyCopy value:value];
     
     switch (_initializationStatus) {
         case MPInitializationStatusStarted:
@@ -2766,7 +2751,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[self.userAttributes copy] key:keyCopy value:values];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPUtils mpId]] copy] key:keyCopy value:values];
     userAttributeChange.isArray = YES;
     
     switch (_initializationStatus) {
@@ -2794,7 +2779,6 @@ static BOOL appBackgrounded = NO;
     }
 }
 
-//TODO: move
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler {
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Setting user identity cannot be done prior to starting the mParticle SDK.\n****\n");
@@ -2807,7 +2791,7 @@ static BOOL appBackgrounded = NO;
     MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:identityType
                                                                                      value:identityString];
     
-    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:self.userIdentities];
+    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:[self userIdentitiesForUserId:[MPUtils mpId]]];
     
     switch (_initializationStatus) {
         case MPInitializationStatusStarted:

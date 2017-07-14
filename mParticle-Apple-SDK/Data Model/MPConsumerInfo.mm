@@ -274,7 +274,7 @@ NSString *const kMPCKExpiration = @"e";
 
 - (NSDictionary *)localCookiesDictionary {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSDictionary *localCookies = userDefaults[kMPRemoteConfigCookiesKey];
+    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPUtils mpId]];
     
     if (!localCookies) {
         return nil;
