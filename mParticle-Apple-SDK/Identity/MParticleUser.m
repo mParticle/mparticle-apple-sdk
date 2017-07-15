@@ -35,6 +35,33 @@
     return self;
 }
 
+- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+    __weak MParticleUser *weakSelf = self;
+    
+    [self.backendController setUserIdentity:identityString
+                               identityType:identityType
+                                    attempt:0
+                          completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                              __strong MParticleUser *strongSelf = weakSelf;
+                              
+                              if (execStatus == MPExecStatusSuccess) {
+                                  MPILogDebug(@"Set user identity: %@", identityString);
+                                  
+                                  // Forwarding calls to kits
+                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserIdentity:identityType:)
+                                                                     userIdentity:identityString
+                                                                     identityType:identityType
+                                                                       kitHandler:^(id<MPKitProtocol> kit) {
+                                                                           [kit setUserIdentity:identityString identityType:identityType];
+                                                                       }];
+                              } else if (execStatus == MPExecStatusDelayedExecution) {
+                                  MPILogWarning(@"Delayed set user identity: %@\n Reason: %@", identityString, [strongSelf.backendController execStatusDescription:execStatus]);
+                              } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
+                                  MPILogError(@"Could not set user identity: %@\n Reason: %@", identityString, [strongSelf.backendController execStatusDescription:execStatus]);
+                              }
+                          }];
+}
+
 - (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
     if (!_backendController || _backendController.initializationStatus != MPInitializationStatusStarted) {
         MPILogError(@"Cannot increment user attribute. SDK is not initialized yet.");
