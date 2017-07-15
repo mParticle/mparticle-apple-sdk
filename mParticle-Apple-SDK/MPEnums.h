@@ -251,7 +251,13 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeUserIdentityChange = 18
 };
 
-
+typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
+    /** Identity request should be retried */
+    MPIdentityErrorResponseCodeUnknown = 0,
+    MPIdentityErrorResponseCodeTimeout = 504,
+    /** Identity request should be retried */
+    MPIdentityErrorResponseCodeRetry = 429,
+};
 
 /** Posted immediately after a new session has begun.
  
@@ -343,6 +349,8 @@ extern NSString * _Nonnull const mParticleEmbeddedSDKInstanceKey;
 
 extern NSString * _Nonnull const mParticleIdentityStateChangeListenerNotification;
 extern NSString * _Nonnull const mParticleUserKey;
+extern NSString * _Nonnull const mParticleIdentityErrorDomain;
+extern NSString * _Nonnull const mParticleIdentityErrorKey;
 
 /**
  Constant used to express gender.

@@ -8,12 +8,12 @@
 #import "MPNotificationController.h"
 #import "MPUtils.h"
 
-@implementation MPIdentityBaseRequest
+@implementation MPIdentityHTTPBaseRequest
 
 - (NSDictionary *)dictionaryRepresentation {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     
-    NSDictionary *clientSDKDictionary = [MPIdentityClientSDK clientSDKDictionaryWithVersion:kMParticleSDKVersion];
+    NSDictionary *clientSDKDictionary = [MPIdentityHTTPClientSDK clientSDKDictionaryWithVersion:kMParticleSDKVersion];
     if (clientSDKDictionary) {
         dictionary[@"client_sdk"] = clientSDKDictionary;
     }
@@ -38,12 +38,12 @@
 
 @end
 
-@implementation MPIdentifyRequest
+@implementation MPIdentifyHTTPRequest
 
 - (instancetype)initWithIdentityApiRequest:(MPIdentityApiRequest *)apiRequest {
     self = [super init];
     if (self) {
-        _knownIdentities = [[MPIdentities alloc] initWithIdentities:apiRequest.userIdentities];
+        _knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:apiRequest.userIdentities];
         
         NSNumber *mpid = [MPUtils mpId];
         if (mpid.longLongValue != 0) {
@@ -90,7 +90,7 @@
 
 @end
 
-@implementation MPIdentityClientSDK
+@implementation MPIdentityHTTPClientSDK
 
 + (NSDictionary *)clientSDKDictionaryWithVersion:(NSString *)sdkVersion {
     if (!sdkVersion) {
@@ -109,7 +109,7 @@
 
 @end
 
-@implementation MPIdentities
+@implementation MPIdentityHTTPIdentities
 
 - (instancetype)initWithIdentities:(NSDictionary *)identities {
     self = [super init];
@@ -224,10 +224,7 @@
 
 @end
 
-@implementation MPIdentityRequest
-@end
-
-@implementation MPIdentityChange
+@implementation MPIdentityHTTPIdentityChange
 
 - (instancetype)initWithOldValue:(NSString *)oldValue value:(NSString *)value identityType:(NSString *)identityType {
     self = [super init];
@@ -248,7 +245,7 @@
 }
 
 @end
-@implementation MPIdentityModifyRequest
+@implementation MPIdentityHTTPModifyRequest
 
 - (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges {
     if (!mpid || !identityChanges.count) {
@@ -267,7 +264,7 @@
     NSMutableDictionary *dictionary = [[super dictionaryRepresentation] mutableCopy];
     
     NSMutableArray *identityChanges = [NSMutableArray array];
-    [_identityChanges enumerateObjectsUsingBlock:^(MPIdentityChange * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [_identityChanges enumerateObjectsUsingBlock:^(MPIdentityHTTPIdentityChange * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSDictionary *changeDictionary = [obj dictionaryRepresentation];
         [identityChanges addObject:changeDictionary];
     }];
@@ -279,27 +276,30 @@
 
 @end
 
-@implementation MPIdentityErrorResponse
+@implementation MPIdentityHTTPErrorResponse
 
-- (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary httpCode:(NSInteger) httpCode {
     self = [super init];
     if (self) {
-        _items = [NSMutableArray array];
-        NSDictionary *errors = dictionary[@"errors"];
-        NSArray *items = errors[@"items"];
-        [items enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            MPIdentityErrorItem *item = [[MPIdentityErrorItem alloc] initWithJsonDictionary:obj];
-            if (item) {
-                [_items addObject:item];
-            }
-        }];
+        _httpCode = httpCode;
+        if (dictionary) {
+            _items = [NSMutableArray array];
+            NSDictionary *errors = dictionary[@"errors"];
+            NSArray *items = errors[@"items"];
+            [items enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                MPIdentityHTTPErrorItem *item = [[MPIdentityHTTPErrorItem alloc] initWithJsonDictionary:obj];
+                if (item) {
+                    [_items addObject:item];
+                }
+            }];
+        }
     }
     return self;
 }
 
 @end
 
-@implementation MPIdentityErrorItem
+@implementation MPIdentityHTTPErrorItem
 
 - (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary {
     self = [super init];
@@ -312,7 +312,7 @@
 
 @end
 
-@implementation MPIdentitySuccessResponse
+@implementation MPIdentityHTTPSuccessResponse
 
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
     self = [super init];

@@ -12,6 +12,7 @@
 #import "MPIUserDefaults.h"
 #import "MPSession.h"
 #import "MPPersistenceController.h"
+#import "MPIdentityDTO.h"
 
 @interface MPIdentityApi ()
 
@@ -66,36 +67,37 @@
     return user;
 }
 
-- (void)didChangeToIdentifier:(NSNumber *)newMPID completion:(MPIdentityApiResultCallback)completion {
+- (void)onIdentityRequestSuccess:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion {
     
     NSNumber *previousMPID = [MPUtils mpId];
     
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
-    MParticleUser *user = [self userFromIdentifier:newMPID];
+    MParticleUser *user = [self userFromIdentifier:httpResponse.mpid];
     apiResult.user = user;
     self.currentUser = user;
     
-    if (newMPID.intValue == previousMPID.intValue) {
+    if (httpResponse.mpid.intValue == previousMPID.intValue) {
         completion(apiResult, nil);
         return;
     }
     
-    [MPUtils setMpid:newMPID];
+    [MPUtils setMpid:httpResponse.mpid];
     
     MPSession *session = [MParticle sharedInstance].backendController.session;
-    session.userId = newMPID;
+    session.userId = httpResponse.mpid;
     NSString *userIdsString = session.sessionUserIds;
     NSMutableArray *userIds = [[userIdsString componentsSeparatedByString:@","] mutableCopy];
 
-    if (![userIds containsObject:newMPID] && newMPID.longLongValue != 0) {
-        [userIds addObject:newMPID];
+    if (httpResponse.mpid.longLongValue != 0 &&
+        ([userIds lastObject] && ![[userIds lastObject] isEqualToString:httpResponse.mpid.stringValue])) {
+        [userIds addObject:httpResponse.mpid];
     }
  
     session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
     
     [[MPPersistenceController sharedInstance] updateSession:session];
     
-    [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:newMPID];
+    [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:httpResponse.mpid];
     
     if (user) {
         NSDictionary *userInfo = @{mParticleUserKey:user};
@@ -116,8 +118,8 @@
 }
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager identify:identifyRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
-        [self didChangeToIdentifier:newMPID completion:completion];
+    [_apiManager identify:identifyRequest completion:^(MPIdentityHTTPSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onIdentityRequestSuccess:identifyRequest httpResponse:httpResponse completion:completion];
     }];
 }
 
@@ -129,8 +131,8 @@
 }
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager loginRequest:loginRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
-        [self didChangeToIdentifier:newMPID completion:completion];
+    [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onIdentityRequestSuccess:loginRequest httpResponse:httpResponse completion:completion];
     }];
 }
 
@@ -142,8 +144,8 @@
 }
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager logout:logoutRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
-        [self didChangeToIdentifier:newMPID completion:completion];
+    [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onIdentityRequestSuccess:logoutRequest httpResponse:httpResponse completion:completion];
     }];
 }
 

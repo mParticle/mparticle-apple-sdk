@@ -43,6 +43,8 @@ NSString *const mParticleEmbeddedSDKInstanceKey = @"mParticleEmbeddedSDKInstance
 
 NSString *const mParticleIdentityStateChangeListenerNotification = @"mParticleIdentityStateChangeListenerNotification";
 NSString *const mParticleUserKey = @"mParticleUserKey";
+NSString *const mParticleIdentityErrorDomain = @"mParticle Identity Error Domain";
+NSString *const mParticleIdentityErrorKey = @"mParticle Identity Error";
 
 NSString *const mParticleGenderMale = @"M";
 NSString *const mParticleGenderFemale = @"F";

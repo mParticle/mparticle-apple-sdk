@@ -6,7 +6,7 @@
 #import "MPIConstants.h"
 #import "MPIdentityApiRequest.h"
 
-@interface MPIdentities : NSObject
+@interface MPIdentityHTTPIdentities : NSObject
 
 @property (nonatomic) NSString *advertiserId;
 @property (nonatomic) NSString *vendorId;
@@ -26,37 +26,33 @@
 
 @end
 
-@interface MPIdentityClientSDK : NSObject
+@interface MPIdentityHTTPClientSDK : NSObject
 
 + (NSDictionary *)clientSDKDictionaryWithVersion:(NSString *)mParticleVersion;
 
 @end
 
-@interface MPIdentityBaseRequest : NSObject
+@interface MPIdentityHTTPBaseRequest : NSObject
 
 - (NSDictionary *)dictionaryRepresentation;
 
 @end
 
 
-@interface MPIdentifyRequest : MPIdentityBaseRequest
+@interface MPIdentifyHTTPRequest : MPIdentityHTTPBaseRequest
 
 @property (nonatomic) NSString *previousMPID;
-@property (nonatomic) MPIdentities *knownIdentities;
+@property (nonatomic) MPIdentityHTTPIdentities *knownIdentities;
 
 - (id)initWithIdentityApiRequest:(MPIdentityApiRequest *)request;
 - (NSDictionary *)dictionaryRepresentation;
 
 @end
 
-@interface MPIdentityModifyRequest : MPIdentityBaseRequest
+@interface MPIdentityHTTPModifyRequest : MPIdentityHTTPBaseRequest
 
 @property (nonatomic) NSArray *identityChanges;
 @property (nonatomic) NSString *mpid;
-
-@end
-
-@interface MPIdentityRequest : NSObject
 
 @end
 
@@ -72,7 +68,7 @@
 
 @end
 
-@interface MPIdentityChange : NSObject
+@interface MPIdentityHTTPIdentityChange : NSObject
 
 @property (nonatomic) NSString *oldValue;
 @property (nonatomic) NSString *value;
@@ -83,7 +79,7 @@
 
 @end
 
-@interface MPIdentityErrorItem : NSObject
+@interface MPIdentityHTTPErrorItem : NSObject
 
 - (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary;
 
@@ -92,13 +88,16 @@
 
 @end
 
-@interface MPIdentityErrorResponse : NSObject
+@interface MPIdentityHTTPErrorResponse : NSObject
 
-@property (nonatomic) NSMutableArray<MPIdentityErrorItem *> *items;
+- (instancetype)initWithJsonObject:( NSDictionary *)dictionary httpCode:(NSInteger) httpCode;
+
+@property (nonatomic) NSInteger httpCode;
+@property (nonatomic) NSMutableArray<MPIdentityHTTPErrorItem *> *items;
 
 @end
 
-@interface MPIdentitySuccessResponse : NSObject
+@interface MPIdentityHTTPSuccessResponse : NSObject
 
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary;
 

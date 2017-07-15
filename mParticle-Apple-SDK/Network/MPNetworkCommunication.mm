@@ -858,7 +858,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
     if (identifying) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity error":@"Identity API request in progress."}]);
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:0 userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
         }
         return;
     }
@@ -885,7 +885,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    MPIdentifyRequest *request = [[MPIdentifyRequest alloc] initWithIdentityApiRequest:identityRequest];
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:identityRequest];
     NSDictionary *dictionary = [request dictionaryRepresentation];
 
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
@@ -902,7 +902,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                       
                       if (!strongSelf) {
                           if (completion) {
-                              completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity error":@"Unknown error"}]);
+                              MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:nil httpCode:0];
+                              completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeUnknown userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
                           }
                 
                           return;
@@ -944,19 +945,15 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           if (responseString) {
                               MPILogVerbose(@"Identity response:\n%@", responseString);
                           }
-                          MPIdentitySuccessResponse *response = [[MPIdentitySuccessResponse alloc] initWithJsonObject:responseDictionary];
-                          
+                          MPIdentityHTTPSuccessResponse *response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:responseDictionary];
                           _context = response.context;
                           if (completion) {
-                              completion(response.mpid, nil);
+                              completion(response, nil);
                           }
                       } else {
                           if (completion) {
-                              if (responseDictionary) {
-                                  completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:responseDictionary]);
-                              } else {
-                                  completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity rrror":@"Unknown error"}]);
-                              }
+                                MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
+                                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:responseCode userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
                           }
                       }
                       
@@ -971,7 +968,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         if (connector.active) {
             MPILogWarning(@"Failed to call identify API with request: %@", dictionary);
             if (completion) {
-                completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity Error":@"API call timed out."}]);
+                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeTimeout userInfo:@{mParticleIdentityErrorKey:@"API call timed out."}]);
             }
         }
         

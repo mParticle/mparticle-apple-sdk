@@ -24,6 +24,7 @@
 @class MPSessionHistory;
 @class MPSegment;
 @class MPIdentityApiRequest;
+@class MPIdentityHTTPSuccessResponse;
 
 extern NSString * _Nonnull const kMPURLScheme;
 extern NSString * _Nonnull const kMPURLHost;
@@ -43,7 +44,7 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
 typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nullable upload, NSDictionary * _Nullable responseDictionary, BOOL finished);
 typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload * _Nullable standaloneUpload, NSDictionary * _Nullable responseDictionary, BOOL finished);
-typedef void (^MPIdentityApiManagerCallback)(NSNumber *_Nullable newMPID, NSError *_Nullable error);
+typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 
 @interface MPNetworkCommunication : NSObject
 
