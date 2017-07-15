@@ -20,7 +20,7 @@
 
 @implementation MPStandaloneMessage
 
-- (instancetype)initWithMessageId:(int64_t)messageId UUID:(NSString *)uuid messageType:(NSString *)messageType messageData:(NSData *)messageData timestamp:(NSTimeInterval)timestamp uploadStatus:(MPUploadStatus)uploadStatus {
+- (instancetype)initWithMessageId:(int64_t)messageId UUID:(NSString *)uuid messageType:(NSString *)messageType messageData:(NSData *)messageData timestamp:(NSTimeInterval)timestamp uploadStatus:(MPUploadStatus)uploadStatus userId:(NSNumber *)userId {
     self = [super init];
     if (!self) {
         return nil;
@@ -32,17 +32,19 @@
     _timestamp = timestamp;
     _uploadStatus = uploadStatus;
     _messageData = messageData;
+    _userId = userId;
     
     return self;
 }
 
-- (instancetype)initWithMessageType:(NSString *)messageType messageInfo:(NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(NSString *)uuid timestamp:(NSTimeInterval)timestamp {
+- (instancetype)initWithMessageType:(NSString *)messageType messageInfo:(NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId {
     return [self initWithMessageId:0
                               UUID:uuid
                        messageType:messageType
                        messageData:[NSJSONSerialization dataWithJSONObject:messageInfo options:0 error:nil]
                          timestamp:timestamp
-                      uploadStatus:uploadStatus];
+                      uploadStatus:uploadStatus
+                            userId:userId];
 }
 
 - (NSString *)description {
@@ -67,7 +69,8 @@
                                                                          messageType:[_messageType copy]
                                                                          messageData:[_messageData copy]
                                                                            timestamp:_timestamp
-                                                                        uploadStatus:_uploadStatus];
+                                                                        uploadStatus:_uploadStatus
+                                                                              userId:_userId];
     
     return copyObject;
 }
@@ -80,6 +83,7 @@
     [coder encodeObject:self.messageData forKey:@"messageData"];
     [coder encodeDouble:self.timestamp forKey:@"timestamp"];
     [coder encodeInteger:self.uploadStatus forKey:@"uploadStatus"];
+    [coder encodeInt64:_userId.longLongValue forKey:@"mpid"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -88,7 +92,8 @@
                        messageType:[coder decodeObjectForKey:@"messageType"]
                        messageData:[coder decodeObjectForKey:@"messageData"]
                          timestamp:[coder decodeDoubleForKey:@"timestamp"]
-                      uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]];
+                      uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]
+                            userId:@([coder decodeInt64ForKey:@"mpid"])];
     
     return self;
 }

@@ -16,6 +16,10 @@ typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiRe
 
 @property(nonatomic, strong, readonly, nullable) MParticleUser *currentUser;
 
+- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
+
+- (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion;
+
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion;
 
 - (void)loginWithCompletion:(nullable MPIdentityApiResultCallback)completion;

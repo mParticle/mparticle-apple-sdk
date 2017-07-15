@@ -109,8 +109,7 @@
     if (_currentUser) {
         return _currentUser;
     }
-    
-//    NSNumber *mpid = [MPStateMachine sharedInstance].consumerInfo.mpId;
+
     NSNumber *mpid = [MPUtils mpId];
     _currentUser = [self userFromIdentifier:mpid];
     return _currentUser;
@@ -120,6 +119,13 @@
     [_apiManager identify:identifyRequest completion:^(NSNumber * _Nullable newMPID, NSError * _Nullable error) {
         [self didChangeToIdentifier:newMPID completion:completion];
     }];
+}
+
+- (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    [self identify:nil completion:completion];
+#pragma clang diagnostic pop
 }
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {

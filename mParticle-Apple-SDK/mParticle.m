@@ -86,12 +86,6 @@ NSString *const kMPStateKey = @"state";
 
 @end
 
-@interface MPIdentityApi ()
-
-- (void)identify:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion;
-
-@end
-
 @interface MPBackendController ()
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
