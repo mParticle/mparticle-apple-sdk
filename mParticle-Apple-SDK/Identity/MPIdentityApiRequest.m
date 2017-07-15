@@ -7,25 +7,19 @@
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
 
-@interface MPIdentityApiRequest ()
-
-@property (nonatomic, strong) NSMutableDictionary<NSNumber *, NSString *> *identities;
-
-@end
-
 @implementation MPIdentityApiRequest
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        _identities = [NSMutableDictionary dictionary];
+        _userIdentities = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    [_identities setObject:identityString forKey:@(identityType)];
+    [_userIdentities setObject:identityString forKey:@(identityType)];
 }
 
 + (MPIdentityApiRequest *)requestWithEmptyUser {
@@ -34,14 +28,14 @@
 
 + (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user {
     MPIdentityApiRequest *request = [[self alloc] init];
-    request.identities = [user.userIdentities mutableCopy];
+    request.userIdentities = [user.userIdentities mutableCopy];
     return request;
 }
 
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     NSMutableDictionary *knownIdentities = [NSMutableDictionary dictionary];
     
-    [_identities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+    [_userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
         
         MPUserIdentity identityType = [key boolValue];
         switch (identityType) {
@@ -96,11 +90,10 @@
     if (vendorId) {
         knownIdentities[@"ios_idfv"] = vendorId;
     }
-    knownIdentities[@"customerid"] = @"foo";
     
 #if TARGET_OS_IOS == 1
     NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
-    if (deviceToken) {
+    if (deviceToken && [deviceToken length] > 0) {
         knownIdentities[@"push_token"] = deviceToken;
     }
 #endif
@@ -109,7 +102,7 @@
 }
 
 - (NSString *)email {
-    return _identities[@(MPUserIdentityEmail)];
+    return _userIdentities[@(MPUserIdentityEmail)];
 }
 
 - (void)setEmail:(NSString *)email {
@@ -117,7 +110,7 @@
 }
 
 - (NSString *)customerId {
-    return _identities[@(MPUserIdentityCustomerId)];
+    return _userIdentities[@(MPUserIdentityCustomerId)];
 }
 
 - (void)setCustomerId:(NSString *)customerId {
