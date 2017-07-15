@@ -858,7 +858,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
     if (identifying) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity Error":@"Identity API in progress."}]);
+            completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity error":@"Identity API request in progress."}]);
         }
         return;
     }
@@ -887,7 +887,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     MPIdentifyRequest *request = [[MPIdentifyRequest alloc] initWithIdentityApiRequest:identityRequest];
     NSDictionary *dictionary = [request dictionaryRepresentation];
+
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+    NSString *jsonRequest = [[NSString alloc] initWithData:data
+                                                     encoding:NSUTF8StringEncoding];
+
+    MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
     [connector asyncPostDataFromURL:url
                             message:(NSString *)[NSNull null]
@@ -897,7 +902,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                       
                       if (!strongSelf) {
                           if (completion) {
-                              completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity Error":@"Unknown error"}]);
+                              completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity error":@"Unknown error"}]);
                           }
                 
                           return;
@@ -909,6 +914,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                       }
                       
                       NSDictionary *responseDictionary = nil;
+                      NSString *responseString = nil;
                       NSInteger responseCode = [httpResponse statusCode];
                       BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
 
@@ -916,11 +922,15 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
                       NSError *serializationError = nil;
                       
-                      MPILogVerbose(@"Identity Response Code: %ld", (long)responseCode);
+                      MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
                       
                       if (success) {
                           @try {
-                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+                              responseString = [[NSString alloc] initWithData:data
+                                                                     encoding:NSUTF8StringEncoding];
+                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data
+                                                                                   options:0
+                                                                                     error:&serializationError];
                           } @catch (NSException *exception) {
                               responseDictionary = nil;
                               success = NO;
@@ -928,9 +938,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           }
                       }
                       
-                      MPILogVerbose(@"Identity Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+                      MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                     
                       if (success) {
+                          if (responseString) {
+                              MPILogVerbose(@"Identity response:\n%@", responseString);
+                          }
                           MPIdentitySuccessResponse *response = [[MPIdentitySuccessResponse alloc] initWithJsonObject:responseDictionary];
                           
                           _context = response.context;
@@ -942,7 +955,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                               if (responseDictionary) {
                                   completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:responseDictionary]);
                               } else {
-                                  completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity Error":@"Unknown error"}]);
+                                  completion(nil, [NSError errorWithDomain:@"mParticle" code:0 userInfo:@{@"Identity rrror":@"Unknown error"}]);
                               }
                           }
                       }
