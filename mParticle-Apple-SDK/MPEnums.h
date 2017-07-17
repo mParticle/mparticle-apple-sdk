@@ -254,6 +254,7 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
 typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     /** Identity request should be retried */
     MPIdentityErrorResponseCodeUnknown = 0,
+    MPIdentityErrorIdentityRequestInProgress = 1,
     MPIdentityErrorResponseCodeTimeout = 504,
     /** Identity request should be retried */
     MPIdentityErrorResponseCodeRetry = 429,

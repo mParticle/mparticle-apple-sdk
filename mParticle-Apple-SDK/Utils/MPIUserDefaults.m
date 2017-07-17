@@ -32,7 +32,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
                                               @"ua",                /* kMPUserAttributeKey */
                                               @"ui",                /* kMPUserIdentityArrayKey */
                                               @"ck",                /* kMPRemoteConfigCookiesKey */
-                                              @"ltv"                /* kMPLifeTimeValueKey */
+                                              @"ltv",               /* kMPLifeTimeValueKey */
+                                              @"is_ephemeral"       /* kMPIsEphemeralKey */
                                               ];
     return userSpecificKeys;
 }

@@ -529,11 +529,9 @@ static BOOL appBackgrounded = NO;
                         [self logUserIdentityChange:userIdentityChange];
                     }
                     
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                        userDefaults[kMPUserIdentityArrayKey] = userIdentities;
-                        [userDefaults synchronize];
-                    });
+                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                    userDefaults[kMPUserIdentityArrayKey] = userIdentities;
+                    [userDefaults synchronize];
                 }
                 
                 dispatch_async(dispatch_get_main_queue(), ^{

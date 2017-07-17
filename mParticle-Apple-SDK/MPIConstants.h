@@ -183,6 +183,7 @@ extern NSString * _Nonnull const kMPAppSearchAdsAttributionKey;
 extern NSString * _Nonnull const kMPSynchedUserAttributesKey;
 extern NSString * _Nonnull const kMPSynchedUserIdentitiesKey;
 extern NSString * _Nonnull const kMPSessionUserIdsKey;
+extern NSString * _Nonnull const kMPIsEphemeralKey;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;

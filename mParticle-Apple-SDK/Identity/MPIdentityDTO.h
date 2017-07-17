@@ -103,5 +103,6 @@
 
 @property (nonatomic) NSString *context;
 @property (nonatomic) NSNumber *mpid;
+@property (nonatomic) BOOL isEphemeral;
 
 @end

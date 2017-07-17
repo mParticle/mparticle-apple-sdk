@@ -322,6 +322,8 @@
         if (mpidString) {
             _mpid = [NSNumber numberWithLongLong:(long long)[mpidString longLongValue]];
         }
+        _isEphemeral = [[dictionary valueForKey:@"is_ephemeral"] boolValue];
+        
     }
     return self;
 }

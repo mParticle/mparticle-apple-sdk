@@ -19,7 +19,9 @@
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    [_userIdentities setObject:identityString forKey:@(identityType)];
+    if (identityString && [identityString length] > 0) {
+        [_userIdentities setObject:identityString forKey:@(identityType)];
+    }
 }
 
 + (MPIdentityApiRequest *)requestWithEmptyUser {
@@ -28,7 +30,11 @@
 
 + (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user {
     MPIdentityApiRequest *request = [[self alloc] init];
-    request.userIdentities = [user.userIdentities mutableCopy];
+    [user.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+        MPUserIdentity identityType = [key boolValue];
+        [request setUserIdentity:obj identityType:identityType];
+    }];
+
     return request;
 }
 

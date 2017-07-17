@@ -18,13 +18,13 @@ NS_ASSUME_NONNULL_BEGIN
  @returns A dictionary containing the collection of user identities
  @see MPUserIdentity
  */
-@property (nonatomic, strong, nullable) NSDictionary<NSNumber *, NSString *> *userIdentities;
+@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *userIdentities;
 
 /**
  Gets/sets all user attributes.
  @returns A dictionary containing the collection of user attributes.
  */
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
+@property (readonly, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
 
 /**
  Increments the value of a user attribute by the provided amount. If the key does not

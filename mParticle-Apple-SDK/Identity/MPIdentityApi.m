@@ -13,6 +13,7 @@
 #import "MPSession.h"
 #import "MPPersistenceController.h"
 #import "MPIdentityDTO.h"
+#import "MPEnums.h"
 
 @interface MPIdentityApi ()
 
@@ -35,6 +36,12 @@
 
 @end
 
+@interface MParticleUser ()
+
+- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType;
+
+@end
+
 @implementation MPIdentityApi
 
 @synthesize currentUser = _currentUser;
@@ -48,55 +55,43 @@
     return self;
 }
 
-- (MParticleUser *)userFromIdentifier:(NSNumber *)identifier {
-    MParticleUser *user = [[MParticleUser alloc] init];
-
-    NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [[MParticle sharedInstance].backendController userIdentitiesForUserId:identifier];
-    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSString *identity = obj[@"i"];
-        NSNumber *type = obj[@"n"];
-        
-        [userIdentities setObject:identity forKey:type];
-    }];
-    NSDictionary<NSString *, id> *userAttributes = [[MParticle sharedInstance].backendController userAttributesForUserId:identifier];
-    
-    user.userId = identifier;
-    user.userIdentities = userIdentities;
-    user.userAttributes = userAttributes;
-    return user;
-}
-
 - (void)onIdentityRequestSuccess:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion {
-    
     NSNumber *previousMPID = [MPUtils mpId];
-    
+    [MPUtils setMpid:httpResponse.mpid];
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
-    MParticleUser *user = [self userFromIdentifier:httpResponse.mpid];
+    MParticleUser *user = [[MParticleUser alloc] init];
+    user.userId = httpResponse.mpid;
     apiResult.user = user;
     self.currentUser = user;
+    MPSession *session = [MParticle sharedInstance].backendController.session;
+    session.userId = httpResponse.mpid;
+    NSString *userIdsString = session.sessionUserIds;
+    NSMutableArray *userIds = [[userIdsString componentsSeparatedByString:@","] mutableCopy];
+    
+    if (httpResponse.mpid.longLongValue != 0 &&
+        ([userIds lastObject] && ![[userIds lastObject] isEqualToString:httpResponse.mpid.stringValue])) {
+        [userIds addObject:httpResponse.mpid];
+    }
+    
+    session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
+    [[MPPersistenceController sharedInstance] updateSession:session];
+    
+    if (request.userIdentities) {
+        [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
+            MPUserIdentity identityType = (MPUserIdentity)key.intValue;
+            [self.currentUser setUserIdentity:identityValue identityType:identityType];
+        }];
+    }
     
     if (httpResponse.mpid.intValue == previousMPID.intValue) {
         completion(apiResult, nil);
         return;
     }
     
-    [MPUtils setMpid:httpResponse.mpid];
-    
-    MPSession *session = [MParticle sharedInstance].backendController.session;
-    session.userId = httpResponse.mpid;
-    NSString *userIdsString = session.sessionUserIds;
-    NSMutableArray *userIds = [[userIdsString componentsSeparatedByString:@","] mutableCopy];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:@(httpResponse.isEphemeral) forKey:kMPIsEphemeralKey userId:httpResponse.mpid];
+    [userDefaults synchronize];
 
-    if (httpResponse.mpid.longLongValue != 0 &&
-        ([userIds lastObject] && ![[userIds lastObject] isEqualToString:httpResponse.mpid.stringValue])) {
-        [userIds addObject:httpResponse.mpid];
-    }
- 
-    session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
-    
-    [[MPPersistenceController sharedInstance] updateSession:session];
-    
     [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:httpResponse.mpid];
     
     if (user) {
@@ -113,7 +108,9 @@
     }
 
     NSNumber *mpid = [MPUtils mpId];
-    _currentUser = [self userFromIdentifier:mpid];
+    MParticleUser *user = [[MParticleUser alloc] init];
+    user.userId = mpid;
+    _currentUser = user;
     return _currentUser;
 }
 

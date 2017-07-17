@@ -858,7 +858,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
     if (identifying) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:0 userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorIdentityRequestInProgress userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
         }
         return;
     }

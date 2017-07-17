@@ -35,6 +35,23 @@
     return self;
 }
 
+-(NSDictionary*) userIdentities
+{
+    NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [[MParticle sharedInstance].backendController userIdentitiesForUserId:self.userId];
+    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
+    [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *identity = obj[@"i"];
+        NSNumber *type = obj[@"n"];
+        [userIdentities setObject:identity forKey:type];
+    }];
+    return userIdentities;
+}
+
+-(NSDictionary*) userAttributes
+{
+    return [[MParticle sharedInstance].backendController userAttributesForUserId:self.userId];
+}
+
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
     __weak MParticleUser *weakSelf = self;
     

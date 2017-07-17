@@ -145,6 +145,7 @@ NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
 NSString *const kMPSessionUserIdsKey = @"smpids";
+NSString *const kMPIsEphemeralKey = @"is_ephemeral";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
