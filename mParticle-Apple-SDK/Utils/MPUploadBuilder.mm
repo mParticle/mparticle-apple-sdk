@@ -139,9 +139,16 @@ using namespace std;
     MPDevice *device = [[MPDevice alloc] init];
     uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentation];
     
-    NSDictionary *cookies = [stateMachine.consumerInfo cookiesDictionaryRepresentation];
+    MPConsumerInfo *consumerInfo = stateMachine.consumerInfo;
+    
+    NSDictionary *cookies = [consumerInfo cookiesDictionaryRepresentation];
     if (cookies) {
         uploadDictionary[kMPRemoteConfigCookiesKey] = cookies;
+    }
+    
+    NSString *deviceApplicationStamp = consumerInfo.deviceApplicationStamp;
+    if (deviceApplicationStamp) {
+        uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
     }
     
     NSDictionary *productBags = [stateMachine.bags dictionaryRepresentation];

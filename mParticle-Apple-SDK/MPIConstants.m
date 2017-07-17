@@ -146,6 +146,9 @@ NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
 NSString *const kMPSessionUserIdsKey = @"smpids";
 NSString *const kMPIsEphemeralKey = @"is_ephemeral";
+NSString *const kMPDeviceApplicationStampKey = @"das";
+NSString *const kMPDeviceApplicationStampStorageKey = @"dast";
+
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";

@@ -372,6 +372,35 @@ NSString *const kMPCKExpiration = @"e";
     _uniqueIdentifier = [uniqueIdentifier percentEscape];
 }
 
+- (NSString *)deviceApplicationStamp {
+    __block NSString *value = nil;
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    value = userDefaults[kMPDeviceApplicationStampStorageKey];
+    
+    if (!value) {
+        [self.cookies enumerateObjectsUsingBlock:^(MPCookie * _Nonnull cookie, NSUInteger idx, BOOL * _Nonnull stop) {
+            if ([cookie.name isEqualToString:@"uid"]) {
+                NSString *content = cookie.content;
+                NSString *dummyURL = [NSString stringWithFormat:@"https://example.com/?%@", content];
+                NSArray *queryItems = [[NSURLComponents alloc] initWithString:dummyURL].queryItems;
+                [queryItems enumerateObjectsUsingBlock:^(NSURLQueryItem * _Nonnull item, NSUInteger idx, BOOL * _Nonnull stop) {
+                    if ([item.name isEqualToString:@"g"]) {
+                        value = item.value;
+                    }
+                }];
+            }
+        }];
+        if (!value) {
+            value = [NSUUID UUID].UUIDString;
+        }
+        userDefaults[kMPDeviceApplicationStampStorageKey] = value;
+        [userDefaults synchronize];
+    }
+    
+    return value;
+}
+
 #pragma mark Public methods
 - (NSDictionary *)cookiesDictionaryRepresentation {
     if (self.cookies.count == 0) {

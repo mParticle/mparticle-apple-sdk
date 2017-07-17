@@ -46,6 +46,7 @@ extern NSString * _Nonnull const kMPCKExpiration;
 @property (nonatomic, strong, nullable) NSArray<MPCookie *> *cookies;
 @property (atomic, strong, nonnull) NSNumber *mpId;
 @property (nonatomic, strong, nullable) NSString *uniqueIdentifier;
+@property (nonatomic, strong, nullable, readonly) NSString *deviceApplicationStamp;
 
 - (nullable NSDictionary *)cookiesDictionaryRepresentation;
 - (void)updateWithConfiguration:(nonnull NSDictionary *)configuration;

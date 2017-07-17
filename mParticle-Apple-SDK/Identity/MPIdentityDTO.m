@@ -7,6 +7,8 @@
 #import "MPDevice.h"
 #import "MPNotificationController.h"
 #import "MPUtils.h"
+#import "MPStateMachine.h"
+#import "MPConsumerInfo.h"
 
 @implementation MPIdentityHTTPBaseRequest
 
@@ -31,6 +33,11 @@
     NSNumber *requestTimestamp = @(floor([[NSDate date] timeIntervalSince1970]));
     if (requestTimestamp) {
         dictionary[@"request_timestamp_ms"] = @([requestTimestamp longLongValue] * 1000);
+    }
+    
+    NSString *deviceApplicationStamp = [MPStateMachine sharedInstance].consumerInfo.deviceApplicationStamp;
+    if (deviceApplicationStamp) {
+        dictionary[@"device_application_stamp"] = deviceApplicationStamp;
     }
     
     return dictionary;
