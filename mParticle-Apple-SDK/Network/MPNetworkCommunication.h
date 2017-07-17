@@ -25,6 +25,8 @@
 @class MPSegment;
 @class MPIdentityApiRequest;
 @class MPIdentityHTTPSuccessResponse;
+@class MPIdentityHTTPBaseSuccessResponse;
+@class MPIdentityHTTPModifySuccessResponse;
 
 extern NSString * _Nonnull const kMPURLScheme;
 extern NSString * _Nonnull const kMPURLHost;
@@ -44,7 +46,9 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
 typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nullable upload, NSDictionary * _Nullable responseDictionary, BOOL finished);
 typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload * _Nullable standaloneUpload, NSDictionary * _Nullable responseDictionary, BOOL finished);
-typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
+
+typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
+typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 
 @interface MPNetworkCommunication : NSObject
 
@@ -60,6 +64,6 @@ typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPSuccessResponse *_Nul
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion;
-- (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion;
 
 @end

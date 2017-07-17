@@ -93,9 +93,7 @@
 @implementation MPIdentityHTTPClientSDK
 
 + (NSDictionary *)clientSDKDictionaryWithVersion:(NSString *)sdkVersion {
-    if (!sdkVersion) {
-        return nil;
-    }
+    NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     
 #if TARGET_OS_IOS == 1
     NSString *platform = @"ios";
@@ -103,11 +101,47 @@
     NSString *platform = @"tvos";
 #endif
     
-    NSDictionary *dictionary = @{ @"platform": platform, @"sdk_vendor": @"mparticle", @"sdk_version": sdkVersion };
+    dictionary[@"platform"] = platform;
+    dictionary[@"sdk_vendor"] = @"mparticle";
+    
+    if (sdkVersion) {
+        dictionary[@"sdk_version"] = sdkVersion;
+    }
+    
     return dictionary;
 }
 
 @end
+
+@implementation MPIdentityHTTPModifyRequest
+
+- (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges {
+    self = [super init];
+    if (self) {
+        _identityChanges = identityChanges;
+        _mpid = mpid;
+    }
+    return self;
+}
+
+- (NSDictionary *)dictionaryRepresentation {
+    NSMutableDictionary *dictionary = [[super dictionaryRepresentation] mutableCopy];
+    
+    NSMutableArray *identityChanges = [NSMutableArray array];
+    [_identityChanges enumerateObjectsUsingBlock:^(MPIdentityHTTPIdentityChange * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSDictionary *changeDictionary = [obj dictionaryRepresentation];
+        [identityChanges addObject:changeDictionary];
+    }];
+    
+    if (identityChanges) {
+        dictionary[@"identity_changes"] = identityChanges;
+    }
+    
+    return dictionary;
+}
+
+@end
+
 
 @implementation MPIdentityHTTPIdentities
 
@@ -161,7 +195,6 @@
     }
     return self;
 }
-
 
 - (NSDictionary *)dictionaryRepresentation {
     
@@ -222,6 +255,40 @@
     return dictionary;
 }
 
++ (NSString *)stringForIdentityType:(MPUserIdentity)identityType {
+    switch (identityType) {
+        case MPUserIdentityCustomerId:
+            return @"customerid";
+            
+        case MPUserIdentityEmail:
+            return @"email";
+            
+        case MPUserIdentityFacebook:
+            return @"facebook";
+            
+        case MPUserIdentityFacebookCustomAudienceId:
+            return @"facebookcustomaudienceid";
+            
+        case MPUserIdentityGoogle:
+            return @"google";
+            
+        case MPUserIdentityMicrosoft:
+            return @"microsoft";
+            
+        case MPUserIdentityOther:
+            return @"other";
+            
+        case MPUserIdentityTwitter:
+            return @"twitter";
+            
+        case MPUserIdentityYahoo:
+            return @"yahoo";
+            
+        default:
+            return nil;
+    }
+}
+
 @end
 
 @implementation MPIdentityHTTPIdentityChange
@@ -238,41 +305,25 @@
 
 - (NSMutableDictionary *)dictionaryRepresentation {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    dictionary[@"old_value"] = _oldValue;
-    dictionary[@"new_value"] = _value;
-    dictionary[@"identity_type"] = _identityType;
+    if (_oldValue) {
+        dictionary[@"old_value"] = _oldValue;
+    } else {
+        dictionary[@"old_value"] = [NSNull null];
+    }
+    
+    if (_value) {
+        dictionary[@"new_value"] = _value;
+    }
+    else {
+        dictionary[@"new_value"] = [NSNull null];
+    }
+    if (_identityType) {
+        dictionary[@"identity_type"] = _identityType;
+    }
     return dictionary;
 }
 
-@end
-@implementation MPIdentityHTTPModifyRequest
 
-- (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges {
-    if (!mpid || !identityChanges.count) {
-        return nil;
-    }
-    
-    self = [super init];
-    if (self) {
-        _identityChanges = identityChanges;
-        _mpid = mpid;
-    }
-    return self;
-}
-
-- (NSDictionary *)dictionaryRepresentation {
-    NSMutableDictionary *dictionary = [[super dictionaryRepresentation] mutableCopy];
-    
-    NSMutableArray *identityChanges = [NSMutableArray array];
-    [_identityChanges enumerateObjectsUsingBlock:^(MPIdentityHTTPIdentityChange * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSDictionary *changeDictionary = [obj dictionaryRepresentation];
-        [identityChanges addObject:changeDictionary];
-    }];
-    
-    dictionary[@"identity_changes"] = identityChanges;
-    
-    return dictionary;
-}
 
 @end
 
@@ -283,29 +334,9 @@
     if (self) {
         _httpCode = httpCode;
         if (dictionary) {
-            _items = [NSMutableArray array];
-            NSDictionary *errors = dictionary[@"errors"];
-            NSArray *items = errors[@"items"];
-            [items enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                MPIdentityHTTPErrorItem *item = [[MPIdentityHTTPErrorItem alloc] initWithJsonDictionary:obj];
-                if (item) {
-                    [_items addObject:item];
-                }
-            }];
+            _code = dictionary[@"code"];
+            _message = dictionary[@"message"];
         }
-    }
-    return self;
-}
-
-@end
-
-@implementation MPIdentityHTTPErrorItem
-
-- (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary {
-    self = [super init];
-    if (self) {
-        _code = dictionary[@"code"];
-        _message = dictionary[@"message"];
     }
     return self;
 }
@@ -325,6 +356,19 @@
         _isEphemeral = [[dictionary valueForKey:@"is_ephemeral"] boolValue];
         
     }
+    return self;
+}
+
+@end
+
+@implementation MPIdentityHTTPBaseSuccessResponse
+
+@end
+
+@implementation MPIdentityHTTPModifySuccessResponse
+
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
+    self = [super init];
     return self;
 }
 

@@ -288,6 +288,10 @@ extern NSString * _Nonnull const kMParticleWebViewPathRemoveUserTag;
 extern NSString * _Nonnull const kMParticleWebViewPathSetUserAttribute;
 extern NSString * _Nonnull const kMParticleWebViewPathRemoveUserAttribute;
 extern NSString * _Nonnull const kMParticleWebViewPathSetSessionAttribute;
+extern NSString * _Nonnull const kMParticleWebViewPathIdentify;
+extern NSString * _Nonnull const kMParticleWebViewPathLogout;
+extern NSString * _Nonnull const kMParticleWebViewPathLogin;
+extern NSString * _Nonnull const kMParticleWebViewPathModify;
 
 //
 // Primitive data type constants

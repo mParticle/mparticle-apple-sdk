@@ -1448,9 +1448,16 @@ NSString *const kMPStateKey = @"state";
                 default:
                     break;
             }
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserIdentity]) {
+        } else if ([hostPath hasPrefix:kMParticleWebViewPathIdentify]) {
             //TODO: Update with new JS APIs
-//            [self.identity.currentUser setUserIdentity:eventDictionary[@"Identity"] identityType:(MPUserIdentity)[eventDictionary[@"Type"] integerValue]];
+            //            [self.identity.currentUser setUserIdentity:eventDictionary[@"Identity"] identityType:(MPUserIdentity)[eventDictionary[@"Type"] integerValue]];
+            
+        } else if ([hostPath hasPrefix:kMParticleWebViewPathLogin]) {
+            
+        } else if ([hostPath hasPrefix:kMParticleWebViewPathLogout]) {
+            
+        } else if ([hostPath hasPrefix:kMParticleWebViewPathModify]) {
+            
         } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserTag]) {
             [self.identity.currentUser setUserTag:eventDictionary[@"key"]];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathRemoveUserTag]) {

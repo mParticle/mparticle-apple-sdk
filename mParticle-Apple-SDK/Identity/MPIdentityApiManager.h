@@ -8,8 +8,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPSuccessResponse *_Nonnull httpResponse, NSError *_Nullable error);
-typedef void (^MPIdentityApiManagerModifyCallback)(NSError *_Nullable error);
+typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
+typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 
 @interface MPIdentityApiManager : NSObject
 

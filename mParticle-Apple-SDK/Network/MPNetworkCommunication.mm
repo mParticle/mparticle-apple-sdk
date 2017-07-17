@@ -62,6 +62,12 @@ NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
+@interface MPIdentityApiRequest ()
+
+- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
+
+@end
+
 @interface MPNetworkCommunication() {
     BOOL retrievingConfig;
     BOOL retrievingSegments;
@@ -854,8 +860,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     });
 }
 
-- (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityApiRequest *_Nonnull)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-
+- (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+    
     if (identifying) {
         if (completion) {
             completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorIdentityRequestInProgress userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
@@ -885,9 +891,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:identityRequest];
-    NSDictionary *dictionary = [request dictionaryRepresentation];
-
+    NSDictionary *dictionary = [identityRequest dictionaryRepresentation];
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     NSString *jsonRequest = [[NSString alloc] initWithData:data
                                                      encoding:NSUTF8StringEncoding];
@@ -895,7 +899,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
     [connector asyncPostDataFromURL:url
-                            message:(NSString *)[NSNull null]
+                            message:nil
                    serializedParams:data
                   completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
                       __strong MPNetworkCommunication *strongSelf = weakSelf;
@@ -945,15 +949,22 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           if (responseString) {
                               MPILogVerbose(@"Identity response:\n%@", responseString);
                           }
-                          MPIdentityHTTPSuccessResponse *response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:responseDictionary];
-                          _context = response.context;
-                          if (completion) {
-                              completion(response, nil);
+                          BOOL isModify = [identityRequest isMemberOfClass:[MPIdentityHTTPModifyRequest class]];
+                          if (isModify) {
+                              if (completion) {
+                                  completion([[MPIdentityHTTPModifySuccessResponse alloc] init], nil);
+                              }
+                          } else {
+                              MPIdentityHTTPSuccessResponse *response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:responseDictionary];
+                              _context = response.context;
+                              if (completion) {
+                                  completion(response, nil);
+                              }
                           }
                       } else {
                           if (completion) {
-                                MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
-                                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:responseCode userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
+                            MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
+                            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:responseCode userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
                           }
                       }
                       
@@ -982,19 +993,57 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    [self identityApiRequestWithURL:self.identifyURL identityRequest:identifyRequest completion:completion];
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:identifyRequest];
+    [self identityApiRequestWithURL:self.identifyURL identityRequest:request completion:completion];
 }
 
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    [self identityApiRequestWithURL:self.loginURL identityRequest:loginRequest completion:completion];
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:loginRequest];
+    [self identityApiRequestWithURL:self.loginURL identityRequest:request completion:completion];
 }
 
-- (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    [self identityApiRequestWithURL:self.logoutURL identityRequest:logoutRequest completion:completion];
-  }
+- (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable
+                                                                          MPIdentityApiManagerCallback)completion {
+    MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:logoutRequest];
+    [self identityApiRequestWithURL:self.logoutURL identityRequest:request completion:completion];
+}
 
-- (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    //TODO: implement modify
+- (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
+    
+    NSString *mpid = [MPUtils mpId].stringValue;
+    NSMutableArray *identityChanges = [NSMutableArray array];
+    
+    NSDictionary *identitiesDictionary = modifyRequest.userIdentities;
+    NSDictionary *existingIdentities = [MParticle sharedInstance].identity.currentUser.userIdentities;
+    
+    [identitiesDictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString * _Nonnull value, BOOL * _Nonnull stop) {
+        NSString *oldValue = existingIdentities[identityType];
+
+        if (!oldValue || ![value isEqualToString:oldValue]) {
+            MPUserIdentity userIdentity = (MPUserIdentity)[identityType intValue];
+            NSString *stringType = [MPIdentityHTTPIdentities stringForIdentityType:userIdentity];
+            MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:oldValue value:value identityType:stringType];
+            [identityChanges addObject:identityChange];
+        }
+    }];
+    
+    [existingIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, id  _Nonnull value, BOOL * _Nonnull stop) {
+        NSString *newValue = identitiesDictionary[identityType];
+        
+        if (!newValue) {
+            MPUserIdentity userIdentity = (MPUserIdentity)[identityType intValue];
+            NSString *stringType = [MPIdentityHTTPIdentities stringForIdentityType:userIdentity];
+            MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:value value:nil identityType:stringType];
+            [identityChanges addObject:identityChange];
+        }
+    }];
+    
+    MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
+    
+
+    [self identityApiRequestWithURL:self.modifyURL identityRequest:request completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+        completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
+    }];
 }
 
 @end

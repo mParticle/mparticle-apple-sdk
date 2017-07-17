@@ -28,8 +28,6 @@
 
 static NSDateFormatter *RFC1123DateFormatter;
 
-//static NSTimeInterval requestTimeout = 120.0;
-//TODO:(external) Restore normal 30s timeout
 static NSTimeInterval requestTimeout = 30.0;
 
 @interface MPURLRequestBuilder() {

@@ -55,6 +55,20 @@
     return self;
 }
 
+- (void)onModifyRequestSuccess:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion {
+    if (request.userIdentities) {
+        [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
+            MPUserIdentity identityType = (MPUserIdentity)key.intValue;
+            [self.currentUser setUserIdentity:identityValue identityType:identityType];
+        }];
+    }
+    if (completion) {
+        MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
+        apiResult.user = self.currentUser;
+        completion(apiResult, nil);
+    }
+}
+
 - (void)onIdentityRequestSuccess:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion {
     NSNumber *previousMPID = [MPUtils mpId];
     [MPUtils setMpid:httpResponse.mpid];
@@ -115,8 +129,8 @@
 }
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager identify:identifyRequest completion:^(MPIdentityHTTPSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestSuccess:identifyRequest httpResponse:httpResponse completion:completion];
+    [_apiManager identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onIdentityRequestSuccess:identifyRequest httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion];
     }];
 }
 
@@ -128,8 +142,8 @@
 }
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestSuccess:loginRequest httpResponse:httpResponse completion:completion];
+    [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onIdentityRequestSuccess:loginRequest httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion];
     }];
 }
 
@@ -141,8 +155,8 @@
 }
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestSuccess:logoutRequest httpResponse:httpResponse completion:completion];
+    [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onIdentityRequestSuccess:logoutRequest httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion];
     }];
 }
 
@@ -154,10 +168,8 @@
 }
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager modify:modifyRequest completion:^(NSError * _Nullable error) {
-        if (completion) {
-            completion(nil, error);
-        }
+    [_apiManager modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self onModifyRequestSuccess:modifyRequest httpResponse:httpResponse completion:completion];
     }];
 }
 

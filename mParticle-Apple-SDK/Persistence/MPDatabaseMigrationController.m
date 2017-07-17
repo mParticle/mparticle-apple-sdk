@@ -594,7 +594,7 @@
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
-    int64_t userId;
+    int64_t userId = 0;
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         userId = sqlite3_column_int64(selectStatementHandle, 1);
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id

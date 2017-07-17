@@ -24,6 +24,8 @@
 - (NSDictionary *)dictionaryRepresentation;
 - (instancetype)initWithIdentities:(NSDictionary *)identities;
 
++ (NSString *)stringForIdentityType:(MPUserIdentity)identityType;
+
 @end
 
 @interface MPIdentityHTTPClientSDK : NSObject
@@ -45,7 +47,6 @@
 @property (nonatomic) MPIdentityHTTPIdentities *knownIdentities;
 
 - (id)initWithIdentityApiRequest:(MPIdentityApiRequest *)request;
-- (NSDictionary *)dictionaryRepresentation;
 
 @end
 
@@ -53,6 +54,8 @@
 
 @property (nonatomic) NSArray *identityChanges;
 @property (nonatomic) NSString *mpid;
+
+- (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges;
 
 @end
 
@@ -79,25 +82,25 @@
 
 @end
 
-@interface MPIdentityHTTPErrorItem : NSObject
-
-- (instancetype)initWithJsonDictionary:(NSDictionary *)dictionary;
-
-@property (nonatomic) NSString *code;
-@property (nonatomic) NSString *message;
-
-@end
-
 @interface MPIdentityHTTPErrorResponse : NSObject
 
 - (instancetype)initWithJsonObject:( NSDictionary *)dictionary httpCode:(NSInteger) httpCode;
 
 @property (nonatomic) NSInteger httpCode;
-@property (nonatomic) NSMutableArray<MPIdentityHTTPErrorItem *> *items;
+@property (nonatomic) NSString *code;
+@property (nonatomic) NSString *message;
 
 @end
 
-@interface MPIdentityHTTPSuccessResponse : NSObject
+@interface MPIdentityHTTPBaseSuccessResponse : NSObject
+
+@end
+
+@interface MPIdentityHTTPModifySuccessResponse : MPIdentityHTTPBaseSuccessResponse
+
+@end
+
+@interface MPIdentityHTTPSuccessResponse : MPIdentityHTTPBaseSuccessResponse
 
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary;
 

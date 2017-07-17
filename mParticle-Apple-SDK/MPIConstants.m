@@ -251,6 +251,10 @@ NSString *const kMParticleWebViewPathRemoveUserTag = @"removeUserTag";
 NSString *const kMParticleWebViewPathSetUserAttribute = @"setUserAttribute";
 NSString *const kMParticleWebViewPathRemoveUserAttribute = @"removeUserAttribute";
 NSString *const kMParticleWebViewPathSetSessionAttribute = @"setSessionAttribute";
+NSString *const kMParticleWebViewPathIdentify = @"identify";
+NSString *const kMParticleWebViewPathLogout = @"logout";
+NSString *const kMParticleWebViewPathLogin = @"login";
+NSString *const kMParticleWebViewPathModify = @"modify";
 
 //
 // Primitive data type constants

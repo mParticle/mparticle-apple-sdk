@@ -1938,7 +1938,6 @@ const int MaxBreadcrumbs = 50;
         if ([key rangeOfString:@"mParticle::0"].location == 0) {
             NSString *newKey = [key stringByReplacingOccurrencesOfString:@"mParticle::0" withString:[NSString stringWithFormat:@"mParticle::%@", mpid]];
             if (!dictionary[newKey]) {
-                //TODO: test and make sure this doesn't cause problems with non-object values
                 [userDefaults setObject:obj forKey:newKey];
             }
             

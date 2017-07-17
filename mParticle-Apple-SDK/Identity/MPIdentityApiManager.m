@@ -25,26 +25,31 @@
 @implementation MPIdentityApiManager
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    [[MParticle sharedInstance].backendController.networkCommunication identify:identifyRequest completion:^(MPIdentityHTTPSuccessResponse *
+    [[MParticle sharedInstance].backendController.networkCommunication identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse *
        _Nonnull httpResponse, NSError * _Nullable error) {
                    completion(httpResponse, error);
      }];
 }
 
 - (void)loginRequest:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    [[MParticle sharedInstance].backendController.networkCommunication login:loginRequest completion:^(MPIdentityHTTPSuccessResponse *
+    [[MParticle sharedInstance].backendController.networkCommunication login:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse *
                                                                                                              _Nonnull httpResponse, NSError * _Nullable error) {
         completion(httpResponse, error);
-    }];}
+    }];
+}
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    [[MParticle sharedInstance].backendController.networkCommunication logout:logoutRequest completion:^(MPIdentityHTTPSuccessResponse *
+    [[MParticle sharedInstance].backendController.networkCommunication logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse *
                                                                                                              _Nonnull httpResponse, NSError * _Nullable error) {
         completion(httpResponse, error);
-    }];}
+    }];
+}
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
-    //TODO: implement modify
+    [[MParticle sharedInstance].backendController.networkCommunication modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse *
+                                                                                                         _Nonnull httpResponse, NSError * _Nullable error) {
+        completion(httpResponse, error);
+    }];
 }
 
 @end
