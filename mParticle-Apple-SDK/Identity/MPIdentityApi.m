@@ -26,20 +26,18 @@
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
-- (nullable NSDictionary <NSString *, id> *)userAttributes;
-
 @end
 
 @interface MPBackendController ()
 
-- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentities;
+- (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
 
 @end
 
 @interface MParticleUser ()
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType;
-
+- (void)setUserId:(NSNumber *)userId;
 @end
 
 @implementation MPIdentityApi
@@ -100,6 +98,17 @@
     if (httpResponse.mpid.intValue == previousMPID.intValue) {
         completion(apiResult, nil);
         return;
+    }
+    
+    if (request.copyUserAttributes) {
+        NSMutableDictionary *previousUserAttributes = [[MParticle sharedInstance].backendController userAttributesForUserId:previousMPID];
+        if (previousUserAttributes) {
+            for (NSString *key in [previousUserAttributes allKeys]) {
+                if (key) {
+                    [user setUserAttribute:key value:previousUserAttributes[key]];
+                }
+            }
+        }
     }
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

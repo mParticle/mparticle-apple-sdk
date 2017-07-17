@@ -270,23 +270,19 @@ static BOOL appBackgrounded = NO;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSMutableDictionary *userAttributes = [[userDefaults mpObjectForKey:kMPUserAttributeKey userId:userId] mutableCopy];
     if (userAttributes) {
-        NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
-        NSString *key;
-        id value;
         Class NSStringClass = [NSString class];
-        
-        while ((key = [attributeEnumerator nextObject])) {
-            value = userAttributes[key];
-            
-            if ([value isKindOfClass:NSStringClass]) {
-                userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? value : [NSNull null];
+        for (NSString *key in [userAttributes allKeys]) {
+            if ([userAttributes[key] isKindOfClass:NSStringClass]) {
+                userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? userAttributes[key] : [NSNull null];
             } else {
-                userAttributes[key] = value;
+                userAttributes[key] = userAttributes[key];
             }
+
         }
+        return userAttributes;
+    } else {
+        return [NSMutableDictionary dictionary];
     }
-    
-    return userAttributes;
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
@@ -900,12 +896,10 @@ static BOOL appBackgrounded = NO;
                     [self logUserAttributeChange:userAttributeChange];
                 }
 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                    userDefaults[kMPUserAttributeKey] = userAttributesCopy;
-                    [userDefaults synchronize];
-                });
-                
+                MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                userDefaults[kMPUserAttributeKey] = userAttributesCopy;
+                [userDefaults synchronize];
+
                 if (completionHandler) {
                     dispatch_async(dispatch_get_main_queue(), ^{
                         completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);

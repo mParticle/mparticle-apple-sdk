@@ -52,6 +52,10 @@
     return [[MParticle sharedInstance].backendController userAttributesForUserId:self.userId];
 }
 
+- (void)setUserId:(NSNumber *)userId {
+    _userId = userId;
+}
+
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
     __weak MParticleUser *weakSelf = self;
     
