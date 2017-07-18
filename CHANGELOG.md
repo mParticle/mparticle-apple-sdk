@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.0
+
+* [NEW] New identity APIs
+
 ## 6.14.4
 
 * [FIX] Ensure all server-side configuration settings are reloaded on every app-launch
