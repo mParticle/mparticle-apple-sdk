@@ -430,7 +430,7 @@ NSString *const kMPCKExpiration = @"e";
     }
     
     [self configureCookiesWithDictionary:configuration[kMPRemoteConfigCookiesKey]];
-    self.mpId = !MPIsNull(configuration[kMPRemoteConfigMPIDKey]) ? configuration[kMPRemoteConfigMPIDKey] : nil;
+    self.mpId = [MPUtils mpId];
     self.uniqueIdentifier = !MPIsNull(configuration[kMPRemoteConfigUniqueIdentifierKey]) ? configuration[kMPRemoteConfigUniqueIdentifierKey] : nil; // Unique Identifier ("das")
 }
 
