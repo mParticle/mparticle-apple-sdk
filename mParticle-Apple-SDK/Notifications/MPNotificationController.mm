@@ -21,12 +21,20 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #include "MPHasher.h"
+#import "MParticle.h"
+#import "MPBackendController.h"
 
 @interface MPNotificationController() {
     BOOL appJustFinishedLaunching;
     BOOL backgrounded;
     BOOL notificationLaunchedApp;
 }
+
+@end
+
+@interface MParticle ()
+
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end
 
@@ -465,10 +473,6 @@ static int64_t launchNotificationHash = 0;
 
 #pragma mark Public static methods
 + (NSData *)deviceToken {
-    if (deviceToken) {
-        return deviceToken;
-    }
-    
 #ifndef MP_UNIT_TESTING
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     deviceToken = userDefaults[kMPDeviceTokenKey];
@@ -538,6 +542,10 @@ static int64_t launchNotificationHash = 0;
         [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationDeviceTokenNotification
                                                             object:nil
                                                           userInfo:deviceTokenDictionary];
+        
+        NSString *newTokenString = [[NSString alloc] initWithData:newDeviceToken encoding:NSUTF8StringEncoding];
+        NSString *oldTokenString = [[NSString alloc] initWithData:oldDeviceToken encoding:NSUTF8StringEncoding];
+         [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"push_token" value:newTokenString oldValue:oldTokenString];
         
 #ifndef MP_UNIT_TESTING
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

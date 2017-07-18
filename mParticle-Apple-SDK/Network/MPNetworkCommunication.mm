@@ -1010,7 +1010,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
     
-    NSString *mpid = [MPUtils mpId].stringValue;
     NSMutableArray *identityChanges = [NSMutableArray array];
     
     NSDictionary *identitiesDictionary = modifyRequest.userIdentities;
@@ -1018,6 +1017,10 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     [identitiesDictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString * _Nonnull value, BOOL * _Nonnull stop) {
         NSString *oldValue = existingIdentities[identityType];
+        
+        if ((NSNull *)value == [NSNull null]) {
+            value = nil;
+        }
 
         if (!oldValue || ![value isEqualToString:oldValue]) {
             MPUserIdentity userIdentity = (MPUserIdentity)[identityType intValue];
@@ -1027,22 +1030,33 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
     }];
     
-    [existingIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, id  _Nonnull value, BOOL * _Nonnull stop) {
-        NSString *newValue = identitiesDictionary[identityType];
-        
-        if (!newValue) {
-            MPUserIdentity userIdentity = (MPUserIdentity)[identityType intValue];
-            NSString *stringType = [MPIdentityHTTPIdentities stringForIdentityType:userIdentity];
-            MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:value value:nil identityType:stringType];
-            [identityChanges addObject:identityChange];
+    [self modifyWithIdentityChanges:identityChanges completion:completion];
+    
+}
+
+- (void)modifyDeviceID:(NSString *_Nonnull)deviceIdType value:(NSString *_Nonnull)value oldValue:(NSString *_Nonnull)oldValue {
+    NSMutableArray *identityChanges = [NSMutableArray array];
+    MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:oldValue value:value identityType:deviceIdType];
+    [identityChanges addObject:identityChange];
+    __weak MPNetworkCommunication *weakSelf = self;
+    [self modifyWithIdentityChanges:identityChanges completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+        if (error) {
+            if (weakSelf) {
+                MPNetworkCommunication *strongSelf = self;
+                [strongSelf modifyWithIdentityChanges:identityChanges completion:nil];
+            }
         }
     }];
-    
+}
+
+- (void)modifyWithIdentityChanges:(NSArray *)identityChanges completion:(nullable MPIdentityApiManagerModifyCallback)completion {
+    NSString *mpid = [MPUtils mpId].stringValue;
     MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
     
-
     [self identityApiRequestWithURL:self.modifyURL identityRequest:request completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
-        completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
+        if (completion) {
+            completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
+        }
     }];
 }
 

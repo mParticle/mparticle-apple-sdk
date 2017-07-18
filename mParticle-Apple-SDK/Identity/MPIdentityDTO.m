@@ -330,8 +330,6 @@
     return dictionary;
 }
 
-
-
 @end
 
 @implementation MPIdentityHTTPErrorResponse

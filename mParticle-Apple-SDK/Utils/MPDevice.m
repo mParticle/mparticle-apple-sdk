@@ -28,6 +28,8 @@
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
 #import "MPIConstants.h"
+#import "MParticle.h"
+#import "MPBackendController.h"
 
 #if !defined(MP_NO_IDFA)
     #import "AdSupport/ASIdentifierManager.h"
@@ -84,6 +86,11 @@ int main(int argc, char *argv[]);
 
 @end
 
+@interface MParticle ()
+
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+
+@end
 
 @implementation MPDevice
 
@@ -121,10 +128,6 @@ int main(int argc, char *argv[]);
 
 #pragma mark Accessors
 - (NSString *)advertiserId {
-    if (_advertiserId) {
-        return _advertiserId;
-    }
-    
     Class MPIdentifierManager = NSClassFromString(@"ASIdentifierManager");
     if (MPIdentifierManager) {
 #pragma clang diagnostic push
@@ -141,6 +144,12 @@ int main(int argc, char *argv[]);
         if (advertisingTrackingEnabled || alwaysTryToCollectIDFA) {
             selector = NSSelectorFromString(@"advertisingIdentifier");
             _advertiserId = [[adIdentityManager performSelector:selector] UUIDString];
+            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+            NSString *previousIDFA = userDefaults[kMPDeviceAdvertiserIdKey];
+            userDefaults[kMPDeviceAdvertiserIdKey] = _advertiserId;
+            if (![previousIDFA isEqualToString:_advertiserId]) {
+                [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"ios_idfa" value:_advertiserId oldValue:previousIDFA];
+            }
         }
 #pragma clang diagnostic pop
 #pragma clang diagnostic pop

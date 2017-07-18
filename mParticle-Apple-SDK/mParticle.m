@@ -503,7 +503,11 @@ NSString *const kMPStateKey = @"state";
                            
                            [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
                                if (error) {
-                                   MPILogError(@"Identify request failed with error: %@", error);
+                                   [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                                       if (error) {
+                                           MPILogError(@"Identify request failed with error: %@", error);
+                                       }
+                                   }];
                                }
                            }];
                            
