@@ -99,7 +99,9 @@
     }
     
     if (httpResponse.mpid.intValue == previousMPID.intValue) {
-        completion(apiResult, nil);
+        if (completion) {
+            completion(apiResult, nil);
+        }
         return;
     }
     
@@ -125,7 +127,9 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
     }
     
-    completion(apiResult, nil);
+    if (completion) {
+        completion(apiResult, nil);
+    }
 }
 
 - (MParticleUser *)currentUser {

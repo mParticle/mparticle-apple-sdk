@@ -458,8 +458,8 @@ NSString *const kMPStateKey = @"state";
     _proxiedAppDelegate = proxyAppDelegate;
     
     MPIdentityApiRequest *identifyRequest = nil;
-    if (options.initialIdentity) {
-        identifyRequest = options.initialIdentity;
+    if (options.identifyRequest) {
+        identifyRequest = options.identifyRequest;
     }
     else {
         MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
@@ -503,11 +503,10 @@ NSString *const kMPStateKey = @"state";
                            
                            [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
                                if (error) {
-                                   [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                                       if (error) {
-                                           MPILogError(@"Identify request failed with error: %@", error);
-                                       }
-                                   }];
+                                   MPILogError(@"Identify request failed with error: %@", error);
+                               }
+                               if (options.onIdentifyComplete) {
+                                   options.onIdentifyComplete(apiResult, error);
                                }
                            }];
                            

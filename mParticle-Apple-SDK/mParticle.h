@@ -57,9 +57,10 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite) NSString *apiKey;
 @property (nonatomic, strong, readwrite) NSString *apiSecret;
 @property (nonatomic, unsafe_unretained, readwrite) MPInstallationType installType;
-@property (nonatomic, strong, readwrite) MPIdentityApiRequest *initialIdentity;
+@property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest;
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
+@property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 
 @end
 

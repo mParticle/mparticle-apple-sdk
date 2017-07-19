@@ -1037,15 +1037,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSMutableArray *identityChanges = [NSMutableArray array];
     MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:oldValue value:value identityType:deviceIdType];
     [identityChanges addObject:identityChange];
-    __weak MPNetworkCommunication *weakSelf = self;
-    [self modifyWithIdentityChanges:identityChanges completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
-        if (error) {
-            if (weakSelf) {
-                MPNetworkCommunication *strongSelf = self;
-                [strongSelf modifyWithIdentityChanges:identityChanges completion:nil];
-            }
-        }
-    }];
+    [self modifyWithIdentityChanges:identityChanges completion:nil];
 }
 
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges completion:(nullable MPIdentityApiManagerModifyCallback)completion {
