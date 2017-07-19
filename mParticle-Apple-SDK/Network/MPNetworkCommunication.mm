@@ -67,6 +67,13 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 @end
 
+
+@interface MPIdentityHTTPErrorResponse ()
+
+- (instancetype)initWithJsonObject:(nullable NSDictionary *)dictionary httpCode:(NSInteger) httpCode;
+
+@end
+
 @interface MPNetworkCommunication() {
     BOOL retrievingConfig;
     BOOL retrievingSegments;

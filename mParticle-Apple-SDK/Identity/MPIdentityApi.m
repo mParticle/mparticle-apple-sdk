@@ -181,3 +181,23 @@
 }
 
 @end
+
+@implementation MPIdentityApiResult
+
+@end
+
+@implementation MPIdentityHTTPErrorResponse
+
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary httpCode:(NSInteger) httpCode {
+    self = [super init];
+    if (self) {
+        _httpCode = httpCode;
+        if (dictionary) {
+            _code = dictionary[@"code"];
+            _message = dictionary[@"message"];
+        }
+    }
+    return self;
+}
+
+@end

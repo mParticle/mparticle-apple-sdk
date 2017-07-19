@@ -82,16 +82,6 @@
 
 @end
 
-@interface MPIdentityHTTPErrorResponse : NSObject
-
-- (instancetype)initWithJsonObject:( NSDictionary *)dictionary httpCode:(NSInteger) httpCode;
-
-@property (nonatomic) NSInteger httpCode;
-@property (nonatomic) NSString *code;
-@property (nonatomic) NSString *message;
-
-@end
-
 @interface MPIdentityHTTPBaseSuccessResponse : NSObject
 
 @end

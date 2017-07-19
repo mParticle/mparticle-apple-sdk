@@ -6,9 +6,14 @@
 #import <Foundation/Foundation.h>
 #import "MParticleUser.h"
 #import "MPIdentityApiRequest.h"
-#import "MPIdentityApiResult.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+@interface MPIdentityApiResult : NSObject
+
+@property(nonatomic, strong, readwrite, nonnull) MParticleUser *user;
+
+@end
 
 typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 
@@ -29,6 +34,14 @@ typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiRe
 - (void)logoutWithCompletion:(nullable MPIdentityApiResultCallback)completion;
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
+
+@end
+
+@interface MPIdentityHTTPErrorResponse : NSObject
+
+@property (nonatomic) NSInteger httpCode;
+@property (nonatomic, nullable) NSString *code;
+@property (nonatomic, nullable) NSString *message;
 
 @end
 
