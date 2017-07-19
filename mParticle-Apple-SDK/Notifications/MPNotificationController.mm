@@ -531,21 +531,25 @@ static int64_t launchNotificationHash = 0;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         NSMutableDictionary *deviceTokenDictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
+        NSString *newTokenString = nil;
+        NSString *oldTokenString = nil;
         if (newDeviceToken) {
             deviceTokenDictionary[kMPRemoteNotificationDeviceTokenKey] = newDeviceToken;
+            newTokenString = [[NSString alloc] initWithData:newDeviceToken encoding:NSUTF8StringEncoding];
         }
         
         if (oldDeviceToken) {
             deviceTokenDictionary[kMPRemoteNotificationOldDeviceTokenKey] = oldDeviceToken;
+            oldTokenString = [[NSString alloc] initWithData:oldDeviceToken encoding:NSUTF8StringEncoding];
         }
 
         [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationDeviceTokenNotification
                                                             object:nil
                                                           userInfo:deviceTokenDictionary];
         
-        NSString *newTokenString = [[NSString alloc] initWithData:newDeviceToken encoding:NSUTF8StringEncoding];
-        NSString *oldTokenString = [[NSString alloc] initWithData:oldDeviceToken encoding:NSUTF8StringEncoding];
+        if (oldTokenString && newTokenString) {
          [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"push_token" value:newTokenString oldValue:oldTokenString];
+        }
         
 #ifndef MP_UNIT_TESTING
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

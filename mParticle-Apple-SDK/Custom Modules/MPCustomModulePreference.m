@@ -95,6 +95,7 @@
     [coder encodeObject:self.value forKey:@"value"];
     [coder encodeObject:self.writeKey forKey:@"writeKey"];
     [coder encodeInteger:self.dataType forKey:@"dataType"];
+    [coder encodeInt64:self.moduleId.longLongValue forKey:@"moduleId"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -106,6 +107,7 @@
         _value = [coder decodeObjectForKey:@"value"];
         _writeKey = [coder decodeObjectForKey:@"writeKey"];
         _dataType = [coder decodeIntegerForKey:@"dataType"];
+        _moduleId = @([coder decodeInt64ForKey:@"moduleId"]);
     }
     
     return self;

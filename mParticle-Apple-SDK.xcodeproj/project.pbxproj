@@ -463,6 +463,8 @@
 		DB58FB021E9FD06800AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
 		DB58FB031E9FD07900AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
 		DB58FB041E9FD07E00AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
+		DB615E321F1FB6EE006D79BE /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
+		DB615E331F1FB6F3006D79BE /* MPUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA1A11EFD806000340D02 /* MPUtils.m */; };
 		DB678C351F180E0A0015587D /* MPUserIdentityChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB678C331F180E0A0015587D /* MPUserIdentityChange.h */; };
 		DB678C361F180E0A0015587D /* MPUserIdentityChange.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C341F180E0A0015587D /* MPUserIdentityChange.m */; };
 		DB678C371F180E0E0015587D /* MPUserIdentityChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB678C331F180E0A0015587D /* MPUserIdentityChange.h */; };
@@ -1712,12 +1714,14 @@
 				C935A7561D8A2E3800A1EE2F /* MPResponseConfig.m in Sources */,
 				C935A6DF1D8A2DED00A1EE2F /* MPStandaloneMessage.m in Sources */,
 				C935A75E1D8A2E3800A1EE2F /* MPUserAttributeChange.m in Sources */,
+				DB615E321F1FB6EE006D79BE /* MPIUserDefaults.m in Sources */,
 				C935A6E61D8A2DF400A1EE2F /* MPBags.m in Sources */,
 				C935A7101D8A2E0500A1EE2F /* MPKitContainer.mm in Sources */,
 				DBA894681F17CBEE005B21FB /* MPIdentityDTO.m in Sources */,
 				C935A6CA1D8A2DED00A1EE2F /* MPBreadcrumb.m in Sources */,
 				C935A6D31D8A2DED00A1EE2F /* MPIntegrationAttributes.m in Sources */,
 				C935A6C61D8A2DE700A1EE2F /* MPCustomModulePreference.m in Sources */,
+				DB615E331F1FB6F3006D79BE /* MPUtils.m in Sources */,
 				C935A74C1D8A2E3800A1EE2F /* MPDateFormatter.m in Sources */,
 				C935A6D51D8A2DED00A1EE2F /* MPMessage.m in Sources */,
 				C935A7471D8A2E3800A1EE2F /* MPBracket.cpp in Sources */,

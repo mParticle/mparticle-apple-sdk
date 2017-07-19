@@ -298,7 +298,7 @@ NSString *const kMPCKExpiration = @"e";
 - (NSNumber *)mpId {
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     
-    //TODO: remove mpid generation artifacts 
+
     // If we don't have the id, create it.
     if (!_mpId) {
         [self willChangeValueForKey:@"mpId"];
@@ -307,9 +307,9 @@ NSString *const kMPCKExpiration = @"e";
         NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
         
         if (mpIdString) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [userDefaults removeMPObjectForKey:kMPRemoteConfigMPIDKey];
-            });
+//            dispatch_async(dispatch_get_main_queue(), ^{
+//                [userDefaults removeMPObjectForKey:kMPRemoteConfigMPIDKey];
+//            });
             
             _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
             
@@ -328,7 +328,6 @@ NSString *const kMPCKExpiration = @"e";
     return _mpId;
 }
 
-//TODO: remove these methods?
 - (void)setMpId:(NSNumber *)mpId {
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     

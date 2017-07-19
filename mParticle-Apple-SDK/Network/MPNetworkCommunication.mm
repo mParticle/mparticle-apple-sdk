@@ -1015,7 +1015,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSDictionary *identitiesDictionary = modifyRequest.userIdentities;
     NSDictionary *existingIdentities = [MParticle sharedInstance].identity.currentUser.userIdentities;
     
-    [identitiesDictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString * _Nonnull value, BOOL * _Nonnull stop) {
+    [identitiesDictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString *value, BOOL * _Nonnull stop) {
         NSString *oldValue = existingIdentities[identityType];
         
         if ((NSNull *)value == [NSNull null]) {

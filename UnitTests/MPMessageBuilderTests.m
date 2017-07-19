@@ -34,6 +34,7 @@
 #import "MPCart+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
+#import "MPUtils.h"
 
 @interface MPMessageBuilderTests : XCTestCase
 
@@ -48,7 +49,7 @@
         return _session;
     }
     
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     return _session;
 }
 

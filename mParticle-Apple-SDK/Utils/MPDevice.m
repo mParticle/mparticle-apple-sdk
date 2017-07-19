@@ -147,7 +147,7 @@ int main(int argc, char *argv[]);
             MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
             NSString *previousIDFA = userDefaults[kMPDeviceAdvertiserIdKey];
             userDefaults[kMPDeviceAdvertiserIdKey] = _advertiserId;
-            if (![previousIDFA isEqualToString:_advertiserId]) {
+            if (previousIDFA && ![previousIDFA isEqualToString:_advertiserId]) {
                 [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"ios_idfa" value:_advertiserId oldValue:previousIDFA];
             }
         }

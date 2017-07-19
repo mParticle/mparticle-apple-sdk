@@ -13,9 +13,9 @@ typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessRe
 
 @interface MPIdentityApiManager : NSObject
 
-- (void)identify:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
-- (void)loginRequest:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
-- (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)identify:(nullable MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)loginRequest:(nullable MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;
+- (void)logout:(nullable MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion;
 
 @end

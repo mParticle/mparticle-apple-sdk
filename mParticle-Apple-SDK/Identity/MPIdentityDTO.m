@@ -102,11 +102,11 @@
 + (NSDictionary *)clientSDKDictionaryWithVersion:(NSString *)sdkVersion {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     
-#if TARGET_OS_IOS == 1
+
     NSString *platform = @"ios";
-#elif TARGET_OS_TVOS == 1
-    NSString *platform = @"tvos";
-#endif
+    #if TARGET_OS_TVOS == 1
+    platform = @"tvos";
+    #endif
     
     dictionary[@"platform"] = platform;
     dictionary[@"sdk_vendor"] = @"mparticle";

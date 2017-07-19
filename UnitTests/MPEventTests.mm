@@ -23,6 +23,7 @@
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPProduct.h"
+#import "MPUtils.h"
 
 @interface MPEventTests : XCTestCase
 
@@ -144,7 +145,7 @@
 }
 
 - (void)testDictionaryRepresentation {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.currentSession = session;
     

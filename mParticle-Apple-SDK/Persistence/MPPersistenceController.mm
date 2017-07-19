@@ -1313,6 +1313,43 @@ const int MaxBreadcrumbs = 50;
     return integrationAttributesArray;
 }
 
+- (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(MPSession *)session userId:(NSNumber *)userId {
+    __block vector<MPMessage *> messagesVector;
+    
+    dispatch_sync(dbQueue, ^{
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? ORDER BY timestamp, _id";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            
+            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                                                                messageId:int64Value(preparedStatement, 0)
+                                                                     UUID:stringValue(preparedStatement, 1)
+                                                              messageType:stringValue(preparedStatement, 2)
+                                                              messageData:dataValue(preparedStatement, 3)
+                                                                timestamp:doubleValue(preparedStatement, 4)
+                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
+                                                                   userId:@(int64Value(preparedStatement, 6))];
+                
+                messagesVector.push_back(message);
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+    
+    if (messagesVector.empty()) {
+        return nil;
+    }
+    
+    NSArray<MPMessage *> *messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    return messages;
+}
+
 - (NSMutableDictionary *)fetchMessagesForUploadingInSession:(MPSession *)session {
     NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
     dispatch_sync(dbQueue, ^{

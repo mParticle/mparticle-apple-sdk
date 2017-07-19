@@ -39,4 +39,4 @@ branches:
   - master
   - development
   - /^.*-ci$/
-  - /^\d+\.\d+\.\d+(-\S*)?$/
+  - /^6\.\d+\.\d+(-\S*)?$/

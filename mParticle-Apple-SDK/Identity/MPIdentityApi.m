@@ -55,7 +55,7 @@
 
 - (void)onModifyRequestSuccess:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion {
     if (request.userIdentities) {
-        [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
+        [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id identityValue, BOOL * _Nonnull stop) {
             MPUserIdentity identityType = (MPUserIdentity)key.intValue;
             if ((NSNull *)identityValue == [NSNull null]) {
                 identityValue = nil;
@@ -147,10 +147,7 @@
 }
 
 - (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-    [self identify:nil completion:completion];
-#pragma clang diagnostic pop
+    [self identify:(id _Nonnull)nil completion:completion];
 }
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
@@ -160,10 +157,7 @@
 }
 
 - (void)loginWithCompletion:(nullable MPIdentityApiResultCallback)completion {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-    [self login:nil completion:completion];
-#pragma clang diagnostic pop
+    [self login:(id _Nonnull)nil completion:completion];
 }
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiResultCallback)completion {
@@ -173,10 +167,7 @@
 }
 
 - (void)logoutWithCompletion:(nullable MPIdentityApiResultCallback)completion {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnonnull"
-    [self logout:nil completion:completion];
-#pragma clang diagnostic pop
+    [self logout:(id _Nonnull)nil completion:completion];
 }
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiResultCallback)completion {

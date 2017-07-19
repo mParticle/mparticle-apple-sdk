@@ -733,7 +733,6 @@
 }
 
 - (NSNumber *)needsMigration {
-    //TODO: called multiple times
     NSMutableArray *oldDatabaseVersions = [self.databaseVersions mutableCopy];
     [oldDatabaseVersions removeLastObject];
     [oldDatabaseVersions sortUsingComparator:^NSComparisonResult(NSNumber *obj1, NSNumber *obj2) {

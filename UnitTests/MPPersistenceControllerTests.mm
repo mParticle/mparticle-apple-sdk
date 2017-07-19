@@ -94,7 +94,7 @@
 }
 
 - (void)testSession {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
@@ -125,7 +125,7 @@
 }
 
 - (void)testMessage {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session
@@ -140,7 +140,8 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
     
     [persistence fetchMessagesForUploadingInSession:session
-                                  completionHandler:^(NSArray<MPMessage *> *messages) {
+                                  completionHandler:^(NSDictionary *messagesDictionary) {
+                                      NSArray<MPMessage *> *messages = messagesDictionary[[MPUtils mpId]];
                                       MPMessage *fetchedMessage = [messages lastObject];
                                       
                                       XCTAssertEqualObjects(message, fetchedMessage, @"Message and fetchedMessage are not equal.");
@@ -148,7 +149,8 @@
                                       [persistence deleteSession:session];
                                       
                                       [persistence fetchMessagesForUploadingInSession:session
-                                                                    completionHandler:^(NSArray *messages) {
+                                                                    completionHandler:^(NSDictionary *messagesDictionary) {
+                                                                        NSArray *messages = messagesDictionary[[MPUtils mpId]];
                                                                         if (messages) {
                                                                             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageId == %lld", fetchedMessage.messageId];
                                                                             messages = [messages filteredArrayUsingPredicate:predicate];
@@ -163,7 +165,7 @@
 }
 
 - (void)testDeleteMessages {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     for (int i = 0; i < 10; ++i) {
@@ -180,11 +182,13 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
     
     [persistence fetchMessagesForUploadingInSession:session
-                                  completionHandler:^(NSArray<MPMessage *> *messages) {
+                                  completionHandler:^(NSDictionary *messagesDictionary) {
+                                      NSArray *messages = messagesDictionary[[MPUtils mpId]];
                                       [persistence deleteMessages:messages];
                                       
                                       [persistence fetchMessagesForUploadingInSession:session
-                                                                    completionHandler:^(NSArray *messages) {
+                                                                    completionHandler:^(NSDictionary *messagesDictionary) {
+                                                                            NSArray *messages = messagesDictionary[[MPUtils mpId]];
                                                                         XCTAssertNil(messages, @"Should have been nil.");
                                                                         
                                                                         [expectation fulfill];
@@ -195,7 +199,7 @@
 }
 
 - (void)testUpload {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session
@@ -283,7 +287,8 @@
 
 - (void)testStandaloneMessage {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray<MPStandaloneMessage *> *standaloneMessages = [persistence fetchStandaloneMessages];
+    NSMutableDictionary *messagesDictionary = [persistence fetchStandaloneMessages];
+    NSArray<MPStandaloneMessage *> *standaloneMessages = messagesDictionary[[MPUtils mpId]];
     MPStandaloneMessage *standaloneMessage;
     
     for (standaloneMessage in standaloneMessages) {
@@ -300,7 +305,8 @@
     
     [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
     
-    standaloneMessages = [persistence fetchStandaloneMessages];
+    messagesDictionary = [persistence fetchStandaloneMessages];
+    standaloneMessages = messagesDictionary[[MPUtils mpId]];
     XCTAssertEqual(standaloneMessages.count, 1, @"There should have been only 1 fetched stand-alone message.");
     
     standaloneMessage = [standaloneMessages firstObject];
@@ -333,7 +339,8 @@
     XCTAssertEqualObjects(standaloneMessage, deserializedObject, @"Should have been equal.");
     
     [persistence deleteStandaloneMessage:standaloneMessage];
-    standaloneMessage = [[persistence fetchStandaloneMessages] firstObject];
+    messagesDictionary = [persistence fetchStandaloneMessages];
+    standaloneMessage = [messagesDictionary[[MPUtils mpId]] firstObject];
     XCTAssertNil(standaloneMessage, @"Stand-alone message should have been deleted.");
 }
 
@@ -347,7 +354,8 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
     
-    NSArray<MPStandaloneMessage *> *persistedMessages = [persistence fetchStandaloneMessages];
+    NSMutableDictionary *messagesDictionary = [persistence fetchStandaloneMessages];
+    NSArray<MPStandaloneMessage *> *persistedMessages = messagesDictionary[[MPUtils mpId]];
     NSUInteger numberOfMessages = persistedMessages.count;
     NSMutableArray *standaloneMessages = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
     NSMutableArray *preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
@@ -368,7 +376,8 @@
     [persistence saveStandaloneUpload:standaloneUpload];
     
     [persistence deleteStandaloneMessageIds:preparedMessageIds];
-    NSArray *fetchedStandaloneMessages = [persistence fetchStandaloneMessages];
+    messagesDictionary = [persistence fetchStandaloneMessages];
+    NSArray *fetchedStandaloneMessages = messagesDictionary[[MPUtils mpId]];;
     XCTAssertNil(fetchedStandaloneMessages, @"Stand-alone messages should had been deleted.");
     
     NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
@@ -456,7 +465,7 @@
 }
 
 - (void)testMessageCount {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session

@@ -1975,12 +1975,11 @@ static BOOL appBackgrounded = NO;
         }
     }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        userDefaults[kMPUserAttributeKey] = userAttributes;
-        [userDefaults synchronize];
-    });
-    
+
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults[kMPUserAttributeKey] = userAttributesCopy;
+    [userDefaults synchronize];
+ 
     return (NSNumber *)newValue;
 }
 
