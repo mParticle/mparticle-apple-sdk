@@ -49,8 +49,7 @@ NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Ve
 NSString *const modifyURLFormat = @"%@://%@%@/%@/%@"; // Scheme, URL Host, API Version, mpid, path
 NSString *const kMPConfigVersion = @"/v4";
 NSString *const kMPConfigURL = @"/config";
-//TODO: events v2
-NSString *const kMPEventsVersion = @"/v1";
+NSString *const kMPEventsVersion = @"/v2";
 NSString *const kMPEventsURL = @"/events";
 NSString *const kMPSegmentVersion = @"/v1";
 NSString *const kMPSegmentURL = @"/audience";
