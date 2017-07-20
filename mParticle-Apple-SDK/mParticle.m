@@ -39,7 +39,7 @@
 #import "MPStateMachine.h"
 #import "MPUserSegments+Setters.h"
 #import "NSURLSession+mParticle.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPConvertJS.h"
 
 #if TARGET_OS_IOS == 1
@@ -419,7 +419,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     __weak MParticle *weakSelf = self;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL firstRun = userDefaults[kMParticleFirstRun] == nil;
     BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
@@ -1259,7 +1259,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     NSMutableDictionary *userAttributes = nil;
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];

@@ -17,7 +17,7 @@
 //
 
 #import "MPCustomModulePreference.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPAppboy.h"
 #import "MPStateMachine.h"
 #import "MPILogger.h"
@@ -203,7 +203,7 @@
         return _value;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];

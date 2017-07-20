@@ -19,7 +19,7 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #include "MPHasher.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
@@ -291,7 +291,7 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (NSDictionary *)localCookiesDictionary {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *localCookies = userDefaults[kMPRemoteConfigCookiesKey];
     
     if (!localCookies) {
@@ -320,7 +320,7 @@ NSString *const kMPCKExpiration = @"e";
     if (!_mpId) {
         [self willChangeValueForKey:@"mpId"];
         
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
         
         if (mpIdString) {
@@ -371,7 +371,7 @@ NSString *const kMPCKExpiration = @"e";
         return _uniqueIdentifier;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     if (userDefaults[kMPRemoteConfigUniqueIdentifierKey]) {
         _uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
         [userDefaults removeMPObjectForKey:kMPRemoteConfigUniqueIdentifierKey];

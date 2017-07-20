@@ -27,7 +27,7 @@
 #import "MPKitRegister.h"
 #import "MPKitContainer.h"
 #import "MPKitTestClass.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 
 #pragma mark - MPURLRequestBuilder category
 @interface MPURLRequestBuilder(Tests)
@@ -155,7 +155,7 @@
 }
 
 - (void)testEtag {
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
     if (!eTag) {
         userDefaults[kMPHTTPETagHeaderKey] = @"1.618-2.718-3.141-42";

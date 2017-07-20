@@ -24,7 +24,7 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPNetworkPerformance.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPBreadcrumb.h"
 #import "MPExceptionHandler.h"
 #import "MPUpload.h"
@@ -272,7 +272,7 @@ static BOOL appBackgrounded = NO;
     }
     
     _userAttributes = [[NSMutableDictionary alloc] initWithCapacity:2];
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     if (userAttributes) {
         NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
@@ -300,7 +300,7 @@ static BOOL appBackgrounded = NO;
     }
     
     _userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSArray *userIdentityArray = userDefaults[kMPUserIdentityArrayKey];
     if (userIdentityArray) {
         [_userIdentities addObjectsFromArray:userIdentityArray];
@@ -799,7 +799,7 @@ static BOOL appBackgrounded = NO;
                 }
 
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                     userDefaults[kMPUserAttributeKey] = userAttributes;
                     [userDefaults synchronize];
                 });
@@ -929,7 +929,7 @@ static BOOL appBackgrounded = NO;
                     }
 
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+                        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                         userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
                         [userDefaults synchronize];
                     });
@@ -1998,7 +1998,7 @@ static BOOL appBackgrounded = NO;
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         userDefaults[kMPUserAttributeKey] = userAttributes;
         [userDefaults synchronize];
     });

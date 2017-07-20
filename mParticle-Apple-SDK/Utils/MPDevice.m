@@ -21,7 +21,7 @@
 #import <sys/sysctl.h>
 #import <mach/machine.h>
 #import "MPStateMachine.h"
-#import "NSUserDefaults+mParticle.h"
+#import "MPIUserDefaults.h"
 #import <objc/runtime.h>
 #import <mach-o/ldsyms.h>
 #import <dlfcn.h>
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]);
         return _deviceIdentifier;
     }
     
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     _deviceIdentifier = userDefaults[kMPDeviceIdentifierKey];
     if (!_deviceIdentifier) {
         _deviceIdentifier = [[NSUUID UUID] UUIDString];
@@ -316,7 +316,7 @@ int main(int argc, char *argv[]);
     }
     
     _vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-    NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     if (_vendorId && ![_vendorId isEqualToString:kMPDeviceInvalidVendorId]) {
         userDefaults[kMPDeviceAppVendorIdKey] = _vendorId;
