@@ -41,22 +41,6 @@ static NSString *const MPIUserDefaultsPrefix = @"mParticle::";
 }
 
 #pragma mark Public methods
-- (BOOL)boolForKey:(nonnull NSString *)key {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:key];
-}
-
-- (nullable NSDictionary<NSString *, id> *)dictionaryRepresentation {
-    return [[NSUserDefaults standardUserDefaults] dictionaryRepresentation];
-}
-
-- (float)floatForKey:(nonnull NSString *)key {
-    return [[NSUserDefaults standardUserDefaults] floatForKey:key];
-}
-
-- (NSInteger)integerForKey:(nonnull NSString *)key {
-    return [[NSUserDefaults standardUserDefaults] integerForKey:key];
-}
-
 - (id)mpObjectForKey:(NSString *)key {
     NSString *prefixedKey = [self prefixedKey:key];
     return [[NSUserDefaults standardUserDefaults] objectForKey:prefixedKey];
@@ -65,10 +49,6 @@ static NSString *const MPIUserDefaultsPrefix = @"mParticle::";
 - (void)setMPObject:(id)value forKey:(NSString *)key {
     NSString *prefixedKey = [self prefixedKey:key];
     [[NSUserDefaults standardUserDefaults] setObject:value forKey:prefixedKey];
-}
-
-- (nullable id)objectForKey:(nonnull NSString *)key {
-    return [[NSUserDefaults standardUserDefaults] objectForKey:key];
 }
 
 - (void)removeMPObjectForKey:(NSString *)key {

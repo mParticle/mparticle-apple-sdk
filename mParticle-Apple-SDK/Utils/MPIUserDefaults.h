@@ -21,13 +21,8 @@
 @interface MPIUserDefaults : NSObject
 
 + (nonnull instancetype)standardUserDefaults;
-- (BOOL)boolForKey:(nonnull NSString *)key;
-- (nullable NSDictionary<NSString *, id> *)dictionaryRepresentation;
-- (float)floatForKey:(nonnull NSString *)key;
-- (NSInteger)integerForKey:(nonnull NSString *)key;
 - (nullable id)mpObjectForKey:(nonnull NSString *)key;
 - (void)setMPObject:(nullable id)value forKey:(nonnull NSString *)key;
-- (nullable id)objectForKey:(nonnull NSString *)key;
 - (void)removeMPObjectForKey:(nonnull NSString *)key;
 - (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
 - (void)setObject:(nullable id)obj forKeyedSubscript:(nonnull NSString *)key;
