@@ -200,4 +200,13 @@
     return self;
 }
 
+- (NSString *)description {
+    NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPIdentityHTTPErrorResponse {\n"];
+    [description appendFormat:@"  httpCode: %@\n", @(_httpCode)];
+    [description appendFormat:@"  code: %@\n", _code];
+    [description appendFormat:@"  message: %@\n", _message];
+    [description appendString:@"}"];
+    return description;
+}
+
 @end
