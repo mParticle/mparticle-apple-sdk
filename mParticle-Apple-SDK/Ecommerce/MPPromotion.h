@@ -81,7 +81,7 @@ typedef NS_ENUM(NSUInteger, MPPromotionAction) {
 
 #pragma mark - MPPromotionContainer
 /**
- This class is a container for the information that represents a collection promotions (one or more).
+ This class is a container for the information that represents a collection of promotions (one or more).
  
  <b>Usage:</b>
  

@@ -1884,7 +1884,7 @@ static BOOL appBackgrounded = NO;
                                                     }
                                                         break;
                                                         
-                                                    case MPNetworkErrorDelayedSegemnts:
+                                                    case MPNetworkErrorDelayedSegments:
                                                         if (success && segments.count > 0) {
                                                             [persistence deleteSegments];
                                                         }

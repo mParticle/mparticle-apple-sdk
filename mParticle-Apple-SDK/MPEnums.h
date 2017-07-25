@@ -121,7 +121,7 @@ typedef NS_ENUM(NSUInteger, MPSurveyProvider) {
 typedef NS_ENUM(NSUInteger, MPUserIdentity) {
     /** User identity other */
     MPUserIdentityOther = 0,
-    /** User identity customer id. This is an id issue by your own system */
+    /** User identity customer id. This is an id issued by your own system */
     MPUserIdentityCustomerId,
     /** User identity Facebook */
     MPUserIdentityFacebook,

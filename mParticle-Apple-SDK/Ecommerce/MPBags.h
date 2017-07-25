@@ -22,7 +22,7 @@
 
 /**
  This class is used to describe a product bag to hold the state of products in the hands of a user. Please note a difference 
- when compared with a shopping cart. A product bag is intendend to represent product samples shipped for trial by a user, which 
+ when compared with a shopping cart. A product bag is intended to represent product samples shipped for trial by a user, which 
  later may return the samples or add one or more to a shopping cart with the intent of purchasing them.
 
  Bags, and products added to them are persisted throughout the lifetime of the application. It is up to you to remove products from 
