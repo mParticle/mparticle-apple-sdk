@@ -426,7 +426,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                          completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
                      } else {
                          segmentError = [NSError errorWithDomain:@"mParticle Segments"
-                                                            code:MPNetworkErrorDelayedSegemnts
+                                                            code:MPNetworkErrorDelayedSegments
                                                         userInfo:@{@"message":@"It took too long to retrieve segments."}];
                          
                          completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);

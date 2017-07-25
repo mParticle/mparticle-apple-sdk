@@ -72,7 +72,7 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma mark Properties
 /**
  This property is an instance of MPBag, which used to describe a product bag to hold the state of products in the hands of a user. Please note a difference
- when compared with a shopping cart. A product bag is intendend to represent product samples shipped for trial by a user, which
+ when compared with a shopping cart. A product bag is intended to represent product samples shipped for trial by a user, which
  later may return the samples or add one or more to a shopping cart with the intent of purchasing them.
  
  Bags, and products added to them are persisted throughout the lifetime of the application. It is up to you to remove products from
@@ -344,7 +344,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Begins timing an event. There can be many timed events going on at the same time, the only requirement is that each
  concurrent timed event must have a unique event name. After beginning a timed event you don't have to keep a reference
- to the event instance being timed, you can use the eventWithName: method to retrive it later when ending the timed event.
+ to the event instance being timed, you can use the eventWithName: method to retrieve it later when ending the timed event.
  @param event An instance of MPEvent
  @see MPEvent
  */
@@ -352,7 +352,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Ends timing an event and logs its data to the mParticle SDK. If you didn't keep a reference to the event
- being timed, you can use the eventWithName: method to retrive it.
+ being timed, you can use the eventWithName: method to retrieve it.
  @param event An instance of MPEvent
  @see beginTimedEvent:
  */
@@ -360,7 +360,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  When working with timed events you don't need to keep a reference to the event being timed. You can use this method
- to retrive the event being timed passing the event name as parameter. If an instance of MPEvent, with a matching
+ to retrieve the event being timed passing the event name as parameter. If an instance of MPEvent, with a matching
  event name cannot be found, this method will return nil.
  @param eventName A string with the event name associated with the event being timed
  @returns An instance of MPEvent, if one could be found, or nil.
@@ -456,14 +456,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Logs an exception.
- @param exception The exception which occured
+ @param exception The exception which occurred
  @see logException:topmostContext:
  */
 - (void)logException:(NSException *)exception;
 
 /**
  Logs an exception and a context.
- @param exception The exception which occured
+ @param exception The exception which occurred
  @param topmostContext The topmost context of the app, typically the topmost view controller
  */
 - (void)logException:(NSException *)exception topmostContext:(nullable id)topmostContext;
@@ -614,7 +614,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  By default mParticle SDK will remove the query part of all URLs. Use this method to add an exception to the default
- behavior and include the query compoment of any URL containing queryString. You can call this method multiple times, passing a query string at a time.
+ behavior and include the query component of any URL containing queryString. You can call this method multiple times, passing a query string at a time.
  @param queryString A string with the query component to be included and reported in network performance measurement.
  */
 - (void)preserveQueryMeasuringNetworkPerformance:(NSString *)queryString;

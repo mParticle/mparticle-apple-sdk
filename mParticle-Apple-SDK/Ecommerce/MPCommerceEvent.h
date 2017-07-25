@@ -130,7 +130,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 @property (nonatomic, unsafe_unretained) NSInteger checkoutStep;
 
 /**
- Flag indicating whether a refund in non-interactive. The default value is false/NO.
+ Flag indicating whether a refund is non-interactive. The default value is false/NO.
  */
 @property (nonatomic, unsafe_unretained) BOOL nonInteractive;
 
@@ -177,7 +177,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 - (void)addProduct:(nonnull MPProduct *)product;
 
 /**
- Removes a product to the list of products to have <i>action</i> applied to.
+ Removes a product from the list of products to have <i>action</i> applied to.
  
  @param product An instance of MPProduct
  */

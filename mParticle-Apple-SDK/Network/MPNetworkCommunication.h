@@ -36,7 +36,7 @@ typedef NS_ENUM(NSInteger, MPNetworkResponseAction) {
 
 typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorTimeout = 1,
-    MPNetworkErrorDelayedSegemnts
+    MPNetworkErrorDelayedSegments
 };
 
 typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
