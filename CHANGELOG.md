@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.1
+
+* [FIX] Propagate Identity API errors to original caller
+
 ## 7.0.0
 
 * [NEW] New identity APIs
