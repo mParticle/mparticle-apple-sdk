@@ -1,5 +1,10 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.14.5
+
+* [FIX] Fixes for Xcode 9 / iOS 11 and main thread checker
+* [NEW] Remove category on NSUserDefaults
+
 ## 6.14.4
 
 * [FIX] Ensure all server-side configuration settings are reloaded on every app-launch
