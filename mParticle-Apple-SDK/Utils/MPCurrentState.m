@@ -42,7 +42,25 @@ NSString *const kMPStateGPSKey = @"gps";
 NSString *const kMPStateTotalDiskSpaceKey = @"tds";
 NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 
+@interface MPCurrentState () {
+#if TARGET_OS_IOS == 1
+    NSNumber *_statusBarOrientation;
+#endif
+}
+@end
+
 @implementation MPCurrentState
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+#if TARGET_OS_IOS == 1
+        _statusBarOrientation = @(UIInterfaceOrientationPortrait);
+#endif
+    }
+    return self;
+}
 
 - (NSString *)description {
     return [NSString stringWithFormat:@"%@", [self dictionaryRepresentation]];
@@ -189,7 +207,10 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 }
 
 - (NSNumber *)statusBarOrientation {
-    return @([[UIApplication sharedApplication] statusBarOrientation]);
+    if ([NSThread isMainThread]) {
+        _statusBarOrientation = @([[UIApplication sharedApplication] statusBarOrientation]);
+    }
+    return _statusBarOrientation;
 }
 #endif
 

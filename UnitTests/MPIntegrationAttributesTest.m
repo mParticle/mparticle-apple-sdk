@@ -81,11 +81,11 @@
     integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
-    attributes = @{@"pi":@314};
+    attributes = @{@"pi":(NSString *)@314};
     integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
-    attributes = @{@628:@"tau"};
+    attributes = @{(NSString *)@628:@"tau"};
     integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
     XCTAssertNil(integrationAttributes);
     

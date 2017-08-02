@@ -49,9 +49,9 @@ static BOOL handlingExceptions;
 
 void SignalHandler(int signal);
 //void BeginUncaughtExceptionLogging();
-void EndUncaughtExceptionLogging();
+void EndUncaughtExceptionLogging(void);
 void handleException(NSException *exception);
-static bool debuggerRunning();
+static bool debuggerRunning(void);
 
 typedef struct Binaryimage {
     struct Binaryimage *previous;

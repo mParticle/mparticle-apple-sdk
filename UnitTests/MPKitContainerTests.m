@@ -616,8 +616,17 @@
     event.category = @"Olympic Games";
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
+            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
+            if (kitExtension.code.intValue == 42) {
+                return YES;
+            }
+        }
+        return NO;
+    }] anyObject];
 
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Filtering event type"];
     [kitContainer filter:registeredKit
                 forEvent:event
                 selector:@selector(logEvent:)
@@ -625,7 +634,9 @@
            XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
            XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
            XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
+           [expectation fulfill];
        }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testFilterMessageType {
@@ -657,8 +668,17 @@
     event.category = @"Olympic Games";
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
+            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
+            if (kitExtension.code.intValue == 42) {
+                return YES;
+            }
+        }
+        return NO;
+    }] anyObject];
     
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Filtering message type"];
     [kitContainer filter:registeredKit
                 forEvent:event
                 selector:@selector(logEvent:)
@@ -666,7 +686,9 @@
            XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
            XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
            XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
+           [expectation fulfill];
        }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testFilterEventNameAndAttributes {
@@ -693,14 +715,24 @@
     event.category = @"Olympic Games";
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [registeredKits anyObject];
+    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
+            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
+            if (kitExtension.code.intValue == 42) {
+                return YES;
+            }
+        }
+        return NO;
+    }] anyObject];
     
+    XCTestExpectation *expectation1 = [self expectationWithDescription:@"Filtering event name and attributes"];
     [kitContainer filter:registeredKit
                 forEvent:event
                 selector:@selector(logEvent:)
        completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
            XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
            XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+           [expectation1 fulfill];
        }];
     
     configurations = @[
@@ -711,7 +743,7 @@
                                    @"sendTransactionData":@"true"
                                    },
                            @"hs":@{
-                                   @"ea":@{@"484927002":@0}
+                                   @"ea":@{@"1152562650":@0}
                                    }
                            }
                        ];
@@ -725,17 +757,18 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
+    XCTestExpectation *expectation2 = [self expectationWithDescription:@"Filtering event name and attributes"];
     [kitContainer filter:registeredKit
                 forEvent:event
                 selector:@selector(logEvent:)
        completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
            XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
            XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
            XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
            XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
+           [expectation2 fulfill];
        }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 - (void)testFilterForSelector {

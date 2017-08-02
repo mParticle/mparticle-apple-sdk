@@ -136,7 +136,7 @@
     return jsonString;
 }
 
-- (NSString *)defaultValueForMacroPlaceholder:(NSString *)macroPlaceholder {
+- (NSString *)defaultValueForMacroPlaceholder:(NSString *)macroPlaceholder __attribute__((no_sanitize("integer"))) {
     NSString *defaultValue = @"";
     
     if ([macroPlaceholder isEqualToString:@"%gn%"]) {

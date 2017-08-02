@@ -75,7 +75,7 @@
 
 #pragma mark MPDataModelProtocol
 - (NSDictionary *)dictionaryRepresentation {
-    NSDictionary<NSNumber *, NSDictionary<NSString *, NSString*> *> *dictionary = @{[_kitCode stringValue]:_attributes};
+    NSDictionary<NSString *, NSDictionary<NSString *, NSString*> *> *dictionary = @{[_kitCode stringValue]:_attributes};
     return dictionary;
 }
 
