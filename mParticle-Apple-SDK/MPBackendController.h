@@ -109,7 +109,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)saveMessage:(nonnull MPDataModelAbstract *)abstractMessage updateSession:(BOOL)updateSession;
-- (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)())completionHandler;
+- (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
 
 #if TARGET_OS_IOS == 1
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;

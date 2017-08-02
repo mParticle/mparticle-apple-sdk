@@ -816,13 +816,17 @@ static BOOL runningInBackground = NO;
         return;
     }
     
-    MPDevice *device = [[MPDevice alloc] init];
-    NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
+    BOOL dataRamped = YES;
+    if (rampPercentage.integerValue != 0) {
+        MPDevice *device = [[MPDevice alloc] init];
+        NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
+        
+        uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+        NSUInteger modRampHash = rampHash % 100;
+        
+        dataRamped = modRampHash > [rampPercentage integerValue];
+    }
     
-    uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
-    NSUInteger modRampHash = rampHash % 100;
-    
-    BOOL dataRamped = modRampHash > [rampPercentage integerValue];
     if (_dataRamped != dataRamped) {
         [self willChangeValueForKey:@"dataRamped"];
         _dataRamped = dataRamped;

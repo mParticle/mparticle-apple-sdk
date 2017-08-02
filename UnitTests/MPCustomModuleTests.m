@@ -285,7 +285,7 @@
 - (void)testValue {
     NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
     
-    void (^removeKeysFromUserDefaults)() = ^{
+    void (^removeKeysFromUserDefaults)(void) = ^{
         [userDefaults removeObjectForKey:@"mParticle_UNIT_TEST_CustomModule_1"];
         [userDefaults removeObjectForKey:@"mParticle_UNIT_TEST_CustomModule_2"];
         [userDefaults removeObjectForKey:@"mParticle_UNIT_TEST_CustomModule_3"];

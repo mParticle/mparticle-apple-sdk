@@ -1461,7 +1461,11 @@ static BOOL appBackgrounded = NO;
     
     backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
                                   eventHandler:^{
-                                      NSTimeInterval backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
+                                      __block NSTimeInterval backgroundTimeRemaining;
+                                      dispatch_sync(dispatch_get_main_queue(), ^{
+                                           backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
+                                      });
+                                      
                                       __strong MPBackendController *strongSelf = weakSelf;
                                       if (!strongSelf) {
                                           return;
@@ -2562,7 +2566,7 @@ static BOOL appBackgrounded = NO;
     [MPURLRequestBuilder tryToCaptureUserAgent];
     
     __weak MPBackendController *weakSelf = self;
-    
+    __block MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
     dispatch_async(backendQueue, ^{
         __strong MPBackendController *strongSelf = weakSelf;
         _initializationStatus = MPInitializationStatusStarted;
@@ -2572,7 +2576,6 @@ static BOOL appBackgrounded = NO;
         [strongSelf beginUploadTimer];
         
         if (firstRun) {
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:strongSelf.session messageInfo:nil];
             MPMessage *message = (MPMessage *)[messageBuilder build];
             message.uploadStatus = MPUploadStatusBatch;
             

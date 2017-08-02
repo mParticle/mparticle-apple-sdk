@@ -21,6 +21,7 @@
 #include <algorithm>
 
 namespace mParticle {
+    __attribute__((no_sanitize("integer")))
     int Hasher::hashFromString(const string &stringToHash) {
         if (stringToHash.empty()) {
             return 0;

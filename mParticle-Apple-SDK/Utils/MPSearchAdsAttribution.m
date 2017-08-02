@@ -38,7 +38,7 @@
     return self;
 }
 
-- (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)())completionHandler {
+- (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler {
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3
     Class MPClientClass = NSClassFromString(@"ADClient");
     if (!MPClientClass) {
@@ -62,7 +62,7 @@
     }
     
     __block BOOL called = NO;
-    void(^onceCompletionBlock)() = ^(){
+    void(^onceCompletionBlock)(void) = ^(){
         if (!called) {
             called = YES;
             completionHandler();
@@ -77,7 +77,7 @@
     int numRequests = 4;
     __block int numRequestsCompleted = 0;
     
-    void (^requestBlock)() = ^{
+    void (^requestBlock)(void) = ^{
         if (!called) {
             [MPClientSharedInstance performSelector:requestDetailsSelector withObject:^(NSDictionary *attributionDetails, NSError *error) {
                 ++numRequestsCompleted;
