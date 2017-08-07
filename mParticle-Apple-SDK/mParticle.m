@@ -996,8 +996,8 @@ NSString *const kMPStateKey = @"state";
 - (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)kitCode {
     __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
     
-    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPILogError(@"Cannot set integration attributes. mParticle SDK is not initialized yet.");
+    if (self.backendController.initializationStatus == MPInitializationStatusNotStarted) {
+        MPILogError(@"Cannot set integration attributes. mParticle SDK is not started yet.");
         returnCode = MPKitReturnCodeCannotExecute;
     }
 
@@ -1016,8 +1016,8 @@ NSString *const kMPStateKey = @"state";
     MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
     BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:kitCode];
     
-    if (self.backendController.initializationStatus != MPInitializationStatusStarted) {
-        MPILogError(@"Cannot clear integration attributes. mParticle SDK is not initialized yet.");
+    if (self.backendController.initializationStatus == MPInitializationStatusNotStarted) {
+        MPILogError(@"Cannot clear integration attributes. mParticle SDK is not started yet.");
         returnCode = MPKitReturnCodeCannotExecute;
     }
 
