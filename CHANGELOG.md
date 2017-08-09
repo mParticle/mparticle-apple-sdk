@@ -1,5 +1,10 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.3
+
+* [FIX] Ensure the correct mpid is used in batches
+* [FIX] Fix device application stamp
+
 ## 7.0.2
 
 * [FIX] Propagate Identity API errors to original caller
