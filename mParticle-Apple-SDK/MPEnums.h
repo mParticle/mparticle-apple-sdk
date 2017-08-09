@@ -192,7 +192,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Iterable */
     MPKitInstanceIterable = 1003,
     /** Kit code for Button */
-    MPKitInstanceButton = 1022
+    MPKitInstanceButton = 1022,
+    /** Kit code for Singular */
+    MPKitInstanceSingular = 119
 };
 
 /// Log Levels

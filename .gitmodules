@@ -67,3 +67,6 @@
 [submodule "Kits/wootric-kit"]
 	path = Kits/wootric-kit
 	url = git@github.com:mparticle-integrations/mparticle-apple-integration-wootric.git
+[submodule "Kits/singular-kit"]
+	path = Kits/singular-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-singular
