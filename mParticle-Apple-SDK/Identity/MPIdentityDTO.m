@@ -35,11 +35,6 @@
         dictionary[@"request_timestamp_ms"] = @([requestTimestamp longLongValue] * 1000);
     }
     
-    NSString *deviceApplicationStamp = [MPStateMachine sharedInstance].consumerInfo.deviceApplicationStamp;
-    if (deviceApplicationStamp) {
-        dictionary[@"device_application_stamp"] = deviceApplicationStamp;
-    }
-    
     return dictionary;
 }
 
@@ -67,6 +62,11 @@
         NSString *vendorId = device.vendorId;
         if (vendorId) {
             _knownIdentities.vendorId = vendorId;
+        }
+        
+        NSString *deviceApplicationStamp = [MPStateMachine sharedInstance].consumerInfo.deviceApplicationStamp;
+        if (deviceApplicationStamp) {
+            _knownIdentities.deviceApplicationStamp = deviceApplicationStamp;
         }
         
 #if TARGET_OS_IOS == 1
@@ -213,6 +213,10 @@
     
     if (_vendorId) {
         dictionary[@"ios_idfv"] = _vendorId;
+    }
+    
+    if (_deviceApplicationStamp) {
+        dictionary[@"device_application_stamp"] = _deviceApplicationStamp;
     }
     
 #if TARGET_OS_IOS == 1

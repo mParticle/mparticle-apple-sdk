@@ -10,6 +10,7 @@
 
 @property (nonatomic) NSString *advertiserId;
 @property (nonatomic) NSString *vendorId;
+@property (nonatomic) NSString *deviceApplicationStamp;
 @property (nonatomic) NSString *pushToken;
 @property (nonatomic) NSString *customerId;
 @property (nonatomic) NSString *email;
