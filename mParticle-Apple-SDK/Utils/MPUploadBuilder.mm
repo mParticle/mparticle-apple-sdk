@@ -36,7 +36,7 @@ using namespace std;
 
 @implementation MPUploadBuilder
 
-- (instancetype)initWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     NSAssert(messages, @"Messages cannot be nil.");
     
     self = [super init];
@@ -61,7 +61,7 @@ using namespace std;
     
     NSNumber *ltv;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    ltv = [userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:session.userId];
+    ltv = [userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid];
     if (!ltv) {
         ltv = @0;
     }
@@ -91,7 +91,7 @@ using namespace std;
         uploadDictionary[kMPRemoteConfigCustomModuleSettingsKey] = customModulesDictionary;
     }
     
-    uploadDictionary[kMPRemoteConfigMPIDKey] = session.userId;
+    uploadDictionary[kMPRemoteConfigMPIDKey] = mpid;
     
     return self;
 }
@@ -109,13 +109,13 @@ using namespace std;
 }
 
 #pragma mark Public class methods
-+ (MPUploadBuilder *)newBuilderWithMessages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
++ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid session:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
-+ (MPUploadBuilder *)newBuilderWithSession:(MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithSession:session messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
++ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid session:session messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 

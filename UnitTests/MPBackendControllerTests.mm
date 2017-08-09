@@ -432,7 +432,7 @@
                                               XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
                                           }
                                           
-                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:messages sessionTimeout:100 uploadInterval:100];
+                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPUtils mpId] session:self.session messages:messages sessionTimeout:100 uploadInterval:100];
                                           XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
                                           
                                           if (!uploadBuilder) {
@@ -493,7 +493,7 @@
     [persistence fetchMessagesForUploadingInSession:session
                                   completionHandler:^(NSDictionary *messagesDictionary) {
                                       NSArray *persistedMessages = messagesDictionary[[MPUtils mpId]];
-                                      MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+                                      MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPUtils mpId] session:session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
                                       XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
                                       
                                       if (!uploadBuilder) {
@@ -525,7 +525,7 @@
                                                                                     [persistence fetchUploadedMessagesInSession:session
                                                                                               excludeNetworkPerformanceMessages:NO
                                                                                                               completionHandler:^(NSArray *persistedMessages) {
-                                                                                                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:self.session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+                                                                                                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPUtils mpId] session:self.session messages:persistedMessages sessionTimeout:100 uploadInterval:100];
                                                                                                                   XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
                                                                                                                   
                                                                                                                   if (!uploadBuilder) {

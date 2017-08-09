@@ -136,7 +136,8 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:session
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPUtils mpId]
+                                                                    session:session
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
                                                              uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
@@ -202,7 +203,7 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMessages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPUtils mpId] messages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
     
     XCTAssertNotNil(uploadBuilder);
     

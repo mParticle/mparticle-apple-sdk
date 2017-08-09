@@ -958,7 +958,7 @@ static BOOL appBackgrounded = NO;
                                           
                                           
                                           __strong MPBackendController *strongSelf = weakSelf;
-                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
+                                          MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid session:uploadSession messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
                                           
                                           if (!uploadBuilder || !strongSelf) {
                                               sessionBeingUploaded = nil;
@@ -1109,7 +1109,8 @@ static BOOL appBackgrounded = NO;
                                   
                                   __strong MPBackendController *strongSelf = weakSelf;
                                   
-                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:session
+                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:session.userId
+                                                                                                  session:session
                                                                                                  messages:messages
                                                                                            sessionTimeout:strongSelf.sessionTimeout
                                                                                            uploadInterval:strongSelf.uploadInterval];
@@ -1201,7 +1202,7 @@ static BOOL appBackgrounded = NO;
     }
     
     [standaloneMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber *  _Nonnull mpid, NSArray * _Nonnull messages, BOOL * _Nonnull stop) {
-        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMessages:messages uploadInterval:self.uploadInterval];
+        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid messages:messages uploadInterval:self.uploadInterval];
         
         if (!uploadBuilder) {
             return;
@@ -1341,7 +1342,8 @@ static BOOL appBackgrounded = NO;
             [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
                 
                 
-                MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:sessionCopy
+                MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:mpid
+                                                                                session:sessionCopy
                                                                                messages:messages
                                                                          sessionTimeout:self.sessionTimeout
                                                                          uploadInterval:self.uploadInterval];
