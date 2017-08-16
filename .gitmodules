@@ -1,0 +1,69 @@
+[submodule "Kits/adjust-kit"]
+	path = Kits/adjust-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-adjust.git
+[submodule "Kits/appboy-kit"]
+	path = Kits/appboy-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-appboy.git
+[submodule "Kits/appsflyer-kit"]
+	path = Kits/appsflyer-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-appsflyer.git
+[submodule "Kits/apptentive-kit"]
+	path = Kits/apptentive-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-apptentive.git
+[submodule "Kits/apptimize-kit"]
+	path = Kits/apptimize-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-apptimize.git
+[submodule "Kits/apteligent-kit"]
+	path = Kits/apteligent-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-apteligent.git
+[submodule "Kits/branchmetrics-kit"]
+	path = Kits/branchmetrics-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-branchmetrics.git
+[submodule "Kits/button-kit"]
+	path = Kits/button-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-button.git
+[submodule "Kits/comscore-kit"]
+	path = Kits/comscore-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-comscore.git
+[submodule "Kits/flurry-kit"]
+	path = Kits/flurry-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-flurry.git
+[submodule "Kits/foresee-kit"]
+	path = Kits/foresee-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-foresee.git
+[submodule "Kits/iterable-kit"]
+	path = Kits/iterable-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-iterable.git
+[submodule "Kits/kahuna-kit"]
+	path = Kits/kahuna-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-kahuna.git
+[submodule "Kits/kochava-kit"]
+	path = Kits/kochava-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-kochava.git
+[submodule "Kits/leanplum-kit"]
+	path = Kits/leanplum-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-leanplum.git
+[submodule "Kits/localytics-kit"]
+	path = Kits/localytics-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-localytics.git
+[submodule "Kits/primer-kit"]
+	path = Kits/primer-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-primer.git
+[submodule "Kits/radar-kit"]
+	path = Kits/radar-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-radar.git
+[submodule "Kits/revealmobile-kit"]
+	path = Kits/revealmobile-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-revealmobile.git
+[submodule "Kits/skyhook-kit"]
+	path = Kits/skyhook-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-skyhook.git
+[submodule "Kits/tune-kit"]
+	path = Kits/tune-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-tune.git
+[submodule "Kits/urbanairship-kit"]
+	path = Kits/urbanairship-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-urbanairship.git
+[submodule "Kits/wootric-kit"]
+	path = Kits/wootric-kit
+	url = git@github.com:mparticle-integrations/mparticle-apple-integration-wootric.git
