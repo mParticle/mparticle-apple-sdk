@@ -19,7 +19,7 @@ git remote remove public || true
 git remote add public git@github.com:mparticle/mparticle-apple-sdk
 git push origin development
 git tag VERSION
-git submodule foreach "git tag VERSION; git push origin master; git push origin VERSION"
+git submodule foreach "git tag VERSION; git push origin HEAD:master; git push origin VERSION"
 git push public HEAD:master
 git push public VERSION
 git push origin HEAD:master
