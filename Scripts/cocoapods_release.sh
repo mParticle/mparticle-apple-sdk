@@ -6,4 +6,5 @@
 # * Push all the kits to CocoaPods 
 
 pod trunk push
+pod repo update
 git submodule foreach 'pod trunk push $([ "$name" == "Kits/apptentive-kit" ] || echo --use-libraries) --allow-warnings'
