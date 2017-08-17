@@ -460,7 +460,6 @@
 		DB58FB031E9FD07900AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
 		DB58FB041E9FD07E00AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
 		DB615E321F1FB6EE006D79BE /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
-		DB615E331F1FB6F3006D79BE /* MPUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA1A11EFD806000340D02 /* MPUtils.m */; };
 		DB678C351F180E0A0015587D /* MPUserIdentityChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB678C331F180E0A0015587D /* MPUserIdentityChange.h */; };
 		DB678C361F180E0A0015587D /* MPUserIdentityChange.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C341F180E0A0015587D /* MPUserIdentityChange.m */; };
 		DB678C371F180E0E0015587D /* MPUserIdentityChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB678C331F180E0A0015587D /* MPUserIdentityChange.h */; };
@@ -473,8 +472,6 @@
 		DB7ABA191DA6ED7F00367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
 		DB9AA1A21EFD806000340D02 /* MPIUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */; };
 		DB9AA1A31EFD806000340D02 /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
-		DB9AA1A41EFD806000340D02 /* MPUtils.h in Headers */ = {isa = PBXBuildFile; fileRef = DB9AA1A01EFD806000340D02 /* MPUtils.h */; };
-		DB9AA1A51EFD806000340D02 /* MPUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA1A11EFD806000340D02 /* MPUtils.m */; };
 		DBA894661F17CBE6005B21FB /* MPIdentityDTO.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */; };
 		DBA894671F17CBE6005B21FB /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */; };
 		DBA894681F17CBEE005B21FB /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */; };
@@ -751,8 +748,6 @@
 		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
 		DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIUserDefaults.h; sourceTree = "<group>"; };
 		DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaults.m; sourceTree = "<group>"; };
-		DB9AA1A01EFD806000340D02 /* MPUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUtils.h; sourceTree = "<group>"; };
-		DB9AA1A11EFD806000340D02 /* MPUtils.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUtils.m; sourceTree = "<group>"; };
 		DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityDTO.h; path = Identity/MPIdentityDTO.h; sourceTree = "<group>"; };
 		DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityDTO.m; path = Identity/MPIdentityDTO.m; sourceTree = "<group>"; };
 		DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+MPCaseInsensitive.h"; sourceTree = "<group>"; };
@@ -1118,8 +1113,6 @@
 			children = (
 				DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */,
 				DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */,
-				DB9AA1A01EFD806000340D02 /* MPUtils.h */,
-				DB9AA1A11EFD806000340D02 /* MPUtils.m */,
 				DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */,
 				DB58FB001E9FD06800AB5402 /* MPConvertJS.m */,
 				C9DD1D151D8A112B00D3ABBE /* MPApplication.h */,
@@ -1416,7 +1409,6 @@
 				C9DD1FC41D8A13DC00D3ABBE /* MPBags.h in Headers */,
 				C9DD1FE61D8A13EA00D3ABBE /* MPBaseProjection.h in Headers */,
 				C9DD1FE21D8A13E200D3ABBE /* MPEvent.h in Headers */,
-				DB9AA1A41EFD806000340D02 /* MPUtils.h in Headers */,
 				C9DD202A1D8A142000D3ABBE /* MPDateFormatter.h in Headers */,
 				C9DD20321D8A142000D3ABBE /* MPMessageBuilder.h in Headers */,
 				C9DD20151D8A140800D3ABBE /* MPNetworkPerformance.h in Headers */,
@@ -1710,7 +1702,6 @@
 				C935A6CA1D8A2DED00A1EE2F /* MPBreadcrumb.m in Sources */,
 				C935A6D31D8A2DED00A1EE2F /* MPIntegrationAttributes.m in Sources */,
 				C935A6C61D8A2DE700A1EE2F /* MPCustomModulePreference.m in Sources */,
-				DB615E331F1FB6F3006D79BE /* MPUtils.m in Sources */,
 				C935A74C1D8A2E3800A1EE2F /* MPDateFormatter.m in Sources */,
 				C935A6D51D8A2DED00A1EE2F /* MPMessage.m in Sources */,
 				C935A7471D8A2E3800A1EE2F /* MPBracket.cpp in Sources */,
@@ -1841,7 +1832,6 @@
 				C9DD20141D8A140800D3ABBE /* MPNetworkCommunication.mm in Sources */,
 				C9DD1FEB1D8A13EA00D3ABBE /* MPForwardQueueItem.m in Sources */,
 				C9DD1FD71D8A13DC00D3ABBE /* MPPromotion.mm in Sources */,
-				DB9AA1A51EFD806000340D02 /* MPUtils.m in Sources */,
 				C9DD1FB41D8A13D600D3ABBE /* MPMessage.m in Sources */,
 				C9DD20161D8A140800D3ABBE /* MPNetworkPerformance.m in Sources */,
 				C9DD1FCF1D8A13DC00D3ABBE /* MPCommerceEventInstruction.m in Sources */,

@@ -24,7 +24,7 @@
 #import "MPBreadcrumb.h"
 #import "MPSessionHistory.h"
 #import "MPStateMachine.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 @interface MPDataModelTests : XCTestCase
 
@@ -45,7 +45,7 @@
 }
 
 - (void)testSessionInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     XCTAssertNotNil(session, @"Should not have been nil");
     
     MPSession *sessionCopy = [session copy];
@@ -79,7 +79,7 @@
 }
 
 - (void)testMessageInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session
@@ -119,7 +119,7 @@
 }
 
 - (void)testUploadInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session
@@ -161,7 +161,7 @@
 }
 
 - (void)testBreadcrumbInstance {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session
@@ -210,7 +210,7 @@
 }
 
 - (void)testSessionHistory {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session

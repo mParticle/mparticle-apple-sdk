@@ -19,7 +19,6 @@
 #import "MPDatabaseMigrationController.h"
 #import "sqlite3.h"
 #import "MPSession.h"
-#import "MPUtils.h"
 #import "MPIUserDefaults.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
@@ -101,7 +100,7 @@
 - (void)migrateUserDefaultsWithVersion:(NSNumber *)oldVersion {
     NSInteger oldVersionValue = [oldVersion integerValue];
     if (oldVersionValue < 26) {
-        [[MPIUserDefaults standardUserDefaults] migrateUserKeysWithUserId:[MPUtils mpId]];
+        [[MPIUserDefaults standardUserDefaults] migrateUserKeysWithUserId:[MPPersistenceController mpId]];
     }
 }
 
@@ -160,7 +159,7 @@
         NSTimeInterval length = 0;
         NSNumber *mpId;
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 10));
         }
@@ -228,7 +227,7 @@
         }
         
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }
@@ -324,7 +323,7 @@
         sqlite3_bind_text(insertStatementHandle, 3, (const char *)sqlite3_column_text(selectStatementHandle, 2), -1, SQLITE_TRANSIENT); // name
         sqlite3_bind_text(insertStatementHandle, 4, (const char *)sqlite3_column_text(selectStatementHandle, 3), -1, SQLITE_TRANSIENT); // endpoint_ids
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
         }
@@ -367,7 +366,7 @@
         sqlite3_bind_int(insertStatementHandle, 4, sqlite3_column_int(selectStatementHandle, 3)); // membership_action
         
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
         }
@@ -409,7 +408,7 @@
         sqlite3_bind_blob(insertStatementHandle, 5, sqlite3_column_blob(selectStatementHandle, 4), sqlite3_column_bytes(selectStatementHandle, 4), SQLITE_TRANSIENT); // message_data
         sqlite3_bind_int(insertStatementHandle, 6, sqlite3_column_int(selectStatementHandle, 5)); // upload_status
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }
@@ -450,7 +449,7 @@
         sqlite3_bind_double(insertStatementHandle, 4, sqlite3_column_int64(selectStatementHandle, 3)); // timestamp
         
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
         }
@@ -497,7 +496,7 @@
         sqlite3_bind_double(insertStatementHandle, 9, sqlite3_column_int64(selectStatementHandle, 8)); // receipt_time
         
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         }
         else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 9));
@@ -564,7 +563,7 @@
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
         sqlite3_bind_blob(insertStatementHandle, 2, sqlite3_column_blob(selectStatementHandle, 1), sqlite3_column_bytes(selectStatementHandle, 1), SQLITE_TRANSIENT); // forwarding_data
         if (oldVersionValue < 26) {
-            mpId = [MPUtils mpId];
+            mpId = [MPPersistenceController mpId];
         }
         else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 2));
@@ -628,7 +627,7 @@
         sqlite3_bind_text(insertStatementHandle, 6, (const char *)sqlite3_column_text(selectStatementHandle, 5), -1, SQLITE_TRANSIENT); // name
         if (oldVersionValue < 26) {
             mpId = @(userId);
-            [MPUtils setMpid:mpId];
+            [MPPersistenceController setMpid:mpId];
             
             MPSession *session = [MParticle sharedInstance].backendController.session;
             session.userId = mpId;

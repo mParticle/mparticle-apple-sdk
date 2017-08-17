@@ -28,7 +28,7 @@
 #import "MPKitContainer.h"
 #import "MPKitTestClass.h"
 #import "MPIUserDefaults.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 #pragma mark - MPURLRequestBuilder category
 @interface MPURLRequestBuilder(Tests)
@@ -74,7 +74,7 @@
                                                                                   messageInfo:@{@"key":@"value"}
                                                                                  uploadStatus:MPUploadStatusBatch
                                                                                          UUID:[[NSUUID UUID] UUIDString]
-                                                                                    timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+                                                                                    timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
                                                                             message:[standaloneMessage serializedString]
@@ -302,7 +302,7 @@
                                                                                   messageInfo:@{@"key":@"value"}
                                                                                  uploadStatus:MPUploadStatusBatch
                                                                                          UUID:[[NSUUID UUID] UUIDString]
-                                                                                    timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+                                                                                    timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
                                                                             message:[standaloneMessage serializedString]

@@ -22,7 +22,7 @@
 #import "MPStateMachine.h"
 #import "MPILogger.h"
 #import "MPDateFormatter.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 @interface MPCustomModulePreference()
 
@@ -206,7 +206,7 @@
     
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];
-    NSNumber *mpId = [MPUtils mpId];
+    NSNumber *mpId = [MPPersistenceController mpId];
     id valueWithDeprecatedKey = [userDefaults mpObjectForKey:deprecatedKey userId:mpId];
     if (valueWithDeprecatedKey) {
         _value = valueWithDeprecatedKey;

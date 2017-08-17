@@ -40,7 +40,7 @@
 #import "MPDateFormatter.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
 
@@ -1048,7 +1048,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges completion:(nullable MPIdentityApiManagerModifyCallback)completion {
-    NSString *mpid = [MPUtils mpId].stringValue;
+    NSString *mpid = [MPPersistenceController mpId].stringValue;
     MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
     
     [self identityApiRequestWithURL:self.modifyURL identityRequest:request completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {

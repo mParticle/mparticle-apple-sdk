@@ -36,7 +36,8 @@
 #import "MPForwardRecord.h"
 #include "MessageTypeName.h"
 #import "MPIntegrationAttributes.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
+#import "MPIUserDefaults.h"
 
 #if TARGET_OS_IOS == 1
     #import "MParticleUserNotification.h"
@@ -119,6 +120,22 @@ const int MaxBreadcrumbs = 50;
             [self openDatabase];
         }
     }
+}
+
++ (NSNumber *)mpId {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *mpId = userDefaults[@"mpid"];
+    if (!mpId) {
+        mpId = @0;
+    }
+    
+    return mpId;
+}
+
++ (void)setMpid:(NSNumber *)mpId {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults[@"mpid"] = mpId;
+    [userDefaults synchronize];
 }
 
 #pragma mark Accessors
@@ -215,7 +232,7 @@ const int MaxBreadcrumbs = 50;
     params.push_back("'" + string([cookie.name cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
     
     fields.push_back("mpid");
-    params.push_back("'" + string([[NSString stringWithFormat:@"%@", [MPUtils mpId]] cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
+    params.push_back("'" + string([[NSString stringWithFormat:@"%@", [MPPersistenceController mpId]] cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
     
     string sqlStatement = "INSERT INTO cookies (consumer_info_id";
     for (auto field : fields) {
@@ -1121,7 +1138,7 @@ const int MaxBreadcrumbs = 50;
         const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, session_number, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:stringValue(preparedStatement, 1)
@@ -1445,9 +1462,9 @@ const int MaxBreadcrumbs = 50;
                                      ORDER BY session_number";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPUtils mpId] longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 3, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MPSession *crashSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
@@ -1489,7 +1506,7 @@ const int MaxBreadcrumbs = 50;
         MPSession *previousSession = nil;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
@@ -1527,7 +1544,7 @@ const int MaxBreadcrumbs = 50;
         const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
@@ -1606,7 +1623,7 @@ const int MaxBreadcrumbs = 50;
             
             if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
                 sqlite3_bind_int64(preparedStatement, 1, segmentId);
-                sqlite3_bind_int64(preparedStatement, 2, [[MPUtils mpId] longLongValue]);
+                sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
                 
                 while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                     MPSegmentMembership *segmentMembership = [[MPSegmentMembership alloc] initWithSegmentId:segmentId
@@ -1635,7 +1652,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             segments = [[NSMutableArray alloc] initWithCapacity:1];
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 int64_t segmentId = int64Value(preparedStatement, 0);
@@ -1796,7 +1813,7 @@ const int MaxBreadcrumbs = 50;
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
-            sqlite3_bind_int64(preparedStatement, 3, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
@@ -2075,7 +2092,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 3, message.timestamp);
             sqlite3_bind_blob(preparedStatement, 4, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
             sqlite3_bind_int64(preparedStatement, 5, [session.sessionNumber integerValue]);
-            sqlite3_bind_int64(preparedStatement, 6, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
@@ -2090,8 +2107,8 @@ const int MaxBreadcrumbs = 50;
         sqlStatement = "DELETE FROM breadcrumbs WHERE mpid = ? AND _id NOT IN (SELECT _id FROM breadcrumbs WHERE mpid = ? ORDER BY _id DESC LIMIT ?)";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
             sqlite3_bind_int(preparedStatement, 3, MaxBreadcrumbs);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -2301,7 +2318,7 @@ const int MaxBreadcrumbs = 50;
                 sqlite3_bind_int64(preparedStatement, 1, segmentMembership.segmentId);
                 sqlite3_bind_double(preparedStatement, 2, segmentMembership.timestamp);
                 sqlite3_bind_int(preparedStatement, 3, segmentMembership.action);
-                sqlite3_bind_int64(preparedStatement, 4, [[MPUtils mpId] longLongValue]);
+                sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
                 
                 if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                     MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(mParticleDB));
@@ -2338,7 +2355,7 @@ const int MaxBreadcrumbs = 50;
                 sqlite3_bind_null(preparedStatement, 4);
             }
             
-            sqlite3_bind_int64(preparedStatement, 5, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 5, [[MPPersistenceController mpId] longLongValue]);
             
             if (SQLITE_DONE == sqlite3_step(preparedStatement)) {
                 for (MPSegmentMembership *segmentMembership in segment.memberships) {
@@ -2463,7 +2480,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 3, standaloneMessage.timestamp);
             sqlite3_bind_blob(preparedStatement, 4, [standaloneMessage.messageData bytes], (int)[standaloneMessage.messageData length], SQLITE_STATIC);
             sqlite3_bind_int(preparedStatement, 5, standaloneMessage.uploadStatus);
-            sqlite3_bind_int64(preparedStatement, 6, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while storing stand-alone message: %s", sqlite3_errmsg(mParticleDB));
@@ -2588,7 +2605,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, userNotification.userNotificationId);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while deleting user notification: %s", sqlite3_errmsg(mParticleDB));
@@ -2611,7 +2628,7 @@ const int MaxBreadcrumbs = 50;
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int(preparedStatement, 1, MPUserNotificationCommandAlertUserLocalTime);
             sqlite3_bind_double(preparedStatement, 2, [[NSDate date] timeIntervalSince1970]);
-            sqlite3_bind_int64(preparedStatement, 3, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MParticleUserNotification *userNotification = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
@@ -2645,7 +2662,7 @@ const int MaxBreadcrumbs = 50;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int(preparedStatement, 1, MPUserNotificationCommandAlertUserLocalTime);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MParticleUserNotification *userNotification = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
@@ -2681,7 +2698,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 1, referenceDate);
             sqlite3_bind_int(preparedStatement, 2, MPUserNotificationCommandAlertUserLocalTime);
             sqlite3_bind_double(preparedStatement, 3, [[NSDate date] timeIntervalSince1970]);
-            sqlite3_bind_int64(preparedStatement, 4, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MParticleUserNotification *userNotification = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
@@ -2716,7 +2733,7 @@ const int MaxBreadcrumbs = 50;
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_double(preparedStatement, 1, referenceDate);
             sqlite3_bind_int(preparedStatement, 2, MPUserNotificationCommandAlertUserLocalTime);
-            sqlite3_bind_int64(preparedStatement, 3, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MParticleUserNotification *userNotification = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
@@ -2758,7 +2775,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 2, MPUserNotificationCommandAlertUserLocalTime);
             sqlite3_bind_int(preparedStatement, 3, MPUserNotificationCommandAlertUserLocalTime);
             sqlite3_bind_double(preparedStatement, 4, now);
-            sqlite3_bind_int64(preparedStatement, 5, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 5, [[MPPersistenceController mpId] longLongValue]);
             
             MParticleUserNotification *userNotification;
             id notificationObject;
@@ -2822,7 +2839,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 2, MPUserNotificationCommandAlertUserLocalTime);
             sqlite3_bind_int(preparedStatement, 3, MPUserNotificationCommandAlertUserLocalTime);
             sqlite3_bind_double(preparedStatement, 4, now);
-            sqlite3_bind_int64(preparedStatement, 5, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 5, [[MPPersistenceController mpId] longLongValue]);
             
             MParticleUserNotification *userNotification;
             id notificationObject;
@@ -2878,7 +2895,7 @@ const int MaxBreadcrumbs = 50;
         const string sqlStatement = "SELECT _id, notification_data FROM remote_notifications WHERE mpid = ? ORDER BY _id";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MParticleUserNotification *userNotification = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
@@ -2929,7 +2946,7 @@ const int MaxBreadcrumbs = 50;
             
             sqlite3_bind_double(preparedStatement, 8, [userNotification.receiptTime timeIntervalSince1970]);
             
-            sqlite3_bind_int64(preparedStatement, 9, [[MPUtils mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 9, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while storing user notification: %s", sqlite3_errmsg(mParticleDB));

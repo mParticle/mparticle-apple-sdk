@@ -27,7 +27,6 @@
 #import "MPStateMachine.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
-#import "MPUtils.h"
 
 @interface MPUploadBuilderTests : XCTestCase
 
@@ -121,7 +120,7 @@
 - (void)testInstanceWithSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
 
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -136,7 +135,7 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPUtils mpId]
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
                                                                     session:session
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
@@ -203,7 +202,7 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPUtils mpId] messages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] messages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
     
     XCTAssertNotNil(uploadBuilder);
     

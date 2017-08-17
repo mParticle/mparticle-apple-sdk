@@ -6,7 +6,7 @@
 #import "mParticle.h"
 #import "MPDevice.h"
 #import "MPNotificationController.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
 
@@ -47,9 +47,9 @@
     if (self) {
         _knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:apiRequest.userIdentities];
         
-        NSNumber *mpid = [MPUtils mpId];
+        NSNumber *mpid = [MPPersistenceController mpId];
         if (mpid.longLongValue != 0) {
-            _previousMPID = [MPUtils mpId].stringValue;
+            _previousMPID = [MPPersistenceController mpId].stringValue;
         }
         
         MPDevice *device = [[MPDevice alloc] init];

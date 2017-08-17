@@ -20,7 +20,7 @@
 #import "MPCustomModule.h"
 #import "MPCustomModulePreference.h"
 #import "MPIConstants.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 @interface MPCustomModuleTests : XCTestCase
 
@@ -109,7 +109,7 @@
 
 - (void)setUp {
     [super setUp];
-    [MPUtils setMpid:@1];
+    [MPPersistenceController setMpid:@1];
 }
 
 - (void)tearDown {

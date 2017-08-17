@@ -18,7 +18,7 @@
 
 #import "MPSession.h"
 #import "MPIConstants.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 NSString *const sessionNumberFileName = @"SessionNumber";
 NSString *const sessionUUIDKey = @"sessionId";
@@ -30,7 +30,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
 
 - (instancetype)init {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:[MPUtils mpId] sessionUserIds:[[MPUtils mpId] stringValue]];
+    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:[MPPersistenceController mpId] sessionUserIds:[[MPPersistenceController mpId] stringValue]];
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId {

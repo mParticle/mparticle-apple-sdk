@@ -51,6 +51,8 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
 
 + (nonnull instancetype)sharedInstance;
++ (nullable NSNumber *)mpId;
++ (void)setMpid:(nonnull NSNumber *)mpId;
 - (void)archiveSession:(nonnull MPSession *)session completionHandler:(void (^ _Nullable)(MPSession * _Nullable archivedSession))completionHandler;
 - (nullable MPSession *)archiveSessionSync:(nonnull MPSession *)session;
 - (BOOL)closeDatabase;

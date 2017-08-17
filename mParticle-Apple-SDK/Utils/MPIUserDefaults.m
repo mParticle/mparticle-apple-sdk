@@ -17,7 +17,7 @@
 //
 
 #import "MPIUserDefaults.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
@@ -101,7 +101,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 - (void)removeMPObjectForKey:(NSString *)key {
-    [self removeMPObjectForKey:key userId:[MPUtils mpId]];
+    [self removeMPObjectForKey:key userId:[MPPersistenceController mpId]];
 }
 
 - (void)synchronize {
@@ -127,14 +127,14 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     if ([key isEqualToString:@"mpid"]) {
         return [self mpObjectForKey:key userId:@0];
     }
-    return [self mpObjectForKey:key userId:[MPUtils mpId]];
+    return [self mpObjectForKey:key userId:[MPPersistenceController mpId]];
 }
 
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
     if (obj) {
-        [self setMPObject:obj forKey:key userId:[MPUtils mpId]];
+        [self setMPObject:obj forKey:key userId:[MPPersistenceController mpId]];
     } else {
-        [self removeMPObjectForKey:key userId:[MPUtils mpId]];
+        [self removeMPObjectForKey:key userId:[MPPersistenceController mpId]];
     }
 }
 

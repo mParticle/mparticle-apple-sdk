@@ -33,7 +33,7 @@
 #import "MPLocationManager.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
-#import "MPUtils.h"
+#import "MPPersistenceController.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -281,7 +281,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
                                                       uploadStatus:MPUploadStatusBatch
                                                               UUID:messageDictionary[kMPMessageIdKey]
                                                          timestamp:_timestamp
-                                                            userId:[MPUtils mpId]];
+                                                            userId:[MPPersistenceController mpId]];
     }
     
     return message;

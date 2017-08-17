@@ -8,7 +8,6 @@
 #import "MPBackendController.h"
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
-#import "MPUtils.h"
 #import "MPIUserDefaults.h"
 #import "MPSession.h"
 #import "MPPersistenceController.h"
@@ -83,8 +82,8 @@
         }
         return;
     }
-    NSNumber *previousMPID = [MPUtils mpId];
-    [MPUtils setMpid:httpResponse.mpid];
+    NSNumber *previousMPID = [MPPersistenceController mpId];
+    [MPPersistenceController setMpid:httpResponse.mpid];
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
     MParticleUser *user = [[MParticleUser alloc] init];
     user.userId = httpResponse.mpid;
@@ -149,7 +148,7 @@
         return _currentUser;
     }
 
-    NSNumber *mpid = [MPUtils mpId];
+    NSNumber *mpid = [MPPersistenceController mpId];
     MParticleUser *user = [[MParticleUser alloc] init];
     user.userId = mpid;
     _currentUser = user;

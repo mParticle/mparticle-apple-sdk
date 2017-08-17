@@ -24,7 +24,6 @@
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
 #import "NSString+MPPercentEscape.h"
-#import "MPUtils.h"
 
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";
@@ -234,7 +233,7 @@ NSString *const kMPCKExpiration = @"e";
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     NSMutableArray<MPCookie *> *cookies = [[NSMutableArray alloc] init];
-    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPUtils mpId]];
+    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPPersistenceController mpId]];
     if (fetchedCookies) {
         [cookies addObjectsFromArray:fetchedCookies];
     }
@@ -274,7 +273,7 @@ NSString *const kMPCKExpiration = @"e";
 
 - (NSDictionary *)localCookiesDictionary {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPUtils mpId]];
+    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPPersistenceController mpId]];
     
     if (!localCookies) {
         return nil;
@@ -429,7 +428,7 @@ NSString *const kMPCKExpiration = @"e";
     }
     
     [self configureCookiesWithDictionary:configuration[kMPRemoteConfigCookiesKey]];
-    self.mpId = [MPUtils mpId];
+    self.mpId = [MPPersistenceController mpId];
     self.uniqueIdentifier = !MPIsNull(configuration[kMPRemoteConfigUniqueIdentifierKey]) ? configuration[kMPRemoteConfigUniqueIdentifierKey] : nil; // Unique Identifier ("das")
 }
 

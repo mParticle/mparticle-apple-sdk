@@ -56,7 +56,6 @@
 #import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPURLRequestBuilder.h"
-#import "MPUtils.h"
 
 
 #if TARGET_OS_IOS == 1
@@ -450,7 +449,7 @@ static BOOL appBackgrounded = NO;
                 NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
                 
                 NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
-                NSDictionary *userIdentity = [[[self userIdentitiesForUserId:[MPUtils mpId]] filteredArrayUsingPredicate:predicate] lastObject];
+                NSDictionary *userIdentity = [[[self userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
                 
                 if (userIdentity &&
                     [userIdentity[kMPUserIdentityIdKey] caseInsensitiveCompare:userIdentityChange.userIdentityNew.value] == NSOrderedSame &&
@@ -474,7 +473,7 @@ static BOOL appBackgrounded = NO;
                 NSUInteger existingEntryIndex;
                 BOOL persistUserIdentities = NO;
                 
-                NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPUtils mpId]];
+                NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceController mpId]];
                 
                 if (userIdentityChange.userIdentityNew.value == nil || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
                     existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
@@ -840,7 +839,7 @@ static BOOL appBackgrounded = NO;
             
             dispatch_sync(backendQueue, ^{
                 
-                NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPUtils mpId]];
+                NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController mpId]];
                 id<NSObject> userAttributeValue = nil;
                 NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
                 NSError *error = nil;
@@ -1596,7 +1595,7 @@ static BOOL appBackgrounded = NO;
         [self endSession];
     }
     
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPUtils mpId]];
+    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
@@ -1949,13 +1948,13 @@ static BOOL appBackgrounded = NO;
     NSAssert([value isKindOfClass:[NSNumber class]], @"'value' must be a number.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Incrementing user attribute cannot happen prior to starting the mParticle SDK.\n****\n");
     
-    NSString *localKey = [[self userAttributesForUserId:[MPUtils mpId]] caseInsensitiveKey:key];
+    NSString *localKey = [[self userAttributesForUserId:[MPPersistenceController mpId]] caseInsensitiveKey:key];
     if (!localKey) {
         [self setUserAttribute:key value:value attempt:0 completionHandler:nil];
         return value;
     }
     
-    id currentValue = [self userAttributesForUserId:[MPUtils mpId]][localKey];
+    id currentValue = [self userAttributesForUserId:[MPPersistenceController mpId]][localKey];
     if (currentValue && ![currentValue isKindOfClass:[NSNumber class]]) {
         return nil;
     } else if (MPIsNull(currentValue)) {
@@ -1966,7 +1965,7 @@ static BOOL appBackgrounded = NO;
     NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)currentValue stringValue]];
     newValue = [newValue decimalNumberByAdding:incrementValue];
     
-    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPUtils mpId]];
+    NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController mpId]];
     userAttributes[localKey] = newValue;
     
     NSMutableDictionary *userAttributesCopy = [[NSMutableDictionary alloc] initWithCapacity:userAttributes.count];
@@ -2704,7 +2703,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPUtils mpId]] copy] key:keyCopy value:value];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController mpId]] copy] key:keyCopy value:value];
     
     switch (_initializationStatus) {
         case MPInitializationStatusStarted:
@@ -2747,7 +2746,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPUtils mpId]] copy] key:keyCopy value:values];
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController mpId]] copy] key:keyCopy value:values];
     userAttributeChange.isArray = YES;
     
     switch (_initializationStatus) {
@@ -2787,7 +2786,7 @@ static BOOL appBackgrounded = NO;
     MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:identityType
                                                                                      value:identityString];
     
-    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:[self userIdentitiesForUserId:[MPUtils mpId]]];
+    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew userIdentities:[self userIdentitiesForUserId:[MPPersistenceController mpId]]];
     
     switch (_initializationStatus) {
         case MPInitializationStatusStarted:
