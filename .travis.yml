@@ -17,8 +17,12 @@ env:
   global:
   - FRAMEWORK_NAME=mParticle_Apple_SDK
   - secure: "rKzMktHX0tQF9XjIZ0SiRKoNHINvFvb9VAlkPXCPyuu1L9UmKql4lsCH6VSafUK+Dm7EOyjle9P3jUGlO9RKY5T20ynNK5hBLKuSY7emWo2zEAhTfVCSAkZlixorkMIKEXD13jY/IZYvATsf4cTYo7DKsu97AWVL9AuQN4xPrETBYgrKXXYuLYnb0lDr2jJSaAUTvt0QqOEvIBLE59CRUIvcxnPqZefiQV5TMRjzNDoNY6SYlds/GEk1hXcYK6pIcKYV6QSjh0ZcAIYMnNaoWFXEmIdy1SNyGrwXSw43xPeVKCGrpbzMyjiEGPGm89fdy9y6c0TVsVXt8/BzY9a88H7TiJhjC/3BLpCKYtselNmYhGkhkGdPE/9NUfbSH4T1KQNjUVtFbsRBXmx0vhFf7Be+0mame187HxpP/t8oybAzqbLBda01V9HNTPyrzaG/y9gL6/g6eiPq8FkEAnOI4DnUpj9JOzQFDBErNfDniaTkqXRKbDaSvCA5rp/SBXjmHV5vv96egg6XOxJ0VR9XIVVpsCRxjehop7lEgLW+Syvft1Y70AooX8+CIj8FmBaCgSL6wHf7xJEygFpfLfYsVQNh+eUbXa1BsRh0iIIwrj5TtMt9WA9dfLAT7sZuVLLxTDx0uBzs7sdxYleBi43aVQXc+KwwHdhSZTQspQXkG34="
-before_script:
+git:
+  submodules: false
+before_install:
   - open -a "simulator" --args -CurrentDeviceUDID $UDID
+  - sed -i '' -e 's/git@github.com:/https:\/\/github.com\//' .gitmodules
+  - git submodule update --init --recursive
 before_deploy:
 - carthage build --no-skip-current
 - carthage archive $FRAMEWORK_NAME
