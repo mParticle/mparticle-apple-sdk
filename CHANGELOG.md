@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.4
+
+* [FIX] Remove MPUtils.h/m
+
 ## 7.0.3
 
 * [FIX] Ensure the correct mpid is used in batches
