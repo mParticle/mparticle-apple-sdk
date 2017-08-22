@@ -251,13 +251,13 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeUserIdentityChange = 18
 };
 
-typedef NS_ENUM(NSUInteger, MPConnectivityError) {
+typedef NS_ENUM(NSUInteger, MPConnectivityErrorCode) {
     /** Client side error: Unknown error. */
-    MPConnectivityErrorUnknown = 0,
+    MPConnectivityErrorCodeUnknown = 0,
     /** The device is not online. Please make sure you've initialized the mParticle SDK and that your device has an active network connection. */
-    MPConnectivityErrorNoConnection = 1,
+    MPConnectivityErrorCodeNoConnection = 1,
     /** Client side error: SSL connection failed to be established due to invalid server certificate. mParticle performs SSL pinning - you cannot use a proxy to read traffic. */
-    MPConnectivityErrorSSLCertificate = 2,
+    MPConnectivityErrorCodeSSLCertificate = 2,
 };
 
 typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {

@@ -247,7 +247,7 @@ static NSArray *mpFiddlerCertificates = nil;
 - (void)asyncGetDataFromURL:(NSURL *)url completionHandler:(void (^)(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse))completionHandler {
 #if !defined(MP_UNIT_TESTING)
     if ([MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
-        NSError *error = [NSError errorWithDomain:@"MPConnector" code:MPConnectivityErrorNoConnection userInfo:nil];
+        NSError *error = [NSError errorWithDomain:@"MPConnector" code:MPConnectivityErrorCodeNoConnection userInfo:nil];
         completionHandler(nil, error, 0, nil);
         return;
     }
@@ -271,7 +271,7 @@ static NSArray *mpFiddlerCertificates = nil;
 - (void)asyncPostDataFromURL:(NSURL *)url message:(NSString *)message serializedParams:(NSData *)serializedParams completionHandler:(void (^)(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse))completionHandler {
 #if !defined(MP_UNIT_TESTING)
     if ([MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
-        NSError *error = [NSError errorWithDomain:@"MPConnector" code:MPConnectivityErrorNoConnection userInfo:nil];
+        NSError *error = [NSError errorWithDomain:@"MPConnector" code:MPConnectivityErrorCodeNoConnection userInfo:nil];
         completionHandler(nil, error, 0, nil);
         return;
     }

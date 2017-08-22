@@ -974,7 +974,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           if (completion) {
                               MPIdentityHTTPErrorResponse *errorResponse;
                               if (error) {
-                                  if (error.code == MPConnectivityErrorNoConnection) {
+                                  if (error.code == MPConnectivityErrorCodeNoConnection) {
                                       errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientNoConnection message:@"Device has no network connectivity." error:error];
                                   } else if ([error.domain isEqualToString: NSURLErrorDomain] ){
                                       errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeSSLError message:@"Failed to establish SSL connection." error:error];
