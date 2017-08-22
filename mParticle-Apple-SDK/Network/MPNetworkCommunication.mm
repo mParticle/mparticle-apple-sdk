@@ -999,12 +999,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         
         if (strongSelf) {
             strongSelf->uploading = NO;
+            strongSelf->identifying = NO;
         }
 
         if (connector.active) {
             MPILogWarning(@"Failed to call identify API with request: %@", dictionary);
             if (completion) {
-                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeClientSideTimeout userInfo:@{mParticleIdentityErrorKey:@"API call timed out. Please check device connectivity and try again."}]);
+                MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientSideTimeout message:@"API call timed out. Please check device connectivity and try again." error:nil];
+                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeClientSideTimeout userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
             }
         }
         
