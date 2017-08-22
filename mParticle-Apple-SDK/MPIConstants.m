@@ -177,7 +177,6 @@ NSString *const kMPRemoteConfigLocationKey = @"lct";
 NSString *const kMPRemoteConfigLocationModeKey = @"ltm";
 NSString *const kMPRemoteConfigLocationAccuracyKey = @"acc";
 NSString *const kMPRemoteConfigLocationMinimumDistanceKey = @"mdf";
-NSString *const kMPRemoteConfigLatestSDKVersionKey = @"lsv";
 NSString *const kMPRemoteConfigRampKey = @"rp";
 NSString *const kMPRemoteConfigTriggerKey = @"tri";
 NSString *const kMPRemoteConfigTriggerEventsKey = @"evts";

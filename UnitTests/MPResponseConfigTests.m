@@ -37,7 +37,6 @@
 
 - (void)testInstance {
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                    kMPRemoteConfigLatestSDKVersionKey:kMParticleSDKVersion,
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
@@ -69,7 +68,6 @@
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.customModules = nil;
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                    kMPRemoteConfigLatestSDKVersionKey:kMParticleSDKVersion,
                                     kMPRemoteConfigCustomModuleSettingsKey:cmsDict,
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
@@ -91,7 +89,6 @@
 
 - (void)testSaveRestore {
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                    kMPRemoteConfigLatestSDKVersionKey:kMParticleSDKVersion,
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
@@ -123,7 +120,6 @@
     XCTAssertTrue(stateMachine.shouldUploadSessionHistory);
 
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                    kMPRemoteConfigLatestSDKVersionKey:kMParticleSDKVersion,
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
@@ -138,7 +134,6 @@
     XCTAssertFalse(stateMachine.shouldUploadSessionHistory);
 
     configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                      kMPRemoteConfigLatestSDKVersionKey:kMParticleSDKVersion,
                       kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                       kMPRemoteConfigRampKey:@100,
                       kMPRemoteConfigTriggerKey:[NSNull null],
