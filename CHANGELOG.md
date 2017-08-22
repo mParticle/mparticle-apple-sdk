@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.5
+
+* [FIX] Fixes and enhancements to Identity API error callbacks
+
 ## 7.0.4
 
 * [FIX] Remove MPUtils.h/m
