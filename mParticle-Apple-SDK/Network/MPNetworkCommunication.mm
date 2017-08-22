@@ -71,6 +71,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 @interface MPIdentityHTTPErrorResponse ()
 
 - (instancetype)initWithJsonObject:(nullable NSDictionary *)dictionary httpCode:(NSInteger) httpCode;
+- (instancetype)initWithCode:(MPIdentityErrorResponseCode) code message: (NSString *) message error:(NSError *) error;
 
 @end
 
@@ -870,7 +871,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     if (identifying) {
         if (completion) {
-            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorIdentityRequestInProgress userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeRequestInProgress userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
         }
         return;
     }
@@ -951,6 +952,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                       
                       MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
                     
+                      strongSelf->identifying = NO;
+                      
                       if (success) {
                           if (responseString) {
                               MPILogVerbose(@"Identity response:\n%@", responseString);
@@ -969,29 +972,40 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           }
                       } else {
                           if (completion) {
-                            MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
-                            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:responseCode userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
+                              MPIdentityHTTPErrorResponse *errorResponse;
+                              if (error) {
+                                  if (error.code == MPConnectivityErrorNoConnection) {
+                                      errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientNoConnection message:@"Device has no network connectivity." error:error];
+                                  } else if ([error.domain isEqualToString: NSURLErrorDomain] ){
+                                      errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeSSLError message:@"Failed to establish SSL connection." error:error];
+                                  } else {
+                                      errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown message:@"An unknown client-side error has occured" error:error];
+                                  }
+                              } else {
+                                  errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
+                              }
+                              completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:errorResponse.code userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
                           }
                       }
                       
-                      strongSelf->identifying = NO;
+                      
                   }];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
             return;
         }
+        __strong MPNetworkCommunication *strongSelf = weakSelf;
         
+        if (strongSelf) {
+            strongSelf->uploading = NO;
+        }
+
         if (connector.active) {
             MPILogWarning(@"Failed to call identify API with request: %@", dictionary);
             if (completion) {
-                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeTimeout userInfo:@{mParticleIdentityErrorKey:@"API call timed out."}]);
+                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeClientSideTimeout userInfo:@{mParticleIdentityErrorKey:@"API call timed out. Please check device connectivity and try again."}]);
             }
-        }
-        
-        __strong MPNetworkCommunication *strongSelf = weakSelf;
-        if (strongSelf) {
-            strongSelf->uploading = NO;
         }
         
         [connector cancelRequest];

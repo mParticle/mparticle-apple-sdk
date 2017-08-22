@@ -40,8 +40,9 @@ typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiRe
 @interface MPIdentityHTTPErrorResponse : NSObject
 
 @property (nonatomic) NSInteger httpCode;
-@property (nonatomic, nullable) NSString *code;
+@property (nonatomic, assign) MPIdentityErrorResponseCode code;
 @property (nonatomic, nullable) NSString *message;
+@property (nonatomic, nullable) NSError *innerError;
 
 @end
 

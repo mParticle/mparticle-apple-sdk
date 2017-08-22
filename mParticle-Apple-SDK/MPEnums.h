@@ -251,13 +251,32 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeUserIdentityChange = 18
 };
 
+typedef NS_ENUM(NSUInteger, MPConnectivityError) {
+    /** Client side error: Unknown error. */
+    MPConnectivityErrorUnknown = 0,
+    /** The device is not online. Please make sure you've initialized the mParticle SDK and that your device has an active network connection. */
+    MPConnectivityErrorNoConnection = 1,
+    /** Client side error: SSL connection failed to be established due to invalid server certificate. mParticle performs SSL pinning - you cannot use a proxy to read traffic. */
+    MPConnectivityErrorSSLCertificate = 2,
+};
+
 typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
-    /** Identity request should be retried */
+    /** Client side error: Unknown error. */
     MPIdentityErrorResponseCodeUnknown = 0,
-    MPIdentityErrorIdentityRequestInProgress = 1,
+    /** Client side error: There is a current Identity API request in progress. Please wait until it has completed and retry your request. */
+    MPIdentityErrorResponseCodeRequestInProgress = 1,
+    /** Client side error: Request timed-out while attempting to call the server. Request should be retried when device connectivity has been reestablished. */
+    MPIdentityErrorResponseCodeClientSideTimeout = 2,
+    /** Client side error: Device has no network connection. Request should be retried when device connectivity has been reestablished. */
+    MPIdentityErrorResponseCodeClientNoConnection = 3,
+    /** Client side error: SSL connection failed to be established due to invalid server certificate. mParticle performs SSL pinning - you cannot use a proxy to read traffic. */
+    MPIdentityErrorResponseCodeSSLError = 3,
+    /** HTTP Error 401: Unauthorized. Ensure that you've initialized the mParticle SDK with a valid workspace key and secret. */
+    MPIdentityErrorResponseCodeUnauthorized = 401,
+    /** HTTP Error 504: Identity request should be retried */
     MPIdentityErrorResponseCodeTimeout = 504,
-    /** Identity request should be retried */
-    MPIdentityErrorResponseCodeRetry = 429,
+    /** HTTP Error 429: Identity request should be retried */
+    MPIdentityErrorResponseCodeRetry = 429
 };
 
 /** Posted immediately after a new session has begun.

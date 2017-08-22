@@ -204,9 +204,21 @@
     if (self) {
         _httpCode = httpCode;
         if (dictionary) {
-            _code = dictionary[@"code"];
+            _code = [dictionary[@"code"] unsignedIntegerValue];
             _message = dictionary[@"message"];
+        } else {
+            _code = httpCode;
         }
+    }
+    return self;
+}
+
+- (instancetype)initWithCode:(MPIdentityErrorResponseCode) code message: (NSString *) message error: (NSError *) error {
+    self = [super init];
+    if (self) {
+        _code = code;
+        _innerError = error;
+        _message = message;
     }
     return self;
 }
@@ -214,8 +226,9 @@
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPIdentityHTTPErrorResponse {\n"];
     [description appendFormat:@"  httpCode: %@\n", @(_httpCode)];
-    [description appendFormat:@"  code: %@\n", _code];
+    [description appendFormat:@"  code: %@\n", @(_code)];
     [description appendFormat:@"  message: %@\n", _message];
+    [description appendFormat:@"  inner error: %@\n", _innerError];
     [description appendString:@"}"];
     return description;
 }
