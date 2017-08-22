@@ -47,7 +47,6 @@ static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
 
 @interface MPStateMachine() {
-    BOOL lastestSDKWarningShown;
     BOOL optOutSet;
     BOOL alwaysTryToCollectIDFASet;
 }
@@ -90,7 +89,6 @@ static BOOL runningInBackground = NO;
         _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
         _backgrounded = NO;
         _consoleLogging = MPConsoleLoggingAutoDetect;
-        lastestSDKWarningShown = NO;
         _dataRamped = NO;
         _installationType = MPInstallationTypeAutodetect;
         _launchDate = [NSDate date];
@@ -536,29 +534,6 @@ static BOOL runningInBackground = NO;
     [self didChangeValueForKey:@"installationType"];
     
     self.firstSeenInstallation = installationType != MPInstallationTypeKnownUpgrade ? @YES : @NO;
-}
-
-- (void)setLatestSDKVersion:(NSString *)latestSDKVersion {
-    if (MPIsNull(latestSDKVersion)) {
-        return;
-    }
-    
-    if (!_latestSDKVersion || ![_latestSDKVersion isEqualToString:latestSDKVersion]) {
-        [self willChangeValueForKey:@"latestSDKVersion"];
-        _latestSDKVersion = latestSDKVersion;
-        [self didChangeValueForKey:@"latestSDKVersion"];
-    }
-    
-    if (!lastestSDKWarningShown && ([MPStateMachine environment] == MPEnvironmentDevelopment) && latestSDKVersion && [latestSDKVersion compare:kMParticleSDKVersion] == NSOrderedDescending) {
-        NSLog(@"****");
-        NSLog(@"*");
-        NSLog(@"* Version %@ of the mParticle SDK is available.", latestSDKVersion);
-        NSLog(@"* You are running version %@.", kMParticleSDKVersion);
-        NSLog(@"*");
-        NSLog(@"****");
-        
-        lastestSDKWarningShown = YES;
-    }
 }
 
 #if TARGET_OS_IOS == 1

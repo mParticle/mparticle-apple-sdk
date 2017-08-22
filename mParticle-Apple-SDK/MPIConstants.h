@@ -220,7 +220,6 @@ extern NSString * _Nonnull const kMPRemoteConfigLocationKey;
 extern NSString * _Nonnull const kMPRemoteConfigLocationModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigLocationAccuracyKey;
 extern NSString * _Nonnull const kMPRemoteConfigLocationMinimumDistanceKey;
-extern NSString * _Nonnull const kMPRemoteConfigLatestSDKVersionKey;
 extern NSString * _Nonnull const kMPRemoteConfigRampKey;
 extern NSString * _Nonnull const kMPRemoteConfigTriggerKey;
 extern NSString * _Nonnull const kMPRemoteConfigTriggerEventsKey;

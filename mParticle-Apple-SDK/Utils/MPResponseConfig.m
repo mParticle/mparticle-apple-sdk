@@ -46,7 +46,6 @@
     if (dataReceivedFromServer) {
         [[MPKitContainer sharedInstance] configureKits:_configuration[kMPRemoteConfigKitsKey]];
     }
-    stateMachine.latestSDKVersion = _configuration[kMPRemoteConfigLatestSDKVersionKey];
     [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];
     [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
     [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
