@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.6
+
+* [FIX] Ensure Identifying flag is flipped on API timeout
+
 ## 7.0.5
 
 * [FIX] Fixes and enhancements to Identity API error callbacks
