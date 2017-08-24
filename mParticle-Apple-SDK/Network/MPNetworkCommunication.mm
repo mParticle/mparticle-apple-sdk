@@ -867,7 +867,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     });
 }
 
-- (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest completion:(nullable MPIdentityApiManagerCallback)completion {
+- (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion {
     
     if (identifying) {
         if (completion) {
@@ -875,8 +875,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
         return;
     }
-    
-    identifying = YES;
+    if (blockOtherRequests) {
+        identifying = YES;
+    }
     __weak MPNetworkCommunication *weakSelf = self;
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
@@ -1016,18 +1017,18 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:identifyRequest];
-    [self identityApiRequestWithURL:self.identifyURL identityRequest:request completion:completion];
+    [self identityApiRequestWithURL:self.identifyURL identityRequest:request blockOtherRequests: YES completion:completion];
 }
 
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:loginRequest];
-    [self identityApiRequestWithURL:self.loginURL identityRequest:request completion:completion];
+    [self identityApiRequestWithURL:self.loginURL identityRequest:request blockOtherRequests: YES completion:completion];
 }
 
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable
                                                                           MPIdentityApiManagerCallback)completion {
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:logoutRequest];
-    [self identityApiRequestWithURL:self.logoutURL identityRequest:request completion:completion];
+    [self identityApiRequestWithURL:self.logoutURL identityRequest:request blockOtherRequests: YES completion:completion];
 }
 
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
@@ -1052,7 +1053,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
     }];
     
-    [self modifyWithIdentityChanges:identityChanges completion:completion];
+    [self modifyWithIdentityChanges:identityChanges blockOtherRequests:YES completion:completion];
     
 }
 
@@ -1060,14 +1061,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSMutableArray *identityChanges = [NSMutableArray array];
     MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:oldValue value:value identityType:deviceIdType];
     [identityChanges addObject:identityChange];
-    [self modifyWithIdentityChanges:identityChanges completion:nil];
+    [self modifyWithIdentityChanges:identityChanges blockOtherRequests:NO completion:nil];
 }
 
-- (void)modifyWithIdentityChanges:(NSArray *)identityChanges completion:(nullable MPIdentityApiManagerModifyCallback)completion {
+- (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion {
     NSString *mpid = [MPPersistenceController mpId].stringValue;
     MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
     
-    [self identityApiRequestWithURL:self.modifyURL identityRequest:request completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+    [self identityApiRequestWithURL:self.modifyURL identityRequest:request blockOtherRequests:blockOtherRequests completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
         if (completion) {
             completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
         }
