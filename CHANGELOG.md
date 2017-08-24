@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.7
+
+* [FIX] Allow concurrent internal modify requests
+
 ## 7.0.6
 
 * [FIX] Ensure Identifying flag is flipped on API timeout
