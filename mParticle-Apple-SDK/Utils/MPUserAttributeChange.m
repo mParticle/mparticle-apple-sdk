@@ -23,7 +23,7 @@
 
 @synthesize valueToLog = _valueToLog;
 
-- (nonnull instancetype)initWithUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes key:(nonnull NSString *)key value:(nullable id)value {
+- (nullable instancetype)initWithUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes key:(nonnull NSString *)key value:(nullable id)value {
     Class NSStringClass = [NSString class];
     Class NSArrayClass = [NSArray class];
     BOOL validKey = !MPIsNull(key) && [key isKindOfClass:NSStringClass];

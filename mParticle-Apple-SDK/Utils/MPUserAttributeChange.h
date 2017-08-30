@@ -29,6 +29,6 @@
 @property (nonatomic, unsafe_unretained) BOOL deleted;
 @property (nonatomic, unsafe_unretained) BOOL isArray;
 
-- (nonnull instancetype)initWithUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes key:(nonnull NSString *)key value:(nullable id)value;
+- (nullable instancetype)initWithUserAttributes:(nullable NSDictionary<NSString *, id> *)userAttributes key:(nonnull NSString *)key value:(nullable id)value;
 
 @end
