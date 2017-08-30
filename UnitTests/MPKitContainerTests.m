@@ -1365,8 +1365,7 @@
                               XCTAssertNotNil(forwardEvent);
                               XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
                               XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 4);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_customer_user_id"], @"trex@shortarmsdinosaurs.com");
+                              XCTAssertEqual(forwardEvent.info.count, 3);
                               
                               [expectation fulfill];
                           }
@@ -1540,10 +1539,6 @@
                                 kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                                     if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
                                         MPEvent *event = kitFilter.forwardEvent;
-                                        NSString *customerUserId = event.info[@"af_customer_user_id"];
-                                        XCTAssertNotNil(customerUserId);
-                                        XCTAssertEqualObjects(customerUserId, @"trex@shortarmsdinosaurs.com");
-                                        
                                         XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
                                         XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
                                         XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
@@ -1649,7 +1644,7 @@
                           if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
                               XCTAssertNotNil(forwardEvent);
                               XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
+                              XCTAssertEqual(forwardEvent.info.count, 2);
                               
                               [foundEventNames addObject:forwardEvent.name];
                               
@@ -1871,7 +1866,7 @@
                               XCTAssertNotNil(forwardEvent);
                               XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
                               XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
+                              XCTAssertEqual(forwardEvent.info.count, 2);
                               XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
                               
                               [expectation fulfill];
@@ -1945,7 +1940,7 @@
                               XCTAssertNotNil(forwardEvent);
                               XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
                               XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
+                              XCTAssertEqual(forwardEvent.info.count, 1);
                               XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
                               
                               [expectation fulfill];
