@@ -2055,31 +2055,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         __block NSNumber *lastKit = nil;
         
-        MPCommerceEvent *surrogateCommerceEvent = nil;
-        
-        // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
-        // commerce event user defined attributes (prior to filtering and projections)
-        if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-            NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-            
-            for (NSDictionary *userIdentity in userIdentities) {
-                MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                
-                if (identityType == MPUserIdentityCustomerId) {
-                    surrogateCommerceEvent = [commerceEvent copy];
-                    NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                    surrogateCommerceEvent.userDefinedAttributes[@"af_customer_user_id"] = identityString;
-                    break;
-                }
-            }
-        }
-        
-        if (!surrogateCommerceEvent) {
-            surrogateCommerceEvent = commerceEvent;
-        }
-        
-        [self filter:kitRegister forCommerceEvent:surrogateCommerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+        [self filter:kitRegister forCommerceEvent:commerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
             if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
                 return;
             }
@@ -2163,38 +2139,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             if (event) {
-                MPEvent *surrogateEvent = nil;
-                
-                // If kit is AppsFlyer, add the "af_customer_user_id" key and "customer_id" user identity value, if available, to the
-                // event attributes (prior to filtering and projections)
-                if ([kitRegister.code isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                    NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-                    
-                    for (NSDictionary *userIdentity in userIdentities) {
-                        MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                        
-                        if (identityType == MPUserIdentityCustomerId) {
-                            surrogateEvent = [event copy];
-                            NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                            
-                            NSMutableDictionary *eventInfo = [surrogateEvent.info mutableCopy];
-                            if (!eventInfo) {
-                                eventInfo = [[NSMutableDictionary alloc] initWithCapacity:1];
-                            }
-                            
-                            eventInfo[@"af_customer_user_id"] = identityString;
-                            surrogateEvent.info = eventInfo;
-                            break;
-                        }
-                    }
-                }
-                
-                if (!surrogateEvent) {
-                    surrogateEvent = event;
-                }
-                
-                [self filter:kitRegister forEvent:surrogateEvent selector:selector completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                [self filter:kitRegister forEvent:event selector:selector completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
                     forwardWithFilter(kitFilter);
                 }];
             } else {
