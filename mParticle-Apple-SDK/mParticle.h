@@ -38,6 +38,7 @@
 #import "MPUserSegments.h"
 #import "NSArray+MPCaseInsensitive.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "MPKitAPI.h"
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1

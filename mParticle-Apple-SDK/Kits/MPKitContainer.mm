@@ -48,11 +48,19 @@
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPForwardQueueParameters.h"
+#import "MPIntegrationAttributes.h"
+#import "MPKitAPI.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
+
+@interface MPKitAPI ()
+
+- (id)initWithKitCode:(NSNumber *)kitCode;
+
+@end
 
 @interface MPKitContainer() {
     dispatch_semaphore_t kitsSemaphore;
@@ -392,6 +400,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
     }
     
+    if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
+        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+        [kitRegister.wrapperInstance setKitApi:kitApi];
+    }
+    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     // Synchronizes user attributes
@@ -402,44 +415,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         [synchedUserAttributes addObject:kitRegister.code];
         userDefaults[kMPSynchedUserAttributesKey] = synchedUserAttributes;
 
-        NSDictionary<NSString *, id> *userAttributes = userDefaults[kMPUserAttributeKey];
-        if (userAttributes.count > 0) {
-            MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
-            NSDictionary *filteredUserAttributes = nil;
-            Class NSArrayClass = [NSArray class];
-            Class NSNumberClass = [NSNumber class];
-            Class NSStringClass = [NSString class];
-            BOOL supportsUserAttributeLists = [kitRegister.wrapperInstance respondsToSelector:@selector(setUserAttribute:values:)];
-
-            if (!kitFilter.shouldFilter) {
-                filteredUserAttributes = userAttributes;
-            } else if (kitFilter.shouldFilter && kitFilter.filteredAttributes.count > 0) {
-                filteredUserAttributes = kitFilter.filteredAttributes;
-            }
-
-            if (filteredUserAttributes) {
-                __block NSMutableDictionary<NSString *, id> *forwardUserAttributes = [[NSMutableDictionary alloc] initWithCapacity:filteredUserAttributes.count];
-
-                [filteredUserAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-                    id value = nil;
-
-                    if ([obj isKindOfClass:NSStringClass]) {
-                        value = obj;
-                    } else if ([obj isKindOfClass:NSArrayClass]) {
-                        value = supportsUserAttributeLists ? obj : [obj componentsJoinedByString:@","];
-                    } else if ([obj isKindOfClass:NSNumberClass]) {
-                        value = [obj stringValue];
-                    }
-
-                    if (value) {
-                        forwardUserAttributes[key] = value;
-                    }
-                }];
-
-                if (forwardUserAttributes.count > 0) {
-                    [kitRegister.wrapperInstance setUserAttributes:forwardUserAttributes];
-                }
-            }
+        NSDictionary<NSString *, id> *forwardUserAttributes = [self userAttributesForKit:kitRegister.code];
+        if (forwardUserAttributes.count > 0) {
+            [kitRegister.wrapperInstance setUserAttributes:forwardUserAttributes];
         }
     }
 
@@ -450,24 +428,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         [synchedUserIdentities addObjectsFromArray:alreadySynchedUserIdentities];
         [synchedUserIdentities addObject:kitRegister.code];
         userDefaults[kMPSynchedUserIdentitiesKey] = synchedUserIdentities;
-
-        NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
-        if (userIdentities.count > 0) {
-            __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
-
-            [userIdentities enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                MPUserIdentity identityType = (MPUserIdentity)[obj[kMPUserIdentityTypeKey] integerValue];
-                NSString *identityString = obj[kMPUserIdentityIdKey];
-                MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
-
-                if (!kitFilter.shouldFilter) {
-                    [forwardUserIdentities addObject:obj];
-                }
-            }];
-
-            if (forwardUserIdentities.count > 0) {
-                [kitRegister.wrapperInstance setUserIdentities:forwardUserIdentities];
-            }
+        
+        NSArray<NSDictionary<NSString *, id> *> *forwardUserIdentities = [self userIdentitiesArrayForKit:kitRegister.code];
+        if (forwardUserIdentities.count > 0) {
+            [kitRegister.wrapperInstance setUserIdentities:forwardUserIdentities];
         }
     }
 }
@@ -2357,5 +2321,103 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
     }
 }
+
+- (NSArray<NSDictionary<NSString *, id> *> *)userIdentitiesArrayForKit:(NSNumber *)kitCode {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+    id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+    if (!kitRegister) {
+        return nil;
+    }
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
+    __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
+        
+    [userIdentities enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        MPUserIdentity identityType = (MPUserIdentity)[obj[kMPUserIdentityTypeKey] integerValue];
+        NSString *identityString = obj[kMPUserIdentityIdKey];
+        MPKitFilter *kitFilter = [self filter:kitRegister forUserIdentityKey:identityString identityType:identityType];
+        
+        if (!kitFilter.shouldFilter) {
+            [forwardUserIdentities addObject:obj];
+        }
+    }];
+    return forwardUserIdentities;
+}
+
+- (NSDictionary<NSNumber *, NSString *> *)userIdentitiesForKit:(NSNumber *)kitCode {
+    __block NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    
+    NSArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [self userIdentitiesArrayForKit:kitCode];
+    
+    [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        MPUserIdentity identityType = (MPUserIdentity)[obj[kMPUserIdentityTypeKey] integerValue];
+        NSString *identityString = obj[kMPUserIdentityIdKey];
+        [dictionary setObject:identityString forKey:@(identityType)];
+    }];
+    return dictionary;
+}
+
+- (NSDictionary<NSString *, id> *)userAttributesForKit:(NSNumber *)kitCode {
+    __block NSMutableDictionary<NSString *, id> *forwardUserAttributes = [NSMutableDictionary dictionary];
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSDictionary<NSString *, id> *userAttributes = userDefaults[kMPUserAttributeKey];
+    if (userAttributes.count > 0) {
+        
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+        id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
+        if (!kitRegister) {
+            return nil;
+        }
+        
+        BOOL supportsUserAttributeLists = [kitRegister.wrapperInstance respondsToSelector:@selector(setUserAttribute:values:)];
+        
+        MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
+        NSDictionary *filteredUserAttributes = nil;
+        Class NSArrayClass = [NSArray class];
+        Class NSNumberClass = [NSNumber class];
+        Class NSStringClass = [NSString class];
+        
+        if (!kitFilter.shouldFilter) {
+            filteredUserAttributes = userAttributes;
+        } else if (kitFilter.shouldFilter && kitFilter.filteredAttributes.count > 0) {
+            filteredUserAttributes = kitFilter.filteredAttributes;
+        }
+        
+        if (filteredUserAttributes) {
+            
+            [filteredUserAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+                id value = nil;
+                
+                if ([obj isKindOfClass:NSStringClass]) {
+                    value = obj;
+                } else if ([obj isKindOfClass:NSArrayClass]) {
+                    value = supportsUserAttributeLists ? obj : [obj componentsJoinedByString:@","];
+                } else if ([obj isKindOfClass:NSNumberClass]) {
+                    value = [obj stringValue];
+                }
+                
+                if (value) {
+                    forwardUserAttributes[key] = value;
+                }
+            }];
+        }
+    }
+    return forwardUserAttributes;
+}
+
+- (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)kitCode {
+    NSArray<MPIntegrationAttributes *> *array = [[MPPersistenceController sharedInstance] fetchIntegrationAttributes];
+    __block NSDictionary<NSString *, NSString *> *dictionary = nil;
+    [array enumerateObjectsUsingBlock:^(MPIntegrationAttributes * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (obj.kitCode.intValue == kitCode.intValue) {
+            dictionary = obj.attributes;
+            *stop = YES;
+        }
+    }];
+    return dictionary;
+}
+
 
 @end

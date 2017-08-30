@@ -406,6 +406,7 @@
 
 - (void)testIntegrationAttributes {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    [persistence deleteIntegrationAttributesForKitCode:@42];
 
     NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"keyUA":@"valueUA"};

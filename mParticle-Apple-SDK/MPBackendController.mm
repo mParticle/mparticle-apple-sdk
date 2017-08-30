@@ -927,12 +927,11 @@ static BOOL appBackgrounded = NO;
                     if (userIdentityChange.changed) {
                         [self logUserIdentityChange:userIdentityChange];
                     }
-
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                        userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
-                        [userDefaults synchronize];
-                    });
+                    
+                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                    userDefaults[kMPUserIdentityArrayKey] = self.userIdentities;
+                    [userDefaults synchronize];
+                    
                 }
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -2830,6 +2829,12 @@ static BOOL appBackgrounded = NO;
             completionHandler(identityString, identityType, MPExecStatusSDKNotStarted);
             break;
     }
+}
+
+- (void)clearUserAttributes {
+    [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:@"ua"];
+    [[MPIUserDefaults standardUserDefaults] synchronize];
+    _userAttributes = nil;
 }
 
 #if TARGET_OS_IOS == 1
