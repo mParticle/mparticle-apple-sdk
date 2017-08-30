@@ -691,6 +691,57 @@
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testFilterEventTypeNavigation {
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey"
+                                            },
+                                    @"hs":@{
+                                            @"et":@{@"49":@0}
+                                            }
+                                    }
+                                ];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
+        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
+            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
+            if (kitExtension.code.intValue == 42) {
+                return YES;
+            }
+        }
+        return NO;
+    }] anyObject];
+    
+    XCTestExpectation *notFilteringExpectation = [self expectationWithDescription:@"Not filtering screen events by event type"];
+    [kitContainer filter:registeredKit
+                forEvent:event
+                selector:@selector(logScreen:)
+       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+           XCTAssertFalse(kitFilter.shouldFilter, @"Event type filtering should not be taking place for screen events.");
+           [notFilteringExpectation fulfill];
+       }];
+    
+    XCTestExpectation *filteringExpectation = [self expectationWithDescription:@"Filtering non-screen events by event type"];
+    [kitContainer filter:registeredKit
+                forEvent:event
+                selector:@selector(logEvent:)
+       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+           XCTAssertTrue(kitFilter.shouldFilter, @"Non-screen event should have been filtered by event type");
+           [filteringExpectation fulfill];
+       }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
 - (void)testFilterEventNameAndAttributes {
     NSArray *configurations = @[
                                 @{
