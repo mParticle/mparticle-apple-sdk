@@ -779,22 +779,29 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter;
     void (^completionHandlerCopy)(MPKitFilter *, BOOL) = [completionHandler copy];
+    __block NSString *hashValue = nil;
+    __block BOOL shouldFilter = NO;
     
     // Attribute value filtering
-    if (![self shouldIncludeEventWithAttributes:event.info afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
+    shouldFilter = ![self shouldIncludeEventWithAttributes:event.info afterAttributeValueFilteringWithConfiguration:kitConfiguration];
+    if (shouldFilter) {
+        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
         completionHandlerCopy(kitFilter, YES);
         return;
     }
     
     // Event type filter
-    __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>(event.type)).c_str() encoding:NSUTF8StringEncoding];
-    
-    __block BOOL shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
-    if (shouldFilter) {
-        kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
-        completionHandlerCopy(kitFilter, YES);
-        return;
+    if (selector != @selector(logScreen:)) {
+        
+        hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>(event.type)).c_str() encoding:NSUTF8StringEncoding];
+        
+        shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
+        if (shouldFilter) {
+            kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
+            completionHandlerCopy(kitFilter, YES);
+            return;
+        }
+        
     }
     
     // Message type filter
