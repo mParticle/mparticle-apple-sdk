@@ -743,8 +743,17 @@ static BOOL appBackgrounded = NO;
             }
             
             dispatch_sync(backendQueue, ^{
-                id<NSObject> userAttributeValue = nil;
                 NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
+                
+                if (!userAttributeChange.value && !self.userAttributes[localKey]) {
+                    if (completionHandler) {
+                        completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);
+                    }
+                    
+                    return;
+                }
+                
+                id<NSObject> userAttributeValue = nil;
                 NSError *error = nil;
                 NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
                 BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
