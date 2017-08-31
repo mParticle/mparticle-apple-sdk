@@ -842,6 +842,15 @@ static BOOL appBackgrounded = NO;
                 NSMutableDictionary *userAttributes = [self userAttributesForUserId:[MPPersistenceController mpId]];
                 id<NSObject> userAttributeValue = nil;
                 NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
+                
+                if (!userAttributeChange.value && !userAttributes[localKey]) {
+                    if (completionHandler) {
+                        completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);
+                    }
+                    
+                    return;
+                }
+                
                 NSError *error = nil;
                 NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
                 BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
