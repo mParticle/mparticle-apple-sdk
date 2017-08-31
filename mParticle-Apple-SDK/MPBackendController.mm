@@ -1460,55 +1460,61 @@ static BOOL appBackgrounded = NO;
     
     backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
                                   eventHandler:^{
-                                      __block NSTimeInterval backgroundTimeRemaining;
-                                      dispatch_sync(dispatch_get_main_queue(), ^{
-                                           backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
-                                      });
                                       
-                                      __strong MPBackendController *strongSelf = weakSelf;
-                                      if (!strongSelf) {
-                                          return;
-                                      }
-                                      
-                                      strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
-                                      
-                                      if (!strongSelf->longSession) {
-                                          NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+                                      dispatch_async(dispatch_get_main_queue(), ^{
                                           
-                                          void(^processSession)(NSTimeInterval) = ^(NSTimeInterval timeout) {
-                                              [strongSelf endBackgroundTimer];
-                                              strongSelf.session.backgroundTime += timeout;
+                                          __block NSTimeInterval backgroundTimeRemaining;
+                                          backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
+                                          
+                                          dispatch_async(backendQueue, ^{
                                               
-                                              [strongSelf processOpenSessionsIncludingCurrent:YES
-                                                                            completionHandler:^(BOOL success) {
-                                                                                [MPStateMachine setRunningInBackground:NO];
-                                                                                [strongSelf broadcastSessionDidEnd:strongSelf->_session];
-                                                                                strongSelf->_session = nil;
-                                                                                
-                                                                                if (strongSelf.eventSet.count == 0) {
-                                                                                    strongSelf->_eventSet = nil;
-
-                                                                                }
-                                                                                
-                                                                                MPILogDebug(@"SDK has ended background activity.");
-                                                                                [strongSelf endBackgroundTask];
-                                                                            }];
-                                          };
-                                          
-                                          if ((MINIMUM_SESSION_TIMEOUT + 0.1) >= strongSelf.sessionTimeout) {
-                                              processSession(strongSelf.sessionTimeout);
-                                          } else if (backgroundStartTime == 0) {
-                                              backgroundStartTime = currentTime;
-                                          } else if ((currentTime - backgroundStartTime) >= strongSelf.sessionTimeout) {
-                                              processSession(currentTime - timeAppWentToBackground);
-                                          }
-                                      } else {
-                                          backgroundStartTime = 0;
-
-                                          if (!strongSelf->uploadSource) {
-                                              [strongSelf beginUploadTimer];
-                                          }
-                                      }
+                                              
+                                              __strong MPBackendController *strongSelf = weakSelf;
+                                              if (!strongSelf) {
+                                                  return;
+                                              }
+                                              
+                                              strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
+                                              
+                                              if (!strongSelf->longSession) {
+                                                  NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+                                                  
+                                                  void(^processSession)(NSTimeInterval) = ^(NSTimeInterval timeout) {
+                                                      [strongSelf endBackgroundTimer];
+                                                      strongSelf.session.backgroundTime += timeout;
+                                                      
+                                                      [strongSelf processOpenSessionsIncludingCurrent:YES
+                                                                                    completionHandler:^(BOOL success) {
+                                                                                        [MPStateMachine setRunningInBackground:NO];
+                                                                                        [strongSelf broadcastSessionDidEnd:strongSelf->_session];
+                                                                                        strongSelf->_session = nil;
+                                                                                        
+                                                                                        if (strongSelf.eventSet.count == 0) {
+                                                                                            strongSelf->_eventSet = nil;
+                                                                                            
+                                                                                        }
+                                                                                        
+                                                                                        MPILogDebug(@"SDK has ended background activity.");
+                                                                                        [strongSelf endBackgroundTask];
+                                                                                    }];
+                                                  };
+                                                  
+                                                  if ((MINIMUM_SESSION_TIMEOUT + 0.1) >= strongSelf.sessionTimeout) {
+                                                      processSession(strongSelf.sessionTimeout);
+                                                  } else if (backgroundStartTime == 0) {
+                                                      backgroundStartTime = currentTime;
+                                                  } else if ((currentTime - backgroundStartTime) >= strongSelf.sessionTimeout) {
+                                                      processSession(currentTime - timeAppWentToBackground);
+                                                  }
+                                              } else {
+                                                  backgroundStartTime = 0;
+                                                  
+                                                  if (!strongSelf->uploadSource) {
+                                                      [strongSelf beginUploadTimer];
+                                                  }
+                                              }
+                                          });
+                                      });
                                   } cancelHandler:^{
                                       __strong MPBackendController *strongSelf = weakSelf;
                                       if (strongSelf) {
