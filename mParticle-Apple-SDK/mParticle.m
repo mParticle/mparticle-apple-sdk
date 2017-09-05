@@ -427,7 +427,7 @@ NSString *const kMPStateKey = @"state";
     if (self.configSettings) {
         NSNumber *configRegisterForSilentNotifications = self.configSettings[kMPConfigRegisterForSilentNotifications];
         
-        if (configRegisterForSilentNotifications) {
+        if (configRegisterForSilentNotifications != nil) {
             registerForSilentNotifications = [configRegisterForSilentNotifications boolValue];
         }
     }

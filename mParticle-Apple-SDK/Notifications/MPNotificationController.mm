@@ -417,7 +417,7 @@ static int64_t launchNotificationHash = 0;
     influencedOpenNumber = userDefaults[kMPInfluencedOpenTimerKey];
 #endif
     
-    if (influencedOpenNumber) {
+    if (influencedOpenNumber != nil) {
         _influencedOpenTimer = [influencedOpenNumber doubleValue];
     } else {
         _influencedOpenTimer = 1800;
@@ -432,12 +432,12 @@ static int64_t launchNotificationHash = 0;
         dispatch_async(dispatch_get_main_queue(), ^{
             MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
             
-            if (!infOpenTimer) {
+            if (infOpenTimer == nil) {
                 [userDefaults removeMPObjectForKey:kMPInfluencedOpenTimerKey];
                 [userDefaults synchronize];
             } else {
                 NSNumber *udInfOpenTimer = userDefaults[kMPInfluencedOpenTimerKey];
-                if (!udInfOpenTimer || ![udInfOpenTimer isEqualToNumber:infOpenTimer]) {
+                if (udInfOpenTimer == nil || ![udInfOpenTimer isEqualToNumber:infOpenTimer]) {
                     userDefaults[kMPInfluencedOpenTimerKey] = infOpenTimer;
                     [userDefaults synchronize];
                 }

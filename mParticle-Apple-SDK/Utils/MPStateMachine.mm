@@ -464,13 +464,13 @@ static BOOL runningInBackground = NO;
 }
 
 - (NSNumber *)firstSeenInstallation {
-    if (_firstSeenInstallation) {
+    if (_firstSeenInstallation != nil) {
         return _firstSeenInstallation;
     }
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *firstSeenInstallation = userDefaults[kMPAppFirstSeenInstallationKey];
-    if (firstSeenInstallation) {
+    if (firstSeenInstallation != nil) {
         _firstSeenInstallation = firstSeenInstallation;
     } else {
         [self willChangeValueForKey:@"firstSeenInstallation"];
@@ -487,13 +487,13 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setFirstSeenInstallation:(NSNumber *)firstSeenInstallation {
-    if (_firstSeenInstallation) {
+    if (_firstSeenInstallation != nil) {
         return;
     }
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *fsi = userDefaults[kMPAppFirstSeenInstallationKey];
-    if (!fsi) {
+    if (fsi == nil) {
         [self willChangeValueForKey:@"firstSeenInstallation"];
         _firstSeenInstallation = firstSeenInstallation;
         [self didChangeValueForKey:@"firstSeenInstallation"];
@@ -641,7 +641,7 @@ static BOOL runningInBackground = NO;
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
-    if (optOutNumber) {
+    if (optOutNumber != nil) {
         _optOut = [optOutNumber boolValue];
     } else {
         _optOut = NO;
@@ -679,7 +679,7 @@ static BOOL runningInBackground = NO;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *alwaysTryToCollectIDFANumber = userDefaults[kMPAlwaysTryToCollectIDFA];
     
-    if (alwaysTryToCollectIDFANumber) {
+    if (alwaysTryToCollectIDFANumber != nil) {
         _alwaysTryToCollectIDFA = [alwaysTryToCollectIDFANumber boolValue];
     }
     else {

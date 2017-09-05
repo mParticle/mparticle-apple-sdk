@@ -28,7 +28,7 @@
 #define ARCHIVED_MESSAGES_DIRECTORY_PATH [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:@"ArchivedMessages"];
 #define STATE_MACHINE_DIRECTORY_PATH [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:@"StateMachine"];
 
-#define MPIsNull(object) (!(object) || (NSNull *)(object) == [NSNull null])
+#define MPIsNull(object) ((object) == nil || (NSNull *)(object) == [NSNull null])
 
 typedef NS_ENUM(NSInteger, MPUploadStatus) {
     MPUploadStatusUnknown = -1,

@@ -497,7 +497,7 @@ int main(int argc, char *argv[]);
     }
     
     NSNumber *limitAdTracking = self.limitAdTracking;
-    if (limitAdTracking) {
+    if (limitAdTracking != nil) {
         deviceDictionary[kMPDeviceLimitAdTrackingKey] = limitAdTracking;
     }
 

@@ -512,7 +512,7 @@ static NSArray *actionNames;
             }
 
             // Transaction attributes
-            if (!_transactionAttributes.revenue) {
+            if (_transactionAttributes.revenue == nil) {
                 calculatedRevenue += [_transactionAttributes.shipping doubleValue] + [_transactionAttributes.tax doubleValue];
                 _transactionAttributes.revenue = @(calculatedRevenue);
             }

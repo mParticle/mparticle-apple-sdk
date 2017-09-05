@@ -62,7 +62,7 @@ using namespace std;
     NSNumber *ltv;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     ltv = userDefaults[kMPLifeTimeValueKey];
-    if (!ltv) {
+    if (ltv == nil) {
         ltv = @0;
     }
     

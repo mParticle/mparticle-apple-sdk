@@ -108,7 +108,7 @@ const int MaxBreadcrumbs = 50;
     MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[databaseVersions copy]];
     
     NSNumber *migrateVersion = [migrationController needsMigration];
-    if (migrateVersion) {
+    if (migrateVersion != nil) {
         BOOL isDatabaseOpen = databaseOpen;
         [self closeDatabase];
         
@@ -2754,7 +2754,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveUserNotification:(MParticleUserNotification *)userNotification {
-    if (!userNotification.contentId) {
+    if (userNotification.contentId == nil) {
         return;
     }
     

@@ -317,7 +317,7 @@ NSString *const kMPCKExpiration = @"e";
     dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
     
     // If we don't have the id, create it.
-    if (!_mpId) {
+    if (_mpId == nil) {
         [self willChangeValueForKey:@"mpId"];
         
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
