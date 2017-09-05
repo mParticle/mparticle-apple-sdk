@@ -289,7 +289,10 @@ static NSString *kMPAppStoreReceiptString = nil;
     UIApplication *app = [UIApplication sharedApplication];
     
     if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         UIUserNotificationSettings *userNotificationSettings = [app currentUserNotificationSettings];
+#pragma clang diagnostic pop
         notificationTypes = @(userNotificationSettings.types);
     } else {
 #pragma clang diagnostic push

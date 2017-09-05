@@ -100,6 +100,8 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         _type = kMPPushMessageAction;
         
         if (_categoryIdentifier) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
             UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
             
             if (userNotificationSettings) {
@@ -116,6 +118,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
                     }
                 }
             }
+#pragma clang diagnostic pop
         }
     } else {
         _actionIdentifier = nil;

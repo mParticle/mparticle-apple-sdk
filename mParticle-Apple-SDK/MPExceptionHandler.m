@@ -64,7 +64,10 @@ typedef struct BinaryImageList {
     BinaryImage *tailBinaryImage;
     BinaryImage *free;
     int32_t referenceCount;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     OSSpinLock write_lock;
+#pragma clang diagnostic pop
 } BinaryImageList;
 
 //
@@ -638,6 +641,8 @@ static void appendImageList(BinaryImageList *list, uintptr_t header, const char 
     new->header = header;
     new->name = strdup(name);
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     // Update the image record and issue a memory barrier to ensure a consistent view.
     OSMemoryBarrier();
     
@@ -663,6 +668,7 @@ static void appendImageList(BinaryImageList *list, uintptr_t header, const char 
             list->tailBinaryImage = new;
         }
     } OSSpinLockUnlock(&list->write_lock);
+#pragma clang diagnostic pop
 }
 
 /**
@@ -675,12 +681,15 @@ static void appendImageList(BinaryImageList *list, uintptr_t header, const char 
  */
 static void flagReadingImageList(BinaryImageList *list, bool enable) {
     if (enable) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         // Increment and issue a barrier. Once issued, no items will be deallocated while a reference is held
         OSAtomicIncrement32Barrier(&list->referenceCount);
     } else {
         // Increment and issue a barrier. Once issued, items may again be deallocated
         OSAtomicDecrement32Barrier(&list->referenceCount);
     }
+#pragma clang diagnostic pop
 }
 
 /**

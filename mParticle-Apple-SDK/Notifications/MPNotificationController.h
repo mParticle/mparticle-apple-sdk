@@ -31,7 +31,10 @@
 @property (nonatomic, unsafe_unretained, readonly) BOOL registeredForSilentNotifications;
 
 + (nullable NSData *)deviceToken;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 + (nullable NSDictionary *)dictionaryFromLocalNotification:(nonnull UILocalNotification *)notification;
+#pragma clang diagnostic pop
 + (void)setDeviceToken:(nullable NSData *)devToken;
 + (int64_t)launchNotificationHash;
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPNotificationControllerDelegate>)delegate;

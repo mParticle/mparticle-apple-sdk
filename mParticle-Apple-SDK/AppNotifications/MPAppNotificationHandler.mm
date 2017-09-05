@@ -143,7 +143,10 @@
                                          }];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
+#pragma clang diagnostic pop
     if ([MPStateMachine sharedInstance].optOut) {
         return;
     }
