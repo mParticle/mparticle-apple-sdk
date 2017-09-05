@@ -427,7 +427,7 @@ static BOOL appBackgrounded = NO;
         previousSessionSuccessfullyClosed = previousSessionStateDictionary[kMPASTPreviousSessionSuccessfullyClosedKey];
     }
     
-    if (!previousSessionSuccessfullyClosed) {
+    if (previousSessionSuccessfullyClosed == nil) {
         previousSessionSuccessfullyClosed = @YES;
     }
     
@@ -507,7 +507,7 @@ static BOOL appBackgrounded = NO;
                             userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
                             
                             NSNumber *timeIntervalMilliseconds = userIdentity[kMPDateUserIdentityWasFirstSet];
-                            userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
+                            userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
                             userIdentityChange.userIdentityNew.isFirstTimeSet = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
@@ -2176,7 +2176,7 @@ static BOOL appBackgrounded = NO;
                     messageInfo[messageTypeBreadcrumbKey] = breadcrumbs;
                     
                     NSNumber *sessionNumber = self.session.sessionNumber;
-                    if (sessionNumber) {
+                    if (sessionNumber != nil) {
                         messageInfo[kMPSessionNumberKey] = sessionNumber;
                     }
                 }

@@ -139,7 +139,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"User Notification\n Receipt Time: %@\n State: %@\n Type Id: %@\n", self.receiptTime, self.state, self.type];
     
-    if (self.uniqueIdentifier) {
+    if (self.uniqueIdentifier != nil) {
         [description appendFormat:@" Unique identifier: %@\n", self.uniqueIdentifier];
     }
     
@@ -155,11 +155,11 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         [description appendFormat:@" Action identifier: %@\n Action title: %@\n", self.actionIdentifier, self.actionTitle];
     }
     
-    if (self.campaignId) {
+    if (self.campaignId != nil) {
         [description appendFormat:@" Campaign Id: %@\n", self.campaignId];
     }
     
-    if (self.contentId) {
+    if (self.contentId != nil) {
         [description appendFormat:@" Content Id: %@\n", self.contentId];
     }
     
@@ -342,11 +342,11 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         [coder encodeObject:_actionTitle forKey:@"actionTitle"];
     }
     
-    if (_campaignId) {
+    if (_campaignId != nil) {
         [coder encodeObject:_campaignId forKey:@"campaignId"];
     }
     
-    if (_contentId) {
+    if (_contentId != nil) {
         [coder encodeObject:_contentId forKey:@"contentId"];
     }
     
@@ -374,7 +374,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         [coder encodeBool:_hasBeenUsedInInfluencedOpen forKey:@"hasBeenUsedInInfluencedOpen"];
     }
     
-    if (_uniqueIdentifier) {
+    if (_uniqueIdentifier != nil) {
         [coder encodeObject:_uniqueIdentifier forKey:@"uniqueIdentifier"];
     }
 }

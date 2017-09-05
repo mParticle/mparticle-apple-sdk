@@ -172,13 +172,13 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSNumber *)initialLaunchTime {
-    if (_initialLaunchTime) {
+    if (_initialLaunchTime != nil) {
         return _initialLaunchTime;
     }
     
     _initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
     
-    if (!_initialLaunchTime) {
+    if (_initialLaunchTime == nil) {
         _initialLaunchTime = MPCurrentEpochInMilliseconds;
         userDefaults[kMPAppInitialLaunchTimeKey] = _initialLaunchTime;
         syncUserDefaults = YES;
@@ -194,7 +194,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 - (NSNumber *)lastUseDate {
     NSNumber *lastUseDate = userDefaults[kMPAppLastUseDateKey];
-    if (!lastUseDate) {
+    if (lastUseDate == nil) {
         lastUseDate = MPMilliseconds([[MPStateMachine sharedInstance].launchDate timeIntervalSince1970]);
     }
     
@@ -333,7 +333,7 @@ static NSString *kMPAppStoreReceiptString = nil;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
     
-    if (!initialLaunchTime) {
+    if (initialLaunchTime == nil) {
         initialLaunchTime = MPCurrentEpochInMilliseconds;
         userDefaults[kMPAppInitialLaunchTimeKey] = initialLaunchTime;
         
@@ -418,22 +418,22 @@ static NSString *kMPAppStoreReceiptString = nil;
     }
     
     NSNumber *auxNumber = self.upgradeDate;
-    if (auxNumber) {
+    if (auxNumber != nil) {
         applicationInfo[kMPAppUpgradeDateKey] = auxNumber;
     }
     
     auxNumber = self.launchCount;
-    if (auxNumber) {
+    if (auxNumber != nil) {
         applicationInfo[kMPAppLaunchCountKey] = auxNumber;
     }
     
     auxNumber = self.launchCountSinceUpgrade;
-    if (auxNumber) {
+    if (auxNumber != nil) {
         applicationInfo[kMPAppLaunchCountSinceUpgradeKey] = auxNumber;
     }
     
     auxNumber = self.lastUseDate;
-    if (auxNumber) {
+    if (auxNumber != nil) {
         applicationInfo[kMPAppLastUseDateKey] = auxNumber;
     }
     
@@ -455,7 +455,7 @@ static NSString *kMPAppStoreReceiptString = nil;
     applicationInfo[kMPDeviceSupportedPushNotificationTypesKey] = self.remoteNotificationTypes;
     
     NSNumber *badgeNumber = self.badgeNumber;
-    if (badgeNumber) {
+    if (badgeNumber != nil) {
         applicationInfo[kMPAppBadgeNumberKey] = badgeNumber;
     }
 #endif

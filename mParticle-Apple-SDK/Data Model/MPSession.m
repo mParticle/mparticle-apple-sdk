@@ -144,7 +144,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
 }
 
 - (NSNumber *)sessionNumber {
-    if (_sessionNumber) {
+    if (_sessionNumber != nil) {
         return _sessionNumber;
     }
     

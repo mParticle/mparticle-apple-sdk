@@ -299,7 +299,7 @@ NSString *const kMPCKExpiration = @"e";
     
 
     // If we don't have the id, create it.
-    if (!_mpId) {
+    if (_mpId == nil) {
         [self willChangeValueForKey:@"mpId"];
         
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

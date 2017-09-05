@@ -45,11 +45,11 @@
     
     // LTV
     NSNumber *increasedLTV = !MPIsNull(configuration[kMPIncreasedLifeTimeValueKey]) ? configuration[kMPIncreasedLifeTimeValueKey] : nil;
-    if (increasedLTV) {
+    if (increasedLTV != nil) {
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         NSNumber *ltv = userDefaults[kMPLifeTimeValueKey];
         
-        if (ltv) {
+        if (ltv != nil) {
             ltv = @([ltv doubleValue] + [increasedLTV doubleValue]);
         } else {
             ltv = increasedLTV;
