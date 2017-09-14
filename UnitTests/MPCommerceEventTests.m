@@ -441,4 +441,40 @@
     XCTAssertNotNil(expandedInstructions, @"Expanded commerce instructions should not have been nil.");
 }
 
+- (void)testBeautifiedAttributesContainTransactionAttributes {
+    MPCommerceEvent *purchaseEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:nil];
+    
+    MPTransactionAttributes *attributes = [[MPTransactionAttributes alloc] init];
+    attributes.transactionId = @"<transaction id>";
+    attributes.revenue = @1;
+    attributes.tax = @0.5;
+    attributes.shipping = @2;
+    attributes.couponCode = @"<coupon code>";
+    
+    purchaseEvent.transactionAttributes = attributes;
+    purchaseEvent.currency = @"<currency>";
+    
+    NSDictionary *beautifiedAttributes = [purchaseEvent beautifiedAttributes];
+    XCTAssertEqualObjects(beautifiedAttributes[@"Currency Code"], @"<currency>");
+    XCTAssertEqualObjects(beautifiedAttributes[@"Coupon Code"], @"<coupon code>");
+    XCTAssertEqualObjects(beautifiedAttributes[@"Shipping Amount"], @"2");
+    XCTAssertEqualObjects(beautifiedAttributes[@"Tax Amount"], @"0.5");
+    XCTAssertEqualObjects(beautifiedAttributes[@"Total Amount"], @"1");
+    XCTAssertEqualObjects(beautifiedAttributes[@"Transaction Id"], @"<transaction id>");
+}
+
+- (void)testBeautifiedAttributesReflectTransactionAttributeChanges {
+    MPCommerceEvent *purchaseEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:nil];
+    
+    MPTransactionAttributes *attributes = [[MPTransactionAttributes alloc] init];
+    attributes.revenue = @1;
+    
+    purchaseEvent.transactionAttributes = attributes;
+    
+    attributes.revenue = @2;
+    
+    NSDictionary *beautifiedAttributes = [purchaseEvent beautifiedAttributes];
+    XCTAssertEqualObjects(beautifiedAttributes[@"Total Amount"], @"2");
+}
+
 @end
