@@ -1,5 +1,50 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.7
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Update AppsFlyer kit to support checking for deep links
+- Update UrbanAirship kit to add transaction id to purchase events
+
+## 6.15.6
+
+### Core SDK Updates
+
+- Prevent deprecation warnings for iOS 11 deployment target
+
+### Kit Updates
+
+- Update Singular and Apptentive kits to support Carthage
+
+## 6.15.3
+
+### Core SDK Updates
+
+- Remove Git submodules from the repo to address https://github.com/mParticle/mparticle-apple-sdk/issues/49
+
+### Kit Updates
+
+- Update Singular kit with fixes from the Singular team: https://github.com/mparticle-integrations/mparticle-apple-integration-singular/pull/4
+
+## 6.15.0
+
+### Core SDK Updates
+
+- All kits repos are now git submodules within the core repository
+
+### Kit Updates
+
+- mParticle now support Singular (formerly Apsalar) via both a Kit and server-side integration!
+- This release introduces a class method to `MPKitAppsFlyer` such that implementing apps can set the AppsFlyer tracker delegate.
+- Update Kochava SDK to 3.2.0
+- Update Appboy SDK to 3.0.0
+- Update Branch SDK to 0.17.6
+
 ## 6.14.5
 
 * [FIX] Fixes for Xcode 9 / iOS 11 and main thread checker
