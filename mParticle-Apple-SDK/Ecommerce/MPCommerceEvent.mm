@@ -83,6 +83,7 @@ static NSArray *actionNames;
 
 @implementation MPCommerceEvent
 
+@synthesize transactionAttributes = _transactionAttributes;
 @synthesize beautifiedAttributes = _beautifiedAttributes;
 @synthesize userDefinedAttributes = _userDefinedAttributes;
 @synthesize currency = _currency;
@@ -220,8 +221,28 @@ static NSArray *actionNames;
         return _beautifiedAttributes;
     }
     
-    _beautifiedAttributes = [[NSMutableDictionary alloc] initWithCapacity:5];
-    return _beautifiedAttributes;
+    NSMutableDictionary *beautifiedAttributes = [NSMutableDictionary dictionary];
+    NSDictionary *attributeNameMapping = @{
+                                           kMPCECheckoutOptions: kMPExpCECheckoutOptions,
+                                           kMPCEProductListName: kMPExpCEProductListName,
+                                           kMPCEProductListSource: kMPExpCEProductListSource
+                                           };
+    
+    [attributeNameMapping enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull shortKey, id  _Nonnull longKey, BOOL * _Nonnull stop) {
+        id value = self.attributes[shortKey];
+        if (value) {
+            beautifiedAttributes[longKey] = value;
+        }
+    }];
+    
+    if (_currency) {
+        beautifiedAttributes[kMPExpCECurrency] = _currency;
+    }
+    
+    NSDictionary *transactionDictionary = [self.transactionAttributes beautifiedDictionaryRepresentation];
+    [beautifiedAttributes addEntriesFromDictionary:transactionDictionary];
+    
+    return beautifiedAttributes;
 }
 
 - (NSMutableArray<MPProduct *> *)latestAddedProducts {
@@ -799,10 +820,8 @@ static NSArray *actionNames;
 - (void)setCheckoutOptions:(NSString *)checkoutOptions {
     if (checkoutOptions) {
         self.attributes[kMPCECheckoutOptions] = checkoutOptions;
-        self.beautifiedAttributes[kMPExpCECheckoutOptions] = checkoutOptions;
     } else {
         [self.attributes removeObjectForKey:kMPCECheckoutOptions];
-        [self.beautifiedAttributes removeObjectForKey:kMPExpCECheckoutOptions];
     }
 }
 
@@ -812,11 +831,6 @@ static NSArray *actionNames;
 
 - (void)setCurrency:(NSString *)currency {
     _currency = currency;
-    if (currency) {
-        self.beautifiedAttributes[kMPExpCECurrency] = currency;
-    } else {
-        [self.beautifiedAttributes removeObjectForKey:kMPExpCECurrency];
-    }
 }
 
 - (NSDictionary<NSString *, __kindof NSSet<MPProduct *> *> *)impressions {
@@ -834,10 +848,8 @@ static NSArray *actionNames;
 - (void)setProductListName:(NSString *)productListName {
     if (productListName) {
         self.attributes[kMPCEProductListName] = productListName;
-        self.beautifiedAttributes[kMPExpCEProductListName] = productListName;
     } else {
         [self.attributes removeObjectForKey:kMPCEProductListName];
-        [self.beautifiedAttributes removeObjectForKey:kMPExpCEProductListName];
     }
 }
 
@@ -848,10 +860,8 @@ static NSArray *actionNames;
 - (void)setProductListSource:(NSString *)productListSource {
     if (productListSource) {
         self.attributes[kMPCEProductListSource] = productListSource;
-        self.beautifiedAttributes[kMPExpCEProductListSource] = productListSource;
     } else {
         [self.attributes removeObjectForKey:kMPCEProductListSource];
-        [self.beautifiedAttributes removeObjectForKey:kMPExpCEProductListSource];
     }
 }
 
@@ -881,7 +891,6 @@ static NSArray *actionNames;
 - (void)setCheckoutStep:(NSInteger)checkoutStep {
     NSNumber *checkoutStepNumber = @(checkoutStep);
     self.attributes[kMPCECheckoutStep] = checkoutStepNumber;
-    self.beautifiedAttributes[kMPExpCECheckoutStep] = checkoutStepNumber;
 }
 
 #pragma mark Public methods
