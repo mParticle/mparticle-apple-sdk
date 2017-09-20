@@ -10,5 +10,6 @@
 - (NSDictionary<NSString *, NSString *> *)integrationAttributes;
 - (NSDictionary<NSNumber *, NSString *> *)userIdentities;
 - (NSDictionary<NSString *, id> *)userAttributes;
+- (void)onDeeplinkCompleteWithInfo:(NSDictionary *)info error:(NSError *)error;
 
 @end

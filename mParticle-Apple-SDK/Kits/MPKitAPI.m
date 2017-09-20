@@ -90,4 +90,16 @@
     return dictionary;
 }
 
+- (void)onDeeplinkCompleteWithInfo:(NSDictionary *)info error:(NSError *)error {
+    MPDeeplinkResult *result = nil;
+    if (info) {
+        result = [[MPDeeplinkResult alloc] init];
+        result.kitCode = _kitCode;
+        result.kitName = [self kitName];
+        result.linkInfo = info;
+    }
+    
+    [MPKitContainer sharedInstance].deepLinkCompletionHandler(result, error);
+}
+
 @end

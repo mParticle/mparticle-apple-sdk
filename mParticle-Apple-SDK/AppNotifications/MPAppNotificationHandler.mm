@@ -28,6 +28,7 @@
 #import "MPKitContainer.h"
 #include "MPHasher.h"
 #import "MPForwardQueueParameters.h"
+#import "MPKitApi.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -38,11 +39,14 @@
     #import <UserNotifications/UNUserNotificationCenter.h>
 #endif
 
+@interface MPKitAPI ()
+- (id)initWithKitCode:(NSNumber *)kitCode;
+@end
+
 @interface MPAppNotificationHandler() {
     dispatch_queue_t processUserNotificationQueue;
 }
 @end
-
 
 @implementation MPAppNotificationHandler
 
@@ -386,6 +390,22 @@
         }
     }
     
+    for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
+        
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(checkForDeferredDeepLinkWithCompletionHandler:)]) {
+            continue;
+        }
+        
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(continueUserActivity:restorationHandler:)]) {
+            continue;
+        }
+        
+        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+        [kitRegister.wrapperInstance checkForDeferredDeepLinkWithCompletionHandler:^(NSDictionary * _Nullable linkInfo, NSError * _Nullable error) {
+            [kitApi onDeeplinkCompleteWithInfo:linkInfo error:error];
+        }];
+    }
+    
     return handlingActivity;
 }
 
@@ -409,6 +429,23 @@
                                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                                              *execStatus = [kit openURL:forwardParameters[0] options:forwardParameters[1]];
                                          }];
+    
+    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
+    for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
+        
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(checkForDeferredDeepLinkWithCompletionHandler:)]) {
+            continue;
+        }
+        
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(openURL:options:)]) {
+            continue;
+        }
+        
+        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+        [kitRegister.wrapperInstance checkForDeferredDeepLinkWithCompletionHandler:^(NSDictionary * _Nullable linkInfo, NSError * _Nullable error) {
+            [kitApi onDeeplinkCompleteWithInfo:linkInfo error:error];
+        }];
+    }
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
@@ -434,6 +471,23 @@
                                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                                              *execStatus = [kit openURL:forwardParameters[0] sourceApplication:forwardParameters[1] annotation:forwardParameters[2]];
                                          }];
+    
+    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
+    for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
+        
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(checkForDeferredDeepLinkWithCompletionHandler:)]) {
+            continue;
+        }
+        
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(openURL:sourceApplication:annotation:)]) {
+            continue;
+        }
+        
+        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+        [kitRegister.wrapperInstance checkForDeferredDeepLinkWithCompletionHandler:^(NSDictionary * _Nullable linkInfo, NSError * _Nullable error) {
+            [kitApi onDeeplinkCompleteWithInfo:linkInfo error:error];
+        }];
+    }
 }
 
 @end

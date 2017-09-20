@@ -50,11 +50,16 @@
 #import "MPForwardQueueParameters.h"
 #import "MPIntegrationAttributes.h"
 #import "MPKitAPI.h"
+#import "mParticle.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
+
+@interface MParticle ()
+@property (nonatomic, strong, nonnull) MParticleOptions *options;
+@end
 
 @interface MPKitAPI ()
 
@@ -84,7 +89,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     self = [super init];
     if (self) {
         _kitsInitialized = NO;
+        _deepLinkInfo = [NSMutableDictionary dictionary];
+        NSMutableDictionary *linkInfo = _deepLinkInfo;
         kitsSemaphore = dispatch_semaphore_create(1);
+        _deepLinkCompletionHandler = [^void(MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error) {
+            if (deeplinkResult && deeplinkResult.kitCode) {
+                linkInfo[deeplinkResult.kitCode] = deeplinkResult;
+                [MParticle sharedInstance].options.onDeeplinkComplete(deeplinkResult, error);
+            }
+        } copy];
         
         if (![MPStateMachine sharedInstance].optOut) {
             [self initializeKits];
@@ -400,9 +413,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
     }
     
+    MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+    
     if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
-        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
         [kitRegister.wrapperInstance setKitApi:kitApi];
+    }
+    else {
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(checkForDeferredDeepLinkWithCompletionHandler:)]) {
+            MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+            [kitRegister.wrapperInstance checkForDeferredDeepLinkWithCompletionHandler:^(NSDictionary * _Nullable linkInfo, NSError * _Nullable error) {
+                [kitApi onDeeplinkCompleteWithInfo:linkInfo error:error];
+            }];
+        }
     }
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

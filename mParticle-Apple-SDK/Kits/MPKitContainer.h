@@ -20,6 +20,7 @@
 #import <Foundation/Foundation.h>
 #import "MPExtensionProtocol.h"
 #import "MPKitProtocol.h"
+#import "mParticle.h"
 
 @class MPKitFilter;
 @class MPKitExecStatus;
@@ -28,6 +29,9 @@
 @class MPForwardQueueParameters;
 
 @interface MPKitContainer : NSObject
+
+@property (nonatomic, copy) void (^ _Nonnull deepLinkCompletionHandler)(MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
+@property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPDeeplinkResult *> *deepLinkInfo;
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;

@@ -68,9 +68,14 @@ NSString *const kMPStateKey = @"state";
 }
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic, unsafe_unretained) BOOL initialized;
+
+@end
+
+@implementation MPDeeplinkResult
 
 @end
 
@@ -435,6 +440,8 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)startWithOptions:(MParticleOptions *)options {
+    self.options = options;
+    
     NSString *apiKey = options.apiKey;
     NSString *secret = options.apiSecret;
     MPInstallationType installationType = options.installType;
@@ -799,6 +806,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Deep linking
+- (nullable NSDictionary<NSNumber *, NSDictionary *> *)lastDeepLinkInfo {
+    return [[MPKitContainer sharedInstance].deepLinkInfo copy];
+}
+
 - (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary * linkInfo, NSError *error))completionHandler {
     [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
         [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];

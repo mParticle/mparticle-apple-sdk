@@ -52,6 +52,14 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@interface MPDeeplinkResult : NSObject
+
+@property (nonatomic) NSNumber *kitCode;
+@property (nonatomic) NSString *kitName;
+@property (nonatomic) NSDictionary *linkInfo;
+
+@end
+
 @interface MParticleOptions : NSObject
 
 + (MParticleOptions*)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
@@ -62,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
-
+@property (nonatomic, copy) void (^onDeeplinkComplete)(MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
 @end
 
 /**
@@ -384,10 +392,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Deep linking
 /**
- Checks for deferred deep link information.
- @param completionHandler A block to be called when deep link checking is finished.
+ Convenience method for getting the most recently retrieved deep link info for all kits.
+ @returns A dictionary containing the most recent deep link info that was retrieved by each kit
+ @see MPKitInstance
  */
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
+- (nullable NSDictionary<NSNumber *, MPDeeplinkResult *> *)lastDeepLinkInfo;
 
 #pragma mark - Error, Exception, and Crash Handling
 /**
