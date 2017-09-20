@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.8
+
+* [NEW] Introduce new deeplinking API
+
 ## 7.0.7
 
 * [FIX] Allow concurrent internal modify requests
