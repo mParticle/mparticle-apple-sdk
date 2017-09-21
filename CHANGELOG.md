@@ -1,5 +1,25 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.9
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Update Localytics SDK version
+
+## 6.15.8
+
+### Core SDK Updates
+
+- Set transaction attributes on kit purchase events
+
+### Kit Updates
+
+- Add Adobe kit
+
 ## 6.15.7
 
 ### Core SDK Updates
