@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.10
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Fix Localytics SDK version
+
 ## 6.15.9
 
 ### Core SDK Updates
