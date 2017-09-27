@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.11
+
+### Core SDK Updates
+
+- Delay deeplinking call to kits if necessary
+
+### Kit Updates
+
+- Update AppsFlyer kit to support onAppOpenAttribution
+- Update AppsFlyer SDK to 4.8.0
+- Update Branch SDK to 0.18.8
+
 ## 6.15.10
 
 ### Core SDK Updates
