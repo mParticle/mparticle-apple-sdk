@@ -196,7 +196,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Singular */
     MPKitInstanceSingular = 119,
     /** Kit code for Adobe */
-    MPKitInstanceAdobe = 124
+    MPKitInstanceAdobe = 124,
+    /** Kit code for Instabot */
+    MPKitInstanceInstabot = 123
     
 };
 

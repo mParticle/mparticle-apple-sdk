@@ -107,6 +107,7 @@ Kit | CocoaPods | Carthage
 [Button](https://github.com/mparticle-integrations/mparticle-apple-integration-button)                |  ✓ | ✓
 [comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)            |  ✓ |  
 [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                |  ✓ |  
+[Instabot](https://github.com/mparticle-integrations/mparticle-apple-integration-instabot)            |  ✓ |  
 [Iterable](https://github.com/mparticle-integrations/mparticle-apple-integration-iterable)            |  ✓ | ✓ 
 [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)                |  ✓ |  
 [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
