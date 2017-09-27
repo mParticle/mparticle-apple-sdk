@@ -50,11 +50,16 @@
 #import "MPForwardQueueParameters.h"
 #import "MPIntegrationAttributes.h"
 #import "MPKitAPI.h"
+#import "mParticle.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
 NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
+
+@interface MParticle ()
+- (void)executeKitsInitializedBlocks;
+@end
 
 @interface MPKitAPI ()
 
@@ -75,6 +80,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 
 @implementation MPKitContainer
+
+@synthesize kitsInitialized = _kitsInitialized;
 
 + (void)initialize {
     kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
@@ -159,11 +166,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return _forwardQueue;
 }
 
+- (BOOL)kitsInitialized {
+    return _kitsInitialized;
+}
+
 - (void)setKitsInitialized:(BOOL)kitsInitialized {
     _kitsInitialized = kitsInitialized;
     
     if (_kitsInitialized) {
         [self replayQueuedItems];
+        [[MParticle sharedInstance] executeKitsInitializedBlocks];
     }
 }
 

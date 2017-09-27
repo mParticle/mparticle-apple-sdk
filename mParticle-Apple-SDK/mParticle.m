@@ -58,6 +58,10 @@ NSString *const kMParticleFirstRun = @"firstrun";
 NSString *const kMPMethodName = @"$MethodName";
 NSString *const kMPStateKey = @"state";
 
+@interface MPKitContainer ()
+- (BOOL)kitsInitialized;
+@end
+
 @interface MParticle() <MPBackendControllerDelegate> {
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     MPExceptionHandler *exceptionHandler;
@@ -70,6 +74,8 @@ NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic, unsafe_unretained) BOOL initialized;
+@property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
+
 
 @end
 
@@ -93,6 +99,7 @@ NSString *const kMPStateKey = @"state";
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
     _kitActivity = [[MPKitActivity alloc] init];
+    _kitsInitializedBlocks = [NSMutableArray array];
     
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
@@ -738,8 +745,10 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Deep linking
 - (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary * linkInfo, NSError *error))completionHandler {
-    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
-        [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
+    [[MParticle sharedInstance] onKitsInitialized:^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
+            [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
+        }];
     }];
 }
 
@@ -1037,6 +1046,23 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Kits
+
+- (void)onKitsInitialized:(void(^)(void))block {
+    BOOL kitsInitialized = [MPKitContainer sharedInstance].kitsInitialized;
+    if (kitsInitialized) {
+        block();
+    } else {
+        [self.kitsInitializedBlocks addObject:[block copy]];
+    }
+}
+
+- (void)executeKitsInitializedBlocks {
+    [self.kitsInitializedBlocks enumerateObjectsUsingBlock:^(void (^block)(void), NSUInteger idx, BOOL * _Nonnull stop) {
+        block();
+    }];
+    [self.kitsInitializedBlocks removeAllObjects];
+}
+
 - (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
     BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
     NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
