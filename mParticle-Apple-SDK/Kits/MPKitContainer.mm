@@ -59,6 +59,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @interface MParticle ()
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
+- (void)executeKitsInitializedBlocks;
 @end
 
 @interface MPKitAPI ()
@@ -80,6 +81,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 
 @implementation MPKitContainer
+
+@synthesize kitsInitialized = _kitsInitialized;
 
 + (void)initialize {
     kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
@@ -172,11 +175,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return _forwardQueue;
 }
 
+- (BOOL)kitsInitialized {
+    return _kitsInitialized;
+}
+
 - (void)setKitsInitialized:(BOOL)kitsInitialized {
     _kitsInitialized = kitsInitialized;
     
     if (_kitsInitialized) {
         [self replayQueuedItems];
+        [[MParticle sharedInstance] executeKitsInitializedBlocks];
     }
 }
 
