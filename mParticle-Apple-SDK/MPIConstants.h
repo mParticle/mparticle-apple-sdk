@@ -181,6 +181,7 @@ extern NSString * _Nonnull const kMPHTTPETagHeaderKey;
 extern NSString * _Nonnull const kMPAppSearchAdsAttributionKey;
 extern NSString * _Nonnull const kMPSynchedUserAttributesKey;
 extern NSString * _Nonnull const kMPSynchedUserIdentitiesKey;
+extern NSString * _Nonnull const kMPLastConfigReceivedKey;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;
@@ -302,6 +303,10 @@ extern const NSTimeInterval DEFAULT_UPLOAD_INTERVAL;
 extern const NSTimeInterval INITIAL_UPLOAD_TIME;
 
 extern const NSUInteger EVENT_LIMIT; // maximum number of events per session
+
+// How long to block config requests after a successful response.
+extern const NSTimeInterval DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL;
+extern const NSTimeInterval CONFIG_REQUESTS_QUIET_INTERVAL;
 
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_COUNT;

@@ -143,6 +143,7 @@ NSString *const kMPHTTPETagHeaderKey = @"ETag";
 NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
+NSString *const kMPLastConfigReceivedKey = @"LastConfigReceived";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
@@ -284,6 +285,10 @@ const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
     #else
         600.0;
     #endif
+
+// How long to block config requests after a successful response.
+const NSTimeInterval DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL = 60.0;
+const NSTimeInterval CONFIG_REQUESTS_QUIET_INTERVAL = 10.0*60;
 
 const NSUInteger EVENT_LIMIT = 1000; // maximum number of events per session
 
