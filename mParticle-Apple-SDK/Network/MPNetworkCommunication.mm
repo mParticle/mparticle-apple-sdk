@@ -43,6 +43,7 @@
 #import "MPPersistenceController.h"
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
+#import "MPIConstants.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Version, path
@@ -293,8 +294,32 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     return retrievingSegments;
 }
 
+- (void)configRequestDidSucceed {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults[kMPLastConfigReceivedKey] = @([NSDate timeIntervalSinceReferenceDate]);
+    [userDefaults synchronize];
+}
+
 #pragma mark Public methods
 - (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary))completionHandler {
+    
+    BOOL shouldSendRequest = YES;
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *lastReceivedNumber = userDefaults[kMPLastConfigReceivedKey];
+    if (lastReceivedNumber != nil) {
+        NSTimeInterval lastConfigReceivedInterval = [lastReceivedNumber doubleValue];
+        NSTimeInterval interval = [NSDate timeIntervalSinceReferenceDate];
+        NSTimeInterval delta = interval - lastConfigReceivedInterval;
+        NSTimeInterval quietInterval = [MPStateMachine environment] == MPEnvironmentDevelopment ? DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL : CONFIG_REQUESTS_QUIET_INTERVAL;
+        shouldSendRequest = delta > quietInterval;
+    }
+    
+    if (!shouldSendRequest) {
+        completionHandler(YES, nil);
+        return;
+    }
+    
     if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
         return;
     }
@@ -340,6 +365,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                      
                      if (responseCode == HTTPStatusCodeNotModified) {
                          completionHandler(YES, nil);
+                         [self configRequestDidSucceed];
                          strongSelf->retrievingConfig = NO;
                          return;
                      }
@@ -382,6 +408,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
                      
                      completionHandler(success, configurationDictionary);
+                     [self configRequestDidSucceed];
                      strongSelf->retrievingConfig = NO;
                  }];
     
