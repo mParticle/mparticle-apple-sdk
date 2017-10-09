@@ -33,6 +33,110 @@
 
 * [NEW] New identity APIs
 
+## 6.15.12
+
+### Core SDK Updates
+
+- Disable code coverage settings
+- Limit how often config requests can be sent
+
+### Kit Updates
+
+- Update Appboy kit with simplified endpoint logic
+- Update ComScore SDK to 5.0
+
+## 6.15.11
+
+### Core SDK Updates
+
+- Delay deeplinking call to kits if necessary
+
+### Kit Updates
+
+- Update AppsFlyer kit to support onAppOpenAttribution
+- Update AppsFlyer SDK to 4.8.0
+- Update Branch SDK to 0.18.8
+
+## 6.15.10
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Fix Localytics SDK version
+
+## 6.15.9
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Update Localytics SDK version
+
+## 6.15.8
+
+### Core SDK Updates
+
+- Set transaction attributes on kit purchase events
+
+### Kit Updates
+
+- Add Adobe kit
+
+## 6.15.7
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Update AppsFlyer kit to support checking for deep links
+- Update UrbanAirship kit to add transaction id to purchase events
+
+## 6.15.6
+
+### Core SDK Updates
+
+- Prevent deprecation warnings for iOS 11 deployment target
+
+### Kit Updates
+
+- Update Singular and Apptentive kits to support Carthage
+
+## 6.15.3
+
+### Core SDK Updates
+
+- Remove Git submodules from the repo to address https://github.com/mParticle/mparticle-apple-sdk/issues/49
+
+### Kit Updates
+
+- Update Singular kit with fixes from the Singular team: https://github.com/mparticle-integrations/mparticle-apple-integration-singular/pull/4
+
+## 6.15.0
+
+### Core SDK Updates
+
+- All kits repos are now git submodules within the core repository
+
+### Kit Updates
+
+- mParticle now support Singular (formerly Apsalar) via both a Kit and server-side integration!
+- This release introduces a class method to `MPKitAppsFlyer` such that implementing apps can set the AppsFlyer tracker delegate.
+- Update Kochava SDK to 3.2.0
+- Update Appboy SDK to 3.0.0
+- Update Branch SDK to 0.17.6
+
+## 6.14.5
+
+* [FIX] Fixes for Xcode 9 / iOS 11 and main thread checker
+* [NEW] Remove category on NSUserDefaults
+
 ## 6.14.4
 
 * [FIX] Ensure all server-side configuration settings are reloaded on every app-launch
