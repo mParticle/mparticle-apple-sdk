@@ -61,7 +61,6 @@
 - (void)deinit;
 
 #pragma mark Application
-- (nonnull MPKitExecStatus *)checkForDeferredDeepLinkWithCompletionHandler:(void(^ _Nonnull)(NSDictionary * _Nullable linkInfo, NSError * _Nullable error))completionHandler;
 - (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 - (nonnull MPKitExecStatus *)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
 - (nonnull MPKitExecStatus *)didBecomeActive;

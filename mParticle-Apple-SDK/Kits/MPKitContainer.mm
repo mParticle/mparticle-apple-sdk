@@ -430,15 +430,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
     }
     
-    if (![kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(checkForDeferredDeepLinkWithCompletionHandler:)]) {
-            MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
-            [kitRegister.wrapperInstance checkForDeferredDeepLinkWithCompletionHandler:^(NSDictionary * _Nullable linkInfo, NSError * _Nullable error) {
-                [kitApi onDeeplinkCompleteWithInfo:linkInfo error:error];
-            }];
-        }
-    }
-    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     // Synchronizes user attributes

@@ -817,14 +817,6 @@ NSString *const kMPStateKey = @"state";
     return [[MPKitContainer sharedInstance].deepLinkInfo copy];
 }
 
-- (void)checkForDeferredDeepLinkWithCompletionHandler:(void(^)(NSDictionary * linkInfo, NSError *error))completionHandler {
-    [[MParticle sharedInstance] onKitsInitialized:^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(checkForDeferredDeepLinkWithCompletionHandler:) kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitExecStatus * __autoreleasing  _Nonnull * _Nonnull execStatus) {
-            [kit checkForDeferredDeepLinkWithCompletionHandler:completionHandler];
-        }];
-    }];
-}
-
 #pragma mark Error, Exception, and Crash Handling
 - (void)beginUncaughtExceptionLogging {
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
