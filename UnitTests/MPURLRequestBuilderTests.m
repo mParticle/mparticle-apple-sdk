@@ -53,10 +53,11 @@
     stateMachine.secret = @"unit_test_secret";
     
     if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
-        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:@{@"appKey":@"🔑"} startImmediately:YES];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
+        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+        [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:@{@"appKey":@"🔑"}];
         [MPKitContainer registerKit:kitRegister];
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
         [MPKitContainer registerKit:kitRegister];
     }
 }

@@ -28,16 +28,18 @@ NSString *const afDevKey = @"devKey";
     return @92;
 }
 
-- (instancetype)initWithConfiguration:(NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super init];
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    MPKitExecStatus *execStatus = nil;
+    
     NSString *appleAppId = configuration[afAppleAppId];
     NSString *devKey = configuration[afDevKey];
-    if (!self || !appleAppId || !devKey) {
-        return nil;
+    if (!appleAppId || !devKey) {
+        execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeRequirementsNotMet];
+        return execStatus;
     }
     
     _configuration = configuration;
-    _started = startImmediately;
+    _started = YES;
     
     BOOL alreadyActive = [[UIApplication sharedApplication] applicationState] == UIApplicationStateActive;
     
@@ -52,7 +54,8 @@ NSString *const afDevKey = @"devKey";
                                                           userInfo:userInfo];
     });
     
-    return self;
+    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
 }
 
 - (nonnull MPKitExecStatus *)didBecomeActive {

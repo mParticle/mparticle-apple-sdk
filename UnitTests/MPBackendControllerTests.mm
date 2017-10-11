@@ -733,10 +733,10 @@
     [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
     
     if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
         
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
         [MPKitContainer registerKit:kitRegister];
         
         NSDictionary *configuration1 = @{

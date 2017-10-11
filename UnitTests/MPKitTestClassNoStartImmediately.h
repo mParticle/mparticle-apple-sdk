@@ -1,5 +1,5 @@
 //
-//  MPKitTestClass.h
+//  MPKitTestClassNoStartImmediately.h
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -19,7 +19,7 @@
 #import <Foundation/Foundation.h>
 #import "MPKitProtocol.h"
 
-@interface MPKitTestClass : NSObject <MPKitProtocol>
+@interface MPKitTestClassNoStartImmediately : NSObject <MPKitProtocol>
 
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 @property (nonatomic, unsafe_unretained, readonly) BOOL started;

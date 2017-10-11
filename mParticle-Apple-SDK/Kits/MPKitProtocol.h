@@ -44,7 +44,7 @@
 #pragma mark - Required methods
 @property (nonatomic, unsafe_unretained, readonly) BOOL started;
 
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
+- (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
 
 + (nonnull NSNumber *)kitCode;
 

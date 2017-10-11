@@ -1,5 +1,5 @@
 //
-//  MPKitTestClass.m
+//  MPKitSecondTestClassNoStartImmediately.m
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,23 +16,25 @@
 //  limitations under the License.
 //
 
-#import "MPKitTestClass.h"
+#import "MPKitSecondTestClassNoStartImmediately.h"
 #import "MPKitExecStatus.h"
 
-@implementation MPKitTestClass
+@implementation MPKitSecondTestClassNoStartImmediately
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
+    if (!self) {
+        return nil;
+    }
     
-    _configuration = configuration;
-    _started = YES;
+    _started = NO;
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }
 
 + (nonnull NSNumber *)kitCode {
-    return @42;
+    return @314;
 }
 
 - (void)deinit {
@@ -46,14 +48,6 @@
 
 - (void)start {
     _started = YES;
-
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
-                                                            object:nil
-                                                          userInfo:userInfo];
-    });
 }
 
 - (MPKitExecStatus *)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
@@ -71,10 +65,6 @@
     return execStatus;
 }
 
-- (id)providerKitInstance {
-    return _started ? self : nil;
-}
-
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
@@ -85,20 +75,6 @@
     tempUserAttributes[key] = value;
     self.userAttributes = tempUserAttributes;
     
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-    return execStatus;
-}
-
-- (MPKitExecStatus *)setUserAttribute:(NSString *)key values:(NSArray<NSString *> *)values {
-    NSMutableDictionary *tempUserAttributes = self.userAttributes ? [self.userAttributes mutableCopy] : [[NSMutableDictionary alloc] initWithCapacity:1];
-    tempUserAttributes[key] = values;
-    self.userAttributes = tempUserAttributes;
-    
-    MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
-    return execStatus;
-}
-
-- (nonnull MPKitExecStatus *)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }

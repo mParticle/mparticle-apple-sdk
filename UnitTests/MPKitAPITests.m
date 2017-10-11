@@ -63,7 +63,7 @@
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
         
         NSDictionary *configuration = @{

@@ -451,12 +451,16 @@
 		C9DD21001D8A203900D3ABBE /* MPUserAttributeChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
+		DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
+		DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
+		DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
+		DB3935151F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
+		DB3935161F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */; };
+		DB3935171F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */; };
 		DB4552BD1F01895600B6924C /* MPIdentityApiManager.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4552BB1F01895600B6924C /* MPIdentityApiManager.h */; };
 		DB4552BE1F01895600B6924C /* MPIdentityApiManager.h in Headers */ = {isa = PBXBuildFile; fileRef = DB4552BB1F01895600B6924C /* MPIdentityApiManager.h */; };
 		DB4552BF1F01895600B6924C /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */; };
 		DB4552C01F01895600B6924C /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */; };
-		DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
-		DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
 		DB58FB011E9FD06800AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
 		DB58FB021E9FD06800AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
 		DB58FB031E9FD07900AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
@@ -742,10 +746,14 @@
 		C9DD20B51D8A190600D3ABBE /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		DB00F6371F4E11380070A74B /* MPKitAPITests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAPITests.m; sourceTree = "<group>"; };
+		DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitSecondTestClassNoStartImmediately.m; sourceTree = "<group>"; };
+		DB3935111F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitSecondTestClassNoStartImmediately.h; sourceTree = "<group>"; };
+		DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClassNoStartImmediately.m; sourceTree = "<group>"; };
+		DB3935131F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTestClassNoStartImmediately.h; sourceTree = "<group>"; };
 		DB4552BB1F01895600B6924C /* MPIdentityApiManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityApiManager.h; path = Identity/MPIdentityApiManager.h; sourceTree = "<group>"; };
 		DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApiManager.m; path = Identity/MPIdentityApiManager.m; sourceTree = "<group>"; };
 		DB4F166C1F1511B100D625CD /* MPIdentityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityTests.m; sourceTree = "<group>"; };
-		DB00F6371F4E11380070A74B /* MPKitAPITests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAPITests.m; sourceTree = "<group>"; };
 		DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
 		DB58FB001E9FD06800AB5402 /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
 		DB678C331F180E0A0015587D /* MPUserIdentityChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUserIdentityChange.h; sourceTree = "<group>"; };
@@ -1221,6 +1229,10 @@
 				C9DD20A81D8A190600D3ABBE /* MPKitSecondTestClass.m */,
 				C9DD20A91D8A190600D3ABBE /* MPKitTestClass.h */,
 				C9DD20AA1D8A190600D3ABBE /* MPKitTestClass.m */,
+				DB3935111F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.h */,
+				DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */,
+				DB3935131F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.h */,
+				DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */,
 				C9DD20AB1D8A190600D3ABBE /* MPLaunchInfoTests.m */,
 				C9DD20AC1D8A190600D3ABBE /* MPMessageBuilderTests.m */,
 				C9DD20AD1D8A190600D3ABBE /* MPNetworkCommunication+Tests.h */,
@@ -1629,6 +1641,7 @@
 				C911FDA41D8A365A002A3516 /* MPURLRequestBuilderTests.m in Sources */,
 				C911FD9B1D8A365A002A3516 /* MPKitTestClass.m in Sources */,
 				C911FD921D8A365A002A3516 /* MPEventTests.mm in Sources */,
+				DB3935151F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				C911FD931D8A365A002A3516 /* MPForwardQueueItemTests.m in Sources */,
 				C911FD9C1D8A365A002A3516 /* MPLaunchInfoTests.m in Sources */,
 				C911FD971D8A365A002A3516 /* MPKitConfigurationTests.mm in Sources */,
@@ -1656,6 +1669,7 @@
 				C911FD911D8A365A002A3516 /* MPDateFormatterTests.m in Sources */,
 				C911FDA51D8A365A002A3516 /* MPUserAttributeChangeTests.m in Sources */,
 				C911FD8F1D8A365A002A3516 /* MPCustomModuleTests.m in Sources */,
+				DB3935171F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */,
 				C911FDA01D8A365A002A3516 /* MPProductBagTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1871,6 +1885,7 @@
 				DB678C3B1F1817E70015587D /* MPUserIdentityChangeTests.m in Sources */,
 				C9DD20FD1D8A202D00D3ABBE /* MPStateMachineTests.mm in Sources */,
 				C9DD20F41D8A1FF700D3ABBE /* MPKitRegisterTests.m in Sources */,
+				DB3935161F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */,
 				C9DD20E71D8A195D00D3ABBE /* MPCartTests.m in Sources */,
 				C9DD20EB1D8A1F9E00D3ABBE /* MPDataModelTests.m in Sources */,
 				C9DD20E21D8A193500D3ABBE /* HasherTests.mm in Sources */,
@@ -1885,6 +1900,7 @@
 				C9DD20E61D8A195500D3ABBE /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				C9DD20EC1D8A1FA100D3ABBE /* MPDateFormatterTests.m in Sources */,
 				C9DD20F51D8A1FFE00D3ABBE /* MPKitSecondTestClass.m in Sources */,
+				DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				C9DD20E81D8A1F9200D3ABBE /* MPCommerceEventTests.m in Sources */,
 				C9DD20F71D8A200F00D3ABBE /* MPLaunchInfoTests.m in Sources */,
 				C9DD20FF1D8A203500D3ABBE /* MPURLRequestBuilderTests.m in Sources */,

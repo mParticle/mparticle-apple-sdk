@@ -25,7 +25,7 @@
 
 - (instancetype)init {
     id invalidVar = nil;
-    self = [self initWithName:invalidVar className:invalidVar startImmediately:NO];
+    self = [self initWithName:invalidVar className:invalidVar];
     if (self) {
         MPILogError(@"MPKitRegister cannot be initialized using the init method");
     }
@@ -33,7 +33,7 @@
     return nil;
 }
 
-- (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately {
+- (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className {
     Class stringClass = [NSString class];
     BOOL validName = !MPIsNull(name) && [name isKindOfClass:stringClass];
     NSAssert(validName, @"The 'name' variable is not valid.");
@@ -48,7 +48,6 @@
     
     _name = name;
     _className = className;
-    _startImmediately = startImmediately;
     _code = [(id<MPKitProtocol>)NSClassFromString(_className) kitCode];
     
     _wrapperInstance = nil;

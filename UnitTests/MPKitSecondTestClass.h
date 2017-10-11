@@ -26,7 +26,7 @@
 @property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *userAttributes;
 @property (nonatomic, strong, nullable) NSArray<NSDictionary<NSString *, id> *> *userIdentities;
 
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
+- (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
 + (nonnull NSNumber *)kitCode;
 
 @end

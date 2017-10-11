@@ -418,15 +418,19 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     configuration = [self validateAndTransformToSafeConfiguration:configuration];
     
     if (configuration) {
-        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] initWithConfiguration:configuration startImmediately:kitRegister.startImmediately];
+        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+        
+        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
+            [kitRegister.wrapperInstance setKitApi:kitApi];
+        }
+        
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
+            [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+        }
     }
     
-    MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
-    
-    if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
-        [kitRegister.wrapperInstance setKitApi:kitApi];
-    }
-    else {
+    if (![kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(checkForDeferredDeepLinkWithCompletionHandler:)]) {
             MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
             [kitRegister.wrapperInstance checkForDeferredDeepLinkWithCompletionHandler:^(NSDictionary * _Nullable linkInfo, NSError * _Nullable error) {
@@ -1920,7 +1924,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         }
                         
                         if ([kitInstance respondsToSelector:@selector(start)]) {
-                            [kitInstance start];
+                            @try {
+                                [kitInstance start];
+                            }
+                            @catch (NSException *exception) {
+                                MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
+                            }
                         }
                     }
                 }

@@ -89,13 +89,13 @@
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
         
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
         [MPKitContainer registerKit:kitRegister];
         
-        kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest" startImmediately:YES];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
         [MPKitContainer registerKit:kitRegister];
         
         NSDictionary *configuration = @{
@@ -112,7 +112,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 92"];
     id kitAppsFlyer = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     if (!kitAppsFlyer) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest" startImmediately:YES];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
         [MPKitContainer registerKit:kitRegister];
     }
 }

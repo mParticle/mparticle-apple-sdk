@@ -54,18 +54,12 @@
 @property (nonatomic, strong, nonnull, readonly) NSString *className;
 
 /**
- Indicates whether a 3rd party kit should be started immediately or it should wait until launch info such as deep-linking is available, then start
- */
-@property (nonatomic, unsafe_unretained, readonly) BOOL startImmediately;
-
-/**
  Allocates and initializes a register to a 3rd party kit implementation
  @param name Kit name. Obtained from the 3rd party library provider and informed to the Core SDK
  @param className Name of the class implementing the wrapper to forward calls to 3rd party kits
- @param startImmediately Indicates whether a 3rd party kit should be started immediately or it should wait until launch info such as deep-linking is available, then start
  @returns An instance of a kit register or nil if a kit register could not be instantiated
  */
-- (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className startImmediately:(BOOL)startImmediately;
+- (nullable instancetype)initWithName:(nonnull NSString *)name className:(nonnull NSString *)className;
 
 @end
 

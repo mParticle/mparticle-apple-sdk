@@ -21,15 +21,16 @@
 
 @implementation MPKitSecondTestClass
 
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super init];
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    MPKitExecStatus *execStatus = nil;
     if (!self) {
         return nil;
     }
     
-    _started = startImmediately;
+    _started = YES;
     
-    return self;
+    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
 }
 
 + (nonnull NSNumber *)kitCode {

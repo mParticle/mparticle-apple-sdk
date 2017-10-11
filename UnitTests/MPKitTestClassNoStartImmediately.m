@@ -1,5 +1,5 @@
 //
-//  MPKitTestClass.m
+//  MPKitTestClassNoStartImmediately.m
 //
 //  Copyright 2016 mParticle, Inc.
 //
@@ -16,16 +16,16 @@
 //  limitations under the License.
 //
 
-#import "MPKitTestClass.h"
+#import "MPKitTestClassNoStartImmediately.h"
 #import "MPKitExecStatus.h"
 
-@implementation MPKitTestClass
+@implementation MPKitTestClassNoStartImmediately
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
     
     _configuration = configuration;
-    _started = YES;
+    _started = NO;
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
