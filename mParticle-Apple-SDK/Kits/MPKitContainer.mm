@@ -95,10 +95,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         _deepLinkInfo = [NSMutableDictionary dictionary];
         NSMutableDictionary *linkInfo = _deepLinkInfo;
         kitsSemaphore = dispatch_semaphore_create(1);
-        _deepLinkCompletionHandler = [^void(MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error) {
-            if (deeplinkResult && deeplinkResult.kitCode) {
-                linkInfo[deeplinkResult.kitCode] = deeplinkResult;
-                [MParticle sharedInstance].options.onDeeplinkComplete(deeplinkResult, error);
+        _deepLinkCompletionHandler = [^void(MPDeeplinkContext *context, MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error) {
+            if (deeplinkResult && context.kitCode) {
+                linkInfo[context.kitCode] = deeplinkResult;
+                [MParticle sharedInstance].options.onDeeplinkComplete(context, deeplinkResult, error);
             }
         } copy];
         

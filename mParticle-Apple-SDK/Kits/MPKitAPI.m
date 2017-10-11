@@ -91,15 +91,17 @@
 }
 
 - (void)onDeeplinkCompleteWithInfo:(NSDictionary *)info error:(NSError *)error {
+    MPDeeplinkContext *context = [[MPDeeplinkContext alloc] init];
+    context.kitCode = _kitCode;
+    context.kitName = [self kitName];
+    
     MPDeeplinkResult *result = nil;
     if (info) {
         result = [[MPDeeplinkResult alloc] init];
-        result.kitCode = _kitCode;
-        result.kitName = [self kitName];
         result.linkInfo = info;
     }
     
-    [MPKitContainer sharedInstance].deepLinkCompletionHandler(result, error);
+    [MPKitContainer sharedInstance].deepLinkCompletionHandler(context, result, error);
 }
 
 @end

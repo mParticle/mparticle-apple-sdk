@@ -52,10 +52,15 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPDeeplinkResult : NSObject
+@interface MPDeeplinkContext : NSObject
 
 @property (nonatomic) NSNumber *kitCode;
 @property (nonatomic) NSString *kitName;
+
+@end
+
+@interface MPDeeplinkResult : NSObject
+
 @property (nonatomic) NSDictionary *linkInfo;
 
 @end
@@ -70,7 +75,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
-@property (nonatomic, copy) void (^onDeeplinkComplete)(MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
+@property (nonatomic, copy) void (^onDeeplinkComplete)(MPDeeplinkContext *context, MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
 @end
 
 /**

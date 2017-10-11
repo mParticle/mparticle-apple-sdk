@@ -81,6 +81,10 @@ NSString *const kMPStateKey = @"state";
 
 @end
 
+@implementation MPDeeplinkContext
+
+@end
+
 @implementation MPDeeplinkResult
 
 @end

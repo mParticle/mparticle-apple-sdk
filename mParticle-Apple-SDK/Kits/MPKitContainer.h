@@ -30,7 +30,7 @@
 
 @interface MPKitContainer : NSObject
 
-@property (nonatomic, copy) void (^ _Nonnull deepLinkCompletionHandler)(MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
+@property (nonatomic, copy) void (^ _Nonnull deepLinkCompletionHandler)(MPDeeplinkContext *_Nonnull context, MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
 @property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPDeeplinkResult *> *deepLinkInfo;
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
