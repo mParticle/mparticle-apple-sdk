@@ -1,5 +1,20 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.0.9
+
+### Core SDK Updates
+
+- Change init method to did finish launching
+
+### Kit Updates
+
+- Update AppsFlyer with new deeplinking API
+- Update BranchMetrics with new deeplinking API
+- Update Button with new deeplinking API
+- Update Iterable with new deeplinking API
+- Update Singular with new deeplinking API
+- Update Tune with new deeplinking API
+
 ## 7.0.8
 
 * [NEW] Introduce new deeplinking API
