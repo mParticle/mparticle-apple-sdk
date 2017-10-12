@@ -4,6 +4,13 @@
 #import "MPKitContainer.h"
 #import "MPILogger.h"
 
+@interface MPAttributionResult ()
+
+@property (nonatomic, readwrite) NSNumber *kitCode;
+@property (nonatomic, readwrite) NSString *kitName;
+
+@end
+
 @interface MPKitAPI ()
 
 @property (nonatomic) NSNumber *kitCode;
@@ -90,18 +97,35 @@
     return dictionary;
 }
 
-- (void)onDeeplinkCompleteWithInfo:(NSDictionary *)info error:(NSError *)error {
-    MPDeeplinkContext *context = [[MPDeeplinkContext alloc] init];
-    context.kitCode = _kitCode;
-    context.kitName = [self kitName];
-    
-    MPDeeplinkResult *result = nil;
-    if (info) {
-        result = [[MPDeeplinkResult alloc] init];
-        result.linkInfo = info;
+- (void)onAttributionCompleteWithResult:(MPAttributionResult *)result error:(NSError *)error {
+    if (error || !result) {
+        
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+        if (_kitCode) {
+            userInfo[mParticleKitInstanceKey] = _kitCode;
+        }
+        
+        NSString *errorMessage = nil;
+        
+        if (error) {
+            errorMessage = @"mParticle Kit Attribution Error";
+            userInfo[NSUnderlyingErrorKey] = error;
+        }
+        
+        if (!result) {
+            errorMessage = @"mParticle Kit Attribution handler was called with nil info and no error";
+        }
+        
+        userInfo[MPKitAPIErrorKey] = errorMessage;
+        NSError *attributionError = [NSError errorWithDomain:MPKitAPIErrorDomain code:0 userInfo:userInfo];
+        [MPKitContainer sharedInstance].attributionCompletionHandler(nil, attributionError);
+        return;
     }
     
-    [MPKitContainer sharedInstance].deepLinkCompletionHandler(context, result, error);
+    result.kitCode = _kitCode;
+    result.kitName = [self kitName];
+    
+    [MPKitContainer sharedInstance].attributionCompletionHandler(result, nil);
 }
 
 @end

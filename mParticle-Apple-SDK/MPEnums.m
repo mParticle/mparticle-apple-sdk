@@ -49,3 +49,6 @@ NSString *const mParticleIdentityErrorKey = @"mParticle Identity Error";
 NSString *const mParticleGenderMale = @"M";
 NSString *const mParticleGenderFemale = @"F";
 NSString *const mParticleGenderNotAvailable = @"NA";
+
+NSString * const MPKitAPIErrorDomain = @"com.mparticle.kitapi";
+NSString * const MPKitAPIErrorKey = @"mParticle Kit API Error";

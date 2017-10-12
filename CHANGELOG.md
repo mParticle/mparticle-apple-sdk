@@ -8,12 +8,12 @@
 
 ### Kit Updates
 
-- Update AppsFlyer with new deeplinking API
-- Update BranchMetrics with new deeplinking API
-- Update Button with new deeplinking API
-- Update Iterable with new deeplinking API
-- Update Singular with new deeplinking API
-- Update Tune with new deeplinking API
+- Update AppsFlyer with new attribution API
+- Update BranchMetrics with new attribution API
+- Update Button with new attribution API
+- Update Iterable with new attribution API
+- Update Singular with new attribution API
+- Update Tune with new attribution API
 
 ## 7.0.8
 

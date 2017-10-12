@@ -52,16 +52,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPDeeplinkContext : NSObject
-
-@property (nonatomic) NSNumber *kitCode;
-@property (nonatomic) NSString *kitName;
-
-@end
-
-@interface MPDeeplinkResult : NSObject
+@interface MPAttributionResult : NSObject
 
 @property (nonatomic) NSDictionary *linkInfo;
+@property (nonatomic, readonly) NSNumber *kitCode;
+@property (nonatomic, readonly) NSString *kitName;
 
 @end
 
@@ -75,7 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
-@property (nonatomic, copy) void (^onDeeplinkComplete)(MPDeeplinkContext *context, MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error);
+@property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end
 
 /**
@@ -395,13 +390,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)logScreen:(NSString *)screenName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
-#pragma mark - Deep linking
+#pragma mark - Attribution
 /**
- Convenience method for getting the most recently retrieved deep link info for all kits.
- @returns A dictionary containing the most recent deep link info that was retrieved by each kit
+ Convenience method for getting the most recently retrieved attribution info for all kits.
+ @returns A dictionary containing the most recent attribution info that was retrieved by each kit
  @see MPKitInstance
  */
-- (nullable NSDictionary<NSNumber *, MPDeeplinkResult *> *)lastDeepLinkInfo;
+- (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo;
 
 #pragma mark - Error, Exception, and Crash Handling
 /**

@@ -386,4 +386,10 @@ extern NSString * _Nonnull const mParticleGenderMale;
 extern NSString * _Nonnull const mParticleGenderFemale;
 extern NSString * _Nonnull const mParticleGenderNotAvailable;
 
+/**
+ Kit API error domain and key
+ */
+extern NSString * _Nonnull const MPKitAPIErrorDomain;
+extern NSString * _Nonnull const MPKitAPIErrorKey;
+
 #endif

@@ -81,11 +81,23 @@ NSString *const kMPStateKey = @"state";
 
 @end
 
-@implementation MPDeeplinkContext
+@interface MPAttributionResult ()
+
+@property (nonatomic, readwrite) NSNumber *kitCode;
+@property (nonatomic, readwrite) NSString *kitName;
 
 @end
 
-@implementation MPDeeplinkResult
+@implementation MPAttributionResult
+
+- (NSString *)description {
+    NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPAttributionResult {\n"];
+    [description appendFormat:@"  kitCode: %@\n", _kitCode];
+    [description appendFormat:@"  kitName: %@\n", _kitName];
+    [description appendFormat:@"  linkInfo: %@\n", _linkInfo];
+    [description appendString:@"}"];
+    return description;
+}
 
 @end
 
@@ -816,9 +828,9 @@ NSString *const kMPStateKey = @"state";
     [self logScreenEvent:event];
 }
 
-#pragma mark Deep linking
-- (nullable NSDictionary<NSNumber *, NSDictionary *> *)lastDeepLinkInfo {
-    return [[MPKitContainer sharedInstance].deepLinkInfo copy];
+#pragma mark Attribution
+- (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo {
+    return [[MPKitContainer sharedInstance].attributionInfo copy];
 }
 
 #pragma mark Error, Exception, and Crash Handling

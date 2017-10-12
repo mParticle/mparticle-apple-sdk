@@ -92,14 +92,14 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     self = [super init];
     if (self) {
         _kitsInitialized = NO;
-        _deepLinkInfo = [NSMutableDictionary dictionary];
-        NSMutableDictionary *linkInfo = _deepLinkInfo;
+        _attributionInfo = [NSMutableDictionary dictionary];
+        NSMutableDictionary *linkInfo = _attributionInfo;
         kitsSemaphore = dispatch_semaphore_create(1);
-        _deepLinkCompletionHandler = [^void(MPDeeplinkContext *context, MPDeeplinkResult *_Nullable deeplinkResult, NSError * _Nullable error) {
-            if (deeplinkResult && context.kitCode) {
-                linkInfo[context.kitCode] = deeplinkResult;
-                [MParticle sharedInstance].options.onDeeplinkComplete(context, deeplinkResult, error);
+        _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
+            if (attributionResult && attributionResult.kitCode) {
+                linkInfo[attributionResult.kitCode] = attributionResult;
             }
+            [MParticle sharedInstance].options.onAttributionComplete(attributionResult, error);
         } copy];
         
         if (![MPStateMachine sharedInstance].optOut) {
