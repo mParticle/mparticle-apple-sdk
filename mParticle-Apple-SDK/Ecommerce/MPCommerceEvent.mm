@@ -33,6 +33,7 @@
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "mParticle.h"
 
 using namespace std;
 using namespace mParticle;
@@ -78,7 +79,7 @@ static NSArray *actionNames;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *productImpressions;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *productsList;
 @property (nonatomic, strong) NSMutableDictionary *userDefinedAttributes;
-
+@property (nonatomic, strong) NSDictionary *shoppingCartState;
 @end
 
 @implementation MPCommerceEvent
@@ -114,7 +115,7 @@ static NSArray *actionNames;
     if (!self) {
         return nil;
     }
-
+    _shoppingCartState = [[MParticle sharedInstance].identity.currentUser.cart dictionaryRepresentation];
     commerceEventKind = MPCommerceEventKindProduct;
     self.action = action;
     [self setEventType];
@@ -356,6 +357,7 @@ static NSArray *actionNames;
         copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];
+        copyObject->_shoppingCartState = _shoppingCartState ? [[NSMutableDictionary alloc] initWithDictionary:[_shoppingCartState copy]] : nil;
     }
     
     return copyObject;
@@ -409,6 +411,10 @@ static NSArray *actionNames;
     if (_nonInteractive) {
         [coder encodeBool:_nonInteractive forKey:@"nonInteractive"];
     }
+    
+    if (_shoppingCartState) {
+        [coder encodeObject:_shoppingCartState forKey:@"shoppingCartState"];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -452,6 +458,11 @@ static NSArray *actionNames;
     type = (MPEventType)[coder decodeIntegerForKey:@"type"];
     commerceEventKind = (MPCommerceEventKind)[coder decodeIntegerForKey:@"commerceEventKind"];
     
+    dictionary = [coder decodeObjectForKey:@"shoppingCartState"];
+    if (dictionary) {
+        self->_shoppingCartState = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+    }
+    
     return self;
 }
 
@@ -481,10 +492,8 @@ static NSArray *actionNames;
         dictionary[kMPCEUserDefinedAttributes] = [_userDefinedAttributes transformValuesToString];
     }
 
-    // Shopping cart state
-    NSDictionary *cartDictionary = [[MPCart sharedInstance] dictionaryRepresentation];
-    if (cartDictionary) {
-        dictionary[kMPCEShoppingCartState] = cartDictionary;
+    if (_shoppingCartState) {
+        dictionary[kMPCEShoppingCartState] = _shoppingCartState;
     }
     
     if (_currency) {

@@ -6,6 +6,7 @@
 #import <Foundation/Foundation.h>
 #import "MPUserSegments.h"
 #import "MPEnums.h"
+#import "MPCart.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -25,6 +26,12 @@ NS_ASSUME_NONNULL_BEGIN
  @returns A dictionary containing the collection of user attributes.
  */
 @property (readonly, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
+
+/**
+ Gets/sets all user attributes.
+ @returns A dictionary containing the collection of user attributes.
+ */
+@property (readonly, strong, nonnull) MPCart *cart;
 
 /**
  Increments the value of a user attribute by the provided amount. If the key does not

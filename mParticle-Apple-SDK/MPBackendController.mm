@@ -2090,7 +2090,7 @@ static BOOL appBackgrounded = NO;
                 products = [commerceEvent addedProducts];
                 
                 if (products) {
-                    [[MPCart sharedInstance] addProducts:products logEvent:NO updateProductList:YES];
+                    [[MParticle sharedInstance].identity.currentUser.cart addProducts:products logEvent:NO updateProductList:YES];
                     [commerceEvent resetLatestProducts];
                 } else {
                     MPILogWarning(@"Commerce event products were not added to the cart.");
@@ -2099,7 +2099,7 @@ static BOOL appBackgrounded = NO;
                 products = [commerceEvent removedProducts];
                 
                 if (products) {
-                    [[MPCart sharedInstance] removeProducts:products logEvent:NO updateProductList:YES];
+                    [[MParticle sharedInstance].identity.currentUser.cart removeProducts:products logEvent:NO updateProductList:YES];
                     [commerceEvent resetLatestProducts];
                 } else {
                     MPILogWarning(@"Commerce event products were not removed from the cart.");

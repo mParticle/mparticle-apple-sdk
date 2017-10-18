@@ -25,6 +25,12 @@
 
 @end
 
+@interface MPCart ()
+
+- (nonnull instancetype)initWithUserId:(NSNumber *_Nonnull)userId;
+
+@end
+
 @implementation MPCartTests
 
 - (void)setUp {
@@ -36,7 +42,7 @@
 }
 
 - (void)testAddProduct {
-    MPCart *cart = [MPCart sharedInstance];
+    MPCart *cart = [[MPCart alloc] initWithUserId:@123];
     XCTAssertEqual(cart.products.count, 0, @"There should have been no products in the cart.");
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -48,7 +54,7 @@
 }
 
 - (void)testRemoveProduct {
-    MPCart *cart = [MPCart sharedInstance];
+    MPCart *cart = [[MPCart alloc] initWithUserId:@123];
     XCTAssertEqual(cart.products.count, 0, @"There should have been no products in the cart.");
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -62,7 +68,7 @@
 }
 
 - (void)testLoadingPersistedCart {
-    MPCart *cart = [MPCart sharedInstance];
+    MPCart *cart = [[MPCart alloc] initWithUserId:@123];
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     [cart addProducts:@[product] logEvent:NO updateProductList:YES];
     

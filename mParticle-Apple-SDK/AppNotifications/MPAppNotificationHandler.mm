@@ -28,7 +28,7 @@
 #import "MPKitContainer.h"
 #include "MPHasher.h"
 #import "MPForwardQueueParameters.h"
-#import "MPKitApi.h"
+#import "MPKitAPI.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"

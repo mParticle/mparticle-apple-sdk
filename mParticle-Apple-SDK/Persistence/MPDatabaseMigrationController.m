@@ -30,6 +30,14 @@
 
 @end
 
+@interface MPCart ()
+
+- (nonnull instancetype)initWithUserId:(NSNumber *_Nonnull)userId;
+- (void)migrate;
+
+@end
+
+
 @interface MPDatabaseMigrationController() {
     dispatch_queue_t dbQueue;
     NSArray *migratedSessions;
@@ -101,6 +109,14 @@
     NSInteger oldVersionValue = [oldVersion integerValue];
     if (oldVersionValue < 26) {
         [[MPIUserDefaults standardUserDefaults] migrateUserKeysWithUserId:[MPPersistenceController mpId]];
+    }
+}
+
+- (void)migrateCartWithVersion:(NSNumber *)oldVersion {
+    NSInteger oldVersionValue = [oldVersion integerValue];
+    if (oldVersionValue < 26) {
+        MPCart *newCart = [[MPCart alloc] initWithUserId:[MPPersistenceController mpId]];
+        [newCart migrate];
     }
 }
 

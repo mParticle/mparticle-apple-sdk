@@ -35,6 +35,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
 #import "MPPersistenceController.h"
+#import "MParticle.h"
 
 @interface MPMessageBuilderTests : XCTestCase
 
@@ -146,7 +147,7 @@
     commerceEvent[@"key_number"] = @3.14;
     commerceEvent[@"key_date"] = [NSDate date];
     
-    MPCart *cart = [MPCart sharedInstance];
+    MPCart *cart = [MParticle sharedInstance].identity.currentUser.cart;
     [cart clear];
     [cart addProducts:@[product] logEvent:NO updateProductList:YES];
     XCTAssertEqual(cart.products.count, 1, @"Incorrect product count.");

@@ -24,7 +24,15 @@
 
 @end
 
+@interface MPCart ()
+
+- (nonnull instancetype)initWithUserId:(NSNumber *_Nonnull)userId;
+
+@end
+
 @implementation MParticleUser
+
+@synthesize cart = _cart;
 
 - (instancetype)init
 {
@@ -35,8 +43,15 @@
     return self;
 }
 
--(NSDictionary*) userIdentities
-{
+-(MPCart *)cart {
+    if (_cart) {
+        return _cart;
+    }
+    _cart = [[MPCart alloc] initWithUserId:self.userId];
+    return _cart;
+}
+
+-(NSDictionary*) userIdentities {
     NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [[MParticle sharedInstance].backendController userIdentitiesForUserId:self.userId];
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
     [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
@@ -54,6 +69,7 @@
 
 - (void)setUserId:(NSNumber *)userId {
     _userId = userId;
+    _cart = nil;
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {

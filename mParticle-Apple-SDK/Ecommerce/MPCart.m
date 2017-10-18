@@ -29,6 +29,7 @@
 
 @property (nonatomic, strong, readonly, nullable) NSString *cartFile;
 @property (nonatomic, strong, nullable) NSMutableArray<MPProduct *> *productsList;
+@property (nonatomic, strong, readonly, nullable) NSNumber *mpid;
 
 @end
 
@@ -37,7 +38,31 @@
 
 @synthesize cartFile = _cartFile;
 
+- (id)init {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    return self;
+}
+
+- (instancetype)initWithUserId:(NSNumber *)userId {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    _mpid = userId;
+    MPCart *persistedCart = [self retrieveCart];
+    if (persistedCart && persistedCart.productsList.count > 0) {
+        self.productsList = persistedCart.productsList;
+    }
+    
+    return self;
+}
+
 #pragma mark Private accessors
+
 - (NSString *)cartFile {
     if (_cartFile) {
         return _cartFile;
@@ -50,7 +75,8 @@
         [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
     }
     
-    _cartFile = [stateMachineDirectoryPath stringByAppendingPathComponent:@"MPCart.cart"];
+    NSString *cartPath = [NSString stringWithFormat:@"%@::%@", _mpid, @"MPCart.cart"];
+    _cartFile = [stateMachineDirectoryPath stringByAppendingPathComponent:cartPath];
     return _cartFile;
 }
 
@@ -64,6 +90,20 @@
 }
 
 #pragma mark Private methods
+- (void)migrate {
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *oldCartFile = [stateMachineDirectoryPath stringByAppendingPathComponent:@"MPCart.cart"];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if ([fileManager fileExistsAtPath:self.cartFile]) {
+        MPCart *cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:oldCartFile];
+        if (cart.productsList) {
+            _productsList = cart.productsList;
+            [self persistCart];
+        }
+    }
+}
+
 - (void)persistCart {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     
@@ -165,23 +205,6 @@
         [self.productsList removeObjectsInArray:products];
         [self persistCart];
     }
-}
-
-#pragma mark Class methods
-+ (instancetype)sharedInstance {
-    static MPCart *sharedInstance = nil;
-    static dispatch_once_t cartPredicate;
-    
-    dispatch_once(&cartPredicate, ^{
-        sharedInstance = [[MPCart alloc] init];
-        
-        MPCart *persistedCart = [sharedInstance retrieveCart];
-        if (persistedCart && persistedCart.productsList.count > 0) {
-            sharedInstance.productsList = persistedCart.productsList;
-        }
-    });
-    
-    return sharedInstance;
 }
 
 #pragma mark Public methods

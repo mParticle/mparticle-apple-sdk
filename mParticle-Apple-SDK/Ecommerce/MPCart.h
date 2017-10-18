@@ -21,23 +21,11 @@
 @class MPProduct;
 
 /**
- This class is a singleton and used to keep the state of the shopping cart.
+ This class is used to keep the state of the shopping cart for a given user.
  E-commerce transactions logged using the MPCommerce class or the logCommerceEvent: method will keep the state of the respective products in here.
 
  Once products are added to the cart, its contents are persisted through the lifetime of the app. Therefore it is important that after completing an ecommerce transaction
  (purchase, refund, etc) that you call the cart's <b>clear</b> method to empty its content and remove whatever data was persisted.
- 
- <b>Usage:</b>
- 
- <b>Swift</b>
- <pre><code>
- let cart = MPCart.sharedInstance()
- </code></pre>
- 
- <b>Objective-C</b>
- <pre><code>
- MPCart *cart = [MPCart sharedInstance];
- </code></pre>
  
  @see MPCommerce
  @see mParticle
@@ -45,26 +33,16 @@
 @interface MPCart : NSObject <NSCoding>
 
 /**
- Returns the shared instance object.
- @returns the Singleton instance of the MPClass class.
- */
-+ (nonnull instancetype)sharedInstance;
-
-/**
  Adds a product to the shopping cart. 
  Calling this method directly will create a <i>AddToCart</i>  <b> MPCommerceEvent</b> with <i>product</i> and invoke the <b>logCommerceEvent:</b> method on your behalf.
 
  <b>Swift</b>
  <pre><code>
- let cart = MPCart.sharedInstance()
- 
  cart.addProduct(product)
  </code></pre>
  
  <b>Objective-C</b>
  <pre><code>
- MPCart *cart = [MPCart sharedInstance];
- 
  [cart addProduct:product];
  </code></pre>
  
@@ -80,15 +58,11 @@
  
  <b>Swift</b>
  <pre><code>
- let cart = MPCart.sharedInstance()
- 
  cart.clear()
  </code></pre>
  
  <b>Objective-C</b>
  <pre><code>
- MPCart *cart = [MPCart sharedInstance];
- 
  [cart clear];
  </code></pre>
  */
@@ -107,16 +81,12 @@
  <b>Swift</b>
  
  <pre><code>
- let cart = MPCart.sharedInstance()
-
  cart.removeProduct(product)
  </code></pre>
  
  <b>Objective-C</b>
  
  <pre><code>
- MPCart *cart = [MPCart sharedInstance];
- 
  [cart removeProduct:product];
  </code></pre>
  
