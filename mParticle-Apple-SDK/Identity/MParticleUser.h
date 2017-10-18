@@ -28,8 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
 
 /**
- Gets/sets all user attributes.
- @returns A dictionary containing the collection of user attributes.
+ Gets the user's shopping cart
+ @returns An MPCart object
  */
 @property (readonly, strong, nonnull) MPCart *cart;
 

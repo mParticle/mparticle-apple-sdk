@@ -38,15 +38,6 @@
 
 @synthesize cartFile = _cartFile;
 
-- (id)init {
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    return self;
-}
-
 - (instancetype)initWithUserId:(NSNumber *)userId {
     self = [super init];
     if (!self) {
@@ -96,11 +87,18 @@
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:self.cartFile]) {
-        MPCart *cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:oldCartFile];
-        if (cart.productsList) {
+        MPCart *cart = nil;
+        @try {
+            cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:oldCartFile];
+        } @catch(NSException *ex) { }
+        
+        if (!cart) {
+            MPILogError(@"Unable to migrate cart.");
+        } else if (cart.productsList) {
             _productsList = cart.productsList;
             [self persistCart];
         }
+
     }
 }
 
