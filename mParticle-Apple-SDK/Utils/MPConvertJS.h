@@ -23,6 +23,7 @@
 @class MPPromotion;
 @class MPTransactionAttributes;
 @class MPProduct;
+@class MPIdentityApiRequest;
 
 @interface MPConvertJS : NSObject
 
@@ -31,5 +32,6 @@
 + (MPPromotion *)MPPromotion:(NSDictionary *)json;
 + (MPTransactionAttributes *)MPTransactionAttributes:(NSDictionary *)json;
 + (MPProduct *)MPProduct:(NSDictionary *)json;
++ (MPIdentityApiRequest *)MPIdentityApiRequest:(NSDictionary *)json;
 
 @end

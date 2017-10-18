@@ -47,7 +47,7 @@
     
     [_userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
         
-        MPUserIdentity identityType = [key boolValue];
+        MPUserIdentity identityType = [key intValue];
         switch (identityType) {
             case MPUserIdentityCustomerId:
                 knownIdentities[@"customerid"] = obj;

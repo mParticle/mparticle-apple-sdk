@@ -1502,17 +1502,55 @@ NSString *const kMPStateKey = @"state";
                     break;
             }
         } else if ([hostPath hasPrefix:kMParticleWebViewPathIdentify]) {
+            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
+            
+            if (!request) {
+                MPILogError(@"Unable to create identify request from webview JS dictionary: %@", eventDictionary);
+                return;
+            }
+            
+            [[MParticle sharedInstance].identity identify:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                
+            }];
+            
             
         } else if ([hostPath hasPrefix:kMParticleWebViewPathLogin]) {
+            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
             
+            if (!request) {
+                MPILogError(@"Unable to create login request from webview JS dictionary: %@", eventDictionary);
+                return;
+            }
+            
+            [[MParticle sharedInstance].identity login:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                
+            }];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathLogout]) {
+            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
             
+            if (!request) {
+                MPILogError(@"Unable to create logout request from webview JS dictionary: %@", eventDictionary);
+                return;
+            }
+            
+            [[MParticle sharedInstance].identity logout:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                
+            }];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathModify]) {
+            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
             
+            if (!request) {
+                MPILogError(@"Unable to create modify request from webview JS dictionary: %@", eventDictionary);
+                return;
+            }
+            
+            [[MParticle sharedInstance].identity modify:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                
+            }];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserTag]) {
             [self.identity.currentUser setUserTag:eventDictionary[@"key"]];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
-            
+            [self.identity.currentUser removeUserAttribute:eventDictionary[@"key"]];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
             [self.identity.currentUser setUserAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
