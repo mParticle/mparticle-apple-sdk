@@ -14,10 +14,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
 
-@property (nonatomic, unsafe_unretained, readwrite) BOOL copyUserAttributes;
 @property (nonatomic, strong, nullable) NSString *email;
 @property (nonatomic, strong, nullable) NSString *customerId;
 @property (nonatomic, strong, nullable, readonly) NSMutableDictionary *userIdentities;
+@property (nonatomic, copy, nullable) void (^onUserAlias)(MParticleUser *previousUser, MParticleUser *newUser);
 
 @end
 

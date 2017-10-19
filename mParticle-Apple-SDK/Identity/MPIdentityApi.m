@@ -13,6 +13,7 @@
 #import "MPPersistenceController.h"
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"
+#import "MPILogger.h"
 
 @interface MPIdentityApi ()
 
@@ -85,6 +86,7 @@
     NSNumber *previousMPID = [MPPersistenceController mpId];
     [MPPersistenceController setMpid:httpResponse.mpid];
     MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
+    MParticleUser *previousUser = self.currentUser;
     MParticleUser *user = [[MParticleUser alloc] init];
     user.userId = httpResponse.mpid;
     apiResult.user = user;
@@ -116,14 +118,11 @@
         return;
     }
     
-    if (request.copyUserAttributes) {
-        NSMutableDictionary *previousUserAttributes = [[MParticle sharedInstance].backendController userAttributesForUserId:previousMPID];
-        if (previousUserAttributes) {
-            for (NSString *key in [previousUserAttributes allKeys]) {
-                if (key) {
-                    [user setUserAttribute:key value:previousUserAttributes[key]];
-                }
-            }
+    if (request.onUserAlias) {
+        @try {
+            request.onUserAlias(previousUser, user);
+        } @catch (NSException *exception) {
+            MPILogError(@"Identity request - onUserAlias block threw an exception when invoked by the SDK: %@", exception);
         }
     }
     
