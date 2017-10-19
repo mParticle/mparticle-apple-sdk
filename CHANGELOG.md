@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.13
+
+### Core SDK Updates
+
+- None
+
+### Kit Updates
+
+- Update UrbanAirship kit with named user support
+
 ## 6.15.12
 
 ### Core SDK Updates
