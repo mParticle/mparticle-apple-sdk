@@ -205,13 +205,39 @@
     }
 }
 
+- (BOOL)validateProduct:(MPProduct *)product {
+    BOOL valid = !MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
+    return valid;
+}
+
+- (BOOL)validateProducts:(NSArray<MPProduct *> *)products {
+    __block BOOL allValidProducts = YES;
+    [products enumerateObjectsUsingBlock:^(MPProduct * _Nonnull product, NSUInteger idx, BOOL * _Nonnull stop) {
+        BOOL thisProductValid = [self validateProduct:product];
+        if (!thisProductValid) {
+            allValidProducts = NO;
+            *stop = YES;
+        }
+    }];
+    return allValidProducts;
+}
+
 #pragma mark Public methods
 - (void)addProduct:(MPProduct *)product {
-    BOOL validProduct = !MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
+    BOOL validProduct = [self validateProduct:product];
     NSAssert(validProduct, @"The 'product' variable is not valid.");
     
     if (validProduct) {
         [self addProducts:@[product] logEvent:YES updateProductList:NO];
+    }
+}
+
+- (void)addAllProducts:(NSArray<MPProduct *> *)products shouldLogEvents:(BOOL)shouldLogEvents {
+    BOOL validProducts = [self validateProducts:products];
+    NSAssert(validProducts, @"The 'products' array is not valid");
+    
+    if (validProducts) {
+        [self addProducts:products logEvent:shouldLogEvents updateProductList:NO];
     }
 }
 

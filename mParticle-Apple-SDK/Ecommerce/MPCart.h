@@ -54,6 +54,28 @@
 - (void)addProduct:(nonnull MPProduct *)product;
 
 /**
+ Adds an array of products to the shopping cart.
+ Optionally, this method will also log an event for each one.
+ 
+ <b>Swift</b>
+ <pre><code>
+ cart.addAllProducts(products, shouldLogEvents:false)
+ </code></pre>
+ 
+ <b>Objective-C</b>
+ <pre><code>
+ [cart addAllProducts:products shouldLogEvents:NO];
+ </code></pre>
+ 
+ @param products An array of MPProduct instances
+ @param shouldLogEvents Whether or not events should be logged for each product
+ 
+ @see MPCommerceEvent
+ @see mParticle
+ */
+- (void)addAllProducts:(nonnull NSArray<MPProduct *> *)products shouldLogEvents:(BOOL)shouldLogEvents;
+
+/**
  Empties the shopping cart. Removes all its contents and respective persisted data.
  
  <b>Swift</b>
@@ -69,8 +91,8 @@
 - (void)clear;
 
 /**
- Returns the collection of products in the shoppint cart.
- @returns An array with products in the shoppint cart or nil if the cart is empty.
+ Returns the collection of products in the shopping cart.
+ @returns An array with products in the shopping cart or nil if the cart is empty.
  */
 - (nullable NSArray<MPProduct *> *)products;
 
