@@ -14,6 +14,8 @@
 - Update Iterable with new attribution API
 - Update Singular with new attribution API
 - Update Tune with new attribution API
+- Update BranchMetrics SDK to 0.20.2
+- Update UrbanAirship kit with named user support
 
 ## 7.0.8
 
