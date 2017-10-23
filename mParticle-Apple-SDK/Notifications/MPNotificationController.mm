@@ -113,7 +113,11 @@ static int64_t launchNotificationHash = 0;
     
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+    UIUserNotificationSettings *userNotificationSettings = nil;
+    if ([NSThread isMainThread]) {
+        userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+    }
+    
     if (!userNotificationSettings) {
         return NO;
     }
