@@ -25,7 +25,7 @@ NS_ASSUME_NONNULL_BEGIN
  Gets/sets all user attributes.
  @returns A dictionary containing the collection of user attributes.
  */
-@property (readonly, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
+@property (readwrite, strong, nonnull) NSDictionary<NSString *, id> *userAttributes;
 
 /**
  Gets the user's shopping cart

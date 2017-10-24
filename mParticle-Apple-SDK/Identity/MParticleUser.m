@@ -67,6 +67,20 @@
     return [[MParticle sharedInstance].backendController userAttributesForUserId:self.userId];
 }
 
+-(void) setUserAttributes:(NSDictionary *)userAttributes
+{    
+    [userAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull valueOrValues, BOOL * _Nonnull stop) {
+        if ([valueOrValues isKindOfClass:[NSArray class]]) {
+            NSArray *values = valueOrValues;
+            [self setUserAttributeList:key values:values];
+        }
+        else {
+            id value = valueOrValues;
+            [self setUserAttribute:key value:value];
+        }
+    }];
+}
+
 - (void)setUserId:(NSNumber *)userId {
     _userId = userId;
     _cart = nil;
