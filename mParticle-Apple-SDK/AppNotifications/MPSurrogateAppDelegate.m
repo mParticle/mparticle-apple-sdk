@@ -65,12 +65,6 @@
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 10.0) {
-        if ([_appDelegateProxy.originalAppDelegate respondsToSelector:@selector(userNotificationCenter:willPresentNotification:withCompletionHandler:)]) {
-            return;
-        }
-    }
-
     void (^userNotificationCompletionHandler)(UIBackgroundFetchResult) = ^(UIBackgroundFetchResult fetchResult) {
         dispatch_async(userNotificationQueue, ^{
             completionHandler(fetchResult);
