@@ -69,6 +69,11 @@
 
 -(void) setUserAttributes:(NSDictionary *)userAttributes
 {    
+    NSDictionary<NSString *, id> *existingUserAttributes = self.userAttributes;
+    [existingUserAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
+        [self removeUserAttribute:key];
+    }];
+    
     [userAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull valueOrValues, BOOL * _Nonnull stop) {
         if ([valueOrValues isKindOfClass:[NSArray class]]) {
             NSArray *values = valueOrValues;
