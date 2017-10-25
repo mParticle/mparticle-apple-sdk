@@ -1,5 +1,18 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.14
+
+### Core SDK Updates
+
+- Always forward didReceiveRemoteNotification API
+- Fix main thread error
+
+### Kit Updates
+
+- Add Carthage support to Leanplum
+- Update Apptentive SDK to 4.0.7
+- Update BranchMetrics SDK to 0.20.2
+
 ## 6.15.13
 
 ### Core SDK Updates
