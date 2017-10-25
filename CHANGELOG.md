@@ -4,7 +4,7 @@
 
 ### Core SDK Updates
 
-- Change init method to did finish launching
+This release updates MPIdentityApiRequest by removing the copyUserAttributes setting, and adding an optional onUserAlias block. By setting this block on your request, you can copy user attributes per your business logic from one user to the next. You can also copy object from the user's cart.
 
 ### Kit Updates
 
