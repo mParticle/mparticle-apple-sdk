@@ -320,7 +320,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return;
     }
     
-    if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
+    if (retrievingConfig) {
         return;
     }
     
