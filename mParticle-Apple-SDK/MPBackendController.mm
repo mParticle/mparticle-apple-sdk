@@ -70,6 +70,7 @@ const NSInteger kExceededNumberOfAttributesLimit = 103;
 const NSInteger kExceededAttributeMaximumLength = 104;
 const NSInteger kExceededKeyMaximumLength = 105;
 const NSInteger kInvalidDataType = 106;
+const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5;
 
 static NSArray *execStatusDescriptions;
 static BOOL appBackgrounded = NO;
@@ -2683,7 +2684,8 @@ static BOOL appBackgrounded = NO;
         __strong MPBackendController *strongSelf = weakSelf;
         
         [strongSelf requestConfig:^(BOOL uploadBatch) {
-            if (!uploadBatch) {
+            BOOL shouldDelayUpload = [[MPKitContainer sharedInstance] shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+            if (!uploadBatch || shouldDelayUpload) {
                 if (completionHandler) {
                     completionHandler();
                 }
