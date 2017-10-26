@@ -651,7 +651,6 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                       }
                       
                       success = success && [data length] > 0;
-                      
                       if (success) {
                           NSError *serializationError = nil;
                           

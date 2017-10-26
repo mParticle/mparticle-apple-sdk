@@ -374,39 +374,6 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
-- (void)migrateRemoteNotificationsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    NSInteger oldVersionValue = [oldVersion integerValue];
-    
-    if (oldVersionValue < 17) {
-        return;
-    }
-    
-    selectStatement = "SELECT _id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time FROM remote_notifications";
-    insertStatement = "INSERT INTO remote_notifications (_id, uuid, campaign_id, content_id, command, expiration, local_alert_time, notification_data, receipt_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
-    
-    while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
-        sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
-        sqlite3_bind_text(insertStatementHandle, 2, (const char *)sqlite3_column_text(selectStatementHandle, 1), -1, SQLITE_TRANSIENT); // uuid
-        sqlite3_bind_int64(insertStatementHandle, 3, sqlite3_column_int64(selectStatementHandle, 2)); // campaign_id
-        sqlite3_bind_int64(insertStatementHandle, 4, sqlite3_column_int64(selectStatementHandle, 3)); // content_id
-        sqlite3_bind_int(insertStatementHandle, 5, sqlite3_column_int(selectStatementHandle, 4)); // command
-        sqlite3_bind_double(insertStatementHandle, 6, sqlite3_column_double(selectStatementHandle, 5)); // expiration
-        sqlite3_bind_double(insertStatementHandle, 7, sqlite3_column_double(selectStatementHandle, 6)); // local_alert_time
-        sqlite3_bind_blob(insertStatementHandle, 8, sqlite3_column_blob(selectStatementHandle, 7), sqlite3_column_bytes(selectStatementHandle, 7), SQLITE_TRANSIENT); // notification_data
-        sqlite3_bind_double(insertStatementHandle, 9, sqlite3_column_int64(selectStatementHandle, 8)); // receipt_time
-        
-        sqlite3_step(insertStatementHandle);
-    }
-    
-    sqlite3_finalize(selectStatementHandle);
-    sqlite3_finalize(insertStatementHandle);
-}
-
 - (void)migrateProductBagsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
@@ -571,7 +538,6 @@
         [self migrateSegmentMembershipsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateStandaloneMessagesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateStandaloneUploadsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateRemoteNotificationsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateProductBagsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];

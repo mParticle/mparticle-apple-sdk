@@ -210,11 +210,7 @@ static NSArray *mpFiddlerCertificates = nil;
                 }
             }
         }
-        
-#ifdef SERVER_ECHO
-        NSLog(@"\nResponse: %@\nData: %@", httpURLResponse, [[NSString alloc] initWithData:receivedData encoding:NSUTF8StringEncoding]);
-#endif
-        
+    
         if (self.completionHandler != nil && self.completionHandler != NULL) {
             @try {
                 self.completionHandler(receivedData, nil, downloadTime, httpURLResponse);
