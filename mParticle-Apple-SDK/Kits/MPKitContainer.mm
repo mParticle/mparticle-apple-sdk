@@ -76,6 +76,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
+@property (nonatomic, strong) NSDate *initializedTime;
 
 @end
 
@@ -94,7 +95,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         _kitsInitialized = NO;
         _attributionInfo = [NSMutableDictionary dictionary];
         NSMutableDictionary *linkInfo = _attributionInfo;
+        _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
+        
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
                 linkInfo[attributionResult.kitCode] = attributionResult;
@@ -2407,5 +2410,28 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return dictionary;
 }
 
+
+/*
+ * Original intention of this method is to ensure that any kits that set 
+ * integration attributes have done so prior to the SDK's first upload.
+ */
+- (BOOL)shouldDelayUpload: (NSTimeInterval) maxWaitTime  {
+    NSTimeInterval timeInterval = -1 * [_initializedTime timeIntervalSinceNow];
+    if (timeInterval > maxWaitTime) {
+        return NO;
+    } else if (!self.kitsInitialized) {
+        return YES;
+    } else {
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+        for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
+            if ([kitRegister.wrapperInstance respondsToSelector:@selector(shouldDelayMParticleUpload)] &&
+                [kitRegister.wrapperInstance shouldDelayMParticleUpload]) {
+                MPILogDebug(@"Delaying initial upload for kit: %@", kitRegister.name);
+                return YES;
+            }
+        }
+    }
+    return NO;
+}
 
 @end

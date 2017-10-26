@@ -2104,4 +2104,11 @@
     [self resetUserAttributesAndIdentities];
 }
 
+- (void)testShouldDelayUploadMaxTime {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    [localKitContainer setKitsInitialized:NO];
+    XCTAssertFalse([localKitContainer shouldDelayUpload:0]);
+    XCTAssertTrue([localKitContainer shouldDelayUpload:10000]);
+}
+
 @end
