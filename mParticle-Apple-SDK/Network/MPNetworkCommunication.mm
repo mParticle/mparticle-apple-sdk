@@ -239,7 +239,7 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
         return;
     }
     
-    if (retrievingConfig || [MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
+    if (retrievingConfig) {
         return;
     }
     
