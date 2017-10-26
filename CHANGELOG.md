@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.15
+
+### Core SDK Updates
+
+This release introduces a new API to kit developers. Kits can now delay the first upload of the Core SDK. This is to allow for necessary 3rd-party ID collection.
+
+### Kit Updates
+
+- Update Adobe kit to delay uploads prior to MCID collection
+
 ## 6.15.14
 
 ### Core SDK Updates
