@@ -732,7 +732,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                       }
                       
                       success = success && [data length] > 0;
-                      
                       if (success) {
                           NSError *serializationError = nil;
                           

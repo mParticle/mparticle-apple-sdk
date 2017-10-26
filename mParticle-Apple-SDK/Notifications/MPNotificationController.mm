@@ -140,44 +140,6 @@ static int64_t launchNotificationHash = 0;
 #pragma clang diagnostic pop
 }
 
-- (void)verifyIfInfluencedOpen {
-    NSTimeInterval referenceDate = [[[NSDate date] dateByAddingTimeInterval:(-self.influencedOpenTimer)] timeIntervalSince1970];
-    NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray<MParticleUserNotification *> *displayedLocalUserNotifications = [persistence fetchDisplayedLocalUserNotificationsSince:referenceDate];
-    NSArray<MParticleUserNotification *> *displayedUserNotifications = [persistence fetchDisplayedRemoteUserNotificationsSince:referenceDate];
-    
-    if (displayedUserNotifications) {
-        if (displayedLocalUserNotifications) {
-            displayedUserNotifications = [displayedUserNotifications arrayByAddingObjectsFromArray:displayedLocalUserNotifications];
-        }
-    } else {
-        displayedUserNotifications = displayedLocalUserNotifications;
-    }
-    
-    if (!displayedUserNotifications) {
-        return;
-    }
-    
-    NSMutableArray *influencedUserNotifications = [[NSMutableArray alloc] initWithCapacity:displayedUserNotifications.count];
-    MParticleUserNotification *userNotification;
-    
-    for (userNotification in displayedUserNotifications) {
-        if (!userNotification.hasBeenUsedInDirectOpen && !userNotification.hasBeenUsedInInfluencedOpen && userNotification.campaignExpiration >= now) {
-            userNotification.hasBeenUsedInInfluencedOpen = YES;
-            userNotification.behavior = MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorInfluencedOpen;
-            [influencedUserNotifications addObject:userNotification];
-        }
-    }
-    
-    if (influencedUserNotifications.count > 0) {
-        for (userNotification in influencedUserNotifications) {
-            [self.delegate receivedUserNotification:userNotification];
-        }
-    }
-}
-
 - (MParticleUserNotification *)userNotificationWithDictionary:(NSDictionary *)notificationDictionary actionIdentifier:(NSString *)actionIdentifier state:(NSString *)state userNotificationMode:(MPUserNotificationMode)userNotificationMode runningMode:(MPUserNotificationRunningMode)runningMode {
     if (!state) {
         state = backgrounded || actionIdentifier ? kMPPushNotificationStateBackground : kMPPushNotificationStateForeground;
@@ -261,7 +223,6 @@ static int64_t launchNotificationHash = 0;
         }
     } else {
         notificationLaunchedApp = NO;
-        [self verifyIfInfluencedOpen];
     }
     
     if (userNotification && shouldDelegateReceivedRemoteNotification) {
@@ -304,7 +265,6 @@ static int64_t launchNotificationHash = 0;
         return;
     }
     
-    [self verifyIfInfluencedOpen];
 }
 
 - (void)handleLocalNotificationReceived:(NSNotification *)notification {
@@ -312,7 +272,6 @@ static int64_t launchNotificationHash = 0;
     NSDictionary *notificationDictionary = userInfo[kMPUserNotificationDictionaryKey];
     NSString *actionIdentifier = userInfo[kMPUserNotificationActionKey];
     
-    NSArray<MParticleUserNotification *> *displayedUserNotifications = [[MPPersistenceController sharedInstance] fetchDisplayedLocalUserNotifications];
 
     MParticleUserNotification *userNotification = [self userNotificationWithDictionary:notificationDictionary
                                                                       actionIdentifier:actionIdentifier
@@ -323,36 +282,6 @@ static int64_t launchNotificationHash = 0;
     MParticleUserNotification *displayedUserNotification = nil;
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     BOOL existingUserNotification = NO;
-    
-    for (displayedUserNotification in displayedUserNotifications) {
-        existingUserNotification = [userNotification isEqual:displayedUserNotification];
-        
-        if (existingUserNotification) {
-            displayedUserNotification.command = MPUserNotificationCommandAlertUser;
-            
-            if (displayedUserNotification.campaignExpiration >= now) {
-                if (actionIdentifier) {
-                    displayedUserNotification.actionIdentifier = actionIdentifier;
-                    displayedUserNotification.actionTitle = userNotification.actionTitle;
-                    displayedUserNotification.type = kMPPushMessageAction;
-                }
-                
-                if (!displayedUserNotification.hasBeenUsedInInfluencedOpen && !displayedUserNotification.hasBeenUsedInDirectOpen) {
-                    displayedUserNotification.behavior = MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead;
-                    
-                    if (!actionIdentifier || [self actionIdentifierBringsAppToTheForegound:actionIdentifier notificationDictionary:notificationDictionary]) {
-                        displayedUserNotification.behavior |= MPUserNotificationBehaviorDirectOpen;
-                        displayedUserNotification.hasBeenUsedInDirectOpen = YES;
-                    } else if (displayedUserNotification.hasBeenUsedInInfluencedOpen && displayedUserNotification.type == kMPPushMessageAction) {
-                        displayedUserNotification.behavior = MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead;
-                        displayedUserNotification.shouldPersist = NO;
-                    }
-                }
-            }
-            
-            break;
-        }
-    }
     
     if (existingUserNotification) {
         if (displayedUserNotification.campaignExpiration >= now) {
@@ -367,8 +296,6 @@ static int64_t launchNotificationHash = 0;
     NSDictionary *userInfo = [notification userInfo];
     NSDictionary *notificationDictionary = userInfo[kMPUserNotificationDictionaryKey];
     NSString *actionIdentifier = userInfo[kMPUserNotificationActionKey];
-    
-    NSArray<MParticleUserNotification *> *displayedUserNotifications = [[MPPersistenceController sharedInstance] fetchDisplayedRemoteUserNotifications];
 
     MParticleUserNotification *userNotification = [self userNotificationWithDictionary:notificationDictionary
                                                                       actionIdentifier:actionIdentifier
@@ -380,33 +307,6 @@ static int64_t launchNotificationHash = 0;
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
     BOOL existingUserNotification = NO;
     
-    for (displayedUserNotification in displayedUserNotifications) {
-        existingUserNotification = [userNotification isEqual:displayedUserNotification];
-
-        if (existingUserNotification) {
-            if (displayedUserNotification.campaignExpiration >= now) {
-                if (actionIdentifier) {
-                    displayedUserNotification.actionIdentifier = actionIdentifier;
-                    displayedUserNotification.actionTitle = userNotification.actionTitle;
-                    displayedUserNotification.type = kMPPushMessageAction;
-                }
-                
-                if (!displayedUserNotification.hasBeenUsedInInfluencedOpen && !displayedUserNotification.hasBeenUsedInDirectOpen) {
-                    displayedUserNotification.behavior = MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead;
-                    
-                    if (!actionIdentifier || [self actionIdentifierBringsAppToTheForegound:actionIdentifier notificationDictionary:notificationDictionary]) {
-                        displayedUserNotification.behavior |= MPUserNotificationBehaviorDirectOpen;
-                        displayedUserNotification.hasBeenUsedInDirectOpen = YES;
-                    }
-                } else if (displayedUserNotification.hasBeenUsedInInfluencedOpen && displayedUserNotification.type == kMPPushMessageAction) {
-                    displayedUserNotification.behavior = MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead;
-                    displayedUserNotification.shouldPersist = NO;
-                }
-            }
-            
-            break;
-        }
-    }
     
     if (existingUserNotification) {
         if (!displayedUserNotification.hasBeenUsedInInfluencedOpen && !displayedUserNotification.hasBeenUsedInDirectOpen && displayedUserNotification.campaignExpiration >= now) {

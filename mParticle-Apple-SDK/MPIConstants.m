@@ -74,7 +74,6 @@ NSString *const kMPSessionNumberKey = @"sn";
 NSString *const kMPOptOutKey = @"oo";
 NSString *const kMPDateUserIdentityWasFirstSet = @"dfs";
 NSString *const kMPIsFirstTimeUserIdentityHasBeenSet = @"f";
-NSString *const kMPRemoteNotificationCampaignHistoryKey = @"pch";
 NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
 NSString *const kMPProductBagKey = @"pb";

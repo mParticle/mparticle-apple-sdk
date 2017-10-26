@@ -366,7 +366,6 @@ static BOOL appBackgrounded = NO;
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     if (nextCleanUpTime < currentTime) {
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        [persistence deleteExpiredUserNotifications];
         [persistence deleteRecordsOlderThan:(currentTime - ONE_HUNDRED_EIGHTY_DAYS)];
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
@@ -2939,14 +2938,6 @@ static BOOL appBackgrounded = NO;
             
         default:
             break;
-    }
-    
-    if (userNotification.shouldPersist) {
-        if (userNotification.userNotificationId) {
-            [[MPPersistenceController sharedInstance] updateUserNotification:userNotification];
-        } else {
-            [[MPPersistenceController sharedInstance] saveUserNotification:userNotification];
-        }
     }
     
     NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", [MPNotificationController deviceToken]],
