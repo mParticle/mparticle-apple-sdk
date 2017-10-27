@@ -373,14 +373,6 @@ static int64_t launchNotificationHash = 0;
     }
 }
 
-- (BOOL)registeredForSilentNotifications {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 8.0) {
-        return NO;
-    }
-    
-    return [[UIApplication sharedApplication] isRegisteredForRemoteNotifications];
-}
-
 #pragma mark Public static methods
 + (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
@@ -485,20 +477,6 @@ static int64_t launchNotificationHash = 0;
                                                                            runningMode:MPUserNotificationRunningModeForeground];
     
     return userNotification;
-}
-
-- (void)registerForSilentNotifications {
-    if ([[[UIDevice currentDevice] systemVersion] floatValue] < 8.0) {
-        return;
-    }
-    
-    NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSArray *backgroundModes = bundleInfoDictionary[@"UIBackgroundModes"];
-    if ([backgroundModes containsObject:@"remote-notification"]) {
-#if !TARGET_IPHONE_SIMULATOR
-        [[UIApplication sharedApplication] registerForRemoteNotifications];
-#endif
-    }
 }
 
 - (void)scheduleNotification:(MParticleUserNotification *)userNotification {

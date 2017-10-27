@@ -117,16 +117,6 @@
     return remoteNotificationDictionary;
 }
 
-- (NSDictionary *)silentNotificationDictionary {
-    NSDictionary *silentNotificationDictionary = @{@"aps":@{
-                                                           @"content-available":@1,
-                                                           @"sound":@""
-                                                           }
-                                                   };
-    
-    return silentNotificationDictionary;
-}
-
 - (NSArray *)retrieveDisplayedUserNotificationsSince:(NSTimeInterval)referenceDate mode:(MPUserNotificationMode)mode {
     return @[self.userNotification];
 }

@@ -257,7 +257,6 @@ extern NSString * _Nonnull const kMPConfigEnableCrashReporting;
 extern NSString * _Nonnull const kMPConfigLocationTracking;
 extern NSString * _Nonnull const kMPConfigLocationAccuracy;
 extern NSString * _Nonnull const kMPConfigLocationDistanceFilter;
-extern NSString * _Nonnull const kMPConfigRegisterForSilentNotifications;
 
 // Data connection path/status
 extern NSString * _Nonnull const kDataConnectionOffline;

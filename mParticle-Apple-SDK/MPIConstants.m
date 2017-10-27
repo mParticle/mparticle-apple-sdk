@@ -218,7 +218,6 @@ NSString *const kMPConfigEnableCrashReporting = @"enable_crash_reporting";
 NSString *const kMPConfigLocationTracking = @"enable_location_tracking";
 NSString *const kMPConfigLocationAccuracy = @"location_tracking_accuracy";
 NSString *const kMPConfigLocationDistanceFilter = @"location_tracking_distance_filter";
-NSString *const kMPConfigRegisterForSilentNotifications = @"register_for_silent_notifications";
 
 // Data connection path/status
 NSString *const kDataConnectionOffline = @"offline";

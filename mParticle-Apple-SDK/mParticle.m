@@ -483,7 +483,6 @@ NSString *const kMPStateKey = @"state";
     __weak MParticle *weakSelf = self;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController mpId]] == nil;
-    BOOL registerForSilentNotifications = YES;
     _proxiedAppDelegate = proxyAppDelegate;
     
     MPIdentityApiRequest *identifyRequest = nil;
@@ -507,14 +506,6 @@ NSString *const kMPStateKey = @"state";
         }];
     }
     
-    if (self.configSettings) {
-        NSNumber *configRegisterForSilentNotifications = self.configSettings[kMPConfigRegisterForSilentNotifications];
-        
-        if (configRegisterForSilentNotifications != nil) {
-            registerForSilentNotifications = [configRegisterForSilentNotifications boolValue];
-        }
-    }
-
     [MPStateMachine setEnvironment:environment];
 
     [self.backendController startWithKey:apiKey
@@ -522,7 +513,6 @@ NSString *const kMPStateKey = @"state";
                                 firstRun:firstRun
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
-          registerForSilentNotifications:registerForSilentNotifications
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            

@@ -236,16 +236,6 @@
     return _session;
 }
 
-- (NSDictionary *)silentNotificationDictionary {
-    NSDictionary *silentNotificationDictionary = @{@"aps":@{
-                                                           @"content-available":@1,
-                                                           @"sound":@""
-                                                           }
-                                                   };
-    
-    return silentNotificationDictionary;
-}
-
 #if TARGET_OS_IOS == 1
 - (MPNotificationController *)notificationController {
     if (_notificationController) {
