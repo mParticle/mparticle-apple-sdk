@@ -179,6 +179,8 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceApptentive = 97,
     /** Kit code for Leanplum */
     MPKitInstanceLeanplum = 98,
+    /** Kit code for Carnival */
+    MPKitInstanceCarnival = 99,
     /** Kit code for Primer */
     MPKitInstancePrimer = 100,
     /** Kit code for Apptimize */
@@ -198,10 +200,7 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Adobe */
     MPKitInstanceAdobe = 124,
     /** Kit code for Instabot */
-    MPKitInstanceInstabot = 123,
-    /** Kit code for Carnival */
-    MPKitInstanceCarnival = 99
-
+    MPKitInstanceInstabot = 123
 };
 
 /// Log Levels
