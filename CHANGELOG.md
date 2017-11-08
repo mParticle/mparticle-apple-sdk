@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 6.15.16
+
+### Core SDK Updates
+
+This release fixes an issue with setting user attributes concurrently from multiple threads.
+
+### Kit Updates
+
+- None
+
 ## 6.15.15
 
 ### Core SDK Updates
