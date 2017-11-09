@@ -20,7 +20,6 @@
 
 @class MPSession;
 @class MPUpload;
-@class MPSessionHistory;
 @class MPSegment;
 @class MPIdentityApiRequest;
 @class MPIdentityHTTPSuccessResponse;
@@ -56,7 +55,6 @@ typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessRe
 - (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary))completionHandler;
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
-- (void)uploadSessionHistory:(nonnull MPSessionHistory *)sessionHistory completionHandler:(void(^ _Nonnull)(BOOL success))completionHandler;
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion;

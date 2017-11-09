@@ -115,35 +115,4 @@
     }
 }
 
-- (void)testConfigSendSessionHistory {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    XCTAssertTrue(stateMachine.shouldUploadSessionHistory);
-
-    NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                    kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                    kMPRemoteConfigRampKey:@100,
-                                    kMPRemoteConfigTriggerKey:[NSNull null],
-                                    kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigNetworkPerformanceModeKey:kMPRemoteConfigForceFalse,
-                                    kMPRemoteConfigSessionTimeoutKey:@112,
-                                    kMPRemoteConfigUploadIntervalKey:@42,
-                                    kMPRemoteConfigIncludeSessionHistory:@NO};
-
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-    XCTAssertNotNil(responseConfig);
-    XCTAssertFalse(stateMachine.shouldUploadSessionHistory);
-
-    configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                      kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                      kMPRemoteConfigRampKey:@100,
-                      kMPRemoteConfigTriggerKey:[NSNull null],
-                      kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                      kMPRemoteConfigNetworkPerformanceModeKey:kMPRemoteConfigForceFalse,
-                      kMPRemoteConfigSessionTimeoutKey:@112,
-                      kMPRemoteConfigUploadIntervalKey:@42};
-    
-    responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-    XCTAssertTrue(stateMachine.shouldUploadSessionHistory);
-}
-
 @end

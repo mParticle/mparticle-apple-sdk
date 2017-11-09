@@ -85,7 +85,6 @@
 - (void)resetUserIdentitiesFirstTimeUseFlag;
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession;
 - (void)uploadMessagesFromSession:(MPSession *)session completionHandler:(void(^)(MPSession *uploadedSession))completionHandler;
-- (void)uploadSessionHistory:(MPSession *)session completionHandler:(dispatch_block_t)completionHandler;
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error;
 

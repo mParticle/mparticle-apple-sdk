@@ -22,7 +22,6 @@
 #import "MPMessageBuilder.h"
 #import "MPUpload.h"
 #import "MPBreadcrumb.h"
-#import "MPSessionHistory.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
 
@@ -207,58 +206,6 @@
     
     NSDictionary *dictionaryRepresentation = [breadcrumb dictionaryRepresentation];
     XCTAssertNotNil(dictionaryRepresentation, @"Should not have been nil.");
-}
-
-- (void)testSessionHistory {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
-    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
-                                       kMPSessionTimeoutKey:@120,
-                                       kMPUploadIntervalKey:@10,
-                                       kMPLifeTimeValueKey:@0,
-                                       kMPMessagesKey:@[[message dictionaryRepresentation]],
-                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
-    
-    MPUpload *upload = [[MPUpload alloc] initWithSession:session uploadDictionary:uploadDictionary];
-    
-    MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:session uploads:@[upload]];
-    sessionHistory.userAttributes = @{@"user":@"attribute"};
-    sessionHistory.userIdentities = @[@{@"user":@"identity"}];
-    
-    XCTAssertNotNil(sessionHistory, @"Should not have been nil.");
-    XCTAssertEqualObjects(sessionHistory.session, session, @"Should have been equal.");
-    XCTAssertEqual(sessionHistory.uploads.count, 1, @"Should have been equal");
-    XCTAssertEqual(sessionHistory.uploadIds.count, 1, @"Should have been equal");
-    
-    NSArray *expectedKeys = @[@"a", @"ai", @"ct", @"di", @"dt", @"sdk", @"sh", @"sid", @"ua", @"ui"];
-    
-    NSDictionary *dictionary = [sessionHistory dictionaryRepresentation];
-    XCTAssertNotNil(dictionary, @"Should not have been nil.");
-    
-    NSString *serializedString = [sessionHistory serializedString];
-    XCTAssertNotNil(serializedString, @"Should not have been nil.");
-    
-    for (NSString *key in expectedKeys) {
-        XCTAssertNotNil(dictionary[key], @"Should not have been nil.");
-        
-        NSRange searchRange = [serializedString rangeOfString:key];
-        XCTAssertNotEqual(searchRange.location, NSNotFound, @"Should have been different");
-    }
-    
-    sessionHistory.uploads = nil;
-    dictionary = [sessionHistory dictionaryRepresentation];
-    XCTAssertNotNil(dictionary, @"Should not have been nil.");
-    
-    serializedString = [sessionHistory serializedString];
-    XCTAssertNotNil(serializedString, @"Should not have been nil.");
-    
-    sessionHistory = [[MPSessionHistory alloc] init];
-    XCTAssertNil(sessionHistory, @"Should have been nil.");
 }
 
 @end

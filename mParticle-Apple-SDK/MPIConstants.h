@@ -59,9 +59,6 @@ typedef NS_ENUM(NSInteger, MPDataType) {
 // mParticle SDK Version
 extern NSString * _Nonnull const kMParticleSDKVersion;
 
-// Session Upload Settings
-extern NSString * _Nonnull const kMPSessionHistoryValue;
-
 // Message Type (dt)
 extern NSString * _Nonnull const kMPMessageTypeKey;                  
 extern NSString * _Nonnull const kMPMessageTypeRequestHeader;
@@ -229,7 +226,6 @@ extern NSString * _Nonnull const kMPRemoteConfigInfluencedOpenTimerKey;
 extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
 extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
 extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
-extern NSString * _Nonnull const kMPRemoteConfigIncludeSessionHistory;
 
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;

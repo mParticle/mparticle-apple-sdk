@@ -72,7 +72,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
 @property (nonatomic, unsafe_unretained) BOOL alwaysTryToCollectIDFA;
-@property (nonatomic, unsafe_unretained) BOOL shouldUploadSessionHistory;
 @property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
 
 + (nonnull instancetype)sharedInstance;

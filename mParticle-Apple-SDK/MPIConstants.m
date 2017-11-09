@@ -21,9 +21,6 @@
 // mParticle SDK Version
 NSString *const kMParticleSDKVersion = @"7.0.9";
 
-// Session Upload Settings
-NSString *const kMPSessionHistoryValue = @"sh";
-
 // Message Type (dt)
 NSString *const kMPMessageTypeKey = @"dt";
 NSString *const kMPMessageTypeRequestHeader = @"h";
@@ -190,7 +187,6 @@ NSString *const kMPRemoteConfigInfluencedOpenTimerKey = @"pio";
 NSString *const kMPRemoteConfigUniqueIdentifierKey = @"das";
 NSString *const kMPRemoteConfigBracketKey = @"bk";
 NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
-NSString *const kMPRemoteConfigIncludeSessionHistory = @"inhd";
 
 // Notifications
 NSString *const kMPCrashReportOccurredNotification = @"MPCrashReportOccurredNotification";

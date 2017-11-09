@@ -34,7 +34,6 @@
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
-#import "MPSessionHistory.h"
 #import "MPDateFormatter.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
@@ -78,7 +77,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     BOOL retrievingConfig;
     BOOL retrievingSegments;
     BOOL uploading;
-    BOOL uploadingSessionHistory;
     BOOL identifying;
 }
 
@@ -111,7 +109,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     retrievingConfig = NO;
     retrievingSegments = NO;
     uploading = NO;
-    uploadingSessionHistory = NO;
     identifying = NO;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -274,12 +271,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 #pragma mark Notification handlers
 - (void)handleReachabilityChanged:(NSNotification *)notification {
-    retrievingConfig = retrievingSegments = uploading = uploadingSessionHistory = NO;
+    retrievingConfig = retrievingSegments = uploading = NO;
 }
 
 #pragma mark Public accessors
 - (BOOL)inUse {
-    return retrievingConfig || retrievingSegments || uploading || uploadingSessionHistory;
+    return retrievingConfig || retrievingSegments || uploading;
 }
 
 - (BOOL)retrievingSegments {
@@ -671,113 +668,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         __strong MPNetworkCommunication *strongSelf = weakSelf;
         if (strongSelf) {
             strongSelf->uploading = NO;
-        }
-        
-        [connector cancelRequest];
-    });
-}
-
-- (void)uploadSessionHistory:(MPSessionHistory *)sessionHistory completionHandler:(void(^)(BOOL success))completionHandler {
-    if (uploadingSessionHistory) {
-        return;
-    }
-    
-    if (!sessionHistory) {
-        completionHandler(NO);
-        return;
-    }
-    
-    uploadingSessionHistory = YES;
-    __weak MPNetworkCommunication *weakSelf = self;
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    MPILogVerbose(@"Source Batch Id: %@", sessionHistory.session.uuid);
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
-    backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            __strong MPNetworkCommunication *strongSelf = weakSelf;
-            if (strongSelf) {
-                strongSelf->uploadingSessionHistory = NO;
-            }
-            
-            [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }];
-    
-    NSData *sessionHistoryData = [NSJSONSerialization dataWithJSONObject:[sessionHistory dictionaryRepresentation] options:0 error:nil];
-    
-    NSData *zipSessionData = nil;
-    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[sessionHistoryData bytes], (unsigned int)[sessionHistoryData length]);
-    if (get<0>(zipData) != nullptr) {
-        zipSessionData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
-        delete [] get<0>(zipData);
-    } else {
-        completionHandler(NO);
-        uploadingSessionHistory = NO;
-        return;
-    }
-    
-    NSString *jsonString = [[NSString alloc] initWithData:sessionHistoryData encoding:NSUTF8StringEncoding];
-    MPConnector *connector = [[MPConnector alloc] init];
-    NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
-    
-    [connector asyncPostDataFromURL:self.eventURL
-                            message:jsonString
-                   serializedParams:zipSessionData
-                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                      __strong MPNetworkCommunication *strongSelf = weakSelf;
-                      if (!strongSelf) {
-                          completionHandler(NO);
-                          return;
-                      }
-                      
-                      NSInteger responseCode = [httpResponse statusCode];
-                      BOOL success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
-                      MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-                      
-                      if (success) {
-                          MPILogVerbose(@"Session History: %@\n", jsonString);
-                          MPILogVerbose(@"Session History Response Code: %ld", (long)responseCode);
-                      } else {
-                          if (responseCode == HTTPStatusCodeBadRequest) {
-                              responseAction = MPNetworkResponseActionDeleteBatch;
-                          } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-                              responseAction = MPNetworkResponseActionThrottle;
-                          }
-                          
-                          MPILogWarning(@"Session History Error - Response Code: %ld", (long)responseCode);
-                      }
-                      
-                      MPILogVerbose(@"Session History Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-                      
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
-                      
-                      completionHandler(success);
-                      
-                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                      }
-                      
-                      strongSelf->uploadingSessionHistory = NO;
-                  }];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
-            return;
-        }
-        
-        if (connector.active) {
-            MPILogWarning(@"Failed Uploading Source Batch Id: %@", sessionHistory.session.uuid);
-            completionHandler(NO);
-        }
-        
-        __strong MPNetworkCommunication *strongSelf = weakSelf;
-        if (strongSelf) {
-            strongSelf->uploadingSessionHistory = NO;
         }
         
         [connector cancelRequest];

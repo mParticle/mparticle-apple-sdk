@@ -94,7 +94,6 @@ static BOOL runningInBackground = NO;
         _launchDate = [NSDate date];
         _launchOptions = nil;
         _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
-        _shouldUploadSessionHistory = YES;
         _searchAttribution = [[MPSearchAdsAttribution alloc] init];
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];

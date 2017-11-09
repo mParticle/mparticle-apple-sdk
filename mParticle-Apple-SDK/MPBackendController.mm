@@ -42,7 +42,6 @@
 #import "MPResponseEvents.h"
 #import "MPConsumerInfo.h"
 #import "MPResponseConfig.h"
-#import "MPSessionHistory.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPCart.h"
@@ -734,28 +733,7 @@ static BOOL appBackgrounded = NO;
                                                          
                                                          [persistence deleteUpload:upload];
                                                          
-                                                         MPSession *previousSession = [persistence fetchPreviousSessionSync];
-                                                         MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:previousSession
-                                                                                                                              uploads:uploads];
-                                                         
-                                                         if (!sessionHistory) {
-                                                             return;
-                                                         }
-
-                                                         sessionHistory.userAttributes = [self userAttributesForUserId:previousSession.userId];
-                                                         sessionHistory.userIdentities = [self userIdentitiesForUserId:previousSession.userId];
-
-                                                         [strongSelf.networkCommunication uploadSessionHistory:sessionHistory
-                                                                                             completionHandler:^(BOOL success) {
-                                                                                                 if (!success) {
-                                                                                                     return;
-                                                                                                 }
-                                                                                                 
-                                                                                                 for (NSNumber *uploadId in sessionHistory.uploadIds) {
-                                                                                                     [persistence deleteUploadId:[uploadId intValue]];
-                                                                                                 }
-                                                                                             }];
-                                                     }];
+                                                         }];
                            }];
 }
 
@@ -1081,126 +1059,12 @@ static BOOL appBackgrounded = NO;
                                completionHandler:^(MPSession *uploadedSession) {
                                    session = nil;
                                    
-                                   if (uploadedSession) {
-                                       [strongSelf uploadSessionHistory:uploadedSession completionHandler:^(BOOL sessionHistorySuccess) {
-                                           if (sessionHistorySuccess) {
-                                               [strongSelf uploadOpenSessions:openSessions completionHandler:completionHandler];
-                                           } else {
-                                               invokeCompletionHandler(NO);
-                                           }
-                                       }];
-                                   } else {
+                                   if (!uploadedSession) {
                                        invokeCompletionHandler(NO);
                                    }
                                }];
    
     }];
-}
-
-- (void)uploadSessionHistory:(MPSession *)session completionHandler:(void (^)(BOOL sessionHistorySuccess))completionHandler {
-    if (!session) {
-        return;
-    }
-    
-    __weak MPBackendController *weakSelf = self;
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    [persistence fetchUploadedMessagesInSession:session
-              excludeNetworkPerformanceMessages:NO
-                              completionHandler:^(NSArray<MPMessage *> *messages) {
-                                  if (!messages) {
-                                      if (completionHandler) {
-                                          completionHandler(NO);
-                                      }
-                                      
-                                      return;
-                                  }
-                                  
-                                  __strong MPBackendController *strongSelf = weakSelf;
-                                  
-                                  MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:session.userId
-                                                                                                  session:session
-                                                                                                 messages:messages
-                                                                                           sessionTimeout:strongSelf.sessionTimeout
-                                                                                           uploadInterval:strongSelf.uploadInterval];
-                                  
-                                  if (!uploadBuilder || !strongSelf) {
-                                      if (completionHandler) {
-                                          completionHandler(NO);
-                                      }
-                                      
-                                      return;
-                                  }
-                                  
-                                         [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:session.userId]
-                                                     deletedUserAttributes:deletedUserAttributes];
-                                  [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:session.userId]];
-                                  [uploadBuilder build:^(MPUpload *upload) {
-                                      [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
-                                      
-                                      [persistence fetchUploadsInSession:session
-                                                       completionHandler:^(NSArray<MPUpload *> *uploads) {
-                                                           MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-                                                           if (!stateMachine.shouldUploadSessionHistory || stateMachine.dataRamped) {
-                                                               for (MPUpload *upload in uploads) {
-                                                                   [persistence deleteUpload:upload];
-                                                               }
-                                                               
-                                                               [persistence deleteMessages:messages];
-                                                               [persistence deleteNetworkPerformanceMessages];
-                                                               
-                                                               [persistence archiveSession:session
-                                                                         completionHandler:^(MPSession *archivedSession) {
-                                                                             [persistence deleteSession:archivedSession];
-                                                                             
-                                                                             if (completionHandler) {
-                                                                                 completionHandler(NO);
-                                                                             }
-                                                                         }];
-                                                               
-                                                               return;
-                                                           }
-                                                           
-                                                           MPSessionHistory *sessionHistory = [[MPSessionHistory alloc] initWithSession:session uploads:uploads];
-                                                           sessionHistory.userAttributes = [strongSelf userAttributesForUserId:session.userId];
-                                                           sessionHistory.userIdentities = [strongSelf userIdentitiesForUserId:session.userId];
-                                                           
-                                                           if (!sessionHistory) {
-                                                               if (completionHandler) {
-                                                                   completionHandler(NO);
-                                                               }
-                                                               
-                                                               return;
-                                                           }
-                                                           
-                                                           [strongSelf.networkCommunication uploadSessionHistory:sessionHistory
-                                                                                               completionHandler:^(BOOL success) {
-                                                                                                   if (!success) {
-                                                                                                       if (completionHandler) {
-                                                                                                           completionHandler(NO);
-                                                                                                       }
-                                                                                                       
-                                                                                                       return;
-                                                                                                   }
-                                                                                                   
-                                                                                                   for (NSNumber *uploadId in sessionHistory.uploadIds) {
-                                                                                                       [persistence deleteUploadId:[uploadId intValue]];
-                                                                                                   }
-                                                                                                   
-                                                                                                   [persistence archiveSession:session
-                                                                                                             completionHandler:^(MPSession *archivedSession) {
-                                                                                                                 [persistence deleteSession:archivedSession];
-                                                                                                                 [persistence deleteNetworkPerformanceMessages];
-                                                                                                                 
-                                                                                                                 if (completionHandler) {
-                                                                                                                     completionHandler(YES);
-                                                                                                                 }
-                                                                                                             }];
-                                                                                               }];
-                                                       }];
-                                  }];
-                              }];
 }
 
 #pragma mark Notification handlers
@@ -1650,8 +1514,6 @@ static BOOL appBackgrounded = NO;
                                if (!strongSelf) {
                                    return;
                                }
-                               
-                               [strongSelf uploadSessionHistory:uploadedSession completionHandler:nil];
                            }];
     }];
     
