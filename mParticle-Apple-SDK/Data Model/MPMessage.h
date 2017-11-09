@@ -41,6 +41,8 @@
                              uploadStatus:(MPUploadStatus)uploadStatus
                                    userId:(nonnull NSNumber *)userId;
 
-- (nonnull instancetype)initWithSession:(nonnull MPSession *)session messageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
+
+
+- (nonnull instancetype)initWithSession:(nullable MPSession *)session messageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
 
 @end

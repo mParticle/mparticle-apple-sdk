@@ -26,8 +26,6 @@
 #import "MPUpload.h"
 #import "MPSegment.h"
 #import "MPSegmentMembership.h"
-#import "MPStandaloneMessage.h"
-#import "MPStandaloneUpload.h"
 #include <string>
 #include <vector>
 #import "MPILogger.h"
@@ -385,22 +383,8 @@ const int MaxBreadcrumbs = 50;
                 FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
                 FOREIGN KEY (segment_id) REFERENCES segments (segment_id) \
             )",
-            "CREATE TABLE IF NOT EXISTS standalone_messages ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                message_type TEXT NOT NULL, \
-                uuid TEXT NOT NULL, \
-                timestamp REAL NOT NULL, \
-                message_data BLOB NOT NULL, \
-                upload_status INTEGER, \
-                mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-            )",
-            "CREATE TABLE IF NOT EXISTS standalone_uploads ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                uuid TEXT NOT NULL, \
-                message_data BLOB NOT NULL, \
-                timestamp REAL NOT NULL \
-            )",
+            "DROP TABLE IF EXISTS standalone_messages",
+            "DROP TABLE IF EXISTS standalone_uploads",
             "DROP TABLE IF EXISTS remote_notifications",
             "CREATE TABLE IF NOT EXISTS consumer_info ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -661,50 +645,6 @@ const int MaxBreadcrumbs = 50;
     return databaseClosed;
 }
 
-- (NSUInteger)countMesssagesForUploadInSession:(MPSession *)session {
-    __block NSUInteger messageCount = 0;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT COUNT(_id) FROM messages WHERE mpid != 0 AND session_id = ? AND (upload_status = ? OR upload_status = ?)";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusStream);
-            sqlite3_bind_int(preparedStatement, 3, MPUploadStatusBatch);
-            
-            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                messageCount = intValue(preparedStatement, 0);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    return messageCount;
-}
-
-- (NSUInteger)countStandaloneMessages {
-    __block NSUInteger messageCount = 0;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT COUNT(_id) FROM standalone_messages WHERE mpid != 0";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                messageCount = intValue(preparedStatement, 0);
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    return messageCount;
-}
-
 - (void)deleteConsumerInfo {
     [self deleteCookies];
     
@@ -895,7 +835,7 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp {
     dispatch_barrier_async(dbQueue, ^{
-        vector<string> tables = {"messages", "uploads", "sessions", "standalone_messages", "standalone_uploads"};
+        vector<string> tables = {"messages", "uploads", "sessions"};
         vector<string> timeFields = {"timestamp", "timestamp", "timestamp", "end_time", "timestamp", "timestamp", "timestamp", "receipt_time"};
         
         size_t idx = 0;
@@ -1029,67 +969,6 @@ const int MaxBreadcrumbs = 50;
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while deleting upload: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)deleteStandaloneMessage:(MPStandaloneMessage *)standaloneMessage {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM standalone_messages WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, standaloneMessage.messageId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting stand-alone message: %s", sqlite3_errmsg(mParticleDB));
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)deleteStandaloneMessageIds:(nonnull NSArray<NSNumber *> *)standaloneMessageIds {
-    if (!standaloneMessageIds || standaloneMessageIds.count == 0) {
-        return;
-    }
-    
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        NSString *standaloneMessageIdsList = [NSString stringWithFormat:@"%@", [standaloneMessageIds componentsJoinedByString:@","]];
-        NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM standalone_messages WHERE _id IN (%@)", standaloneMessageIdsList];
-        const string sqlStatement = string([sqlString UTF8String]);
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting stand-alone messages: %s", sqlite3_errmsg(mParticleDB));
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)deleteStandaloneUpload:(MPStandaloneUpload *)standaloneUpload {
-    [self deleteStandaloneUploadId:standaloneUpload.uploadId];
-}
-
-- (void)deleteStandaloneUploadId:(int64_t)standaloneUploadId {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM standalone_uploads WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, standaloneUploadId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting stand-alone upload: %s", sqlite3_errmsg(mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -1882,73 +1761,6 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (nullable NSMutableDictionary *)fetchStandaloneMessages {
-    __block vector<MPStandaloneMessage *> messagesVector;
-    NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM standalone_messages ORDER BY _id";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageId:int64Value(preparedStatement, 0)
-                                                                                                   UUID:stringValue(preparedStatement, 1)
-                                                                                            messageType:stringValue(preparedStatement, 2)
-                                                                                            messageData:dataValue(preparedStatement, 3)
-                                                                                              timestamp:doubleValue(preparedStatement, 4)
-                                                                                           uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                                                                 userId:@(int64Value(preparedStatement, 6))];
-                
-                messagesVector.push_back(standaloneMessage);
-                NSNumber *mpid = standaloneMessage.userId;
-                if (![mpidMessages objectForKey:mpid]) {
-                    mpidMessages[mpid] = [NSMutableArray array];
-                }
-                [mpidMessages[mpid] addObject:standaloneMessage];
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    if (mpidMessages.count == 0) {
-        return nil;
-    }
-
-    return mpidMessages;
-}
-
-- (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads {
-    __block vector<MPStandaloneUpload *> uploadsVector;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM standalone_uploads ORDER BY _id";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPStandaloneUpload *standaloneUpload = [[MPStandaloneUpload alloc] initWithUploadId:int64Value(preparedStatement, 0)
-                                                                                               UUID:stringValue(preparedStatement, 1)
-                                                                                         uploadData:dataValue(preparedStatement, 2)
-                                                                                          timestamp:doubleValue(preparedStatement, 3)];
-                
-                uploadsVector.push_back(standaloneUpload);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    if (uploadsVector.empty()) {
-        return nil;
-    }
-    
-    NSArray<MPStandaloneUpload *> *standaloneUploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
-    return standaloneUploads;
-}
-
 - (void)moveContentFromMpidZeroToMpid:(NSNumber *)mpid {
     [self moveUserDefaultsFromMpidZeroToMpid:mpid];
     [self moveDatabasesFromMpidZeroToMpid:mpid];
@@ -1979,7 +1791,6 @@ const int MaxBreadcrumbs = 50;
                                      @"breadcrumbs",
                                      @"segments",
                                      @"segment_memberships",
-                                     @"standalone_messages",
                                      @"remote_notifications",
                                      @"cookies",
                                      @"consumer_info"
@@ -2431,67 +2242,6 @@ const int MaxBreadcrumbs = 50;
             
             sqlite3_finalize(preparedStatement);
         }
-    });
-}
-
-- (void)saveStandaloneMessage:(MPStandaloneMessage *)standaloneMessage {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO standalone_messages (message_type, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?)";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([standaloneMessage.messageType UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-            
-            auxString = string([standaloneMessage.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-            
-            sqlite3_bind_double(preparedStatement, 3, standaloneMessage.timestamp);
-            sqlite3_bind_blob(preparedStatement, 4, [standaloneMessage.messageData bytes], (int)[standaloneMessage.messageData length], SQLITE_STATIC);
-            sqlite3_bind_int(preparedStatement, 5, standaloneMessage.uploadStatus);
-            sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing stand-alone message: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            standaloneMessage.messageId = sqlite3_last_insert_rowid(mParticleDB);
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)saveStandaloneUpload:(MPStandaloneUpload *)standaloneUpload {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO standalone_uploads (uuid, message_data, timestamp) VALUES (?, ?, ?)";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([standaloneUpload.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-            
-            sqlite3_bind_blob(preparedStatement, 2, [standaloneUpload.uploadData bytes], (int)[standaloneUpload.uploadData length], SQLITE_STATIC);
-            sqlite3_bind_double(preparedStatement, 3, standaloneUpload.timestamp);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing stand-alone upload: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            standaloneUpload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
     });
 }
 

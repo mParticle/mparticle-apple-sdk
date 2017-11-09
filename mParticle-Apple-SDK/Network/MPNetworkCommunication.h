@@ -20,7 +20,6 @@
 
 @class MPSession;
 @class MPUpload;
-@class MPStandaloneUpload;
 @class MPSessionHistory;
 @class MPSegment;
 @class MPIdentityApiRequest;
@@ -45,7 +44,6 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
 
 typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(BOOL success, MPUpload * _Nullable upload, NSDictionary * _Nullable responseDictionary, BOOL finished);
-typedef void(^ _Nonnull MPStandaloneUploadsCompletionHandler)(BOOL success, MPStandaloneUpload * _Nullable standaloneUpload, NSDictionary * _Nullable responseDictionary, BOOL finished);
 
 typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
@@ -57,7 +55,6 @@ typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessRe
 
 - (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary))completionHandler;
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
-- (void)standaloneUploads:(nonnull NSArray<MPStandaloneUpload *> *)standaloneUploads index:(NSUInteger)index completionHandler:(MPStandaloneUploadsCompletionHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
 - (void)uploadSessionHistory:(nonnull MPSessionHistory *)sessionHistory completionHandler:(void(^ _Nonnull)(BOOL success))completionHandler;
 

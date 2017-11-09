@@ -23,7 +23,6 @@
 #import "MPMessageBuilder.h"
 #import "MPIConstants.h"
 #import "MPUpload.h"
-#import "MPStandaloneUpload.h"
 #import "MPStateMachine.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
@@ -165,7 +164,7 @@
     NSString *description = [uploadBuilder description];
     XCTAssertNotNil(description);
     
-    [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
         XCTAssertNotNil(upload);
         Class uploadClass = [MPUpload class];
         XCTAssertEqualObjects([upload class], uploadClass);
@@ -228,12 +227,12 @@
     NSString *description = [uploadBuilder description];
     XCTAssertNotNil(description);
     
-    [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
         XCTAssertNotNil(upload);
-        Class uploadClass = [MPStandaloneUpload class];
+        Class uploadClass = [MPUpload class];
         XCTAssertEqualObjects([upload class], uploadClass);
         
-        NSDictionary *uploadDictionary = [(MPStandaloneUpload *)upload dictionaryRepresentation];
+        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
         XCTAssertNotNil(uploadDictionary);
         
         NSDictionary *referenceUserAttributes = @{@"Dinosaur":@"T-Rex",

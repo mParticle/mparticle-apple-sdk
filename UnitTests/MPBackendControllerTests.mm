@@ -430,7 +430,7 @@
                                           
                                           [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
                                           [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
-                                          [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                          [uploadBuilder build:^(MPUpload *upload) {
                                               [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
                                               
                                               NSArray *messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
@@ -491,7 +491,7 @@
                                       
                                       [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
                                       [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
-                                      [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                      [uploadBuilder build:^(MPUpload *upload) {
                                           [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
                                           
                                           [persistence fetchUploadsInSession:session
@@ -523,7 +523,7 @@
                                                                                                                   
                                                                                                                   [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
                                                                                                                   [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
-                                                                                                                  [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                                                                                                  [uploadBuilder build:^(MPUpload *upload) {
                                                                                                                       [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                                                                                                                       
                                                                                                                       [persistence fetchUploadedMessagesInSession:session

@@ -32,8 +32,6 @@
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPMessageBuilder.h"
-#import "MPStandaloneMessage.h"
-#import "MPStandaloneUpload.h"
 #import "MPEvent.h"
 #import "MPEvent+Internal.h"
 #import "MParticleUserNotification.h"
@@ -399,7 +397,7 @@ static BOOL appBackgrounded = NO;
         [messageBuilder withTimestamp:[userAttributeChange.timestamp timeIntervalSince1970]];
     }
     
-    MPDataModelAbstract *message = [messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:YES];
 }
@@ -416,7 +414,7 @@ static BOOL appBackgrounded = NO;
         [messageBuilder withTimestamp:[userIdentityChange.timestamp timeIntervalSince1970]];
     }
     
-    MPDataModelAbstract *message = [messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:YES];
 }
@@ -980,7 +978,7 @@ static BOOL appBackgrounded = NO;
                                           
                                           [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
                                           [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
-                                          [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                          [uploadBuilder build:^(MPUpload *upload) {
                                               [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
                                               
                                               [persistence fetchUploadsInSession:session
@@ -1138,7 +1136,7 @@ static BOOL appBackgrounded = NO;
                                          [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:session.userId]
                                                      deletedUserAttributes:deletedUserAttributes];
                                   [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:session.userId]];
-                                  [uploadBuilder build:^(MPDataModelAbstract *upload) {
+                                  [uploadBuilder build:^(MPUpload *upload) {
                                       [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                                       
                                       [persistence fetchUploadsInSession:session
@@ -1203,55 +1201,6 @@ static BOOL appBackgrounded = NO;
                                                        }];
                                   }];
                               }];
-}
-
-- (void)uploadStandaloneMessages {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSMutableDictionary *standaloneMessages = [persistence fetchStandaloneMessages];
-    
-    if (!standaloneMessages) {
-        return;
-    }
-    
-    [standaloneMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber *  _Nonnull mpid, NSArray * _Nonnull messages, BOOL * _Nonnull stop) {
-        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid messages:messages uploadInterval:self.uploadInterval];
-        
-        if (!uploadBuilder) {
-            return;
-        }
-        
-        [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
-        [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
-        [uploadBuilder build:^(MPDataModelAbstract *standaloneUpload) {
-            [persistence saveStandaloneUpload:(MPStandaloneUpload *)standaloneUpload];
-            [persistence deleteStandaloneMessageIds:uploadBuilder.preparedMessageIds];
-        }];
-        
-        NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
-        if (!standaloneUploads) {
-            return;
-        }
-        
-        if ([MPStateMachine sharedInstance].dataRamped) {
-            for (MPStandaloneUpload *standaloneUpload in standaloneUploads) {
-                [persistence deleteStandaloneUpload:standaloneUpload];
-            }
-            
-            return;
-        }
-        
-        [self.networkCommunication standaloneUploads:standaloneUploads
-                                               index:0
-                                   completionHandler:^(BOOL success, MPStandaloneUpload *standaloneUpload, NSDictionary *responseDictionary, BOOL finished) {
-                                       if (!success) {
-                                           return;
-                                       }
-                                       
-                                       [MPResponseEvents parseConfiguration:responseDictionary session:nil];
-                                       
-                                       [persistence deleteStandaloneUpload:standaloneUpload];
-                                   }];
-        }];
 }
 
 #pragma mark Notification handlers
@@ -1362,7 +1311,7 @@ static BOOL appBackgrounded = NO;
                 
                 [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
                 [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
-                [uploadBuilder buildAsync:NO completionHandler:^(MPDataModelAbstract * _Nullable upload) {
+                [uploadBuilder buildAsync:NO completionHandler:^(MPUpload * _Nullable upload) {
                     [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                 }];
             }];
@@ -2590,57 +2539,51 @@ static BOOL appBackgrounded = NO;
     });
 }
 
-- (void)saveMessage:(MPDataModelAbstract *)abstractMessage updateSession:(BOOL)updateSession {
+- (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
-    if ([abstractMessage isKindOfClass:[MPMessage class]]) {
-        MPMessage *message = (MPMessage *)abstractMessage;
-        MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([message.messageType UTF8String]));
-        if (messageTypeCode == MPMessageTypeBreadcrumb) {
-            [persistence saveBreadcrumb:message session:self.session];
-        } else {
-            [persistence saveMessage:message];
-        }
-        
-        MPILogVerbose(@"Source Event Id: %@", message.uuid);
-        
-        if (updateSession) {
-            if (self.session.persisted) {
-                self.session.endTime = [[NSDate date] timeIntervalSince1970];
-                [persistence updateSession:self.session];
-            } else {
-                [persistence saveSession:self.session];
-            }
-        }
-        
-        __weak MPBackendController *weakSelf = self;
-        dispatch_async(backendQueue, ^{
-            MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-            BOOL shouldUpload = [stateMachine.triggerMessageTypes containsObject:message.messageType];
-            
-            if (!shouldUpload && stateMachine.triggerEventTypes) {
-                NSError *error = nil;
-                NSDictionary *messageDictionary = [message dictionaryRepresentation];
-                NSString *eventName = messageDictionary[kMPEventNameKey];
-                NSString *eventType = messageDictionary[kMPEventTypeKey];
-                
-                if (!error && eventName && eventType) {
-                    NSString *hashedEvent = [NSString stringWithCString:mParticle::Hasher::hashEvent([eventName cStringUsingEncoding:NSUTF8StringEncoding], [eventType cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                               encoding:NSUTF8StringEncoding];
-                    
-                    shouldUpload = [stateMachine.triggerEventTypes containsObject:hashedEvent];
-                }
-            }
-            
-            if (shouldUpload) {
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf uploadWithCompletionHandler:nil];
-            }
-        });
-    } else if ([abstractMessage isKindOfClass:[MPStandaloneMessage class]]) {
-        [persistence saveStandaloneMessage:(MPStandaloneMessage *)abstractMessage];
-        [self uploadWithCompletionHandler:nil];
+    MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([message.messageType UTF8String]));
+    if (messageTypeCode == MPMessageTypeBreadcrumb) {
+        [persistence saveBreadcrumb:message session:self.session];
+    } else {
+        [persistence saveMessage:message];
     }
+    
+    MPILogVerbose(@"Source Event Id: %@", message.uuid);
+    
+    if (updateSession) {
+        if (self.session.persisted) {
+            self.session.endTime = [[NSDate date] timeIntervalSince1970];
+            [persistence updateSession:self.session];
+        } else {
+            [persistence saveSession:self.session];
+        }
+    }
+    
+    __weak MPBackendController *weakSelf = self;
+    dispatch_async(backendQueue, ^{
+        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+        BOOL shouldUpload = [stateMachine.triggerMessageTypes containsObject:message.messageType];
+        
+        if (!shouldUpload && stateMachine.triggerEventTypes) {
+            NSError *error = nil;
+            NSDictionary *messageDictionary = [message dictionaryRepresentation];
+            NSString *eventName = messageDictionary[kMPEventNameKey];
+            NSString *eventType = messageDictionary[kMPEventTypeKey];
+            
+            if (!error && eventName && eventType) {
+                NSString *hashedEvent = [NSString stringWithCString:mParticle::Hasher::hashEvent([eventName cStringUsingEncoding:NSUTF8StringEncoding], [eventType cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
+                                                           encoding:NSUTF8StringEncoding];
+                
+                shouldUpload = [stateMachine.triggerEventTypes containsObject:hashedEvent];
+            }
+        }
+        
+        if (shouldUpload) {
+            __strong MPBackendController *strongSelf = weakSelf;
+            [strongSelf uploadWithCompletionHandler:nil];
+        }
+    });
 }
 
 - (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
@@ -2667,28 +2610,13 @@ static BOOL appBackgrounded = NO;
             }
             
             MPSession *session = strongSelf->_session;
-            MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-            BOOL shouldTryToUploadSessionMessages = (session != nil) ? [persistence countMesssagesForUploadInSession:session] > 0 : NO;
-            BOOL shouldTryToUploadStandaloneMessages = [persistence countStandaloneMessages] > 0;
+            [strongSelf uploadBatchesFromSession:session
+                               completionHandler:^(MPSession *uploadedSession) {
+                                   if (completionHandler) {
+                                       completionHandler();
+                                   }
+                               }];
             
-            if (shouldTryToUploadSessionMessages) {
-                [strongSelf uploadBatchesFromSession:session
-                                   completionHandler:^(MPSession *uploadedSession) {
-                                       if (shouldTryToUploadStandaloneMessages) {
-                                           [strongSelf uploadStandaloneMessages];
-                                       }
-                                       
-                                       if (completionHandler) {
-                                           completionHandler();
-                                       }
-                                   }];
-            } else if (shouldTryToUploadStandaloneMessages) {
-                [strongSelf uploadStandaloneMessages];
-
-                if (completionHandler) {
-                    completionHandler();
-                }
-            }
         }];
     };
     
@@ -2700,6 +2628,7 @@ static BOOL appBackgrounded = NO;
     
     return MPExecStatusSuccess;
 }
+
 
 - (void)setUserAttribute:(NSString *)key value:(id)value attempt:(NSUInteger)attempt completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     NSString *keyCopy = [key mutableCopy];
@@ -2909,7 +2838,7 @@ static BOOL appBackgrounded = NO;
     }
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushRegistration session:self.session messageInfo:messageInfo];
-    MPDataModelAbstract *message = [messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:YES];
     
@@ -2965,7 +2894,7 @@ static BOOL appBackgrounded = NO;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:_session messageInfo:messageInfo];
     messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-    MPDataModelAbstract *message = [messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:(_session != nil)];
 }

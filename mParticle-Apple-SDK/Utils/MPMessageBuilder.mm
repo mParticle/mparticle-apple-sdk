@@ -20,7 +20,6 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPStateMachine.h"
-#import "MPStandaloneMessage.h"
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
 #import "MPEnums.h"
@@ -261,28 +260,21 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (MPDataModelAbstract *)build {
-    MPDataModelAbstract *message = nil;
+- (MPMessage *)build {
+    MPMessage *message = nil;
     
     messageDictionary[kMPMessageTypeKey] = _messageType;
     messageDictionary[kMPMessageIdKey] = uuid ? uuid : [[NSUUID UUID] UUIDString];
+    
+    NSNumber *userId = _session ? _session.userId : [MPPersistenceController mpId];
 
-    if (_session) {
-        message = [[MPMessage alloc] initWithSession:_session
-                                         messageType:_messageType
-                                         messageInfo:messageDictionary
-                                        uploadStatus:MPUploadStatusBatch
-                                                UUID:messageDictionary[kMPMessageIdKey]
-                                           timestamp:_timestamp
-                                              userId:_session.userId];
-    } else {
-        message = [[MPStandaloneMessage alloc] initWithMessageType:_messageType
-                                                       messageInfo:messageDictionary
-                                                      uploadStatus:MPUploadStatusBatch
-                                                              UUID:messageDictionary[kMPMessageIdKey]
-                                                         timestamp:_timestamp
-                                                            userId:[MPPersistenceController mpId]];
-    }
+    message = [[MPMessage alloc] initWithSession:_session
+                                     messageType:_messageType
+                                     messageInfo:messageDictionary
+                                    uploadStatus:MPUploadStatusBatch
+                                            UUID:messageDictionary[kMPMessageIdKey]
+                                       timestamp:_timestamp
+                                          userId:userId];
     
     return message;
 }

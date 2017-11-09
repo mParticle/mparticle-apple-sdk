@@ -16,14 +16,12 @@
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPCustomModule.h"
-#import "MPStandaloneUpload.h"
 #import "MPConsumerInfo.h"
 #import "MPApplication.h"
 #import "MPDevice.h"
 #import "MPBags.h"
 #import "MPBags+Internal.h"
 #import "MPForwardRecord.h"
-#import "MPDataModelAbstract.h"
 #import "MPIntegrationAttributes.h"
 
 using namespace std;
@@ -36,7 +34,7 @@ using namespace std;
 
 @implementation MPUploadBuilder
 
-- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     NSAssert(messages, @"Messages cannot be nil.");
     
     self = [super init];
@@ -109,22 +107,22 @@ using namespace std;
 }
 
 #pragma mark Public class methods
-+ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
++ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid messages:(nonnull NSArray<MPMessage *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid session:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
-+ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<__kindof MPDataModelAbstract *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
++ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid session:session messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
 #pragma mark Public instance methods
-- (void)build:(void (^)(MPDataModelAbstract *upload))completionHandler {
+- (void)build:(void (^)(MPUpload *upload))completionHandler {
     [self buildAsync:YES completionHandler:completionHandler];
 }
 
-- (void)buildAsync:(BOOL)asyncBuild completionHandler:(void (^ _Nonnull)(MPDataModelAbstract * _Nullable upload))completionHandler {
+- (void)buildAsync:(BOOL)asyncBuild completionHandler:(void (^ _Nonnull)(MPUpload * _Nullable upload))completionHandler {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
@@ -188,13 +186,12 @@ using namespace std;
         uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
     }
     
-    if (_session) { // MPUpload
-        MPUpload *upload = [[MPUpload alloc] initWithSession:_session uploadDictionary:uploadDictionary];
-        completionHandler(upload);
+    
+    MPUpload *upload = [[MPUpload alloc] initWithSession:_session uploadDictionary:uploadDictionary];
+    completionHandler(upload);
+    
+    if (_session) {
         [persistence deleteForwardRecordsIds:forwardRecordsIds];
-    } else { // MPStandaloneUpload
-        MPStandaloneUpload *standaloneUpload = [[MPStandaloneUpload alloc] initWithUploadDictionary:uploadDictionary];
-        completionHandler(standaloneUpload);
     }
 }
 

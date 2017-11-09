@@ -24,8 +24,6 @@
 #import "MPSegment.h"
 #import "MPSegmentMembership.h"
 #import "MPIConstants.h"
-#import "MPStandaloneMessage.h"
-#import "MPStandaloneUpload.h"
 #import "MPMessageBuilder.h"
 #import "MParticleUserNotification.h"
 #import "MPIntegrationAttributes.h"
@@ -262,135 +260,6 @@
     }
 }
 
-- (void)testStandaloneMessage {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSMutableDictionary *messagesDictionary = [persistence fetchStandaloneMessages];
-    NSArray<MPStandaloneMessage *> *standaloneMessages = messagesDictionary[[MPPersistenceController mpId]];
-    MPStandaloneMessage *standaloneMessage;
-    
-    for (standaloneMessage in standaloneMessages) {
-        [persistence deleteStandaloneMessage:standaloneMessage];
-    }
-
-    NSDictionary *messageInfo = @{kMPDeviceTokenKey:@"<Device Token>",
-                                  kMPPushMessageProviderKey:kMPPushMessageProviderValue};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:nil messageInfo:messageInfo];
-    MPDataModelAbstract *message = [messageBuilder build];
-    XCTAssertNotNil(message, @"Stand-alone message should not have been nil.");
-    XCTAssertTrue([message isKindOfClass:[MPStandaloneMessage class]], @"Instance should have been of kind MPStandaloneMessage.");
-    
-    [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
-    
-    messagesDictionary = [persistence fetchStandaloneMessages];
-    standaloneMessages = messagesDictionary[[MPPersistenceController mpId]];
-    XCTAssertEqual(standaloneMessages.count, 1, @"There should have been only 1 fetched stand-alone message.");
-    
-    standaloneMessage = [standaloneMessages firstObject];
-    XCTAssertNotNil(standaloneMessage, @"Stand-alone message should not have been nil.");
-    XCTAssertEqualObjects(standaloneMessage.messageType, @"pm", @"Stand-alone message type should have been 'pm.'");
-    XCTAssertGreaterThan(standaloneMessage.messageId, 0, @"Stand-alone message id should have been greater than 0.");
-    XCTAssertEqual(standaloneMessage.uploadStatus, MPUploadStatusBatch, @"Upload status should have been 'batch.'");
-    XCTAssertNotNil(standaloneMessage.messageData, @"Stand-alone message should contain data.");
-    XCTAssertNotNil(standaloneMessage.uuid, @"Stand-alone message should have a uuid.");
-    XCTAssertGreaterThan(standaloneMessage.timestamp, 0.0, @"Stand-alone message timestamp should have been greater than 0.");
-    
-    NSDictionary *dictionary = [standaloneMessage dictionaryRepresentation];
-    XCTAssertNotNil(dictionary, @"Stand-alone message dictionary representation should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPDeviceTokenKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPPushMessageProviderKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPMessageIdKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPMessageTypeKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPTimestampKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[@"cs"], @"Dictionary key should not have been nil.");
-    
-    MPStandaloneMessage *copyStandaloneMessage = [standaloneMessage copy];
-    XCTAssertNotEqual(copyStandaloneMessage, standaloneMessage, @"Pointer addresses should not have been the same.");
-    XCTAssertEqualObjects(copyStandaloneMessage, standaloneMessage, @"Stand-alone message is not being copied properly.");
-    
-    NSData *serializedObject = [NSKeyedArchiver archivedDataWithRootObject:standaloneMessage];
-    XCTAssertNotNil(serializedObject, @"Should not have been nil.");
-    
-    MPStandaloneMessage *deserializedObject = [NSKeyedUnarchiver unarchiveObjectWithData:serializedObject];
-    XCTAssertNotNil(deserializedObject, @"Should not have been nil.");
-    XCTAssertEqualObjects(standaloneMessage, deserializedObject, @"Should have been equal.");
-    
-    [persistence deleteStandaloneMessage:standaloneMessage];
-    messagesDictionary = [persistence fetchStandaloneMessages];
-    standaloneMessage = [messagesDictionary[[MPPersistenceController mpId]] firstObject];
-    XCTAssertNil(standaloneMessage, @"Stand-alone message should have been deleted.");
-}
-
-- (void)testStandaloneUpload {
-    NSDictionary *messageInfo = @{kMPDeviceTokenKey:@"<Device Token>",
-                                  kMPPushMessageProviderKey:kMPPushMessageProviderValue};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:nil messageInfo:messageInfo];
-    MPDataModelAbstract *message = [messageBuilder build];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence saveStandaloneMessage:(MPStandaloneMessage *)message];
-    
-    NSMutableDictionary *messagesDictionary = [persistence fetchStandaloneMessages];
-    NSArray<MPStandaloneMessage *> *persistedMessages = messagesDictionary[[MPPersistenceController mpId]];
-    NSUInteger numberOfMessages = persistedMessages.count;
-    NSMutableArray *standaloneMessages = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
-    NSMutableArray *preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
-    for (MPStandaloneMessage *standaloneMessage in persistedMessages) {
-        [preparedMessageIds addObject:@(standaloneMessage.messageId)];
-        [standaloneMessages addObject:[standaloneMessage dictionaryRepresentation]];
-    }
-    
-    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
-                                       kMPUploadIntervalKey:@600,
-                                       kMPLifeTimeValueKey:@0,
-                                       kMPMessagesKey:standaloneMessages,
-                                       kMPMessageIdKey:[[NSUUID UUID] UUIDString],
-                                       kMPTimestampKey:MPCurrentEpochInMilliseconds};
-    
-    MPStandaloneUpload *standaloneUpload = [[MPStandaloneUpload alloc] initWithUploadDictionary:uploadDictionary];
-    XCTAssertNotNil(standaloneUpload, @"Stand-alone upload should not have been nil.");
-    [persistence saveStandaloneUpload:standaloneUpload];
-    
-    [persistence deleteStandaloneMessageIds:preparedMessageIds];
-    messagesDictionary = [persistence fetchStandaloneMessages];
-    NSArray *fetchedStandaloneMessages = messagesDictionary[[MPPersistenceController mpId]];;
-    XCTAssertNil(fetchedStandaloneMessages, @"Stand-alone messages should had been deleted.");
-    
-    NSArray<MPStandaloneUpload *> *standaloneUploads = [persistence fetchStandaloneUploads];
-    
-    for (MPStandaloneUpload *stAlnUpld in standaloneUploads) {
-        [persistence deleteStandaloneUpload:stAlnUpld];
-    }
-    
-    standaloneUpload = [standaloneUploads firstObject];
-    XCTAssertNotNil(standaloneUpload, @"Stand-alone upload should not have been nil.");
-    XCTAssertGreaterThan(standaloneUpload.uploadId, 0, @"Stand-alone upload id should have been greater than 0.");
-    XCTAssertGreaterThan(standaloneUpload.timestamp, 0.0, @"Stand-alone upload timestamp should have been greater than 0.");
-    XCTAssertNotNil(standaloneUpload.uploadData, @"Stand-alone upload should contain data.");
-    XCTAssertNotNil(standaloneUpload.uuid, @"Stand-alone upload should have a uuid.");
-    
-    NSDictionary *dictionary = [standaloneUpload dictionaryRepresentation];
-    XCTAssertNotNil(dictionary, @"Stand-alone upload dictionary representation should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPTimestampKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPMessageIdKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPLifeTimeValueKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPMessagesKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPOptOutKey], @"Dictionary key should not have been nil.");
-    XCTAssertNotNil(dictionary[kMPUploadIntervalKey], @"Dictionary key should not have been nil.");
-    
-    MPStandaloneUpload *copyStandaloneUpload = [standaloneUpload copy];
-    XCTAssertNotEqual(copyStandaloneUpload, standaloneUpload, @"Pointer addresses should not have been the same.");
-    XCTAssertEqualObjects(copyStandaloneUpload, standaloneUpload, @"Stand-alone upload is not being copied properly.");
-    
-    NSString *serializedString = [standaloneUpload serializedString];
-    XCTAssertNotNil(serializedString, @"Should not have been nil.");
-    
-    [persistence deleteStandaloneUpload:standaloneUpload];
-    standaloneUpload = [[persistence fetchStandaloneUploads] firstObject];
-    XCTAssertNil(standaloneUpload, @"Stand-alone upload should have been deleted.");
-}
-
 - (void)testIntegrationAttributes {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     [persistence deleteIntegrationAttributesForKitCode:@42];
@@ -440,43 +309,6 @@
     [persistence deleteAllIntegrationAttributes];
     integrationAttributesArray = [persistence fetchIntegrationAttributes];
     XCTAssertNil(integrationAttributesArray);
-}
-
-- (void)testMessageCount {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-
-    NSUInteger messageCount = [persistence countMesssagesForUploadInSession:session];
-    XCTAssertEqual(messageCount, 0);
-
-    [persistence saveMessage:message];
-    
-    messageCount = [persistence countMesssagesForUploadInSession:session];
-    XCTAssertEqual(messageCount, 1);
-    
-    [persistence deleteSession:session];
-    
-    NSDictionary *messageInfo = @{kMPDeviceTokenKey:@"<Device Token>",
-                                  kMPPushMessageProviderKey:kMPPushMessageProviderValue};
-    
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:nil messageInfo:messageInfo];
-    MPStandaloneMessage *standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
-
-    messageCount = [persistence countStandaloneMessages];
-    XCTAssertEqual(messageCount, 0);
-
-    [persistence saveStandaloneMessage:standaloneMessage];
-
-    messageCount = [persistence countStandaloneMessages];
-    XCTAssertEqual(messageCount, 1);
-    
-    [persistence deleteStandaloneMessage:standaloneMessage];
 }
 
 - (void)testConsumerInfo {

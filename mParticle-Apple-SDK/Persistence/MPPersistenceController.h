@@ -25,8 +25,6 @@
 @class MPProductBag;
 @class MPSession;
 @class MPUpload;
-@class MPStandaloneMessage;
-@class MPStandaloneUpload;
 @class MPCookie;
 @class MPConsumerInfo;
 @class MPForwardRecord;
@@ -56,8 +54,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)archiveSession:(nonnull MPSession *)session completionHandler:(void (^ _Nullable)(MPSession * _Nullable archivedSession))completionHandler;
 - (nullable MPSession *)archiveSessionSync:(nonnull MPSession *)session;
 - (BOOL)closeDatabase;
-- (NSUInteger)countMesssagesForUploadInSession:(nonnull MPSession *)session;
-- (NSUInteger)countStandaloneMessages;
 - (void)deleteConsumerInfo;
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
 - (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
@@ -76,10 +72,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteSessionSync:(nonnull MPSession *)session;
 - (void)deleteUpload:(nonnull MPUpload *)upload;
 - (void)deleteUploadId:(int64_t)uploadId;
-- (void)deleteStandaloneMessage:(nonnull MPStandaloneMessage *)standaloneMessage;
-- (void)deleteStandaloneMessageIds:(nonnull NSArray<NSNumber *> *)standaloneMessageIds;
-- (void)deleteStandaloneUpload:(nonnull MPStandaloneUpload *)standaloneUpload;
-- (void)deleteStandaloneUploadId:(int64_t)standaloneUploadId;
 - (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs;
 - (nullable MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber * _Nonnull)userId;
 - (void)fetchConsumerInfoForUserId:(NSNumber * _Nonnull)userId completionHandler:(void (^ _Nonnull)(MPConsumerInfo * _Nullable consumerInfo))completionHandler;
@@ -101,8 +93,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSessionSync:(nonnull MPSession *)session;
 - (void)fetchUploadsExceptInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (void)fetchUploadsInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
-- (nullable NSMutableDictionary *)fetchStandaloneMessages;
-- (nullable NSArray<MPStandaloneUpload *> *)fetchStandaloneUploads;
 - (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 - (void)purgeMemory;
 - (BOOL)openDatabase;
@@ -115,8 +105,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)saveSegment:(nonnull MPSegment *)segment;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation;
-- (void)saveStandaloneMessage:(nonnull MPStandaloneMessage *)standaloneMessage;
-- (void)saveStandaloneUpload:(nonnull MPStandaloneUpload *)standaloneUpload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
 

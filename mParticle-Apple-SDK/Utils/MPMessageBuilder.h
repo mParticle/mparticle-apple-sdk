@@ -24,10 +24,10 @@
 #endif
 
 @class MPSession;
-@class MPDataModelAbstract;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
 @class MPUserIdentityChange;
+@class MPMessage;
 
 @interface MPMessageBuilder : NSObject {
 @protected
@@ -51,7 +51,7 @@
 - (nonnull MPMessageBuilder *)withLaunchInfo:(nonnull NSDictionary *)launchInfo;
 - (nonnull MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;
 - (nonnull MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
-- (nonnull MPDataModelAbstract *)build;
+- (nonnull MPMessage *)build;
 
 #if TARGET_OS_IOS == 1
 - (nonnull MPMessageBuilder *)withLocation:(nonnull CLLocation *)location;

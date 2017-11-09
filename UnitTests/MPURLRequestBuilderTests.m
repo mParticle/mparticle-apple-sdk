@@ -23,12 +23,12 @@
 #import "MPConsumerInfo.h"
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
-#import "MPStandaloneMessage.h"
 #import "MPKitRegister.h"
 #import "MPKitContainer.h"
 #import "MPKitTestClass.h"
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
+#import "MPMessage.h"
 
 #pragma mark - MPURLRequestBuilder category
 @interface MPURLRequestBuilder(Tests)
@@ -71,14 +71,10 @@
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
-    MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageType:@"e"
-                                                                                  messageInfo:@{@"key":@"value"}
-                                                                                 uploadStatus:MPUploadStatusBatch
-                                                                                         UUID:[[NSUUID UUID] UUIDString]
-                                                                                    timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
-                                                                            message:[standaloneMessage serializedString]
+                                                                            message:[message serializedString]
                                                                          httpMethod:@"POST"];
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
@@ -299,14 +295,10 @@
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
-    MPStandaloneMessage *standaloneMessage = [[MPStandaloneMessage alloc] initWithMessageType:@"e"
-                                                                                  messageInfo:@{@"key":@"value"}
-                                                                                 uploadStatus:MPUploadStatusBatch
-                                                                                         UUID:[[NSUUID UUID] UUIDString]
-                                                                                    timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
-                                                                            message:[standaloneMessage serializedString]
+                                                                            message:[message serializedString]
                                                                          httpMethod:@"POST"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
     

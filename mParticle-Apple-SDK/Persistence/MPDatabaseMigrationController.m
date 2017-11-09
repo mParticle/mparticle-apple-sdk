@@ -395,89 +395,6 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
-- (void)migrateStandaloneMessagesFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    NSInteger oldVersionValue = [oldVersion integerValue];
-    NSNumber *mpId;
-    
-    if (oldVersionValue < 16) {
-        return;
-    }
-    
-    if (oldVersionValue < 26) {
-        selectStatement = "SELECT _id, message_type, uuid, timestamp, message_data, upload_status FROM standalone_messages ORDER BY _id";
-    } else {
-        selectStatement = "SELECT _id, message_type, uuid, timestamp, message_data, upload_status, mpid FROM standalone_messages ORDER BY _id";
-    }
-    
-    insertStatement = "INSERT INTO standalone_messages (_id, message_type, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
-    
-    while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
-        sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
-        sqlite3_bind_text(insertStatementHandle, 2, (const char *)sqlite3_column_text(selectStatementHandle, 1), -1, SQLITE_TRANSIENT); // messate_type
-        sqlite3_bind_text(insertStatementHandle, 3, (const char *)sqlite3_column_text(selectStatementHandle, 2), -1, SQLITE_TRANSIENT); // uuid
-        sqlite3_bind_double(insertStatementHandle, 4, sqlite3_column_int64(selectStatementHandle, 3)); // timestamp
-        sqlite3_bind_blob(insertStatementHandle, 5, sqlite3_column_blob(selectStatementHandle, 4), sqlite3_column_bytes(selectStatementHandle, 4), SQLITE_TRANSIENT); // message_data
-        sqlite3_bind_int(insertStatementHandle, 6, sqlite3_column_int(selectStatementHandle, 5)); // upload_status
-        if (oldVersionValue < 26) {
-            mpId = [MPPersistenceController mpId];
-        } else {
-            mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
-        }
-        sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
-        
-        sqlite3_step(insertStatementHandle);
-    }
-    
-    sqlite3_finalize(selectStatementHandle);
-    sqlite3_finalize(insertStatementHandle);
-}
-
-- (void)migrateStandaloneUploadsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
-    NSInteger oldVersionValue = [oldVersion integerValue];
-    NSNumber *mpId;
-    
-    if (oldVersionValue < 16) {
-        return;
-    }
-    
-    if (oldVersionValue < 26) {
-        selectStatement = "SELECT _id, uuid, message_data, timestamp FROM standalone_uploads ORDER BY _id";
-    } else {
-        selectStatement = "SELECT _id, uuid, message_data, timestamp, mpid FROM standalone_uploads ORDER BY _id";
-    }
-    
-    insertStatement = "INSERT INTO standalone_uploads (_id, uuid, message_data, timestamp, mpid) VALUES (?, ?, ?, ?, ?)";
-    
-    sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
-    sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
-    
-    while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
-        sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
-        sqlite3_bind_text(insertStatementHandle, 2, (const char *)sqlite3_column_text(selectStatementHandle, 1), -1, SQLITE_TRANSIENT); // uuid
-        sqlite3_bind_blob(insertStatementHandle, 3, sqlite3_column_blob(selectStatementHandle, 2), sqlite3_column_bytes(selectStatementHandle, 2), SQLITE_TRANSIENT); // message_data
-        sqlite3_bind_double(insertStatementHandle, 4, sqlite3_column_int64(selectStatementHandle, 3)); // timestamp
-        
-        if (oldVersionValue < 26) {
-            mpId = [MPPersistenceController mpId];
-        } else {
-            mpId = @(sqlite3_column_int64(selectStatementHandle, 4));
-        }
-        sqlite3_bind_int64(insertStatementHandle, 5, [mpId longLongValue]); // mpid
-        
-        sqlite3_step(insertStatementHandle);
-    }
-    
-    sqlite3_finalize(selectStatementHandle);
-    sqlite3_finalize(insertStatementHandle);
-}
-
 - (void)migrateProductBagsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
@@ -686,8 +603,6 @@
         [self migrateUploadsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateSegmentsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateSegmentMembershipsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateStandaloneMessagesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateStandaloneUploadsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateProductBagsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
         [self migrateIntegrationAttributesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
