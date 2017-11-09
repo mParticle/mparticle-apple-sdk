@@ -69,6 +69,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest;
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
+@property (nonatomic, unsafe_unretained, readwrite) BOOL automaticSessionTracking;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end

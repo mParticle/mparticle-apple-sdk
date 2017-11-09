@@ -464,6 +464,8 @@
 		DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
 		DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
 		DB7ABA191DA6ED7F00367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
+		DB8C8A391FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */; };
+		DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */; };
 		DB9AA1A21EFD806000340D02 /* MPIUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */; };
 		DB9AA1A31EFD806000340D02 /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
 		DBA894661F17CBE6005B21FB /* MPIdentityDTO.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */; };
@@ -743,6 +745,7 @@
 		DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
 		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
+		DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleOptionsTests.m; sourceTree = "<group>"; };
 		DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIUserDefaults.h; sourceTree = "<group>"; };
 		DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaults.m; sourceTree = "<group>"; };
 		DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityDTO.h; path = Identity/MPIdentityDTO.h; sourceTree = "<group>"; };
@@ -1225,6 +1228,7 @@
 				C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */,
 				DB4F166C1F1511B100D625CD /* MPIdentityTests.m */,
 				DB00F6371F4E11380070A74B /* MPKitAPITests.m */,
+				DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1616,6 +1620,7 @@
 				C911FD9C1D8A365A002A3516 /* MPLaunchInfoTests.m in Sources */,
 				C911FD971D8A365A002A3516 /* MPKitConfigurationTests.mm in Sources */,
 				C911FD8B1D8A365A002A3516 /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
+				DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */,
 				C911FD9F1D8A365A002A3516 /* MPPersistenceControllerTests.mm in Sources */,
 				C911FD951D8A365A002A3516 /* MPIntegrationAttributesTest.m in Sources */,
 				C911FD8D1D8A365A002A3516 /* MPCommerceEventTests.m in Sources */,
@@ -1852,6 +1857,7 @@
 				DB3935161F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */,
 				C9DD20E71D8A195D00D3ABBE /* MPCartTests.m in Sources */,
 				C9DD20EB1D8A1F9E00D3ABBE /* MPDataModelTests.m in Sources */,
+				DB8C8A391FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */,
 				C9DD20E21D8A193500D3ABBE /* HasherTests.mm in Sources */,
 				C9DD20EE1D8A1FA800D3ABBE /* MPForwardQueueItemTests.m in Sources */,
 				C9DD20E11D8A193000D3ABBE /* BracketTests.mm in Sources */,

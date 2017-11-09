@@ -74,6 +74,7 @@ static BOOL runningInBackground = NO;
 @synthesize storedSDKVersion = _storedSDKVersion;
 @synthesize triggerEventTypes = _triggerEventTypes;
 @synthesize triggerMessageTypes = _triggerMessageTypes;
+@synthesize automaticSessionTracking = _automaticSessionTracking;
 
 #if TARGET_OS_IOS == 1
 @synthesize location = _location;

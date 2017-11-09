@@ -103,6 +103,15 @@ NSString *const kMPStateKey = @"state";
 
 @implementation MParticleOptions
 
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _automaticSessionTracking = YES;
+    }
+    return self;
+}
+
 + (id)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret {
     MParticleOptions *options = [[self alloc] init];
     options.apiKey = apiKey;
@@ -507,6 +516,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     [MPStateMachine setEnvironment:environment];
+    [MPStateMachine sharedInstance].automaticSessionTracking = options.automaticSessionTracking;
 
     [self.backendController startWithKey:apiKey
                                   secret:secret
@@ -538,6 +548,7 @@ NSString *const kMPStateKey = @"state";
                            strongSelf->privateOptOut = @(strongSelf->_optOut);
                            
                            if (strongSelf.configSettings) {
+                               
                                if (strongSelf.configSettings[kMPConfigSessionTimeout]) {
                                    strongSelf.sessionTimeout = [strongSelf.configSettings[kMPConfigSessionTimeout] doubleValue];
                                }
