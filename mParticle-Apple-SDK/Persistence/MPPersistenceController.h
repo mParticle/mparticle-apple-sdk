@@ -61,7 +61,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
 - (void)deleteIntegrationAttributesForKitCode:(nonnull NSNumber *)kitCode;
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
-- (void)deleteMessagesWithNoSession;
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;
 - (void)deleteProductBag:(nonnull MPProductBag *)productBag;

@@ -1017,7 +1017,6 @@ static BOOL appBackgrounded = NO;
     };
     
     if (!openSessions || openSessions.count == 0) {
-        [persistence deleteMessagesWithNoSession];
         invokeCompletionHandler(YES);
         return;
     }

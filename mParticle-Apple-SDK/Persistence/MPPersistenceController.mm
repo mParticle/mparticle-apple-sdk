@@ -753,21 +753,6 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (void)deleteMessagesWithNoSession {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM messages WHERE session_id = 0";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting messages with no sessions");
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
 - (void)deleteNetworkPerformanceMessages {
     dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
