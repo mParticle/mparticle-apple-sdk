@@ -1,11 +1,3 @@
-//
-//  MPUploadBuilder.mm
-//  mParticle
-//
-//  Created by Dalmo Cirne on 5/7/15.
-//  Copyright (c) 2015 mParticle. All rights reserved.
-//
-
 #import "MPUploadBuilder.h"
 #include <vector>
 #import "MPMessage.h"
