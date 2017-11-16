@@ -4,17 +4,17 @@
 
 @class MPSession;
 
-@interface MPMessage : MPDataModelAbstract <NSCopying, NSCoding, MPDataModelProtocol>
+@interface MPMessage : MPDataModelAbstract <NSCopying, MPDataModelProtocol>
 
 @property (nonatomic, strong, readonly, nonnull) NSString *messageType;
 @property (nonatomic, strong, readonly, nonnull) NSData *messageData;
 @property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
 @property (nonatomic, unsafe_unretained) int64_t messageId;
-@property (nonatomic, unsafe_unretained) int64_t sessionId;
-@property (nonatomic, unsafe_unretained, nonnull) NSNumber *userId;
+@property (nonatomic, strong, nullable) NSNumber *sessionId;
+@property (nonatomic, strong, nonnull) NSNumber *userId;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 
-- (nonnull instancetype)initWithSessionId:(int64_t)sessionId
+- (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId
                                 messageId:(int64_t)messageId
                                      UUID:(nonnull NSString *)uuid
                               messageType:(nonnull NSString *)messageType

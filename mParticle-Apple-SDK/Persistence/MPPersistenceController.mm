@@ -320,23 +320,21 @@ const int MaxBreadcrumbs = 50;
             )",
             "CREATE TABLE IF NOT EXISTS messages ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                session_id INTEGER NOT NULL, \
+                session_id INTEGER, \
                 message_type TEXT NOT NULL, \
                 uuid TEXT NOT NULL, \
                 timestamp REAL NOT NULL, \
                 message_data BLOB NOT NULL, \
                 upload_status INTEGER, \
                 mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
-                FOREIGN KEY (session_id) REFERENCES sessions (_id) \
+                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
             )",
             "CREATE TABLE IF NOT EXISTS uploads ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                session_id INTEGER NOT NULL, \
+                session_id INTEGER, \
                 uuid TEXT NOT NULL, \
                 message_data BLOB NOT NULL, \
-                timestamp REAL NOT NULL, \
-                FOREIGN KEY (session_id) REFERENCES sessions (_id) \
+                timestamp REAL NOT NULL \
             )",
             "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -1158,7 +1156,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1196,7 +1194,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 3, MPUploadStatusBatch);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1239,7 +1237,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int(preparedStatement, 3, MPUploadStatusBatch);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1511,7 +1509,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_text(preparedStatement, 2, sessionEndMessageType.c_str(), (int)sessionEndMessageType.size(), SQLITE_STATIC);
             
             if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
                                                      messageId:int64Value(preparedStatement, 0)
                                                           UUID:stringValue(preparedStatement, 1)
                                                    messageType:stringValue(preparedStatement, 2)
@@ -1590,7 +1588,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 3, session.userId.longLongValue);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1633,7 +1631,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:session.sessionId
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1669,7 +1667,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPUpload *upload = [[MPUpload alloc] initWithSessionId:int64Value(preparedStatement, 4)
+                MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
                                                               uploadId:int64Value(preparedStatement, 0)
                                                                   UUID:stringValue(preparedStatement, 1)
                                                             uploadData:dataValue(preparedStatement, 2)
@@ -1705,7 +1703,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPUpload *upload = [[MPUpload alloc] initWithSessionId:session.sessionId
+                MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId)
                                                               uploadId:int64Value(preparedStatement, 0)
                                                                   UUID:stringValue(preparedStatement, 1)
                                                             uploadData:dataValue(preparedStatement, 2)
@@ -2004,7 +2002,12 @@ const int MaxBreadcrumbs = 50;
             string auxString = string([message.messageType UTF8String]);
             sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
             
-            sqlite3_bind_int64(preparedStatement, 2, message.sessionId);
+            if (message.sessionId != nil) {
+                sqlite3_bind_int64(preparedStatement, 2, message.sessionId.longLongValue);
+            } else {
+                sqlite3_bind_null(preparedStatement, 2);
+            }
+            
             
             auxString = string([message.uuid UTF8String]);
             sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
@@ -2179,7 +2182,12 @@ const int MaxBreadcrumbs = 50;
             
             sqlite3_bind_blob(preparedStatement, 2, [upload.uploadData bytes], (int)[upload.uploadData length], SQLITE_STATIC);
             sqlite3_bind_double(preparedStatement, 3, upload.timestamp);
-            sqlite3_bind_int64(preparedStatement, 4, upload.sessionId);
+            
+            if (upload.sessionId != nil) {
+                sqlite3_bind_int64(preparedStatement, 4, upload.sessionId.longLongValue);
+            } else {
+                sqlite3_bind_null(preparedStatement, 4);
+            }
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));

@@ -89,12 +89,6 @@
     XCTAssertNotEqualObjects(message, messageCopy, @"Should not have been equal.");
     XCTAssertNotEqualObjects(messageCopy, message, @"Should not have been equal.");
 
-    NSData *messageData = [NSKeyedArchiver archivedDataWithRootObject:message];
-    XCTAssertNotNil(messageData, @"Should not have been nil.");
-    MPMessage *deserializedMessage = [NSKeyedUnarchiver unarchiveObjectWithData:messageData];
-    XCTAssertNotNil(deserializedMessage, @"Should not have been nil.");
-    XCTAssertEqualObjects(message, deserializedMessage, @"Should have been equal.");
-    
     NSDictionary *dictionaryRepresentation = [message dictionaryRepresentation];
     XCTAssertNotNil(dictionaryRepresentation, @"Should not have been nil.");
 }

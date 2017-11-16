@@ -210,18 +210,23 @@
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
 
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
-        sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // messate_type
+        sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // message_type
 
         uuid = (const char *)sqlite3_column_text(selectStatementHandle, 2);
         sqlite3_bind_text(insertStatementHandle, 3, uuid, -1, SQLITE_TRANSIENT); // uuid
         
         if (oldVersionValue < 10) {
-            sqlite3_bind_int64(insertStatementHandle, 2, 0); // session_id
+            sqlite3_bind_null(insertStatementHandle, 2); // session_id
         } else {
             uuid = (const char *)sqlite3_column_text(selectStatementHandle, 1);
             session = [self sessionWithUUID:[NSString stringWithUTF8String:uuid] database:newDatabase];
-            sessionId = session ? session.sessionId : 0;
-            sqlite3_bind_int64(insertStatementHandle, 2, sessionId); // session_id
+            if (session) {
+                sessionId = session.sessionId;
+                sqlite3_bind_int64(insertStatementHandle, 2, sessionId); // session_id
+            }
+            else {
+                sqlite3_bind_null(insertStatementHandle, 2); // session_id
+            }
         }
         
         if (oldVersionValue < 26) {
@@ -277,12 +282,17 @@
         sqlite3_bind_double(insertStatementHandle, 3, sqlite3_column_double(selectStatementHandle, 2)); // timestamp
         
         if (oldVersionValue < 10) {
-            sqlite3_bind_int64(insertStatementHandle, 4, 0); // session_id
+            sqlite3_bind_null(insertStatementHandle, 4); // session_id
         } else {
             uuid = (const char *)sqlite3_column_text(selectStatementHandle, 3);
             session = [self sessionWithUUID:[NSString stringWithUTF8String:uuid] database:newDatabase];
-            sessionId = session ? session.sessionId : 0;
-            sqlite3_bind_int64(insertStatementHandle, 4, sessionId); // session_id
+            if (session) {
+                sessionId = session.sessionId;
+                sqlite3_bind_int64(insertStatementHandle, 4, sessionId); // session_id
+            }
+            else {
+                sqlite3_bind_null(insertStatementHandle, 4); // session_id
+            }
         }
         
         sqlite3_step(insertStatementHandle);
