@@ -214,7 +214,6 @@ extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
 extern NSString * _Nonnull const kMPConfigureExceptionHandlingNotification;
 extern NSString * _Nonnull const kMPRemoteNotificationOpenKey;
 extern NSString * _Nonnull const kMPLogRemoteNotificationKey;
-extern NSString * _Nonnull const kMPEventCounterLimitReachedNotification;
 extern NSString * _Nonnull const kMPRemoteNotificationReceivedNotification;
 extern NSString * _Nonnull const kMPUserNotificationDictionaryKey;
 extern NSString * _Nonnull const kMPUserNotificationActionKey;
@@ -287,8 +286,6 @@ extern const NSTimeInterval DEFAULT_UPLOAD_INTERVAL;
 
 // Delay before processing uploads to allow app to get started
 extern const NSTimeInterval INITIAL_UPLOAD_TIME;
-
-extern const NSUInteger EVENT_LIMIT; // maximum number of events per session
 
 // How long to block config requests after a successful response.
 extern const NSTimeInterval DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL;

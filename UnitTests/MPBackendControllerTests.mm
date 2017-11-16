@@ -619,19 +619,6 @@
 #endif
 }
 
-- (void)testSessionEventCounter {
-    MPSession *session = [self.session copy];
-    
-    XCTAssertEqualObjects(session, self.session, @"Session instances are not being copied correctly.");
-    
-    NSUInteger upperLimit = EVENT_LIMIT + 1;
-    for (NSUInteger i = 0; i != upperLimit; ++i) {
-        [self.session incrementCounter];
-    }
-    
-    XCTAssertNotEqualObjects(session, self.session, @"New session has not began after reaching the maximum number of events limit.");
-}
-
 - (void)testCheckAttributes {
     NSMutableDictionary *dictionary = [@{@"Transport":@"Time Machine",
                                          @"Model":@"Tardis",

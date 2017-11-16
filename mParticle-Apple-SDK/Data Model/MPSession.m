@@ -166,15 +166,9 @@ NSString *const sessionNumberKey = @"sessionNumber";
 
 #pragma mark Public methods
 - (void)incrementCounter {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
     [self willChangeValueForKey:@"eventCounter"];
     ++_eventCounter;
     [self didChangeValueForKey:@"eventCounter"];
-    
-    if (_eventCounter > EVENT_LIMIT) {
-        [notificationCenter postNotificationName:kMPEventCounterLimitReachedNotification object:self userInfo:nil];
-    }
 }
 
 - (void)suspendSession {

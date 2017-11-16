@@ -163,11 +163,6 @@ static BOOL appBackgrounded = NO;
                                  object:nil];
         
         [notificationCenter addObserver:self
-                               selector:@selector(handleEventCounterLimitReached:)
-                                   name:kMPEventCounterLimitReachedNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:self
                                selector:@selector(handleApplicationWillResignActive:)
                                    name:UIApplicationWillResignActiveNotification
                                  object:nil];
@@ -193,7 +188,6 @@ static BOOL appBackgrounded = NO;
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [notificationCenter removeObserver:self name:kMPEventCounterLimitReachedNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillResignActiveNotification object:nil];
     
 #if TARGET_OS_IOS == 1
@@ -1229,11 +1223,6 @@ static BOOL appBackgrounded = NO;
     [self beginUploadTimer];
 
     MPILogVerbose(@"Application Did Become Active");
-}
-
-- (void)handleEventCounterLimitReached:(NSNotification *)notification {
-    MPILogDebug(@"The event limit has been exceeded for this session. Automatically begining a new session.");
-    [self beginSession:nil];
 }
 
 - (void)handleApplicationWillResignActive:(NSNotification *)notification {
