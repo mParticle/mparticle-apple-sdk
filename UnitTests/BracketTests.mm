@@ -22,37 +22,37 @@ mParticle::Bracket makeBracket() {
 
 - (void)testBracket {
     mParticle::Bracket bracket(LONG_MAX - 3141592, 95, 97);
-    XCTAssertTrue(bracket.shouldForward(), @"Backet should be forwarding.");
+    XCTAssertTrue(bracket.shouldForward(), @"Bracket should be forwarding.");
     
     bracket.high = 96;
-    XCTAssertFalse(bracket.shouldForward(), @"Backet should not be forwarding.");
+    XCTAssertFalse(bracket.shouldForward(), @"Bracket should not be forwarding.");
 }
 
 - (void)testBracketPointer {
     shared_ptr<mParticle::Bracket> bracket = make_shared<mParticle::Bracket>(-(LONG_MAX - 271828182), 40, 41);
-    XCTAssertTrue(bracket->shouldForward(), @"Backet should be forwarding.");
+    XCTAssertTrue(bracket->shouldForward(), @"Bracket should be forwarding.");
     
     bracket->low = 41;
-    XCTAssertFalse(bracket->shouldForward(), @"Backet should not be forwarding.");
+    XCTAssertFalse(bracket->shouldForward(), @"Bracket should not be forwarding.");
 }
 
 - (void)testCopyBracket {
     mParticle::Bracket bracket(LONG_MAX - 3141592, 95, 97);
     mParticle::Bracket bracketCopy = bracket;
     
-    XCTAssertTrue(bracketCopy.shouldForward(), @"Backet should be forwarding.");
+    XCTAssertTrue(bracketCopy.shouldForward(), @"Bracket should be forwarding.");
     
     bracketCopy.high = 96;
-    XCTAssertFalse(bracketCopy.shouldForward(), @"Backet should not be forwarding.");
+    XCTAssertFalse(bracketCopy.shouldForward(), @"Bracket should not be forwarding.");
 }
 
 - (void)testMoveBracket {
     mParticle::Bracket bracket = makeBracket();
     
-    XCTAssertTrue(bracket.shouldForward(), @"Backet should be forwarding.");
+    XCTAssertTrue(bracket.shouldForward(), @"Bracket should be forwarding.");
     
     bracket.high = 96;
-    XCTAssertFalse(bracket.shouldForward(), @"Backet should not be forwarding.");
+    XCTAssertFalse(bracket.shouldForward(), @"Bracket should not be forwarding.");
 }
 
 - (void)testBracketComparison {

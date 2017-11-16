@@ -21,7 +21,7 @@ namespace mParticle {
         stream.next_in = (Bytef *)data;
         stream.avail_in = length;
         
-        // Compresssion Levels:
+        // Compression Levels:
         //  Z_NO_COMPRESSION
         //  Z_BEST_SPEED
         //  Z_BEST_COMPRESSION

@@ -176,7 +176,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Unique identifier for this app running on this device. This unique identifier is synchronized with the mParticle servers.
- @retuns A string containing the unique identifier or nil, if communication with the server could not yet be established.
+ @returns A string containing the unique identifier or nil, if communication with the server could not yet be established.
  */
 @property (nonatomic, strong, readonly, nullable) NSString *uniqueIdentifier;
 

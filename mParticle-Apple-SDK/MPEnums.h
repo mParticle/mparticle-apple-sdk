@@ -219,7 +219,7 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeFirstRun = 7,
     /** Message type code for attributions */
     MPMessageTypePreAttribution = 8,
-    /** Message type code for when an app successfuly registers to receive push notifications */
+    /** Message type code for when an app successfully registers to receive push notifications */
     MPMessageTypePushRegistration = 9,
     /** Message type code for when an app transitions to/from background */
     MPMessageTypeAppStateTransition = 10,
