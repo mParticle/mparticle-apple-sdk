@@ -173,6 +173,11 @@
     forwardRecord2.forwardRecordId = 321;
     XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
     
+    forwardRecord2.forwardRecordId = 123;
+    forwardRecord1.mpid = @1;
+    forwardRecord2.mpid = @2;
+    XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
+    
     forwardRecord2 = nil;
     XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
     
