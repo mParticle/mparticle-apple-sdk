@@ -356,6 +356,7 @@ static NSArray *actionNames;
         copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];
+        copyObject->_currency = [_currency copy];
     }
     
     return copyObject;
