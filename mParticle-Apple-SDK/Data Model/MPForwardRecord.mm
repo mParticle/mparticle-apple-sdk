@@ -9,6 +9,7 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPEventProjection.h"
 #import "MPKitExecStatus.h"
+#import "MPPersistenceController.h"
 
 NSString *const kMPFRModuleId = @"mid";
 NSString *const kMPFRProjections = @"proj";
@@ -19,13 +20,14 @@ NSString *const kMPFROptOutState = @"s";
 
 @implementation MPForwardRecord
 
-- (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data {
+- (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data mpid:(NSNumber *)mpid {
     self = [super init];
     if (!self) {
         return nil;
     }
     
     _forwardRecordId = forwardRecordId;
+    _mpid = mpid;
     
     if (!MPIsNull(data)) {
         NSError *error = nil;
@@ -77,6 +79,7 @@ NSString *const kMPFROptOutState = @"s";
     }
     
     _forwardRecordId = 0;
+    _mpid = [MPPersistenceController mpId];
     _dataDictionary = [[NSMutableDictionary alloc] init];
     _dataDictionary[kMPFRModuleId] = execStatus.kitCode;
     _dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;
@@ -134,6 +137,7 @@ NSString *const kMPFROptOutState = @"s";
     NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPForwardRecord {\n"];
     [description appendFormat:@"  forwardRecordId: %llu\n", _forwardRecordId];
     [description appendFormat:@"  dataDictionary: %@\n", _dataDictionary];
+    [description appendFormat:@"  mpid: %@\n", _mpid];
     [description appendString:@"}"];
     
     return description;
@@ -150,6 +154,10 @@ NSString *const kMPFROptOutState = @"s";
     
     if (isEqual && _forwardRecordId > 0 && objectForwardRecord.forwardRecordId > 0) {
         isEqual = _forwardRecordId == objectForwardRecord.forwardRecordId;
+    }
+    
+    if (isEqual) {
+        isEqual = [_mpid isEqual:objectForwardRecord.mpid];
     }
     
     return isEqual;

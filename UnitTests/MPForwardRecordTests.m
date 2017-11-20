@@ -40,7 +40,7 @@
     
     NSData *dataRepresentation = [forwardRecord dataRepresentation];
     
-    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation];
+    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation mpid:@1];
     XCTAssertNotNil(derivedForwardRecord, @"Should not have been nil.");
     XCTAssertEqualObjects(forwardRecord, derivedForwardRecord, @"Should have been equal.");
     

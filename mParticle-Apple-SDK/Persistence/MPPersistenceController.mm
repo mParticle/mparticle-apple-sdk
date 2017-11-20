@@ -392,7 +392,8 @@ const int MaxBreadcrumbs = 50;
             )",
             "CREATE TABLE IF NOT EXISTS forwarding_records ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                forwarding_data BLOB NOT NULL \
+                forwarding_data BLOB NOT NULL, \
+                mpid INTEGER NOT NULL \
             )",
             "CREATE TABLE IF NOT EXISTS integration_attributes ( \
                 _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -1094,12 +1095,13 @@ const int MaxBreadcrumbs = 50;
     
     dispatch_sync(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, forwarding_data FROM forwarding_records ORDER BY _id";
+        const string sqlStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records ORDER BY _id";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithId:int64Value(preparedStatement, 0)
-                                                                                data:dataValue(preparedStatement, 1)];
+                                                                                data:dataValue(preparedStatement, 1)
+                                                                                mpid:@(int64Value(preparedStatement, 2))];
                 
                 forwardRecordsVector.push_back(forwardRecord);
             }
@@ -1920,7 +1922,7 @@ const int MaxBreadcrumbs = 50;
 - (void)saveForwardRecord:(MPForwardRecord *)forwardRecord {
     dispatch_barrier_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO forwarding_records (forwarding_data) VALUES (?)";
+        const string sqlStatement = "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (?, ?)";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             NSData *data = [forwardRecord dataRepresentation];
@@ -1928,6 +1930,14 @@ const int MaxBreadcrumbs = 50;
             if (data) {
                 sqlite3_bind_blob(preparedStatement, 1, [data bytes], (int)[data length], SQLITE_STATIC);
             } else {
+                sqlite3_finalize(preparedStatement);
+                return;
+            }
+            
+            if (forwardRecord.mpid) {
+                sqlite3_bind_int64(preparedStatement, 2, forwardRecord.mpid.longLongValue);
+            }
+            else {
                 sqlite3_finalize(preparedStatement);
                 return;
             }
