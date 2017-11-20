@@ -415,7 +415,7 @@
         return;
     }
     
-    if (oldVersionValue < 26) {
+    if (oldVersionValue < 27) {
         selectStatement = "SELECT _id, forwarding_data FROM forwarding_records";
     } else {
         selectStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records";
