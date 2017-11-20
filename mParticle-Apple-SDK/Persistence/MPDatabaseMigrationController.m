@@ -197,14 +197,14 @@
     NSInteger oldVersionValue = [oldVersion integerValue];
     
     if (oldVersionValue < 10) {
-        selectStatement = "SELECT message_type, session_id, cfuuid, message_time, message, upload_status FROM messages ORDER BY _id";
+        selectStatement = "SELECT message_type, session_id, cfuuid, message_time, message_data, upload_status FROM messages ORDER BY _id";
     } else if (oldVersionValue < 26) {
-        selectStatement = "SELECT message_type, session_id, uuid, timestamp, message, upload_status FROM messages ORDER BY _id";
+        selectStatement = "SELECT message_type, session_id, uuid, timestamp, message_data, upload_status FROM messages ORDER BY _id";
     } else {
-        selectStatement = "SELECT message_type, session_id, uuid, timestamp, message, upload_status, mpid FROM messages ORDER BY _id";
+        selectStatement = "SELECT message_type, session_id, uuid, timestamp, message_data, upload_status, mpid FROM messages ORDER BY _id";
     }
 
-    insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -256,12 +256,12 @@
     NSInteger oldVersionValue = [oldVersion integerValue];
 
     if (oldVersionValue < 10) {
-        selectStatement = "SELECT cfuuid, message, message_time, session_id FROM uploads ORDER BY _id";
+        selectStatement = "SELECT cfuuid, message_data, message_time, session_id FROM uploads ORDER BY _id";
     } else {
-        selectStatement = "SELECT uuid, message, timestamp, session_id FROM uploads ORDER BY _id";
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id FROM uploads ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO uploads (uuid, message, timestamp, session_id) VALUES (?, ?, ?, ?)";
+    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
