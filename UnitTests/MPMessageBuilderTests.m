@@ -95,16 +95,16 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"Y";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     commerceEvent.checkoutOptions = @"option 1";
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
-    commerceEvent[@"key_date"] = [NSDate date];
+    commerceEvent[@"key_number"] = @"3.14";
+    commerceEvent[@"key_date"] = @"01/01/2000";
     
     MPCart *cart = [MParticle sharedInstance].identity.currentUser.cart;
     [cart clear];

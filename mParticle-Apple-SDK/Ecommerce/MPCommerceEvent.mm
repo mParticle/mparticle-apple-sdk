@@ -16,6 +16,7 @@
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "mParticle.h"
+#import "MPILogger.h"
 
 using namespace std;
 using namespace mParticle;
@@ -308,6 +309,7 @@ static NSArray *actionNames;
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
     NSAssert(key != nil, @"'key' cannot be nil.");
     NSAssert(obj != nil, @"'obj' cannot be nil.");
+    NSAssert([obj isKindOfClass:[NSString class]], @"'obj' for custom attributes must be a NSString");
     
     if (obj == nil) {
         return;
@@ -414,15 +416,25 @@ static NSArray *actionNames;
     if (dictionary) {
         self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
-
+    
     dictionary = [coder decodeObjectForKey:@"productImpressions"];
     if (dictionary.count > 0) {
         self->_productImpressions = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
     
-    dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
-    if (dictionary.count > 0) {
-        self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+    @try {
+        dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
+    }
+    
+    @catch ( NSException *e) {
+        dictionary = nil;
+        MPILogError(@"Exception decoding MPCommerceEvent User Defined Attributes: %@", [e reason]);
+    }
+    
+    @finally {
+        if (dictionary.count > 0) {
+            self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
     }
     
     NSArray *array = [coder decodeObjectForKey:@"productsList"];

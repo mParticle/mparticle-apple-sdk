@@ -1046,8 +1046,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -1057,7 +1057,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     transactionAttributes.affiliation = @"Doctor";
@@ -1102,8 +1102,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -1113,7 +1113,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
@@ -1169,8 +1169,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -1180,7 +1180,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
