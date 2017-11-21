@@ -33,6 +33,7 @@
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "MPILogger.h"
 
 using namespace std;
 using namespace mParticle;
@@ -432,9 +433,19 @@ static NSArray *actionNames;
         self->_productImpressions = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
     
-    dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
-    if (dictionary.count > 0) {
-        self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+    @try {
+        dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
+    }
+    
+    @catch ( NSException *e) {
+        dictionary = nil;
+        MPILogError(@"Exception decoding MPCommerceEvent User Defined Attributes: %@", [e reason]);
+    }
+    
+    @finally {
+        if (dictionary.count > 0) {
+            self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
     }
     
     NSArray *array = [coder decodeObjectForKey:@"productsList"];

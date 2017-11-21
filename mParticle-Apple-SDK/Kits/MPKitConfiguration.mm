@@ -22,6 +22,7 @@
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
 #include "MessageTypeName.h"
+#import "MPILogger.h"
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -108,7 +109,20 @@
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    NSDictionary *configurationDictionary = [coder decodeObjectForKey:@"configurationDictionary"];
+    NSDictionary *configurationDictionary;
+    
+    @try {
+        configurationDictionary = [coder decodeObjectForKey:@"configurationDictionary"];
+    }
+    
+    @catch ( NSException *e) {
+        configurationDictionary = nil;
+        MPILogError(@"Exception decoding MPKitConfiguration Attributes: %@", [e reason]);
+    }
+    
+    @finally {
+        self = [self initWithDictionary:configurationDictionary];
+    }
     
     self = [self initWithDictionary:configurationDictionary];
     if (!self) {
