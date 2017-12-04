@@ -10,7 +10,8 @@
 @property (nonatomic, strong, nullable) NSNumber *sessionId;
 @property (nonatomic, unsafe_unretained) int64_t uploadId;
 
-- (nonnull instancetype)initWithSession:(nullable MPSession *)session uploadDictionary:(nonnull NSDictionary *)uploadDictionary;
+
+- (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId uploadDictionary:(nonnull NSDictionary *)uploadDictionary;
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId uploadId:(int64_t)uploadId UUID:(nonnull NSString *)uuid uploadData:(nonnull NSData *)uploadData timestamp:(NSTimeInterval)timestamp;
 
 @end

@@ -4,13 +4,7 @@
 
 @implementation MPUpload
 
-- (instancetype)initWithSession:(MPSession *)session uploadDictionary:(NSDictionary *)uploadDictionary {
-    NSNumber *sessionId = nil;
-    
-    if (session) {
-        sessionId = @(session.sessionId);
-    }
-    
+- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary {    
     NSData *uploadData = [NSJSONSerialization dataWithJSONObject:uploadDictionary options:0 error:nil];
     
     return [self initWithSessionId:sessionId

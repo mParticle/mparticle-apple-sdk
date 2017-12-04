@@ -1182,19 +1182,18 @@ const int MaxBreadcrumbs = 50;
     return messages;
 }
 
-- (NSMutableDictionary *)fetchMessagesForUploadingInSession:(MPSession *)session {
+- (NSMutableDictionary *)fetchMessagesForUploading {
     NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
     dispatch_sync(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE mpid != 0 AND session_id = ? AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
-        
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY session_id, timestamp, _id";
+
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusStream);
-            sqlite3_bind_int(preparedStatement, 3, MPUploadStatusBatch);
+            sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
+            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:[NSNumber numberWithLongLong:int64Value(preparedStatement, 7)]
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1225,19 +1224,18 @@ const int MaxBreadcrumbs = 50;
     return mpidMessages;
 }
 
-- (void)fetchMessagesForUploadingInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSDictionary* _Nullable messages))completionHandler {
+- (void)fetchMessagesForUploadingWithCompletionHandler:(void (^ _Nonnull)(NSDictionary* _Nullable messages))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE mpid != 0 AND session_id = ? AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
 
         NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusStream);
-            sqlite3_bind_int(preparedStatement, 3, MPUploadStatusBatch);
+            sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
+            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
+                MPMessage *message = [[MPMessage alloc] initWithSessionId:[NSNumber numberWithLongLong:int64Value(preparedStatement, 7)]
                                                                 messageId:int64Value(preparedStatement, 0)
                                                                      UUID:stringValue(preparedStatement, 1)
                                                               messageType:stringValue(preparedStatement, 2)
@@ -1247,10 +1245,15 @@ const int MaxBreadcrumbs = 50;
                                                                    userId:@(int64Value(preparedStatement, 6))];
                 if (message) {
                     NSNumber *mpid = message.userId;
+                    NSNumber *sessionID = (message.sessionId != nil) ? message.sessionId : [NSNumber numberWithInteger:-1] ;
+                    
                     if (![mpidMessages objectForKey:mpid]) {
-                        mpidMessages[mpid] = [NSMutableArray array];
+                        mpidMessages[mpid] = [NSMutableDictionary dictionary];
                     }
-                    [mpidMessages[mpid] addObject:message];
+                    if (![mpidMessages[mpid] objectForKey:sessionID]) {
+                        mpidMessages[mpid][sessionID] = [NSMutableArray array];
+                    }
+                    [mpidMessages[mpid][sessionID] addObject:message];
                 }
                 
             }
@@ -1692,18 +1695,23 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (void)fetchUploadsInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
+- (void)fetchUploadsWithSessionId:(NSNumber *)sessionId completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id = ? ORDER BY _id";
+        string sqlStatement;
+        if (sessionId) {
+            sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id = ? ORDER BY _id";
+        } else {
+            sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id IS NULL ORDER BY _id";
+        }
         
         vector<MPUpload *> uploadsVector;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            sqlite3_bind_int64(preparedStatement, 1, sessionId.longLongValue);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId)
+                MPUpload *upload = [[MPUpload alloc] initWithSessionId:sessionId
                                                               uploadId:int64Value(preparedStatement, 0)
                                                                   UUID:stringValue(preparedStatement, 1)
                                                             uploadData:dataValue(preparedStatement, 2)

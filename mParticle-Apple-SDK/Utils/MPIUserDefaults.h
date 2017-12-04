@@ -11,5 +11,7 @@
 - (void)setObject:(nullable id)obj forKeyedSubscript:(nonnull NSString *)key;
 - (void)synchronize;
 - (void)migrateUserKeysWithUserId:(nonnull NSNumber *)userId;
+- (void)migrateToSharedGroupIdentifier:(nonnull NSString *)groupIdentifier;
+- (void)migrateFromSharedGroupIdentifier;
 
 @end

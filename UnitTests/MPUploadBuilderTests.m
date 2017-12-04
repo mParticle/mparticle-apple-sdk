@@ -117,7 +117,7 @@
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                    session:session
+                                                                    sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
                                                              uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];

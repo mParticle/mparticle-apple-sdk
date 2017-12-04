@@ -26,7 +26,7 @@ using namespace std;
 
 @implementation MPUploadBuilder
 
-- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
     NSAssert(messages, @"Messages cannot be nil.");
     
     self = [super init];
@@ -34,7 +34,7 @@ using namespace std;
         return nil;
     }
     
-    _session = session;
+    _sessionId = sessionId;
     
     NSUInteger numberOfMessages = messages.count;
     NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
@@ -89,8 +89,8 @@ using namespace std;
 - (NSString *)description {
     NSString *description;
     
-    if (_session) {
-        description = [NSString stringWithFormat:@"MPUploadBuilder\n Session Id: %lld\n UploadDictionary: %@", self.session.sessionId, uploadDictionary];
+    if (_sessionId) {
+        description = [NSString stringWithFormat:@"MPUploadBuilder\n Session Id: %lld\n UploadDictionary: %@", self.sessionId.longLongValue, uploadDictionary];
     } else {
         description = [NSString stringWithFormat:@"MPUploadBuilder\n UploadDictionary: %@", uploadDictionary];
     }
@@ -100,12 +100,12 @@ using namespace std;
 
 #pragma mark Public class methods
 + (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid messages:(nonnull NSArray<MPMessage *> *)messages uploadInterval:(NSTimeInterval)uploadInterval {
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid session:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
-+ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid session:(nullable MPSession *)session messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid session:session messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
++ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval {
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:sessionId messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval];
     return uploadBuilder;
 }
 
@@ -179,12 +179,8 @@ using namespace std;
     }
     
     
-    MPUpload *upload = [[MPUpload alloc] initWithSession:_session uploadDictionary:uploadDictionary];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId uploadDictionary:uploadDictionary];
     completionHandler(upload);
-    
-    if (_session) {
-        [persistence deleteForwardRecordsIds:forwardRecordsIds];
-    }
 }
 
 - (MPUploadBuilder *)withUserAttributes:(NSDictionary<NSString *, id> *)userAttributes deletedUserAttributes:(NSSet<NSString *> *)deletedUserAttributes {
@@ -211,7 +207,7 @@ using namespace std;
         }
     }
     
-    if (deletedUserAttributes.count > 0 && _session) {
+    if (deletedUserAttributes.count > 0 && _sessionId) {
         uploadDictionary[kMPUserAttributeDeletedKey] = [deletedUserAttributes allObjects];
     }
     

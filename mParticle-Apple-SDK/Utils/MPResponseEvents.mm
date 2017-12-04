@@ -8,7 +8,7 @@
 
 @implementation MPResponseEvents
 
-+ (void)parseConfiguration:(NSDictionary *)configuration session:(MPSession *)session {
++ (void)parseConfiguration:(NSDictionary *)configuration sessionId:(NSNumber *)sessionId {
     if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
         return;
     }
@@ -16,7 +16,7 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
 
     // Consumer Information
-    if (session) {
+    if (sessionId) {
         MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;
         [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
         [persistence updateConsumerInfo:consumerInfo];

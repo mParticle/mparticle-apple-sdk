@@ -5,6 +5,6 @@
 #pragma mark - MPResponseEvents
 @interface MPResponseEvents : NSObject
 
-+ (void)parseConfiguration:(nonnull NSDictionary *)configuration session:(nullable MPSession *)session;
++ (void)parseConfiguration:(nonnull NSDictionary *)configuration sessionId:(nullable NSNumber *)sessionId;
 
 @end

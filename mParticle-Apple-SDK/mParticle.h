@@ -47,6 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
 + (MParticleOptions*)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
 @property (nonatomic, strong, readwrite) NSString *apiKey;
 @property (nonatomic, strong, readwrite) NSString *apiSecret;
+@property (nonatomic, strong, readwrite) NSString *sharedGroupID;
 @property (nonatomic, unsafe_unretained, readwrite) MPInstallationType installType;
 @property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest;
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;

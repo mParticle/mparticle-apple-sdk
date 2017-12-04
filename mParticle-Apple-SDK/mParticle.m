@@ -447,6 +447,7 @@ NSString *const kMPStateKey = @"state";
     MParticleOptions *options = [[MParticleOptions alloc] init];
     options.apiKey = apiKey;
     options.apiSecret = secret;
+    options.apiKey = self.configSettings[kMPConfigSharedGroupID];
     options.installType = MPInstallationTypeAutodetect;
     options.environment = MPEnvironmentAutoDetect;
     options.proxyAppDelegate = YES;
@@ -495,6 +496,15 @@ NSString *const kMPStateKey = @"state";
             NSNumber *type = obj[@"n"];
             [identifyRequest setUserIdentity:identity identityType:[type intValue]];
         }];
+    }
+    
+    id currentIdentifier = userDefaults[kMPUserIdentitySharedGroupIdentifier];
+    if (options.sharedGroupID == currentIdentifier) {
+        // Do nothing, we only want to update NSUserDefaults on a change
+    } else if (options.sharedGroupID && ![options.sharedGroupID isEqualToString:@""]) {
+        [userDefaults migrateToSharedGroupIdentifier:options.sharedGroupID];
+    } else {
+        [userDefaults migrateFromSharedGroupIdentifier];
     }
     
     [MPStateMachine setEnvironment:environment];
