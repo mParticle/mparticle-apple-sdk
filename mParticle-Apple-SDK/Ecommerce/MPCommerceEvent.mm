@@ -342,6 +342,7 @@ static NSArray *actionNames;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];
         copyObject->_shoppingCartState = _shoppingCartState ? [[NSMutableDictionary alloc] initWithDictionary:[_shoppingCartState copy]] : nil;
+        copyObject->_currency = [_currency copy];
     }
     
     return copyObject;
