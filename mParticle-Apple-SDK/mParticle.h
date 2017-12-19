@@ -742,14 +742,14 @@ NS_ASSUME_NONNULL_BEGIN
  @param center The notification center that received the notification
  @param notification The notification that is about to be delivered
  */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification;
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification NS_AVAILABLE_IOS(10.0);
 
 /**
  Informs the mParticle SDK that the user has interacted with a given notification
  @param center The notification center that received the notification
  @param response The user’s response to the notification
  */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response;
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response NS_AVAILABLE_IOS(10.0);
 #endif
 
 #pragma mark - User Segments
