@@ -993,8 +993,6 @@ const int MaxBreadcrumbs = 50;
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
                 consumerInfo = [[MPConsumerInfo alloc] init];
                 consumerInfo.consumerInfoId = int64Value(preparedStatement, 0);
-                consumerInfo.mpId = @(int64Value(preparedStatement, 1));
-                
                 unsigned char *columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
                 if (columnText != NULL) {
                     consumerInfo.uniqueIdentifier = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
@@ -1014,27 +1012,8 @@ const int MaxBreadcrumbs = 50;
     NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
     
     dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, mpid, unique_identifier FROM consumer_info";
-        MPConsumerInfo *consumerInfo = nil;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                consumerInfo = [[MPConsumerInfo alloc] init];
-                consumerInfo.consumerInfoId = int64Value(preparedStatement, 0);
-                consumerInfo.mpId = @(int64Value(preparedStatement, 1));
-                
-                unsigned char *columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
-                if (columnText != NULL) {
-                    consumerInfo.uniqueIdentifier = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
-                }
-                
-                consumerInfo.cookies = cookies;
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
+        MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+        consumerInfo.cookies = cookies;
         dispatch_async(dispatch_get_main_queue(), ^{
             completionHandler(consumerInfo);
         });
@@ -1909,8 +1888,6 @@ const int MaxBreadcrumbs = 50;
         sqlStatement += ")";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId longLongValue]);
-            
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
@@ -2250,27 +2227,6 @@ const int MaxBreadcrumbs = 50;
 
 - (void)updateConsumerInfo:(MPConsumerInfo *)consumerInfo {
     dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "UPDATE consumer_info SET mpid = ? ";
-        
-        if (consumerInfo.uniqueIdentifier) {
-            sqlStatement += ", unique_identifier = '" + string([consumerInfo.uniqueIdentifier UTF8String]) + "'";
-        }
-        
-        sqlStatement += " WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [consumerInfo.mpId longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 2, consumerInfo.consumerInfoId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while updating consumer info: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
         
         for (MPCookie *cookie in consumerInfo.cookies) {
             if (cookie.expired) {

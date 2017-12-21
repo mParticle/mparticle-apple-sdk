@@ -369,7 +369,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSString *const MPKitBracketLowKey = @"lo";
     NSString *const MPKitBracketHighKey = @"hi";
     
-    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    long mpId = [[MPPersistenceController mpId] longValue];
     short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
     short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
     localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
@@ -552,7 +552,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return;
     }
     
-    long mpId = [[MPStateMachine sharedInstance].consumerInfo.mpId longValue];
+    long mpId = [[MPPersistenceController mpId] longValue];
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
     

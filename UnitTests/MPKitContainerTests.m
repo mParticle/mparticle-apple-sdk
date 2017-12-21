@@ -65,7 +65,6 @@
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
-    stateMachine.consumerInfo.mpId = @(-986700791391657968);
     
     kitContainer = [MPKitContainer sharedInstance];
 

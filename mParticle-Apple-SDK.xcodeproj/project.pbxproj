@@ -21,6 +21,8 @@
 		04F6440E1EFC8278000FADE3 /* MParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F6440C1EFC8278000FADE3 /* MParticleUser.m */; };
 		04F6440F1EFC8281000FADE3 /* MParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F6440B1EFC8278000FADE3 /* MParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		04F644101EFC8284000FADE3 /* MParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F6440C1EFC8278000FADE3 /* MParticleUser.m */; };
+		B2AE029E1FFD59CF00C4DD89 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */; };
+		B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */; };
 		C911FD6F1D8A300C002A3516 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206B1D8A147A00D3ABBE /* UIKit.framework */; };
 		C911FD701D8A3014002A3516 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */; };
 		C911FD711D8A301C002A3516 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206F1D8A148C00D3ABBE /* Security.framework */; };
@@ -504,6 +506,7 @@
 		04F644001EFC2A61000FADE3 /* MPIdentityApiRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApiRequest.m; path = Identity/MPIdentityApiRequest.m; sourceTree = "<group>"; };
 		04F6440B1EFC8278000FADE3 /* MParticleUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MParticleUser.h; path = Identity/MParticleUser.h; sourceTree = "<group>"; };
 		04F6440C1EFC8278000FADE3 /* MParticleUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MParticleUser.m; path = Identity/MParticleUser.m; sourceTree = "<group>"; };
+		B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseEventsTest.m; sourceTree = "<group>"; };
 		C911FD7C1D8A3524002A3516 /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		C92F0F2D1DF9C21D008C5384 /* MPKitActivity.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitActivity.h; sourceTree = "<group>"; };
@@ -1214,6 +1217,7 @@
 				C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */,
 				C9DD20B11D8A190600D3ABBE /* MPProductBagTests.m */,
 				C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */,
+				B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */,
 				C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */,
 				C9DD20B41D8A190600D3ABBE /* MPUploadBuilderTests.m */,
 				C9DD20B51D8A190600D3ABBE /* MPURLRequestBuilderTests.m */,
@@ -1615,6 +1619,7 @@
 				DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */,
 				C911FD9F1D8A365A002A3516 /* MPPersistenceControllerTests.mm in Sources */,
 				C911FD951D8A365A002A3516 /* MPIntegrationAttributesTest.m in Sources */,
+				B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */,
 				C911FD8D1D8A365A002A3516 /* MPCommerceEventTests.m in Sources */,
 				C911FD8C1D8A365A002A3516 /* MPCartTests.m in Sources */,
 				C911FD981D8A365A002A3516 /* MPKitContainerTests.m in Sources */,
@@ -1867,6 +1872,7 @@
 				C9DD20F71D8A200F00D3ABBE /* MPLaunchInfoTests.m in Sources */,
 				C9DD20FF1D8A203500D3ABBE /* MPURLRequestBuilderTests.m in Sources */,
 				C9DD20EA1D8A1F9A00D3ABBE /* MPCustomModuleTests.m in Sources */,
+				B2AE029E1FFD59CF00C4DD89 /* MPResponseEventsTest.m in Sources */,
 				C9DD20E91D8A1F9700D3ABBE /* MPConsumerInfoTests.m in Sources */,
 				C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */,
 				C9DD20FE1D8A203200D3ABBE /* MPUploadBuilderTests.m in Sources */,

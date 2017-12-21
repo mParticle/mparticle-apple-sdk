@@ -21,23 +21,12 @@
         [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
         [persistence updateConsumerInfo:consumerInfo];
         [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId] completionHandler:^(MPConsumerInfo *consumerInfo) {
-            [MPStateMachine sharedInstance].consumerInfo = consumerInfo;
+            if (consumerInfo == nil) {
+                [MPStateMachine sharedInstance].consumerInfo = consumerInfo;
+            } else if (consumerInfo.cookies != nil) {
+                [MPStateMachine sharedInstance].consumerInfo.cookies = consumerInfo.cookies;
+            }
         }];
-    }
-    
-    // LTV
-    NSNumber *increasedLTV = !MPIsNull(configuration[kMPIncreasedLifeTimeValueKey]) ? configuration[kMPIncreasedLifeTimeValueKey] : nil;
-    if (increasedLTV != nil) {
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        NSNumber *ltv = userDefaults[kMPLifeTimeValueKey];
-        
-        if (ltv != nil) {
-            ltv = @([ltv doubleValue] + [increasedLTV doubleValue]);
-        } else {
-            ltv = increasedLTV;
-        }
-        
-        userDefaults[kMPLifeTimeValueKey] = ltv;
     }
 }
 

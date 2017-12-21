@@ -167,7 +167,6 @@ NSString *const kMPCKExpiration = @"e";
 @implementation MPConsumerInfo
 
 @synthesize cookies = _cookies;
-@synthesize mpId = _mpId;
 @synthesize uniqueIdentifier = _uniqueIdentifier;
 
 - (id)init {
@@ -185,11 +184,6 @@ NSString *const kMPCKExpiration = @"e";
     if (self.cookies) {
         [coder encodeObject:_cookies forKey:@"cookies"];
     }
-    
-    if (self.mpId) {
-        [coder encodeObject:_mpId forKey:@"mpId"];
-    }
-
     if (self.uniqueIdentifier) {
         [coder encodeObject:_uniqueIdentifier forKey:@"uniqueIdentifier"];
     }
@@ -199,7 +193,6 @@ NSString *const kMPCKExpiration = @"e";
     self = [super init];
     if (self) {
         _cookies = [coder decodeObjectForKey:@"cookies"];
-        _mpId = [coder decodeObjectForKey:@"mpId"];
         _uniqueIdentifier = [coder decodeObjectForKey:@"uniqueIdentifier"];
     }
     
@@ -273,57 +266,6 @@ NSString *const kMPCKExpiration = @"e";
     [userDefaults removeMPObjectForKey:kMPRemoteConfigCookiesKey];
     
     return cookiesDictionary;
-}
-
-#pragma mark Public accessors
-- (NSNumber *)mpId {
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-    
-
-    // If we don't have the id, create it.
-    if (_mpId == nil) {
-        [self willChangeValueForKey:@"mpId"];
-        
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        NSString *mpIdString = userDefaults[kMPRemoteConfigMPIDKey];
-        
-        if (mpIdString) {
-//            dispatch_async(dispatch_get_main_queue(), ^{
-//                [userDefaults removeMPObjectForKey:kMPRemoteConfigMPIDKey];
-//            });
-            
-            _mpId = [NSNumber numberWithLongLong:(long long)[mpIdString longLongValue]];
-            
-            if ([_mpId isEqualToNumber:@0]) {
-//                _mpId = [self generateMpId];
-            }
-        } else {
-//            _mpId = [self generateMpId];
-        }
-        
-        [self didChangeValueForKey:@"mpId"];
-    }
-
-    dispatch_semaphore_signal(semaphore);
-    
-    return _mpId;
-}
-
-- (void)setMpId:(NSNumber *)mpId {
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-    
-    if (MPIsNull(mpId)) {
-        dispatch_semaphore_signal(semaphore);
-        return;
-    }
-    
-    if ([mpId isEqualToNumber:@0]) {
-//        _mpId = [self generateMpId];
-    } else {
-        _mpId = mpId;
-    }
-    
-    dispatch_semaphore_signal(semaphore);
 }
 
 - (NSString *)uniqueIdentifier {
@@ -410,8 +352,6 @@ NSString *const kMPCKExpiration = @"e";
     }
     
     [self configureCookiesWithDictionary:configuration[kMPRemoteConfigCookiesKey]];
-    self.mpId = [MPPersistenceController mpId];
-    self.uniqueIdentifier = !MPIsNull(configuration[kMPRemoteConfigUniqueIdentifierKey]) ? configuration[kMPRemoteConfigUniqueIdentifierKey] : nil; // Unique Identifier ("das")
 }
 
 @end

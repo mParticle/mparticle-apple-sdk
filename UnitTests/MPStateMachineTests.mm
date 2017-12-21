@@ -32,17 +32,6 @@
     [super tearDown];
 }
 
-- (void)testMPID {
-    NSNumber *mpid = @(-7370019784850138375);
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.consumerInfo.mpId = mpid;
-    
-    XCTAssertEqualObjects(stateMachine.consumerInfo.mpId, mpid, @"mpIds are different.");
-    
-    stateMachine.consumerInfo.mpId = mpid;
-    XCTAssertNotNil(stateMachine.consumerInfo.mpId, @"mpId is not retaining its value.");
-}
-
 - (void)testOptOut {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.optOut = YES;

@@ -139,7 +139,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSString *segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
-    NSString *urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, kMPURLHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, stateMachine.consumerInfo.mpId];
+    NSString *urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, kMPURLHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
     
     NSURL *segmentURL = [NSURL URLWithString:urlString];
     
@@ -182,10 +182,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 - (NSURL *)modifyURL {
-    NSString *pathComponent = @"modify";
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    
-    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, stateMachine.consumerInfo.mpId, pathComponent];
+    NSString *pathComponent = @"modify";    
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
     
     NSURL *modifyURL = [NSURL URLWithString:urlString];
     
