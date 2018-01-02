@@ -42,22 +42,26 @@
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3
     Class MPClientClass = NSClassFromString(@"ADClient");
     if (!MPClientClass) {
+        completionHandler();
         return;
     }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     SEL sharedClientSelector = NSSelectorFromString(@"sharedClient");
     if (![MPClientClass respondsToSelector:sharedClientSelector]) {
+        completionHandler();
         return;
     }
     
     id MPClientSharedInstance = [MPClientClass performSelector:sharedClientSelector];
     if (!MPClientSharedInstance) {
+        completionHandler();
         return;
     }
     
     SEL requestDetailsSelector = NSSelectorFromString(@"requestAttributionDetailsWithBlock:");
     if (![MPClientSharedInstance respondsToSelector:requestDetailsSelector]) {
+        completionHandler();
         return;
     }
     
