@@ -148,6 +148,16 @@ NSString *const kMPFROptOutState = @"s";
     return self;
 }
 
+- (NSNumber *)timestamp {
+    return _dataDictionary[kMPTimestampKey];
+}
+
+- (void)setTimestamp:(NSNumber *)timestamp {
+    if (timestamp) {
+        _dataDictionary[kMPTimestampKey] = timestamp;
+    }
+}
+
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPForwardRecord {\n"];
     [description appendFormat:@"  forwardRecordId: %llu\n", _forwardRecordId];
