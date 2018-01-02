@@ -164,6 +164,8 @@
                                                                         execStatus:execStatus
                                                                          stateFlag:YES];
     
+    forwardRecord2.timestamp = forwardRecord1.timestamp;
+    
     XCTAssertEqualObjects(forwardRecord1, forwardRecord2, @"Should have been equal");
     
     forwardRecord1.forwardRecordId = 123;
