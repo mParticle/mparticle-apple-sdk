@@ -622,7 +622,7 @@ static BOOL appBackgrounded = NO;
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
     [self saveMessage:message updateSession:YES];
-
+    [MPApplication updateStoredVersionAndBuildNumbers];
     didFinishLaunchingNotification = nil;
     
     MPILogVerbose(@"Application Did Finish Launching");
