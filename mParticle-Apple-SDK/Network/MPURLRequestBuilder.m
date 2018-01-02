@@ -85,9 +85,11 @@ static NSTimeInterval requestTimeout = 30.0;
 
     if (!mpUserAgent) {
 #if TARGET_OS_IOS == 1
+#if !defined(MPARTICLE_APP_EXTENSIONS)
         if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
             return [self fallbackUserAgent];
         }
+#endif
 
         dispatch_block_t getUserAgent = ^{
             @try {

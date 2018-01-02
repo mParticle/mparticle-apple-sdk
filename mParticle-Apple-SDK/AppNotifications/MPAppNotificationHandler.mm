@@ -94,7 +94,9 @@
         return;
     }
     
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     [MPNotificationController setDeviceToken:nil];
+#endif
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
     
@@ -114,8 +116,9 @@
         return;
     }
     
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     [MPNotificationController setDeviceToken:deviceToken];
-    
+#endif
     SEL deviceTokenSelector = @selector(setDeviceToken:);
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];

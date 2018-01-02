@@ -76,8 +76,12 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     NSString *presentedViewControllerDescription = nil;
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
+#if !defined(MPARTICLE_APP_EXTENSIONS)
         UIViewController *presentedViewController = [UIApplication sharedApplication].keyWindow.rootViewController.presentedViewController;
         presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
+#else
+        presentedViewControllerDescription = @"extension_message";
+#endif
         mainThreadFlag = @YES;
     } else {
         presentedViewControllerDescription = @"off_thread";

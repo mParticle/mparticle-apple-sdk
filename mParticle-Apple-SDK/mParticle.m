@@ -570,6 +570,7 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Application notifications
 #if TARGET_OS_IOS == 1
+#if !defined(MPARTICLE_APP_EXTENSIONS)
 - (NSData *)pushNotificationToken {
     return [MPNotificationController deviceToken];
 }
@@ -629,6 +630,7 @@ NSString *const kMPStateKey = @"state";
     
     [[MPAppNotificationHandler sharedInstance] handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
 }
+#endif
 #endif
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {

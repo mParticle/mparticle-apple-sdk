@@ -97,7 +97,7 @@ static int64_t launchNotificationHash = 0;
     if ([NSThread isMainThread]) {
         userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
     }
-    
+
     if (!userNotificationSettings) {
         return NO;
     }

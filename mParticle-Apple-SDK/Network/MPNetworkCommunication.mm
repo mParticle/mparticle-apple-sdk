@@ -302,6 +302,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPILogVerbose(@"Starting config request");
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
             __strong MPNetworkCommunication *strongSelf = weakSelf;
@@ -313,6 +314,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }];
+#endif
     
     MPConnector *connector = [[MPConnector alloc] init];
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
@@ -326,10 +328,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                          return;
                      }
                      
+#if !defined(MPARTICLE_APP_EXTENSIONS)
                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                      }
+#endif
                      
                      NSInteger responseCode = [httpResponse statusCode];
                      MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
@@ -413,6 +417,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     retrievingSegments = YES;
     
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
@@ -420,6 +425,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }];
+#endif
     
     MPConnector *connector = [[MPConnector alloc] init];
     
@@ -435,10 +441,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                          return;
                      }
                      
+#if !defined(MPARTICLE_APP_EXTENSIONS)
                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                      }
+#endif
                      
                      if (!data) {
                          completionHandler(NO, nil, elapsedTime, nil);
@@ -542,6 +550,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     uploading = YES;
     __weak MPNetworkCommunication *weakSelf = self;
+    
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -555,6 +565,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }];
+#endif
     
     MPUpload *upload = uploads[index];
     NSString *uploadString = [upload serializedString];
@@ -588,10 +599,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           return;
                       }
                       
+#if !defined(MPARTICLE_APP_EXTENSIONS)
                       if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                           [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                           backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                       }
+#endif
                       
                       NSDictionary *responseDictionary = nil;
                       MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
@@ -672,6 +685,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         identifying = YES;
     }
     __weak MPNetworkCommunication *weakSelf = self;
+    
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
@@ -685,6 +700,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }];
+#endif
     
     MPConnector *connector = [[MPConnector alloc] init];
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
@@ -714,10 +730,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                           return;
                       }
                       
+#if !defined(MPARTICLE_APP_EXTENSIONS)
                       if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                           [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
                           backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                       }
+#endif
                       
                       NSDictionary *responseDictionary = nil;
                       NSString *responseString = nil;

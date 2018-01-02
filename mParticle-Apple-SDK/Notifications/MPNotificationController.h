@@ -3,7 +3,7 @@
 #import "MParticleUserNotification.h"
 
 @protocol MPNotificationControllerDelegate;
-
+NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead.")
 @interface MPNotificationController : NSObject
 
 #if TARGET_OS_IOS == 1
@@ -25,6 +25,6 @@
 
 @protocol MPNotificationControllerDelegate <NSObject>
 #if TARGET_OS_IOS == 1
-- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification;
+- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead.");
 #endif
 @end

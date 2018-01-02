@@ -189,9 +189,12 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 }
 
 - (NSNumber *)statusBarOrientation {
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     if ([NSThread isMainThread]) {
         _statusBarOrientation = @([[UIApplication sharedApplication] statusBarOrientation]);
     }
+#endif
+    
     return _statusBarOrientation;
 }
 #endif

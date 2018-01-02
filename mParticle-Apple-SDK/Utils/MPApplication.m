@@ -260,14 +260,19 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 #if TARGET_OS_IOS == 1
 - (NSNumber *)badgeNumber {
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     NSInteger appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
     NSNumber *badgeNumber = appBadgeNumber != 0 ? @(appBadgeNumber) : nil;
     
     return badgeNumber;
+#endif
+    return 0;
 }
 
 - (NSNumber *)remoteNotificationTypes {
     NSNumber *notificationTypes;
+    
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     UIApplication *app = [UIApplication sharedApplication];
     
     if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
@@ -282,6 +287,7 @@ static NSString *kMPAppStoreReceiptString = nil;
         notificationTypes = @([app enabledRemoteNotificationTypes]);
 #pragma clang diagnostic pop
     }
+#endif
     
     return notificationTypes;
 }

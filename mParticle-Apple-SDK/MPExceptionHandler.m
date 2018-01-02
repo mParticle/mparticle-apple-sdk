@@ -166,10 +166,13 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)topmostContext {
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
     id topmostContext = [self topViewControllerForController:rootViewController];
     NSString *topmostContextName = [[topmostContext class] description];
     return topmostContextName;
+#endif
+    return @"extension_context";
 }
 
 - (NSDictionary *)loadArchivedCrashInfo {

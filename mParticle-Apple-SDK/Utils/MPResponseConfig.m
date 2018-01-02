@@ -162,6 +162,7 @@
 - (void)configurePushNotifications:(NSDictionary *)pushNotificationDictionary {
     NSString *pushNotificationMode = pushNotificationDictionary[kMPRemoteConfigPushNotificationModeKey];
     [MPStateMachine sharedInstance].pushNotificationMode = pushNotificationMode;
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     UIApplication *app = [UIApplication sharedApplication];
     
     if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceTrue]) {
@@ -173,6 +174,7 @@
     } else if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceFalse]) {
         [app unregisterForRemoteNotifications];
     }
+#endif
 }
 #endif
 
