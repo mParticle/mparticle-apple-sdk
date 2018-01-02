@@ -277,7 +277,6 @@ static BOOL runningInBackground = NO;
 #pragma mark Notification handlers
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
     [MPApplication updateLastUseDate:_launchDate];
-    [MPApplication updateStoredVersionAndBuildNumbers];
     _backgrounded = YES;
 
     __weak MPStateMachine *weakSelf = self;
@@ -298,7 +297,6 @@ static BOOL runningInBackground = NO;
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
     [MPApplication updateLastUseDate:_launchDate];
-    [MPApplication updateStoredVersionAndBuildNumbers];
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
