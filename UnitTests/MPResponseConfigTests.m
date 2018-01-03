@@ -23,7 +23,6 @@
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeIgnore,
-                                    kMPRemoteConfigNetworkPerformanceModeKey:kMPRemoteConfigForceFalse,
                                     kMPRemoteConfigSessionTimeoutKey:@112,
                                     kMPRemoteConfigUploadIntervalKey:@42};
     
@@ -54,7 +53,6 @@
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigNetworkPerformanceModeKey:kMPRemoteConfigForceFalse,
                                     kMPRemoteConfigSessionTimeoutKey:@112,
                                     kMPRemoteConfigUploadIntervalKey:@42};
     
@@ -75,7 +73,6 @@
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigNetworkPerformanceModeKey:kMPRemoteConfigForceFalse,
                                     kMPRemoteConfigSessionTimeoutKey:@112,
                                     kMPRemoteConfigUploadIntervalKey:@42};
     

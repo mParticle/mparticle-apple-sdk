@@ -143,12 +143,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
 
 /**
- Flag indicating whether network performance is being measured.
- @see beginMeasuringNetworkPerformance
- */
-@property (nonatomic, unsafe_unretained, readonly) BOOL measuringNetworkPerformance;
-
-/**
  Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.
  The default value is NO (opt-in of event tracking)
  */
@@ -568,22 +562,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Network Performance
 /**
- Begins measuring and reporting network performance.
- */
-- (void)beginMeasuringNetworkPerformance;
-
-/**
- Ends measuring and reporting network performance.
- */
-- (void)endMeasuringNetworkPerformance;
-
-/**
- Excludes a URL from network performance measurement. You can call this method multiple times, passing a URL at a time.
- @param url A URL to be removed from measurements
- */
-- (void)excludeURLFromNetworkPerformanceMeasuring:(NSURL *)url;
-
-/**
  Allows you to log a network performance measurement independently from the mParticle SDK measurement. 
  @param urlString The absolute URL being measured
  @param httpMethod The method used in the network communication (e.g. GET, POST, etc)
@@ -593,18 +571,6 @@ NS_ASSUME_NONNULL_BEGIN
  @param bytesReceived The number of bytes received
  */
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived;
-
-/**
- By default mParticle SDK will remove the query part of all URLs. Use this method to add an exception to the default
- behavior and include the query component of any URL containing queryString. You can call this method multiple times, passing a query string at a time.
- @param queryString A string with the query component to be included and reported in network performance measurement.
- */
-- (void)preserveQueryMeasuringNetworkPerformance:(NSString *)queryString;
-
-/**
- Resets all network performance measurement filters and URL exclusions.
- */
-- (void)resetNetworkPerformanceExclusionsAndFilters;
 
 #pragma mark - Session management
 /**

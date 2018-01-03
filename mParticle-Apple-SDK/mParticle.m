@@ -20,7 +20,6 @@
 #import "MPSession.h"
 #import "MPStateMachine.h"
 #import "MPUserSegments+Setters.h"
-#import "NSURLSession+mParticle.h"
 #import "MPIUserDefaults.h"
 #import "MPConvertJS.h"
 #import "MPIdentityApi.h"
@@ -227,7 +226,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
-    [NSURLSession freeResources];
 }
 
 #pragma mark MPBackendControllerDelegate methods
@@ -335,10 +333,6 @@ NSString *const kMPStateKey = @"state";
     if ([MPStateMachine environment] == MPEnvironmentDevelopment) {
         [MPStateMachine sharedInstance].logLevel = logLevel;
     }
-}
-
-- (BOOL)measuringNetworkPerformance {
-    return [NSURLSession methodsSwizzled];
 }
 
 - (BOOL)optOut {
@@ -1240,43 +1234,6 @@ NSString *const kMPStateKey = @"state";
 }
 #endif
 
-#pragma mark Network performance
-- (void)beginMeasuringNetworkPerformance {
-    if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
-        if ([[MPStateMachine sharedInstance].networkPerformanceMeasuringMode isEqualToString:kMPRemoteConfigForceFalse]) {
-            return;
-        }
-        
-        [NSURLSession swizzleMethods];
-    } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
-        __weak MParticle *weakSelf = self;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong MParticle *strongSelf = weakSelf;
-            [strongSelf beginMeasuringNetworkPerformance];
-        });
-    }
-}
-
-- (void)endMeasuringNetworkPerformance {
-    if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
-        if ([[MPStateMachine sharedInstance].networkPerformanceMeasuringMode isEqualToString:kMPRemoteConfigForceTrue]) {
-            return;
-        }
-        
-        [NSURLSession restoreMethods];
-    } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
-        __weak MParticle *weakSelf = self;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong MParticle *strongSelf = weakSelf;
-            [strongSelf endMeasuringNetworkPerformance];
-        });
-    }
-}
-
-- (void)excludeURLFromNetworkPerformanceMeasuring:(NSURL *)url {
-    [NSURLSession excludeURLFromNetworkPerformanceMeasuring:url];
-}
-
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived {
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
@@ -1302,14 +1259,6 @@ NSString *const kMPStateKey = @"state";
                                                    MPILogError(@"Could not log network performance measurement\n Reason: %@", [strongSelf.backendController execStatusDescription:execStatus]);
                                                }
                                            }];
-}
-
-- (void)preserveQueryMeasuringNetworkPerformance:(NSString *)queryString {
-    [NSURLSession preserveQueryMeasuringNetworkPerformance:queryString];
-}
-
-- (void)resetNetworkPerformanceExclusionsAndFilters {
-    [NSURLSession resetNetworkPerformanceExclusionsAndFilters];
 }
 
 #pragma mark Session management

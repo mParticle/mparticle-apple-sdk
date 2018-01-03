@@ -173,7 +173,6 @@ extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeAppDefined;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeForce;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeIgnore;
-extern NSString * _Nonnull const kMPRemoteConfigNetworkPerformanceModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigAppDefined;
 extern NSString * _Nonnull const kMPRemoteConfigForceTrue;
 extern NSString * _Nonnull const kMPRemoteConfigForceFalse;

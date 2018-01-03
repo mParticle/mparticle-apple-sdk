@@ -168,8 +168,6 @@
 		C935A7391D8A2E2200A1EE2F /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */; };
 		C935A73A1D8A2E2200A1EE2F /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */; };
 		C935A73B1D8A2E2200A1EE2F /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */; };
-		C935A73C1D8A2E2200A1EE2F /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */; };
-		C935A73D1D8A2E2200A1EE2F /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */; };
 		C935A73E1D8A2E2700A1EE2F /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0B1D8A112B00D3ABBE /* MPNotificationController.h */; };
 		C935A73F1D8A2E2700A1EE2F /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */; };
 		C935A7401D8A2E2D00A1EE2F /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */; };
@@ -335,8 +333,6 @@
 		C9DD20181D8A140800D3ABBE /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */; };
 		C9DD20191D8A140800D3ABBE /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */; };
 		C9DD201A1D8A140800D3ABBE /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */; };
-		C9DD201B1D8A140800D3ABBE /* NSURLSession+mParticle.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */; };
-		C9DD201C1D8A140800D3ABBE /* NSURLSession+mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */; };
 		C9DD201D1D8A140D00D3ABBE /* MPNotificationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0B1D8A112B00D3ABBE /* MPNotificationController.h */; };
 		C9DD201E1D8A140D00D3ABBE /* MPNotificationController.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */; };
 		C9DD201F1D8A141400D3ABBE /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */; };
@@ -633,8 +629,6 @@
 		C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLConnectionAssociate.m; sourceTree = "<group>"; };
 		C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPURLRequestBuilder.h; sourceTree = "<group>"; };
 		C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilder.m; sourceTree = "<group>"; };
-		C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURLSession+mParticle.h"; sourceTree = "<group>"; };
-		C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURLSession+mParticle.m"; sourceTree = "<group>"; };
 		C9DD1D0B1D8A112B00D3ABBE /* MPNotificationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNotificationController.h; sourceTree = "<group>"; };
 		C9DD1D0C1D8A112B00D3ABBE /* MPNotificationController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPNotificationController.mm; sourceTree = "<group>"; };
 		C9DD1D0E1D8A112B00D3ABBE /* MPDatabaseMigrationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDatabaseMigrationController.h; sourceTree = "<group>"; };
@@ -1072,8 +1066,6 @@
 				C9DD1D051D8A112B00D3ABBE /* MPURLConnectionAssociate.m */,
 				C9DD1D061D8A112B00D3ABBE /* MPURLRequestBuilder.h */,
 				C9DD1D071D8A112B00D3ABBE /* MPURLRequestBuilder.m */,
-				C9DD1D081D8A112B00D3ABBE /* NSURLSession+mParticle.h */,
-				C9DD1D091D8A112B00D3ABBE /* NSURLSession+mParticle.m */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1249,7 +1241,6 @@
 				C935A7761D8A2E4000A1EE2F /* MPIHasher.h in Headers */,
 				C935A6C31D8A2DE700A1EE2F /* MPCustomModule.h in Headers */,
 				C935A7491D8A2E3800A1EE2F /* MPCurrentState.h in Headers */,
-				C935A73C1D8A2E2200A1EE2F /* NSURLSession+mParticle.h in Headers */,
 				C935A6F21D8A2DF400A1EE2F /* MPProduct.h in Headers */,
 				C935A6C11D8A2DE700A1EE2F /* MPAppboy.h in Headers */,
 				C935A6BB1D8A2DDF00A1EE2F /* MPAppDelegateProxy.h in Headers */,
@@ -1388,7 +1379,6 @@
 				C9DD20361D8A142000D3ABBE /* MPResponseEvents.h in Headers */,
 				C9DD1FCE1D8A13DC00D3ABBE /* MPCommerceEventInstruction.h in Headers */,
 				DBA894661F17CBE6005B21FB /* MPIdentityDTO.h in Headers */,
-				C9DD201B1D8A140800D3ABBE /* NSURLSession+mParticle.h in Headers */,
 				C9DD201F1D8A141400D3ABBE /* MPDatabaseMigrationController.h in Headers */,
 				C9DD1FDF1D8A13E200D3ABBE /* MPEvent+Internal.h in Headers */,
 				C9DD20571D8A142900D3ABBE /* mParticle.h in Headers */,
@@ -1722,7 +1712,6 @@
 				DBF57B311F3A4D9D00A809CC /* MPKitAPI.m in Sources */,
 				C935A7081D8A2E0500A1EE2F /* MPBaseProjection.m in Sources */,
 				C935A73B1D8A2E2200A1EE2F /* MPURLRequestBuilder.m in Sources */,
-				C935A73D1D8A2E2200A1EE2F /* NSURLSession+mParticle.m in Sources */,
 				C935A6D11D8A2DED00A1EE2F /* MPForwardRecord.mm in Sources */,
 				C935A7771D8A2E4000A1EE2F /* MPIHasher.mm in Sources */,
 				C935A6E91D8A2DF400A1EE2F /* MPCart.m in Sources */,
@@ -1795,7 +1784,6 @@
 				C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.cpp in Sources */,
 				C9DD20261D8A142000D3ABBE /* MPBracket.cpp in Sources */,
 				C9DD1FA71D8A13D600D3ABBE /* MParticleUserNotification.m in Sources */,
-				C9DD201C1D8A140800D3ABBE /* NSURLSession+mParticle.m in Sources */,
 				C9DD1FF31D8A13EA00D3ABBE /* MPKitFilter.m in Sources */,
 				C9DD1FDA1D8A13DC00D3ABBE /* MPTransactionAttributes.m in Sources */,
 				C9DD1FE91D8A13EA00D3ABBE /* MPEventProjection.mm in Sources */,

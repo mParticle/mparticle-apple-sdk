@@ -45,12 +45,6 @@
                                                           userInfo:nil];
     }
     
-    // Network performance
-    auxString = !MPIsNull(_configuration[kMPRemoteConfigNetworkPerformanceModeKey]) ? _configuration[kMPRemoteConfigNetworkPerformanceModeKey] : nil;
-    if (auxString) {
-        [self configureNetworkPerformanceMeasurement:auxString];
-    }
-    
     // Session timeout
     NSNumber *auxNumber = _configuration[kMPRemoteConfigSessionTimeoutKey];
     if (auxNumber != nil) {
@@ -93,21 +87,6 @@
 }
 
 #pragma mark Private methods
-- (void)configureNetworkPerformanceMeasurement:(NSString *)networkPerformanceMeasuringMode {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-
-    if ([networkPerformanceMeasuringMode isEqualToString:stateMachine.networkPerformanceMeasuringMode]) {
-        return;
-    }
-    
-    stateMachine.networkPerformanceMeasuringMode = [networkPerformanceMeasuringMode copy];
-    
-    if ([stateMachine.networkPerformanceMeasuringMode isEqualToString:kMPRemoteConfigForceTrue]) {
-        [[MParticle sharedInstance] beginMeasuringNetworkPerformance];
-    } else if ([stateMachine.networkPerformanceMeasuringMode isEqualToString:kMPRemoteConfigForceFalse]) {
-        [[MParticle sharedInstance] endMeasuringNetworkPerformance];
-    }
-}
 
 #pragma mark Public class methods
 + (void)save:(nonnull MPResponseConfig *)responseConfig {
