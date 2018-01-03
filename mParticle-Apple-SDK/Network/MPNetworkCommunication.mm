@@ -327,7 +327,11 @@ NSString *const kMPURLHostConfig = @"config2.mparticle.com";
                      [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
                      
                      completionHandler(success, configurationDictionary);
-                     [self configRequestDidSucceed];
+                     
+                     if (success) {
+                         [self configRequestDidSucceed];
+                     }
+                     
                      strongSelf->retrievingConfig = NO;
                  }];
     
