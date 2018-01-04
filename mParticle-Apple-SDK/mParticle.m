@@ -131,6 +131,7 @@ NSString *const kMPStateKey = @"state";
     _initialized = NO;
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
+    _automaticSessionTracking = YES;
     
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
@@ -476,6 +477,7 @@ NSString *const kMPStateKey = @"state";
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController mpId]] == nil;
     _proxiedAppDelegate = proxyAppDelegate;
+    _automaticSessionTracking = self.options.automaticSessionTracking;
     
     MPIdentityApiRequest *identifyRequest = nil;
     if (options.identifyRequest) {

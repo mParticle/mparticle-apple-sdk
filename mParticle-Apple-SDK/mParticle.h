@@ -161,6 +161,13 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, unsafe_unretained, readonly) BOOL proxiedAppDelegate;
 
+/**
+ A flag indicating whether the mParticle Apple SDK is using
+ automated Session tracking.
+ @see MParticleOptions
+ */
+@property (nonatomic, unsafe_unretained, readonly) BOOL automaticSessionTracking;
+
 #if TARGET_OS_IOS == 1
 /**
  Gets/Sets the push notification token for the application.

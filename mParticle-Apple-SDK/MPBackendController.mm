@@ -224,6 +224,10 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPSession *)session {
+    if (!MParticle.sharedInstance.automaticSessionTracking) {
+        return nil;
+    }
+    
     dispatch_semaphore_wait(backendSemaphore, DISPATCH_TIME_FOREVER);
     
     bool isNewSession = NO;
@@ -374,7 +378,7 @@ static BOOL appBackgrounded = NO;
     
     MPMessage *message = [messageBuilder build];
     
-    [self saveMessage:message updateSession:YES];
+    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
 }
 
 - (void)logUserIdentityChange:(MPUserIdentityChange *)userIdentityChange {
@@ -391,7 +395,7 @@ static BOOL appBackgrounded = NO;
     
     MPMessage *message = [messageBuilder build];
     
-    [self saveMessage:message updateSession:YES];
+    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
 }
 
 - (NSNumber *)previousSessionSuccessfullyClosed {
@@ -621,8 +625,9 @@ static BOOL appBackgrounded = NO;
     messageBuilder = [messageBuilder withStateTransition:sessionFinalized previousSession:nil];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    [self saveMessage:message updateSession:YES];
+    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     [MPApplication updateStoredVersionAndBuildNumbers];
+
     didFinishLaunchingNotification = nil;
     
     MPILogVerbose(@"Application Did Finish Launching");
@@ -1066,12 +1071,14 @@ static BOOL appBackgrounded = NO;
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
     [self.session suspendSession];
-    [self saveMessage:message updateSession:YES];
-    [self beginBackgroundTask];
-
-    [self uploadWithCompletionHandler:^{
-        [self beginBackgroundTimer];
-    }];
+    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [self beginBackgroundTask];
+        
+        [self uploadWithCompletionHandler:^{
+            [self beginBackgroundTimer];
+        }];
+    }
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
@@ -1100,7 +1107,7 @@ static BOOL appBackgrounded = NO;
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-
+    
     if (_session) {
         MPSession *sessionCopy = [_session copy];
         
@@ -1215,7 +1222,7 @@ static BOOL appBackgrounded = NO;
     messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
     MPMessage *message = (MPMessage *)[messageBuilder build];
-    [self saveMessage:message updateSession:YES];
+    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
     [self beginUploadTimer];
 
@@ -1419,7 +1426,7 @@ static BOOL appBackgrounded = NO;
 #endif
         MPMessage *message = (MPMessage *)[[messageBuilder withTimestamp:_session.startTime] build];
         
-        [self saveMessage:message updateSession:YES];
+        [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
         if (completionHandler) {
             completionHandler(_session, previousSession, MPExecStatusSuccess);
@@ -1810,7 +1817,7 @@ static BOOL appBackgrounded = NO;
             }
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             if ([self.eventSet containsObject:event]) {
                 [_eventSet removeObject:event];
@@ -1866,7 +1873,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             [self.session incrementCounter];
             
             // Update cart
@@ -1988,7 +1995,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *errorMessage = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:errorMessage updateSession:YES];
+            [self saveMessage:errorMessage updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             execStatus = MPExecStatusSuccess;
         }
@@ -2040,7 +2047,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             if ([self.eventSet containsObject:event]) {
                 [_eventSet removeObject:event];
@@ -2098,7 +2105,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             execStatus = MPExecStatusSuccess;
         }
@@ -2156,7 +2163,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             if ([self.eventSet containsObject:event]) {
                 [_eventSet removeObject:event];
@@ -2219,7 +2226,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             execStatus = MPExecStatusSuccess;
         }
@@ -2264,7 +2271,7 @@ static BOOL appBackgrounded = NO;
 #endif
             MPMessage *message = (MPMessage *)[messageBuilder build];
             
-            [self saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             if (optOutStatus) {
                 [self endSession];
@@ -2351,7 +2358,7 @@ static BOOL appBackgrounded = NO;
             MPMessage *message = (MPMessage *)[messageBuilder build];
             message.uploadStatus = MPUploadStatusBatch;
             
-            [strongSelf saveMessage:message updateSession:YES];
+            [strongSelf saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
             
             MPILogDebug(@"Application First Run");
         }
@@ -2670,7 +2677,7 @@ static BOOL appBackgrounded = NO;
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushRegistration session:self.session messageInfo:messageInfo];
     MPMessage *message = [messageBuilder build];
     
-    [self saveMessage:message updateSession:YES];
+    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
     if (deviceToken) {
         MPILogDebug(@"Set Device Token: %@", deviceToken);
