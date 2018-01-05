@@ -120,7 +120,13 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
     /** User identity Alias */
     MPUserIdentityAlias,
     /** User identity Facebook Custom Audience Third Party Id, or User App Id */
-    MPUserIdentityFacebookCustomAudienceId
+    MPUserIdentityFacebookCustomAudienceId,
+    /** User identity other 2 */
+    MPUserIdentityOther2,
+    /** User identity other 3 */
+    MPUserIdentityOther3,
+    /** User identity other 4 */
+    MPUserIdentityOther4
 };
 
 /// Kit Instance Codes

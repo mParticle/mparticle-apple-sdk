@@ -21,6 +21,9 @@
 @property (nonatomic) NSString *other;
 @property (nonatomic) NSString *twitter;
 @property (nonatomic) NSString *yahoo;
+@property (nonatomic) NSString *other2;
+@property (nonatomic) NSString *other3;
+@property (nonatomic) NSString *other4;
 
 - (NSDictionary *)dictionaryRepresentation;
 - (instancetype)initWithIdentities:(NSDictionary *)identities;

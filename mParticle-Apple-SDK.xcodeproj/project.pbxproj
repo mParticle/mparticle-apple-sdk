@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		04B1670B20000E0F0027F077 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4F166C1F1511B100D625CD /* MPIdentityTests.m */; };
+		04B1670C20000E0F0027F077 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4F166C1F1511B100D625CD /* MPIdentityTests.m */; };
 		04F643F51EFC03E7000FADE3 /* MPIdentityApi.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F643F31EFC03E7000FADE3 /* MPIdentityApi.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		04F643F61EFC03E7000FADE3 /* MPIdentityApi.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F643F41EFC03E7000FADE3 /* MPIdentityApi.m */; };
 		04F643F71EFC0483000FADE3 /* MPIdentityApi.m in Sources */ = {isa = PBXBuildFile; fileRef = 04F643F41EFC03E7000FADE3 /* MPIdentityApi.m */; };
@@ -1629,6 +1631,7 @@
 				C911FD871D8A365A002A3516 /* BracketTests.mm in Sources */,
 				C911FD8A1D8A365A002A3516 /* MPBackendControllerTests.mm in Sources */,
 				C911FD9A1D8A365A002A3516 /* MPKitSecondTestClass.m in Sources */,
+				04B1670C20000E0F0027F077 /* MPIdentityTests.m in Sources */,
 				C911FD941D8A365A002A3516 /* MPForwardRecordTests.m in Sources */,
 				C911FD9D1D8A365A002A3516 /* MPMessageBuilderTests.m in Sources */,
 				C911FD911D8A365A002A3516 /* MPDateFormatterTests.m in Sources */,
@@ -1835,6 +1838,7 @@
 				DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */,
 				C9DD20F21D8A1FF000D3ABBE /* MPKitConfigurationTests.mm in Sources */,
 				C9DD20FB1D8A202500D3ABBE /* MPProductBagTests.m in Sources */,
+				04B1670B20000E0F0027F077 /* MPIdentityTests.m in Sources */,
 				C9DD20F01D8A1FAF00D3ABBE /* MPIntegrationAttributesTest.m in Sources */,
 				C9AB50681DFF0C4B0036BEE9 /* MPKitActivityTests.m in Sources */,
 				C9DD20ED1D8A1FA500D3ABBE /* MPEventTests.mm in Sources */,

@@ -77,6 +77,18 @@
                 knownIdentities[@"other"] = obj;
                 break;
                 
+            case MPUserIdentityOther2:
+                knownIdentities[@"other2"] = obj;
+                break;
+                
+            case MPUserIdentityOther3:
+                knownIdentities[@"other3"] = obj;
+                break;
+                
+            case MPUserIdentityOther4:
+                knownIdentities[@"other4"] = obj;
+                break;
+                
             case MPUserIdentityTwitter:
                 knownIdentities[@"twitter"] = obj;
                 break;

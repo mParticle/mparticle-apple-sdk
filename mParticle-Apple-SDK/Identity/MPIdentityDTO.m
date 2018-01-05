@@ -195,6 +195,18 @@
                     _yahoo = obj;
                     break;
                     
+                case MPUserIdentityOther2:
+                    _other2 = obj;
+                    break;
+                    
+                case MPUserIdentityOther3:
+                    _other3 = obj;
+                    break;
+                    
+                case MPUserIdentityOther4:
+                    _other4 = obj;
+                    break;
+                    
                 default:
                     break;
             }
@@ -263,6 +275,18 @@
         dictionary[@"yahoo"] = _yahoo;
     }
     
+    if (_other2) {
+        dictionary[@"other2"] = _other2;
+    }
+    
+    if (_other3) {
+        dictionary[@"other3"] = _other3;
+    }
+    
+    if (_other4) {
+        dictionary[@"other4"] = _other4;
+    }
+    
     return dictionary;
 }
 
@@ -294,6 +318,15 @@
             
         case MPUserIdentityYahoo:
             return @"yahoo";
+            
+        case MPUserIdentityOther2:
+            return @"other2";
+            
+        case MPUserIdentityOther3:
+            return @"other3";
+            
+        case MPUserIdentityOther4:
+            return @"other4";
             
         default:
             return nil;

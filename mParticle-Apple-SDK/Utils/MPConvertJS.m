@@ -30,7 +30,10 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     MPJSIdentityTypeYahoo,
     MPJSIdentityTypeEmail,
     MPJSIdentityTypeAlias,
-    MPJSIdentityTypeFacebookCustomAudienceId
+    MPJSIdentityTypeFacebookCustomAudienceId,
+    MPJSIdentityTypeOther2,
+    MPJSIdentityTypeOther3,
+    MPJSIdentityTypeOther4
 };
 
 @implementation MPConvertJS
@@ -241,6 +244,18 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
             
         case MPJSIdentityTypeOther:
             localIdentity = MPUserIdentityOther;
+            break;
+            
+        case MPJSIdentityTypeOther2:
+            localIdentity = MPUserIdentityOther2;
+            break;
+            
+        case MPJSIdentityTypeOther3:
+            localIdentity = MPUserIdentityOther3;
+            break;
+            
+        case MPJSIdentityTypeOther4:
+            localIdentity = MPUserIdentityOther4;
             break;
             
         default:
