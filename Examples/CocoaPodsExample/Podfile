@@ -15,6 +15,11 @@ abstract_target 'Example' do
     end
 
     target 'iOS7_Example' do
-        platform :ios, '7.0'
+        platform :ios, '8.0'
+    end
+    
+    target 'iOS_Extension_Example' do
+        pod 'mParticle-Apple-SDK/AppExtension', :path => '../../'
+        platform :ios, '9.0'
     end
 end

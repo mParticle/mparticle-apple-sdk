@@ -2289,34 +2289,36 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)updateSession:(MPSession *)session {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "UPDATE sessions SET end_time = ?, attributes_data = ?, background_time = ?, number_interruptions = ?, event_count = ?, suspend_time = ?, length = ?, mpid = ?, session_user_ids = ? WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_double(preparedStatement, 1, session.endTime);
+    if (session != nil) {
+        dispatch_barrier_sync(dbQueue, ^{
+            sqlite3_stmt *preparedStatement;
+            const string sqlStatement = "UPDATE sessions SET end_time = ?, attributes_data = ?, background_time = ?, number_interruptions = ?, event_count = ?, suspend_time = ?, length = ?, mpid = ?, session_user_ids = ? WHERE _id = ?";
             
-            NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
-            sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-            
-            sqlite3_bind_double(preparedStatement, 3, session.backgroundTime);
-            sqlite3_bind_int(preparedStatement, 4, session.numberOfInterruptions);
-            sqlite3_bind_int(preparedStatement, 5, session.eventCounter);
-            sqlite3_bind_double(preparedStatement, 6, session.suspendTime);
-            sqlite3_bind_double(preparedStatement, 7, session.length);
-            sqlite3_bind_int64(preparedStatement, 8, session.userId.longLongValue);
-            sqlite3_bind_text(preparedStatement, 9, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
-            sqlite3_bind_int64(preparedStatement, 10, session.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while updating session: %s", sqlite3_errmsg(mParticleDB));
+            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+                sqlite3_bind_double(preparedStatement, 1, session.endTime);
+                
+                NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
+                sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+                
+                sqlite3_bind_double(preparedStatement, 3, session.backgroundTime);
+                sqlite3_bind_int(preparedStatement, 4, session.numberOfInterruptions);
+                sqlite3_bind_int(preparedStatement, 5, session.eventCounter);
+                sqlite3_bind_double(preparedStatement, 6, session.suspendTime);
+                sqlite3_bind_double(preparedStatement, 7, session.length);
+                sqlite3_bind_int64(preparedStatement, 8, session.userId.longLongValue);
+                sqlite3_bind_text(preparedStatement, 9, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
+                sqlite3_bind_int64(preparedStatement, 10, session.sessionId);
+                
+                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                    MPILogError(@"Error while updating session: %s", sqlite3_errmsg(mParticleDB));
+                }
+                
+                sqlite3_clear_bindings(preparedStatement);
             }
             
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+            sqlite3_finalize(preparedStatement);
+        });
+    }
 }
 @end
 

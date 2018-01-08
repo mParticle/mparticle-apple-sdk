@@ -54,7 +54,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 #if TARGET_OS_IOS == 1
 <MPNotificationControllerDelegate>
 
-@property (nonatomic, strong, nonnull) MPNotificationController *notificationController NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead.");
+@property (nonatomic, strong, nonnull) MPNotificationController *notificationController NS_EXTENSION_UNAVAILABLE_IOS("");
 #endif
 
 @property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
@@ -97,7 +97,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (MPExecStatus)endLocationTracking;
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
-- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead.");
+- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification NS_EXTENSION_UNAVAILABLE_IOS("");
 #endif
 
 @end

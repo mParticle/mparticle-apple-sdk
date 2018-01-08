@@ -65,8 +65,9 @@ static NSString *const PlaybackControllerRateObservationContext = @"PlaybackView
     [mParticle logScreen:@"Video Streams"
                eventInfo:@{@"Launch":@YES}];
     
-    [mParticle setUserIdentity:@"user@thisappisawesomewhyhaventithoughtaboutbuildingit.com"
-                  identityType:MPUserIdentityEmail];
+    MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithEmptyUser];
+    identityRequest.email = @"user@thisappisawesomewhyhaventithoughtaboutbuildingit.com";
+    [[mParticle identity] modify:identityRequest completion:nil];
     
     MPEvent *timedEvent = [[MPEvent alloc] initWithName:@"First Selection Time" type:MPEventTypeNavigation];
     
@@ -308,7 +309,6 @@ static NSString *const PlaybackControllerRateObservationContext = @"PlaybackView
     MParticle *mParticle = [MParticle sharedInstance];
     [mParticle logEvent:event];
     [mParticle incrementSessionAttribute:@"Playcount" byValue:@1];
-    [mParticle incrementUserAttribute:@"Lifetime Playcount" byValue:@1];
     
     MPEvent *timedEvent = [mParticle eventWithName:@"First Selection Time"];
     if (timedEvent) {

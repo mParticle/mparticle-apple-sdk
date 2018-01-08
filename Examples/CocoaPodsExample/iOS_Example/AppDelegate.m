@@ -14,8 +14,9 @@
 
     // Starts the mParticle SDK
     MParticle *mParticle = [MParticle sharedInstance];
-    [mParticle startWithKey:@"Your_App_Key" secret:@"Your_App_Secret"];
-    
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"Your_App_Key" secret:@"Your_App_Secret"];
+    [MParticle.sharedInstance startWithOptions:options];
+
     // Debug log level to the console. The default log level is
     // MPLogLevelWarning (only warning and error log messages are displayed to the console)
     mParticle.logLevel = MPILogLevelDebug;

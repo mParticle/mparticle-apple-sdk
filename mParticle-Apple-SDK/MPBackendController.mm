@@ -279,7 +279,7 @@ static BOOL appBackgrounded = NO;
 }
 
 #pragma mark Private methods
-- (void)beginBackgroundTask NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead."){
+- (void)beginBackgroundTask NS_EXTENSION_UNAVAILABLE_IOS(""){
     __weak MPBackendController *weakSelf = self;
     
     if (backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
@@ -311,7 +311,7 @@ static BOOL appBackgrounded = NO;
     }
 }
 
-- (void)endBackgroundTask NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead."){
+- (void)endBackgroundTask NS_EXTENSION_UNAVAILABLE_IOS(""){
     if (backendBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
         [[UIApplication sharedApplication] endBackgroundTask:backendBackgroundTaskIdentifier];
         backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
@@ -503,11 +503,11 @@ static BOOL appBackgrounded = NO;
                 if (persistUserIdentities) {
                     if (userIdentityChange.changed) {
                         [self logUserIdentityChange:userIdentityChange];
+                        
+                        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                        [userDefaults setObject:userIdentities forKeyedSubscript:kMPUserIdentityArrayKey];
+                        [userDefaults synchronize];
                     }
-                    
-                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                    userDefaults[kMPUserIdentityArrayKey] = userIdentities;
-                    [userDefaults synchronize];
                 }
                 
                 dispatch_async(dispatch_get_main_queue(), ^{
@@ -720,7 +720,7 @@ static BOOL appBackgrounded = NO;
                            }];
 }
 
-- (void)proxyOriginalAppDelegate NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead.")
+- (void)proxyOriginalAppDelegate NS_EXTENSION_UNAVAILABLE_IOS("")
  {
     if (originalAppDelegateProxied) {
         return;
@@ -1233,7 +1233,7 @@ static BOOL appBackgrounded = NO;
 }
 
 #pragma mark Timers
-- (void)beginBackgroundTimer NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead."){
+- (void)beginBackgroundTimer NS_EXTENSION_UNAVAILABLE_IOS(""){
     __weak MPBackendController *weakSelf = self;
     
     backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
