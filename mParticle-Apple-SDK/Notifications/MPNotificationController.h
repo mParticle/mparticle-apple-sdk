@@ -9,7 +9,6 @@
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, readonly, nullable) NSString *initialRedactedUserNotificationString;
 @property (nonatomic, weak, nullable) id<MPNotificationControllerDelegate> delegate;
-@property (nonatomic, unsafe_unretained) NSTimeInterval influencedOpenTimer;
 
 + (nullable NSData *)deviceToken;
 #pragma clang diagnostic push
@@ -20,7 +19,6 @@
 + (int64_t)launchNotificationHash;
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPNotificationControllerDelegate>)delegate;
 - (nonnull MParticleUserNotification *)newUserNotificationWithDictionary:(nonnull NSDictionary *)notificationDictionary actionIdentifier:(nullable NSString *)actionIdentifier state:(nullable NSString *)state;
-- (void)scheduleNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 
 @end

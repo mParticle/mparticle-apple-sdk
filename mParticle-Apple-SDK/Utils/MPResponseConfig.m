@@ -32,9 +32,7 @@
     [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
     [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
     [stateMachine configureRestrictIDFA:_configuration[kMPRemoteConfigRestrictIDFA]];
-    
-    _influencedOpenTimer = !MPIsNull(_configuration[kMPRemoteConfigInfluencedOpenTimerKey]) ? _configuration[kMPRemoteConfigInfluencedOpenTimerKey] : nil;
-    
+        
     // Exception handling
     NSString *auxString = !MPIsNull(_configuration[kMPRemoteConfigExceptionHandlingModeKey]) ? _configuration[kMPRemoteConfigExceptionHandlingModeKey] : nil;
     if (auxString) {

@@ -734,9 +734,7 @@ static BOOL appBackgrounded = NO;
     if (self.networkCommunication.inUse) {
         return;
     }
-    
-    __weak MPBackendController *weakSelf = self;
-    
+        
     [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary) {
         if (!success) {
             if (completionHandler) {
@@ -746,16 +744,8 @@ static BOOL appBackgrounded = NO;
             return;
         }
         
-        __strong MPBackendController *strongSelf = weakSelf;
-        
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
         [MPResponseConfig save:responseConfig];
-        
-        if (responseConfig.influencedOpenTimer && strongSelf) {
-#if TARGET_OS_IOS == 1
-            strongSelf.notificationController.influencedOpenTimer = [responseConfig.influencedOpenTimer doubleValue];
-#endif
-        }
         
         if ([[MPStateMachine sharedInstance].minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
             MPILogDebug(@"Throttling batches");
@@ -2688,24 +2678,6 @@ static BOOL appBackgrounded = NO;
 
 #pragma mark MPNotificationControllerDelegate
 - (void)receivedUserNotification:(MParticleUserNotification *)userNotification {
-    switch (userNotification.command) {
-        case MPUserNotificationCommandAlertUserLocalTime:
-            [self.notificationController scheduleNotification:userNotification];
-            break;
-            
-        case MPUserNotificationCommandConfigRefresh:
-            [self requestConfig:nil];
-            break;
-            
-            
-        case MPUserNotificationCommandDoNothing:
-            return;
-            break;
-            
-        default:
-            break;
-    }
-    
     NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", [MPNotificationController deviceToken]],
                                           kMPPushNotificationStateKey:userNotification.state,
                                           kMPPushMessageProviderKey:kMPPushMessageProviderValue,

@@ -213,14 +213,7 @@
             userNotificationDictionary[kMPUserNotificationActionKey] = actionIdentifier;
         }
         
-        NSString *notificationName;
-        if (userNotificationMode == MPUserNotificationModeAutoDetect) {
-            MPUserNotificationCommand command = static_cast<MPUserNotificationCommand>([userInfo[kMPUserNotificationCommandKey] integerValue]);
-            
-            notificationName = command != MPUserNotificationCommandAlertUserLocalTime ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
-        } else {
-            notificationName = userNotificationMode == MPUserNotificationModeRemote ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
-        }
+        NSString *notificationName = userNotificationMode == MPUserNotificationModeRemote ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
         
         [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
                                                             object:strongSelf

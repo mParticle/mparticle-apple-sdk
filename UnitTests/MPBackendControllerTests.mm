@@ -182,12 +182,7 @@
                                                            @"badge":@1,
                                                            @"sound":@"t-rex_roar.aiff",
                                                            @"category":@"DINOSAUR_TRANSPORTATION_CATEGORY"
-                                                           },
-                                                   @"m_cmd":@1,
-                                                   @"m_cid":@2,
-                                                   @"m_cntid":@3,
-                                                   @"m_expy":MPMilliseconds([[NSDate date] timeIntervalSince1970] + 100),
-                                                   @"m_uid":@(arc4random_uniform(INT_MAX))
+                                                           }
                                                    };
     
     return remoteNotificationDictionary;
