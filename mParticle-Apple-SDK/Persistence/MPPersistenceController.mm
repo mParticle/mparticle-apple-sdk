@@ -569,7 +569,7 @@ const int MaxBreadcrumbs = 50;
     
     dispatch_barrier_sync(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
@@ -590,7 +590,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
             sqlite3_bind_double(preparedStatement, 11, session.length);
             sqlite3_bind_int64(preparedStatement, 12, session.userId.longLongValue);
-            sqlite3_bind_text(preparedStatement, 12, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_STATIC);
+            sqlite3_bind_text(preparedStatement, 13, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_STATIC);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
@@ -803,7 +803,7 @@ const int MaxBreadcrumbs = 50;
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp {
     dispatch_barrier_async(dbQueue, ^{
         vector<string> tables = {"messages", "uploads", "sessions"};
-        vector<string> timeFields = {"timestamp", "timestamp", "timestamp", "end_time", "timestamp", "timestamp", "timestamp", "receipt_time"};
+        vector<string> timeFields = {"timestamp", "timestamp", "end_time"};
         
         size_t idx = 0;
         
@@ -1767,7 +1767,6 @@ const int MaxBreadcrumbs = 50;
                                      @"breadcrumbs",
                                      @"segments",
                                      @"segment_memberships",
-                                     @"remote_notifications",
                                      @"cookies",
                                      @"consumer_info"
                                      ];
@@ -1917,6 +1916,8 @@ const int MaxBreadcrumbs = 50;
             
             sqlite3_clear_bindings(preparedStatement);
         }
+        
+        sqlite3_finalize(preparedStatement);
         
         for (MPCookie *cookie in consumerInfo.cookies) {
             if (!cookie.expired) {
