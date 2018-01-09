@@ -1133,7 +1133,7 @@ static BOOL appBackgrounded = NO;
             [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
                 [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
                     
-                    NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? sessionId : nil;
+                    NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
 
                     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:mpid
                                                                                     sessionId:nullableSessionID

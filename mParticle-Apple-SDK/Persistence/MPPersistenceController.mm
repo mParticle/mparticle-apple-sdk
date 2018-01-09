@@ -1187,8 +1187,8 @@ const int MaxBreadcrumbs = 50;
     NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
     dispatch_sync(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY session_id, timestamp, _id";
-
+        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
+        
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
             sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
@@ -1202,20 +1202,26 @@ const int MaxBreadcrumbs = 50;
                                                                 timestamp:doubleValue(preparedStatement, 4)
                                                              uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
                                                                    userId:@(int64Value(preparedStatement, 6))];
-                
                 if (message) {
                     NSNumber *mpid = message.userId;
+                    NSNumber *sessionID = (message.sessionId != nil) ? message.sessionId : [NSNumber numberWithInteger:-1] ;
+                    
                     if (![mpidMessages objectForKey:mpid]) {
-                        mpidMessages[mpid] = [NSMutableArray array];
+                        mpidMessages[mpid] = [NSMutableDictionary dictionary];
                     }
-                    [mpidMessages[mpid] addObject:message];
+                    if (![mpidMessages[mpid] objectForKey:sessionID]) {
+                        mpidMessages[mpid][sessionID] = [NSMutableArray array];
+                    }
+                    [mpidMessages[mpid][sessionID] addObject:message];
                 }
+                
             }
             
             sqlite3_clear_bindings(preparedStatement);
         }
         
         sqlite3_finalize(preparedStatement);
+        
     });
     
     if (mpidMessages.count == 0) {
