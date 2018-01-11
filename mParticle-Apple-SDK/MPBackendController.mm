@@ -297,18 +297,20 @@ static BOOL appBackgrounded = NO;
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentities {
-    if (_userIdentities) {
-        return _userIdentities;
-    }
-    
-    _userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
+    NSMutableArray *userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = userDefaults[kMPUserIdentityArrayKey];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey];
     if (userIdentityArray) {
-        [_userIdentities addObjectsFromArray:userIdentityArray];
+        [userIdentities addObjectsFromArray:userIdentityArray];
     }
     
-    return _userIdentities;
+    return userIdentities;
+}
+
+- (void)setUserIdentities:(NSMutableArray<NSDictionary<NSString *,id> *> *)userIdentities {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey];
+    [userDefaults synchronize];
 }
 
 #pragma mark Private methods
@@ -893,11 +895,13 @@ static BOOL appBackgrounded = NO;
                     existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
                     
                     if (existingEntryIndex != NSNotFound) {
-                        identityDictionary = [self.userIdentities[existingEntryIndex] mutableCopy];
+                        identityDictionary = [[self userIdentities][existingEntryIndex] mutableCopy];
                         userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
                         userIdentityChange.userIdentityNew = nil;
                         
-                        [self.userIdentities removeObjectAtIndex:existingEntryIndex];
+                        NSMutableArray *currentUserIdentities = [self.userIdentities mutableCopy];
+                        [currentUserIdentities removeObjectAtIndex:existingEntryIndex];
+                        self.userIdentities = currentUserIdentities;
                         persistUserIdentities = YES;
                     }
                 } else {
@@ -915,7 +919,9 @@ static BOOL appBackgrounded = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                             
-                            [self.userIdentities addObject:identityDictionary];
+                            NSMutableArray *currentUserIdentities = [self.userIdentities mutableCopy];
+                            [currentUserIdentities addObject:identityDictionary];
+                            self.userIdentities = currentUserIdentities;
                         } else {
                             userIdentity = self.userIdentities[existingEntryIndex];
                             userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
@@ -926,7 +932,9 @@ static BOOL appBackgrounded = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                             
-                            [self.userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                            NSMutableArray *currentUserIdentities = [self.userIdentities mutableCopy];
+                            [currentUserIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                            self.userIdentities = currentUserIdentities;
                         }
                         
                         persistUserIdentities = YES;
@@ -1401,7 +1409,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
-    self.userIdentities = nil;
 }
 
 - (void)handleNetworkPerformanceNotification:(NSNotification *)notification {
