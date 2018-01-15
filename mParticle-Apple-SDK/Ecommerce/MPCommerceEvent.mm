@@ -339,7 +339,7 @@ static NSArray *actionNames;
 }
 
 - (NSUInteger)count {
-    return [self.userDefinedAttributes count];
+    return [self.productsList count];
 }
 
 #pragma mark NSCopying
