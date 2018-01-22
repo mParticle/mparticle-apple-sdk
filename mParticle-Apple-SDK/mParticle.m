@@ -84,6 +84,8 @@ NSString *const kMPStateKey = @"state";
 
 @synthesize commerce = _commerce;
 @synthesize optOut = _optOut;
+@synthesize collectUserAgent = _collectUserAgent;
+@synthesize customUserAgent = _customUserAgent;
 
 + (void)initialize {
     eventTypeStrings = @[@"Reserved - Not Used", @"Navigation", @"Location", @"Search", @"Transaction", @"UserContent", @"UserPreference", @"Social", @"Other"];
@@ -95,6 +97,7 @@ NSString *const kMPStateKey = @"state";
         return nil;
     }
 
+    _collectUserAgent = YES;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
