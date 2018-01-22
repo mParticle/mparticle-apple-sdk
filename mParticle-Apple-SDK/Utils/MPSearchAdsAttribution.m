@@ -21,7 +21,7 @@
 }
 
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler {
-#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3 && !defined(MPARTICLE_APP_EXTENSIONS)
     Class MPClientClass = NSClassFromString(@"ADClient");
     if (!MPClientClass) {
         completionHandler();
