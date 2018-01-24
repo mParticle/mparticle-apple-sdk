@@ -9,8 +9,8 @@
 #import "MPILogger.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
-
 static NSTimeInterval requestTimeout = 30.0;
+static NSString *mpUserAgent = nil;
 
 @interface MPURLRequestBuilder() {
     BOOL SDKURLRequest;
@@ -81,37 +81,45 @@ static NSTimeInterval requestTimeout = 30.0;
 }
 
 - (NSString *)userAgent {
-    static NSString *mpUserAgent = nil;
-
     if (!mpUserAgent) {
+        if (MParticle.sharedInstance.customUserAgent != nil) {
+            mpUserAgent = MParticle.sharedInstance.customUserAgent;
+        }else if (!MParticle.sharedInstance.collectUserAgent) {
+            mpUserAgent = [self fallbackUserAgent];
+        }else {
 #if TARGET_OS_IOS == 1
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-        if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-            return [self fallbackUserAgent];
-        }
-#endif
-
-        dispatch_block_t getUserAgent = ^{
-            @try {
-                UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-                mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
-            } @catch (NSException *exception) {
-                mpUserAgent = [self fallbackUserAgent];
-                MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
+            if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+                return [self fallbackUserAgent];
             }
-        };
-        
-        if ([NSThread isMainThread]) {
-            getUserAgent();
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), getUserAgent);
-        }
-#elif TARGET_OS_TV == 1
-        mpUserAgent = [self fallbackUserAgent];
 #endif
+            
+            dispatch_block_t getUserAgent = ^{
+                @try {
+                    UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+                    mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+                } @catch (NSException *exception) {
+                    mpUserAgent = [self fallbackUserAgent];
+                    MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
+                }
+            };
+            
+            if ([NSThread isMainThread]) {
+                getUserAgent();
+            } else {
+                dispatch_sync(dispatch_get_main_queue(), getUserAgent);
+            }
+#elif TARGET_OS_TV == 1
+            mpUserAgent = [self fallbackUserAgent];
+#endif
+        }
     }
-
+    
     return mpUserAgent;
+}
+
+- (void)setUserAgent:(NSString *)userAgent {
+    mpUserAgent = userAgent;
 }
 
 #pragma mark Public class methods

@@ -53,6 +53,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL automaticSessionTracking;
+@property (atomic, strong, nullable) NSString *customUserAgent;
+@property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end
@@ -162,8 +164,21 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, unsafe_unretained, readonly) BOOL automaticSessionTracking;
 
-#if TARGET_OS_IOS == 1
 /**
+ Gets/Sets the user agent to a custom value.
+ */
+@property (atomic, strong, nullable) NSString *customUserAgent;
+
+/**
+ Determines whether the mParticle Apple SDK will instantiate a UIWebView in order to collect the browser user agent.
+ This value is required by attribution providers for fingerprint identification, when device IDs are not available.
+ If you disable this flag, consider populating the user agent via the customUserAgent property above if you are using
+ an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
+ */
+@property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+ 
+ #if TARGET_OS_IOS == 1
+ /**
  Gets/Sets the push notification token for the application.
  @see registerForPushNotificationWithTypes:
  */

@@ -226,6 +226,8 @@ extern NSString * _Nonnull const kMPConfigPlist;
 extern NSString * _Nonnull const kMPConfigApiKey;
 extern NSString * _Nonnull const kMPConfigSecret;
 extern NSString * _Nonnull const kMPConfigSharedGroupID;
+extern NSString * _Nonnull const kMPConfigCustomUserAgent;
+extern NSString * _Nonnull const kMPConfigCollectUserAgent;
 extern NSString * _Nonnull const kMPConfigSessionTimeout;
 extern NSString * _Nonnull const kMPConfigUploadInterval;
 extern NSString * _Nonnull const kMPConfigEnableSSL;

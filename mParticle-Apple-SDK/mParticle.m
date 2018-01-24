@@ -442,7 +442,9 @@ NSString *const kMPStateKey = @"state";
     MParticleOptions *options = [[MParticleOptions alloc] init];
     options.apiKey = apiKey;
     options.apiSecret = secret;
-    options.apiKey = self.configSettings[kMPConfigSharedGroupID];
+    options.automaticSessionTracking = self.configSettings[kMPConfigSharedGroupID];
+    options.customUserAgent = self.configSettings[kMPConfigCustomUserAgent];
+    options.collectUserAgent = self.configSettings[kMPConfigCollectUserAgent];
     options.installType = MPInstallationTypeAutodetect;
     options.environment = MPEnvironmentAutoDetect;
     options.proxyAppDelegate = YES;
@@ -472,6 +474,8 @@ NSString *const kMPStateKey = @"state";
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController mpId]] == nil;
     _proxiedAppDelegate = proxyAppDelegate;
     _automaticSessionTracking = self.options.automaticSessionTracking;
+    _customUserAgent = self.options.customUserAgent;
+    _collectUserAgent = self.options.collectUserAgent;
     
     MPIdentityApiRequest *identifyRequest = nil;
     if (options.identifyRequest) {

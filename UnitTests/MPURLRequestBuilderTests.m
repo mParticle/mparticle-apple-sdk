@@ -17,6 +17,8 @@
 
 - (NSString *)hmacSha256Encode:(NSString *const)message key:(NSString *const)key;
 - (NSString *)userAgent;
+- (void)setUserAgent:(NSString *const)userAgent;
+- (NSString *)fallbackUserAgent;
 
 @end
 
@@ -68,6 +70,55 @@
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
+- (void)testCustomUserAgent {
+    [MParticle sharedInstance].customUserAgent = @"Test User Agent";
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    
+    MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+                                                                            message:[message serializedString]
+                                                                         httpMethod:@"POST"];
+    [urlRequestBuilder setUserAgent:nil];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *userAgent = [urlRequestBuilder userAgent];
+        XCTAssertNotNil(userAgent, @"Should not have been nil.");
+        XCTAssertTrue([userAgent isEqualToString:@"Test User Agent"], @"User Agent has an invalid value: %@", userAgent);
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testDisableCollectUserAgent {
+    [MParticle sharedInstance].customUserAgent = nil;
+    [MParticle sharedInstance].collectUserAgent = NO;
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    
+    MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+                                                                            message:[message serializedString]
+                                                                         httpMethod:@"POST"];
+    [urlRequestBuilder setUserAgent:nil];
+    
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSString *userAgent = [urlRequestBuilder userAgent];
+        NSString *fallbackAgent = [urlRequestBuilder fallbackUserAgent];
+        XCTAssertNotNil(userAgent, @"Should not have been nil.");
+        XCTAssert([userAgent isEqualToString:fallbackAgent], @"User Agent has an invalid value: %@", userAgent);
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
 - (void)testHMACSha256Encode {
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
