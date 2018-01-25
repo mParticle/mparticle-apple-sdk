@@ -246,6 +246,7 @@
         sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
+        sqlite3_reset(insertStatementHandle);
     }
     
     sqlite3_finalize(selectStatementHandle);
@@ -467,6 +468,9 @@
     selectStatement = "SELECT _id, mpid, unique_identifier FROM consumer_info";
     insertStatement = "INSERT INTO consumer_info (_id, mpid, unique_identifier) VALUES (?, ?, ?)";
     
+    selectStatementHandle = NULL;
+    insertStatementHandle = NULL;
+    
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
@@ -519,8 +523,6 @@
             }
 
             session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
-            [[MPPersistenceController sharedInstance] updateSession:session];
-            [[MPPersistenceController sharedInstance] moveContentFromMpidZeroToMpid:mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }
@@ -528,6 +530,7 @@
         sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
+        sqlite3_reset(insertStatementHandle);
     }
     
     sqlite3_finalize(selectStatementHandle);
