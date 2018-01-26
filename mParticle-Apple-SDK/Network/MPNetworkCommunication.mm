@@ -295,12 +295,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     retrievingConfig = YES;
     __weak MPNetworkCommunication *weakSelf = self;
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     MPILogVerbose(@"Starting config request");
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
 #if !defined(MPARTICLE_APP_EXTENSIONS)
+    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
             __strong MPNetworkCommunication *strongSelf = weakSelf;
