@@ -139,10 +139,6 @@ static BOOL appBackgrounded = NO;
         backendQueue = dispatch_queue_create("com.mParticle.BackendQueue", DISPATCH_QUEUE_SERIAL);
         notificationsQueue = dispatch_queue_create("com.mParticle.NotificationsQueue", DISPATCH_QUEUE_CONCURRENT);
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self requestConfig:nil];
-        });
-        
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                selector:@selector(handleApplicationDidEnterBackground:)
@@ -2582,6 +2578,10 @@ static BOOL appBackgrounded = NO;
     stateMachine.secret = secret;
     stateMachine.installationType = installationType;
     [MPStateMachine setRunningInBackground:NO];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self requestConfig:nil];
+    });
     
     [MPURLRequestBuilder tryToCaptureUserAgent];
     
