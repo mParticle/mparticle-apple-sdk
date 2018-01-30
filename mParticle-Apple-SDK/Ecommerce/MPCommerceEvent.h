@@ -200,12 +200,6 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  */
 - (nullable NSArray *)allKeys;
 
-/**
- Number of entries in the custom attributes dictionary
- @returns The number of entries in the dictionary
- */
-- (NSUInteger)count;
-
 - (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
 - (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
 

@@ -322,10 +322,6 @@ static NSArray *actionNames;
     return [self.userDefinedAttributes allKeys];
 }
 
-- (NSUInteger)count {
-    return [self.userDefinedAttributes count];
-}
-
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPCommerceEvent *copyObject = [[[self class] alloc] init];
