@@ -73,8 +73,20 @@
                     return;
                 }
 
-                if (attributionDetails && !error) {
-                    strongSelf.dictionary = attributionDetails;
+                if (!strongSelf.dictionary && attributionDetails && !error) {
+                    NSDictionary* deepCopyDetails = nil;
+                    @try {
+                        deepCopyDetails = [NSKeyedUnarchiver unarchiveObjectWithData:
+                                                         [NSKeyedArchiver archivedDataWithRootObject:attributionDetails]];
+                    }
+                    @catch (NSException *e) {
+                        deepCopyDetails = [attributionDetails copy];
+                    }
+
+                    if (deepCopyDetails) {
+                        strongSelf.dictionary = deepCopyDetails;
+                    }
+                    
                     onceCompletionBlock();
                 }
                 else if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
