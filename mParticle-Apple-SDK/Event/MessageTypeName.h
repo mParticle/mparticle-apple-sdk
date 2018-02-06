@@ -26,7 +26,8 @@ namespace mParticle {
         PushNotificationInteraction = 15,
         CommerceEvent = 16,
         UserAttributeChange = 17,
-        UserIdentityChange = 18
+        UserIdentityChange = 18,
+        Consent = 20
     };
     
     class MessageTypeName final {

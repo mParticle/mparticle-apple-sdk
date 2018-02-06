@@ -50,8 +50,8 @@
     [MPPersistenceController setMpid:originalMpId];
     stateMachine.consumerInfo.cookies = originalCookies;
     
-    XCTAssertEqual([MPPersistenceController mpId], originalMpId);
-    XCTAssertEqual(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
+    XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
+    XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
     
     NSDictionary *response = @{kMPRemoteConfigConsumerInfoKey:@{
@@ -61,8 +61,8 @@
                                        }};
     
     [MPResponseEvents parseConfiguration:response sessionId:@5];
-    XCTAssertEqual([MPPersistenceController mpId], originalMpId);
-    XCTAssertEqual(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
+    XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
+    XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
 }
 

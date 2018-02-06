@@ -14,6 +14,7 @@
 @class MPNotificationController;
 @class MPEvent;
 @class MPCommerceEvent;
+@class MPConsentEvent;
 
 @protocol MPBackendControllerDelegate;
 
@@ -79,6 +80,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPCommerceEvent * _Nonnull commerceEvent, MPExecStatus execStatus))completionHandler;
 - (void)logError:(nullable NSString *)message exception:(nullable NSException *)exception topmostContext:(nullable id)topmostContext eventInfo:(nullable NSDictionary *)eventInfo attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus))completionHandler;
 - (void)logEvent:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
+- (void)logConsentEvent:(nonnull MPConsentEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPConsentEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 - (void)logNetworkPerformanceMeasurement:(nonnull MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(MPNetworkPerformance * _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
 - (void)logScreen:(nonnull MPEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 - (void)profileChange:(MPProfileChange)profile attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPProfileChange profile, MPExecStatus execStatus))completionHandler;

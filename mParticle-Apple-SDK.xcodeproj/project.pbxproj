@@ -441,6 +441,10 @@
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
 		DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
 		DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
+		DB16793B201BDC9B005CA3DA /* MPConsentEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB167939201BDC9B005CA3DA /* MPConsentEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB16793C201BDC9B005CA3DA /* MPConsentEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB167939201BDC9B005CA3DA /* MPConsentEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB16793D201BDC9B005CA3DA /* MPConsentEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB16793A201BDC9B005CA3DA /* MPConsentEvent.mm */; };
+		DB16793E201BDC9B005CA3DA /* MPConsentEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB16793A201BDC9B005CA3DA /* MPConsentEvent.mm */; };
 		DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
 		DB3935151F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
 		DB3935161F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */; };
@@ -460,6 +464,7 @@
 		DB678C381F180E130015587D /* MPUserIdentityChange.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C341F180E0A0015587D /* MPUserIdentityChange.m */; };
 		DB678C3B1F1817E70015587D /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */; };
 		DB678C3C1F1817EA0015587D /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */; };
+		DB6BA23B201FB01A006BC850 /* MPConsentEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB6BA23A201FB01A006BC850 /* MPConsentEventTests.m */; };
 		DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
 		DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
 		DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
@@ -730,6 +735,8 @@
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
 		DB00F6371F4E11380070A74B /* MPKitAPITests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAPITests.m; sourceTree = "<group>"; };
+		DB167939201BDC9B005CA3DA /* MPConsentEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConsentEvent.h; sourceTree = "<group>"; };
+		DB16793A201BDC9B005CA3DA /* MPConsentEvent.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = MPConsentEvent.mm; sourceTree = "<group>"; };
 		DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitSecondTestClassNoStartImmediately.m; sourceTree = "<group>"; };
 		DB3935111F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitSecondTestClassNoStartImmediately.h; sourceTree = "<group>"; };
 		DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClassNoStartImmediately.m; sourceTree = "<group>"; };
@@ -742,6 +749,7 @@
 		DB678C331F180E0A0015587D /* MPUserIdentityChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUserIdentityChange.h; sourceTree = "<group>"; };
 		DB678C341F180E0A0015587D /* MPUserIdentityChange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChange.m; sourceTree = "<group>"; };
 		DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
+		DB6BA23A201FB01A006BC850 /* MPConsentEventTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentEventTests.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
 		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
 		DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleOptionsTests.m; sourceTree = "<group>"; };
@@ -939,6 +947,8 @@
 				C9DD1C8F1D8A112B00D3ABBE /* MPSession.m */,
 				C9DD1C961D8A112B00D3ABBE /* MPUpload.h */,
 				C9DD1C971D8A112B00D3ABBE /* MPUpload.m */,
+				DB167939201BDC9B005CA3DA /* MPConsentEvent.h */,
+				DB16793A201BDC9B005CA3DA /* MPConsentEvent.mm */,
 			);
 			path = "Data Model";
 			sourceTree = "<group>";
@@ -1227,6 +1237,7 @@
 				DB4F166C1F1511B100D625CD /* MPIdentityTests.m */,
 				DB00F6371F4E11380070A74B /* MPKitAPITests.m */,
 				DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */,
+				DB6BA23A201FB01A006BC850 /* MPConsentEventTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1263,6 +1274,7 @@
 				C935A7481D8A2E3800A1EE2F /* MPBracket.h in Headers */,
 				C935A6F41D8A2DF400A1EE2F /* MPProductBag.h in Headers */,
 				C935A7131D8A2E0500A1EE2F /* MPKitFilter.h in Headers */,
+				DB16793C201BDC9B005CA3DA /* MPConsentEvent.h in Headers */,
 				C935A6D61D8A2DED00A1EE2F /* MPSegment.h in Headers */,
 				04F644021EFC2A61000FADE3 /* MPIdentityApiRequest.h in Headers */,
 				C935A7151D8A2E0500A1EE2F /* MPKitInstanceValidator.h in Headers */,
@@ -1397,6 +1409,7 @@
 				C9C9DC3A1DAC04670079A05D /* MPForwardQueueParameters.h in Headers */,
 				C9DD1FA21D8A13D000D3ABBE /* MPCustomModule.h in Headers */,
 				C9DD20271D8A142000D3ABBE /* MPBracket.h in Headers */,
+				DB16793B201BDC9B005CA3DA /* MPConsentEvent.h in Headers */,
 				C9DD205D1D8A142900D3ABBE /* MPExceptionHandler.h in Headers */,
 				04F643F51EFC03E7000FADE3 /* MPIdentityApi.h in Headers */,
 				C9DD20171D8A140800D3ABBE /* MPURLConnectionAssociate.h in Headers */,
@@ -1687,6 +1700,7 @@
 				C935A7521D8A2E3800A1EE2F /* MPLaunchInfo.m in Sources */,
 				C935A6F01D8A2DF400A1EE2F /* MPCommerceEventInstruction.m in Sources */,
 				C935A6DB1D8A2DED00A1EE2F /* MPSession.m in Sources */,
+				DB16793E201BDC9B005CA3DA /* MPConsentEvent.mm in Sources */,
 				C935A7121D8A2E0500A1EE2F /* MPKitExecStatus.m in Sources */,
 				C935A71D1D8A2E1200A1EE2F /* MPLocationManager.m in Sources */,
 				C92F0F321DF9C21D008C5384 /* MPKitActivity.m in Sources */,
@@ -1781,6 +1795,7 @@
 				C9DD20181D8A140800D3ABBE /* MPURLConnectionAssociate.m in Sources */,
 				C9DD1FFA1D8A13F100D3ABBE /* MParticleReachability.m in Sources */,
 				C9DD1FA31D8A13D000D3ABBE /* MPCustomModule.m in Sources */,
+				DB16793D201BDC9B005CA3DA /* MPConsentEvent.mm in Sources */,
 				C9DD20291D8A142000D3ABBE /* MPCurrentState.m in Sources */,
 				C9DD20251D8A142000D3ABBE /* MPApplication.m in Sources */,
 				C9DD1FB61D8A13D600D3ABBE /* MPSegment.m in Sources */,
@@ -1879,6 +1894,7 @@
 				C9DD20F91D8A201E00D3ABBE /* MPNotificationControllerTests.m in Sources */,
 				C9DD20F31D8A1FF400D3ABBE /* MPKitContainerTests.m in Sources */,
 				C9DD20F81D8A201200D3ABBE /* MPMessageBuilderTests.m in Sources */,
+				DB6BA23B201FB01A006BC850 /* MPConsentEventTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -51,7 +51,11 @@ namespace mParticle {
         /** Internal. Used when a product is removed from the wishlist */
         RemoveFromWishlist = 21,
         /** Internal. Used when a product is displayed in a promotion */
-        Impression = 22
+        Impression = 22,
+        /** Internal. Used when consent is granted */
+        ConsentGranted = 24,
+        /** Internal. Used when consent is denied */
+        ConsentDenied = 25
     };
     
     class EventTypeName final {

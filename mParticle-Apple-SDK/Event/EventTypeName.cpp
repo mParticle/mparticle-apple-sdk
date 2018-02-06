@@ -2,9 +2,12 @@
 #include "MPHasher.h"
 
 namespace mParticle {
-    const vector<string> EventTypeName::names = {"Unknown", "Navigation", "Location", "Search", "Transaction", "UserContent", "UserPreference", "Social", "Other", "Media(discontinued)", // 0-9
-                                                 "ProductAddToCart", "ProductRemoveFromCart", "ProductCheckout", "ProductCheckoutOption", "ProductClick", "ProductViewDetail", "ProductPurchase", "ProductRefund", // 10-17
-                                                 "PromotionView", "PromotionClick", "ProductAddToWishlist", "ProductRemoveFromWishlist", "ProductImpression"}; // 18-22
+    const vector<string> EventTypeName::names = {
+        "Unknown", "Navigation", "Location", "Search", "Transaction", "UserContent", "UserPreference", "Social", "Other", "Media(discontinued)", // 0-9
+        "ProductAddToCart", "ProductRemoveFromCart", "ProductCheckout", "ProductCheckoutOption", "ProductClick", "ProductViewDetail", "ProductPurchase", "ProductRefund", // 10-17
+        "PromotionView", "PromotionClick", "ProductAddToWishlist", "ProductRemoveFromWishlist", "ProductImpression", // 18-22
+        "Attribution", "ConsentGranted", "ConsentDenied" // 23-25
+    };
     
     const size_t EventTypeName::count = EventTypeName::names.size();
     

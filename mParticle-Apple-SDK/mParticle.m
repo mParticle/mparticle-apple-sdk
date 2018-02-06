@@ -823,6 +823,29 @@ NSString *const kMPStateKey = @"state";
     [self logScreenEvent:event];
 }
 
+- (void)logConsentEvent:(MPConsentEvent *)event {
+    __weak MParticle *weakSelf = self;
+    
+    [self.backendController logConsentEvent:event
+                                    attempt:0
+                          completionHandler:^(MPConsentEvent *event, MPExecStatus execStatus) {
+                              __strong MParticle *strongSelf = weakSelf;
+                              
+                              if (execStatus == MPExecStatusSuccess) {
+                                  MPILogDebug(@"Logged consent event: %@", event);
+                                  
+                                  // Forwarding calls to kits
+                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logConsentEvent:) kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+                                      *execStatus = [kit logConsentEvent:event];
+                                  }];
+                              } else if (execStatus == MPExecStatusDelayedExecution) {
+                                  MPILogWarning(@"Delayed consent event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                              } else if (execStatus != MPExecStatusContinuedDelayedExecution) {
+                                  MPILogError(@"Failed logging consent event: %@\n Reason: %@", event, [strongSelf.backendController execStatusDescription:execStatus]);
+                              }
+                          }];
+}
+
 #pragma mark Attribution
 - (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo {
     return [[MPKitContainer sharedInstance].attributionInfo copy];
