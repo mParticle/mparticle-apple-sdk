@@ -113,7 +113,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     MPApplication *application = [[MPApplication alloc] init];
     NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
-    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, kMPURLHostConfig, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, application.version, kMParticleSDKVersion];
+    NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
+    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, application.version, kMParticleSDKVersion];
     _configURL = [NSURL URLWithString:urlString];
     
     return _configURL;
@@ -125,7 +126,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, kMPURLHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
+    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
     _eventURL = [NSURL URLWithString:urlString];
     
     return _eventURL;
@@ -135,7 +137,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSString *segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
-    NSString *urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, kMPURLHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
+    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
+    NSString *urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
     
     NSURL *segmentURL = [NSURL URLWithString:urlString];
     
@@ -147,7 +150,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return _identifyURL;
     }
     NSString *pathComponent = @"identify";
-    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
     _identifyURL = [NSURL URLWithString:urlString];
     
     return _identifyURL;
@@ -159,7 +163,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     NSString *pathComponent = @"login";
-    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
     _loginURL = [NSURL URLWithString:urlString];
     
     return _loginURL;
@@ -171,15 +176,17 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     NSString *pathComponent = @"logout";
-    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
     _logoutURL = [NSURL URLWithString:urlString];
     
     return _logoutURL;
 }
 
 - (NSURL *)modifyURL {
-    NSString *pathComponent = @"modify";    
-    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
+    NSString *pathComponent = @"modify";
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
     
     NSURL *modifyURL = [NSURL URLWithString:urlString];
     

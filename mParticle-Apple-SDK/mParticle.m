@@ -65,7 +65,7 @@ NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic, unsafe_unretained) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
-
+@property (nonatomic, readwrite) MPNetworkOptions *networkOptions;
 
 @end
 
@@ -83,6 +83,33 @@ NSString *const kMPStateKey = @"state";
     [description appendFormat:@"  kitCode: %@\n", _kitCode];
     [description appendFormat:@"  kitName: %@\n", _kitName];
     [description appendFormat:@"  linkInfo: %@\n", _linkInfo];
+    [description appendString:@"}"];
+    return description;
+}
+
+@end
+
+@implementation MPNetworkOptions
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        _configHost = nil;
+        _eventsHost = nil;
+        _identityHost = nil;
+        _certificates = nil;
+        _pinningDisabledInDevelopment = NO;
+    }
+    return self;
+}
+
+- (NSString *)description {
+    NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPNetworkOptions {\n"];
+    [description appendFormat:@"  configHost: %@\n", _configHost];
+    [description appendFormat:@"  eventsHost: %@\n", _eventsHost];
+    [description appendFormat:@"  identityHost: %@\n", _identityHost];
+    [description appendFormat:@"  certificates: %@\n", _certificates];
     [description appendString:@"}"];
     return description;
 }
@@ -501,6 +528,10 @@ NSString *const kMPStateKey = @"state";
     
     if (options.isUploadIntervalSet) {
         self.uploadInterval = options.uploadInterval;
+    }
+    
+    if (options.networkOptions) {
+        self.networkOptions = options.networkOptions;
     }
     
     NSString *apiKey = options.apiKey;

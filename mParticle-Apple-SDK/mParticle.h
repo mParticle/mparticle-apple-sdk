@@ -43,6 +43,17 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface MPNetworkOptions : NSObject
+
+@property (nonatomic) NSString *configHost;
+@property (nonatomic) NSString *eventsHost;
+@property (nonatomic) NSString *identityHost;
+@property (nonatomic) NSArray<NSData *> *certificates;
+
+@property (nonatomic) BOOL pinningDisabledInDevelopment;
+
+@end
+
 @interface MParticleOptions : NSObject
 
 + (MParticleOptions*)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
@@ -59,6 +70,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
 @property (atomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
 @property (atomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
+@property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end
@@ -167,6 +179,12 @@ NS_ASSUME_NONNULL_BEGIN
  an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
  */
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+
+/**
+ Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.
+ @see MParticleOptions
+ */
+@property (nonatomic, readonly) MPNetworkOptions *networkOptions;
  
  #if TARGET_OS_IOS == 1
  /**

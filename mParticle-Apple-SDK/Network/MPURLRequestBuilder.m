@@ -185,7 +185,7 @@ static NSString *mpUserAgent = nil;
     [urlRequest setTimeoutInterval:requestTimeout];
     [urlRequest setHTTPMethod:_httpMethod];
 
-    BOOL isIdentityRequest = [urlRequest.URL.host rangeOfString:@"identity"].location != NSNotFound;
+    BOOL isIdentityRequest = [urlRequest.URL.host rangeOfString:@"identity"].location != NSNotFound || [urlRequest.URL.host isEqualToString:[MParticle sharedInstance].networkOptions.identityHost];
     
     if (SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
