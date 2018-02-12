@@ -35,7 +35,7 @@
 + (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user {
     MPIdentityApiRequest *request = [[self alloc] init];
     [user.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        MPUserIdentity identityType = [key boolValue];
+        MPUserIdentity identityType = [key intValue];
         [request setUserIdentity:obj identityType:identityType];
     }];
 

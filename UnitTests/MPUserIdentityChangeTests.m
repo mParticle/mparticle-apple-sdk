@@ -1,5 +1,9 @@
 #import <XCTest/XCTest.h>
 #import "MPUserIdentityChange.h"
+#import "MPIdentityApiRequest.h"
+#import "MParticleUser.h"
+#import "MParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 
 @interface MPUserIdentityChangeTests : XCTestCase
@@ -14,6 +18,19 @@
 
 - (void)tearDown {
     [super tearDown];
+}
+
+- (void)testUserIdentityRequest {
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@example.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:currentUser];
+    XCTAssertEqualObjects(request.customerId, @"test");
+    XCTAssertEqualObjects(request.email, @"test@example.com");
 }
 
 - (void)testUserIdentityInstance {

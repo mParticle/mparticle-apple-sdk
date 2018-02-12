@@ -452,7 +452,7 @@ static BOOL appBackgrounded = NO;
                 
                 NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceController mpId]];
                 
-                if (userIdentityChange.userIdentityNew.value == nil || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
+                if (userIdentityChange.userIdentityNew.value == nil || userIdentityChange.userIdentityNew.value == [NSNull null] || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
                     existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
                     
                     if (existingEntryIndex != NSNotFound) {
