@@ -183,6 +183,8 @@ extern NSString * _Nonnull const kMPIsEphemeralKey;
 extern NSString * _Nonnull const kMPDeviceApplicationStampKey;
 extern NSString * _Nonnull const kMPDeviceApplicationStampStorageKey;
 extern NSString * _Nonnull const kMPLastConfigReceivedKey;
+extern NSString * _Nonnull const kMPUserAgentSystemVersionUserDefaultsKey;
+extern NSString * _Nonnull const kMPUserAgentValueUserDefaultsKey;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;

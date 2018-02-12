@@ -144,6 +144,8 @@ NSString *const kMPIsEphemeralKey = @"is_ephemeral";
 NSString *const kMPDeviceApplicationStampKey = @"das";
 NSString *const kMPDeviceApplicationStampStorageKey = @"dast";
 NSString *const kMPLastConfigReceivedKey = @"LastConfigReceived";
+NSString *const kMPUserAgentSystemVersionUserDefaultsKey = @"UserAgentSystemVersion";
+NSString *const kMPUserAgentValueUserDefaultsKey = @"UserAgentValue";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
