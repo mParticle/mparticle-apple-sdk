@@ -143,6 +143,8 @@ NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
 NSString *const kMPLastConfigReceivedKey = @"LastConfigReceived";
+NSString *const kMPUserAgentSystemVersionUserDefaultsKey = @"UserAgentSystemVersion";
+NSString *const kMPUserAgentValueUserDefaultsKey = @"UserAgentValue";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";

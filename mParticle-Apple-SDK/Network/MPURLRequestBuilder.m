@@ -105,6 +105,16 @@ static NSString *mpUserAgent = nil;
     } else if (!mpUserAgent) {
         if ([[MParticle sharedInstance] collectUserAgent]) {
 #if TARGET_OS_IOS == 1
+            NSString *currentSystemVersion = [UIDevice currentDevice].systemVersion;
+            NSString *savedSystemVersion = [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey];
+            if ([currentSystemVersion isEqualToString:savedSystemVersion]) {
+                NSString *savedUserAgent = [MPIUserDefaults standardUserDefaults][kMPUserAgentValueUserDefaultsKey];
+                if (savedUserAgent) {
+                    mpUserAgent = savedUserAgent;
+                    return mpUserAgent;
+                }
+            }
+            
             if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
                 return [self fallbackUserAgent];
             }
@@ -113,6 +123,12 @@ static NSString *mpUserAgent = nil;
                 @try {
                     UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
                     mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+                    NSString *systemVersion = [UIDevice currentDevice].systemVersion;
+                    if (mpUserAgent && systemVersion) {
+                        [MPIUserDefaults standardUserDefaults][kMPUserAgentValueUserDefaultsKey] = mpUserAgent;
+                        [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey] = systemVersion;
+                        [[MPIUserDefaults standardUserDefaults] synchronize];
+                    }
                 } @catch (NSException *exception) {
                     mpUserAgent = [self fallbackUserAgent];
                     MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
