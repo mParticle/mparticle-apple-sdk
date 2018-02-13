@@ -92,7 +92,7 @@ static NSString *mpUserAgent = nil;
             dispatch_block_t getUserAgent = ^{
                 @try {
                     UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-                    mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+                    mpUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
                     NSString *systemVersion = [UIDevice currentDevice].systemVersion;
                     if (mpUserAgent && systemVersion) {
                         [MPIUserDefaults standardUserDefaults][kMPUserAgentValueUserDefaultsKey] = mpUserAgent;
