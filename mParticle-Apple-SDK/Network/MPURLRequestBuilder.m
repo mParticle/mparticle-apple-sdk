@@ -264,9 +264,11 @@ static NSString *mpUserAgent = nil;
             [urlRequest setValue:kits forHTTPHeaderField:@"x-mp-kits"];
         }
 
-        NSString *userAgent = [self userAgent];
-        if (userAgent) {
-            [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
+        if (!isIdentityRequest) {
+            NSString *userAgent = [self userAgent];
+            if (userAgent) {
+                [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
+            }
         }
         
         [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
