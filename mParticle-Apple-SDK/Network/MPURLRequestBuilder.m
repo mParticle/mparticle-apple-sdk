@@ -67,26 +67,11 @@ static NSString *mpUserAgent = nil;
     return (NSString *)encodedMessage;
 }
 
-- (NSString *)fallbackUserAgent {
-    NSString *mpUserAgent;
-    NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
-    [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
-
-#if TARGET_OS_IOS == 1
-    mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
-#elif TARGET_OS_TV == 1
-    mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
-#endif
-    return mpUserAgent;
-}
-
 - (NSString *)userAgent {
     if (!mpUserAgent) {
         if (MParticle.sharedInstance.customUserAgent != nil) {
             mpUserAgent = MParticle.sharedInstance.customUserAgent;
-        }else if (!MParticle.sharedInstance.collectUserAgent) {
-            mpUserAgent = [self fallbackUserAgent];
-        }else {
+        } else if (MParticle.sharedInstance.collectUserAgent) {
 #if TARGET_OS_IOS == 1
             NSString *currentSystemVersion = [UIDevice currentDevice].systemVersion;
             NSString *savedSystemVersion = [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey];
@@ -100,7 +85,7 @@ static NSString *mpUserAgent = nil;
             
 #if !defined(MPARTICLE_APP_EXTENSIONS)
             if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                return [self fallbackUserAgent];
+                return nil;
             }
 #endif
             
@@ -115,7 +100,7 @@ static NSString *mpUserAgent = nil;
                         [[MPIUserDefaults standardUserDefaults] synchronize];
                     }
                 } @catch (NSException *exception) {
-                    mpUserAgent = [self fallbackUserAgent];
+                    mpUserAgent = nil;
                     MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
                 }
             };
@@ -125,8 +110,6 @@ static NSString *mpUserAgent = nil;
             } else {
                 dispatch_sync(dispatch_get_main_queue(), getUserAgent);
             }
-#elif TARGET_OS_TV == 1
-            mpUserAgent = [self fallbackUserAgent];
 #endif
         }
     }
@@ -281,7 +264,11 @@ static NSString *mpUserAgent = nil;
             [urlRequest setValue:kits forHTTPHeaderField:@"x-mp-kits"];
         }
 
-        [urlRequest setValue:[self userAgent] forHTTPHeaderField:@"User-Agent"];
+        NSString *userAgent = [self userAgent];
+        if (userAgent) {
+            [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
+        }
+        
         [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
         if (!isIdentityRequest) {
             [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];

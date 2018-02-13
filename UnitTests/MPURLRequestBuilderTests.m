@@ -63,7 +63,11 @@
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
+#if TARGET_OS_IOS == 1
         XCTAssertNotNil(userAgent, @"Should not have been nil.");
+#else
+        XCTAssertNil(userAgent, @"Should have been nil.");
+#endif
         [expectation fulfill];
     });
     
@@ -111,9 +115,7 @@
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
-        NSString *fallbackAgent = [urlRequestBuilder fallbackUserAgent];
-        XCTAssertNotNil(userAgent, @"Should not have been nil.");
-        XCTAssert([userAgent isEqualToString:fallbackAgent], @"User Agent has an invalid value: %@", userAgent);
+        XCTAssertNil(userAgent, @"Should have been nil.");
         [expectation fulfill];
     });
     
@@ -149,12 +151,19 @@
 
 - (void)testURLRequestComposition {
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MParticle.sharedInstance.collectUserAgent = YES;
+    MParticle.sharedInstance.customUserAgent = nil;
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
     
     NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
     NSArray *keys = [headersDictionary allKeys];
-    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env", @"x-mp-kits"];
+
+    NSMutableArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env", @"x-mp-kits"].mutableCopy;
+#if TARGET_OS_IOS != 1
+    [headers removeObject:@"User-Agent"];
+#endif
+    
     NSString *headerValue;
     
     for (NSString *header in headers) {
@@ -324,6 +333,9 @@
     [[MPKitContainer sharedInstance] configureKits:nil];
     [[MPKitContainer sharedInstance] configureKits:kitConfigs];
     
+    MParticle.sharedInstance.collectUserAgent = YES;
+    MParticle.sharedInstance.customUserAgent = nil;
+    
     XCTAssertEqual([MPURLRequestBuilder requestTimeout], 30, @"Should have been equal.");
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
@@ -337,7 +349,10 @@
     
     NSDictionary *headersDictionary = [asyncURLRequest allHTTPHeaderFields];
     NSArray *keys = [headersDictionary allKeys];
-    NSArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-kits"];
+    NSMutableArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-kits"].mutableCopy;
+#if TARGET_OS_IOS != 1
+    [headers removeObject:@"User-Agent"];
+#endif
     NSString *headerValue;
     
     for (NSString *header in headers) {
