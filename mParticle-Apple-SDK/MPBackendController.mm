@@ -35,6 +35,7 @@
 #import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPURLRequestBuilder.h"
+#import "MPConsentEvent.h"
 
 
 #if TARGET_OS_IOS == 1

@@ -21,7 +21,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPIdentityApi.h"
 #import "MPKitAPI.h"
-#import "MPConsentEvent.h"
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
@@ -392,13 +391,6 @@ NS_ASSUME_NONNULL_BEGIN
  @see logScreenEvent:
  */
 - (void)logScreen:(NSString *)screenName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
-
-/**
- Logs a consent event.
- @param event An instance of MPConsentEvent
- @see MPConsentEvent
- */
-- (void)logConsentEvent:(MPConsentEvent *)event;
 
 #pragma mark - Attribution
 /**

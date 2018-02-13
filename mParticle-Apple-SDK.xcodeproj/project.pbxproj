@@ -441,8 +441,8 @@
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
 		DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
 		DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
-		DB16793B201BDC9B005CA3DA /* MPConsentEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB167939201BDC9B005CA3DA /* MPConsentEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DB16793C201BDC9B005CA3DA /* MPConsentEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB167939201BDC9B005CA3DA /* MPConsentEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB16793B201BDC9B005CA3DA /* MPConsentEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB167939201BDC9B005CA3DA /* MPConsentEvent.h */; };
+		DB16793C201BDC9B005CA3DA /* MPConsentEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB167939201BDC9B005CA3DA /* MPConsentEvent.h */; };
 		DB16793D201BDC9B005CA3DA /* MPConsentEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB16793A201BDC9B005CA3DA /* MPConsentEvent.mm */; };
 		DB16793E201BDC9B005CA3DA /* MPConsentEvent.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB16793A201BDC9B005CA3DA /* MPConsentEvent.mm */; };
 		DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
