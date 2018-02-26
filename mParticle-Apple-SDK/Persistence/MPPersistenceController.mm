@@ -53,6 +53,9 @@ typedef NS_ENUM(NSInteger, MPDatabaseState) {
 };
 
 static const NSArray *databaseVersions;
+static NSMutableArray *readyHandlers;
+static BOOL isReady = NO;
+
 const int MaxBreadcrumbs = 50;
 
 @interface MPPersistenceController() {
@@ -80,6 +83,17 @@ const int MaxBreadcrumbs = 50;
         
         [self setupDatabase:^{
             [self migrateDatabaseIfNeeded];
+            [self openDatabase];
+            isReady = YES;
+            
+            if (readyHandlers.count) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [readyHandlers enumerateObjectsUsingBlock:^(void (^ _Nonnull readyHandler)(void), NSUInteger idx, BOOL * _Nonnull stop) {
+                        readyHandler();
+                    }];
+                    readyHandlers = nil;
+                });
+            }
         }];
     }
     
@@ -497,6 +511,27 @@ const int MaxBreadcrumbs = 50;
     });
     
     return sharedInstance;
+}
+
++ (void)addReadyHandler:(void (^ _Nonnull)(void))handler {
+    if (!handler) {
+        MPILogError(@"Unable to add nil persistence ready handler");
+        return;
+    }
+    
+    if (isReady) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            handler();
+        });
+        return;
+    }
+    
+    if (!readyHandlers) {
+        readyHandlers = [NSMutableArray array];
+    }
+    void (^handlerCopy)(void) = [handler copy];
+    [readyHandlers addObject:handlerCopy];
+    [MPPersistenceController sharedInstance];
 }
 
 #pragma mark Public methods
