@@ -2401,38 +2401,40 @@ static BOOL appBackgrounded = NO;
     
     [MPURLRequestBuilder tryToCaptureUserAgent];
     
-    __weak MPBackendController *weakSelf = self;
-    __block MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
-    dispatch_async(backendQueue, ^{
-        __strong MPBackendController *strongSelf = weakSelf;
-        _initializationStatus = MPInitializationStatusStarted;
-        [strongSelf processPendingUploads];
-        [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {}];
-        
-        [strongSelf beginUploadTimer];
-        
-        if (firstRun) {
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            message.uploadStatus = MPUploadStatusBatch;
+    [MPPersistenceController addReadyHandler:^{
+        __weak MPBackendController *weakSelf = self;
+        __block MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
+        dispatch_async(backendQueue, ^{
+            __strong MPBackendController *strongSelf = weakSelf;
+            _initializationStatus = MPInitializationStatusStarted;
+            [strongSelf processPendingUploads];
+            [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {}];
             
-            [strongSelf saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
+            [strongSelf beginUploadTimer];
             
-            MPILogDebug(@"Application First Run");
-        }
-        
-        [stateMachine.searchAttribution requestAttributionDetailsWithBlock:^{
-            [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
-            [strongSelf uploadWithCompletionHandler:nil];
-        }];
-        
-        [strongSelf processPendingArchivedMessages];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [MPResponseConfig restore];
-            MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
-            completionHandler();
+            if (firstRun) {
+                MPMessage *message = (MPMessage *)[messageBuilder build];
+                message.uploadStatus = MPUploadStatusBatch;
+                
+                [strongSelf saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
+                
+                MPILogDebug(@"Application First Run");
+            }
+            
+            [stateMachine.searchAttribution requestAttributionDetailsWithBlock:^{
+                [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
+                [strongSelf uploadWithCompletionHandler:nil];
+            }];
+            
+            [strongSelf processPendingArchivedMessages];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [MPResponseConfig restore];
+                MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
+                completionHandler();
+            });
         });
-    });
+    }];
 }
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
