@@ -121,7 +121,7 @@
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM sessions ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -148,7 +148,7 @@
         sqlite3_bind_blob(insertStatementHandle, 5, [attributesData bytes], (int)attributesLength, SQLITE_TRANSIENT);
         
         sessionNumber = (oldVersionValue >= 10) ? sqlite3_column_int(selectStatementHandle, 4) : 0;
-        sqlite3_bind_int64(insertStatementHandle, 5, sessionNumber); // session_number
+        sqlite3_bind_int64(insertStatementHandle, 6, sessionNumber); // session_number
 
         NSTimeInterval backgroundTime = 0;
         int numberInterruptions = 0;
@@ -179,6 +179,7 @@
         sqlite3_bind_double(insertStatementHandle, 9, suspendTime); // suspend_time
         sqlite3_bind_double(insertStatementHandle, 10, length); // length
         sqlite3_bind_int64(insertStatementHandle, 11, [mpId longLongValue]); // mpid
+        sqlite3_bind_text(insertStatementHandle, 12, (const char *)[mpId stringValue].UTF8String, -1, SQLITE_TRANSIENT); // session_user_ids
 
         sqlite3_step(insertStatementHandle);
     }
@@ -509,20 +510,6 @@
         if (oldVersionValue < 26) {
             mpId = @(userId);
             [MPPersistenceController setMpid:mpId];
-            
-            MPSession *session = [MParticle sharedInstance].backendController.session;
-            session.userId = mpId;
-            NSString *userIdsString = session.sessionUserIds;
-            if (!(userIdsString.length > 0) && ![userIdsString isEqualToString:@"0"]) {
-                session.sessionUserIds = mpId.stringValue;
-            }
-            NSMutableArray *userIds = [[session.sessionUserIds componentsSeparatedByString:@","] mutableCopy];
-
-            if (![userIds containsObject:mpId] && mpId.longLongValue != 0) {
-                [userIds addObject:mpId];
-            }
-
-            session.sessionUserIds = userIds.count > 0 ? [userIds componentsJoinedByString:@","] : @"";
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }
