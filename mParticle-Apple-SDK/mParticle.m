@@ -477,27 +477,6 @@ NSString *const kMPStateKey = @"state";
     _customUserAgent = self.options.customUserAgent;
     _collectUserAgent = self.options.collectUserAgent;
     
-    MPIdentityApiRequest *identifyRequest = nil;
-    if (options.identifyRequest) {
-        identifyRequest = options.identifyRequest;
-    }
-    else {
-        MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
-        if (user) {
-            identifyRequest = [MPIdentityApiRequest requestWithUser:user];
-        }
-        else {
-            identifyRequest = [MPIdentityApiRequest requestWithEmptyUser];
-        }
-        
-        NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [_backendController userIdentitiesForUserId:[MPPersistenceController mpId]];
-        [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            NSString *identity = obj[@"i"];
-            NSNumber *type = obj[@"n"];
-            [identifyRequest setUserIdentity:identity identityType:[type intValue]];
-        }];
-    }
-    
     id currentIdentifier = userDefaults[kMPUserIdentitySharedGroupIdentifier];
     if (options.sharedGroupID == currentIdentifier) {
         // Do nothing, we only want to update NSUserDefaults on a change
@@ -520,6 +499,15 @@ NSString *const kMPStateKey = @"state";
                            
                            if (!strongSelf) {
                                return;
+                           }
+                           
+                           MPIdentityApiRequest *identifyRequest = nil;
+                           if (options.identifyRequest) {
+                               identifyRequest = options.identifyRequest;
+                           }
+                           else {
+                               MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+                               identifyRequest = [MPIdentityApiRequest requestWithUser:user];
                            }
                            
                            [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
