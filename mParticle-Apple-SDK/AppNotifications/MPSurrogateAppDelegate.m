@@ -3,24 +3,7 @@
 #import "MPNotificationController.h"
 #import "MPAppNotificationHandler.h"
 
-@interface MPSurrogateAppDelegate() {
-    dispatch_queue_t userNotificationQueue;
-}
-@end
-
-
 @implementation MPSurrogateAppDelegate
-
-- (instancetype)init {
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    userNotificationQueue = dispatch_queue_create("com.mParticle.UserNotificationQueue", DISPATCH_QUEUE_SERIAL);
-    
-    return self;
-}
 
 #pragma mark UIApplicationDelegate
 #if TARGET_OS_IOS == 1
@@ -50,22 +33,16 @@
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    void (^userNotificationCompletionHandler)(UIBackgroundFetchResult) = ^(UIBackgroundFetchResult fetchResult) {
-        dispatch_async(userNotificationQueue, ^{
-            completionHandler(fetchResult);
-        });
-    };
-    
     MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
     [appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeAutoDetect];
     
     if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
-        [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:userNotificationCompletionHandler];
+        [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
     } else if ([_appDelegateProxy.originalAppDelegate respondsToSelector:@selector(application:didReceiveRemoteNotification:)] && appNotificationHandler.runningMode == MPUserNotificationRunningModeForeground) {
         [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo];
-        userNotificationCompletionHandler(UIBackgroundFetchResultNewData);
+        completionHandler(UIBackgroundFetchResultNewData);
     } else {
-        userNotificationCompletionHandler(UIBackgroundFetchResultNewData);
+        completionHandler(UIBackgroundFetchResultNewData);
     }
 }
 
