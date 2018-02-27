@@ -62,7 +62,6 @@ static BOOL appBackgrounded = NO;
     __weak MPSession *sessionBeingUploaded;
     NSNotification *didFinishLaunchingNotification;
     dispatch_queue_t backendQueue;
-    dispatch_queue_t notificationsQueue;
     NSTimeInterval nextCleanUpTime;
     NSTimeInterval timeAppWentToBackground;
     NSTimeInterval backgroundStartTime;
@@ -116,7 +115,6 @@ static BOOL appBackgrounded = NO;
         backendSemaphore = dispatch_semaphore_create(1);
         
         backendQueue = dispatch_queue_create("com.mParticle.BackendQueue", DISPATCH_QUEUE_SERIAL);
-        notificationsQueue = dispatch_queue_create("com.mParticle.NotificationsQueue", DISPATCH_QUEUE_CONCURRENT);
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -321,7 +319,7 @@ static BOOL appBackgrounded = NO;
     __weak MPBackendController *weakSelf = self;
     double delay = _initializationStatus == MPInitializationStatusStarted ? 0 : 0.1;
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), notificationsQueue, ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
         if (strongSelf) {
@@ -337,7 +335,7 @@ static BOOL appBackgrounded = NO;
     
     __weak MPBackendController *weakSelf = self;
     NSNumber *sessionId = @(session.sessionId);
-    dispatch_async(notificationsQueue, ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
         if (strongSelf && sessionId) {
