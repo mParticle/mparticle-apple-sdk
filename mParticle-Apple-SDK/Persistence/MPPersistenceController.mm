@@ -846,15 +846,24 @@ const int MaxBreadcrumbs = 50;
 
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp {
     dispatch_barrier_async(dbQueue, ^{
-        vector<string> tables = {"messages", "uploads", "sessions", "standalone_messages", "standalone_uploads"};
-        vector<string> timeFields = {"timestamp", "timestamp", "timestamp", "end_time", "timestamp", "timestamp", "timestamp", "receipt_time"};
         
-        size_t idx = 0;
+        char *errMsg;
+        string sqlStatement = "BEGIN TRANSACTION";
         
-        for (auto &table : tables) {
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "DELETE FROM " + table + " WHERE " + timeFields[idx] + " < ?";
-            
+        if (sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
+            MPILogError("Problem Beginning SQL Transaction: %s\n", sqlStatement.c_str());
+        }
+        
+        vector<string> sqlStatements = {
+            "DELETE FROM messages WHERE timestamp < ?",
+            "DELETE FROM uploads WHERE timestamp < ?",
+            "DELETE FROM sessions WHERE end_time < ?",
+            "DELETE FROM standalone_messages WHERE timestamp < ?",
+            "DELETE FROM standalone_uploads WHERE timestamp < ?"
+        };
+        
+        sqlite3_stmt *preparedStatement;
+        for (const auto &sqlStatement : sqlStatements) {
             if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
                 sqlite3_bind_double(preparedStatement, 1, timestamp);
                 
@@ -864,9 +873,13 @@ const int MaxBreadcrumbs = 50;
                 
                 sqlite3_clear_bindings(preparedStatement);
             }
-            
             sqlite3_finalize(preparedStatement);
-            ++idx;
+        }
+        
+        sqlStatement = "END TRANSACTION";
+        
+        if (sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
+            MPILogError("Problem Ending SQL Transaction: %s\n", sqlStatement.c_str());
         }
     });
 }
