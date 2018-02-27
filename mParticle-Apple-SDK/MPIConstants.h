@@ -229,8 +229,6 @@ extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
 extern NSString * _Nonnull const kMPConfigureExceptionHandlingNotification;
-extern NSString * _Nonnull const kMPRemoteNotificationOpenKey;
-extern NSString * _Nonnull const kMPLogRemoteNotificationKey;
 extern NSString * _Nonnull const kMPRemoteNotificationReceivedNotification;
 extern NSString * _Nonnull const kMPUserNotificationDictionaryKey;
 extern NSString * _Nonnull const kMPUserNotificationActionKey;

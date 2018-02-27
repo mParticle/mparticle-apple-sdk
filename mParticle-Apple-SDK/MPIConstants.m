@@ -190,8 +190,6 @@ NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
 // Notifications
 NSString *const kMPCrashReportOccurredNotification = @"MPCrashReportOccurredNotification";
 NSString *const kMPConfigureExceptionHandlingNotification = @"MPConfigureExceptionHandlingNotification";
-NSString *const kMPRemoteNotificationOpenKey = @"MPRemoteNotificationOpen";
-NSString *const kMPLogRemoteNotificationKey = @"MPLogRemoteNotification";
 NSString *const kMPRemoteNotificationReceivedNotification = @"MPRemoteNotificationReceivedNotification";
 NSString *const kMPUserNotificationDictionaryKey = @"MPUserNotificationDictionaryKey";
 NSString *const kMPUserNotificationActionKey = @"MPUserNotificationActionKey";
