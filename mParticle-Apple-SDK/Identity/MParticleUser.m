@@ -88,7 +88,7 @@
 
 - (void)setUserId:(NSNumber *)userId {
     _userId = userId;
-    _cart = nil;
+    _cart = [[MPCart alloc] initWithUserId:userId];
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {

@@ -120,7 +120,7 @@ const int MaxBreadcrumbs = 50;
 + (NSNumber *)mpId {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *mpId = userDefaults[@"mpid"];
-    if (!mpId) {
+    if (mpId == nil) {
         mpId = @0;
     }
     
@@ -1720,7 +1720,7 @@ const int MaxBreadcrumbs = 50;
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         string sqlStatement;
-        if (sessionId) {
+        if (sessionId != nil) {
             sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id = ? ORDER BY _id";
         } else {
             sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id IS NULL ORDER BY _id";

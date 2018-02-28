@@ -200,7 +200,7 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 + (BOOL)MPUserIdentity:(NSNumber *)json identity:(MPUserIdentity *)identity {
     MPUserIdentity localIdentity;
     
-    if (!json) {
+    if (json == nil) {
         return NO;
     }
     

@@ -16,14 +16,12 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
 
     // Consumer Information
-    if (sessionId) {
+    if (sessionId != nil) {
         MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;
         [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
         [persistence updateConsumerInfo:consumerInfo];
         [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId] completionHandler:^(MPConsumerInfo *consumerInfo) {
-            if (consumerInfo == nil) {
-                [MPStateMachine sharedInstance].consumerInfo = consumerInfo;
-            } else if (consumerInfo.cookies != nil) {
+            if (consumerInfo.cookies != nil) {
                 [MPStateMachine sharedInstance].consumerInfo.cookies = consumerInfo.cookies;
             }
         }];

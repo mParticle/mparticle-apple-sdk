@@ -31,7 +31,7 @@
     }
     
     NSNumber *requestTimestamp = @(floor([[NSDate date] timeIntervalSince1970]));
-    if (requestTimestamp) {
+    if (requestTimestamp != nil) {
         dictionary[@"request_timestamp_ms"] = @([requestTimestamp longLongValue] * 1000);
     }
     

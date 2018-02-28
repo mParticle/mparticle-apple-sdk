@@ -89,7 +89,7 @@ using namespace std;
 - (NSString *)description {
     NSString *description;
     
-    if (_sessionId) {
+    if (_sessionId != nil) {
         description = [NSString stringWithFormat:@"MPUploadBuilder\n Session Id: %lld\n UploadDictionary: %@", self.sessionId.longLongValue, uploadDictionary];
     } else {
         description = [NSString stringWithFormat:@"MPUploadBuilder\n UploadDictionary: %@", uploadDictionary];

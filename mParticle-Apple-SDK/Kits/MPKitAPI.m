@@ -101,7 +101,7 @@
     if (error || !result) {
         
         NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-        if (_kitCode) {
+        if (_kitCode != nil) {
             userInfo[mParticleKitInstanceKey] = _kitCode;
         }
         

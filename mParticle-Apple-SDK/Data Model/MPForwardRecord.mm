@@ -138,7 +138,7 @@ NSString *const kMPFROptOutState = @"s";
 }
 
 - (void)setTimestamp:(NSNumber *)timestamp {
-    if (timestamp) {
+    if (timestamp != nil) {
         _dataDictionary[kMPTimestampKey] = timestamp;
     }
 }
