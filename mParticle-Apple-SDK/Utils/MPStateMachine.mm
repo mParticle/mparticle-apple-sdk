@@ -11,7 +11,6 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
-#import "MPBags.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
 #import "MPKitContainer.h"
@@ -354,15 +353,6 @@ static BOOL runningInBackground = NO;
 }
 
 #pragma mark Public accessors
-- (MPBags *)bags {
-    if (_bags) {
-        return _bags;
-    }
-    
-    _bags = [[MPBags alloc] init];
-    return _bags;
-}
-
 - (MPConsoleLogging)consoleLogging {
     if (_consoleLogging != MPConsoleLoggingAutoDetect) {
         return _consoleLogging;

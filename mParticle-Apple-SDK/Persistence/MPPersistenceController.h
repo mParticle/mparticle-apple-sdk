@@ -4,7 +4,6 @@
 
 @class MPSegment;
 @class MPMessage;
-@class MPProductBag;
 @class MPSession;
 @class MPUpload;
 @class MPCookie;
@@ -46,8 +45,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;
-- (void)deleteProductBag:(nonnull MPProductBag *)productBag;
-- (void)deleteAllProductBags;
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp;
 - (void)deleteSegments;
 - (void)deleteSession:(nonnull MPSession *)session;
@@ -66,7 +63,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (void)fetchPreviousSession:(void (^ _Nonnull)(MPSession * _Nullable previousSession))completionHandler;
 - (nullable MPSession *)fetchPreviousSessionSync;
-- (nullable NSArray<MPProductBag *> *)fetchProductBags;
 - (nullable NSArray<MPSegment *> *)fetchSegments;
 - (nullable MPMessage *)fetchSessionEndMessageInSession:(nonnull MPSession *)session;
 - (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler;
@@ -83,7 +79,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)saveForwardRecord:(nonnull MPForwardRecord *)forwardRecord;
 - (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
 - (void)saveMessage:(nonnull MPMessage *)message;
-- (void)saveProductBag:(nonnull MPProductBag *)productBag;
 - (void)saveSegment:(nonnull MPSegment *)segment;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation;

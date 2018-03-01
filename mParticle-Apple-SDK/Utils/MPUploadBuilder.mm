@@ -11,8 +11,6 @@
 #import "MPConsumerInfo.h"
 #import "MPApplication.h"
 #import "MPDevice.h"
-#import "MPBags.h"
-#import "MPBags+Internal.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
 
@@ -139,11 +137,6 @@ using namespace std;
     NSString *deviceApplicationStamp = consumerInfo.deviceApplicationStamp;
     if (deviceApplicationStamp) {
         uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
-    }
-    
-    NSDictionary *productBags = [stateMachine.bags dictionaryRepresentation];
-    if (productBags) {
-        uploadDictionary[kMPProductBagKey] = productBags;
     }
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];

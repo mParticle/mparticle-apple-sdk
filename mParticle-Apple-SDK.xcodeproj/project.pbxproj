@@ -56,7 +56,6 @@
 		C911FD9C1D8A365A002A3516 /* MPLaunchInfoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20AB1D8A190600D3ABBE /* MPLaunchInfoTests.m */; };
 		C911FD9D1D8A365A002A3516 /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20AC1D8A190600D3ABBE /* MPMessageBuilderTests.m */; };
 		C911FD9F1D8A365A002A3516 /* MPPersistenceControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */; };
-		C911FDA01D8A365A002A3516 /* MPProductBagTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B11D8A190600D3ABBE /* MPProductBagTests.m */; };
 		C911FDA11D8A365A002A3516 /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */; };
 		C911FDA21D8A365A002A3516 /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */; };
 		C911FDA31D8A365A002A3516 /* MPUploadBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B41D8A190600D3ABBE /* MPUploadBuilderTests.m */; };
@@ -103,9 +102,6 @@
 		C935A6DB1D8A2DED00A1EE2F /* MPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C8F1D8A112B00D3ABBE /* MPSession.m */; };
 		C935A6E21D8A2DED00A1EE2F /* MPUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C961D8A112B00D3ABBE /* MPUpload.h */; };
 		C935A6E31D8A2DED00A1EE2F /* MPUpload.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C971D8A112B00D3ABBE /* MPUpload.m */; };
-		C935A6E41D8A2DF400A1EE2F /* MPBags+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C991D8A112B00D3ABBE /* MPBags+Internal.h */; };
-		C935A6E51D8A2DF400A1EE2F /* MPBags.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C9A1D8A112B00D3ABBE /* MPBags.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C935A6E61D8A2DF400A1EE2F /* MPBags.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C9B1D8A112B00D3ABBE /* MPBags.m */; };
 		C935A6E71D8A2DF400A1EE2F /* MPCart+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C9C1D8A112B00D3ABBE /* MPCart+Dictionary.h */; };
 		C935A6E81D8A2DF400A1EE2F /* MPCart.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C9D1D8A112B00D3ABBE /* MPCart.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A6E91D8A2DF400A1EE2F /* MPCart.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C9E1D8A112B00D3ABBE /* MPCart.m */; };
@@ -119,8 +115,6 @@
 		C935A6F11D8A2DF400A1EE2F /* MPProduct+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CA61D8A112B00D3ABBE /* MPProduct+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A6F21D8A2DF400A1EE2F /* MPProduct.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CA71D8A112B00D3ABBE /* MPProduct.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A6F31D8A2DF400A1EE2F /* MPProduct.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CA81D8A112B00D3ABBE /* MPProduct.mm */; };
-		C935A6F41D8A2DF400A1EE2F /* MPProductBag.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CA91D8A112B00D3ABBE /* MPProductBag.h */; };
-		C935A6F51D8A2DF400A1EE2F /* MPProductBag.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CAA1D8A112B00D3ABBE /* MPProductBag.m */; };
 		C935A6F61D8A2DF400A1EE2F /* MPPromotion+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAB1D8A112B00D3ABBE /* MPPromotion+Dictionary.h */; };
 		C935A6F71D8A2DF400A1EE2F /* MPPromotion.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAC1D8A112B00D3ABBE /* MPPromotion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A6F81D8A2DF400A1EE2F /* MPPromotion.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CAD1D8A112B00D3ABBE /* MPPromotion.mm */; };
@@ -268,9 +262,6 @@
 		C9DD1FBA1D8A13D600D3ABBE /* MPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C8F1D8A112B00D3ABBE /* MPSession.m */; };
 		C9DD1FC11D8A13D600D3ABBE /* MPUpload.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C961D8A112B00D3ABBE /* MPUpload.h */; };
 		C9DD1FC21D8A13D600D3ABBE /* MPUpload.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C971D8A112B00D3ABBE /* MPUpload.m */; };
-		C9DD1FC31D8A13DC00D3ABBE /* MPBags+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C991D8A112B00D3ABBE /* MPBags+Internal.h */; };
-		C9DD1FC41D8A13DC00D3ABBE /* MPBags.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C9A1D8A112B00D3ABBE /* MPBags.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		C9DD1FC51D8A13DC00D3ABBE /* MPBags.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C9B1D8A112B00D3ABBE /* MPBags.m */; };
 		C9DD1FC61D8A13DC00D3ABBE /* MPCart+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C9C1D8A112B00D3ABBE /* MPCart+Dictionary.h */; };
 		C9DD1FC71D8A13DC00D3ABBE /* MPCart.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1C9D1D8A112B00D3ABBE /* MPCart.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FC81D8A13DC00D3ABBE /* MPCart.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1C9E1D8A112B00D3ABBE /* MPCart.m */; };
@@ -284,8 +275,6 @@
 		C9DD1FD01D8A13DC00D3ABBE /* MPProduct+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CA61D8A112B00D3ABBE /* MPProduct+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FD11D8A13DC00D3ABBE /* MPProduct.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CA71D8A112B00D3ABBE /* MPProduct.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FD21D8A13DC00D3ABBE /* MPProduct.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CA81D8A112B00D3ABBE /* MPProduct.mm */; };
-		C9DD1FD31D8A13DC00D3ABBE /* MPProductBag.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CA91D8A112B00D3ABBE /* MPProductBag.h */; };
-		C9DD1FD41D8A13DC00D3ABBE /* MPProductBag.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CAA1D8A112B00D3ABBE /* MPProductBag.m */; };
 		C9DD1FD51D8A13DC00D3ABBE /* MPPromotion+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAB1D8A112B00D3ABBE /* MPPromotion+Dictionary.h */; };
 		C9DD1FD61D8A13DC00D3ABBE /* MPPromotion.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAC1D8A112B00D3ABBE /* MPPromotion.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FD71D8A13DC00D3ABBE /* MPPromotion.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CAD1D8A112B00D3ABBE /* MPPromotion.mm */; };
@@ -431,7 +420,6 @@
 		C9DD20F81D8A201200D3ABBE /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20AC1D8A190600D3ABBE /* MPMessageBuilderTests.m */; };
 		C9DD20F91D8A201E00D3ABBE /* MPNotificationControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20AF1D8A190600D3ABBE /* MPNotificationControllerTests.m */; };
 		C9DD20FA1D8A202200D3ABBE /* MPPersistenceControllerTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */; };
-		C9DD20FB1D8A202500D3ABBE /* MPProductBagTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B11D8A190600D3ABBE /* MPProductBagTests.m */; };
 		C9DD20FC1D8A202A00D3ABBE /* MPResponseConfigTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */; };
 		C9DD20FD1D8A202D00D3ABBE /* MPStateMachineTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */; };
 		C9DD20FE1D8A203200D3ABBE /* MPUploadBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B41D8A190600D3ABBE /* MPUploadBuilderTests.m */; };
@@ -555,9 +543,6 @@
 		C9DD1C8F1D8A112B00D3ABBE /* MPSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSession.m; sourceTree = "<group>"; };
 		C9DD1C961D8A112B00D3ABBE /* MPUpload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUpload.h; sourceTree = "<group>"; };
 		C9DD1C971D8A112B00D3ABBE /* MPUpload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUpload.m; sourceTree = "<group>"; };
-		C9DD1C991D8A112B00D3ABBE /* MPBags+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPBags+Internal.h"; sourceTree = "<group>"; };
-		C9DD1C9A1D8A112B00D3ABBE /* MPBags.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBags.h; sourceTree = "<group>"; };
-		C9DD1C9B1D8A112B00D3ABBE /* MPBags.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBags.m; sourceTree = "<group>"; };
 		C9DD1C9C1D8A112B00D3ABBE /* MPCart+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPCart+Dictionary.h"; sourceTree = "<group>"; };
 		C9DD1C9D1D8A112B00D3ABBE /* MPCart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCart.h; sourceTree = "<group>"; };
 		C9DD1C9E1D8A112B00D3ABBE /* MPCart.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCart.m; sourceTree = "<group>"; };
@@ -571,8 +556,6 @@
 		C9DD1CA61D8A112B00D3ABBE /* MPProduct+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPProduct+Dictionary.h"; sourceTree = "<group>"; };
 		C9DD1CA71D8A112B00D3ABBE /* MPProduct.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPProduct.h; sourceTree = "<group>"; };
 		C9DD1CA81D8A112B00D3ABBE /* MPProduct.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPProduct.mm; sourceTree = "<group>"; };
-		C9DD1CA91D8A112B00D3ABBE /* MPProductBag.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPProductBag.h; sourceTree = "<group>"; };
-		C9DD1CAA1D8A112B00D3ABBE /* MPProductBag.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPProductBag.m; sourceTree = "<group>"; };
 		C9DD1CAB1D8A112B00D3ABBE /* MPPromotion+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPPromotion+Dictionary.h"; sourceTree = "<group>"; };
 		C9DD1CAC1D8A112B00D3ABBE /* MPPromotion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPPromotion.h; sourceTree = "<group>"; };
 		C9DD1CAD1D8A112B00D3ABBE /* MPPromotion.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPPromotion.mm; sourceTree = "<group>"; };
@@ -727,7 +710,6 @@
 		C9DD20AE1D8A190600D3ABBE /* MPNotificationController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNotificationController+Tests.h"; sourceTree = "<group>"; };
 		C9DD20AF1D8A190600D3ABBE /* MPNotificationControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNotificationControllerTests.m; sourceTree = "<group>"; };
 		C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
-		C9DD20B11D8A190600D3ABBE /* MPProductBagTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPProductBagTests.m; sourceTree = "<group>"; };
 		C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfigTests.m; sourceTree = "<group>"; };
 		C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPStateMachineTests.mm; sourceTree = "<group>"; };
 		C9DD20B41D8A190600D3ABBE /* MPUploadBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadBuilderTests.m; sourceTree = "<group>"; };
@@ -956,9 +938,6 @@
 		C9DD1C981D8A112B00D3ABBE /* Ecommerce */ = {
 			isa = PBXGroup;
 			children = (
-				C9DD1C991D8A112B00D3ABBE /* MPBags+Internal.h */,
-				C9DD1C9A1D8A112B00D3ABBE /* MPBags.h */,
-				C9DD1C9B1D8A112B00D3ABBE /* MPBags.m */,
 				C9DD1C9C1D8A112B00D3ABBE /* MPCart+Dictionary.h */,
 				C9DD1C9D1D8A112B00D3ABBE /* MPCart.h */,
 				C9DD1C9E1D8A112B00D3ABBE /* MPCart.m */,
@@ -972,8 +951,6 @@
 				C9DD1CA61D8A112B00D3ABBE /* MPProduct+Dictionary.h */,
 				C9DD1CA71D8A112B00D3ABBE /* MPProduct.h */,
 				C9DD1CA81D8A112B00D3ABBE /* MPProduct.mm */,
-				C9DD1CA91D8A112B00D3ABBE /* MPProductBag.h */,
-				C9DD1CAA1D8A112B00D3ABBE /* MPProductBag.m */,
 				C9DD1CAB1D8A112B00D3ABBE /* MPPromotion+Dictionary.h */,
 				C9DD1CAC1D8A112B00D3ABBE /* MPPromotion.h */,
 				C9DD1CAD1D8A112B00D3ABBE /* MPPromotion.mm */,
@@ -1225,7 +1202,6 @@
 				C9DD20AE1D8A190600D3ABBE /* MPNotificationController+Tests.h */,
 				C9DD20AF1D8A190600D3ABBE /* MPNotificationControllerTests.m */,
 				C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */,
-				C9DD20B11D8A190600D3ABBE /* MPProductBagTests.m */,
 				C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */,
 				B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */,
 				C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */,
@@ -1252,7 +1228,6 @@
 				C935A6C91D8A2DED00A1EE2F /* MPBreadcrumb.h in Headers */,
 				C935A70D1D8A2E0500A1EE2F /* MPKitConfiguration.h in Headers */,
 				04F643F81EFC0487000FADE3 /* MPIdentityApi.h in Headers */,
-				C935A6E51D8A2DF400A1EE2F /* MPBags.h in Headers */,
 				C935A6D41D8A2DED00A1EE2F /* MPMessage.h in Headers */,
 				C935A7361D8A2E2200A1EE2F /* MPNetworkPerformance.h in Headers */,
 				C935A7761D8A2E4000A1EE2F /* MPIHasher.h in Headers */,
@@ -1269,10 +1244,8 @@
 				C935A6FD1D8A2DFD00A1EE2F /* EventTypeName.h in Headers */,
 				C935A6C51D8A2DE700A1EE2F /* MPCustomModulePreference.h in Headers */,
 				C935A6F91D8A2DF400A1EE2F /* MPTransactionAttributes+Dictionary.h in Headers */,
-				C935A6E41D8A2DF400A1EE2F /* MPBags+Internal.h in Headers */,
 				C935A73A1D8A2E2200A1EE2F /* MPURLRequestBuilder.h in Headers */,
 				C935A7481D8A2E3800A1EE2F /* MPBracket.h in Headers */,
-				C935A6F41D8A2DF400A1EE2F /* MPProductBag.h in Headers */,
 				C935A7131D8A2E0500A1EE2F /* MPKitFilter.h in Headers */,
 				DB16793C201BDC9B005CA3DA /* MPConsentEvent.h in Headers */,
 				C935A6D61D8A2DED00A1EE2F /* MPSegment.h in Headers */,
@@ -1384,7 +1357,6 @@
 				C9DD1FD01D8A13DC00D3ABBE /* MPProduct+Dictionary.h in Headers */,
 				C9DD1FA81D8A13D600D3ABBE /* MPBreadcrumb.h in Headers */,
 				C9DD1F9C1D8A13CA00D3ABBE /* MPAppNotificationHandler.h in Headers */,
-				C9DD1FC31D8A13DC00D3ABBE /* MPBags+Internal.h in Headers */,
 				C9DD20421D8A142000D3ABBE /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				C9DD1FB71D8A13D600D3ABBE /* MPSegmentMembership.h in Headers */,
 				C9DD1FD51D8A13DC00D3ABBE /* MPPromotion+Dictionary.h in Headers */,
@@ -1414,7 +1386,6 @@
 				04F643F51EFC03E7000FADE3 /* MPIdentityApi.h in Headers */,
 				C9DD20171D8A140800D3ABBE /* MPURLConnectionAssociate.h in Headers */,
 				C9DD1FEE1D8A13EA00D3ABBE /* MPKitContainer.h in Headers */,
-				C9DD1FC41D8A13DC00D3ABBE /* MPBags.h in Headers */,
 				C9DD1FE61D8A13EA00D3ABBE /* MPBaseProjection.h in Headers */,
 				C9DD1FE21D8A13E200D3ABBE /* MPEvent.h in Headers */,
 				C9DD202A1D8A142000D3ABBE /* MPDateFormatter.h in Headers */,
@@ -1438,7 +1409,6 @@
 				C9DD1FFD1D8A13FB00D3ABBE /* MPILogger.h in Headers */,
 				DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */,
 				04F6440D1EFC8278000FADE3 /* MParticleUser.h in Headers */,
-				C9DD1FD31D8A13DC00D3ABBE /* MPProductBag.h in Headers */,
 				DB678C351F180E0A0015587D /* MPUserIdentityChange.h in Headers */,
 				C9DD1FA41D8A13D000D3ABBE /* MPCustomModulePreference.h in Headers */,
 				C9DD20591D8A142900D3ABBE /* MPBackendController.h in Headers */,
@@ -1656,7 +1626,6 @@
 				C911FDA51D8A365A002A3516 /* MPUserAttributeChangeTests.m in Sources */,
 				C911FD8F1D8A365A002A3516 /* MPCustomModuleTests.m in Sources */,
 				DB3935171F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */,
-				C911FDA01D8A365A002A3516 /* MPProductBagTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1666,7 +1635,6 @@
 			files = (
 				C935A75A1D8A2E3800A1EE2F /* MPStateMachine.mm in Sources */,
 				C935A6C81D8A2DED00A1EE2F /* MParticleUserNotification.m in Sources */,
-				C935A6F51D8A2DF400A1EE2F /* MPProductBag.m in Sources */,
 				C935A7641D8A2E3800A1EE2F /* NSDictionary+MPCaseInsensitive.m in Sources */,
 				C935A7391D8A2E2200A1EE2F /* MPURLConnectionAssociate.m in Sources */,
 				C935A7011D8A2DFD00A1EE2F /* MPEvent+Internal.mm in Sources */,
@@ -1709,7 +1677,6 @@
 				C935A7561D8A2E3800A1EE2F /* MPResponseConfig.m in Sources */,
 				C935A75E1D8A2E3800A1EE2F /* MPUserAttributeChange.m in Sources */,
 				DB615E321F1FB6EE006D79BE /* MPIUserDefaults.m in Sources */,
-				C935A6E61D8A2DF400A1EE2F /* MPBags.m in Sources */,
 				C935A7101D8A2E0500A1EE2F /* MPKitContainer.mm in Sources */,
 				DBA894681F17CBEE005B21FB /* MPIdentityDTO.m in Sources */,
 				C935A6CA1D8A2DED00A1EE2F /* MPBreadcrumb.m in Sources */,
@@ -1784,7 +1751,6 @@
 				C9DD202D1D8A142000D3ABBE /* MPDevice.m in Sources */,
 				C9DD20401D8A142000D3ABBE /* MPZip.cpp in Sources */,
 				C9DD1FBA1D8A13D600D3ABBE /* MPSession.m in Sources */,
-				C9DD1FC51D8A13DC00D3ABBE /* MPBags.m in Sources */,
 				C9DD1FF51D8A13EA00D3ABBE /* MPKitInstanceValidator.m in Sources */,
 				04F6440E1EFC8278000FADE3 /* MParticleUser.m in Sources */,
 				C9DD1FA51D8A13D000D3ABBE /* MPCustomModulePreference.m in Sources */,
@@ -1816,7 +1782,6 @@
 				C9DD1FC21D8A13D600D3ABBE /* MPUpload.m in Sources */,
 				C9DD20221D8A141400D3ABBE /* MPPersistenceController.mm in Sources */,
 				C9DD203D1D8A142000D3ABBE /* MPUserAttributeChange.m in Sources */,
-				C9DD1FD41D8A13DC00D3ABBE /* MPProductBag.m in Sources */,
 				C9DD1FB21D8A13D600D3ABBE /* MPIntegrationAttributes.m in Sources */,
 				C9C9DC3B1DAC04670079A05D /* MPForwardQueueParameters.m in Sources */,
 				C9DD1F9D1D8A13CA00D3ABBE /* MPAppNotificationHandler.mm in Sources */,
@@ -1857,7 +1822,6 @@
 				C9DD21001D8A203900D3ABBE /* MPUserAttributeChangeTests.m in Sources */,
 				DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */,
 				C9DD20F21D8A1FF000D3ABBE /* MPKitConfigurationTests.mm in Sources */,
-				C9DD20FB1D8A202500D3ABBE /* MPProductBagTests.m in Sources */,
 				04B1670B20000E0F0027F077 /* MPIdentityTests.m in Sources */,
 				C9DD20F01D8A1FAF00D3ABBE /* MPIntegrationAttributesTest.m in Sources */,
 				C9AB50681DFF0C4B0036BEE9 /* MPKitActivityTests.m in Sources */,

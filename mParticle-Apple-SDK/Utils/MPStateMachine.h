@@ -6,7 +6,6 @@
 @class MPSession;
 @class MPNotificationController;
 @class MPConsumerInfo;
-@class MPBags;
 @class MPLocationManager;
 @class MPCustomModule;
 @class MPSearchAdsAttribution;
@@ -23,7 +22,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @interface MPStateMachine : NSObject
 
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
-@property (nonatomic, strong, nonnull) MPBags *bags;
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
 @property (nonatomic, weak, nullable) MPSession *currentSession;
 @property (nonatomic, strong, nullable) NSArray<MPCustomModule *> *customModules;

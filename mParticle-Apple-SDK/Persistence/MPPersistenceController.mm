@@ -12,7 +12,6 @@
 #include <vector>
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
-#import "MPProductBag.h"
 #import "MPForwardRecord.h"
 #include "MessageTypeName.h"
 #import "MPIntegrationAttributes.h"
@@ -800,41 +799,6 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (void)deleteProductBag:(MPProductBag *)productBag {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM product_bags WHERE name = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string name = string([productBag.name UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, name.c_str(), (int)name.size(), SQLITE_STATIC);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting product bag: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)deleteAllProductBags {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM product_bags";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting product bags: %s", sqlite3_errmsg(mParticleDB));
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp {
     dispatch_barrier_async(dbQueue, ^{
         vector<string> tables = {"messages", "uploads", "sessions"};
@@ -1409,45 +1373,6 @@ const int MaxBreadcrumbs = 50;
     });
     
     return previousSession;
-}
-
-- (nullable NSArray<MPProductBag *> *)fetchProductBags {
-    __block vector<MPProductBag *> productBagsVector;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT name, product_data FROM product_bags ORDER BY name, timestamp, _id";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            NSString *lastBagName = nil;
-            
-            MPProductBag *productBag = nil;
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                NSString *name = stringValue(preparedStatement, 0);
-                
-                if (![lastBagName isEqualToString:name]) {
-                    lastBagName = name;
-                    productBag = [[MPProductBag alloc] initWithName:name];
-                    productBagsVector.push_back(productBag);
-                }
-                
-                MPProduct *product = [NSKeyedUnarchiver unarchiveObjectWithData:dataValue(preparedStatement, 1)];
-                
-                if (product) {
-                    [productBag.products addObject:product];
-                }
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
-    
-    if (productBagsVector.empty()) {
-        return nil;
-    }
-    
-    NSArray<MPProductBag *> *productBags = [NSArray arrayWithObjects:&productBagsVector[0] count:productBagsVector.size()];
-    return productBags;
 }
 
 - (nullable NSArray<MPSegment *> *)fetchSegments {
@@ -2058,41 +1983,6 @@ const int MaxBreadcrumbs = 50;
         }
         
         sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)saveProductBag:(MPProductBag *)productBag {
-    [self deleteProductBag:productBag];
-    
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO product_bags (name, timestamp, product_data) VALUES (?, ?, ?)";
-        
-        string auxString;
-        NSData *productData;
-        
-        for (MPProduct *product in productBag.products) {
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                auxString = string([productBag.name UTF8String]);
-                sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT); // name
-                
-                sqlite3_bind_double(preparedStatement, 2, [[NSDate date] timeIntervalSince1970]); // timestamp
-                
-                productData = [NSKeyedArchiver archivedDataWithRootObject:product];
-                sqlite3_bind_blob(preparedStatement, 3, [productData bytes], (int)[productData length], SQLITE_STATIC); // product_data
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while storing product bag: %s", sqlite3_errmsg(mParticleDB));
-                    sqlite3_clear_bindings(preparedStatement);
-                    sqlite3_finalize(preparedStatement);
-                    return;
-                }
-                
-                sqlite3_clear_bindings(preparedStatement);
-            }
-            
-            sqlite3_finalize(preparedStatement);
-        }
     });
 }
 

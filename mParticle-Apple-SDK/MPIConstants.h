@@ -95,7 +95,6 @@ extern NSString * _Nonnull const kMPIsFirstTimeUserIdentityHasBeenSet;
 extern NSString * _Nonnull const kMPRemoteNotificationCampaignHistoryKey;
 extern NSString * _Nonnull const kMPRemoteNotificationContentIdHistoryKey;
 extern NSString * _Nonnull const kMPRemoteNotificationTimestampHistoryKey;
-extern NSString * _Nonnull const kMPProductBagKey;
 extern NSString * _Nonnull const kMPForwardStatsRecord;
 
 // Consent events

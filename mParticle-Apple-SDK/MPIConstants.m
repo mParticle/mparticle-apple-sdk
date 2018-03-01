@@ -56,7 +56,6 @@ NSString *const kMPDateUserIdentityWasFirstSet = @"dfs";
 NSString *const kMPIsFirstTimeUserIdentityHasBeenSet = @"f";
 NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
-NSString *const kMPProductBagKey = @"pb";
 NSString *const kMPForwardStatsRecord = @"fsr";
 
 // Consent events

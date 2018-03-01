@@ -271,10 +271,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark - Public accessors and methods
-- (MPBags *)bags {
-    return [MPStateMachine sharedInstance].bags;
-}
-
 - (MPIdentityApi *)identity {
     if (_identity) {
         return _identity;
