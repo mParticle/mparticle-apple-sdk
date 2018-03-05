@@ -13,5 +13,6 @@
 - (void)migrateUserKeysWithUserId:(nonnull NSNumber *)userId;
 - (void)migrateToSharedGroupIdentifier:(nonnull NSString *)groupIdentifier;
 - (void)migrateFromSharedGroupIdentifier;
+- (BOOL)isExistingUserId:(nonnull NSNumber *)userId;
 
 @end

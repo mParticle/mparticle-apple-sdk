@@ -33,6 +33,28 @@
     XCTAssertEqualObjects(request.email, @"test@example.com");
 }
 
+- (void)testSelectedUserIdentityRequest {
+    NSNumber *selectedUserID = [NSNumber numberWithInteger:58591];
+
+
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    //Set up Identity to exist
+    [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:selectedUserID];
+    
+    MParticleUser *selectedUser = [[MParticle sharedInstance].identity getUser:selectedUserID];
+    
+    XCTAssertNotNil(selectedUser);
+    
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@example.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:selectedUser.userId];
+    
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:selectedUser];
+    XCTAssertEqualObjects(request.customerId, @"test");
+    XCTAssertEqualObjects(request.email, @"test@example.com");
+}
+
 - (void)testUserIdentityInstance {
     NSDate *date = [NSDate date];
     

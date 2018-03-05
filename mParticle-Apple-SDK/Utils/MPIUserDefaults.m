@@ -16,7 +16,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
                                               @"ui",                /* kMPUserIdentityArrayKey */
                                               @"ck",                /* kMPRemoteConfigCookiesKey */
                                               @"ltv",               /* kMPLifeTimeValueKey */
-                                              @"is_ephemeral"       /* kMPIsEphemeralKey */
+                                              @"is_ephemeral",      /* kMPIsEphemeralKey */
+                                              @"last_date_used"     /* kMPLastIdentifiedDate  */
                                               ];
     return userSpecificKeys;
 }
@@ -167,6 +168,15 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     
     [standardUserDefaults removeObjectForKey:kMPUserIdentitySharedGroupIdentifier];
+}
+
+- (BOOL)isExistingUserId:(NSNumber *)userId {
+    NSDate *dateLastIdentified = [self mpObjectForKey:kMPLastIdentifiedDate userId:userId];
+    if (dateLastIdentified != nil) {
+        return true;
+    }
+    
+    return false;
 }
 
 #pragma mark Objective-C Literals

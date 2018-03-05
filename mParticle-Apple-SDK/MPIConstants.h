@@ -180,6 +180,7 @@ extern NSString * _Nonnull const kMPSynchedUserAttributesKey;
 extern NSString * _Nonnull const kMPSynchedUserIdentitiesKey;
 extern NSString * _Nonnull const kMPSessionUserIdsKey;
 extern NSString * _Nonnull const kMPIsEphemeralKey;
+extern NSString * _Nonnull const kMPLastIdentifiedDate;
 extern NSString * _Nonnull const kMPDeviceApplicationStampKey;
 extern NSString * _Nonnull const kMPDeviceApplicationStampStorageKey;
 extern NSString * _Nonnull const kMPLastConfigReceivedKey;

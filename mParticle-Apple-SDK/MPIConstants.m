@@ -141,6 +141,7 @@ NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
 NSString *const kMPSessionUserIdsKey = @"smpids";
 NSString *const kMPIsEphemeralKey = @"is_ephemeral";
+NSString *const kMPLastIdentifiedDate = @"last_date_used";
 NSString *const kMPDeviceApplicationStampKey = @"das";
 NSString *const kMPDeviceApplicationStampStorageKey = @"dast";
 NSString *const kMPLastConfigReceivedKey = @"LastConfigReceived";

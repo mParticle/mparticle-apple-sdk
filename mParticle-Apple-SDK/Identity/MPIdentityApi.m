@@ -96,6 +96,13 @@
     NSString *userIdsString = session.sessionUserIds;
     NSMutableArray *userIds = [[userIdsString componentsSeparatedByString:@","] mutableCopy];
     
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+
+    if (user.userId.longLongValue != 0) {
+        [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:user.userId];
+        [userDefaults synchronize];
+    }
+    
     if (httpResponse.mpid.longLongValue != 0 &&
         ([userIds lastObject] && ![[userIds lastObject] isEqualToString:httpResponse.mpid.stringValue])) {
         [userIds addObject:httpResponse.mpid];
@@ -126,7 +133,6 @@
         }
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     [userDefaults setMPObject:@(httpResponse.isEphemeral) forKey:kMPIsEphemeralKey userId:httpResponse.mpid];
     [userDefaults synchronize];
 
@@ -152,6 +158,17 @@
     user.userId = mpid;
     _currentUser = user;
     return _currentUser;
+}
+
+- (MParticleUser *)getUser:(NSNumber *)mpId {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    if ([userDefaults isExistingUserId:mpId]) {
+        MParticleUser *user = [[MParticleUser alloc] init];
+        user.userId = mpId;
+        return user;
+    } else {
+        return nil;
+    }
 }
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
