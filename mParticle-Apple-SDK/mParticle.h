@@ -113,7 +113,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The environment property returns the running SDK environment: Development or Production.
  @see MPEnvironment
- @see startWithKey:secret:installationType:environment:proxyAppDelegate:
+ @see startWithOptions:
  */
 @property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment;
 
@@ -140,7 +140,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
  application notifications automatically.
- @see startWithKey:secret:installationType:environment:proxyAppDelegate:
+ @see startWithOptions:
  */
 @property (nonatomic, unsafe_unretained, readonly) BOOL proxiedAppDelegate;
 
@@ -167,7 +167,6 @@ NS_ASSUME_NONNULL_BEGIN
  #if TARGET_OS_IOS == 1
  /**
  Gets/Sets the push notification token for the application.
- @see registerForPushNotificationWithTypes:
  */
 @property (nonatomic, strong, nullable) NSData *pushNotificationToken;
 #endif
