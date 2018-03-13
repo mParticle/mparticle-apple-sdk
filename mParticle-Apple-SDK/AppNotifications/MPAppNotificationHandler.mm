@@ -25,11 +25,6 @@
 - (id)initWithKitCode:(NSNumber *)kitCode;
 @end
 
-@interface MPAppNotificationHandler() {
-    dispatch_queue_t processUserNotificationQueue;
-}
-@end
-
 @implementation MPAppNotificationHandler
 
 - (instancetype)init {
@@ -38,7 +33,6 @@
         return nil;
     }
     
-    processUserNotificationQueue = dispatch_queue_create("com.mParticle.ProcessUserNotificationQueue", DISPATCH_QUEUE_SERIAL);
 #if TARGET_OS_IOS == 1
     _runningMode = MPUserNotificationRunningModeForeground;
 #endif
@@ -201,27 +195,20 @@
         return;
     }
     
-    __weak MPAppNotificationHandler *weakSelf = self;
-    dispatch_async(processUserNotificationQueue, ^{
-        __strong MPAppNotificationHandler *strongSelf = weakSelf;
-        
-        if (!strongSelf) {
-            return;
-        }
-        
-        NSMutableDictionary *userNotificationDictionary = [@{kMPUserNotificationDictionaryKey:userInfo,
-                                                             kMPUserNotificationRunningModeKey:@(strongSelf.runningMode)}
-                                                           mutableCopy];
-        if (actionIdentifier) {
-            userNotificationDictionary[kMPUserNotificationActionKey] = actionIdentifier;
-        }
-        
-        NSString *notificationName = userNotificationMode == MPUserNotificationModeRemote ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
-                                                            object:strongSelf
-                                                          userInfo:userNotificationDictionary];
-    });
+    
+    NSMutableDictionary *userNotificationDictionary = [@{kMPUserNotificationDictionaryKey:userInfo,
+                                                         kMPUserNotificationRunningModeKey:@(self.runningMode)}
+                                                       mutableCopy];
+    if (actionIdentifier) {
+        userNotificationDictionary[kMPUserNotificationActionKey] = actionIdentifier;
+    }
+    
+    NSString *notificationName = userNotificationMode == MPUserNotificationModeRemote ? kMPRemoteNotificationReceivedNotification : kMPLocalNotificationReceivedNotification;
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:notificationName
+                                                        object:self
+                                                      userInfo:userNotificationDictionary];
+    
     
     if (!actionIdentifier) {
         SEL receivedNotificationSelector = @selector(receivedUserNotification:);
@@ -264,21 +251,12 @@
         return;
     }
     
-    __weak MPAppNotificationHandler *weakSelf = self;
-    dispatch_async(processUserNotificationQueue, ^{
-        __strong MPAppNotificationHandler *strongSelf = weakSelf;
-        
-        if (!strongSelf) {
-            return;
-        }
-        
-        NSDictionary *userNotificationDictionary = @{kMPUserNotificationDictionaryKey:notification.request.content.userInfo,
-                                                     kMPUserNotificationRunningModeKey:@(strongSelf.runningMode)};
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                            object:strongSelf
-                                                          userInfo:userNotificationDictionary];
-    });
+    NSDictionary *userNotificationDictionary = @{kMPUserNotificationDictionaryKey:notification.request.content.userInfo,
+                                                 kMPUserNotificationRunningModeKey:@(self.runningMode)};
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
+                                                        object:self
+                                                      userInfo:userNotificationDictionary];
     
     SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
@@ -295,25 +273,16 @@
         return;
     }
     
-    __weak MPAppNotificationHandler *weakSelf = self;
-    dispatch_async(processUserNotificationQueue, ^{
-        __strong MPAppNotificationHandler *strongSelf = weakSelf;
-        
-        if (!strongSelf) {
-            return;
-        }
-        
-        NSMutableDictionary *userNotificationDictionary = [@{kMPUserNotificationDictionaryKey:response.notification.request.content.userInfo,
-                                                             kMPUserNotificationRunningModeKey:@(strongSelf.runningMode)}
-                                                           mutableCopy];
-        if (response.actionIdentifier) {
-            userNotificationDictionary[kMPUserNotificationActionKey] = response.actionIdentifier;
-        }
-        
-        [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                            object:strongSelf
-                                                          userInfo:userNotificationDictionary];
-    });
+    NSMutableDictionary *userNotificationDictionary = [@{kMPUserNotificationDictionaryKey:response.notification.request.content.userInfo,
+                                                         kMPUserNotificationRunningModeKey:@(self.runningMode)}
+                                                       mutableCopy];
+    if (response.actionIdentifier) {
+        userNotificationDictionary[kMPUserNotificationActionKey] = response.actionIdentifier;
+    }
+    
+    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
+                                                        object:self
+                                                      userInfo:userNotificationDictionary];
     
     SEL userNotificationCenterDidReceiveNotificationResponse = @selector(userNotificationCenter:didReceiveNotificationResponse:);
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
