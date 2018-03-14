@@ -21,7 +21,6 @@
 
 
 @interface MPDatabaseMigrationController() {
-    dispatch_queue_t dbQueue;
     NSArray *migratedSessions;
 }
 
@@ -34,7 +33,6 @@
 - (instancetype)initWithDatabaseVersions:(NSArray<NSNumber *> *)databaseVersions {
     self = [super init];
     if (self) {
-        dbQueue = dispatch_queue_create("com.mParticle.migrationQueue", DISPATCH_QUEUE_SERIAL);
         self.databaseVersions = [databaseVersions copy];
     }
     
@@ -182,6 +180,7 @@
         sqlite3_bind_text(insertStatementHandle, 12, (const char *)[mpId stringValue].UTF8String, -1, SQLITE_TRANSIENT); // session_user_ids
 
         sqlite3_step(insertStatementHandle);
+        sqlite3_reset(insertStatementHandle);
     }
     
     sqlite3_finalize(selectStatementHandle);
@@ -298,6 +297,7 @@
         }
         
         sqlite3_step(insertStatementHandle);
+        sqlite3_reset(insertStatementHandle);
     }
     
     sqlite3_finalize(selectStatementHandle);
@@ -525,45 +525,43 @@
 
 #pragma mark Public methods
 - (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion {
-    dispatch_sync(dbQueue, ^{
-        NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-        NSNumber *currentDatabaseVersion = [self.databaseVersions lastObject];
-        NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
-        NSString *databasePath = [documentsDirectory stringByAppendingPathComponent:databaseName];
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        sqlite3 *oldmParticleDB, *mParticleDB;
-        NSString *dbPath;
-        
-        if (sqlite3_open([databasePath UTF8String], &mParticleDB) != SQLITE_OK) {
-            return;
-        }
-        
-        if ([oldVersion isEqualToNumber:self.databaseVersions[0]]) {
-            databaseName = @"mParticle.db";
-        } else {
-            databaseName = [NSString stringWithFormat:@"mParticle%@.db", oldVersion];
-        }
-        
-        dbPath = [documentsDirectory stringByAppendingPathComponent:databaseName];
-        
-        if (![fileManager fileExistsAtPath:dbPath] || (sqlite3_open([dbPath UTF8String], &oldmParticleDB) != SQLITE_OK)) {
-            return;
-        }
-        
-        [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateUserDefaultsWithVersion:oldVersion];
-        [self migrateSessionsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateMessagesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateUploadsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateSegmentsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateSegmentMembershipsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
-        [self migrateIntegrationAttributesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSNumber *currentDatabaseVersion = [self.databaseVersions lastObject];
+    NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
+    NSString *databasePath = [documentsDirectory stringByAppendingPathComponent:databaseName];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    sqlite3 *oldmParticleDB, *mParticleDB;
+    NSString *dbPath;
+    
+    if (sqlite3_open([databasePath UTF8String], &mParticleDB) != SQLITE_OK) {
+        return;
+    }
+    
+    if ([oldVersion isEqualToNumber:self.databaseVersions[0]]) {
+        databaseName = @"mParticle.db";
+    } else {
+        databaseName = [NSString stringWithFormat:@"mParticle%@.db", oldVersion];
+    }
+    
+    dbPath = [documentsDirectory stringByAppendingPathComponent:databaseName];
+    
+    if (![fileManager fileExistsAtPath:dbPath] || (sqlite3_open([dbPath UTF8String], &oldmParticleDB) != SQLITE_OK)) {
+        return;
+    }
+    
+    [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateUserDefaultsWithVersion:oldVersion];
+    [self migrateSessionsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateMessagesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateUploadsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateSegmentsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateSegmentMembershipsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateForwardingRecordsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
+    [self migrateIntegrationAttributesFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
 
-        sqlite3_close(oldmParticleDB);
-        [fileManager removeItemAtPath:dbPath error:nil];
-        sqlite3_close(mParticleDB);
-    });
+    sqlite3_close(oldmParticleDB);
+    [fileManager removeItemAtPath:dbPath error:nil];
+    sqlite3_close(mParticleDB);
 }
 
 - (NSNumber *)needsMigration {

@@ -25,6 +25,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 @protected
     sqlite3 *mParticleDB;
     dispatch_queue_t dbQueue;
+    dispatch_queue_t migrationQueue;
 }
 
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;

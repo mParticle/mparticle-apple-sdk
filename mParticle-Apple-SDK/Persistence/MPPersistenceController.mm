@@ -78,21 +78,23 @@ const int MaxBreadcrumbs = 50;
     self = [super init];
     if (self) {
         dbQueue = dispatch_queue_create("com.mParticle.PersistenceQueue", DISPATCH_QUEUE_SERIAL);
+        migrationQueue = dispatch_queue_create("com.mParticle.MigrationQueue", DISPATCH_QUEUE_SERIAL);
         databaseOpen = NO;
         
         [self setupDatabase:^{
-            [self migrateDatabaseIfNeeded];
-            [self openDatabase];
-            isReady = YES;
-            
-            if (readyHandlers.count) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [readyHandlers enumerateObjectsUsingBlock:^(void (^ _Nonnull readyHandler)(void), NSUInteger idx, BOOL * _Nonnull stop) {
-                        readyHandler();
-                    }];
-                    readyHandlers = nil;
-                });
-            }
+            [self migrateDatabaseIfNeeded:^{
+                [self openDatabase];
+                isReady = YES;
+                
+                if (readyHandlers.count) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [readyHandlers enumerateObjectsUsingBlock:^(void (^ _Nonnull readyHandler)(void), NSUInteger idx, BOOL * _Nonnull stop) {
+                            readyHandler();
+                        }];
+                        readyHandlers = nil;
+                    });
+                }
+            }];
         }];
     }
     
@@ -100,20 +102,25 @@ const int MaxBreadcrumbs = 50;
 }
 
 #pragma mark Database version migration methods
-- (void)migrateDatabaseIfNeeded {
-    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[databaseVersions copy]];
-    
-    NSNumber *migrateVersion = [migrationController needsMigration];
-    if (migrateVersion != nil) {
-        BOOL isDatabaseOpen = databaseOpen;
-        [self closeDatabase];
+- (void)migrateDatabaseIfNeeded:(void (^)())completionHandler {
+    dispatch_async(migrationQueue, ^{
+        MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[databaseVersions copy]];
         
-        [migrationController migrateDatabaseFromVersion:migrateVersion];
-        
-        if (isDatabaseOpen) {
-            [self openDatabase];
+        NSNumber *migrateVersion = [migrationController needsMigration];
+        if (migrateVersion != nil) {
+            BOOL isDatabaseOpen = databaseOpen;
+            [self closeDatabase];
+            
+            [migrationController migrateDatabaseFromVersion:migrateVersion];
+            
+            if (isDatabaseOpen) {
+                [self openDatabase];
+            }
         }
-    }
+        dispatch_async(dispatch_get_main_queue(), ^{
+            completionHandler();
+        });
+    });
 }
 
 + (NSNumber *)mpId {
