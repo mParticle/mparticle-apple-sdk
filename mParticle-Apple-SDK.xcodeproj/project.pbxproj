@@ -461,6 +461,8 @@
 		DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */; };
 		DB9AA1A21EFD806000340D02 /* MPIUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */; };
 		DB9AA1A31EFD806000340D02 /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
+		DBA42900205ADEB7006AB971 /* MPConvertJSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */; };
+		DBA42901205ADEB7006AB971 /* MPConvertJSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */; };
 		DBA894661F17CBE6005B21FB /* MPIdentityDTO.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */; };
 		DBA894671F17CBE6005B21FB /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */; };
 		DBA894681F17CBEE005B21FB /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */; };
@@ -737,6 +739,7 @@
 		DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleOptionsTests.m; sourceTree = "<group>"; };
 		DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIUserDefaults.h; sourceTree = "<group>"; };
 		DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaults.m; sourceTree = "<group>"; };
+		DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConvertJSTests.m; sourceTree = "<group>"; };
 		DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityDTO.h; path = Identity/MPIdentityDTO.h; sourceTree = "<group>"; };
 		DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityDTO.m; path = Identity/MPIdentityDTO.m; sourceTree = "<group>"; };
 		DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+MPCaseInsensitive.h"; sourceTree = "<group>"; };
@@ -1214,6 +1217,7 @@
 				DB00F6371F4E11380070A74B /* MPKitAPITests.m */,
 				DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */,
 				DB6BA23A201FB01A006BC850 /* MPConsentEventTests.m */,
+				DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1600,6 +1604,7 @@
 				C911FD971D8A365A002A3516 /* MPKitConfigurationTests.mm in Sources */,
 				C911FD8B1D8A365A002A3516 /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */,
+				DBA42901205ADEB7006AB971 /* MPConvertJSTests.m in Sources */,
 				C911FD9F1D8A365A002A3516 /* MPPersistenceControllerTests.mm in Sources */,
 				C911FD951D8A365A002A3516 /* MPIntegrationAttributesTest.m in Sources */,
 				B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */,
@@ -1859,6 +1864,7 @@
 				C9DD20F31D8A1FF400D3ABBE /* MPKitContainerTests.m in Sources */,
 				C9DD20F81D8A201200D3ABBE /* MPMessageBuilderTests.m in Sources */,
 				DB6BA23B201FB01A006BC850 /* MPConsentEventTests.m in Sources */,
+				DBA42900205ADEB7006AB971 /* MPConvertJSTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
