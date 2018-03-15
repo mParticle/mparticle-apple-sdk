@@ -5,6 +5,7 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceController.h"
+#import "MPIConstants.h"
 
 @interface MParticle ()
 
@@ -548,6 +549,9 @@
     if (![fileManager fileExistsAtPath:dbPath] || (sqlite3_open([dbPath UTF8String], &oldmParticleDB) != SQLITE_OK)) {
         return;
     }
+    
+    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    [[MPPersistenceController sharedInstance] deleteRecordsOlderThan:(currentTime - SEVEN_DAYS) withDatabase:oldmParticleDB];
     
     [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
     [self migrateUserDefaultsWithVersion:oldVersion];

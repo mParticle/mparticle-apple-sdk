@@ -807,30 +807,45 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp {
+    __weak MPPersistenceController *weakSelf = self;
     dispatch_barrier_async(dbQueue, ^{
-        vector<string> tables = {"messages", "uploads", "sessions"};
-        vector<string> timeFields = {"timestamp", "timestamp", "end_time"};
-        
-        size_t idx = 0;
-        
-        for (auto &table : tables) {
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "DELETE FROM " + table + " WHERE " + timeFields[idx] + " < ?";
+        [weakSelf deleteRecordsOlderThan:timestamp withDatabase:mParticleDB];
+    });
+}
+
+- (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp withDatabase:(sqlite3*)database {
+    char *errMsg;
+    string sqlStatement = "BEGIN TRANSACTION";
+    
+    if (sqlite3_exec(database, sqlStatement.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError("Problem Beginning SQL Transaction: %s\n", sqlStatement.c_str());
+    }
+    
+    vector<string> sqlStatements = {
+        "DELETE FROM messages WHERE timestamp < ?",
+        "DELETE FROM uploads WHERE timestamp < ?",
+        "DELETE FROM sessions WHERE end_time < ?"
+    };
+    
+    sqlite3_stmt *preparedStatement;
+    for (const auto &sqlStatement : sqlStatements) {
+        if (sqlite3_prepare_v2(database, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_double(preparedStatement, 1, timestamp);
             
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                sqlite3_bind_double(preparedStatement, 1, timestamp);
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while deleting old records: %s", sqlite3_errmsg(mParticleDB));
-                }
-                
-                sqlite3_clear_bindings(preparedStatement);
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting old records: %s", sqlite3_errmsg(mParticleDB));
             }
             
-            sqlite3_finalize(preparedStatement);
-            ++idx;
+            sqlite3_clear_bindings(preparedStatement);
         }
-    });
+        sqlite3_finalize(preparedStatement);
+    }
+    
+    sqlStatement = "END TRANSACTION";
+    
+    if (sqlite3_exec(database, sqlStatement.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError("Problem Ending SQL Transaction: %s\n", sqlStatement.c_str());
+    }
 }
 
 - (void)deleteSegments {

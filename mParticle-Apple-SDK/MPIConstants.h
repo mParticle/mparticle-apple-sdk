@@ -296,7 +296,8 @@ extern const NSTimeInterval MINIMUM_SESSION_TIMEOUT;
 extern const NSTimeInterval MAXIMUM_SESSION_TIMEOUT;
 extern const NSTimeInterval DEFAULT_SESSION_TIMEOUT;
 extern const NSTimeInterval TWENTY_FOUR_HOURS; // Database clean up interval
-extern const NSTimeInterval ONE_HUNDRED_EIGHTY_DAYS;
+extern const NSTimeInterval SEVEN_DAYS;
+extern const NSTimeInterval NINETY_DAYS;
 
 // Interval between uploads if not specified
 extern const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL;

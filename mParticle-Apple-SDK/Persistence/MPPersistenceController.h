@@ -47,6 +47,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp;
+- (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp withDatabase:(sqlite3 * _Nonnull)database;
 - (void)deleteSegments;
 - (void)deleteSession:(nonnull MPSession *)session;
 - (void)deleteSessionSync:(nonnull MPSession *)session;

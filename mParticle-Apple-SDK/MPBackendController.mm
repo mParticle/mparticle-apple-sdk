@@ -350,7 +350,7 @@ static BOOL appBackgrounded = NO;
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     if (nextCleanUpTime < currentTime) {
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        [persistence deleteRecordsOlderThan:(currentTime - ONE_HUNDRED_EIGHTY_DAYS)];
+        [persistence deleteRecordsOlderThan:(currentTime - NINETY_DAYS)];
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
 }

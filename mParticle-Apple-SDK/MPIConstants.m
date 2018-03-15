@@ -271,7 +271,8 @@ const NSTimeInterval DEFAULT_SESSION_TIMEOUT =
     #endif
 
 const NSTimeInterval TWENTY_FOUR_HOURS = 86400; // database clean up interval
-const NSTimeInterval ONE_HUNDRED_EIGHTY_DAYS = 60 * 60 * 24 * 180; // Old messages purge interval = 60 seconds * 60 minutes * 24 hours * 180 days
+const NSTimeInterval SEVEN_DAYS = 60 * 60 * 24 * 7; // Old messages purged on migration = 60 seconds * 60 minutes * 24 hours * 7 days
+const NSTimeInterval NINETY_DAYS = 60 * 60 * 24 * 90; // Old messages purge interval = 60 seconds * 60 minutes * 24 hours * 90 days
 
 // Interval between uploads if not specified
 const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL =
