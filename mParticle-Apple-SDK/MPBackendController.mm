@@ -687,8 +687,7 @@ static BOOL appBackgrounded = NO;
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     __weak MPBackendController *weakSelf = self;
     
-    [persistence fetchUploadsExceptInSession:self.session
-                           completionHandler:^(NSArray<MPUpload *> * _Nullable uploads) {
+    [persistence fetchUploadsWithCompletionHandler:^(NSArray<MPUpload *> * _Nullable uploads) {
                                if (!uploads) {
                                    return;
                                }
@@ -898,6 +897,7 @@ static BOOL appBackgrounded = NO;
     __weak MPBackendController *weakSelf = self;
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
+    //Fetch all stored messages (1)
     [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *mpidMessages) {
         if (!mpidMessages || mpidMessages.count == 0) {
             completionHandlerCopy(YES);
@@ -905,7 +905,7 @@ static BOOL appBackgrounded = NO;
         }
         [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
             [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
-                
+                //In batches broken up by mpid and then sessionID create the Uploads (2)
                 __strong MPBackendController *strongSelf = weakSelf;
                 NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
                 MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
@@ -919,49 +919,57 @@ static BOOL appBackgrounded = NO;
                 [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
                 [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
                 [uploadBuilder build:^(MPUpload *upload) {
+                    //Save the Upload to the Database (3)
                     [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
                     
-                    [persistence fetchUploadsWithSessionId:nullableSessionID
-                                     completionHandler:^(NSArray<MPUpload *> *uploads) {
-                                         if (!uploads) {
-                                             sessionBeingUploaded = nil;
-                                             completionHandlerCopy(YES);
-                                             return;
-                                         }
-                                         
-                                         if ([MPStateMachine sharedInstance].dataRamped) {
-                                             for (MPUpload *upload in uploads) {
-                                                 [persistence deleteUpload:upload];
-                                             }
-                                             
-                                             [persistence deleteNetworkPerformanceMessages];
-                                             [persistence deleteMessages:messages];
-                                             return;
-                                         }
-                                         
-                                         [strongSelf.networkCommunication upload:uploads
-                                                                           index:0
-                                                               completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
-                                                                   if (!success) {
-                                                                       completionHandlerCopy(success);
-                                                                       return;
-                                                                   }
-                                                                   
-                                                                   [MPResponseEvents parseConfiguration:responseDictionary sessionId:nullableSessionID];
-                                                                   
-                                                                   [persistence deleteUpload:upload];
-                                                                   
-                                                                   if (!finished) {
-                                                                       return;
-                                                                   }
-                                                                   
-                                                                   sessionBeingUploaded = nil;
-                                                                   completionHandlerCopy(success);
-                                                               }];
-                                     }];
+                    //Delete all messages associated with this batch (4)
+                    [persistence deleteMessages:messages];
+
                 }];
                 
                 deletedUserAttributes = nil;
+            }];
+        }];
+        
+        //Fetch all sessions and delete them if inactive (5)
+        [persistence deleteAllSessionsExcept:[MPStateMachine sharedInstance].currentSession];
+        
+        // Fetch all Uploads (6)
+        [persistence fetchUploadsWithCompletionHandler:^(NSArray<MPUpload *> *uploads) {
+            if (!uploads) {
+                sessionBeingUploaded = nil;
+                completionHandlerCopy(YES);
+                return;
+            }
+            
+            if ([MPStateMachine sharedInstance].dataRamped) {
+                for (MPUpload *upload in uploads) {
+                    [persistence deleteUpload:upload];
+                }
+                
+                [persistence deleteNetworkPerformanceMessages];
+                return;
+            }
+            
+            //Send all Uploads to the backend (7)
+            __strong MPBackendController *strongSelf = weakSelf;
+            [strongSelf.networkCommunication upload:uploads index:0 completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
+                if (!success) {
+                  completionHandlerCopy(success);
+                  return;
+                }
+
+                [MPResponseEvents parseConfiguration:responseDictionary];
+
+                //Delete the Upload from the local database on success (8)
+                [persistence deleteUpload:upload];
+
+                if (!finished) {
+                  return;
+                }
+
+                sessionBeingUploaded = nil;
+                completionHandlerCopy(success);
             }];
         }];
     }];
@@ -1064,10 +1072,12 @@ static BOOL appBackgrounded = NO;
     if (MParticle.sharedInstance.automaticSessionTracking) {
         [self beginBackgroundTask];
         
-        [self uploadWithCompletionHandler:^{
+        [self uploadDatabaseWithCompletionHandler:^{
             [self beginBackgroundTimer];
         }];
     }
+#else
+    [self endSession];
 #endif
 }
 
@@ -1145,7 +1155,7 @@ static BOOL appBackgrounded = NO;
                     
                     [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
                     [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
-                    [uploadBuilder buildAsync:NO completionHandler:^(MPUpload * _Nullable upload) {
+                    [uploadBuilder build: ^(MPUpload * _Nullable upload) {
                         [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
                     }];
                 }];
@@ -1312,7 +1322,7 @@ static BOOL appBackgrounded = NO;
         
         strongSelf->uploadSource = [strongSelf createSourceTimer:strongSelf.uploadInterval
                                                     eventHandler:^{
-                                                        [strongSelf uploadWithCompletionHandler:nil];
+                                                        [strongSelf uploadDatabaseWithCompletionHandler:nil];
                                                     } cancelHandler:^{
                                                         strongSelf->uploadSource = nil;
                                                     }];
@@ -1482,10 +1492,10 @@ static BOOL appBackgrounded = NO;
         }
         
         [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
-                               if (!strongSelf) {
-                                   return;
-                               }
-                           }];
+           if (!strongSelf) {
+               return;
+           }
+        }];
     }];
     
     [self broadcastSessionDidEnd:endSession];
@@ -2421,7 +2431,7 @@ static BOOL appBackgrounded = NO;
             
             [stateMachine.searchAttribution requestAttributionDetailsWithBlock:^{
                 [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
-                [strongSelf uploadWithCompletionHandler:nil];
+                [strongSelf uploadDatabaseWithCompletionHandler:nil];
             }];
             
             [strongSelf processPendingArchivedMessages];
@@ -2477,12 +2487,12 @@ static BOOL appBackgrounded = NO;
         
         if (shouldUpload) {
             __strong MPBackendController *strongSelf = weakSelf;
-            [strongSelf uploadWithCompletionHandler:nil];
+            [strongSelf uploadDatabaseWithCompletionHandler:nil];
         }
     });
 }
 
-- (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
+- (MPExecStatus)uploadDatabaseWithCompletionHandler:(void (^ _Nullable)())completionHandler {
     if (_initializationStatus != MPInitializationStatusStarted) {
         if (completionHandler) {
             completionHandler();

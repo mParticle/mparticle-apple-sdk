@@ -91,7 +91,7 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)saveMessage:(nonnull MPMessage *)message updateSession:(BOOL)updateSession;
-- (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
+- (MPExecStatus)uploadDatabaseWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
 - (nonnull NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(nonnull NSNumber *)userId;
 

@@ -179,16 +179,14 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload test"];
     
-    [persistence fetchUploadsWithSessionId:message.sessionId
-                         completionHandler:^(NSArray<MPUpload *> *uploads) {
+    [persistence fetchUploadsWithCompletionHandler:^(NSArray<MPUpload *> *uploads) {
                              MPUpload *fetchedUpload = [uploads lastObject];
                              
                              XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
                              
                              [persistence deleteUpload:upload];
                              
-                             [persistence fetchUploadsWithSessionId:message.sessionId
-                                                  completionHandler:^(NSArray *uploads) {
+                             [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
                                                       if (uploads) {
                                                           NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", fetchedUpload.uploadId];
                                                           uploads = [uploads filteredArrayUsingPredicate:predicate];

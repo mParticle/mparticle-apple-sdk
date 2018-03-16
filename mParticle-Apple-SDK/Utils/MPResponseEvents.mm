@@ -8,7 +8,7 @@
 
 @implementation MPResponseEvents
 
-+ (void)parseConfiguration:(NSDictionary *)configuration sessionId:(NSNumber *)sessionId {
++ (void)parseConfiguration:(nonnull NSDictionary *)configuration {
     if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
         return;
     }
@@ -16,16 +16,14 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
 
     // Consumer Information
-    if (sessionId != nil) {
-        MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;
-        [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
-        [persistence updateConsumerInfo:consumerInfo];
-        [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId] completionHandler:^(MPConsumerInfo *consumerInfo) {
-            if (consumerInfo.cookies != nil) {
-                [MPStateMachine sharedInstance].consumerInfo.cookies = consumerInfo.cookies;
-            }
-        }];
-    }
+    MPConsumerInfo *consumerInfo = [MPStateMachine sharedInstance].consumerInfo;
+    [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
+    [persistence updateConsumerInfo:consumerInfo];
+    [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId] completionHandler:^(MPConsumerInfo *consumerInfo) {
+        if (consumerInfo.cookies != nil) {
+            [MPStateMachine sharedInstance].consumerInfo.cookies = consumerInfo.cookies;
+        }
+    }];
 }
 
 @end

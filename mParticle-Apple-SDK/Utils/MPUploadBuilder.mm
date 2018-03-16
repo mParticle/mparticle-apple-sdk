@@ -109,10 +109,6 @@ using namespace std;
 
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
-    [self buildAsync:YES completionHandler:completionHandler];
-}
-
-- (void)buildAsync:(BOOL)asyncBuild completionHandler:(void (^ _Nonnull)(MPUpload * _Nullable upload))completionHandler {
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;

@@ -49,6 +49,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp;
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp withDatabase:(sqlite3 * _Nonnull)database;
 - (void)deleteSegments;
+- (void)deleteAllSessionsExcept:(nullable MPSession *)session;
 - (void)deleteSession:(nonnull MPSession *)session;
 - (void)deleteSessionSync:(nonnull MPSession *)session;
 - (void)deleteUpload:(nonnull MPUpload *)upload;
@@ -71,8 +72,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(nonnull MPSession *)session userId:(nonnull NSNumber *)userId;
 - (void)fetchUploadedMessagesInSession:(nonnull MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler;
 - (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSessionSync:(nonnull MPSession *)session;
-- (void)fetchUploadsExceptInSession:(nonnull MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
-- (void)fetchUploadsWithSessionId:(nonnull NSNumber *)sessionId completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
+- (void)fetchUploadsWithCompletionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler;
 - (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 - (void)purgeMemory;
 - (BOOL)openDatabase;

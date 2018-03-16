@@ -417,16 +417,14 @@
                     XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
                 }
                 
-                [persistence fetchUploadsWithSessionId:[NSNumber numberWithLong:_session.sessionId]
-                                     completionHandler:^(NSArray *uploads) {
+                [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
                                          XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
                                          
                                          for (MPUpload *upload in uploads) {
                                              [persistence deleteUpload:upload];
                                          }
                                          
-                                         [persistence fetchUploadsWithSessionId:[NSNumber numberWithLong:_session.sessionId]
-                                                              completionHandler:^(NSArray *uploads) {
+                                         [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
                                                                   XCTAssertNil(uploads, @"Uploads are not being deleted.");
                                                                   
                                                                   [expectation fulfill];
@@ -470,8 +468,7 @@
         [uploadBuilder build:^(MPUpload *upload) {
             [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
             
-            [persistence fetchUploadsWithSessionId:[NSNumber numberWithLong:_session.sessionId]
-                                 completionHandler:^(NSArray *uploads) {
+            [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
                                      XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
                                      
                                      MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
@@ -483,8 +480,7 @@
                                          [persistence deleteUpload:upload];
                                      }
                                      
-                                     [persistence fetchUploadsWithSessionId:[NSNumber numberWithLong:_session.sessionId]
-                                                          completionHandler:^(NSArray *uploads) {
+                                     [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
                                                               XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
                                                               
                                                               [persistence fetchUploadedMessagesInSession:session

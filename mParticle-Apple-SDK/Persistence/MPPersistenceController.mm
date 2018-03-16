@@ -873,7 +873,27 @@ const int MaxBreadcrumbs = 50;
     });
 }
 
-- (void)deleteSession:(MPSession *)session {
+- (void)deleteAllSessionsExcept:(nullable MPSession *)session {
+    dispatch_barrier_async(dbQueue, ^{
+        // Delete sessions
+        sqlite3_stmt *preparedStatement;
+        string sqlStatement = "DELETE FROM sessions WHERE _id != ?";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting sessions: %s", sqlite3_errmsg(mParticleDB));
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    });
+}
+
+- (void)deleteSession:(nonnull MPSession *)session {
     dispatch_barrier_async(dbQueue, ^{
         // Delete messages
         sqlite3_stmt *preparedStatement;
@@ -1627,59 +1647,19 @@ const int MaxBreadcrumbs = 50;
     return messages;
 }
 
-- (void)fetchUploadsExceptInSession:(MPSession *)session completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
-    dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads WHERE session_id != ? ORDER BY session_id, _id";
-        
-        vector<MPUpload *> uploadsVector;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
-                                                              uploadId:int64Value(preparedStatement, 0)
-                                                                  UUID:stringValue(preparedStatement, 1)
-                                                            uploadData:dataValue(preparedStatement, 2)
-                                                             timestamp:doubleValue(preparedStatement, 3)];
-                
-                uploadsVector.push_back(upload);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        NSArray<MPUpload *> *uploads = nil;
-        if (!uploadsVector.empty()) {
-            uploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(uploads);
-        });
-    });
-}
-
-- (void)fetchUploadsWithSessionId:(NSNumber *)sessionId completionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
+- (void)fetchUploadsWithCompletionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
     dispatch_async(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
         string sqlStatement;
-        if (sessionId != nil) {
-            sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id = ? ORDER BY _id";
-        } else {
-            sqlStatement = "SELECT _id, uuid, message_data, timestamp FROM uploads WHERE session_id IS NULL ORDER BY _id";
-        }
+        
+        sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads";
         
         vector<MPUpload *> uploadsVector;
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, sessionId.longLongValue);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPUpload *upload = [[MPUpload alloc] initWithSessionId:sessionId
+                MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
                                                               uploadId:int64Value(preparedStatement, 0)
                                                                   UUID:stringValue(preparedStatement, 1)
                                                             uploadData:dataValue(preparedStatement, 2)
