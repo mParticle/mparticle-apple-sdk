@@ -55,9 +55,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
             messageDictionary[kMPSessionIdKey] = _session.uuid;
             messageDictionary[kMPSessionStartTimestamp] = MPMilliseconds(_session.startTime);
             
-            if (messageType == MPMessageTypeBreadcrumb) {
-                messageDictionary[kMPSessionNumberKey] = _session.sessionNumber;
-            } else if (messageType == MPMessageTypeSessionEnd) {
+            if (messageType == MPMessageTypeSessionEnd) {
                 NSArray *userIds = [_session.sessionUserIds componentsSeparatedByString:@","];
                 
                 NSMutableArray *userIdNumbers = [NSMutableArray array];

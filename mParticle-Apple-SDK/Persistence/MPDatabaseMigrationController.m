@@ -146,8 +146,9 @@
         }
         sqlite3_bind_blob(insertStatementHandle, 5, [attributesData bytes], (int)attributesLength, SQLITE_TRANSIENT);
         
-        sessionNumber = (oldVersionValue >= 10) ? sqlite3_column_int(selectStatementHandle, 4) : 0;
-        sqlite3_bind_int64(insertStatementHandle, 6, sessionNumber); // session_number
+        //session number has been deprecated
+        sessionNumber = 0;
+        sqlite3_bind_int64(insertStatementHandle, 5, sessionNumber); // session_number
 
         NSTimeInterval backgroundTime = 0;
         int numberInterruptions = 0;
