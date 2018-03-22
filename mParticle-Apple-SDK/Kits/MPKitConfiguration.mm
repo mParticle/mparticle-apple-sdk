@@ -65,7 +65,6 @@
     _configuration = configurationDictionary[@"as"];
     if (_configuration) {
         NSMutableDictionary *configDictionary = [_configuration mutableCopy];
-        configDictionary[@"mpEnv"] = @([MPStateMachine environment]);
         
         if (_addEventAttributeList) {
             configDictionary[@"eaa"] = _addEventAttributeList;
