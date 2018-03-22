@@ -72,10 +72,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
         } else {
             messageDictionary[kMPSessionIdKey] = _session.uuid;
             messageDictionary[kMPSessionStartTimestamp] = MPMilliseconds(_session.startTime);
-            
-            if (messageType == MPMessageTypeBreadcrumb) {
-                messageDictionary[kMPSessionNumberKey] = _session.sessionNumber;
-            }
         }
     }
     
