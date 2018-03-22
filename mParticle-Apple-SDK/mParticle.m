@@ -326,9 +326,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    if ([MPStateMachine environment] == MPEnvironmentDevelopment) {
-        [MPStateMachine sharedInstance].logLevel = logLevel;
-    }
+    [MPStateMachine sharedInstance].logLevel = logLevel;
 }
 
 - (BOOL)optOut {
@@ -480,6 +478,12 @@ NSString *const kMPStateKey = @"state";
         [userDefaults migrateToSharedGroupIdentifier:options.sharedGroupID];
     } else {
         [userDefaults migrateFromSharedGroupIdentifier];
+    }
+
+    if (environment == MPEnvironmentDevelopment) {
+        MPILogWarning(@"SDK has been initialized in Development mode.");
+    } else if (environment == MPEnvironmentProduction) {
+        MPILogWarning(@"SDK has been initialized in Production Mode.");
     }
     
     [MPStateMachine setEnvironment:environment];

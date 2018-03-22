@@ -75,7 +75,7 @@ static BOOL runningInBackground = NO;
         _installationType = MPInstallationTypeAutodetect;
         _launchDate = [NSDate date];
         _launchOptions = nil;
-        _logLevel = [MPStateMachine environment] == MPEnvironmentProduction ? MPILogLevelNone : MPILogLevelWarning;
+        _logLevel = MPILogLevelNone;
         _searchAttribution = [[MPSearchAdsAttribution alloc] init];
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -316,10 +316,6 @@ static BOOL runningInBackground = NO;
 }
 
 + (void)setEnvironment:(MPEnvironment)environment {
-    if ([MPStateMachine getEnvironment] == MPEnvironmentProduction && environment == MPEnvironmentDevelopment) {
-        MPILogError(@"Please be aware you are forcing the SDK running environment into development; be sure to undo this before submitting to the App Store.");
-    }
-
     runningEnvironment = environment;
 }
 
@@ -393,15 +389,10 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    if ([MPStateMachine environment] == MPEnvironmentProduction) {
-        _logLevel = MPILogLevelNone;
+    _logLevel = logLevel;
+    
+    if (logLevel == MPILogLevelNone) {
         _consoleLogging = MPConsoleLoggingSuppress;
-    } else {
-        _logLevel = logLevel;
-        
-        if (logLevel == MPILogLevelNone) {
-            _consoleLogging = MPConsoleLoggingSuppress;
-        }
     }
 }
 
