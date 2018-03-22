@@ -572,7 +572,7 @@ const int MaxBreadcrumbs = 50;
                 NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
                 sqlite3_bind_blob(preparedStatement, 6, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
                 
-                sqlite3_bind_int64(preparedStatement, 7, [session.sessionNumber integerValue]);
+                sqlite3_bind_int64(preparedStatement, 7, 0); //session_number Deprecated
                 sqlite3_bind_int(preparedStatement, 8, session.numberOfInterruptions);
                 sqlite3_bind_int(preparedStatement, 9, session.eventCounter);
                 sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
@@ -625,7 +625,7 @@ const int MaxBreadcrumbs = 50;
             NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
             sqlite3_bind_blob(preparedStatement, 6, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
             
-            sqlite3_bind_int64(preparedStatement, 7, [session.sessionNumber integerValue]);
+            sqlite3_bind_int64(preparedStatement, 7, 0); //session_number Deprecated
             sqlite3_bind_int(preparedStatement, 8, session.numberOfInterruptions);
             sqlite3_bind_int(preparedStatement, 9, session.eventCounter);
             sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
@@ -991,7 +991,7 @@ const int MaxBreadcrumbs = 50;
     
     dispatch_sync(dbQueue, ^{
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, session_number, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
+        const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
@@ -1001,8 +1001,7 @@ const int MaxBreadcrumbs = 50;
                                                                         breadcrumbId:int64Value(preparedStatement, 0)
                                                                                 UUID:stringValue(preparedStatement, 2)
                                                                       breadcrumbData:dataValue(preparedStatement, 3)
-                                                                       sessionNumber:@(int64Value(preparedStatement, 4))
-                                                                           timestamp:doubleValue(preparedStatement, 5)];
+                                                                           timestamp:doubleValue(preparedStatement, 4)];
                 
                 breadcumbsVector.push_back(breadcrumb);
             }
@@ -1318,7 +1317,6 @@ const int MaxBreadcrumbs = 50;
                                                                      startTime:doubleValue(preparedStatement, 3)
                                                                        endTime:doubleValue(preparedStatement, 4)
                                                                     attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                                 sessionNumber:@(int64Value(preparedStatement, 6))
                                                          numberOfInterruptions:intValue(preparedStatement, 7)
                                                                   eventCounter:intValue(preparedStatement, 8)
                                                                    suspendTime:doubleValue(preparedStatement, 9)
@@ -1360,7 +1358,6 @@ const int MaxBreadcrumbs = 50;
                                                              startTime:doubleValue(preparedStatement, 3)
                                                                endTime:doubleValue(preparedStatement, 4)
                                                             attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                         sessionNumber:@(int64Value(preparedStatement, 6))
                                                  numberOfInterruptions:intValue(preparedStatement, 7)
                                                           eventCounter:intValue(preparedStatement, 8)
                                                            suspendTime:doubleValue(preparedStatement, 9)
@@ -1398,7 +1395,6 @@ const int MaxBreadcrumbs = 50;
                                                              startTime:doubleValue(preparedStatement, 3)
                                                                endTime:doubleValue(preparedStatement, 4)
                                                             attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                         sessionNumber:@(int64Value(preparedStatement, 6))
                                                  numberOfInterruptions:intValue(preparedStatement, 7)
                                                           eventCounter:intValue(preparedStatement, 8)
                                                            suspendTime:doubleValue(preparedStatement, 9)
@@ -1536,7 +1532,6 @@ const int MaxBreadcrumbs = 50;
                                                                 startTime:doubleValue(preparedStatement, 3)
                                                                   endTime:doubleValue(preparedStatement, 4)
                                                                attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                            sessionNumber:@(int64Value(preparedStatement, 6))
                                                     numberOfInterruptions:intValue(preparedStatement, 7)
                                                              eventCounter:intValue(preparedStatement, 8)
                                                               suspendTime:doubleValue(preparedStatement, 9)
@@ -1793,7 +1788,7 @@ const int MaxBreadcrumbs = 50;
             
             sqlite3_bind_double(preparedStatement, 3, message.timestamp);
             sqlite3_bind_blob(preparedStatement, 4, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
-            sqlite3_bind_int64(preparedStatement, 5, [session.sessionNumber integerValue]);
+            sqlite3_bind_int64(preparedStatement, 5, 0); //session_number Deprecated
             sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -2067,7 +2062,7 @@ const int MaxBreadcrumbs = 50;
                 NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
                 sqlite3_bind_blob(preparedStatement, 5, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
                 
-                sqlite3_bind_int64(preparedStatement, 6, [session.sessionNumber integerValue]);
+                sqlite3_bind_int64(preparedStatement, 6, 0); //session_number Deprecated
                 sqlite3_bind_int(preparedStatement, 7, session.numberOfInterruptions);
                 sqlite3_bind_int(preparedStatement, 8, session.eventCounter);
                 sqlite3_bind_double(preparedStatement, 9, session.suspendTime);

@@ -1972,11 +1972,6 @@ static BOOL appBackgrounded = NO;
                     
                     NSString *messageTypeBreadcrumbKey = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding];
                     messageInfo[messageTypeBreadcrumbKey] = breadcrumbs;
-                    
-                    NSNumber *sessionNumber = self.session.sessionNumber;
-                    if (sessionNumber != nil) {
-                        messageInfo[kMPSessionNumberKey] = sessionNumber;
-                    }
                 }
             } else {
                 messageInfo[kMPErrorMessage] = message;

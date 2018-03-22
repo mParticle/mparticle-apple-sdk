@@ -2,21 +2,17 @@
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 
-NSString *const sessionNumberFileName = @"SessionNumber";
 NSString *const sessionUUIDKey = @"sessionId";
-NSString *const sessionNumberKey = @"sessionNumber";
 
 @implementation MPSession
 
-@synthesize sessionNumber = _sessionNumber;
-
 - (instancetype)init {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:[MPPersistenceController mpId] sessionUserIds:[[MPPersistenceController mpId] stringValue]];
+    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:[MPPersistenceController mpId] sessionUserIds:[[MPPersistenceController mpId] stringValue]];
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId {
-    self = [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:userId sessionUserIds:[userId stringValue]];
+    self = [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:userId sessionUserIds:[userId stringValue]];
     
     return self;
 }
@@ -27,7 +23,6 @@ NSString *const sessionNumberKey = @"sessionNumber";
                         startTime:(NSTimeInterval)startTime
                           endTime:(NSTimeInterval)endTime
                        attributes:(NSMutableDictionary *)attributesDictionary
-                    sessionNumber:(NSNumber *)sessionNumber
             numberOfInterruptions:(uint)numberOfInterruptions
                      eventCounter:(uint)eventCounter
                       suspendTime:(NSTimeInterval)suspendTime
@@ -53,7 +48,6 @@ NSString *const sessionNumberKey = @"sessionNumber";
     
     _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
     
-    _sessionNumber = sessionNumber != nil ? sessionNumber : [self sessionNumber];
     _userId = userId;
 
     return self;
@@ -70,8 +64,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
     
     BOOL isEqual = _sessionId == object.sessionId &&
                    _eventCounter == object.eventCounter &&
-                   [_uuid isEqualToString:object.uuid] &&
-                   [_sessionNumber isEqualToNumber:object.sessionNumber];
+                   [_uuid isEqualToString:object.uuid];
     
     return isEqual;
 }
@@ -84,7 +77,6 @@ NSString *const sessionNumberKey = @"sessionNumber";
                                                        startTime:_startTime
                                                          endTime:_endTime
                                                       attributes:[_attributesDictionary mutableCopy]
-                                                   sessionNumber:[_sessionNumber copy]
                                            numberOfInterruptions:_numberOfInterruptions
                                                     eventCounter:_eventCounter
                                                      suspendTime:_suspendTime
@@ -125,9 +117,14 @@ NSString *const sessionNumberKey = @"sessionNumber";
     _persisted = sessionId != 0;
 }
 
-- (NSNumber *)sessionNumber {
-    //session number has been deprecated
-    return @0;
+- (void)removeSessionNumberFile {
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:@"SessionNumber"];
+    
+    if ([fileManager fileExistsAtPath:sessionNumberPath]) {
+        [fileManager removeItemAtPath:sessionNumberPath error:nil];
+    }
 }
 
 #pragma mark Public methods

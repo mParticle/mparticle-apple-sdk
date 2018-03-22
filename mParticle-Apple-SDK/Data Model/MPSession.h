@@ -3,7 +3,6 @@
 @interface MPSession : MPDataModelAbstract <NSCopying>
 
 @property (nonatomic, strong, nonnull) NSMutableDictionary *attributesDictionary;
-@property (nonatomic, strong, readonly, nonnull) NSNumber *sessionNumber;
 @property (nonatomic, unsafe_unretained) NSTimeInterval backgroundTime;
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval foregroundTime;
 @property (nonatomic, unsafe_unretained) NSTimeInterval startTime;
@@ -25,7 +24,6 @@
                                 startTime:(NSTimeInterval)startTime
                                   endTime:(NSTimeInterval)endTime
                                attributes:(nullable NSMutableDictionary *)attributesDictionary
-                            sessionNumber:(nullable NSNumber *)sessionNumber
                     numberOfInterruptions:(uint)numberOfInterruptions
                              eventCounter:(uint)eventCounter
                               suspendTime:(NSTimeInterval)suspendTime

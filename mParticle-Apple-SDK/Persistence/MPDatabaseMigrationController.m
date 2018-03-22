@@ -63,7 +63,6 @@
                                                  startTime:0
                                                    endTime:0
                                                 attributes:nil
-                                             sessionNumber:@0
                                      numberOfInterruptions:0
                                               eventCounter:0
                                                suspendTime:0
@@ -125,7 +124,6 @@
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
-    NSUInteger sessionNumber = 0;
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         sqlite3_bind_text(insertStatementHandle, 1, (const char *)sqlite3_column_text(selectStatementHandle, 0), -1, SQLITE_TRANSIENT); // uuid
         
@@ -146,9 +144,7 @@
         }
         sqlite3_bind_blob(insertStatementHandle, 5, [attributesData bytes], (int)attributesLength, SQLITE_TRANSIENT);
         
-        //session number has been deprecated
-        sessionNumber = 0;
-        sqlite3_bind_int64(insertStatementHandle, 5, sessionNumber); // session_number
+        sqlite3_bind_int64(insertStatementHandle, 6, 0); //session_number Deprecated
 
         NSTimeInterval backgroundTime = 0;
         int numberInterruptions = 0;
@@ -525,8 +521,20 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
+- (void)removeSessionNumberFile {
+    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:@"SessionNumber"];
+    
+    if ([fileManager fileExistsAtPath:sessionNumberPath]) {
+        [fileManager removeItemAtPath:sessionNumberPath error:nil];
+    }
+}
+
 #pragma mark Public methods
 - (void)migrateDatabaseFromVersion:(NSNumber *)oldVersion {
+    [self removeSessionNumberFile];
+    
     NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
     NSNumber *currentDatabaseVersion = [self.databaseVersions lastObject];
     NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];

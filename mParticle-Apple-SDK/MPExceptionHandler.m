@@ -115,7 +115,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     NSArray<MPSession *> *sessions = [[MPPersistenceController sharedInstance] fetchPossibleSessionsFromCrash];
     
     for (MPSession *session in sessions) {
-        if (![session.sessionNumber isEqualToNumber:_session.sessionNumber]) {
+        if (![session isEqual:_session]) {
             crashSession = session;
             break;
         }
@@ -292,9 +292,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         [messageInfo addEntriesFromDictionary:archivedCrashInfo];
         
         MPSession *crashSession = [self crashSession];
-        if (crashSession) {
-            messageInfo[kMPSessionNumberKey] = crashSession.sessionNumber;
-        }
         
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];

@@ -88,7 +88,6 @@ extern NSString * _Nonnull const kMPUserIdentitySharedGroupIdentifier;
 extern NSString * _Nonnull const kMPAppStateTransitionType;
 extern NSString * _Nonnull const kMPEventTagsKey;
 extern NSString * _Nonnull const kMPLeaveBreadcrumbsKey;
-extern NSString * _Nonnull const kMPSessionNumberKey;
 extern NSString * _Nonnull const kMPOptOutKey;
 extern NSString * _Nonnull const kMPDateUserIdentityWasFirstSet;
 extern NSString * _Nonnull const kMPIsFirstTimeUserIdentityHasBeenSet;

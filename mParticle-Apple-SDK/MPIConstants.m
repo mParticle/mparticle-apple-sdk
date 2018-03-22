@@ -50,7 +50,6 @@ NSString *const kMPUserIdentitySharedGroupIdentifier = @"sgi";
 NSString *const kMPAppStateTransitionType = @"t";
 NSString *const kMPEventTagsKey = @"tags";
 NSString *const kMPLeaveBreadcrumbsKey = @"l";
-NSString *const kMPSessionNumberKey = @"sn";
 NSString *const kMPOptOutKey = @"oo";
 NSString *const kMPDateUserIdentityWasFirstSet = @"dfs";
 NSString *const kMPIsFirstTimeUserIdentityHasBeenSet = @"f";

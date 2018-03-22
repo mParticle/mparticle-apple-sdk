@@ -147,7 +147,6 @@
                                                             breadcrumbId:0
                                                                     UUID:[[NSUUID UUID] UUIDString]
                                                           breadcrumbData:message.messageData
-                                                           sessionNumber:session.sessionNumber
                                                                timestamp:[[NSDate date] timeIntervalSince1970]];
     XCTAssertNotNil(breadcrumb, @"Should not have been nil.");
     

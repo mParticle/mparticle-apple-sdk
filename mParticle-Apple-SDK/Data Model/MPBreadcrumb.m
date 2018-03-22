@@ -8,14 +8,13 @@
 
 @implementation MPBreadcrumb
 
-- (instancetype)initWithSessionUUID:(NSString *)sessionUUID breadcrumbId:(int64_t)breadcrumbId UUID:(NSString *)uuid breadcrumbData:(NSData *)breadcrumbData sessionNumber:(NSNumber *)sessionNumber timestamp:(NSTimeInterval)timestamp {
+- (instancetype)initWithSessionUUID:(NSString *)sessionUUID breadcrumbId:(int64_t)breadcrumbId UUID:(NSString *)uuid breadcrumbData:(NSData *)breadcrumbData timestamp:(NSTimeInterval)timestamp {
     self = [super init];
     if (self) {
         _sessionUUID = sessionUUID;
         _breadcrumbId = breadcrumbId;
         _uuid = uuid;
         _timestamp = timestamp;
-        _sessionNumber = sessionNumber;
         _breadcrumbData = breadcrumbData;
         if (breadcrumbData) {
             _content = [[NSString alloc] initWithData:breadcrumbData encoding:NSUTF8StringEncoding];
@@ -26,7 +25,7 @@
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Breadcrumb\n UUID: %@\n Content: %@\n timestamp: %.0f\n Session number: %@\n", self.uuid, self.content, self.timestamp, self.sessionNumber];
+    return [NSString stringWithFormat:@"Breadcrumb\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uuid, self.content, self.timestamp];
 }
 
 - (BOOL)isEqual:(MPBreadcrumb *)object {
@@ -48,7 +47,6 @@
                                                             breadcrumbId:_breadcrumbId
                                                                     UUID:[_uuid copy]
                                                           breadcrumbData:[_breadcrumbData copy]
-                                                           sessionNumber:[_sessionNumber copy]
                                                                timestamp:_timestamp];
     
     return copyObject;
@@ -62,7 +60,6 @@
     [coder encodeObject:self.content forKey:@"content"];
     [coder encodeObject:self.breadcrumbData forKey:@"breadcrumbData"];
     [coder encodeDouble:self.timestamp forKey:@"timestamp"];
-    [coder encodeObject:self.sessionNumber forKey:@"sessionNumber"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -73,7 +70,6 @@
                         breadcrumbId:[coder decodeInt64ForKey:@"breadcrumbId"]
                                 UUID:[coder decodeObjectForKey:@"uuid"]
                       breadcrumbData:breadcrumbData
-                       sessionNumber:[coder decodeObjectForKey:@"sessionNumber"]
                            timestamp:[coder decodeDoubleForKey:@"timestamp"]];
     
     return self;
@@ -90,10 +86,6 @@
                                                    kMPSessionStartTimestamp:breadcrumbInfo[kMPSessionStartTimestamp]
                                                   }
                                                  mutableCopy];
-
-    if (breadcrumbInfo[kMPSessionNumberKey]) {
-       breadcrumbDictionary[kMPSessionNumberKey] = breadcrumbInfo[kMPSessionNumberKey];
-    }
 
     if (breadcrumbInfo[kMPLeaveBreadcrumbsKey]) {
         breadcrumbDictionary[kMPLeaveBreadcrumbsKey] = breadcrumbInfo[kMPLeaveBreadcrumbsKey];
