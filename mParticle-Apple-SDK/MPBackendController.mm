@@ -343,7 +343,9 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)broadcastSessionDidBegin:(MPSession *)session {
-    [self.delegate sessionDidBegin:session];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.delegate sessionDidBegin:session];
+    });
     
     __weak MPBackendController *weakSelf = self;
     double delay = _initializationStatus == MPInitializationStatusStarted ? 0 : 0.1;
@@ -1658,7 +1660,7 @@ static BOOL appBackgrounded = NO;
         [self saveMessage:message updateSession:YES];
         
         if (completionHandler) {
-            completionHandler(_session, previousSession, MPExecStatusSuccess);
+            completionHandler(self->_session, previousSession, MPExecStatusSuccess);
         }
     }];
     
@@ -1666,7 +1668,7 @@ static BOOL appBackgrounded = NO;
     
     stateMachine.currentSession = _session;
     
-    [self broadcastSessionDidBegin:_session];
+    [self broadcastSessionDidBegin:self->_session];
     
     MPILogVerbose(@"New Session Has Begun: %@", _session.uuid);
 }
@@ -2557,7 +2559,7 @@ static BOOL appBackgrounded = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications startKitsAsync:(BOOL)startKitsAsync completionHandler:(dispatch_block_t)completionHandler {
     sdkIsLaunching = YES;
     _initializationStatus = MPInitializationStatusStarting;
     
@@ -2570,8 +2572,14 @@ static BOOL appBackgrounded = NO;
         [self.notificationController registerForSilentNotifications];
     }
 #endif
+    if (startKitsAsync) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [MPKitContainer sharedInstance];
+        });
+    } else {
+        [MPKitContainer sharedInstance];
+    }
     
-    [MPKitContainer sharedInstance];
     
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.apiKey = apiKey;

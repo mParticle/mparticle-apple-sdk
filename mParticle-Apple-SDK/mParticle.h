@@ -263,6 +263,26 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate;
 
+/**
+ Starts the API with your API key and a secret and installation type.
+ It is required that you use either this method or startAPI to authorize the API before
+ using the other API methods.  The apiKey and secret that are passed in to this method
+ will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
+ @param apiKey The API key for your account
+ @param secret The API secret for your account
+ @param installationType You can tell the mParticle SDK if this is a new install, an upgrade, or let the SDK detect it automatically.
+ @param environment The environment property defining the running SDK environment: Development or Production. You can set it to a specific value, or let the
+ SDK auto-detect the environment for you. Once the app is deployed to the App Store, setting this parameter will have no effect, since the SDK will set
+ the environment to production.
+ @param proxyAppDelegate Flag indicating whether the mParticle SDK should handle logging remote notifications, app launches, and actions automatically. If you set to NO,
+ your app is responsible for calling required methods. Default is YES
+ @param startKitsAsync Flag indicating whether the mParticle SDK should invoke dispatch_async to initialize kit SDKs. This means SDKs will not be initialized
+ within didFinishLaunchingWithOptions. Default is NO.
+ @see MPInstallationType
+ @see MPEnvironment
+ */
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync;
+
 #pragma mark - Application notifications
 #if TARGET_OS_IOS == 1
 /**

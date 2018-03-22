@@ -417,6 +417,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate {
+    [self startWithKey:apiKey secret:secret installationType:installationType environment:environment proxyAppDelegate:proxyAppDelegate startKitsAsync:NO];
+}
+
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync {
     NSAssert(apiKey && secret, @"mParticle SDK must be started with an apiKey and secret.");
     NSAssert([apiKey isKindOfClass:[NSString class]] && [secret isKindOfClass:[NSString class]], @"mParticle SDK apiKey and secret must be of type string.");
     NSAssert(apiKey.length > 0 && secret.length > 0, @"mParticle SDK apiKey and secret cannot be an empty string.");
@@ -452,6 +456,7 @@ NSString *const kMPStateKey = @"state";
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
           registerForSilentNotifications:registerForSilentNotifications
+                          startKitsAsync:startKitsAsync
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            
