@@ -54,6 +54,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) BOOL automaticSessionTracking;
 @property (atomic, strong, nullable) NSString *customUserAgent;
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+@property (atomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end
@@ -212,7 +213,10 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)start;
 
 /**
- Starts the API with your API key and a secret.
+ Starts the SDK with your API key and secret and installation type.
+ It is required that you use either this method or `start` to authorize the SDK before
+ using the other API methods. The apiKey and secret that are passed in to this method
+ will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
  @param options SDK startup options
  */
 - (void)startWithOptions:(MParticleOptions *)options;

@@ -89,6 +89,7 @@ NSString *const kMPStateKey = @"state";
     self = [super init];
     if (self) {
         _automaticSessionTracking = YES;
+        _startKitsAsync = NO;
     }
     return self;
 }
@@ -453,7 +454,8 @@ NSString *const kMPStateKey = @"state";
     MPInstallationType installationType = options.installType;
     MPEnvironment environment = options.environment;
     BOOL proxyAppDelegate = options.proxyAppDelegate;
-    
+    BOOL startKitsAsync = options.startKitsAsync;
+
     NSAssert(apiKey && secret, @"mParticle SDK must be started with an apiKey and secret.");
     NSAssert([apiKey isKindOfClass:[NSString class]] && [secret isKindOfClass:[NSString class]], @"mParticle SDK apiKey and secret must be of type string.");
     NSAssert(apiKey.length > 0 && secret.length > 0, @"mParticle SDK apiKey and secret cannot be an empty string.");
@@ -494,6 +496,7 @@ NSString *const kMPStateKey = @"state";
                                 firstRun:firstRun
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
+                          startKitsAsync:startKitsAsync
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            
