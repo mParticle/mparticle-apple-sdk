@@ -84,7 +84,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if (attributionResult && attributionResult.kitCode) {
                 linkInfo[attributionResult.kitCode] = attributionResult;
             }
-            [MParticle sharedInstance].options.onAttributionComplete(attributionResult, error);
+            if ([MParticle sharedInstance].options.onAttributionComplete) {
+                [MParticle sharedInstance].options.onAttributionComplete(attributionResult, error);
+            }
         } copy];
         
         if (![MPStateMachine sharedInstance].optOut) {
