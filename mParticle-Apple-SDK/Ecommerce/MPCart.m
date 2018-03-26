@@ -12,6 +12,7 @@
 @property (nonatomic, strong, readonly, nullable) NSString *cartFile;
 @property (nonatomic, strong, nullable) NSMutableArray<MPProduct *> *productsList;
 @property (nonatomic, strong, readonly, nullable) NSNumber *mpid;
+@property (nonatomic) BOOL cartInitialized;
 
 @end
 
@@ -26,10 +27,8 @@
         return nil;
     }
     _mpid = userId;
-    MPCart *persistedCart = [self retrieveCart];
-    if (persistedCart && persistedCart.productsList.count > 0) {
-        self.productsList = persistedCart.productsList;
-    }
+    _productsList = nil;
+    _cartInitialized = NO;
     
     return self;
 }
@@ -56,6 +55,15 @@
 - (NSMutableArray *)productsList {
     if (_productsList) {
         return _productsList;
+    }
+    
+    if (!_cartInitialized) {
+        _cartInitialized = YES;
+        MPCart *persistedCart = [self retrieveCart];
+        if (persistedCart && persistedCart.productsList.count > 0) {
+            _productsList = persistedCart.productsList;
+            return _productsList;
+        }
     }
     
     _productsList = [[NSMutableArray alloc] init];
