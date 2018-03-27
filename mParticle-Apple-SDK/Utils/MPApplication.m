@@ -440,7 +440,10 @@ static NSString *kMPAppStoreReceiptString = nil;
     }
     
 #if TARGET_OS_IOS == 1
-    applicationInfo[kMPDeviceSupportedPushNotificationTypesKey] = self.remoteNotificationTypes;
+    NSNumber *notificationTypes = self.remoteNotificationTypes;
+    if (notificationTypes != nil) {
+        applicationInfo[kMPDeviceSupportedPushNotificationTypesKey] = notificationTypes;
+    }
     
     NSNumber *badgeNumber = self.badgeNumber;
     if (badgeNumber != nil) {
