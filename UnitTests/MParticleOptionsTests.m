@@ -31,6 +31,14 @@
     XCTAssertEqualObjects(_options.apiSecret, @"unit_test_secret", @"Expected secret to match the one passed in");
 }
 
+- (void)testDisableProxyAppDelegate {
+    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertTrue(_options.proxyAppDelegate, @"Expected proxy AppDelegate to default to YES");
+    
+    _options.proxyAppDelegate = NO;
+    XCTAssertFalse(_options.proxyAppDelegate, @"Expected proxy AppDelegate to be NO after setting to NO");
+}
+
 - (void)testDisableAutoSessionTracking {
     _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
     XCTAssertTrue(_options.automaticSessionTracking, @"Expected auto session tracking to default to YES");
