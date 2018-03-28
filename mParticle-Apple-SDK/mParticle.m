@@ -89,6 +89,7 @@ NSString *const kMPStateKey = @"state";
     self = [super init];
     if (self) {
         _proxyAppDelegate = YES;
+        _collectUserAgent = YES;
         _automaticSessionTracking = YES;
         _startKitsAsync = NO;
     }

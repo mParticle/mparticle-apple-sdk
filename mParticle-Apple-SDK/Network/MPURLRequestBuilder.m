@@ -68,6 +68,8 @@ static NSString *mpUserAgent = nil;
 }
 
 - (NSString *)userAgent {
+    NSString *defaultUserAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+    
     if (!mpUserAgent) {
         if (MParticle.sharedInstance.customUserAgent != nil) {
             mpUserAgent = MParticle.sharedInstance.customUserAgent;
@@ -85,7 +87,7 @@ static NSString *mpUserAgent = nil;
             
 #if !defined(MPARTICLE_APP_EXTENSIONS)
             if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                return nil;
+                return defaultUserAgent;
             }
 #endif
             
@@ -111,6 +113,8 @@ static NSString *mpUserAgent = nil;
                 dispatch_sync(dispatch_get_main_queue(), getUserAgent);
             }
 #endif
+        } else {
+            return defaultUserAgent;
         }
     }
     

@@ -115,12 +115,16 @@
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
-        XCTAssertNil(userAgent, @"Should have been nil.");
+        XCTAssertNotNil(userAgent, @"Should not have been nil.");
+        
+        NSString *defaultUserAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+        XCTAssertTrue([userAgent isEqualToString:defaultUserAgent], @"User Agent has an invalid value: %@", userAgent);
         [expectation fulfill];
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
+
 - (void)testHMACSha256Encode {
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
