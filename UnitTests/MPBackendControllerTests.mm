@@ -65,7 +65,6 @@
 @interface MPBackendController(Tests)
 
 @property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
-@property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
 @property (nonatomic, unsafe_unretained) MPInitializationStatus initializationStatus;
 
@@ -840,7 +839,7 @@
     XCTAssertEqualObjects(userAttributes, attributes);
 
     [self.backendController setUserAttribute:@"TardisKey4" values:nil attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    XCTAssertNil(userAttributes[@"TardisKey4"]);
+    XCTAssertNil(self.backendController.userAttributes[@"TardisKey4"]);
 
     attributes = @{@"TardisKey2":[NSNull null],
                    @"TardisKey3":@42

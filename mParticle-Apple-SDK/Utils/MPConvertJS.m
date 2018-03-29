@@ -166,7 +166,7 @@ typedef NS_ENUM(NSUInteger, MPJSCommerceEventAction) {
 }
 
 + (MPTransactionAttributes *)MPTransactionAttributes:(NSDictionary *)json {
-    MPTransactionAttributes *transactionAttributes;
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     transactionAttributes.affiliation = json[@"Affiliation"];
     transactionAttributes.couponCode = json[@"CouponCode"];
     transactionAttributes.shipping = json[@"ShippingAmount"];

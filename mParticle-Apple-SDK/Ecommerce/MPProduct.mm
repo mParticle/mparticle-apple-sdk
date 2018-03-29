@@ -21,6 +21,7 @@
 #include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSNumber+MPFormatter.h"
+#import "MPILogger.h"
 
 // Internal
 NSString *const kMPProductBrand = @"br";
@@ -237,9 +238,19 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
         self->_objectDictionary = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
     
-    dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
-    if (dictionary) {
-        self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+    @try {
+        dictionary = [coder decodeObjectForKey:@"userDefinedAttributes"];
+    }
+    
+    @catch ( NSException *e) {
+        dictionary = nil;
+        MPILogError(@"Exception decoding MPProduct User Defined Attributes: %@", [e reason]);
+    }
+    
+    @finally {
+        if (dictionary.count > 0) {
+            self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        }
     }
     
     return self;

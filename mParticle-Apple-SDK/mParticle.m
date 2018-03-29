@@ -84,6 +84,8 @@ NSString *const kMPStateKey = @"state";
 
 @synthesize commerce = _commerce;
 @synthesize optOut = _optOut;
+@synthesize collectUserAgent = _collectUserAgent;
+@synthesize customUserAgent = _customUserAgent;
 
 + (void)initialize {
     eventTypeStrings = @[@"Reserved - Not Used", @"Navigation", @"Location", @"Search", @"Transaction", @"UserContent", @"UserPreference", @"Social", @"Other"];
@@ -95,6 +97,7 @@ NSString *const kMPStateKey = @"state";
         return nil;
     }
 
+    _collectUserAgent = YES;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
@@ -291,9 +294,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    if ([MPStateMachine environment] == MPEnvironmentDevelopment) {
-        [MPStateMachine sharedInstance].logLevel = logLevel;
-    }
+    [MPStateMachine sharedInstance].logLevel = logLevel;
 }
 
 - (BOOL)measuringNetworkPerformance {
@@ -416,6 +417,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate {
+    [self startWithKey:apiKey secret:secret installationType:installationType environment:environment proxyAppDelegate:proxyAppDelegate startKitsAsync:NO];
+}
+
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync {
     NSAssert(apiKey && secret, @"mParticle SDK must be started with an apiKey and secret.");
     NSAssert([apiKey isKindOfClass:[NSString class]] && [secret isKindOfClass:[NSString class]], @"mParticle SDK apiKey and secret must be of type string.");
     NSAssert(apiKey.length > 0 && secret.length > 0, @"mParticle SDK apiKey and secret cannot be an empty string.");
@@ -438,7 +443,11 @@ NSString *const kMPStateKey = @"state";
             registerForSilentNotifications = [configRegisterForSilentNotifications boolValue];
         }
     }
-
+    if (environment == MPEnvironmentDevelopment) {
+        MPILogWarning(@"SDK has been initialized in Development mode.");
+    } else if (environment == MPEnvironmentProduction) {
+        MPILogWarning(@"SDK has been initialized in Production Mode.");
+    }
     [MPStateMachine setEnvironment:environment];
 
     [self.backendController startWithKey:apiKey
@@ -447,6 +456,7 @@ NSString *const kMPStateKey = @"state";
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
           registerForSilentNotifications:registerForSilentNotifications
+                          startKitsAsync:startKitsAsync
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            

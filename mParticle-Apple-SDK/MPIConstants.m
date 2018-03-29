@@ -19,7 +19,7 @@
 #import "MPIConstants.h"
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"6.15.11";
+NSString *const kMParticleSDKVersion = @"6.17.0";
 
 // Session Upload Settings
 NSString *const kMPSessionHistoryValue = @"sh";
@@ -73,7 +73,6 @@ NSString *const kMPSessionNumberKey = @"sn";
 NSString *const kMPOptOutKey = @"oo";
 NSString *const kMPDateUserIdentityWasFirstSet = @"dfs";
 NSString *const kMPIsFirstTimeUserIdentityHasBeenSet = @"f";
-NSString *const kMPRemoteNotificationCampaignHistoryKey = @"pch";
 NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
 NSString *const kMPProductBagKey = @"pb";
@@ -143,6 +142,9 @@ NSString *const kMPHTTPETagHeaderKey = @"ETag";
 NSString *const kMPAppSearchAdsAttributionKey = @"asaa";
 NSString *const kMPSynchedUserAttributesKey = @"SynchedUserAttributes";
 NSString *const kMPSynchedUserIdentitiesKey = @"SynchedUserIdentities";
+NSString *const kMPLastConfigReceivedKey = @"LastConfigReceived";
+NSString *const kMPUserAgentSystemVersionUserDefaultsKey = @"UserAgentSystemVersion";
+NSString *const kMPUserAgentValueUserDefaultsKey = @"UserAgentValue";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
@@ -284,6 +286,10 @@ const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
     #else
         600.0;
     #endif
+
+// How long to block config requests after a successful response.
+const NSTimeInterval DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL = 60.0;
+const NSTimeInterval CONFIG_REQUESTS_QUIET_INTERVAL = 10.0*60;
 
 const NSUInteger EVENT_LIMIT = 1000; // maximum number of events per session
 

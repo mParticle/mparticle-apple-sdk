@@ -137,42 +137,8 @@ NSString *const sessionNumberKey = @"sessionNumber";
 }
 
 - (NSNumber *)sessionNumber {
-    if (_sessionNumber != nil) {
-        return _sessionNumber;
-    }
-    
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:sessionNumberFileName];
-    NSDictionary *sessionNumberDictionary;
-    NSUInteger sessionNumber = 0;
-    
-    if ([fileManager fileExistsAtPath:sessionNumberPath]) {
-        sessionNumberDictionary = [NSDictionary dictionaryWithContentsOfFile:sessionNumberPath];
-        if (sessionNumberDictionary) {
-            NSString *uuid = sessionNumberDictionary[sessionUUIDKey];
-            sessionNumber = [sessionNumberDictionary[sessionNumberKey] integerValue];
-            
-            if (![uuid isEqualToString:self.uuid]) {
-                ++sessionNumber;
-            }
-            
-            if (sessionNumber >= (INT_MAX >> 1)) {
-                sessionNumber = 0;
-            }
-        }
-        
-        [fileManager removeItemAtPath:sessionNumberPath error:nil];
-    }
-    
-    [self willChangeValueForKey:@"sessionNumber"];
-    _sessionNumber = @(sessionNumber);
-    [self didChangeValueForKey:@"sessionNumber"];
-    
-    sessionNumberDictionary = @{sessionUUIDKey:self.uuid, sessionNumberKey:_sessionNumber};
-    [sessionNumberDictionary writeToFile:sessionNumberPath atomically:YES];
-    
-    return _sessionNumber;
+    //session number has been deprecated
+    return @0;
 }
 
 #pragma mark Public methods

@@ -26,6 +26,7 @@
 
 @property (nonatomic, unsafe_unretained) uint64_t forwardRecordId;
 @property (nonatomic, strong, nonnull) NSMutableDictionary *dataDictionary;
+@property (nonatomic, strong, nonnull) NSNumber *timestamp;
 
 - (nonnull instancetype)initWithId:(int64_t)forwardRecordId data:(nonnull NSData *)data;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;

@@ -98,8 +98,10 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
 #pragma clang diagnostic ignored "-Wunreachable-code"
-    if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL) {
-        options = @{UIApplicationOpenURLOptionsSourceApplicationKey:@"testApp"};
+    if (@available(iOS 9.0, *)) {
+        if (&UIApplicationOpenURLOptionsSourceApplicationKey != NULL) {
+            options = @{UIApplicationOpenURLOptionsSourceApplicationKey:@"testApp"};
+        }
     }
 #pragma clang diagnostic pop
     [appNotificationHandler openURL:url options:options];

@@ -58,7 +58,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (NSUInteger)countStandaloneMessages;
 - (void)deleteConsumerInfo;
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
-- (void)deleteExpiredUserNotifications;
 - (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
 - (void)deleteAllIntegrationAttributes;
 - (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
@@ -116,17 +115,5 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)saveStandaloneUpload:(nonnull MPStandaloneUpload *)standaloneUpload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
-#if TARGET_OS_IOS == 1
-- (void)deleteUserNotification:(nonnull MParticleUserNotification *)userNotification;
-- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedLocalUserNotifications;
-- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedRemoteUserNotifications;
-- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedLocalUserNotificationsSince:(NSTimeInterval)referenceDate;
-- (nullable NSArray<MParticleUserNotification *> *)fetchDisplayedRemoteUserNotificationsSince:(NSTimeInterval)referenceDate;
-- (nullable NSArray<MParticleUserNotification *> *)fetchUserNotificationCampaignHistorySync;
-- (void)fetchUserNotificationCampaignHistory:(void (^ _Nonnull)(NSArray<MParticleUserNotification *> * _Nullable userNotificationCampaignHistory))completionHandler;
-- (nullable NSArray<MParticleUserNotification *> *)fetchUserNotifications;
-- (void)saveUserNotification:(nonnull MParticleUserNotification *)userNotification;
-- (void)updateUserNotification:(nonnull MParticleUserNotification *)userNotification;
-#endif
 
 @end

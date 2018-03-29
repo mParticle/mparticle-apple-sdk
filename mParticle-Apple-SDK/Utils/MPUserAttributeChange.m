@@ -62,11 +62,6 @@
     return self;
 }
 
-- (void)setDeleted:(BOOL)deleted {
-    _deleted = deleted;
-    _changed = YES;
-}
-
 - (id)valueToLog {
     if (!_valueToLog) {
         _valueToLog = _value && !_deleted ? _value : [NSNull null];

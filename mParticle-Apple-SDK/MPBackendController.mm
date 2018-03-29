@@ -70,6 +70,7 @@ const NSInteger kExceededNumberOfAttributesLimit = 103;
 const NSInteger kExceededAttributeMaximumLength = 104;
 const NSInteger kExceededKeyMaximumLength = 105;
 const NSInteger kInvalidDataType = 106;
+const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5;
 
 static NSArray *execStatusDescriptions;
 static BOOL appBackgrounded = NO;
@@ -267,11 +268,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (NSMutableDictionary<NSString *, id> *)userAttributes {
-    if (_userAttributes) {
-        return _userAttributes;
-    }
-    
-    _userAttributes = [[NSMutableDictionary alloc] initWithCapacity:2];
+    NSMutableDictionary *localUserAttributes = [[NSMutableDictionary alloc] initWithCapacity:2];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     if (userAttributes) {
@@ -284,29 +281,32 @@ static BOOL appBackgrounded = NO;
             value = userAttributes[key];
             
             if ([value isKindOfClass:NSStringClass]) {
-                _userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? value : [NSNull null];
+                localUserAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? value : [NSNull null];
             } else {
-                _userAttributes[key] = value;
+                localUserAttributes[key] = value;
             }
         }
     }
     
-    return _userAttributes;
+    
+    return localUserAttributes;
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentities {
-    if (_userIdentities) {
-        return _userIdentities;
-    }
-    
-    _userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
+    NSMutableArray *userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = userDefaults[kMPUserIdentityArrayKey];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey];
     if (userIdentityArray) {
-        [_userIdentities addObjectsFromArray:userIdentityArray];
+        [userIdentities addObjectsFromArray:userIdentityArray];
     }
     
-    return _userIdentities;
+    return userIdentities;
+}
+
+- (void)setUserIdentities:(NSMutableArray<NSDictionary<NSString *,id> *> *)userIdentities {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey];
+    [userDefaults synchronize];
 }
 
 #pragma mark Private methods
@@ -343,7 +343,9 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)broadcastSessionDidBegin:(MPSession *)session {
-    [self.delegate sessionDidBegin:session];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.delegate sessionDidBegin:session];
+    });
     
     __weak MPBackendController *weakSelf = self;
     double delay = _initializationStatus == MPInitializationStatusStarted ? 0 : 0.1;
@@ -379,7 +381,6 @@ static BOOL appBackgrounded = NO;
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     if (nextCleanUpTime < currentTime) {
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        [persistence deleteExpiredUserNotifications];
         [persistence deleteRecordsOlderThan:(currentTime - ONE_HUNDRED_EIGHTY_DAYS)];
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
@@ -534,7 +535,7 @@ static BOOL appBackgrounded = NO;
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
     [self saveMessage:message updateSession:YES];
-
+    [MPApplication updateStoredVersionAndBuildNumbers];
     didFinishLaunchingNotification = nil;
     
     MPILogVerbose(@"Application Did Finish Launching");
@@ -724,6 +725,8 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
+    NSMutableDictionary<NSString *, id> *userAttributes = self.userAttributes;
+    
     switch (_initializationStatus) {
         case MPInitializationStatusStarted: {
             if ([MPStateMachine sharedInstance].optOut) {
@@ -743,9 +746,9 @@ static BOOL appBackgrounded = NO;
             }
             
             dispatch_sync(backendQueue, ^{
-                NSString *localKey = [self.userAttributes caseInsensitiveKey:userAttributeChange.key];
+                NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
                 
-                if (!userAttributeChange.value && !self.userAttributes[localKey]) {
+                if (!userAttributeChange.value && !userAttributes[localKey]) {
                     if (completionHandler) {
                         completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);
                     }
@@ -760,7 +763,7 @@ static BOOL appBackgrounded = NO;
                 
                 if (userAttributeChange.isArray) {
                     userAttributeValue = userAttributeChange.value;
-                    userAttributeChange.deleted = error.code == kInvalidValue && self.userAttributes[localKey];
+                    userAttributeChange.deleted = error.code == kInvalidValue && userAttributes[localKey];
                 } else {
                     if (!validAttributes && error.code == kInvalidValue) {
                         userAttributeValue = [NSNull null];
@@ -770,13 +773,13 @@ static BOOL appBackgrounded = NO;
                         userAttributeValue = userAttributeChange.value;
                     }
                     
-                    userAttributeChange.deleted = error.code == kEmptyValueAttribute && self.userAttributes[localKey];
+                    userAttributeChange.deleted = error.code == kEmptyValueAttribute && userAttributes[localKey];
                 }
                 
                 if (validAttributes) {
-                    self.userAttributes[localKey] = userAttributeValue;
+                    userAttributes[localKey] = userAttributeValue;
                 } else if (userAttributeChange.deleted) {
-                    [self.userAttributes removeObjectForKey:localKey];
+                    [userAttributes removeObjectForKey:localKey];
                     
                     if (!deletedUserAttributes) {
                         deletedUserAttributes = [[NSMutableSet alloc] initWithCapacity:1];
@@ -790,15 +793,15 @@ static BOOL appBackgrounded = NO;
                     return;
                 }
                 
-                NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
-                NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
+                NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
                 NSString *aKey;
                 
+                NSMutableDictionary *newUserAttributes = [NSMutableDictionary dictionary];
                 while ((aKey = [attributeEnumerator nextObject])) {
-                    if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
-                        userAttributes[aKey] = kMPNullUserAttributeString;
+                    if ((NSNull *)userAttributes[aKey] == [NSNull null]) {
+                        newUserAttributes[aKey] = kMPNullUserAttributeString;
                     } else {
-                        userAttributes[aKey] = self.userAttributes[aKey];
+                        newUserAttributes[aKey] = userAttributes[aKey];
                     }
                 }
 
@@ -807,11 +810,9 @@ static BOOL appBackgrounded = NO;
                     [self logUserAttributeChange:userAttributeChange];
                 }
 
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                    userDefaults[kMPUserAttributeKey] = userAttributes;
-                    [userDefaults synchronize];
-                });
+                MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                userDefaults[kMPUserAttributeKey] = newUserAttributes;
+                [userDefaults synchronize];
                 
                 if (completionHandler) {
                     dispatch_async(dispatch_get_main_queue(), ^{
@@ -892,11 +893,13 @@ static BOOL appBackgrounded = NO;
                     existingEntryIndex = [self.userIdentities indexOfObjectPassingTest:objectTester];
                     
                     if (existingEntryIndex != NSNotFound) {
-                        identityDictionary = [self.userIdentities[existingEntryIndex] mutableCopy];
+                        identityDictionary = [[self userIdentities][existingEntryIndex] mutableCopy];
                         userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
                         userIdentityChange.userIdentityNew = nil;
                         
-                        [self.userIdentities removeObjectAtIndex:existingEntryIndex];
+                        NSMutableArray *currentUserIdentities = [self.userIdentities mutableCopy];
+                        [currentUserIdentities removeObjectAtIndex:existingEntryIndex];
+                        self.userIdentities = currentUserIdentities;
                         persistUserIdentities = YES;
                     }
                 } else {
@@ -914,7 +917,9 @@ static BOOL appBackgrounded = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                             
-                            [self.userIdentities addObject:identityDictionary];
+                            NSMutableArray *currentUserIdentities = [self.userIdentities mutableCopy];
+                            [currentUserIdentities addObject:identityDictionary];
+                            self.userIdentities = currentUserIdentities;
                         } else {
                             userIdentity = self.userIdentities[existingEntryIndex];
                             userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
@@ -925,7 +930,9 @@ static BOOL appBackgrounded = NO;
                             
                             identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
                             
-                            [self.userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                            NSMutableArray *currentUserIdentities = [self.userIdentities mutableCopy];
+                            [currentUserIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
+                            self.userIdentities = currentUserIdentities;
                         }
                         
                         persistUserIdentities = YES;
@@ -1400,8 +1407,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
-    self.userAttributes = nil;
-    self.userIdentities = nil;
 }
 
 - (void)handleNetworkPerformanceNotification:(NSNotification *)notification {
@@ -1655,7 +1660,7 @@ static BOOL appBackgrounded = NO;
         [self saveMessage:message updateSession:YES];
         
         if (completionHandler) {
-            completionHandler(_session, previousSession, MPExecStatusSuccess);
+            completionHandler(self->_session, previousSession, MPExecStatusSuccess);
         }
     }];
     
@@ -1663,7 +1668,7 @@ static BOOL appBackgrounded = NO;
     
     stateMachine.currentSession = _session;
     
-    [self broadcastSessionDidBegin:_session];
+    [self broadcastSessionDidBegin:self->_session];
     
     MPILogVerbose(@"New Session Has Begun: %@", _session.uuid);
 }
@@ -1984,13 +1989,14 @@ static BOOL appBackgrounded = NO;
     NSAssert([value isKindOfClass:[NSNumber class]], @"'value' must be a number.");
     NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Incrementing user attribute cannot happen prior to starting the mParticle SDK.\n****\n");
     
-    NSString *localKey = [self.userAttributes caseInsensitiveKey:key];
+    NSMutableDictionary<NSString *, id> *userAttributes = self.userAttributes;
+    NSString *localKey = [userAttributes caseInsensitiveKey:key];
     if (!localKey) {
         [self setUserAttribute:key value:value attempt:0 completionHandler:nil];
         return value;
     }
     
-    id currentValue = self.userAttributes[localKey];
+    id currentValue = userAttributes[localKey];
     if (currentValue && ![currentValue isKindOfClass:[NSNumber class]]) {
         return nil;
     } else if (MPIsNull(currentValue)) {
@@ -2001,25 +2007,23 @@ static BOOL appBackgrounded = NO;
     NSDecimalNumber *newValue = [[NSDecimalNumber alloc] initWithString:[(NSNumber *)currentValue stringValue]];
     newValue = [newValue decimalNumberByAdding:incrementValue];
     
-    self.userAttributes[localKey] = newValue;
+    userAttributes[localKey] = newValue;
     
-    NSMutableDictionary *userAttributes = [[NSMutableDictionary alloc] initWithCapacity:self.userAttributes.count];
-    NSEnumerator *attributeEnumerator = [self.userAttributes keyEnumerator];
+    NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
     NSString *aKey;
     
+    NSMutableDictionary *newUserAttributes = [NSMutableDictionary dictionary];
     while ((aKey = [attributeEnumerator nextObject])) {
-        if ((NSNull *)self.userAttributes[aKey] == [NSNull null]) {
-            userAttributes[aKey] = kMPNullUserAttributeString;
+        if ((NSNull *)userAttributes[aKey] == [NSNull null]) {
+            newUserAttributes[aKey] = kMPNullUserAttributeString;
         } else {
-            userAttributes[aKey] = self.userAttributes[aKey];
+            newUserAttributes[aKey] = userAttributes[aKey];
         }
     }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        userDefaults[kMPUserAttributeKey] = userAttributes;
-        [userDefaults synchronize];
-    });
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults[kMPUserAttributeKey] = newUserAttributes;
+    [userDefaults synchronize];
     
     return (NSNumber *)newValue;
 }
@@ -2555,7 +2559,7 @@ static BOOL appBackgrounded = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications startKitsAsync:(BOOL)startKitsAsync completionHandler:(dispatch_block_t)completionHandler {
     sdkIsLaunching = YES;
     _initializationStatus = MPInitializationStatusStarting;
     
@@ -2568,14 +2572,24 @@ static BOOL appBackgrounded = NO;
         [self.notificationController registerForSilentNotifications];
     }
 #endif
+    if (startKitsAsync) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [MPKitContainer sharedInstance];
+        });
+    } else {
+        [MPKitContainer sharedInstance];
+    }
     
-    [MPKitContainer sharedInstance];
     
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.apiKey = apiKey;
     stateMachine.secret = secret;
     stateMachine.installationType = installationType;
     [MPStateMachine setRunningInBackground:NO];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self requestConfig:nil];
+    });
     
     [MPURLRequestBuilder tryToCaptureUserAgent];
     
@@ -2680,7 +2694,8 @@ static BOOL appBackgrounded = NO;
         __strong MPBackendController *strongSelf = weakSelf;
         
         [strongSelf requestConfig:^(BOOL uploadBatch) {
-            if (!uploadBatch) {
+            BOOL shouldDelayUpload = [[MPKitContainer sharedInstance] shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+            if (!uploadBatch || shouldDelayUpload) {
                 if (completionHandler) {
                     completionHandler();
                 }
@@ -2849,7 +2864,6 @@ static BOOL appBackgrounded = NO;
 - (void)clearUserAttributes {
     [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:@"ua"];
     [[MPIUserDefaults standardUserDefaults] synchronize];
-    _userAttributes = nil;
 }
 
 #if TARGET_OS_IOS == 1
@@ -2961,14 +2975,6 @@ static BOOL appBackgrounded = NO;
             
         default:
             break;
-    }
-    
-    if (userNotification.shouldPersist) {
-        if (userNotification.userNotificationId) {
-            [[MPPersistenceController sharedInstance] updateUserNotification:userNotification];
-        } else {
-            [[MPPersistenceController sharedInstance] saveUserNotification:userNotification];
-        }
     }
     
     NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", [MPNotificationController deviceToken]],

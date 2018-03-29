@@ -143,6 +143,19 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) BOOL optOut;
 
 /**
+ Gets/Sets the user agent to a custom value.
+ */
+@property (atomic, strong, nullable) NSString *customUserAgent;
+
+/**
+ Determines whether the mParticle Apple SDK will instantiate a UIWebView in order to collect the browser user agent.
+ This value is required by attribution providers for fingerprint identification, when device IDs are not available.
+ If you disable this flag, consider populating the user agent via the customUserAgent property above if you are using
+ an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
+ */
+@property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+
+/**
  A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
  application notifications automatically.
  @see startWithKey:secret:installationType:environment:proxyAppDelegate:
@@ -249,6 +262,26 @@ NS_ASSUME_NONNULL_BEGIN
  @see MPEnvironment
  */
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate;
+
+/**
+ Starts the API with your API key and a secret and installation type.
+ It is required that you use either this method or startAPI to authorize the API before
+ using the other API methods.  The apiKey and secret that are passed in to this method
+ will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
+ @param apiKey The API key for your account
+ @param secret The API secret for your account
+ @param installationType You can tell the mParticle SDK if this is a new install, an upgrade, or let the SDK detect it automatically.
+ @param environment The environment property defining the running SDK environment: Development or Production. You can set it to a specific value, or let the
+ SDK auto-detect the environment for you. Once the app is deployed to the App Store, setting this parameter will have no effect, since the SDK will set
+ the environment to production.
+ @param proxyAppDelegate Flag indicating whether the mParticle SDK should handle logging remote notifications, app launches, and actions automatically. If you set to NO,
+ your app is responsible for calling required methods. Default is YES
+ @param startKitsAsync Flag indicating whether the mParticle SDK should invoke dispatch_async to initialize kit SDKs. This means SDKs will not be initialized
+ within didFinishLaunchingWithOptions. Default is NO.
+ @see MPInstallationType
+ @see MPEnvironment
+ */
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret installationType:(MPInstallationType)installationType environment:(MPEnvironment)environment proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync;
 
 #pragma mark - Application notifications
 #if TARGET_OS_IOS == 1
@@ -729,14 +762,14 @@ NS_ASSUME_NONNULL_BEGIN
  @param center The notification center that received the notification
  @param notification The notification that is about to be delivered
  */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification;
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification NS_AVAILABLE_IOS(10.0);
 
 /**
  Informs the mParticle SDK that the user has interacted with a given notification
  @param center The notification center that received the notification
  @param response The user’s response to the notification
  */
-- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response;
+- (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response NS_AVAILABLE_IOS(10.0);
 #endif
 
 #pragma mark - User Segments

@@ -50,5 +50,5 @@
 - (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)kitCode;
 - (nullable NSDictionary<NSNumber *, NSString *> *)userIdentitiesForKit:(nonnull NSNumber *)kitCode;
 - (nullable NSDictionary<NSString *, id> *)userAttributesForKit:(nonnull NSNumber *)kitCode;
-
+- (BOOL)shouldDelayUpload: (NSTimeInterval) maxWaitTime;
 @end

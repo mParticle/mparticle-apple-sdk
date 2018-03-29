@@ -83,7 +83,6 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 @property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
 @property (nonatomic, unsafe_unretained, readonly) MPInitializationStatus initializationStatus;
 @property (nonatomic, unsafe_unretained) NSTimeInterval uploadInterval;
-@property (nonatomic, strong, nullable) NSMutableDictionary<NSString *, id> *userAttributes;
 
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPBackendControllerDelegate>)delegate;
 - (void)beginSession:(void (^ _Nullable)(MPSession * _Nullable session, MPSession * _Nullable previousSession, MPExecStatus execStatus))completionHandler;
@@ -107,9 +106,10 @@ typedef NS_ENUM(NSUInteger, MPInitializationStatus) {
 - (void)setUserAttribute:(nonnull NSString *)key value:(nullable id)value attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus))completionHandler;
 - (void)setUserAttribute:(nonnull NSString *)key values:(nullable NSArray<NSString *> *)values attempt:(NSUInteger)attempt completionHandler:(void (^ _Nullable)(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus))completionHandler;
 - (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus))completionHandler;
-- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications completionHandler:(dispatch_block_t _Nonnull)completionHandler;
+- (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate registerForSilentNotifications:(BOOL)registerForSilentNotifications startKitsAsync:(BOOL)startKitsAsync completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)saveMessage:(nonnull MPDataModelAbstract *)abstractMessage updateSession:(BOOL)updateSession;
 - (MPExecStatus)uploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler;
+- (nonnull NSMutableDictionary<NSString *, id> *)userAttributes;
 
 #if TARGET_OS_IOS == 1
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
