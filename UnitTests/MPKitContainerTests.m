@@ -881,13 +881,11 @@
     [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
                 userAttributeKey:key
                            value:values
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
                           XCTAssertNotNil(kit);
                           
                           MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
                           XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
-                          NSArray *referenceValues = @[@"T-Rex", @"Short arms", @"Omnivore"];
-                          XCTAssertEqualObjects(kit.userAttributes[@"Dinosaur"], referenceValues);
                           
                           [expectation fulfill];
                       }];
@@ -920,7 +918,7 @@
     [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
                 userAttributeKey:key
                            value:values
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
                           NSAssert(false, @"This line should never be executed.");
                       }];
     

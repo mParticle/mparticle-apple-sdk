@@ -6,6 +6,8 @@
 #import <Foundation/Foundation.h>
 #import "MParticleUser.h"
 #import "MPIdentityApiRequest.h"
+#import "FilteredMParticleUser.h"
+#import "FilteredMPIdentityApiRequest.h"
 
 NS_ASSUME_NONNULL_BEGIN
 

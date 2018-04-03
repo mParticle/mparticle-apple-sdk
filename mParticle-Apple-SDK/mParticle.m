@@ -1341,8 +1341,9 @@ NSString *const kMPStateKey = @"state";
     
     [[MPKitContainer sharedInstance] forwardSDKCall:@selector(surveyURLWithUserAttributes:)
                                      userAttributes:userAttributes
-                                         kitHandler:^(id<MPKitProtocol> kit, NSDictionary *forwardAttributes) {
-                                             surveyURL = [kit surveyURLWithUserAttributes:forwardAttributes];
+                                         kitHandler:^(id<MPKitProtocol> kit, NSDictionary *forwardAttributes, MPKitConfiguration *kitConfig) {
+                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:kitConfig];
+                                             surveyURL = [kit surveyURLWithUserAttributes:filteredUser.userAttributes];
                                          }];
     
     return surveyURL;

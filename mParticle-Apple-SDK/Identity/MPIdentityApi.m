@@ -14,6 +14,14 @@
 #import "MPIdentityDTO.h"
 #import "MPEnums.h"
 #import "MPILogger.h"
+#import "MPKitContainer.h"
+
+typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
+    MPIdentityRequestIdentify = 0,
+    MPIdentityRequestLogin = 1,
+    MPIdentityRequestLogout = 2,
+    MPIdentityRequestModify = 3
+};
 
 @interface MPIdentityApi ()
 
@@ -69,6 +77,15 @@
             [self.currentUser setUserIdentity:identityValue identityType:identityType];
         }];
     }
+    
+    // Forward call to kits
+    [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onModifyComplete: request:)
+                                                 kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                     FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:self.currentUser kitConfiguration:kitConfig];
+                                                     FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
+                                                     [kit onModifyComplete:filteredUser request:filteredRequest];
+                                                 }];
+    
     if (completion) {
         MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
         apiResult.user = self.currentUser;
@@ -76,7 +93,7 @@
     }
 }
 
-- (void)onIdentityRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error {
+- (void)onIdentityRequestComplete:(MPIdentityApiRequest *)request identityRequestType:(MPIdentityRequestType)identityRequestType httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error {
     if (error) {
         if (completion) {
             completion(nil, error);
@@ -143,6 +160,54 @@
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
     }
     
+    // Forwarding calls to kits
+    switch (identityRequestType) {
+        case MPIdentityRequestIdentify: {
+            [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onIdentifyComplete: request:)
+                                                         kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
+                                                             FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
+                                                             [kit onIdentifyComplete:filteredUser request:filteredRequest];
+                                                         }];
+            break;
+        }
+        case MPIdentityRequestLogin: {
+            [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onLoginComplete: request:)
+                                                         kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
+                                                             FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
+                                                             [kit onLoginComplete:filteredUser request:filteredRequest];
+                                                         }];
+            break;
+        }
+        case MPIdentityRequestLogout: {
+            [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onLogoutComplete: request:)
+                                                         kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
+                                                             FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
+                                                             [kit onLogoutComplete:filteredUser request:filteredRequest];
+                                                         }];
+            break;
+        }
+        case MPIdentityRequestModify: {
+            [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onModifyComplete: request:)
+                                                         kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
+                                                             FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
+                                                             [kit onModifyComplete:filteredUser request:filteredRequest];
+                                                         }];
+            break;
+        }
+        default: {
+            [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onUserIdentified:)
+                                                         kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
+                                                             [kit onUserIdentified:filteredUser];
+                                                         }];
+            break;
+        }
+    }
+    
     if (completion) {
         completion(apiResult, nil);
     }
@@ -173,7 +238,7 @@
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
     [_apiManager identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestComplete:identifyRequest httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
+        [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
 }
 
@@ -183,7 +248,7 @@
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
     [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestComplete:loginRequest httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
+        [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
 }
 
@@ -193,7 +258,7 @@
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiResultCallback)completion {
     [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestComplete:logoutRequest httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
+        [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
 }
 
