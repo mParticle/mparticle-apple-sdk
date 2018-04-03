@@ -96,23 +96,6 @@ extern NSString * _Nonnull const kMPRemoteNotificationContentIdHistoryKey;
 extern NSString * _Nonnull const kMPRemoteNotificationTimestampHistoryKey;
 extern NSString * _Nonnull const kMPForwardStatsRecord;
 
-// Consent events
-extern NSString * _Nonnull const kMPConsentEventKeyRegulation;
-extern NSString * _Nonnull const kMPConsentEventKeyDocument;
-extern NSString * _Nonnull const kMPConsentEventKeyConsentLocation;
-extern NSString * _Nonnull const kMPConsentEventKeyHardwareId;
-extern NSString * _Nonnull const kMPConsentEventKeyCategory;
-extern NSString * _Nonnull const kMPConsentEventKeyPurpose;
-extern NSString * _Nonnull const kMPConsentEventKeyConsented;
-extern NSString * _Nonnull const kMPConsentEventKeyCustomAttributes;
-extern NSString * _Nonnull const kMPConsentRegulationUnknown;
-extern NSString * _Nonnull const kMPConsentRegulationGDPR;
-extern NSString * _Nonnull const kMPConsentCategoryTypeUnknown;
-extern NSString * _Nonnull const kMPConsentCategoryTypeParental;
-extern NSString * _Nonnull const kMPConsentCategoryTypeProcessing;
-extern NSString * _Nonnull const kMPConsentCategoryTypeLocation;
-extern NSString * _Nonnull const kMPConsentCategoryTypeSensitiveData;
-
 // Push Notifications
 extern NSString * _Nonnull const kMPDeviceTokenKey;
 extern NSString * _Nonnull const kMPPushStatusKey;

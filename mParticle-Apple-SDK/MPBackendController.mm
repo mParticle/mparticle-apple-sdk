@@ -35,8 +35,6 @@
 #import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPURLRequestBuilder.h"
-#import "MPConsentEvent.h"
-
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -2081,61 +2079,6 @@ static BOOL appBackgrounded = NO;
     }
     
     completionHandler(event, execStatus);
-}
-
-- (void)logConsentEvent:(nonnull MPConsentEvent *)event attempt:(NSUInteger)attempt completionHandler:(void (^ _Nonnull)(MPConsentEvent * _Nonnull event, MPExecStatus execStatus))completionHandler {
-    NSAssert(_initializationStatus != MPInitializationStatusNotStarted, @"\n****\n  Consent events cannot be logged prior to starting the mParticle SDK.\n****\n");
-    
-    if (attempt > METHOD_EXEC_MAX_ATTEMPT) {
-        completionHandler(event, MPExecStatusFail);
-        return;
-    }
-    
-    MPExecStatus execStatus = MPExecStatusFail;
-    
-    switch (_initializationStatus) {
-        case MPInitializationStatusStarted: {
-            NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
-            
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeConsent session:self.session messageInfo:messageInfo];
-            if (event.timestamp) {
-                [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
-            }
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-#endif
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            
-            [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
-            
-            [self.session incrementCounter];
-            
-            execStatus = MPExecStatusSuccess;
-        }
-            break;
-            
-        case MPInitializationStatusStarting: {
-            if (!event.timestamp) {
-                event.timestamp = [NSDate date];
-            }
-            
-            __weak MPBackendController *weakSelf = self;
-            dispatch_async(dispatch_get_main_queue(), ^{
-                __strong MPBackendController *strongSelf = weakSelf;
-                [strongSelf logConsentEvent:event attempt:(attempt + 1) completionHandler:completionHandler];
-            });
-            
-            execStatus = attempt == 0 ? MPExecStatusDelayedExecution : MPExecStatusContinuedDelayedExecution;
-        }
-            break;
-            
-        case MPInitializationStatusNotStarted:
-            execStatus = MPExecStatusSDKNotStarted;
-            break;
-    }
-    
-    completionHandler(event, execStatus);
-    
 }
 
 - (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance attempt:(NSUInteger)attempt completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {

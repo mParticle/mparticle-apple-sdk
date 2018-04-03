@@ -57,23 +57,6 @@ NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
 NSString *const kMPForwardStatsRecord = @"fsr";
 
-// Consent events
-NSString *const kMPConsentEventKeyRegulation = @"crg";
-NSString *const kMPConsentEventKeyDocument = @"cdo";
-NSString *const kMPConsentEventKeyConsentLocation = @"clc";
-NSString *const kMPConsentEventKeyHardwareId = @"chid";
-NSString *const kMPConsentEventKeyCategory = @"cca";
-NSString *const kMPConsentEventKeyPurpose = @"cpu";
-NSString *const kMPConsentEventKeyConsented = @"cnd";
-NSString *const kMPConsentEventKeyCustomAttributes = @"attrs";
-NSString *const kMPConsentRegulationUnknown = @"unknown";
-NSString *const kMPConsentRegulationGDPR = @"GDPR";
-NSString *const kMPConsentCategoryTypeUnknown = @"unknown";
-NSString *const kMPConsentCategoryTypeParental = @"parental";
-NSString *const kMPConsentCategoryTypeProcessing = @"processing";
-NSString *const kMPConsentCategoryTypeLocation = @"location";
-NSString *const kMPConsentCategoryTypeSensitiveData = @"sensitive_data";
-
 // Push Notifications
 NSString *const kMPDeviceTokenKey = @"to";
 NSString *const kMPPushStatusKey = @"r";

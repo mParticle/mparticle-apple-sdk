@@ -57,12 +57,7 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     /** Internal. Used when a product is removed from the wishlist */
     MPEventTypeRemoveFromWishlist = 21,
     /** Internal. Used when a product is displayed in a promotion */
-    MPEventTypeImpression = 22,
-    /** Internal. Used when consent is granted */
-    MPEventTypeConsentGranted = 24,
-    /** Internal. Used when consent is denied */
-    MPEventTypeConsentDenied = 25
-    
+    MPEventTypeImpression = 22
 };
 
 /// Installation Types
@@ -249,9 +244,7 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type code for a user attribute change */
     MPMessageTypeUserAttributeChange = 17,
     /** Message type code for a user identity change */
-    MPMessageTypeUserIdentityChange = 18,
-    /** Message type code for consent events */
-    MPMessageTypeConsent = 20
+    MPMessageTypeUserIdentityChange = 18
 };
 
 typedef NS_ENUM(NSUInteger, MPConnectivityErrorCode) {
@@ -280,24 +273,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     MPIdentityErrorResponseCodeTimeout = 504,
     /** HTTP Error 429: Identity request should be retried */
     MPIdentityErrorResponseCodeRetry = 429
-};
-
-typedef NS_ENUM(NSUInteger, MPConsentEventType) {
-    MPConsentEventTypeDenied = 0,
-    MPConsentEventTypeGranted = 1
-};
-
-typedef NS_ENUM(NSUInteger, MPConsentRegulation) {
-    MPConsentRegulationUnknown = 0,
-    MPConsentRegulationGDPR = 1
-};
-
-typedef NS_ENUM(NSUInteger, MPConsentCategory) {
-    MPConsentCategoryUnknown = 0,
-    MPConsentCategoryParental = 1,
-    MPConsentCategoryProcessing = 2,
-    MPConsentCategoryLocation = 3,
-    MPConsentCategorySensitiveData = 4
 };
 
 /** Posted immediately after a new session has begun.
