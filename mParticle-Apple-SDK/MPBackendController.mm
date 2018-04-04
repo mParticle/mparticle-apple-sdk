@@ -1195,6 +1195,10 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleSignificantTimeChange:(NSNotification *)notification {
+    if (!MParticle.sharedInstance.automaticSessionTracking) {
+        return;
+    }
+    
     if (_session) {
         [self beginSession:nil];
     }
