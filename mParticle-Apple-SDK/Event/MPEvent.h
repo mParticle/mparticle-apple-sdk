@@ -2,8 +2,7 @@
 #import "MPEnums.h"
 
 /**
- This class contains the information and represents an event to be logged using
- the mParticle SDK.
+ This class represents an event to be logged using the mParticle SDK.
  */
 @interface MPEvent : NSObject <NSCopying> {
 @protected
@@ -24,9 +23,9 @@
 @property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
 
 /**
- The duration, in milliseconds, of an event. This property can be set by a developer, or
- it can be calculated automatically by the mParticle SDK using the beginTiming/endTiming
- methods.
+ The duration, in milliseconds, of an event. You can set this property directly, or
+ you can use the beginTiming/endTiming methods and it will be calculated automatically
+ by the mParticle SDK.
  @see beginTiming
  */
 @property (nonatomic, strong, nullable) NSNumber *duration;

@@ -342,7 +342,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable MPEvent *)eventWithName:(NSString *)eventName;
 
 /**
- Logs an event. This is one of the most fundamental method of the SDK. Developers define all the characteristics
+ Logs an event. This is one of the most fundamental methods of the SDK. You can define all the characteristics
  of an event (name, type, attributes, etc) in an instance of MPEvent and pass that instance to this method to
  log its data to the mParticle SDK.
  @param event An instance of MPEvent
@@ -363,7 +363,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
 
 /**
- Logs a screen event. Developers define all the characteristics of a screen event (name, attributes, etc) in an
+ Logs a screen event. You can define all the characteristics of a screen event (name, attributes, etc) in an
  instance of MPEvent and pass that instance to this method to log its data to the mParticle SDK.
  @param event An instance of MPEvent
  @see MPEvent
