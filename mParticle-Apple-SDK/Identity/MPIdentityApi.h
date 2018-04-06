@@ -21,7 +21,7 @@ typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiRe
 
 @property(nonatomic, strong, readonly, nullable) MParticleUser *currentUser;
 
-- (MParticleUser *)getUser:(NSNumber *)mpId;
+- (nullable MParticleUser *)getUser:(NSNumber *)mpId;
 
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 
