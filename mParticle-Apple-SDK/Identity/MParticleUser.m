@@ -169,11 +169,11 @@
                                                                                     [kit setUserAttribute:key value:value];
                                                                                 }];
                                        } else {
-                                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(removeUserAttribute:)
+                                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:value:)
                                                                           userAttributeKey:key
                                                                                      value:value
                                                                                 kitHandler:^(id<MPKitProtocol> kit) {
-                                                                                    [kit removeUserAttribute:key];
+                                                                                    [kit setUserAttribute:key value:value];
                                                                                 }];
                                        }
                                    } else {
