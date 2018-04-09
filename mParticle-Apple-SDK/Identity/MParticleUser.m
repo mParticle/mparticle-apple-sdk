@@ -140,6 +140,15 @@
                                              [kit incrementUserAttribute:key byValue:value];
                                          }];
     
+    [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:value:)
+                                   userAttributeKey:key
+                                              value:newValue
+                                         kitHandler:^(id<MPKitProtocol> kit) {
+                                             if (![kit respondsToSelector:@selector(incrementUserAttribute:byValue:)]) {
+                                                 [kit setUserAttribute:key value:newValue];
+                                             }
+                                         }];
+    
     return newValue;
 }
 
