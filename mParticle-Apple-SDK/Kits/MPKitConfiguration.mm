@@ -66,7 +66,7 @@
     [self configureProjections:configurationDictionary[@"pr"]];
     
     // Kit instance
-    _bracketConfiguration = !MPIsNull(configurationDictionary[@"bk"]) ? configurationDictionary[@"bk"] : nil;
+    _bracketConfiguration = !MPIsNull(configurationDictionary[kMPRemoteConfigBracketKey]) ? configurationDictionary[kMPRemoteConfigBracketKey] : nil;
     
     _kitCode = !MPIsNull(configurationDictionary[@"id"]) ? configurationDictionary[@"id"] : nil;
     
