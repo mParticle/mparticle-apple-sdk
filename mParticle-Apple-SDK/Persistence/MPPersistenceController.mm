@@ -18,6 +18,7 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "mParticle.h"
+#import "sqlite3.h"
 
 #if TARGET_OS_IOS == 1
     #import "MParticleUserNotification.h"
@@ -52,13 +53,12 @@ typedef NS_ENUM(NSInteger, MPDatabaseState) {
 };
 
 static const NSArray *databaseVersions;
-static NSMutableArray *readyHandlers;
-static BOOL isReady = NO;
 
 const int MaxBreadcrumbs = 50;
 
 @interface MPPersistenceController() {
     BOOL databaseOpen;
+    sqlite3 *mParticleDB;
 }
 
 @property (nonatomic, strong) NSString *databasePath;
@@ -77,50 +77,31 @@ const int MaxBreadcrumbs = 50;
 - (instancetype)init {
     self = [super init];
     if (self) {
-        dbQueue = dispatch_queue_create("com.mParticle.PersistenceQueue", DISPATCH_QUEUE_SERIAL);
-        migrationQueue = dispatch_queue_create("com.mParticle.MigrationQueue", DISPATCH_QUEUE_SERIAL);
         databaseOpen = NO;
         
-        [self setupDatabase:^{
-            [self migrateDatabaseIfNeeded:^{
-                [self openDatabase];
-                isReady = YES;
-                
-                if (readyHandlers.count) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [readyHandlers enumerateObjectsUsingBlock:^(void (^ _Nonnull readyHandler)(void), NSUInteger idx, BOOL * _Nonnull stop) {
-                            readyHandler();
-                        }];
-                        readyHandlers = nil;
-                    });
-                }
-            }];
-        }];
+        [self setupDatabase];
+        [self migrateDatabaseIfNeeded];
+        [self openDatabase];
     }
     
     return self;
 }
 
 #pragma mark Database version migration methods
-- (void)migrateDatabaseIfNeeded:(void (^)())completionHandler {
-    dispatch_async(migrationQueue, ^{
-        MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[databaseVersions copy]];
+- (void)migrateDatabaseIfNeeded {
+    MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:[databaseVersions copy]];
+    
+    NSNumber *migrateVersion = [migrationController needsMigration];
+    if (migrateVersion != nil) {
+        BOOL isDatabaseOpen = databaseOpen;
+        [self closeDatabase];
         
-        NSNumber *migrateVersion = [migrationController needsMigration];
-        if (migrateVersion != nil) {
-            BOOL isDatabaseOpen = databaseOpen;
-            [self closeDatabase];
-            
-            [migrationController migrateDatabaseFromVersion:migrateVersion];
-            
-            if (isDatabaseOpen) {
-                [self openDatabase];
-            }
+        [migrationController migrateDatabaseFromVersion:migrateVersion];
+        
+        if (isDatabaseOpen) {
+            [self openDatabase];
         }
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler();
-        });
-    });
+    }
 }
 
 + (NSNumber *)mpId {
@@ -180,18 +161,16 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)deleteCookies {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM cookies";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting cookies: %s", sqlite3_errmsg(mParticleDB));
-            }
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM cookies";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting cookies: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (BOOL)isDatabaseOpen {
@@ -266,180 +245,167 @@ const int MaxBreadcrumbs = 50;
     sqlite3_finalize(preparedStatement);
 }
 
-- (void)setupDatabase:(void (^)())completionHandler {
-    dispatch_barrier_async(dbQueue, ^{
-        if (sqlite3_open([self.databasePath UTF8String], &mParticleDB) != SQLITE_OK) {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler();
-            });
-            return;
+- (void)setupDatabase {
+    if (sqlite3_open([self.databasePath UTF8String], &mParticleDB) != SQLITE_OK) {
+        return;
+    }
+    
+    MPDatabaseState databaseState = [self verifyDatabaseState];
+    if (databaseState == MPDatabaseStateCorrupted) {
+        [self removeDatabase];
+        
+        sqlite3_open([self.databasePath UTF8String], &mParticleDB);
+    }
+    
+    string sqlStatement = "PRAGMA user_version";
+    sqlite3_stmt *preparedStatement;
+    int userDatabaseVersion = 0;
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        while (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            userDatabaseVersion = sqlite3_column_int(preparedStatement, 0);
         }
-        
-        MPDatabaseState databaseState = [self verifyDatabaseState];
-        if (databaseState == MPDatabaseStateCorrupted) {
-            [self removeDatabase];
-            
-            sqlite3_open([self.databasePath UTF8String], &mParticleDB);
-        }
-        
-        string sqlStatement = "PRAGMA user_version";
-        sqlite3_stmt *preparedStatement;
-        int userDatabaseVersion = 0;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                userDatabaseVersion = sqlite3_column_int(preparedStatement, 0);
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        const int latestDatabaseVersion = [[databaseVersions lastObject] intValue];
-        if (userDatabaseVersion == latestDatabaseVersion) {
-            sqlite3_close(mParticleDB);
-            mParticleDB = NULL;
-            
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler();
-            });
-            
-            return;
-        }
-        
-        vector<string> sqlStatements = {
-            "CREATE TABLE IF NOT EXISTS sessions ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                uuid TEXT NOT NULL, \
-                start_time REAL, \
-                end_time REAL, \
-                background_time REAL, \
-                attributes_data BLOB NOT NULL, \
-                session_number INTEGER NOT NULL, \
-                number_interruptions INTEGER, \
-                event_count INTEGER, \
-                suspend_time REAL, \
-                length REAL, \
-                mpid INTEGER NOT NULL, \
-                session_user_ids TEXT NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-            )",
-            "CREATE TABLE IF NOT EXISTS previous_session ( \
-                session_id INTEGER, \
-                uuid TEXT, \
-                start_time REAL, \
-                end_time REAL, \
-                background_time REAL, \
-                attributes_data BLOB, \
-                session_number INTEGER, \
-                number_interruptions INTEGER, \
-                event_count INTEGER, \
-                suspend_time REAL, \
-                length REAL, \
-                mpid INTEGER NOT NULL, \
-                session_user_ids TEXT NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-            )",
-            "CREATE TABLE IF NOT EXISTS messages ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                session_id INTEGER, \
-                message_type TEXT NOT NULL, \
-                uuid TEXT NOT NULL, \
-                timestamp REAL NOT NULL, \
-                message_data BLOB NOT NULL, \
-                upload_status INTEGER, \
-                mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-            )",
-            "CREATE TABLE IF NOT EXISTS uploads ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                session_id INTEGER, \
-                uuid TEXT NOT NULL, \
-                message_data BLOB NOT NULL, \
-                timestamp REAL NOT NULL \
-            )",
-            "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                session_uuid TEXT NOT NULL, \
-                uuid TEXT NOT NULL, \
-                timestamp REAL NOT NULL, \
-                breadcrumb_data BLOB NOT NULL, \
-                session_number INTEGER NOT NULL, \
-                mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-            )",
-            "CREATE TABLE IF NOT EXISTS segments ( \
-                segment_id INTEGER PRIMARY KEY, \
-                uuid TEXT NOT NULL, \
-                name TEXT NOT NULL, \
-                endpoint_ids TEXT, \
-                mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-            )",
-            "CREATE TABLE IF NOT EXISTS segment_memberships ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                segment_id INTEGER NOT NULL, \
-                timestamp REAL NOT NULL, \
-                membership_action INTEGER NOT NULL, \
-                mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
-                FOREIGN KEY (segment_id) REFERENCES segments (segment_id) \
-            )",
-            "DROP TABLE IF EXISTS standalone_messages",
-            "DROP TABLE IF EXISTS standalone_uploads",
-            "DROP TABLE IF EXISTS remote_notifications",
-            "CREATE TABLE IF NOT EXISTS consumer_info ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                mpid INTEGER, \
-                unique_identifier TEXT \
-            )",
-            "CREATE TABLE IF NOT EXISTS cookies ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                consumer_info_id INTEGER NOT NULL, \
-                content TEXT, \
-                domain TEXT, \
-                expiration TEXT, \
-                name TEXT, \
-                mpid INTEGER NOT NULL, \
-                FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
-                FOREIGN KEY (consumer_info_id) references consumer_info (_id) \
-            )",
-            "CREATE TABLE IF NOT EXISTS product_bags ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                name TEXT, \
-                timestamp REAL NOT NULL, \
-                product_data BLOB NOT NULL \
-            )",
-            "CREATE TABLE IF NOT EXISTS forwarding_records ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                forwarding_data BLOB NOT NULL, \
-                mpid INTEGER NOT NULL \
-            )",
-            "CREATE TABLE IF NOT EXISTS integration_attributes ( \
-                _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-                kit_code INTEGER NOT NULL, \
-                attributes_data BLOB NOT NULL \
-            )"
-        };
-        
-        int tableCreationStatus;
-        char *errMsg;
-        for (const auto &sqlStatement : sqlStatements) {
-            tableCreationStatus = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
-            
-            if (tableCreationStatus != SQLITE_OK) {
-                MPILogError("Problem creating table: %s\n", sqlStatement.c_str());
-            }
-        }
-        
-        sqlStatement = "PRAGMA user_version = " + to_string(latestDatabaseVersion);
-        sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, NULL);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    const int latestDatabaseVersion = [[databaseVersions lastObject] intValue];
+    if (userDatabaseVersion == latestDatabaseVersion) {
         sqlite3_close(mParticleDB);
         mParticleDB = NULL;
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler();
-        });
-    });
+        return;
+    }
+    
+    vector<string> sqlStatements = {
+        "CREATE TABLE IF NOT EXISTS sessions ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            uuid TEXT NOT NULL, \
+            start_time REAL, \
+            end_time REAL, \
+            background_time REAL, \
+            attributes_data BLOB NOT NULL, \
+            session_number INTEGER NOT NULL, \
+            number_interruptions INTEGER, \
+            event_count INTEGER, \
+            suspend_time REAL, \
+            length REAL, \
+            mpid INTEGER NOT NULL, \
+            session_user_ids TEXT NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+        )",
+        "CREATE TABLE IF NOT EXISTS previous_session ( \
+            session_id INTEGER, \
+            uuid TEXT, \
+            start_time REAL, \
+            end_time REAL, \
+            background_time REAL, \
+            attributes_data BLOB, \
+            session_number INTEGER, \
+            number_interruptions INTEGER, \
+            event_count INTEGER, \
+            suspend_time REAL, \
+            length REAL, \
+            mpid INTEGER NOT NULL, \
+            session_user_ids TEXT NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+        )",
+        "CREATE TABLE IF NOT EXISTS messages ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            session_id INTEGER, \
+            message_type TEXT NOT NULL, \
+            uuid TEXT NOT NULL, \
+            timestamp REAL NOT NULL, \
+            message_data BLOB NOT NULL, \
+            upload_status INTEGER, \
+            mpid INTEGER NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+        )",
+        "CREATE TABLE IF NOT EXISTS uploads ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            session_id INTEGER, \
+            uuid TEXT NOT NULL, \
+            message_data BLOB NOT NULL, \
+            timestamp REAL NOT NULL \
+        )",
+        "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            session_uuid TEXT NOT NULL, \
+            uuid TEXT NOT NULL, \
+            timestamp REAL NOT NULL, \
+            breadcrumb_data BLOB NOT NULL, \
+            session_number INTEGER NOT NULL, \
+            mpid INTEGER NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+        )",
+        "CREATE TABLE IF NOT EXISTS segments ( \
+            segment_id INTEGER PRIMARY KEY, \
+            uuid TEXT NOT NULL, \
+            name TEXT NOT NULL, \
+            endpoint_ids TEXT, \
+            mpid INTEGER NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+        )",
+        "CREATE TABLE IF NOT EXISTS segment_memberships ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            segment_id INTEGER NOT NULL, \
+            timestamp REAL NOT NULL, \
+            membership_action INTEGER NOT NULL, \
+            mpid INTEGER NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
+            FOREIGN KEY (segment_id) REFERENCES segments (segment_id) \
+        )",
+        "DROP TABLE IF EXISTS standalone_messages",
+        "DROP TABLE IF EXISTS standalone_uploads",
+        "DROP TABLE IF EXISTS remote_notifications",
+        "CREATE TABLE IF NOT EXISTS consumer_info ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            mpid INTEGER, \
+            unique_identifier TEXT \
+        )",
+        "CREATE TABLE IF NOT EXISTS cookies ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            consumer_info_id INTEGER NOT NULL, \
+            content TEXT, \
+            domain TEXT, \
+            expiration TEXT, \
+            name TEXT, \
+            mpid INTEGER NOT NULL, \
+            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
+            FOREIGN KEY (consumer_info_id) references consumer_info (_id) \
+        )",
+        "CREATE TABLE IF NOT EXISTS product_bags ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            name TEXT, \
+            timestamp REAL NOT NULL, \
+            product_data BLOB NOT NULL \
+        )",
+        "CREATE TABLE IF NOT EXISTS forwarding_records ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            forwarding_data BLOB NOT NULL, \
+            mpid INTEGER NOT NULL \
+        )",
+        "CREATE TABLE IF NOT EXISTS integration_attributes ( \
+            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
+            kit_code INTEGER NOT NULL, \
+            attributes_data BLOB NOT NULL \
+        )"
+    };
+    
+    int tableCreationStatus;
+    char *errMsg;
+    for (const auto &sqlStatement : sqlStatements) {
+        tableCreationStatus = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
+        
+        if (tableCreationStatus != SQLITE_OK) {
+            MPILogError("Problem creating table: %s\n", sqlStatement.c_str());
+        }
+    }
+    
+    sqlStatement = "PRAGMA user_version = " + to_string(latestDatabaseVersion);
+    sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, NULL);
+    sqlite3_close(mParticleDB);
+    mParticleDB = NULL;
 }
 
 - (void)updateCookie:(MPCookie *)cookie {
@@ -519,87 +485,10 @@ const int MaxBreadcrumbs = 50;
     return sharedInstance;
 }
 
-+ (void)addReadyHandler:(void (^ _Nonnull)(void))handler {
-    if (!handler) {
-        MPILogError(@"Unable to add nil persistence ready handler");
-        return;
-    }
-    
-    if (isReady) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            handler();
-        });
-        return;
-    }
-    
-    if (!readyHandlers) {
-        readyHandlers = [NSMutableArray array];
-    }
-    void (^handlerCopy)(void) = [handler copy];
-    [readyHandlers addObject:handlerCopy];
-    [MPPersistenceController sharedInstance];
-}
-
 #pragma mark Public methods
-- (void)archiveSession:(MPSession *)session completionHandler:(void (^)(MPSession *archivedSession))completionHandler {
-    [self fetchPreviousSession:^(MPSession *previousSession) {
-        if (previousSession) {
-            if (session.sessionId == previousSession.sessionId && [session.uuid isEqualToString:previousSession.uuid]) {
-                if (completionHandler) {
-                    completionHandler(nil);
-                }
-                
-                return;
-            } else {
-                [self deletePreviousSession];
-            }
-        }
-        
-        dispatch_barrier_async(dbQueue, ^{
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-                
-                string uuid = string([session.uuid UTF8String]);
-                sqlite3_bind_text(preparedStatement, 2, uuid.c_str(), (int)uuid.size(), SQLITE_STATIC);
-                
-                sqlite3_bind_double(preparedStatement, 3, session.startTime);
-                sqlite3_bind_double(preparedStatement, 4, session.endTime);
-                sqlite3_bind_double(preparedStatement, 5, session.backgroundTime);
-                
-                NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
-                sqlite3_bind_blob(preparedStatement, 6, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-                
-                sqlite3_bind_int64(preparedStatement, 7, 0); //session_number Deprecated
-                sqlite3_bind_int(preparedStatement, 8, session.numberOfInterruptions);
-                sqlite3_bind_int(preparedStatement, 9, session.eventCounter);
-                sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
-                sqlite3_bind_double(preparedStatement, 11, session.length);
-                sqlite3_bind_int64(preparedStatement, 12, [session.userId longLongValue]);
-                sqlite3_bind_text(preparedStatement, 13, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
-                }
-                
-                sqlite3_clear_bindings(preparedStatement);
-            }
-            
-            sqlite3_finalize(preparedStatement);
-            
-            if (completionHandler) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    completionHandler(session);
-                });
-            }
-        });
-    }];
-}
 
-- (nullable MPSession *)archiveSessionSync:(nonnull MPSession *)session {
-    MPSession *previousSession = [self fetchPreviousSessionSync];
+- (nullable MPSession *)archiveSession:(nonnull MPSession *)session {
+    MPSession *previousSession = [self fetchPreviousSession];
     if (previousSession) {
         if (session.sessionId == previousSession.sessionId && [session.uuid isEqualToString:previousSession.uuid]) {
             return nil;
@@ -608,40 +497,38 @@ const int MaxBreadcrumbs = 50;
         }
     }
     
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "INSERT INTO previous_session (session_id, uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            string uuid = string([session.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 2, uuid.c_str(), (int)uuid.size(), SQLITE_STATIC);
-            
-            sqlite3_bind_double(preparedStatement, 3, session.startTime);
-            sqlite3_bind_double(preparedStatement, 4, session.endTime);
-            sqlite3_bind_double(preparedStatement, 5, session.backgroundTime);
-            
-            NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
-            sqlite3_bind_blob(preparedStatement, 6, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-            
-            sqlite3_bind_int64(preparedStatement, 7, 0); //session_number Deprecated
-            sqlite3_bind_int(preparedStatement, 8, session.numberOfInterruptions);
-            sqlite3_bind_int(preparedStatement, 9, session.eventCounter);
-            sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
-            sqlite3_bind_double(preparedStatement, 11, session.length);
-            sqlite3_bind_int64(preparedStatement, 12, session.userId.longLongValue);
-            sqlite3_bind_text(preparedStatement, 13, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_STATIC);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        string uuid = string([session.uuid UTF8String]);
+        sqlite3_bind_text(preparedStatement, 2, uuid.c_str(), (int)uuid.size(), SQLITE_STATIC);
+        
+        sqlite3_bind_double(preparedStatement, 3, session.startTime);
+        sqlite3_bind_double(preparedStatement, 4, session.endTime);
+        sqlite3_bind_double(preparedStatement, 5, session.backgroundTime);
+        
+        NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
+        sqlite3_bind_blob(preparedStatement, 6, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+        
+        sqlite3_bind_int64(preparedStatement, 7, 0); //session_number Deprecated
+        sqlite3_bind_int(preparedStatement, 8, session.numberOfInterruptions);
+        sqlite3_bind_int(preparedStatement, 9, session.eventCounter);
+        sqlite3_bind_double(preparedStatement, 10, session.suspendTime);
+        sqlite3_bind_double(preparedStatement, 11, session.length);
+        sqlite3_bind_int64(preparedStatement, 12, session.userId.longLongValue);
+        sqlite3_bind_text(preparedStatement, 13, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_STATIC);
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while archiving previous session: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     return session;
 }
@@ -651,10 +538,7 @@ const int MaxBreadcrumbs = 50;
         return YES;
     }
     
-    __block int statusCode;
-    dispatch_barrier_sync(dbQueue, ^{
-        statusCode = sqlite3_close(mParticleDB);
-    });
+    int statusCode = sqlite3_close(mParticleDB);
     
     BOOL databaseClosed = statusCode == SQLITE_OK;
     if (databaseClosed) {
@@ -671,54 +555,47 @@ const int MaxBreadcrumbs = 50;
 - (void)deleteConsumerInfo {
     [self deleteCookies];
     
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM consumer_info";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting consumer info: %s", sqlite3_errmsg(mParticleDB));
-            }
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM consumer_info";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting consumer info: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds {
     if (MPIsNull(forwardRecordsIds) || forwardRecordsIds.count == 0) {
         return;
     }
+    sqlite3_stmt *preparedStatement;
+    NSString *idsString = [NSString stringWithFormat:@"%@", [forwardRecordsIds componentsJoinedByString:@","]];
+    NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM forwarding_records WHERE _id IN (%@)", idsString];
+    const string sqlStatement = string([sqlString UTF8String]);
     
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        NSString *idsString = [NSString stringWithFormat:@"%@", [forwardRecordsIds componentsJoinedByString:@","]];
-        NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM forwarding_records WHERE _id IN (%@)", idsString];
-        const string sqlStatement = string([sqlString UTF8String]);
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting forwarding records: %s", sqlite3_errmsg(mParticleDB));
-            }
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting forwarding records: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteAllIntegrationAttributes {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM integration_attributes";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
-            }
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM integration_attributes";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes {
@@ -734,20 +611,18 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM integration_attributes WHERE kit_code = ?";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM integration_attributes WHERE kit_code = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int(preparedStatement, 1, [kitCode intValue]);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int(preparedStatement, 1, [kitCode intValue]);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
-            }
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages {
@@ -755,81 +630,68 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     
-    dispatch_barrier_async(dbQueue, ^{
-        NSMutableArray *messageIds = [[NSMutableArray alloc] initWithCapacity:messages.count];
-        for (MPMessage *message in messages) {
-            [messageIds addObject:@(message.messageId)];
+    NSMutableArray *messageIds = [[NSMutableArray alloc] initWithCapacity:messages.count];
+    for (MPMessage *message in messages) {
+        [messageIds addObject:@(message.messageId)];
+    }
+    
+    NSString *idsString = [NSString stringWithFormat:@"%@", [messageIds componentsJoinedByString:@","]];
+    NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", idsString];
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = string([sqlString UTF8String]);
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        NSString *idsString = [NSString stringWithFormat:@"%@", [messageIds componentsJoinedByString:@","]];
-        NSString *sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", idsString];
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = string([sqlString UTF8String]);
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteNetworkPerformanceMessages {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM messages WHERE message_type = '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "'";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting network messages from sessions");
-            }
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM messages WHERE message_type = '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "'";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting network messages from sessions");
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deletePreviousSession {
-    dispatch_barrier_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "DELETE FROM previous_session";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting previous session");
-            }
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "DELETE FROM previous_session";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting previous session");
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp {
-    __weak MPPersistenceController *weakSelf = self;
-    dispatch_barrier_async(dbQueue, ^{
-        [weakSelf deleteRecordsOlderThan:timestamp withDatabase:mParticleDB];
-    });
-}
-
-- (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp withDatabase:(sqlite3*)database {
     char *errMsg;
-    string sqlStatement = "BEGIN TRANSACTION";
+    NSString *sqlStatement = @"BEGIN TRANSACTION";
     
-    if (sqlite3_exec(database, sqlStatement.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
-        MPILogError("Problem Beginning SQL Transaction: %s\n", sqlStatement.c_str());
+    if (sqlite3_exec(mParticleDB, sqlStatement.UTF8String, NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError("Problem Beginning SQL Transaction: %@\n", sqlStatement);
     }
     
-    vector<string> sqlStatements = {
-        "DELETE FROM messages WHERE timestamp < ?",
-        "DELETE FROM uploads WHERE timestamp < ?",
-        "DELETE FROM sessions WHERE end_time < ?"
-    };
+    NSArray *statements = @[
+                            @"DELETE FROM messages WHERE timestamp < ?",
+                            @"DELETE FROM uploads WHERE timestamp < ?",
+                            @"DELETE FROM sessions WHERE end_time < ?"
+                            ];
     
     sqlite3_stmt *preparedStatement;
-    for (const auto &sqlStatement : sqlStatements) {
-        if (sqlite3_prepare_v2(database, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+    for (NSString *sqlStatement in statements) {
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.UTF8String, (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_double(preparedStatement, 1, timestamp);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -841,126 +703,85 @@ const int MaxBreadcrumbs = 50;
         sqlite3_finalize(preparedStatement);
     }
     
-    sqlStatement = "END TRANSACTION";
+    sqlStatement = @"END TRANSACTION";
     
-    if (sqlite3_exec(database, sqlStatement.c_str(), NULL, NULL, &errMsg) != SQLITE_OK) {
-        MPILogError("Problem Ending SQL Transaction: %s\n", sqlStatement.c_str());
+    if (sqlite3_exec(mParticleDB, sqlStatement.UTF8String, NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError("Problem Ending SQL Transaction: %@\n", sqlStatement);
     }
 }
 
 - (void)deleteSegments {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "DELETE FROM segment_memberships";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting segment memberships: %s", sqlite3_errmsg(mParticleDB));
-            }
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "DELETE FROM segment_memberships";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting segment memberships: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        sqlStatement = "DELETE FROM segments";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting segments: %s", sqlite3_errmsg(mParticleDB));
-            }
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    sqlStatement = "DELETE FROM segments";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting segments: %s", sqlite3_errmsg(mParticleDB));
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteAllSessionsExcept:(nullable MPSession *)session {
-    dispatch_barrier_async(dbQueue, ^{
-        // Delete sessions
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "DELETE FROM sessions WHERE _id != ?";
+    // Delete sessions
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "DELETE FROM sessions WHERE _id != ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting sessions: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting sessions: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteSession:(nonnull MPSession *)session {
-    dispatch_barrier_async(dbQueue, ^{
-        // Delete messages
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
+    // Delete messages
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    // Delete session
+    sqlStatement = "DELETE FROM sessions WHERE _id = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
-        // Delete session
-        sqlStatement = "DELETE FROM sessions WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting session: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting session: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)deleteSessionSync:(nonnull MPSession *)session {
-    dispatch_barrier_sync(dbQueue, ^{
-        // Delete messages
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "DELETE FROM messages WHERE session_id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting messages: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        // Delete session
-        sqlStatement = "DELETE FROM sessions WHERE _id = ?";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting session: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)deleteUpload:(MPUpload *)upload {
@@ -968,137 +789,103 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)deleteUploadId:(int64_t)uploadId {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "DELETE FROM uploads WHERE _id = ?";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "DELETE FROM uploads WHERE _id = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, uploadId);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, uploadId);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while deleting upload: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while deleting upload: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (nullable NSArray<MPBreadcrumb *> *)fetchBreadcrumbs {
-    __block vector<MPBreadcrumb *> breadcumbsVector;
+    vector<MPBreadcrumb *> breadcrumbsVector;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:stringValue(preparedStatement, 1)
+                                                                    breadcrumbId:int64Value(preparedStatement, 0)
+                                                                            UUID:stringValue(preparedStatement, 2)
+                                                                  breadcrumbData:dataValue(preparedStatement, 3)
+                                                                       timestamp:doubleValue(preparedStatement, 4)];
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:stringValue(preparedStatement, 1)
-                                                                        breadcrumbId:int64Value(preparedStatement, 0)
-                                                                                UUID:stringValue(preparedStatement, 2)
-                                                                      breadcrumbData:dataValue(preparedStatement, 3)
-                                                                           timestamp:doubleValue(preparedStatement, 4)];
-                
-                breadcumbsVector.push_back(breadcrumb);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+            breadcrumbsVector.push_back(breadcrumb);
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
     
-    if (breadcumbsVector.empty()) {
+    sqlite3_finalize(preparedStatement);
+    
+    if (breadcrumbsVector.empty()) {
         return nil;
     }
     
-    NSArray<MPBreadcrumb *> *breadcrumbs = [NSArray arrayWithObjects:&breadcumbsVector[0] count:breadcumbsVector.size()];
+    NSArray<MPBreadcrumb *> *breadcrumbs = [NSArray arrayWithObjects:&breadcrumbsVector[0] count:breadcrumbsVector.size()];
     return breadcrumbs;
 }
 
 - (MPConsumerInfo *)fetchConsumerInfoForUserId:(NSNumber *)userId {
+    MPConsumerInfo *consumerInfo = nil;
+    
     NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
-    
-    __block MPConsumerInfo *consumerInfo = nil;
-    
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, mpid, unique_identifier FROM consumer_info";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                consumerInfo = [[MPConsumerInfo alloc] init];
-                consumerInfo.consumerInfoId = int64Value(preparedStatement, 0);
-                unsigned char *columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
-                if (columnText != NULL) {
-                    consumerInfo.uniqueIdentifier = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
-                }
-                
-                consumerInfo.cookies = cookies;
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    if (cookies.count) {
+        consumerInfo = [[MPConsumerInfo alloc] init];
+        consumerInfo.cookies = cookies;
+    }
     
     return consumerInfo;
 }
 
-- (void)fetchConsumerInfoForUserId:(NSNumber *)userId completionHandler:(void (^)(MPConsumerInfo *consumerInfo))completionHandler {
-    NSArray<MPCookie *> *cookies = [self fetchCookiesForUserId:userId];
-    
-    dispatch_async(dbQueue, ^{
-        MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
-        consumerInfo.cookies = cookies;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(consumerInfo);
-        });
-    });
-}
-
 - (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber *)userId {
-    __block vector<MPCookie *> cookiesVector;
+    vector<MPCookie *> cookiesVector;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, content, domain, expiration, name, mpid FROM cookies WHERE mpid = ?";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, content, domain, expiration, name, mpid FROM cookies WHERE mpid = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, [userId longLongValue]);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [userId longLongValue]);
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPCookie *cookie = [[MPCookie alloc] init];
+            cookie.cookieId = int64Value(preparedStatement, 0);
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPCookie *cookie = [[MPCookie alloc] init];
-                cookie.cookieId = int64Value(preparedStatement, 0);
-                
-                unsigned char *columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 1);
-                if (columnText != NULL) {
-                    cookie.content = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
-                }
-                
-                columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
-                if (columnText != NULL) {
-                    cookie.domain = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
-                }
-                
-                columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 3);
-                if (columnText != NULL) {
-                    cookie.expiration = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
-                }
-                
-                cookie.name = stringValue(preparedStatement, 4);
-                
-                cookiesVector.push_back(cookie);
+            unsigned char *columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 1);
+            if (columnText != NULL) {
+                cookie.content = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
             }
             
-            sqlite3_clear_bindings(preparedStatement);
+            columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 2);
+            if (columnText != NULL) {
+                cookie.domain = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
+            }
+            
+            columnText = (unsigned char *)sqlite3_column_text(preparedStatement, 3);
+            if (columnText != NULL) {
+                cookie.expiration = [NSString stringWithCString:(const char *)columnText encoding:NSUTF8StringEncoding];
+            }
+            
+            cookie.name = stringValue(preparedStatement, 4);
+            
+            cookiesVector.push_back(cookie);
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (cookiesVector.empty()) {
         return nil;
@@ -1109,24 +896,22 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords {
-    __block vector<MPForwardRecord *> forwardRecordsVector;
+    vector<MPForwardRecord *> forwardRecordsVector;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records ORDER BY _id";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithId:int64Value(preparedStatement, 0)
-                                                                                data:dataValue(preparedStatement, 1)
-                                                                                mpid:@(int64Value(preparedStatement, 2))];
-                
-                forwardRecordsVector.push_back(forwardRecord);
-            }
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, forwarding_data, mpid FROM forwarding_records ORDER BY _id";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithId:int64Value(preparedStatement, 0)
+                                                                            data:dataValue(preparedStatement, 1)
+                                                                            mpid:@(int64Value(preparedStatement, 2))];
+            
+            forwardRecordsVector.push_back(forwardRecord);
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (forwardRecordsVector.empty()) {
         return nil;
@@ -1137,25 +922,23 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes {
-    __block vector<MPIntegrationAttributes *> integrationAttributesVector;
+    vector<MPIntegrationAttributes *> integrationAttributesVector;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT kit_code, attributes_data FROM integration_attributes";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:@(intValue(preparedStatement, 0))
-                                                                                                   attributesData:dataValue(preparedStatement, 1)];
-                
-                if (integrationAttributes) {
-                    integrationAttributesVector.push_back(integrationAttributes);
-                }
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT kit_code, attributes_data FROM integration_attributes";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:@(intValue(preparedStatement, 0))
+                                                                                               attributesData:dataValue(preparedStatement, 1)];
+            
+            if (integrationAttributes) {
+                integrationAttributesVector.push_back(integrationAttributes);
             }
         }
-        
-        sqlite3_finalize(preparedStatement);
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (integrationAttributesVector.empty()) {
         return nil;
@@ -1166,33 +949,31 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(MPSession *)session userId:(NSNumber *)userId {
-    __block vector<MPMessage *> messagesVector;
+    vector<MPMessage *> messagesVector;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? ORDER BY timestamp, _id";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? ORDER BY timestamp, _id";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
+                                                            messageId:int64Value(preparedStatement, 0)
+                                                                 UUID:stringValue(preparedStatement, 1)
+                                                          messageType:stringValue(preparedStatement, 2)
+                                                          messageData:dataValue(preparedStatement, 3)
+                                                            timestamp:doubleValue(preparedStatement, 4)
+                                                         uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
+                                                               userId:@(int64Value(preparedStatement, 6))];
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
-                                                                messageId:int64Value(preparedStatement, 0)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                              messageType:stringValue(preparedStatement, 2)
-                                                              messageData:dataValue(preparedStatement, 3)
-                                                                timestamp:doubleValue(preparedStatement, 4)
-                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                                   userId:@(int64Value(preparedStatement, 6))];
-                
-                messagesVector.push_back(message);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+            messagesVector.push_back(message);
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (messagesVector.empty()) {
         return nil;
@@ -1204,44 +985,41 @@ const int MaxBreadcrumbs = 50;
 
 - (NSMutableDictionary *)fetchMessagesForUploading {
     NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
+        sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
-            
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:[NSNumber numberWithLongLong:int64Value(preparedStatement, 7)]
-                                                                messageId:int64Value(preparedStatement, 0)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                              messageType:stringValue(preparedStatement, 2)
-                                                              messageData:dataValue(preparedStatement, 3)
-                                                                timestamp:doubleValue(preparedStatement, 4)
-                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                                   userId:@(int64Value(preparedStatement, 6))];
-                if (message) {
-                    NSNumber *mpid = message.userId;
-                    NSNumber *sessionID = (message.sessionId != nil) ? message.sessionId : [NSNumber numberWithInteger:-1] ;
-                    
-                    if (![mpidMessages objectForKey:mpid]) {
-                        mpidMessages[mpid] = [NSMutableDictionary dictionary];
-                    }
-                    if (![mpidMessages[mpid] objectForKey:sessionID]) {
-                        mpidMessages[mpid][sessionID] = [NSMutableArray array];
-                    }
-                    [mpidMessages[mpid][sessionID] addObject:message];
-                }
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPMessage *message = [[MPMessage alloc] initWithSessionId:[NSNumber numberWithLongLong:int64Value(preparedStatement, 7)]
+                                                            messageId:int64Value(preparedStatement, 0)
+                                                                 UUID:stringValue(preparedStatement, 1)
+                                                          messageType:stringValue(preparedStatement, 2)
+                                                          messageData:dataValue(preparedStatement, 3)
+                                                            timestamp:doubleValue(preparedStatement, 4)
+                                                         uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
+                                                               userId:@(int64Value(preparedStatement, 6))];
+            if (message) {
+                NSNumber *mpid = message.userId;
+                NSNumber *sessionID = (message.sessionId != nil) ? message.sessionId : [NSNumber numberWithInteger:-1] ;
                 
+                if (![mpidMessages objectForKey:mpid]) {
+                    mpidMessages[mpid] = [NSMutableDictionary dictionary];
+                }
+                if (![mpidMessages[mpid] objectForKey:sessionID]) {
+                    mpidMessages[mpid][sessionID] = [NSMutableArray array];
+                }
+                [mpidMessages[mpid][sessionID] addObject:message];
             }
             
-            sqlite3_clear_bindings(preparedStatement);
         }
         
-        sqlite3_finalize(preparedStatement);
-        
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (mpidMessages.count == 0) {
         return nil;
@@ -1250,89 +1028,42 @@ const int MaxBreadcrumbs = 50;
     return mpidMessages;
 }
 
-- (void)fetchMessagesForUploadingWithCompletionHandler:(void (^ _Nonnull)(NSDictionary* _Nullable messages))completionHandler {
-    dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid, session_id FROM messages WHERE mpid != 0 AND (upload_status = ? OR upload_status = ?) ORDER BY timestamp, _id";
-
-        NSMutableDictionary *mpidMessages = [NSMutableDictionary dictionary];
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int(preparedStatement, 1, MPUploadStatusStream);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusBatch);
-            
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:[NSNumber numberWithLongLong:int64Value(preparedStatement, 7)]
-                                                                messageId:int64Value(preparedStatement, 0)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                              messageType:stringValue(preparedStatement, 2)
-                                                              messageData:dataValue(preparedStatement, 3)
-                                                                timestamp:doubleValue(preparedStatement, 4)
-                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                                   userId:@(int64Value(preparedStatement, 6))];
-                if (message) {
-                    NSNumber *mpid = message.userId;
-                    NSNumber *sessionID = (message.sessionId != nil) ? message.sessionId : [NSNumber numberWithInteger:-1] ;
-                    
-                    if (![mpidMessages objectForKey:mpid]) {
-                        mpidMessages[mpid] = [NSMutableDictionary dictionary];
-                    }
-                    if (![mpidMessages[mpid] objectForKey:sessionID]) {
-                        mpidMessages[mpid][sessionID] = [NSMutableArray array];
-                    }
-                    [mpidMessages[mpid][sessionID] addObject:message];
-                }
-                
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(mpidMessages);
-        });
-    });
-}
-
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash {
-    __block vector<MPSession *> sessionsVector;
+    vector<MPSession *> sessionsVector;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids \
-                                     FROM sessions \
-                                     WHERE mpid = ? AND _id IN ((SELECT MAX(_id) FROM sessions WHERE mpid = ?), (SELECT (MAX(_id) - 1) FROM sessions WHERE mpid = ?)) \
-                                     ORDER BY session_number";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids \
+    FROM sessions \
+    WHERE mpid = ? AND _id IN ((SELECT MAX(_id) FROM sessions WHERE mpid = ?), (SELECT (MAX(_id) - 1) FROM sessions WHERE mpid = ?)) \
+    ORDER BY session_number";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPSession *crashSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
+                                                                      UUID:stringValue(preparedStatement, 1)
+                                                            backgroundTime:doubleValue(preparedStatement, 2)
+                                                                 startTime:doubleValue(preparedStatement, 3)
+                                                                   endTime:doubleValue(preparedStatement, 4)
+                                                                attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
+                                                     numberOfInterruptions:intValue(preparedStatement, 7)
+                                                              eventCounter:intValue(preparedStatement, 8)
+                                                               suspendTime:doubleValue(preparedStatement, 9)
+                                                                    userId:@(int64Value(preparedStatement, 10))
+                                                            sessionUserIds:stringValue(preparedStatement, 11)];
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPSession *crashSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
-                                                                          UUID:stringValue(preparedStatement, 1)
-                                                                backgroundTime:doubleValue(preparedStatement, 2)
-                                                                     startTime:doubleValue(preparedStatement, 3)
-                                                                       endTime:doubleValue(preparedStatement, 4)
-                                                                    attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                         numberOfInterruptions:intValue(preparedStatement, 7)
-                                                                  eventCounter:intValue(preparedStatement, 8)
-                                                                   suspendTime:doubleValue(preparedStatement, 9)
-                                                                        userId:@(int64Value(preparedStatement, 10))
-                                                                sessionUserIds:stringValue(preparedStatement, 11)];
-                
-                crashSession.length = doubleValue(preparedStatement, 10);
-                
-                sessionsVector.push_back(crashSession);
-            }
+            crashSession.length = doubleValue(preparedStatement, 10);
             
-            sqlite3_clear_bindings(preparedStatement);
+            sessionsVector.push_back(crashSession);
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (sessionsVector.empty()) {
         return nil;
@@ -1342,139 +1073,99 @@ const int MaxBreadcrumbs = 50;
     return sessions;
 }
 
-- (void)fetchPreviousSession:(void (^)(MPSession *previousSession))completionHandler {
-    dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
-        MPSession *previousSession = nil;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
-            
-            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
-                                                                  UUID:stringValue(preparedStatement, 1)
-                                                        backgroundTime:doubleValue(preparedStatement, 2)
-                                                             startTime:doubleValue(preparedStatement, 3)
-                                                               endTime:doubleValue(preparedStatement, 4)
-                                                            attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                 numberOfInterruptions:intValue(preparedStatement, 7)
-                                                          eventCounter:intValue(preparedStatement, 8)
-                                                           suspendTime:doubleValue(preparedStatement, 9)
-                                                                userId:@(int64Value(preparedStatement, 10))
-                                                        sessionUserIds:stringValue(preparedStatement, 11)];
-                
-                previousSession.length = doubleValue(preparedStatement, 10);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(previousSession);
-        });
-    });
-}
-
-- (nullable MPSession *)fetchPreviousSessionSync {
-    __block MPSession *previousSession = nil;
+- (nullable MPSession *)fetchPreviousSession {
+    MPSession *previousSession = nil;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
+                                                              UUID:stringValue(preparedStatement, 1)
+                                                    backgroundTime:doubleValue(preparedStatement, 2)
+                                                         startTime:doubleValue(preparedStatement, 3)
+                                                           endTime:doubleValue(preparedStatement, 4)
+                                                        attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
+                                             numberOfInterruptions:intValue(preparedStatement, 7)
+                                                      eventCounter:intValue(preparedStatement, 8)
+                                                       suspendTime:doubleValue(preparedStatement, 9)
+                                                            userId:@(int64Value(preparedStatement, 10))
+                                                    sessionUserIds:stringValue(preparedStatement, 11)];
             
-            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
-                                                                  UUID:stringValue(preparedStatement, 1)
-                                                        backgroundTime:doubleValue(preparedStatement, 2)
-                                                             startTime:doubleValue(preparedStatement, 3)
-                                                               endTime:doubleValue(preparedStatement, 4)
-                                                            attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                 numberOfInterruptions:intValue(preparedStatement, 7)
-                                                          eventCounter:intValue(preparedStatement, 8)
-                                                           suspendTime:doubleValue(preparedStatement, 9)
-                                                                userId:@(int64Value(preparedStatement, 10))
-                                                        sessionUserIds:stringValue(preparedStatement, 11)];
-                
-                previousSession.length = doubleValue(preparedStatement, 10);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+            previousSession.length = doubleValue(preparedStatement, 10);
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     return previousSession;
 }
 
 - (nullable NSArray<MPSegment *> *)fetchSegments {
-    __block NSMutableArray<MPSegment *> *segments = nil;
+    NSMutableArray<MPSegment *> *segments = nil;
     
-    dispatch_sync(dbQueue, ^{
-        // Block to fetch segment memberships
-        NSArray *(^fetchSegmentMemberships)(int64_t segmentId) = ^(int64_t segmentId) {
-            NSMutableArray *segmentMemberships = [[NSMutableArray alloc] initWithCapacity:3];
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "SELECT _id, timestamp, membership_action FROM segment_memberships WHERE segment_id = ? AND mpid = ? ORDER BY timestamp";
-            
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                sqlite3_bind_int64(preparedStatement, 1, segmentId);
-                sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
-                
-                while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                    MPSegmentMembership *segmentMembership = [[MPSegmentMembership alloc] initWithSegmentId:segmentId
-                                                                                        segmentMembershipId:int64Value(preparedStatement, 0)
-                                                                                                  timestamp:doubleValue(preparedStatement, 1)
-                                                                                           membershipAction:(MPSegmentMembershipAction)intValue(preparedStatement, 2)];
-                    
-                    [segmentMemberships addObject:segmentMembership];
-                }
-                
-                sqlite3_clear_bindings(preparedStatement);
-            }
-            
-            sqlite3_finalize(preparedStatement);
-            
-            if (segmentMemberships.count == 0) {
-                segmentMemberships = nil;
-            }
-            
-            return [segmentMemberships copy];
-        };
-        
-        // Fetch segments
+    // Block to fetch segment memberships
+    NSArray *(^fetchSegmentMemberships)(int64_t segmentId) = ^(int64_t segmentId) {
+        NSMutableArray *segmentMemberships = [[NSMutableArray alloc] initWithCapacity:3];
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT segment_id, uuid, name, endpoint_ids FROM segments WHERE mpid = ? ORDER BY segment_id";
+        const string sqlStatement = "SELECT _id, timestamp, membership_action FROM segment_memberships WHERE segment_id = ? AND mpid = ? ORDER BY timestamp";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            segments = [[NSMutableArray alloc] initWithCapacity:1];
-            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, segmentId);
+            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
             
             while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                int64_t segmentId = int64Value(preparedStatement, 0);
+                MPSegmentMembership *segmentMembership = [[MPSegmentMembership alloc] initWithSegmentId:segmentId
+                                                                                    segmentMembershipId:int64Value(preparedStatement, 0)
+                                                                                              timestamp:doubleValue(preparedStatement, 1)
+                                                                                       membershipAction:(MPSegmentMembershipAction)intValue(preparedStatement, 2)];
                 
-                NSArray *endpointIds = [stringValue(preparedStatement, 3) componentsSeparatedByString:@","];
-                
-                MPSegment *segment = [[MPSegment alloc] initWithSegmentId:@(segmentId)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                                     name:stringValue(preparedStatement, 2)
-                                                              memberships:fetchSegmentMemberships(segmentId)
-                                                              endpointIds:endpointIds];
-                
-                [segments addObject:segment];
+                [segmentMemberships addObject:segmentMembership];
             }
             
             sqlite3_clear_bindings(preparedStatement);
         }
         
         sqlite3_finalize(preparedStatement);
-    });
+        
+        if (segmentMemberships.count == 0) {
+            segmentMemberships = nil;
+        }
+        
+        return [segmentMemberships copy];
+    };
+    
+    // Fetch segments
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT segment_id, uuid, name, endpoint_ids FROM segments WHERE mpid = ? ORDER BY segment_id";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        segments = [[NSMutableArray alloc] initWithCapacity:1];
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            int64_t segmentId = int64Value(preparedStatement, 0);
+            
+            NSArray *endpointIds = [stringValue(preparedStatement, 3) componentsSeparatedByString:@","];
+            
+            MPSegment *segment = [[MPSegment alloc] initWithSegmentId:@(segmentId)
+                                                                 UUID:stringValue(preparedStatement, 1)
+                                                                 name:stringValue(preparedStatement, 2)
+                                                          memberships:fetchSegmentMemberships(segmentId)
+                                                          endpointIds:endpointIds];
+            
+            [segments addObject:segment];
+        }
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     if (segments.count == 0) {
         segments = nil;
@@ -1484,199 +1175,141 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (MPMessage *)fetchSessionEndMessageInSession:(MPSession *)session {
-    __block MPMessage *message = nil;
+    MPMessage *message = nil;
     
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? AND message_type = ?";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? AND message_type = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+        string sessionEndMessageType = MessageTypeName::nameForMessageType(SessionEnd);
+        sqlite3_bind_text(preparedStatement, 2, sessionEndMessageType.c_str(), (int)sessionEndMessageType.size(), SQLITE_STATIC);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            string sessionEndMessageType = MessageTypeName::nameForMessageType(SessionEnd);
-            sqlite3_bind_text(preparedStatement, 2, sessionEndMessageType.c_str(), (int)sessionEndMessageType.size(), SQLITE_STATIC);
-            
-            if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
-                                                     messageId:int64Value(preparedStatement, 0)
-                                                          UUID:stringValue(preparedStatement, 1)
-                                                   messageType:stringValue(preparedStatement, 2)
-                                                   messageData:dataValue(preparedStatement, 3)
-                                                     timestamp:doubleValue(preparedStatement, 4)
-                                                  uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                        userId:@(int64Value(preparedStatement, 6))];
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
+                                                 messageId:int64Value(preparedStatement, 0)
+                                                      UUID:stringValue(preparedStatement, 1)
+                                               messageType:stringValue(preparedStatement, 2)
+                                               messageData:dataValue(preparedStatement, 3)
+                                                 timestamp:doubleValue(preparedStatement, 4)
+                                              uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
+                                                    userId:@(int64Value(preparedStatement, 6))];
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
     
     return message;
 }
 
-- (void)fetchSessions:(void (^ _Nonnull)(NSMutableArray<MPSession *> * _Nullable sessions))completionHandler {
-    dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM sessions ORDER BY _id";
+- (NSMutableArray<MPSession *> *)fetchSessions {
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM sessions ORDER BY _id";
+    
+    NSMutableArray<MPSession *> *sessions = nil;
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sessions = [[NSMutableArray alloc] initWithCapacity:1];
         
-        NSMutableArray<MPSession *> *sessions = nil;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sessions = [[NSMutableArray alloc] initWithCapacity:1];
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPSession *session = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
+                                                                 UUID:stringValue(preparedStatement, 1)
+                                                       backgroundTime:doubleValue(preparedStatement, 2)
+                                                            startTime:doubleValue(preparedStatement, 3)
+                                                              endTime:doubleValue(preparedStatement, 4)
+                                                           attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
+                                                numberOfInterruptions:intValue(preparedStatement, 7)
+                                                         eventCounter:intValue(preparedStatement, 8)
+                                                          suspendTime:doubleValue(preparedStatement, 9)
+                                                               userId:@(int64Value(preparedStatement, 11))
+                                                       sessionUserIds:stringValue(preparedStatement, 12)];
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPSession *session = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                           backgroundTime:doubleValue(preparedStatement, 2)
-                                                                startTime:doubleValue(preparedStatement, 3)
-                                                                  endTime:doubleValue(preparedStatement, 4)
-                                                               attributes:[dictionaryRepresentation(preparedStatement, 5) mutableCopy]
-                                                    numberOfInterruptions:intValue(preparedStatement, 7)
-                                                             eventCounter:intValue(preparedStatement, 8)
-                                                              suspendTime:doubleValue(preparedStatement, 9)
-                                                                   userId:@(int64Value(preparedStatement, 11))
-                                                           sessionUserIds:stringValue(preparedStatement, 12)];
-                
-                session.length = doubleValue(preparedStatement, 10);
-                
-                [sessions addObject:session];
-            }
+            session.length = doubleValue(preparedStatement, 10);
+            
+            [sessions addObject:session];
         }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        if (sessions.count == 0) {
-            sessions = nil;
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(sessions);
-        });
-    });
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    if (sessions.count == 0) {
+        sessions = nil;
+    }
+    
+    return sessions;
 }
 
-- (void)fetchUploadedMessagesInSession:(MPSession *)session excludeNetworkPerformanceMessages:(BOOL)excludeNetworkPerformance completionHandler:(void (^ _Nonnull)(NSArray<MPMessage *> * _Nullable messages))completionHandler {
-    dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
+- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSession:(nonnull MPSession *)session {
+    NSArray<MPMessage *> *messages = nil;
+    
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? AND upload_status = ? AND mpid = ? ORDER BY timestamp";
+    
+    vector<MPMessage *> messagesVector;
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
+        sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
+        sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
         
-        string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? AND upload_status = ? AND mpid = ? ";
-        if (excludeNetworkPerformance) {
-            sqlStatement += "AND message_type != '" + string([kMPMessageTypeNetworkPerformance UTF8String]) + "' ";
-        }
-        sqlStatement += "ORDER BY timestamp";
-        
-        vector<MPMessage *> messagesVector;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
-            sqlite3_bind_int64(preparedStatement, 3, session.userId.longLongValue);
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
+                                                            messageId:int64Value(preparedStatement, 0)
+                                                                 UUID:stringValue(preparedStatement, 1)
+                                                          messageType:stringValue(preparedStatement, 2)
+                                                          messageData:dataValue(preparedStatement, 3)
+                                                            timestamp:doubleValue(preparedStatement, 4)
+                                                         uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
+                                                               userId:@(int64Value(preparedStatement, 6))];
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
-                                                                messageId:int64Value(preparedStatement, 0)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                              messageType:stringValue(preparedStatement, 2)
-                                                              messageData:dataValue(preparedStatement, 3)
-                                                                timestamp:doubleValue(preparedStatement, 4)
-                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                                   userId:@(int64Value(preparedStatement, 6))];
-                
-                messagesVector.push_back(message);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+            messagesVector.push_back(message);
         }
         
-        sqlite3_finalize(preparedStatement);
-        
-        NSArray<MPMessage *> *messages = nil;
-        if (!messagesVector.empty()) {
-            messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(messages);
-        });
-    });
-}
-
-- (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSessionSync:(nonnull MPSession *)session {
-    __block NSArray<MPMessage *> *messages = nil;
-
-    dispatch_sync(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "SELECT _id, uuid, message_type, message_data, timestamp, upload_status, mpid FROM messages WHERE session_id = ? AND upload_status = ? AND mpid = ? ORDER BY timestamp";
-        
-        vector<MPMessage *> messagesVector;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-            sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
-            sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
-            
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
-                                                                messageId:int64Value(preparedStatement, 0)
-                                                                     UUID:stringValue(preparedStatement, 1)
-                                                              messageType:stringValue(preparedStatement, 2)
-                                                              messageData:dataValue(preparedStatement, 3)
-                                                                timestamp:doubleValue(preparedStatement, 4)
-                                                             uploadStatus:(MPUploadStatus)intValue(preparedStatement, 5)
-                                                                   userId:@(int64Value(preparedStatement, 6))];
-                
-                messagesVector.push_back(message);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        if (!messagesVector.empty()) {
-            messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
-        }
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    if (!messagesVector.empty()) {
+        messages = [NSArray arrayWithObjects:&messagesVector[0] count:messagesVector.size()];
+    }
     
     return messages;
 }
 
-- (void)fetchUploadsWithCompletionHandler:(void (^ _Nonnull)(NSArray<MPUpload *> * _Nullable uploads))completionHandler {
-    dispatch_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement;
+- (nullable NSArray<MPUpload *> *)fetchUploads {
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement;
+    
+    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads";
+    
+    vector<MPUpload *> uploadsVector;
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         
-        sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads";
-        
-        vector<MPUpload *> uploadsVector;
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
+                                                          uploadId:int64Value(preparedStatement, 0)
+                                                              UUID:stringValue(preparedStatement, 1)
+                                                        uploadData:dataValue(preparedStatement, 2)
+                                                         timestamp:doubleValue(preparedStatement, 3)];
             
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
-                                                              uploadId:int64Value(preparedStatement, 0)
-                                                                  UUID:stringValue(preparedStatement, 1)
-                                                            uploadData:dataValue(preparedStatement, 2)
-                                                             timestamp:doubleValue(preparedStatement, 3)];
-                
-                uploadsVector.push_back(upload);
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+            uploadsVector.push_back(upload);
         }
         
-        sqlite3_finalize(preparedStatement);
-        
-        NSArray<MPUpload *> *uploads = nil;
-        if (!uploadsVector.empty()) {
-            uploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            completionHandler(uploads);
-        });
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    NSArray<MPUpload *> *uploads = nil;
+    if (!uploadsVector.empty()) {
+        uploads = [NSArray arrayWithObjects:&uploadsVector[0] count:uploadsVector.size()];
+    }
+    
+    return uploads;
 }
 
 - (void)moveContentFromMpidZeroToMpid:(NSNumber *)mpid {
@@ -1700,39 +1333,37 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)moveDatabasesFromMpidZeroToMpid:(NSNumber *)mpid {
-    dispatch_barrier_sync(dbQueue, ^{
+    
+    NSArray *mpidKeyedTables = @[
+                                 @"sessions",
+                                 @"previous_session",
+                                 @"messages",
+                                 @"breadcrumbs",
+                                 @"segments",
+                                 @"segment_memberships",
+                                 @"cookies",
+                                 @"consumer_info"
+                                 ];
+    
+    [mpidKeyedTables enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         
-        NSArray *mpidKeyedTables = @[
-                                     @"sessions",
-                                     @"previous_session",
-                                     @"messages",
-                                     @"breadcrumbs",
-                                     @"segments",
-                                     @"segment_memberships",
-                                     @"cookies",
-                                     @"consumer_info"
-                                     ];
-
-        [mpidKeyedTables enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        sqlite3_stmt *preparedStatement;
+        NSString *sqlString = [NSString stringWithFormat:@"UPDATE %@ SET mpid = ? WHERE mpid = 0", obj];
+        const string sqlStatement = string([sqlString UTF8String]);
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             
-            sqlite3_stmt *preparedStatement;
-            NSString *sqlString = [NSString stringWithFormat:@"UPDATE %@ SET mpid = ? WHERE mpid = 0", obj];
-            const string sqlStatement = string([sqlString UTF8String]);
+            sqlite3_bind_int64(preparedStatement, 1, [mpid longLongValue]);
             
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                
-                sqlite3_bind_int64(preparedStatement, 1, [mpid longLongValue]);
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while updating zero-mpid table: %s", sqlite3_errmsg(mParticleDB));
-                }
-                
-                sqlite3_clear_bindings(preparedStatement);
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while updating zero-mpid table: %s", sqlite3_errmsg(mParticleDB));
             }
             
-            sqlite3_finalize(preparedStatement);
-        }];
-    });
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    }];
 }
 
 - (void)purgeMemory {
@@ -1745,20 +1376,18 @@ const int MaxBreadcrumbs = 50;
         return YES;
     }
     
-    __block int statusCode;
-    dispatch_barrier_sync(dbQueue, ^{
-        const char *databasePath = [self.databasePath UTF8String];
-        statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE, NULL);
-        
-        if (statusCode != SQLITE_OK) {
-            MPDatabaseState databaseState = [self verifyDatabaseState];
-            if (databaseState == MPDatabaseStateCorrupted) {
-                [self removeDatabase];
-                
-                statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE, NULL);
-            }
+    int statusCode;
+    const char *databasePath = [self.databasePath UTF8String];
+    statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE, NULL);
+    
+    if (statusCode != SQLITE_OK) {
+        MPDatabaseState databaseState = [self verifyDatabaseState];
+        if (databaseState == MPDatabaseStateCorrupted) {
+            [self removeDatabase];
+            
+            statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE, NULL);
         }
-    });
+    }
     
     databaseOpen = statusCode == SQLITE_OK;
     if (!databaseOpen) {
@@ -1774,428 +1403,408 @@ const int MaxBreadcrumbs = 50;
     // Save message
     [self saveMessage:message];
     
-    dispatch_barrier_sync(dbQueue, ^{
-        // Save breadcrumb
-        sqlite3_stmt *preparedStatement;
-        string sqlStatement = "INSERT INTO breadcrumbs (session_uuid, uuid, timestamp, breadcrumb_data, session_number, mpid) VALUES (?, ?, ?, ?, ?, ?)";
+    // Save breadcrumb
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "INSERT INTO breadcrumbs (session_uuid, uuid, timestamp, breadcrumb_data, session_number, mpid) VALUES (?, ?, ?, ?, ?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        string auxString = string([session.uuid UTF8String]);
+        sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([session.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-            
-            auxString = string([message.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-            
-            sqlite3_bind_double(preparedStatement, 3, message.timestamp);
-            sqlite3_bind_blob(preparedStatement, 4, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
-            sqlite3_bind_int64(preparedStatement, 5, 0); //session_number Deprecated
-            sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        auxString = string([message.uuid UTF8String]);
+        sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
+        
+        sqlite3_bind_double(preparedStatement, 3, message.timestamp);
+        sqlite3_bind_blob(preparedStatement, 4, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
+        sqlite3_bind_int64(preparedStatement, 5, 0); //session_number Deprecated
+        sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    // Prunes breadcrumbs
+    sqlStatement = "DELETE FROM breadcrumbs WHERE mpid = ? AND _id NOT IN (SELECT _id FROM breadcrumbs WHERE mpid = ? ORDER BY _id DESC LIMIT ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int(preparedStatement, 3, MaxBreadcrumbs);
         
-        // Prunes breadcrumbs
-        sqlStatement = "DELETE FROM breadcrumbs WHERE mpid = ? AND _id NOT IN (SELECT _id FROM breadcrumbs WHERE mpid = ? ORDER BY _id DESC LIMIT ?)";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
-            sqlite3_bind_int(preparedStatement, 3, MaxBreadcrumbs);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while pruning breadcrumbs: %s", sqlite3_errmsg(mParticleDB));
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while pruning breadcrumbs: %s", sqlite3_errmsg(mParticleDB));
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)saveConsumerInfo:(MPConsumerInfo *)consumerInfo {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        
-        vector<string> fields;
-        vector<string> params;
-        
-        if (consumerInfo.uniqueIdentifier) {
-            fields.push_back("unique_identifier");
-            params.push_back("'" + string([consumerInfo.uniqueIdentifier UTF8String]) + "'");
-        }
-        
-        string sqlStatement = "INSERT INTO consumer_info (mpid";
-        for (auto field : fields) {
-            sqlStatement += ", " + field;
-        }
-        
-        sqlStatement += ") VALUES (?";
-        
-        for (auto param : params) {
-            sqlStatement += ", " + param;
-        }
-        
-        sqlStatement += ")";
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            consumerInfo.consumerInfoId = sqlite3_last_insert_rowid(mParticleDB);
-            
+    sqlite3_stmt *preparedStatement;
+    
+    vector<string> fields;
+    vector<string> params;
+    
+    if (consumerInfo.uniqueIdentifier) {
+        fields.push_back("unique_identifier");
+        params.push_back("'" + string([consumerInfo.uniqueIdentifier UTF8String]) + "'");
+    }
+    
+    string sqlStatement = "INSERT INTO consumer_info (mpid";
+    for (auto field : fields) {
+        sqlStatement += ", " + field;
+    }
+    
+    sqlStatement += ") VALUES (?";
+    
+    for (auto param : params) {
+        sqlStatement += ", " + param;
+    }
+    
+    sqlStatement += ")";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while storing consumer info: %s", sqlite3_errmsg(mParticleDB));
             sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
         }
         
-        sqlite3_finalize(preparedStatement);
+        consumerInfo.consumerInfoId = sqlite3_last_insert_rowid(mParticleDB);
         
-        for (MPCookie *cookie in consumerInfo.cookies) {
-            if (!cookie.expired) {
-                [self saveCookie:cookie forConsumerInfo:consumerInfo];
-            }
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    for (MPCookie *cookie in consumerInfo.cookies) {
+        if (!cookie.expired) {
+            [self saveCookie:cookie forConsumerInfo:consumerInfo];
         }
-    });
+    }
 }
 
 - (void)saveForwardRecord:(MPForwardRecord *)forwardRecord {
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (?, ?)";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        NSData *data = [forwardRecord dataRepresentation];
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            NSData *data = [forwardRecord dataRepresentation];
-            
-            if (data) {
-                sqlite3_bind_blob(preparedStatement, 1, [data bytes], (int)[data length], SQLITE_STATIC);
-            } else {
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            if (forwardRecord.mpid) {
-                sqlite3_bind_int64(preparedStatement, 2, forwardRecord.mpid.longLongValue);
-            }
-            else {
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing forward record: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            forwardRecord.forwardRecordId = sqlite3_last_insert_rowid(mParticleDB);
-            
-            sqlite3_clear_bindings(preparedStatement);
+        if (data) {
+            sqlite3_bind_blob(preparedStatement, 1, [data bytes], (int)[data length], SQLITE_STATIC);
+        } else {
+            sqlite3_finalize(preparedStatement);
+            return;
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        if (forwardRecord.mpid) {
+            sqlite3_bind_int64(preparedStatement, 2, forwardRecord.mpid.longLongValue);
+        }
+        else {
+            sqlite3_finalize(preparedStatement);
+            return;
+        }
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while storing forward record: %s", sqlite3_errmsg(mParticleDB));
+            sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
+        }
+        
+        forwardRecord.forwardRecordId = sqlite3_last_insert_rowid(mParticleDB);
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes {
     [self deleteIntegrationAttributesForKitCode:integrationAttributes.kitCode];
     
-    dispatch_barrier_async(dbQueue, ^{
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (?, ?)";
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        NSError *error = nil;
+        NSData *attributesData = nil;
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            NSError *error = nil;
-            NSData *attributesData = nil;
-            
-            @try {
-                attributesData = [NSJSONSerialization dataWithJSONObject:integrationAttributes.attributes options:0 error:&error];
-            } @catch (NSException *exception) {
-            }
-            
-            if (!attributesData && error != nil) {
-                return;
-            }
-            
-            sqlite3_bind_int(preparedStatement, 1, [integrationAttributes.kitCode intValue]);
-            sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing integration attributes: %s", sqlite3_errmsg(mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        @try {
+            attributesData = [NSJSONSerialization dataWithJSONObject:integrationAttributes.attributes options:0 error:&error];
+        } @catch (NSException *exception) {
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        if (!attributesData && error != nil) {
+            return;
+        }
+        
+        sqlite3_bind_int(preparedStatement, 1, [integrationAttributes.kitCode intValue]);
+        sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while storing integration attributes: %s", sqlite3_errmsg(mParticleDB));
+            sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
+        }
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)saveMessage:(MPMessage *)message {
-    dispatch_barrier_sync(dbQueue, ^{
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        string auxString = string([message.messageType UTF8String]);
+        sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
+        
+        if (message.sessionId != nil && MParticle.sharedInstance.automaticSessionTracking) {
+            sqlite3_bind_int64(preparedStatement, 2, message.sessionId.longLongValue);
+        } else {
+            sqlite3_bind_null(preparedStatement, 2);
+        }
+        
+        
+        auxString = string([message.uuid UTF8String]);
+        sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
+        
+        sqlite3_bind_double(preparedStatement, 4, message.timestamp);
+        sqlite3_bind_blob(preparedStatement, 5, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
+        sqlite3_bind_int(preparedStatement, 6, message.uploadStatus);
+        sqlite3_bind_int64(preparedStatement, 7, [message.userId longLongValue]);
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while storing message: %s", sqlite3_errmsg(mParticleDB));
+            sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
+        }
+        
+        message.messageId = sqlite3_last_insert_rowid(mParticleDB);
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+}
+
+- (void)saveSegment:(MPSegment *)segment {
+    void(^saveSegmentMembership)(MPSegmentMembership *segmentMembership) = ^(MPSegmentMembership *segmentMembership) {
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        const string sqlStatement = "INSERT INTO segment_memberships (segment_id, timestamp, membership_action, mpid) VALUES (?, ?, ?, ?)";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([message.messageType UTF8String]);
-            sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-            
-            if (message.sessionId != nil && MParticle.sharedInstance.automaticSessionTracking) {
-                sqlite3_bind_int64(preparedStatement, 2, message.sessionId.longLongValue);
-            } else {
-                sqlite3_bind_null(preparedStatement, 2);
-            }
-            
-            
-            auxString = string([message.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-            
-            sqlite3_bind_double(preparedStatement, 4, message.timestamp);
-            sqlite3_bind_blob(preparedStatement, 5, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
-            sqlite3_bind_int(preparedStatement, 6, message.uploadStatus);
-            sqlite3_bind_int64(preparedStatement, 7, [message.userId longLongValue]);
+            sqlite3_bind_int64(preparedStatement, 1, segmentMembership.segmentId);
+            sqlite3_bind_double(preparedStatement, 2, segmentMembership.timestamp);
+            sqlite3_bind_int(preparedStatement, 3, segmentMembership.action);
+            sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing message: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
             }
             
-            message.messageId = sqlite3_last_insert_rowid(mParticleDB);
+            segmentMembership.segmentMembershipId = sqlite3_last_insert_rowid(mParticleDB);
             
             sqlite3_clear_bindings(preparedStatement);
         }
         
         sqlite3_finalize(preparedStatement);
-    });
-}
-
-- (void)saveSegment:(MPSegment *)segment {
-    dispatch_barrier_sync(dbQueue, ^{
-        void(^saveSegmentMembership)(MPSegmentMembership *segmentMembership) = ^(MPSegmentMembership *segmentMembership) {
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "INSERT INTO segment_memberships (segment_id, timestamp, membership_action, mpid) VALUES (?, ?, ?, ?)";
-            
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                sqlite3_bind_int64(preparedStatement, 1, segmentMembership.segmentId);
-                sqlite3_bind_double(preparedStatement, 2, segmentMembership.timestamp);
-                sqlite3_bind_int(preparedStatement, 3, segmentMembership.action);
-                sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(mParticleDB));
-                    sqlite3_clear_bindings(preparedStatement);
-                    sqlite3_finalize(preparedStatement);
-                    return;
-                }
-                
-                segmentMembership.segmentMembershipId = sqlite3_last_insert_rowid(mParticleDB);
-                
-                sqlite3_clear_bindings(preparedStatement);
-            }
-            
-            sqlite3_finalize(preparedStatement);
-        };
+    };
+    
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "INSERT INTO segments (segment_id, uuid, name, endpoint_ids, mpid) VALUES (?, ?, ?, ?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int(preparedStatement, 1, [segment.segmentId intValue]);
         
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO segments (segment_id, uuid, name, endpoint_ids, mpid) VALUES (?, ?, ?, ?, ?)";
+        string auxString = string([segment.uuid UTF8String]);
+        sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int(preparedStatement, 1, [segment.segmentId intValue]);
-            
-            string auxString = string([segment.uuid UTF8String]);
-            sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-            
-            auxString = string([segment.name UTF8String]);
-            sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-            
-            if (segment.endpointIds.count > 0) {
-                NSString *endpointIds = [segment.endpointIds componentsJoinedByString:@","];
-                auxString = string([endpointIds UTF8String]);
-                sqlite3_bind_text(preparedStatement, 4, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-            } else {
-                sqlite3_bind_null(preparedStatement, 4);
-            }
-            
-            sqlite3_bind_int64(preparedStatement, 5, [[MPPersistenceController mpId] longLongValue]);
-            
-            if (SQLITE_DONE == sqlite3_step(preparedStatement)) {
-                for (MPSegmentMembership *segmentMembership in segment.memberships) {
-                    saveSegmentMembership(segmentMembership);
-                }
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
+        auxString = string([segment.name UTF8String]);
+        sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
+        
+        if (segment.endpointIds.count > 0) {
+            NSString *endpointIds = [segment.endpointIds componentsJoinedByString:@","];
+            auxString = string([endpointIds UTF8String]);
+            sqlite3_bind_text(preparedStatement, 4, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
+        } else {
+            sqlite3_bind_null(preparedStatement, 4);
         }
         
-        sqlite3_finalize(preparedStatement);
-    });
+        sqlite3_bind_int64(preparedStatement, 5, [[MPPersistenceController mpId] longLongValue]);
+        
+        if (SQLITE_DONE == sqlite3_step(preparedStatement)) {
+            for (MPSegmentMembership *segmentMembership in segment.memberships) {
+                saveSegmentMembership(segmentMembership);
+            }
+        }
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
 }
 
 - (void)saveSession:(MPSession *)session {
     if (session) {
-        dispatch_barrier_sync(dbQueue, ^{
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "INSERT INTO sessions (uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-            
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                string auxString = string([session.uuid UTF8String]);
-                sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-                
-                sqlite3_bind_double(preparedStatement, 2, session.startTime);
-                sqlite3_bind_double(preparedStatement, 3, session.endTime);
-                sqlite3_bind_double(preparedStatement, 4, session.backgroundTime);
-                
-                NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
-                sqlite3_bind_blob(preparedStatement, 5, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-                
-                sqlite3_bind_int64(preparedStatement, 6, 0); //session_number Deprecated
-                sqlite3_bind_int(preparedStatement, 7, session.numberOfInterruptions);
-                sqlite3_bind_int(preparedStatement, 8, session.eventCounter);
-                sqlite3_bind_double(preparedStatement, 9, session.suspendTime);
-                sqlite3_bind_double(preparedStatement, 10, session.length);
-                sqlite3_bind_int64(preparedStatement, 11, [session.userId longLongValue]);
-                sqlite3_bind_text(preparedStatement, 12, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while storing session: %s", sqlite3_errmsg(mParticleDB));
-                    sqlite3_clear_bindings(preparedStatement);
-                    sqlite3_finalize(preparedStatement);
-                    return;
-                }
-                
-                session.sessionId = sqlite3_last_insert_rowid(mParticleDB);
-                
-                sqlite3_clear_bindings(preparedStatement);
-            }
-            
-            sqlite3_finalize(preparedStatement);
-        });
-    }
-}
-
-- (void)saveUpload:(MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation {
-    dispatch_barrier_sync(dbQueue, ^{
-        // Save upload
         sqlite3_stmt *preparedStatement;
-        string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
+        const string sqlStatement = "INSERT INTO sessions (uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            string auxString = string([upload.uuid UTF8String]);
+            string auxString = string([session.uuid UTF8String]);
             sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
             
-            sqlite3_bind_blob(preparedStatement, 2, [upload.uploadData bytes], (int)[upload.uploadData length], SQLITE_STATIC);
-            sqlite3_bind_double(preparedStatement, 3, upload.timestamp);
+            sqlite3_bind_double(preparedStatement, 2, session.startTime);
+            sqlite3_bind_double(preparedStatement, 3, session.endTime);
+            sqlite3_bind_double(preparedStatement, 4, session.backgroundTime);
             
-            if (upload.sessionId != nil) {
-                sqlite3_bind_int64(preparedStatement, 4, upload.sessionId.longLongValue);
-            } else {
-                sqlite3_bind_null(preparedStatement, 4);
-            }
+            NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
+            sqlite3_bind_blob(preparedStatement, 5, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+            
+            sqlite3_bind_int64(preparedStatement, 6, 0); //session_number Deprecated
+            sqlite3_bind_int(preparedStatement, 7, session.numberOfInterruptions);
+            sqlite3_bind_int(preparedStatement, 8, session.eventCounter);
+            sqlite3_bind_double(preparedStatement, 9, session.suspendTime);
+            sqlite3_bind_double(preparedStatement, 10, session.length);
+            sqlite3_bind_int64(preparedStatement, 11, [session.userId longLongValue]);
+            sqlite3_bind_text(preparedStatement, 12, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing session: %s", sqlite3_errmsg(mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
             }
             
-            upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
+            session.sessionId = sqlite3_last_insert_rowid(mParticleDB);
             
             sqlite3_clear_bindings(preparedStatement);
         }
         
         sqlite3_finalize(preparedStatement);
+    }
+}
+
+- (void)saveUpload:(MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation {
+    // Save upload
+    sqlite3_stmt *preparedStatement;
+    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        string auxString = string([upload.uuid UTF8String]);
+        sqlite3_bind_text(preparedStatement, 1, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
         
-        if (messageIds.count > 0) {
-            NSString *messageIdsList = [messageIds componentsJoinedByString:@","];
-            NSString *sqlString;
-            
-            switch (operation) {
-                case MPPersistenceOperationDelete:
-                    sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", messageIdsList];
-                    sqlStatement = string([sqlString UTF8String]);
-                    break;
-                    
-                case MPPersistenceOperationFlag:
-                    sqlString = [NSString stringWithFormat:@"UPDATE messages SET upload_status = %ld WHERE _id IN (%@)", (long)MPUploadStatusUploaded, messageIdsList];
-                    sqlStatement = string([sqlString cStringUsingEncoding:NSUTF8StringEncoding]);
-                    break;
-            }
-            
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while post-processing upload: %s", sqlite3_errmsg(mParticleDB));
-                }
-            }
-            
-            sqlite3_finalize(preparedStatement);
+        sqlite3_bind_blob(preparedStatement, 2, [upload.uploadData bytes], (int)[upload.uploadData length], SQLITE_STATIC);
+        sqlite3_bind_double(preparedStatement, 3, upload.timestamp);
+        
+        if (upload.sessionId != nil) {
+            sqlite3_bind_int64(preparedStatement, 4, upload.sessionId.longLongValue);
+        } else {
+            sqlite3_bind_null(preparedStatement, 4);
         }
-    });
+        
+        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+            MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
+            sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
+        }
+        
+        upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
+        
+        sqlite3_clear_bindings(preparedStatement);
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    if (messageIds.count > 0) {
+        NSString *messageIdsList = [messageIds componentsJoinedByString:@","];
+        NSString *sqlString;
+        
+        switch (operation) {
+            case MPPersistenceOperationDelete:
+                sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", messageIdsList];
+                sqlStatement = string([sqlString UTF8String]);
+                break;
+                
+            case MPPersistenceOperationFlag:
+                sqlString = [NSString stringWithFormat:@"UPDATE messages SET upload_status = %ld WHERE _id IN (%@)", (long)MPUploadStatusUploaded, messageIdsList];
+                sqlStatement = string([sqlString cStringUsingEncoding:NSUTF8StringEncoding]);
+                break;
+        }
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while post-processing upload: %s", sqlite3_errmsg(mParticleDB));
+            }
+        }
+        
+        sqlite3_finalize(preparedStatement);
+    }
 }
 
 - (void)updateConsumerInfo:(MPConsumerInfo *)consumerInfo {
-    dispatch_barrier_async(dbQueue, ^{
-        
-        for (MPCookie *cookie in consumerInfo.cookies) {
-            if (cookie.expired) {
-                if (cookie.cookieId != 0) {
-                    [self deleteCookie:cookie];
-                }
+    
+    for (MPCookie *cookie in consumerInfo.cookies) {
+        if (cookie.expired) {
+            if (cookie.cookieId != 0) {
+                [self deleteCookie:cookie];
+            }
+        } else {
+            if (cookie.cookieId == 0) {
+                [self saveCookie:cookie forConsumerInfo:consumerInfo];
             } else {
-                if (cookie.cookieId == 0) {
-                    [self saveCookie:cookie forConsumerInfo:consumerInfo];
-                } else {
-                    [self updateCookie:cookie];
-                }
+                [self updateCookie:cookie];
             }
         }
-    });
+    }
 }
 
 - (void)updateSession:(MPSession *)session {
     if (session != nil) {
-        dispatch_barrier_sync(dbQueue, ^{
-            sqlite3_stmt *preparedStatement;
-            const string sqlStatement = "UPDATE sessions SET end_time = ?, attributes_data = ?, background_time = ?, number_interruptions = ?, event_count = ?, suspend_time = ?, length = ?, mpid = ?, session_user_ids = ? WHERE _id = ?";
+        sqlite3_stmt *preparedStatement;
+        const string sqlStatement = "UPDATE sessions SET end_time = ?, attributes_data = ?, background_time = ?, number_interruptions = ?, event_count = ?, suspend_time = ?, length = ?, mpid = ?, session_user_ids = ? WHERE _id = ?";
+        
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_double(preparedStatement, 1, session.endTime);
             
-            if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-                sqlite3_bind_double(preparedStatement, 1, session.endTime);
-                
-                NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
-                sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
-                
-                sqlite3_bind_double(preparedStatement, 3, session.backgroundTime);
-                sqlite3_bind_int(preparedStatement, 4, session.numberOfInterruptions);
-                sqlite3_bind_int(preparedStatement, 5, session.eventCounter);
-                sqlite3_bind_double(preparedStatement, 6, session.suspendTime);
-                sqlite3_bind_double(preparedStatement, 7, session.length);
-                sqlite3_bind_int64(preparedStatement, 8, session.userId.longLongValue);
-                sqlite3_bind_text(preparedStatement, 9, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
-                sqlite3_bind_int64(preparedStatement, 10, session.sessionId);
-                
-                if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                    MPILogError(@"Error while updating session: %s", sqlite3_errmsg(mParticleDB));
-                }
-                
-                sqlite3_clear_bindings(preparedStatement);
+            NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
+            sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+            
+            sqlite3_bind_double(preparedStatement, 3, session.backgroundTime);
+            sqlite3_bind_int(preparedStatement, 4, session.numberOfInterruptions);
+            sqlite3_bind_int(preparedStatement, 5, session.eventCounter);
+            sqlite3_bind_double(preparedStatement, 6, session.suspendTime);
+            sqlite3_bind_double(preparedStatement, 7, session.length);
+            sqlite3_bind_int64(preparedStatement, 8, session.userId.longLongValue);
+            sqlite3_bind_text(preparedStatement, 9, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
+            sqlite3_bind_int64(preparedStatement, 10, session.sessionId);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while updating session: %s", sqlite3_errmsg(mParticleDB));
             }
             
-            sqlite3_finalize(preparedStatement);
-        });
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        
+        sqlite3_finalize(preparedStatement);
     }
 }
 @end

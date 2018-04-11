@@ -85,13 +85,13 @@ static NSString *mpUserAgent = nil;
                 }
             }
             
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-            if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                return defaultUserAgent;
-            }
-#endif
-            
             dispatch_block_t getUserAgent = ^{
+#if !defined(MPARTICLE_APP_EXTENSIONS)
+                if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+                    mpUserAgent = defaultUserAgent;
+                    return;
+                }
+#endif
                 @try {
                     UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
                     mpUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
@@ -153,9 +153,7 @@ static NSString *mpUserAgent = nil;
 }
 
 + (void)tryToCaptureUserAgent {
-    dispatch_async(dispatch_get_main_queue(),^{
-        [[[MPURLRequestBuilder alloc] init] userAgent];
-    });
+    [[[MPURLRequestBuilder alloc] init] userAgent];
 }
 
 #pragma mark Public instance methods

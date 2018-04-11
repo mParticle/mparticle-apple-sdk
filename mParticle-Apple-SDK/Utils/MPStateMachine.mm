@@ -27,9 +27,14 @@ NSString *const kMinUploadDateKey = @"MinUploadDate";
 static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
 
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
 @interface MPStateMachine() {
     BOOL optOutSet;
     BOOL alwaysTryToCollectIDFASet;
+    dispatch_queue_t messageQueue;
 }
 
 @property (nonatomic, unsafe_unretained) MParticleNetworkStatus networkStatus;
@@ -64,6 +69,7 @@ static BOOL runningInBackground = NO;
 - (instancetype)init {
     self = [super init];
     if (self) {
+        messageQueue = [MParticle messageQueue];
         optOutSet = NO;
         _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
         _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
@@ -184,7 +190,9 @@ static BOOL runningInBackground = NO;
     NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
     NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
     if (newSDKMajorVersion && ![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
-        [[MPKitContainer sharedInstance] removeAllKitConfigurations];
+        dispatch_async(messageQueue, ^{
+            [[MPKitContainer sharedInstance] removeAllKitConfigurations];
+        });
     }
 
     _storedSDKVersion = storedSDKVersion;

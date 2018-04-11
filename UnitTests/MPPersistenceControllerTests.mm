@@ -12,10 +12,17 @@
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
 #import "MPKitExecStatus.h"
+#import "mParticle.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
-@interface MPPersistenceControllerTests : XCTestCase
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
+@interface MPPersistenceControllerTests : XCTestCase {
+    dispatch_queue_t messageQueue;
+}
 
 @end
 
@@ -24,14 +31,17 @@
 
 - (void)setUp {
     [super setUp];
-    
+    [MParticle sharedInstance];
+    messageQueue = [MParticle messageQueue];
     [[MPPersistenceController sharedInstance] openDatabase];
 }
 
 - (void)tearDown {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
-    [persistence closeDatabase];
+    dispatch_sync(messageQueue, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
+        [persistence closeDatabase];
+    });
     
     [super tearDown];
 }
@@ -51,52 +61,54 @@
 }
 
 - (void)testSession {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence saveSession:session];
-    
-    XCTAssertTrue(session.sessionId > 0, @"Session id not greater than zero: %lld", session.sessionId);
-    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Session test"];
     
-    [persistence fetchSessions:^(NSMutableArray<MPSession *> *sessions) {
+    dispatch_async(messageQueue, ^{
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
+        
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        [persistence saveSession:session];
+        
+        XCTAssertTrue(session.sessionId > 0, @"Session id not greater than zero: %lld", session.sessionId);
+        
+        NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
         MPSession *fetchedSession = [sessions lastObject];
         XCTAssertEqualObjects(session, fetchedSession, @"Session and fetchedSession are not equal.");
         
         [persistence deleteSession:session];
         
-        [persistence fetchSessions:^(NSMutableArray *sessions) {
-            if (sessions) {
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"sessionId == %lld", fetchedSession.sessionId];
-                sessions = [NSMutableArray arrayWithArray:[sessions filteredArrayUsingPredicate:predicate]];
-                XCTAssertTrue(sessions.count == 0, @"Session is not being deleted.");
-            }
-            
-            [expectation fulfill];
-        }];
-    }];
+        sessions = [persistence fetchSessions];
+        if (sessions) {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"sessionId == %lld", fetchedSession.sessionId];
+            sessions = [NSMutableArray arrayWithArray:[sessions filteredArrayUsingPredicate:predicate]];
+            XCTAssertTrue(sessions.count == 0, @"Session is not being deleted.");
+        }
+        
+        [expectation fulfill];
+    });
     
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testMessage {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence saveMessage:message];
-    
-    XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
-    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
     
-    [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
+    dispatch_async(messageQueue, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        [persistence saveSession:session];
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                               session:session
+                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessage *message = (MPMessage *)[messageBuilder build];
+        [persistence saveMessage:message];
+        
+        XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
+        
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
         NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
         MPMessage *fetchedMessage = [messages lastObject];
@@ -105,50 +117,47 @@
         
         [persistence deleteSession:session];
         
-        [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-            NSArray *messages = messagesDictionary[[MPPersistenceController mpId]];
-            if (messages) {
-                NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageId == %lld", fetchedMessage.messageId];
-                messages = [messages filteredArrayUsingPredicate:predicate];
-                XCTAssertTrue(messages.count == 0, @"Message is not being deleted.");
-            }
-            
-            [expectation fulfill];
-        }];
-    }];
-    
+        messagesDictionary = [persistence fetchMessagesForUploading];
+        messages = messagesDictionary[[MPPersistenceController mpId]];
+        if (messages) {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageId == %lld", fetchedMessage.messageId];
+            messages = [messages filteredArrayUsingPredicate:predicate];
+            XCTAssertTrue(messages.count == 0, @"Message is not being deleted.");
+        }
+        
+        [expectation fulfill];
+    });
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testDeleteMessages {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    for (int i = 0; i < 10; ++i) {
-        NSString *key = [NSString stringWithFormat:@"Key%@", @(i)];
-        NSString *value = [NSString stringWithFormat:@"Value%@", @(i)];
-        
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                               session:session
-                                                                           messageInfo:@{key:value}];
-        MPMessage *message = (MPMessage *)[messageBuilder build];
-        [persistence saveMessage:message];
-    }
-    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
-    
-    [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
+    dispatch_async(messageQueue, ^{
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        for (int i = 0; i < 10; ++i) {
+            NSString *key = [NSString stringWithFormat:@"Key%@", @(i)];
+            NSString *value = [NSString stringWithFormat:@"Value%@", @(i)];
+            
+            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                                   session:session
+                                                                               messageInfo:@{key:value}];
+            MPMessage *message = (MPMessage *)[messageBuilder build];
+            [persistence saveMessage:message];
+        }
+        
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
         NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
         [persistence deleteMessages:messages];
         
-        [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-            NSArray *messages = messagesDictionary[[MPPersistenceController mpId]];
-            XCTAssertNil(messages, @"Should have been nil.");
-            
-            [expectation fulfill];
-        }];
-    }];
+        messagesDictionary = [persistence fetchMessagesForUploading];
+        messages = messagesDictionary[[MPPersistenceController mpId]];
+        XCTAssertNil(messages, @"Should have been nil.");
+        
+        [expectation fulfill];
+    });
     
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
@@ -179,24 +188,21 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload test"];
     
-    [persistence fetchUploadsWithCompletionHandler:^(NSArray<MPUpload *> *uploads) {
-                             MPUpload *fetchedUpload = [uploads lastObject];
-                             
-                             XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
-                             
-                             [persistence deleteUpload:upload];
-                             
-                             [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
-                                                      if (uploads) {
-                                                          NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", fetchedUpload.uploadId];
-                                                          uploads = [uploads filteredArrayUsingPredicate:predicate];
-                                                          XCTAssertTrue(uploads.count == 0, @"Upload is not being deleted.");
-                                                      }
-                                                      
-                                                      [expectation fulfill];
-                                                  }];
-                             
-                         }];
+    NSArray<MPUpload *> *uploads = [persistence fetchUploads];
+    MPUpload *fetchedUpload = [uploads lastObject];
+    
+    XCTAssertEqualObjects(upload, fetchedUpload, @"Upload and fetchedUpload are not equal.");
+    
+    [persistence deleteUpload:upload];
+    
+    uploads = [persistence fetchUploads];
+    if (uploads) {
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", fetchedUpload.uploadId];
+        uploads = [uploads filteredArrayUsingPredicate:predicate];
+        XCTAssertTrue(uploads.count == 0, @"Upload is not being deleted.");
+    }
+    
+    [expectation fulfill];
     
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
@@ -337,12 +343,11 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
     
-    [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId] completionHandler:^(MPConsumerInfo * _Nullable consumerInfo) {
-        XCTAssertNotNil(consumerInfo);
-        [persistence deleteConsumerInfo];
-        
-        [expectation fulfill];
-    }];
+    consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+    XCTAssertNotNil(consumerInfo);
+    [persistence deleteConsumerInfo];
+    
+    [expectation fulfill];
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }

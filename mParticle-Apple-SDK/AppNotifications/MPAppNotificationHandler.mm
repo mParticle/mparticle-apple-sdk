@@ -21,6 +21,10 @@
     #import <UserNotifications/UNUserNotificationCenter.h>
 #endif
 
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
 @interface MPKitAPI ()
 - (id)initWithKitCode:(NSNumber *)kitCode;
 @end
@@ -97,12 +101,14 @@
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
     [queueParameters addParameter:error];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:failedRegistrationSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit failedToRegisterForUserNotifications:forwardParameters[0]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:failedRegistrationSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit failedToRegisterForUserNotifications:forwardParameters[0]];
+                                             }];
+    });
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
@@ -118,12 +124,14 @@
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
     [queueParameters addParameter:deviceToken];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:deviceTokenSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit setDeviceToken:forwardParameters[0]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:deviceTokenSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit setDeviceToken:forwardParameters[0]];
+                                             }];
+    });
 }
 
 #pragma clang diagnostic push
@@ -139,12 +147,14 @@
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
     [queueParameters addParameter:notificationSettings];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:didRegisterUserNotificationSettingsSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit didRegisterUserNotificationSettings:forwardParameters[0]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:didRegisterUserNotificationSettingsSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit didRegisterUserNotificationSettings:forwardParameters[0]];
+                                             }];
+    });
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
@@ -160,12 +170,14 @@
     [queueParameters addParameter:identifier];
     [queueParameters addParameter:userInfo];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1]];
+                                             }];
+    });
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo {
@@ -182,12 +194,14 @@
     [queueParameters addParameter:userInfo];
     [queueParameters addParameter:responseInfo];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1] withResponseInfo:forwardParameters[2]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1] withResponseInfo:forwardParameters[2]];
+                                             }];
+    });
 }
 
 - (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode {
@@ -216,12 +230,14 @@
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:userInfo];
         
-        [[MPKitContainer sharedInstance] forwardSDKCall:receivedNotificationSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypePushNotification
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit receivedUserNotification:forwardParameters[0]];
-                                             }];
+        dispatch_async([MParticle messageQueue], ^{
+            [[MPKitContainer sharedInstance] forwardSDKCall:receivedNotificationSelector
+                                                 parameters:queueParameters
+                                                messageType:MPMessageTypePushNotification
+                                                 kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                     *execStatus = [kit receivedUserNotification:forwardParameters[0]];
+                                                 }];
+        });
     }
 }
 
@@ -236,12 +252,14 @@
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
     [queueParameters addParameter:userActivity];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:didUpdateUserActivitySelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit didUpdateUserActivity:forwardParameters[0]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:didUpdateUserActivitySelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit didUpdateUserActivity:forwardParameters[0]];
+                                             }];
+    });
 }
 #endif
 
@@ -321,12 +339,14 @@
     [queueParameters addParameter:userActivity];
     [queueParameters addParameter:restorationHandler];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:continueUserActivitySelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit continueUserActivity:forwardParameters[0] restorationHandler:forwardParameters[1]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:continueUserActivitySelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit continueUserActivity:forwardParameters[0] restorationHandler:forwardParameters[1]];
+                                             }];
+    });
     
     NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
     BOOL handlingActivity = NO;
@@ -354,12 +374,14 @@
     [queueParameters addParameter:url];
     [queueParameters addParameter:options];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:openURLOptionsSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit openURL:forwardParameters[0] options:forwardParameters[1]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:openURLOptionsSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit openURL:forwardParameters[0] options:forwardParameters[1]];
+                                             }];
+    });
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
@@ -379,12 +401,14 @@
     [queueParameters addParameter:sourceApplication];
     [queueParameters addParameter:annotation];
     
-    [[MPKitContainer sharedInstance] forwardSDKCall:openURLSourceAppAnnotationSelector
-                                         parameters:queueParameters
-                                        messageType:MPMessageTypeUnknown
-                                         kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                             *execStatus = [kit openURL:forwardParameters[0] sourceApplication:forwardParameters[1] annotation:forwardParameters[2]];
-                                         }];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:openURLSourceAppAnnotationSelector
+                                             parameters:queueParameters
+                                            messageType:MPMessageTypeUnknown
+                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                                 *execStatus = [kit openURL:forwardParameters[0] sourceApplication:forwardParameters[1] annotation:forwardParameters[2]];
+                                             }];
+    });
 }
 
 @end

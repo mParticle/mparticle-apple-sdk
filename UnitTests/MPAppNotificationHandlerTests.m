@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPAppNotificationHandler.h"
 #import "MPPersistenceController.h"
+#import "mParticle.h"
 
 @interface MPAppNotificationHandlerTests : XCTestCase
 
@@ -28,6 +29,7 @@
     XCTAssertNotNil(appNotificationHandler, @"Should not have been nil.");
     
     NSError *error = [NSError errorWithDomain:@"com.mParticle" code:123 userInfo:@{@"some":@"error"}];
+    [MParticle sharedInstance];
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
     NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];

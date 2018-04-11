@@ -117,16 +117,6 @@ NSString *const sessionUUIDKey = @"sessionId";
     _persisted = sessionId != 0;
 }
 
-- (void)removeSessionNumberFile {
-    NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *sessionNumberPath = [documentsDirectory stringByAppendingPathComponent:@"SessionNumber"];
-    
-    if ([fileManager fileExistsAtPath:sessionNumberPath]) {
-        [fileManager removeItemAtPath:sessionNumberPath error:nil];
-    }
-}
-
 #pragma mark Public methods
 - (void)incrementCounter {
     [self willChangeValueForKey:@"eventCounter"];

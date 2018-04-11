@@ -6,6 +6,7 @@
 #import "MPBackendController.h"
 #import "MPPersistenceController.h"
 #import "MPIConstants.h"
+#import "MPILogger.h"
 
 @interface MParticle ()
 
@@ -41,6 +42,53 @@
 }
 
 #pragma mark Private methods
+
+- (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp version:(NSNumber *)oldVersion fromDatabase:(sqlite3 *)mParticleDB {
+    char *errMsg;
+    NSString *sqlStatement = @"BEGIN TRANSACTION";
+    
+    if (sqlite3_exec(mParticleDB, sqlStatement.UTF8String, NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError("Problem Beginning SQL Transaction: %@\n", sqlStatement);
+    }
+    
+    NSInteger oldVersionValue = [oldVersion integerValue];
+    NSArray *statements = nil;
+    
+    if (oldVersionValue < 10) {
+        statements = @[
+                       @"DELETE FROM messages WHERE message_time < ?",
+                       @"DELETE FROM uploads WHERE message_time < ?",
+                       @"DELETE FROM sessions WHERE end_time < ?"
+                       ];
+    } else {
+        statements = @[
+                       @"DELETE FROM messages WHERE timestamp < ?",
+                       @"DELETE FROM uploads WHERE timestamp < ?",
+                       @"DELETE FROM sessions WHERE end_time < ?"
+                       ];
+    }
+    
+    sqlite3_stmt *preparedStatement;
+    for (NSString *sqlStatement in statements) {
+        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.UTF8String, (int)[sqlStatement length], &preparedStatement, NULL) == SQLITE_OK) {
+            sqlite3_bind_double(preparedStatement, 1, timestamp);
+            
+            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
+                MPILogError(@"Error while deleting old records: %s", sqlite3_errmsg(mParticleDB));
+            }
+            
+            sqlite3_clear_bindings(preparedStatement);
+        }
+        sqlite3_finalize(preparedStatement);
+    }
+    
+    sqlStatement = @"END TRANSACTION";
+    
+    if (sqlite3_exec(mParticleDB, sqlStatement.UTF8String, NULL, NULL, &errMsg) != SQLITE_OK) {
+        MPILogError("Problem Ending SQL Transaction: %@\n", sqlStatement);
+    }
+}
+
 - (NSArray *)migratedSessionsInDatabase:(sqlite3 *)database {
     if (migratedSessions) {
         return migratedSessions;
@@ -560,8 +608,7 @@
     }
     
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    [[MPPersistenceController sharedInstance] deleteRecordsOlderThan:(currentTime - SEVEN_DAYS) withDatabase:oldmParticleDB];
-    
+    [self deleteRecordsOlderThan:(currentTime - SEVEN_DAYS) version:oldVersion fromDatabase:oldmParticleDB];
     [self migrateConsumerInfoFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];
     [self migrateUserDefaultsWithVersion:oldVersion];
     [self migrateSessionsFromDatabase:oldmParticleDB version:oldVersion toDatabase:mParticleDB];

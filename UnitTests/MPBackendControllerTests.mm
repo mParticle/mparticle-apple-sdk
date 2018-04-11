@@ -25,6 +25,7 @@
 #pragma mark - MParticle+Tests category
 @interface MParticle(Tests)
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end
@@ -49,12 +50,9 @@
 @property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
-@property (nonatomic, unsafe_unretained) MPInitializationStatus initializationStatus;
 
 - (NSString *)caseInsensitiveKeyInDictionary:(NSDictionary *)dictionary withKey:(NSString *)key;
 - (void)cleanUp;
-- (void)forceAppFinishedLaunching;
-- (void)setInitializationStatus:(MPInitializationStatus)initializationStatus;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)logRemoteNotificationWithNotificationController:(MPNotificationController *const)notificationController;
@@ -73,7 +71,9 @@
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
-@interface MPBackendControllerTests : XCTestCase <MPBackendControllerDelegate>
+@interface MPBackendControllerTests : XCTestCase <MPBackendControllerDelegate> {
+    dispatch_queue_t messageQueue;
+}
 
 @property (nonatomic, strong) MPBackendController *backendController;
 @property (nonatomic, strong) MPSession *session;
@@ -85,41 +85,45 @@
 
 - (void)setUp {
     [super setUp];
-    [MPPersistenceController setMpid:@1];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.apiKey = @"unit_test_app_key";
-    stateMachine.secret = @"unit_test_secret";
+    [MParticle sharedInstance];
+    messageQueue = [MParticle messageQueue];
     
-    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Set up"];
+    dispatch_async(messageQueue, ^{
+        [MPPersistenceController setMpid:@1];
+        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+        stateMachine.apiKey = @"unit_test_app_key";
+        stateMachine.secret = @"unit_test_secret";
+        
+        [[MPPersistenceController sharedInstance] openDatabase];
+        _session = self.backendController.session;
+        [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
+        
+        [self notificationController];
+        [expectation fulfill];
+    });
     
-    [[MPPersistenceController sharedInstance] openDatabase];
-    _session = self.backendController.session;
-    
-    [self notificationController];
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)tearDown {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
-    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Tear down"];
-    
-    [persistence fetchSessions:^(NSMutableArray *sessions) {
+    dispatch_async([MParticle messageQueue], ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
+        NSMutableArray *sessions = [persistence fetchSessions];
         for (MPSession *session in sessions) {
             [persistence deleteSession:session];
         }
         
-        [persistence fetchSessions:^(NSMutableArray *sessions) {
-            XCTAssertEqual(sessions.count, 0, @"Sessions have not been deleted.");
-            [expectation fulfill];
-        }];
-    }];
+        sessions = [persistence fetchSessions];
+        XCTAssertEqual(sessions.count, 0, @"Sessions have not been deleted.");
+        [persistence closeDatabase];
+        [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
+        [expectation fulfill];
+    });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-    [persistence closeDatabase];
-    
-    [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
     
     [super tearDown];
 }
@@ -209,6 +213,7 @@
     }
     
     _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]  userId:[MPPersistenceController mpId]];
+    [[MPPersistenceController sharedInstance] saveSession:_session];
     return _session;
 }
 
@@ -235,81 +240,78 @@
 
 - (void)testBeginSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin session test"];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    [persistence fetchSessions:^(NSMutableArray *sessions) {
+    dispatch_async(messageQueue, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
         
         XCTAssertEqualObjects(session, self.session, @"Sessions are not equal.");
         
-        [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-            NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-            NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
-            MPMessage *message = [messages lastObject];
-            
-            XCTAssertEqualObjects(message.messageType, @"ss", @"Message type is not session start.");
-            
-            [expectation fulfill];
-        }];
-    }];
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
+        MPMessage *message = [messages lastObject];
+        
+        XCTAssertEqualObjects(message.messageType, @"ss", @"Message type is not session start.");
+        
+        [expectation fulfill];
+    });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testEndSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"End session test"];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    [persistence fetchSessions:^(NSMutableArray *sessions) {
+    dispatch_async([MParticle messageQueue], ^{
+        
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
         MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
-        [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-            NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-            NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
-            BOOL containsSessionStart = NO;
-            
-            for (MPMessage *message in messages) {
-                if ([message.messageType isEqualToString:@"ss"]) {
-                    containsSessionStart = YES;
-                }
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
+        BOOL containsSessionStart = NO;
+        
+        for (MPMessage *message in messages) {
+            if ([message.messageType isEqualToString:@"ss"]) {
+                containsSessionStart = YES;
             }
-            
-            XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
-            
-            [self.backendController endSession];
-            [self.backendController endSession];
-            [self.backendController endSession];
-            [self.backendController endSession];
-            [self.backendController endSession];
-            [self.backendController endSession];
-            [self.backendController endSession];
-            
-            [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-                NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-                NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
-                NSUInteger endSessionCount = 0;
-                for (MPMessage *message in messages) {
-                    if ([message.messageType isEqualToString:@"se"]) {
-                        ++endSessionCount;
-                    }
-                }
-                
-                XCTAssertEqual(endSessionCount, 1, @"Logging session end multiple times.");
-                
-                [persistence deletePreviousSession];
-                
-                [persistence fetchPreviousSession:^(MPSession *previousSession) {
-                    XCTAssertNil(previousSession, @"Previous session is not being removed.");
-                    
-                    [expectation fulfill];
-                }];
-            }];
-        }];
-    }];
+        }
+        
+        XCTAssertTrue(containsSessionStart, @"Begin session does not contain a session start message.");
+        
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        [self.backendController endSession];
+        
+        messagesDictionary = [persistence fetchMessagesForUploading];
+        sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
+        NSUInteger endSessionCount = 0;
+        for (MPMessage *message in messages) {
+            if ([message.messageType isEqualToString:@"se"]) {
+                ++endSessionCount;
+            }
+        }
+        
+        XCTAssertEqual(endSessionCount, 1, @"Logging session end multiple times.");
+        
+        [persistence deletePreviousSession];
+        
+        MPSession *previousSession = [persistence fetchPreviousSession];
+        XCTAssertNil(previousSession, @"Previous session is not being removed.");
+        
+        [expectation fulfill];
+    });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
@@ -373,87 +375,79 @@
 }
 
 - (void)testBatchCycle {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.info = @{@"key":@"value"};
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Batch cycle test"];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    [self.backendController logEvent:event
-                             attempt:0
-                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-            NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-            NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
-            XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    dispatch_async(messageQueue, ^{
+        
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        [self.backendController logEvent:event
+                       completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
+        
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
+        XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+        
+        for (MPMessage *message in messages) {
+            XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        }
+        
+        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100];
+        XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+        
+        if (!uploadBuilder) {
+            return;
+        }
+        
+        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
+        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
+        [uploadBuilder build:^(MPUpload *upload) {
+            [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+            
+            NSArray *messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
+            
+            XCTAssertNotNil(messages, @"There are no messages in session.");
             
             for (MPMessage *message in messages) {
-                XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+                XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
             }
             
-            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100];
-            XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+            NSArray *uploads = [persistence fetchUploads];
+            XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
             
-            if (!uploadBuilder) {
-                return;
+            for (MPUpload *upload in uploads) {
+                [persistence deleteUpload:upload];
             }
             
-            [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
-            [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
-            [uploadBuilder build:^(MPUpload *upload) {
-                [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                
-                NSArray *messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
-                
-                XCTAssertNotNil(messages, @"There are no messages in session.");
-                
-                for (MPMessage *message in messages) {
-                    XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
-                }
-                
-                [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
-                                         XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
-                                         
-                                         for (MPUpload *upload in uploads) {
-                                             [persistence deleteUpload:upload];
-                                         }
-                                         
-                                         [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
-                                                                  XCTAssertNil(uploads, @"Uploads are not being deleted.");
-                                                                  
-                                                                  [expectation fulfill];
-                                                              }];
-                                     }];
-            }];
+            uploads = [persistence fetchUploads];
+            XCTAssertNil(uploads, @"Uploads are not being deleted.");
+            
+            [expectation fulfill];
         }];
     });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
+
 }
 
 - (void)testRampUpload {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    
-    [persistence saveMessage:message];
-    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Ramp upload test"];
-    
-    [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
+    dispatch_async(messageQueue, ^{
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                               session:session
+                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessage *message = (MPMessage *)[messageBuilder build];
+        
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        [persistence saveMessage:message];
+        
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
         NSArray *persistedMessages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
         MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100];
@@ -468,55 +462,48 @@
         [uploadBuilder build:^(MPUpload *upload) {
             [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
             
-            [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
-                                     XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
-                                     
-                                     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-                                     [stateMachine configureRampPercentage:@100];
-                                     
-                                     XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
-                                     
-                                     for (MPUpload *upload in uploads) {
-                                         [persistence deleteUpload:upload];
-                                     }
-                                     
-                                     [persistence fetchUploadsWithCompletionHandler:^(NSArray *uploads) {
-                                                              XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
-                                                              
-                                                              [persistence fetchUploadedMessagesInSession:session
-                                                                        excludeNetworkPerformanceMessages:NO
-                                                                                        completionHandler:^(NSArray *persistedMessages) {
-                                                                                            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self.session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100];
-                                                                                            XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
-                                                                                            
-                                                                                            if (!uploadBuilder) {
-                                                                                                return;
-                                                                                            }
-                                                                                            
-                                                                                            [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
-                                                                                            [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
-                                                                                            [uploadBuilder build:^(MPUpload *upload) {
-                                                                                                [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
-                                                                                                
-                                                                                                [persistence fetchUploadedMessagesInSession:session
-                                                                                                          excludeNetworkPerformanceMessages:NO
-                                                                                                                          completionHandler:^(NSArray *persistedMessages) {
-                                                                                                                              XCTAssertNil(persistedMessages, @"Messages are not being deleted are being moved to the uploads table.");
-                                                                                                                              
-                                                                                                                              [expectation fulfill];
-                                                                                                                          }];
-                                                                                            }];
-                                                                                        }];
-                                                          }];
-                                 }];
+            NSArray *uploads = [persistence fetchUploads];
+            XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
+            
+            MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+            [stateMachine configureRampPercentage:@100];
+            
+            XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
+            
+            for (MPUpload *upload in uploads) {
+                [persistence deleteUpload:upload];
+            }
+            
+            uploads = [persistence fetchUploads];
+            XCTAssertNil(uploads, @"Not deleting ramped upload messages.");
+            
+            NSArray *persistedMessages = [persistence fetchUploadedMessagesInSession:session];
+            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self.session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+            XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+            
+            if (!uploadBuilder) {
+                return;
+            }
+            
+            [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
+            [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
+            [uploadBuilder build:^(MPUpload *upload) {
+                [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
+                
+                NSArray *persistedMessages = [persistence fetchUploadedMessagesInSession:session];
+                XCTAssertNil(persistedMessages, @"Messages are not being deleted are being moved to the uploads table.");
+                
+                [expectation fulfill];
+            }];
         }];
-    }];
-    
+        
+    });
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testDidBecomeActiveWithAppLink {
 #if TARGET_OS_IOS == 1
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active with AppLink test"];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
@@ -527,12 +514,11 @@
                                               sourceApplication:sourceApplication
                                                      annotation:annotation];
     
-    [self.backendController forceAppFinishedLaunching];
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active with AppLink test"];
-    
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
+    dispatch_async(messageQueue, ^{
+        
+        NSDictionary *messagesDictionary = [[MPPersistenceController sharedInstance] fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
         NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
         XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
@@ -555,8 +541,7 @@
         }
         
         [expectation fulfill];
-    }];
-    
+    });
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 #endif
 }
@@ -573,12 +558,12 @@
                                               sourceApplication:sourceApplication
                                                      annotation:annotation];
     
-    [self.backendController forceAppFinishedLaunching];
     [self.backendController handleApplicationDidBecomeActive:nil];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active test"];
     
-    [[MPPersistenceController sharedInstance] fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
+    dispatch_async(messageQueue, ^{
+        NSDictionary *messagesDictionary = [[MPPersistenceController sharedInstance] fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
         NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
         XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
@@ -604,7 +589,7 @@
         }
         
         [expectation fulfill];
-    }];
+    });
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 #endif
@@ -679,321 +664,260 @@
 }
 
 - (void)testUserAttributes {
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
-    if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"test user attributes"];
+    dispatch_async(messageQueue, ^{
+        [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
         
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
+        if (![MPKitContainer registeredKits]) {
+            MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
+            [MPKitContainer registerKit:kitRegister];
+            
+            kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
+            [MPKitContainer registerKit:kitRegister];
+            
+            NSDictionary *configuration1 = @{
+                                             @"id":@42,
+                                             @"as":@{
+                                                     @"appId":@"MyAppId"
+                                                     }
+                                             };
+            
+            NSDictionary *configuration2 = @{
+                                             @"id":@314,
+                                             @"as":@{
+                                                     @"appId":@"unique id"
+                                                     }
+                                             };
+            
+            NSArray *kitConfigs = @[configuration1, configuration2];
+            [[MPKitContainer sharedInstance] configureKits:nil];
+            [[MPKitContainer sharedInstance] configureKits:kitConfigs];
+        }
         
-        NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
         
-        NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
+        MParticle *mParticle = [MParticle sharedInstance];
         
-        NSArray *kitConfigs = @[configuration1, configuration2];
+        NSDictionary *attributes = @{@"TardisKey1":@"Master",
+                                     @"TardisKey2":@"Guest",
+                                     @"TardisKey3":@42,
+                                     @"TardisKey4":@[@"alohomora", @"open sesame"]
+                                     };
+        
+        [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
+            if ([obj isKindOfClass:[NSArray class]]) {
+                [mParticle.identity.currentUser setUserAttributeList:key values:obj];
+                [self.backendController setUserAttribute:key values:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+            } else {
+                [mParticle.identity.currentUser setUserAttribute:key value:obj];
+                [self.backendController setUserAttribute:key value:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+            }
+        }];
+        
+        NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        
+        [self.backendController setUserAttribute:@"TardisKey4" value:@"Door" timestamp:[NSDate date] completionHandler:nil];
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertNotEqualObjects(userAttributes, attributes);
+        XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
+        
+        attributes = @{@"TardisKey1":@"Master",
+                       @"TardisKey2":@"Guest",
+                       @"TardisKey3":@42,
+                       @"TardisKey4":@"Door"
+                       };
+        
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        NSMutableString *longString = [[NSMutableString alloc] initWithCapacity:(LIMIT_USER_ATTR_LENGTH + 1)];
+        for (int i = 0; i < (LIMIT_USER_ATTR_LENGTH + 1); ++i) {
+            [longString appendString:@"T"];
+        }
+        
+        [self.backendController setUserAttribute:@"TardisKey1" value:longString timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        [self.backendController setUserAttribute:@"TardisKey1" value:@"" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertNotEqualObjects(userAttributes, attributes);
+        XCTAssertNil(userAttributes[@"TardisKey1"]);
+        
+        attributes = @{@"TardisKey2":@"Guest",
+                       @"TardisKey3":@42,
+                       @"TardisKey4":@"Door"
+                       };
+        
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        [self.backendController setUserAttribute:@"TardisKey2" value:nil timestamp:[NSDate date] completionHandler:nil];
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertNotEqualObjects(userAttributes, attributes);
+        XCTAssertEqualObjects(userAttributes[@"TardisKey2"], [NSNull null]);
+        
+        attributes = @{@"TardisKey2":[NSNull null],
+                       @"TardisKey3":@42,
+                       @"TardisKey4":@"Door"
+                       };
+        
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        [self.backendController incrementUserAttribute:@"TardisKey2" byValue:@1];
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        NSArray *values = @[@"alohomora", @314];
+        [self.backendController setUserAttribute:@"TardisKey4" values:values timestamp:[NSDate date] completionHandler:nil];
+        XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        [self.backendController setUserAttribute:@"TardisKey4" values:nil timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertNil(userAttributes[@"TardisKey4"]);
+        
+        attributes = @{@"TardisKey2":[NSNull null],
+                       @"TardisKey3":@42
+                       };
+        
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqualObjects(userAttributes, attributes);
+        
+        
         [[MPKitContainer sharedInstance] configureKits:nil];
-        [[MPKitContainer sharedInstance] configureKits:kitConfigs];
-    }
-    
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    NSDictionary *attributes = @{@"TardisKey1":@"Master",
-                                 @"TardisKey2":@"Guest",
-                                 @"TardisKey3":@42,
-                                 @"TardisKey4":@[@"alohomora", @"open sesame"]
-                                 };
-    
-    [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[NSArray class]]) {
-            [mParticle.identity.currentUser setUserAttributeList:key values:obj];
-            [self.backendController setUserAttribute:key values:obj attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-        } else {
-            [mParticle.identity.currentUser setUserAttribute:key value:obj];
-            [self.backendController setUserAttribute:key value:obj attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-        }
-    }];
-    
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController incrementUserAttribute:@"TardisKey4" byValue:@1];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController setUserAttribute:@"TardisKey4" value:@"Door" attempt:0 completionHandler:nil];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotEqualObjects(userAttributes, attributes);
-    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
-    
-    attributes = @{@"TardisKey1":@"Master",
-                   @"TardisKey2":@"Guest",
-                   @"TardisKey3":@42,
-                   @"TardisKey4":@"Door"
-                   };
-    
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController setUserAttribute:@"TardisKey1" value:@"Wrong" attempt:11 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    NSMutableString *longString = [[NSMutableString alloc] initWithCapacity:(LIMIT_USER_ATTR_LENGTH + 1)];
-    for (int i = 0; i < (LIMIT_USER_ATTR_LENGTH + 1); ++i) {
-        [longString appendString:@"T"];
-    }
-    
-    [self.backendController setUserAttribute:@"TardisKey1" value:longString attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController setUserAttribute:@"TardisKey1" value:@"" attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotEqualObjects(userAttributes, attributes);
-    XCTAssertNil(userAttributes[@"TardisKey1"]);
-    
-    attributes = @{@"TardisKey2":@"Guest",
-                   @"TardisKey3":@42,
-                   @"TardisKey4":@"Door"
-                   };
-    
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController setUserAttribute:@"TardisKey2" value:nil attempt:0 completionHandler:nil];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotEqualObjects(userAttributes, attributes);
-    XCTAssertEqualObjects(userAttributes[@"TardisKey2"], [NSNull null]);
-    
-    attributes = @{@"TardisKey2":[NSNull null],
-                   @"TardisKey3":@42,
-                   @"TardisKey4":@"Door"
-                   };
-    
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController incrementUserAttribute:@"TardisKey2" byValue:@1];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    NSArray *values = @[@"alohomora", @314];
-    [self.backendController setUserAttribute:@"TardisKey4" values:values attempt:0 completionHandler:nil];
-    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController setUserAttribute:@"TardisKey4" values:nil attempt:0 completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertNil(userAttributes[@"TardisKey4"]);
-    
-    attributes = @{@"TardisKey2":[NSNull null],
-                   @"TardisKey3":@42
-                   };
-    
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
-    mParticle.backendController.initializationStatus = originalInitializationStatus;
-    [[MPKitContainer sharedInstance] configureKits:nil];
-}
-
-- (void)testDeferredUserAttributes {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarting;
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Deferred user attributes"];
-    __weak MPBackendController *weakBackendController = self.backendController;
-    __block NSString *setKey = nil;
-    __block NSString *setValue = nil;
-    
-    [self.backendController setUserAttribute:@"TardisKey1" value:@"Master" attempt:0 completionHandler:^(NSString * _Nonnull key, id _Nullable value, MPExecStatus execStatus) {
-        if (execStatus == MPExecStatusSuccess) {
-            setKey = key;
-            setValue = value;
-            
-            [expectation fulfill];
-        } else if (execStatus == MPExecStatusDelayedExecution || execStatus == MPExecStatusContinuedDelayedExecution) {
-            weakBackendController.initializationStatus = MPInitializationStatusStarted;
-        }
-    }];
-    
+        [expectation fulfill];
+    });
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
-    
-    XCTAssertEqualObjects(setKey, @"TardisKey1");
-    XCTAssertEqualObjects(setValue, @"Master");
-}
-
-- (void)testDeferredUserAttributeList {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarting;
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Deferred user attributes"];
-    __weak MPBackendController *weakBackendController = self.backendController;
-    __block NSString *setKey = nil;
-    __block NSArray *setValues = nil;
-    NSArray *values = @[@"Master", @"Guest"];
-    
-    [self.backendController setUserAttribute:@"TardisKey1" values:values attempt:0 completionHandler:^(NSString * _Nonnull key, id _Nullable values, MPExecStatus execStatus) {
-        if (execStatus == MPExecStatusSuccess) {
-            setKey = key;
-            setValues = values;
-            
-            [expectation fulfill];
-        } else if (execStatus == MPExecStatusDelayedExecution || execStatus == MPExecStatusContinuedDelayedExecution) {
-            weakBackendController.initializationStatus = MPInitializationStatusStarted;
-        }
-    }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
-    
-    XCTAssertEqualObjects(setKey, @"TardisKey1");
-    XCTAssertEqualObjects(setValues, values);
 }
 
 - (void)testUserAttributeChanged {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    [self.backendController setUserAttribute:@"TardisModel" value:@"Police Call Box" attempt:0 completionHandler:nil];
-    
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes[@"TardisModel"], @"Police Call Box");
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
-    XCTAssertNotNil(messages);
-    XCTAssertEqual(messages.count, 1);
-    
-    MPMessage *message = [messages firstObject];
-    XCTAssertNotNil(message);
-    
-    NSDictionary *messageDictionary = [message dictionaryRepresentation];
-    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
-    XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"nv"]);
-    XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
-    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
-    
-    [persistence deleteSession:self.backendController.session];
-    messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
-    XCTAssertNil(messages);
-    
-    [self.backendController setUserAttribute:@"TardisModel" value:@"" attempt:0 completionHandler:nil];
-    messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
-    message = [messages firstObject];
-    messageDictionary = [message dictionaryRepresentation];
-    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
-    XCTAssertEqualObjects([NSNull null], messageDictionary[@"nv"]);
-    XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"ov"]);
-    XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
-    XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"User attribute changed"];
+    dispatch_async(messageQueue, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        [persistence saveSession:self.backendController.session];
+        
+        [self.backendController setUserAttribute:@"TardisModel" value:@"Police Call Box" timestamp:[NSDate date] completionHandler:nil];
+        
+        NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqualObjects(userAttributes[@"TardisModel"], @"Police Call Box");
+        
+        NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
+        XCTAssertNotNil(messages);
+        XCTAssertEqual(messages.count, 1);
+        
+        MPMessage *message = [messages firstObject];
+        XCTAssertNotNil(message);
+        
+        NSDictionary *messageDictionary = [message dictionaryRepresentation];
+        XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+        XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"nv"]);
+        XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
+        XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+        
+        [persistence deleteSession:self.backendController.session];
+        messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
+        XCTAssertNil(messages);
+        
+        [self.backendController setUserAttribute:@"TardisModel" value:@"" timestamp:[NSDate date] completionHandler:nil];
+        messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
+        message = [messages firstObject];
+        messageDictionary = [message dictionaryRepresentation];
+        XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+        XCTAssertEqualObjects([NSNull null], messageDictionary[@"nv"]);
+        XCTAssertEqualObjects(@"Police Call Box", messageDictionary[@"ov"]);
+        XCTAssertEqualObjects(@"TardisModel", messageDictionary[@"n"]);
+        XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testUserIdentityChanged {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    [self.backendController setUserIdentity:@"The Most Interesting Man in the World" identityType:MPUserIdentityCustomerId attempt:0 completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-    }];
-    
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", @"n", @(MPUserIdentityCustomerId)];
-    NSDictionary *userIdentity = [[[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
-    XCTAssertNotNil(userIdentity);
-    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
-    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
-    
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    NSArray *messages = [persistence fetchMessagesInSession:self.session userId:self.session.userId];
-    XCTAssertNotNil(messages);
-    XCTAssertEqual(messages.count, 1);
-    
-    MPMessage *message = [messages firstObject];
-    XCTAssertNotNil(message);
-    
-    NSDictionary *messageDictionary = [message dictionaryRepresentation];
-    XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
-    XCTAssertNotNil(messageDictionary[@"ni"]);
-    userIdentity = messageDictionary[@"ni"];
-    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
-    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
-    
-    [persistence deleteSession:self.session];
-    messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
-    XCTAssertNil(messages);
-    
     XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
-    [self.backendController setUserIdentity:nil identityType:MPUserIdentityCustomerId attempt:0 completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-        [expectation fulfill];
-    }];
-    
+    __weak MPBackendControllerTests *weakSelf = self;
+    dispatch_async(messageQueue, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        [persistence saveSession:weakSelf.session];
+        
+        [weakSelf.backendController setUserIdentity:@"The Most Interesting Man in the World" identityType:MPUserIdentityCustomerId timestamp:[NSDate date] completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+        }];
+        
+        __block NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", @"n", @(MPUserIdentityCustomerId)];
+        __block NSDictionary *userIdentity = [[[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
+        XCTAssertNotNil(userIdentity);
+        XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+        XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+        
+        __block NSArray *messages = [persistence fetchMessagesInSession:self.session userId:self.session.userId];
+        XCTAssertNotNil(messages);
+        XCTAssertEqual(messages.count, 1);
+        
+        __block MPMessage *message = [messages firstObject];
+        XCTAssertNotNil(message);
+        
+        __block NSDictionary *messageDictionary = [message dictionaryRepresentation];
+        XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
+        XCTAssertNotNil(messageDictionary[@"ni"]);
+        userIdentity = messageDictionary[@"ni"];
+        XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+        XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+        
+        [persistence deleteSession:self.session];
+        messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
+        XCTAssertNil(messages);
+        
+        weakSelf.backendController.session = nil;
+        [weakSelf.backendController setUserIdentity:nil identityType:MPUserIdentityCustomerId timestamp:[NSDate date] completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+            userIdentity = [[[weakSelf.backendController userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
+            XCTAssertNil(userIdentity);
+            
+            messages = [persistence fetchMessagesInSession:weakSelf.session userId:[MPPersistenceController mpId]];
+            XCTAssertNotNil(messages);
+            XCTAssertEqual(messages.count, 2);
+            
+            predicate = [NSPredicate predicateWithFormat:@"messageType == %@", @"uic"];
+            message = [[messages filteredArrayUsingPredicate:predicate] firstObject];
+            XCTAssertNotNil(message);
+            
+            messageDictionary = [message dictionaryRepresentation];
+            XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
+            XCTAssertNil(messageDictionary[@"ni"]);
+            userIdentity = messageDictionary[@"oi"];
+            XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
+            XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
+            [expectation fulfill];
+        }];
+        
+    });
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-    userIdentity = [[[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
-    XCTAssertNil(userIdentity);
-    
-    messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
-    XCTAssertNotNil(messages);
-    XCTAssertEqual(messages.count, 2);
-    
-    predicate = [NSPredicate predicateWithFormat:@"messageType == %@", @"uic"];
-    message = [[messages filteredArrayUsingPredicate:predicate] firstObject];
-    XCTAssertNotNil(message);
-    
-    messageDictionary = [message dictionaryRepresentation];
-    XCTAssertEqualObjects(@"uic", messageDictionary[@"dt"]);
-    XCTAssertNil(messageDictionary[@"ni"]);
-    userIdentity = messageDictionary[@"oi"];
-    XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
-    XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
 }
 
 - (void)testIncrementUserAttribute {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
-    
-    NSString *userAttributeKey = @"Number of time travels";
-    NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
-    XCTAssertNil(userAttributeValue);
-    
-    userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@1];
-    XCTAssertNotNil(userAttributeValue);
-    XCTAssertEqualObjects(userAttributeValue, @1);
-    
-    userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
-    XCTAssertNotNil(userAttributeValue);
-    XCTAssertEqualObjects(userAttributeValue, @1);
-    
-    [self.backendController setUserAttribute:userAttributeKey value:@"" attempt:0 completionHandler:{}];
-    userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
-    XCTAssertNil(userAttributeValue);
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Increment user attribute"];
+    dispatch_async(messageQueue, ^{
+        
+        NSString *userAttributeKey = @"Number of time travels";
+        NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
+        XCTAssertNil(userAttributeValue);
+        
+        userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@1];
+        XCTAssertNotNil(userAttributeValue);
+        XCTAssertEqualObjects(userAttributeValue, @1);
+        
+        userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
+        XCTAssertNotNil(userAttributeValue);
+        XCTAssertEqualObjects(userAttributeValue, @1);
+        
+        [self.backendController setUserAttribute:userAttributeKey value:@"" timestamp:[NSDate date] completionHandler:{}];
+        userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
+        XCTAssertNil(userAttributeValue);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testSetLocation {
-    MPInitializationStatus originalInitializationStatus = self.backendController.initializationStatus;
-    self.backendController.initializationStatus = MPInitializationStatusStarted;
     
 #if TARGET_OS_IOS == 1
     CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
@@ -1006,30 +930,26 @@
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     [self.backendController logEvent:event
-                             attempt:0
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
     
-    [persistence fetchMessagesForUploadingWithCompletionHandler:^(NSDictionary *messagesDictionary) {
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
-        XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
-        
-        MPMessage *message = messages.lastObject;
-        NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-        NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
-        XCTAssertNotEqual(range.location, NSNotFound);
-        range = [messageString rangeOfString:@"\"lng\":-73.98738"];
-        XCTAssertNotEqual(range.location, NSNotFound);
-        
-        [persistence deleteMessages:messages];
-        
-        [expectation fulfill];
-    }];
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    MPMessage *message = messages.lastObject;
+    NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+    NSRange range = [messageString rangeOfString:@"\"lat\":40.738526"];
+    XCTAssertNotEqual(range.location, NSNotFound);
+    range = [messageString rangeOfString:@"\"lng\":-73.98738"];
+    XCTAssertNotEqual(range.location, NSNotFound);
+    
+    [persistence deleteMessages:messages];
+    
+    [expectation fulfill];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 #endif
-    
-    self.backendController.initializationStatus = originalInitializationStatus;
 }
 
 @end

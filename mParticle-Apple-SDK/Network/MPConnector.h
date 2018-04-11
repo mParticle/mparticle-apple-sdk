@@ -19,14 +19,23 @@ typedef NS_ENUM(NSInteger, HTTPStatusCode) {
     HTTPStatusCodeNetworkAuthenticationRequired = 511
 };
 
+@interface MPConnectorResponse : NSObject
+
+@property (nonatomic, nullable) NSData *data;
+@property (nonatomic, nullable) NSError *error;
+@property (nonatomic) NSTimeInterval downloadTime;
+@property (nonatomic, nullable) NSHTTPURLResponse *httpResponse;
+
+@end
+
 @interface MPConnector : NSObject
 
 @property (nonatomic, unsafe_unretained, readonly) BOOL active;
 @property (nonatomic, unsafe_unretained, readonly, getter = characterEncoding) NSStringEncoding characterEncoding;
 @property (nonatomic, strong, nonnull) NSString *connectionId;
 
-- (void)asyncGetDataFromURL:(nonnull NSURL *)url completionHandler:(void (^ _Nonnull)(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse))completionHandler;
-- (void)asyncPostDataFromURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams completionHandler:(void (^ _Nonnull)(NSData * _Nullable data, NSError * _Nullable error, NSTimeInterval downloadTime, NSHTTPURLResponse * _Nullable httpResponse))completionHandler;
+- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull NSURL *)url;
+- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams;
 - (void)cancelRequest;
 
 @end

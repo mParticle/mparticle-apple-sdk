@@ -1,9 +1,17 @@
 #import "MPSearchAdsAttribution.h"
+#import "mParticle.h"
+
 #if TARGET_OS_IOS == 1
     #import <iAd/ADClient.h>
 #endif
 
-@interface MPSearchAdsAttribution ()
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
+@interface MPSearchAdsAttribution () {
+    dispatch_queue_t messageQueue;
+}
 
 @property (nonatomic) NSDictionary *dictionary;
 
@@ -16,6 +24,7 @@
     self = [super init];
     if (self) {
         _dictionary = nil;
+        messageQueue = [MParticle messageQueue];
     }
     return self;
 }
@@ -51,7 +60,9 @@
     void(^onceCompletionBlock)(void) = ^(){
         if (!called) {
             called = YES;
-            completionHandler();
+            dispatch_async(messageQueue, ^{
+                completionHandler();
+            });
         }
     };
     

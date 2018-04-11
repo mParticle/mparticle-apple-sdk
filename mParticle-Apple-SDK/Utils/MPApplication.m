@@ -261,7 +261,14 @@ static NSString *kMPAppStoreReceiptString = nil;
 #if TARGET_OS_IOS == 1
 - (NSNumber *)badgeNumber {
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-    NSInteger appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
+    __block NSInteger appBadgeNumber = 0;
+    if ([NSThread isMainThread]) {
+        appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
+        });
+    }
     NSNumber *badgeNumber = appBadgeNumber != 0 ? @(appBadgeNumber) : nil;
     
     return badgeNumber;
@@ -278,7 +285,15 @@ static NSString *kMPAppStoreReceiptString = nil;
     if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        UIUserNotificationSettings *userNotificationSettings = [app currentUserNotificationSettings];
+        __block UIUserNotificationSettings *userNotificationSettings = nil;
+        if ([NSThread isMainThread]) {
+           userNotificationSettings = [app currentUserNotificationSettings];
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                userNotificationSettings = [app currentUserNotificationSettings];
+            });
+        }
+        
 #pragma clang diagnostic pop
         notificationTypes = @(userNotificationSettings.types);
     } else {

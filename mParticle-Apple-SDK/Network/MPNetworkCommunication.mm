@@ -318,76 +318,77 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
     connector.connectionId = connectionId;
     
-    [connector asyncGetDataFromURL:self.configURL
-                 completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                     __strong MPNetworkCommunication *strongSelf = weakSelf;
-                     if (!strongSelf) {
-                         completionHandler(NO, nil);
-                         return;
-                     }
-                     
+    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
+    NSData *data = response.data;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    
+    __strong MPNetworkCommunication *strongSelf = weakSelf;
+    if (!strongSelf) {
+        completionHandler(NO, nil);
+        return;
+    }
+    
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-                     if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                         [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                         backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                     }
+    if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+        backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
 #endif
-                     
-                     NSInteger responseCode = [httpResponse statusCode];
-                     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-                     
-                     if (responseCode == HTTPStatusCodeNotModified) {
-                         completionHandler(YES, nil);
-                         [self configRequestDidSucceed];
-                         strongSelf->retrievingConfig = NO;
-                         return;
-                     }
-                     
-                     NSDictionary *configurationDictionary = nil;
-                     MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-                     BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-                     
-                     if (!data && success) {
-                         completionHandler(NO, nil);
-                         strongSelf->retrievingConfig = NO;
-                         MPILogWarning(@"Failed config request");
-                         return;
-                     }
-                     
-                     NSDictionary *headersDictionary = [httpResponse allHeaderFields];
-                     NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
-                     success = success && [data length] > 0;
-                     
-                     if (!MPIsNull(eTag) && success) {
-                         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-                         userDefaults[kMPHTTPETagHeaderKey] = eTag;
-                     }
-                     
-                     if (success) {
-                         @try {
-                             NSError *serializationError = nil;
-                             configurationDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                             success = serializationError == nil && [configurationDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeConfig];
-                         } @catch (NSException *exception) {
-                             success = NO;
-                             responseCode = HTTPStatusCodeNoContent;
-                         }
-                     } else {
-                         if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-                             responseAction = MPNetworkResponseActionThrottle;
-                         }
-                     }
-                     
-                     [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
-                     
-                     completionHandler(success, configurationDictionary);
-                     
-                     if (success) {
-                         [self configRequestDidSucceed];
-                     }
-                     
-                     strongSelf->retrievingConfig = NO;
-                 }];
+    
+    NSInteger responseCode = [httpResponse statusCode];
+    MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+    
+    if (responseCode == HTTPStatusCodeNotModified) {
+        completionHandler(YES, nil);
+        [self configRequestDidSucceed];
+        strongSelf->retrievingConfig = NO;
+        return;
+    }
+    
+    NSDictionary *configurationDictionary = nil;
+    MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
+    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+    
+    if (!data && success) {
+        completionHandler(NO, nil);
+        strongSelf->retrievingConfig = NO;
+        MPILogWarning(@"Failed config request");
+        return;
+    }
+    
+    NSDictionary *headersDictionary = [httpResponse allHeaderFields];
+    NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
+    success = success && [data length] > 0;
+    
+    if (!MPIsNull(eTag) && success) {
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        userDefaults[kMPHTTPETagHeaderKey] = eTag;
+    }
+    
+    if (success) {
+        @try {
+            NSError *serializationError = nil;
+            configurationDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+            success = serializationError == nil && [configurationDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeConfig];
+        } @catch (NSException *exception) {
+            success = NO;
+            responseCode = HTTPStatusCodeNoContent;
+        }
+    } else {
+        if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
+            responseAction = MPNetworkResponseActionThrottle;
+        }
+    }
+    
+    [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
+    
+    completionHandler(success, configurationDictionary);
+    
+    if (success) {
+        [self configRequestDidSucceed];
+    }
+    
+    strongSelf->retrievingConfig = NO;
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
@@ -430,97 +431,97 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     __weak MPNetworkCommunication *weakSelf = self;
     NSDate *fetchSegmentsStartTime = [NSDate date];
     
-    [connector asyncGetDataFromURL:self.segmentURL
-                 completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
-                     __strong MPNetworkCommunication *strongSelf = weakSelf;
-                     if (!strongSelf) {
-                         completionHandler(NO, nil, elapsedTime, nil);
-                         return;
-                     }
-                     
+    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL];
+    NSData *data = response.data;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
+    __strong MPNetworkCommunication *strongSelf = weakSelf;
+    if (!strongSelf) {
+        completionHandler(NO, nil, elapsedTime, nil);
+        return;
+    }
+    
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-                     if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                         [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                         backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                     }
+    if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+        backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
 #endif
-                     
-                     if (!data) {
-                         completionHandler(NO, nil, elapsedTime, nil);
-                         return;
-                     }
-                     
-                     NSMutableArray<MPSegment *> *segments = nil;
-                     BOOL success = NO;
-                     strongSelf->retrievingSegments = NO;
-                     
-                     NSArray *segmentsList = nil;
-                     NSInteger responseCode = [httpResponse statusCode];
-                     success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
-                     
-                     if (success) {
-                         NSError *serializationError = nil;
-                         NSDictionary *segmentsDictionary = nil;
-                         
-                         @try {
-                             @try {
-                                 segmentsDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                                 success = serializationError == nil;
-                             } @catch (NSException *exception) {
-                                 segmentsDictionary = nil;
-                                 success = NO;
-                                 MPILogError(@"Segments Error: %@", [exception reason]);
-                             }
-                         } @catch (NSException *exception) {
-                             segmentsDictionary = nil;
-                             success = NO;
-                             MPILogError(@"Segments Error: %@", [exception reason]);
-                         }
-                         
-                         if (success) {
-                             segmentsList = segmentsDictionary[kMPSegmentListKey];
-                         }
-                         
-                         if (segmentsList.count > 0) {
-                             segments = [[NSMutableArray alloc] initWithCapacity:segmentsList.count];
-                             MPSegment *segment;
-                             
-                             for (NSDictionary *segmentDictionary in segmentsList) {
-                                 segment = [[MPSegment alloc] initWithDictionary:segmentDictionary];
-                                 
-                                 if (segment) {
-                                     [segments addObject:segment];
-                                 }
-                             }
-                         }
-                         
-                         MPILogVerbose(@"Segments Response Code: %ld", (long)responseCode);
-                     } else {
-                         MPILogWarning(@"Segments Error - Response Code: %ld", (long)responseCode);
-                     }
-                     
-                     if (segments.count == 0) {
-                         segments = nil;
-                     }
-                     
-                     NSError *segmentError = nil;
-                     if (responseCode == HTTPStatusCodeForbidden) {
-                         segmentError = [NSError errorWithDomain:@"mParticle Segments"
-                                                            code:responseCode
-                                                        userInfo:@{@"message":@"Segments not enabled for this org."}];
-                     }
-                     
-                     if (elapsedTime < timeout) {
-                         completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
-                     } else {
-                         segmentError = [NSError errorWithDomain:@"mParticle Segments"
-                                                            code:MPNetworkErrorDelayedSegments
-                                                        userInfo:@{@"message":@"It took too long to retrieve segments."}];
-                         
-                         completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
-                     }
-                 }];
+    
+    if (!data) {
+        completionHandler(NO, nil, elapsedTime, nil);
+        return;
+    }
+    
+    NSMutableArray<MPSegment *> *segments = nil;
+    BOOL success = NO;
+    strongSelf->retrievingSegments = NO;
+    
+    NSArray *segmentsList = nil;
+    NSInteger responseCode = [httpResponse statusCode];
+    success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
+    
+    if (success) {
+        NSError *serializationError = nil;
+        NSDictionary *segmentsDictionary = nil;
+        
+        @try {
+            @try {
+                segmentsDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+                success = serializationError == nil;
+            } @catch (NSException *exception) {
+                segmentsDictionary = nil;
+                success = NO;
+                MPILogError(@"Segments Error: %@", [exception reason]);
+            }
+        } @catch (NSException *exception) {
+            segmentsDictionary = nil;
+            success = NO;
+            MPILogError(@"Segments Error: %@", [exception reason]);
+        }
+        
+        if (success) {
+            segmentsList = segmentsDictionary[kMPSegmentListKey];
+        }
+        
+        if (segmentsList.count > 0) {
+            segments = [[NSMutableArray alloc] initWithCapacity:segmentsList.count];
+            MPSegment *segment;
+            
+            for (NSDictionary *segmentDictionary in segmentsList) {
+                segment = [[MPSegment alloc] initWithDictionary:segmentDictionary];
+                
+                if (segment) {
+                    [segments addObject:segment];
+                }
+            }
+        }
+        
+        MPILogVerbose(@"Segments Response Code: %ld", (long)responseCode);
+    } else {
+        MPILogWarning(@"Segments Error - Response Code: %ld", (long)responseCode);
+    }
+    
+    if (segments.count == 0) {
+        segments = nil;
+    }
+    
+    NSError *segmentError = nil;
+    if (responseCode == HTTPStatusCodeForbidden) {
+        segmentError = [NSError errorWithDomain:@"mParticle Segments"
+                                           code:responseCode
+                                       userInfo:@{@"message":@"Segments not enabled for this org."}];
+    }
+    
+    if (elapsedTime < timeout) {
+        completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
+    } else {
+        segmentError = [NSError errorWithDomain:@"mParticle Segments"
+                                           code:MPNetworkErrorDelayedSegments
+                                       userInfo:@{@"message":@"It took too long to retrieve segments."}];
+        
+        completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
+    }
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         __strong MPNetworkCommunication *strongSelf = weakSelf;
@@ -586,71 +587,72 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return;
     }
     
-    [connector asyncPostDataFromURL:self.eventURL
-                            message:uploadString
-                   serializedParams:zipUploadData
-                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                      __strong MPNetworkCommunication *strongSelf = weakSelf;
-                      
-                      if (!strongSelf) {
-                          completionHandler(NO, upload, nil, YES);
-                          return;
-                      }
-                      
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
+                                                                    message:uploadString
+                                                           serializedParams:zipUploadData];
+    NSData *data = response.data;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    
+    __strong MPNetworkCommunication *strongSelf = weakSelf;
+    
+    if (!strongSelf) {
+        completionHandler(NO, upload, nil, YES);
+        return;
+    }
+    
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                      }
+    if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+        backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
 #endif
-                      
-                      NSDictionary *responseDictionary = nil;
-                      MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-                      BOOL finished = index == uploads.count - 1;
-                      NSInteger responseCode = [httpResponse statusCode];
-                      BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-                      
-                      if (!data && success) {
-                          completionHandler(NO, upload, nil, finished);
-                          strongSelf->uploading = NO;
-                          return;
-                      }
-                      
-                      success = success && [data length] > 0;
-                      if (success) {
-                          NSError *serializationError = nil;
-                          
-                          @try {
-                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                              success = serializationError == nil && [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader];
-                              MPILogVerbose(@"Uploaded Message: %@\n", uploadString);
-                              MPILogVerbose(@"Upload Response Code: %ld", (long)responseCode);
-                          } @catch (NSException *exception) {
-                              responseDictionary = nil;
-                              success = NO;
-                              MPILogError(@"Uploads Error: %@", [exception reason]);
-                          }
-                      } else {
-                          if (responseCode == HTTPStatusCodeBadRequest) {
-                              responseAction = MPNetworkResponseActionDeleteBatch;
-                          } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-                              responseAction = MPNetworkResponseActionThrottle;
-                          }
-                          
-                          MPILogWarning(@"Uploads Error - Response Code: %ld", (long)responseCode);
-                      }
-                      
-                      MPILogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-                      
-                      [strongSelf processNetworkResponseAction:responseAction batchObject:upload httpResponse:httpResponse];
-                      
-                      completionHandler(success, upload, responseDictionary, finished);
-                      
-                      strongSelf->uploading = NO;
-                      if (!finished) {
-                          [strongSelf upload:uploads index:(index + 1) completionHandler:completionHandler];
-                      }
-                  }];
+    
+    NSDictionary *responseDictionary = nil;
+    MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
+    BOOL finished = index == uploads.count - 1;
+    NSInteger responseCode = [httpResponse statusCode];
+    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+    
+    if (!data && success) {
+        completionHandler(NO, upload, nil, finished);
+        strongSelf->uploading = NO;
+        return;
+    }
+    
+    success = success && [data length] > 0;
+    if (success) {
+        NSError *serializationError = nil;
+        
+        @try {
+            responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+            success = serializationError == nil && [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader];
+            MPILogVerbose(@"Uploaded Message: %@\n", uploadString);
+            MPILogVerbose(@"Upload Response Code: %ld", (long)responseCode);
+        } @catch (NSException *exception) {
+            responseDictionary = nil;
+            success = NO;
+            MPILogError(@"Uploads Error: %@", [exception reason]);
+        }
+    } else {
+        if (responseCode == HTTPStatusCodeBadRequest) {
+            responseAction = MPNetworkResponseActionDeleteBatch;
+        } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
+            responseAction = MPNetworkResponseActionThrottle;
+        }
+        
+        MPILogWarning(@"Uploads Error - Response Code: %ld", (long)responseCode);
+    }
+    
+    MPILogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+    
+    [strongSelf processNetworkResponseAction:responseAction batchObject:upload httpResponse:httpResponse];
+    
+    completionHandler(success, upload, responseDictionary, finished);
+    
+    strongSelf->uploading = NO;
+    if (!finished) {
+        [strongSelf upload:uploads index:(index + 1) completionHandler:completionHandler];
+    }
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
@@ -709,97 +711,97 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSDictionary *dictionary = [identityRequest dictionaryRepresentation];
     NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     NSString *jsonRequest = [[NSString alloc] initWithData:data
-                                                     encoding:NSUTF8StringEncoding];
-
+                                                  encoding:NSUTF8StringEncoding];
+    
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
-    [connector asyncPostDataFromURL:url
-                            message:nil
-                   serializedParams:data
-                  completionHandler:^(NSData *data, NSError *error, NSTimeInterval downloadTime, NSHTTPURLResponse *httpResponse) {
-                      __strong MPNetworkCommunication *strongSelf = weakSelf;
-                      
-                      if (!strongSelf) {
-                          if (completion) {
-                              MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:nil httpCode:0];
-                              completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeUnknown userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
-                          }
-                
-                          return;
-                      }
-                      
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:url
+                                                                    message:nil
+                                                           serializedParams:data];
+    NSData *responseData = response.data;
+    NSError *error = response.error;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    
+    __strong MPNetworkCommunication *strongSelf = weakSelf;
+    
+    if (!strongSelf) {
+        if (completion) {
+            MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:nil httpCode:0];
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeUnknown userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
+        }
+        
+        return;
+    }
+    
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-                      if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                          [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
-                          backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-                      }
+    if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+        [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
+        backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    }
 #endif
-                      
-                      NSDictionary *responseDictionary = nil;
-                      NSString *responseString = nil;
-                      NSInteger responseCode = [httpResponse statusCode];
-                      BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-
-                      success = success && [data length] > 0;
-
-                      NSError *serializationError = nil;
-                      
-                      MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
-                      
-                      if (success) {
-                          @try {
-                              responseString = [[NSString alloc] initWithData:data
-                                                                     encoding:NSUTF8StringEncoding];
-                              responseDictionary = [NSJSONSerialization JSONObjectWithData:data
-                                                                                   options:0
-                                                                                     error:&serializationError];
-                          } @catch (NSException *exception) {
-                              responseDictionary = nil;
-                              success = NO;
-                              MPILogError(@"Identity response serialization error: %@", [exception reason]);
-                          }
-                      }
-                      
-                      MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-                    
-                      strongSelf->identifying = NO;
-                      
-                      if (success) {
-                          if (responseString) {
-                              MPILogVerbose(@"Identity response:\n%@", responseString);
-                          }
-                          BOOL isModify = [identityRequest isMemberOfClass:[MPIdentityHTTPModifyRequest class]];
-                          if (isModify) {
-                              if (completion) {
-                                  completion([[MPIdentityHTTPModifySuccessResponse alloc] init], nil);
-                              }
-                          } else {
-                              MPIdentityHTTPSuccessResponse *response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:responseDictionary];
-                              _context = response.context;
-                              if (completion) {
-                                  completion(response, nil);
-                              }
-                          }
-                      } else {
-                          if (completion) {
-                              MPIdentityHTTPErrorResponse *errorResponse;
-                              if (error) {
-                                  if (error.code == MPConnectivityErrorCodeNoConnection) {
-                                      errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientNoConnection message:@"Device has no network connectivity." error:error];
-                                  } else if ([error.domain isEqualToString: NSURLErrorDomain] ){
-                                      errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeSSLError message:@"Failed to establish SSL connection." error:error];
-                                  } else {
-                                      errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown message:@"An unknown client-side error has occured" error:error];
-                                  }
-                              } else {
-                                  errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
-                              }
-                              completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:errorResponse.code userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
-                          }
-                      }
-                      
-                      
-                  }];
+    
+    NSDictionary *responseDictionary = nil;
+    NSString *responseString = nil;
+    NSInteger responseCode = [httpResponse statusCode];
+    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+    
+    success = success && [responseData length] > 0;
+    
+    NSError *serializationError = nil;
+    
+    MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
+    
+    if (success) {
+        @try {
+            responseString = [[NSString alloc] initWithData:responseData
+                                                   encoding:NSUTF8StringEncoding];
+            responseDictionary = [NSJSONSerialization JSONObjectWithData:responseData
+                                                                 options:0
+                                                                   error:&serializationError];
+        } @catch (NSException *exception) {
+            responseDictionary = nil;
+            success = NO;
+            MPILogError(@"Identity response serialization error: %@", [exception reason]);
+        }
+    }
+    
+    MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+    
+    strongSelf->identifying = NO;
+    
+    if (success) {
+        if (responseString) {
+            MPILogVerbose(@"Identity response:\n%@", responseString);
+        }
+        BOOL isModify = [identityRequest isMemberOfClass:[MPIdentityHTTPModifyRequest class]];
+        if (isModify) {
+            if (completion) {
+                completion([[MPIdentityHTTPModifySuccessResponse alloc] init], nil);
+            }
+        } else {
+            MPIdentityHTTPSuccessResponse *response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:responseDictionary];
+            _context = response.context;
+            if (completion) {
+                completion(response, nil);
+            }
+        }
+    } else {
+        if (completion) {
+            MPIdentityHTTPErrorResponse *errorResponse;
+            if (error) {
+                if (error.code == MPConnectivityErrorCodeNoConnection) {
+                    errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientNoConnection message:@"Device has no network connectivity." error:error];
+                } else if ([error.domain isEqualToString: NSURLErrorDomain] ){
+                    errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeSSLError message:@"Failed to establish SSL connection." error:error];
+                } else {
+                    errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeUnknown message:@"An unknown client-side error has occured" error:error];
+                }
+            } else {
+                errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:responseDictionary httpCode:responseCode];
+            }
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:errorResponse.code userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
+        }
+    }
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
@@ -811,7 +813,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             strongSelf->uploading = NO;
             strongSelf->identifying = NO;
         }
-
+        
         if (connector.active) {
             MPILogWarning(@"Failed to call identify API with request: %@", dictionary);
             if (completion) {

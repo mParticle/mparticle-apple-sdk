@@ -21,6 +21,10 @@
 #import "MPIUserDefaults.h"
 #import "MPForwardQueueParameters.h"
 
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
 
@@ -878,17 +882,20 @@
     
     key = @"Dinosaur";
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
-    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
-                userAttributeKey:key
-                           value:values
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
-                          XCTAssertNotNil(kit);
-                          
-                          MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
-                          XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
-                          
-                          [expectation fulfill];
-                      }];
+
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                    userAttributeKey:key
+                               value:values
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+                              XCTAssertNotNil(kit);
+                              
+                              MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+                              XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+                              
+                              [expectation fulfill];
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
@@ -1386,20 +1393,22 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"subscription_success" type:MPEventTypeTransaction];
     event.info = @{@"plan":@"premium", @"plan_color":@"gold", @"boolean":@YES};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
-                              
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 3);
+                                  
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1565,18 +1574,20 @@
     transactionAttributes.transactionId = @"42";
     commerceEvent.transactionAttributes = transactionAttributes;
 
-    [kitContainer forwardCommerceEventCall:commerceEvent
-                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                    if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                        MPEvent *event = kitFilter.forwardEvent;
-                                        XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
-                                        XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
-                                        XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
-                                        XCTAssertEqualObjects(event.name, @"af_add_to_cart");
-                                        
-                                        [expectation fulfill];
-                                    }
-                                }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardCommerceEventCall:commerceEvent
+                                    kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                        if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                            MPEvent *event = kitFilter.forwardEvent;
+                                            XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
+                                            XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
+                                            XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
+                                            XCTAssertEqualObjects(event.name, @"af_add_to_cart");
+                                            
+                                            [expectation fulfill];
+                                        }
+                                    }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1666,25 +1677,27 @@
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription"};
     __block NSMutableArray<NSString *> *foundEventNames = [NSMutableArray arrayWithCapacity:2];
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
-                              
-                              [foundEventNames addObject:forwardEvent.name];
-                              
-                              if (foundEventNames.count == 2) {
-                                  XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
-                                  XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
-                                  [expectation fulfill];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 2);
+                                  
+                                  [foundEventNames addObject:forwardEvent.name];
+                                  
+                                  if (foundEventNames.count == 2) {
+                                      XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
+                                      XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
+                                      [expectation fulfill];
+                                  }
                               }
-                          }
-                      }];
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1749,18 +1762,20 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription", @"gender":@"female"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
+                                  XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1816,18 +1831,20 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"outcome":@"not_new_subscription"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
+                                  XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1887,21 +1904,23 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.info = @{@"plan":@"premium"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
-                              
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 2);
+                                  XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
+                                  
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1961,21 +1980,23 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.info = @{@"test_description":@"this is a description"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 1);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
-                              
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 1);
+                                  XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
+                                  
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -2070,13 +2091,15 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
     
-    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
-        if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-            XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
-            
-            [expectation fulfill];
-        }
-    }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+            if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
+                
+                [expectation fulfill];
+            }
+        }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
