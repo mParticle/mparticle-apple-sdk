@@ -630,23 +630,27 @@ static BOOL appBackgrounded = NO;
     MPILogVerbose(@"Application Did Finish Launching");
 }
 
-- (void)processOpenSessionsIncludingCurrent:(BOOL)includeCurrentSession completionHandler:(void (^)(BOOL success))completionHandler {
+- (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(void (^)(BOOL success))completionHandler {
     [self endUploadTimer];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
     [persistence fetchSessions:^(NSMutableArray<MPSession *> *sessions) {
-        if (includeCurrentSession) {
+        if (endCurrentSession) {
             self.session.endTime = [[NSDate date] timeIntervalSince1970];
             [persistence updateSession:self.session];
+            self.session = nil;
+            if (self.eventSet.count == 0) {
+                self.eventSet = nil;
+            }
         } else {
             NSPredicate *predicate = [NSPredicate predicateWithFormat:@"sessionId == %ld", self.session.sessionId];
             MPSession *currentSession = [[sessions filteredArrayUsingPredicate:predicate] lastObject];
             [sessions removeObject:currentSession];
-            
-            for (MPSession *openSession in sessions) {
-                [self broadcastSessionDidEnd:openSession];
-            }
+        }
+        
+        for (MPSession *openSession in sessions) {
+            [self broadcastSessionDidEnd:openSession];
         }
         
         [self uploadOpenSessions:sessions completionHandler:completionHandler];
@@ -1026,13 +1030,11 @@ static BOOL appBackgrounded = NO;
         
         __strong MPBackendController *strongSelf = weakSelf;
         
-            [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
-                                   session = nil;
-                                   
-                                   if (!success) {
-                                       invokeCompletionHandler(NO);
-                                   }
-                               }];
+        [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
+            session = nil;
+
+            invokeCompletionHandler(success);
+        }];
    
     }];
 }
@@ -1269,17 +1271,11 @@ static BOOL appBackgrounded = NO;
                                                   void(^processSession)(NSTimeInterval) = ^(NSTimeInterval timeout) {
                                                       [strongSelf endBackgroundTimer];
                                                       strongSelf.session.backgroundTime += timeout;
+                                                      [[MPPersistenceController sharedInstance] updateSession:strongSelf->_session];
                                                       
-                                                      [strongSelf processOpenSessionsIncludingCurrent:YES
+                                                      [strongSelf processOpenSessionsEndingCurrent:YES
                                                                                     completionHandler:^(BOOL success) {
                                                                                         [MPStateMachine setRunningInBackground:NO];
-                                                                                        [strongSelf broadcastSessionDidEnd:strongSelf->_session];
-                                                                                        strongSelf->_session = nil;
-                                                                                        
-                                                                                        if (strongSelf.eventSet.count == 0) {
-                                                                                            strongSelf->_eventSet = nil;
-                                                                                            
-                                                                                        }
                                                                                         
                                                                                         MPILogDebug(@"SDK has ended background activity.");
                                                                                         [strongSelf endBackgroundTask];
@@ -2366,7 +2362,7 @@ static BOOL appBackgrounded = NO;
             __strong MPBackendController *strongSelf = weakSelf;
             _initializationStatus = MPInitializationStatusStarted;
             [strongSelf processPendingUploads];
-            [strongSelf processOpenSessionsIncludingCurrent:NO completionHandler:^(BOOL success) {}];
+            [strongSelf processOpenSessionsEndingCurrent:NO completionHandler:^(BOOL success) {}];
             
             [strongSelf beginUploadTimer];
             

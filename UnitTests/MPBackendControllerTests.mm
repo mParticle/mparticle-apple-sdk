@@ -62,7 +62,7 @@
 - (void)parseResponseHeader:(NSDictionary *)responseDictionary session:(MPSession *)session;
 - (NSNumber *)previousSessionSuccessfullyClosed;
 - (void)setPreviousSessionSuccessfullyClosed:(NSNumber *)previousSessionSuccessfullyClosed;
-- (void)processOpenSessionsIncludingCurrent:(BOOL)includeCurrentSession completionHandler:(dispatch_block_t)completionHandler;
+- (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(dispatch_block_t)completionHandler;
 - (void)processPendingArchivedMessages;
 - (void)resetUserIdentitiesFirstTimeUseFlag;
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession;
