@@ -921,7 +921,9 @@ static BOOL appBackgrounded = NO;
     }
 #endif
     
-    [self requestConfig:nil];
+    dispatch_async(messageQueue, ^{
+        [self requestConfig:nil];
+    });
 }
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
