@@ -55,6 +55,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, strong, nullable) NSString *customUserAgent;
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
 @property (atomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
+@property (atomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end

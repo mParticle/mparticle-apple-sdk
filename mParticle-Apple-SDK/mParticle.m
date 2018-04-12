@@ -82,6 +82,12 @@ NSString *const kMPStateKey = @"state";
 
 @end
 
+@interface MParticleOptions () {
+    MPILogLevel _logLevel;
+}
+@property (nonatomic, assign, readwrite) BOOL isLogLevelSet;
+@end
+
 @implementation MParticleOptions
 
 - (instancetype)init
@@ -92,6 +98,8 @@ NSString *const kMPStateKey = @"state";
         _collectUserAgent = YES;
         _automaticSessionTracking = YES;
         _startKitsAsync = NO;
+        _logLevel = MPILogLevelNone;
+        _isLogLevelSet = NO;
     }
     return self;
 }
@@ -101,6 +109,15 @@ NSString *const kMPStateKey = @"state";
     options.apiKey = apiKey;
     options.apiSecret = secret;
     return options;
+}
+
+- (void)setLogLevel:(MPILogLevel)logLevel {
+    _logLevel = logLevel;
+    _isLogLevelSet = YES;
+}
+
+- (MPILogLevel)logLevel {
+    return _logLevel;
 }
 
 @end
@@ -449,6 +466,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)startWithOptions:(MParticleOptions *)options {
+    if (options.isLogLevelSet) {
+        self.logLevel = options.logLevel;
+    }
+    
     self.options = options;
     
     NSString *apiKey = options.apiKey;
