@@ -1493,6 +1493,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveForwardRecord:(MPForwardRecord *)forwardRecord {
+    
     sqlite3_stmt *preparedStatement;
     const string sqlStatement = "INSERT INTO forwarding_records (forwarding_data, mpid) VALUES (?, ?)";
     

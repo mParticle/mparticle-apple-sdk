@@ -316,7 +316,9 @@
                 MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification
                                                                                    execStatus:execStatus];
                 
-                [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                dispatch_async([MParticle messageQueue], ^{
+                    [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                });
                 
                 MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
             }
