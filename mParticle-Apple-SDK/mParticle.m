@@ -42,6 +42,10 @@ NSString *const kMParticleFirstRun = @"firstrun";
 NSString *const kMPMethodName = @"$MethodName";
 NSString *const kMPStateKey = @"state";
 
+@interface MPIdentityApi ()
+- (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
+@end
+
 @interface MPKitContainer ()
 - (BOOL)kitsInitialized;
 @end
@@ -564,12 +568,14 @@ NSString *const kMPStateKey = @"state";
                                identifyRequest = [MPIdentityApiRequest requestWithUser:user];
                            }
                            
-                           [strongSelf.identity identify:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+                           [strongSelf.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
                                if (error) {
                                    MPILogError(@"Identify request failed with error: %@", error);
                                }
                                if (options.onIdentifyComplete) {
-                                   options.onIdentifyComplete(apiResult, error);
+                                   dispatch_async(dispatch_get_main_queue(), ^{
+                                       options.onIdentifyComplete(apiResult, error);
+                                   });
                                }
                            }];
                            

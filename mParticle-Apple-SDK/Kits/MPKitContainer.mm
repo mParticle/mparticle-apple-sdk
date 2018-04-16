@@ -86,7 +86,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 linkInfo[attributionResult.kitCode] = attributionResult;
             }
             if ([MParticle sharedInstance].options.onAttributionComplete) {
-                [MParticle sharedInstance].options.onAttributionComplete(attributionResult, error);
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MParticle sharedInstance].options.onAttributionComplete(attributionResult, error);
+                });
+                
             }
         } copy];
         

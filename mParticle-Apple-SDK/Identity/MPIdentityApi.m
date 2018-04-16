@@ -32,6 +32,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end
@@ -236,10 +237,23 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     }
 }
 
-- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
+- (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
     [_apiManager identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
         [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
     }];
+}
+
+- (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
+    MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(apiResult, error);
+            });
+        }
+    };
+    dispatch_async([MParticle messageQueue], ^{
+        [self identifyNoDispatch:identifyRequest completion:wrappedCompletion];
+    });
 }
 
 - (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion {
@@ -247,9 +261,21 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)login:(MPIdentityApiRequest *)loginRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
-    }];
+    MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(apiResult, error);
+            });
+        }
+    };
+    
+    dispatch_async([MParticle messageQueue], ^{
+        
+        [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+            [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
+        }];
+        
+    });
 }
 
 - (void)loginWithCompletion:(nullable MPIdentityApiResultCallback)completion {
@@ -257,9 +283,19 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)logout:(MPIdentityApiRequest *)logoutRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];
-    }];
+    MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(apiResult, error);
+            });
+        }
+    };
+    
+    dispatch_async([MParticle messageQueue], ^{
+        [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+            [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
+        }];
+    });
 }
 
 - (void)logoutWithCompletion:(nullable MPIdentityApiResultCallback)completion {
@@ -267,9 +303,18 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    [_apiManager modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
-        [self onModifyRequestComplete:modifyRequest httpResponse:httpResponse completion:completion error: error];
-    }];
+    MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        if (completion) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                completion(apiResult, error);
+            });
+        }
+    };
+    dispatch_async([MParticle messageQueue], ^{
+        [_apiManager modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+            [self onModifyRequestComplete:modifyRequest httpResponse:httpResponse completion:wrappedCompletion error: error];
+        }];
+    });
 }
 
 @end
