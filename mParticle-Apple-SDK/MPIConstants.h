@@ -192,7 +192,6 @@ extern NSString * _Nonnull const kMPRemoteConfigCustomModuleDefaultKey;
 extern NSString * _Nonnull const kMPRemoteConfigCustomSettingsKey;
 extern NSString * _Nonnull const kMPRemoteConfigSandboxModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigSessionTimeoutKey;
-extern NSString * _Nonnull const kMPRemoteConfigUploadIntervalKey;
 extern NSString * _Nonnull const kMPRemoteConfigPushNotificationDictionaryKey;
 extern NSString * _Nonnull const kMPRemoteConfigPushNotificationModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigPushNotificationTypeKey;

@@ -49,12 +49,6 @@
         [MParticle sharedInstance].sessionTimeout = [auxNumber doubleValue];
     }
     
-    // Upload interval
-    auxNumber = !MPIsNull(_configuration[kMPRemoteConfigUploadIntervalKey]) ? _configuration[kMPRemoteConfigUploadIntervalKey] : nil;
-    if (auxNumber != nil) {
-        [MParticle sharedInstance].uploadInterval = [auxNumber doubleValue];
-    }
-    
 #if TARGET_OS_IOS == 1
     // Push notifications
     NSDictionary *auxDictionary = !MPIsNull(_configuration[kMPRemoteConfigPushNotificationDictionaryKey]) ? _configuration[kMPRemoteConfigPushNotificationDictionaryKey] : nil;

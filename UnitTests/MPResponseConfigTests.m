@@ -23,8 +23,7 @@
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeIgnore,
-                                    kMPRemoteConfigSessionTimeoutKey:@112,
-                                    kMPRemoteConfigUploadIntervalKey:@42};
+                                    kMPRemoteConfigSessionTimeoutKey:@112};
     
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
     XCTAssertNotNil(responseConfig, @"Should not have been nil.");
@@ -53,8 +52,7 @@
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigSessionTimeoutKey:@112,
-                                    kMPRemoteConfigUploadIntervalKey:@42};
+                                    kMPRemoteConfigSessionTimeoutKey:@112};
     
     XCTAssertNil(stateMachine.customModules);
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO];
@@ -73,8 +71,7 @@
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigSessionTimeoutKey:@112,
-                                    kMPRemoteConfigUploadIntervalKey:@42};
+                                    kMPRemoteConfigSessionTimeoutKey:@112};
     
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
 

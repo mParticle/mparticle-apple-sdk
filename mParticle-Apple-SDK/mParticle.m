@@ -84,8 +84,10 @@ NSString *const kMPStateKey = @"state";
 
 @interface MParticleOptions () {
     MPILogLevel _logLevel;
+    NSTimeInterval _uploadInterval;
 }
 @property (nonatomic, assign, readwrite) BOOL isLogLevelSet;
+@property (nonatomic, assign, readwrite) BOOL isUploadIntervalSet;
 @end
 
 @implementation MParticleOptions
@@ -100,6 +102,7 @@ NSString *const kMPStateKey = @"state";
         _startKitsAsync = NO;
         _logLevel = MPILogLevelNone;
         _isLogLevelSet = NO;
+        _isUploadIntervalSet = NO;
     }
     return self;
 }
@@ -118,6 +121,15 @@ NSString *const kMPStateKey = @"state";
 
 - (MPILogLevel)logLevel {
     return _logLevel;
+}
+
+- (void)setUploadInterval:(NSTimeInterval)uploadInterval {
+    _uploadInterval = uploadInterval;
+    _isUploadIntervalSet = YES;
+}
+
+- (NSTimeInterval)uploadInterval {
+    return _uploadInterval;
 }
 
 @end
@@ -468,6 +480,10 @@ NSString *const kMPStateKey = @"state";
 - (void)startWithOptions:(MParticleOptions *)options {
     if (options.isLogLevelSet) {
         self.logLevel = options.logLevel;
+    }
+    
+    if (options.isUploadIntervalSet) {
+        self.uploadInterval = options.uploadInterval;
     }
     
     self.options = options;

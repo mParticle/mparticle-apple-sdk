@@ -153,7 +153,6 @@ NSString *const kMPRemoteConfigCustomModuleDefaultKey = @"d";
 NSString *const kMPRemoteConfigCustomSettingsKey = @"cs";
 NSString *const kMPRemoteConfigSandboxModeKey = @"dbg";
 NSString *const kMPRemoteConfigSessionTimeoutKey = @"stl";
-NSString *const kMPRemoteConfigUploadIntervalKey = @"uitl";
 NSString *const kMPRemoteConfigPushNotificationDictionaryKey = @"pn";
 NSString *const kMPRemoteConfigPushNotificationModeKey = @"pnm";
 NSString *const kMPRemoteConfigPushNotificationTypeKey = @"rnt";
