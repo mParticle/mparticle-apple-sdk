@@ -56,9 +56,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 @end
 
 @interface MPNetworkCommunication() {
-    BOOL retrievingConfig;
     BOOL retrievingSegments;
-    BOOL uploading;
     BOOL identifying;
 }
 
@@ -88,9 +86,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return nil;
     }
     
-    retrievingConfig = NO;
     retrievingSegments = NO;
-    uploading = NO;
     identifying = NO;
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -251,12 +247,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 #pragma mark Notification handlers
 - (void)handleReachabilityChanged:(NSNotification *)notification {
-    retrievingConfig = retrievingSegments = uploading = NO;
+    retrievingSegments = NO;
 }
 
 #pragma mark Public accessors
 - (BOOL)inUse {
-    return retrievingConfig || retrievingSegments || uploading;
+    return retrievingSegments;
 }
 
 - (BOOL)retrievingSegments {
@@ -289,11 +285,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return;
     }
     
-    if (retrievingConfig) {
-        return;
-    }
-    
-    retrievingConfig = YES;
     __weak MPNetworkCommunication *weakSelf = self;
     
     MPILogVerbose(@"Starting config request");
@@ -303,11 +294,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            __strong MPNetworkCommunication *strongSelf = weakSelf;
-            if (strongSelf) {
-                strongSelf->retrievingConfig = NO;
-            }
-            
             [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
@@ -341,7 +327,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     if (responseCode == HTTPStatusCodeNotModified) {
         completionHandler(YES, nil);
         [self configRequestDidSucceed];
-        strongSelf->retrievingConfig = NO;
         return;
     }
     
@@ -351,7 +336,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     if (!data && success) {
         completionHandler(NO, nil);
-        strongSelf->retrievingConfig = NO;
         MPILogWarning(@"Failed config request");
         return;
     }
@@ -388,7 +372,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         [self configRequestDidSucceed];
     }
     
-    strongSelf->retrievingConfig = NO;
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
@@ -401,11 +384,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
         
         [connector cancelRequest];
-        
-        __strong MPNetworkCommunication *strongSelf = weakSelf;
-        if (strongSelf) {
-            strongSelf->retrievingConfig = NO;
-        }
     });
 }
 
@@ -543,11 +521,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 - (void)upload:(NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler {
-    if (uploading) {
-        return;
-    }
-    
-    uploading = YES;
     __weak MPNetworkCommunication *weakSelf = self;
     
 #if !defined(MPARTICLE_APP_EXTENSIONS)
@@ -555,11 +528,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     backgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            __strong MPNetworkCommunication *strongSelf = weakSelf;
-            if (strongSelf) {
-                strongSelf->uploading = NO;
-            }
-            
             [[UIApplication sharedApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
@@ -583,7 +551,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     } else {
         [self processNetworkResponseAction:MPNetworkResponseActionDeleteBatch batchObject:upload];
         completionHandler(NO, upload, nil, YES);
-        uploading = NO;
         return;
     }
     
@@ -615,7 +582,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     if (!data && success) {
         completionHandler(NO, upload, nil, finished);
-        strongSelf->uploading = NO;
         return;
     }
     
@@ -649,7 +615,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     completionHandler(success, upload, responseDictionary, finished);
     
-    strongSelf->uploading = NO;
     if (!finished) {
         [strongSelf upload:uploads index:(index + 1) completionHandler:completionHandler];
     }
@@ -662,11 +627,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         if (connector.active) {
             MPILogWarning(@"Failed Uploading Source Batch Id: %@", upload.uuid);
             completionHandler(NO, upload, nil, YES);
-        }
-        
-        __strong MPNetworkCommunication *strongSelf = weakSelf;
-        if (strongSelf) {
-            strongSelf->uploading = NO;
         }
         
         [connector cancelRequest];
@@ -810,7 +770,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         __strong MPNetworkCommunication *strongSelf = weakSelf;
         
         if (strongSelf) {
-            strongSelf->uploading = NO;
             strongSelf->identifying = NO;
         }
         
