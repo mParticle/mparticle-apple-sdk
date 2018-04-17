@@ -444,14 +444,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         NSDictionary *segmentsDictionary = nil;
         
         @try {
-            @try {
-                segmentsDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                success = serializationError == nil;
-            } @catch (NSException *exception) {
-                segmentsDictionary = nil;
-                success = NO;
-                MPILogError(@"Segments Error: %@", [exception reason]);
-            }
+            segmentsDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+            success = serializationError == nil;
         } @catch (NSException *exception) {
             segmentsDictionary = nil;
             success = NO;
