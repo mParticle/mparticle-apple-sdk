@@ -57,6 +57,27 @@ NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
 NSString *const kMPForwardStatsRecord = @"fsr";
 
+// Consent
+NSString *const kMPConsentState = @"con";
+
+// GDPR Consent
+NSString *const kMPConsentStateGDPR = @"gdpr";
+
+NSString *const kMPConsentStateGDPRConsented = @"c";
+NSString *const kMPConsentStateGDPRDocument = @"d";
+NSString *const kMPConsentStateGDPRTimestamp = @"ts";
+NSString *const kMPConsentStateGDPRLocation = @"l";
+NSString *const kMPConsentStateGDPRHardwareId = @"h";
+
+// Consent serialization
+NSString *const kMPConsentStateKey = @"consent_state";
+NSString *const kMPConsentStateGDPRKey = @"gdpr";
+NSString *const kMPConsentStateGDPRConsentedKey = @"consented";
+NSString *const kMPConsentStateGDPRDocumentKey = @"document";
+NSString *const kMPConsentStateGDPRTimestampKey = @"timestamp";
+NSString *const kMPConsentStateGDPRLocationKey = @"location";
+NSString *const kMPConsentStateGDPRHardwareIdKey = @"hardware_id";
+
 // Push Notifications
 NSString *const kMPDeviceTokenKey = @"to";
 NSString *const kMPPushStatusKey = @"r";
