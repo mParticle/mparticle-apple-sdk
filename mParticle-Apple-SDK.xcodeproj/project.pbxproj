@@ -456,6 +456,10 @@
 		DB678C381F180E130015587D /* MPUserIdentityChange.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C341F180E0A0015587D /* MPUserIdentityChange.m */; };
 		DB678C3B1F1817E70015587D /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */; };
 		DB678C3C1F1817EA0015587D /* MPUserIdentityChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */; };
+		DB71C5942086696E00D1A3DD /* MPConsentState.h in Headers */ = {isa = PBXBuildFile; fileRef = DB71C5922086696E00D1A3DD /* MPConsentState.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB71C5952086696E00D1A3DD /* MPConsentState.h in Headers */ = {isa = PBXBuildFile; fileRef = DB71C5922086696E00D1A3DD /* MPConsentState.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB71C5962086696E00D1A3DD /* MPConsentState.m in Sources */ = {isa = PBXBuildFile; fileRef = DB71C5932086696E00D1A3DD /* MPConsentState.m */; };
+		DB71C5972086696E00D1A3DD /* MPConsentState.m in Sources */ = {isa = PBXBuildFile; fileRef = DB71C5932086696E00D1A3DD /* MPConsentState.m */; };
 		DB7ABA161DA6E69900367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
 		DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
 		DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
@@ -470,10 +474,18 @@
 		DBA894671F17CBE6005B21FB /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */; };
 		DBA894681F17CBEE005B21FB /* MPIdentityDTO.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */; };
 		DBA894691F17CBF1005B21FB /* MPIdentityDTO.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */; };
+		DBAE13A620866AEA00A982B3 /* MPGDPRConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = DBAE13A420866AEA00A982B3 /* MPGDPRConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBAE13A720866AEA00A982B3 /* MPGDPRConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = DBAE13A420866AEA00A982B3 /* MPGDPRConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBAE13A820866AEA00A982B3 /* MPGDPRConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = DBAE13A520866AEA00A982B3 /* MPGDPRConsent.m */; };
+		DBAE13A920866AEA00A982B3 /* MPGDPRConsent.m in Sources */ = {isa = PBXBuildFile; fileRef = DBAE13A520866AEA00A982B3 /* MPGDPRConsent.m */; };
 		DBB491611DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBB491621DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBB491631DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */; };
 		DBB491641DA4192E002F46BD /* NSArray+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */; };
+		DBC78E1F2087A5D900210806 /* MPConsentStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC78E1E2087A5D900210806 /* MPConsentStateTests.m */; };
+		DBC78E202087A5D900210806 /* MPConsentStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC78E1E2087A5D900210806 /* MPConsentStateTests.m */; };
+		DBC78E222087BB0E00210806 /* MPGDPRConsentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */; };
+		DBC78E232087BB2800210806 /* MPGDPRConsentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */; };
 		DBF57B2E1F3A4D9D00A809CC /* MPKitAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = DBF57B2C1F3A4D9D00A809CC /* MPKitAPI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBF57B2F1F3A4D9D00A809CC /* MPKitAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = DBF57B2C1F3A4D9D00A809CC /* MPKitAPI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBF57B301F3A4D9D00A809CC /* MPKitAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = DBF57B2D1F3A4D9D00A809CC /* MPKitAPI.m */; };
@@ -738,6 +750,8 @@
 		DB678C331F180E0A0015587D /* MPUserIdentityChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUserIdentityChange.h; sourceTree = "<group>"; };
 		DB678C341F180E0A0015587D /* MPUserIdentityChange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChange.m; sourceTree = "<group>"; };
 		DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
+		DB71C5922086696E00D1A3DD /* MPConsentState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConsentState.h; sourceTree = "<group>"; };
+		DB71C5932086696E00D1A3DD /* MPConsentState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentState.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
 		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
 		DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleOptionsTests.m; sourceTree = "<group>"; };
@@ -746,8 +760,12 @@
 		DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConvertJSTests.m; sourceTree = "<group>"; };
 		DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityDTO.h; path = Identity/MPIdentityDTO.h; sourceTree = "<group>"; };
 		DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityDTO.m; path = Identity/MPIdentityDTO.m; sourceTree = "<group>"; };
+		DBAE13A420866AEA00A982B3 /* MPGDPRConsent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPGDPRConsent.h; sourceTree = "<group>"; };
+		DBAE13A520866AEA00A982B3 /* MPGDPRConsent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPGDPRConsent.m; sourceTree = "<group>"; };
 		DBB4915F1DA4192E002F46BD /* NSArray+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+MPCaseInsensitive.h"; sourceTree = "<group>"; };
 		DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSArray+MPCaseInsensitive.m"; sourceTree = "<group>"; };
+		DBC78E1E2087A5D900210806 /* MPConsentStateTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentStateTests.m; sourceTree = "<group>"; };
+		DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPGDPRConsentTests.m; sourceTree = "<group>"; };
 		DBF57B2C1F3A4D9D00A809CC /* MPKitAPI.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitAPI.h; sourceTree = "<group>"; };
 		DBF57B2D1F3A4D9D00A809CC /* MPKitAPI.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPKitAPI.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -855,6 +873,7 @@
 			isa = PBXGroup;
 			children = (
 				04F643F21EFC03DA000FADE3 /* Identity */,
+				DB71C5912086694400D1A3DD /* Consent */,
 				C9DD1C6C1D8A112B00D3ABBE /* AppNotifications */,
 				C9DD1C731D8A112B00D3ABBE /* Custom Modules */,
 				C9DD1C7A1D8A112B00D3ABBE /* Data Model */,
@@ -1223,8 +1242,21 @@
 				DB00F6371F4E11380070A74B /* MPKitAPITests.m */,
 				DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */,
 				DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */,
+				DBC78E1E2087A5D900210806 /* MPConsentStateTests.m */,
+				DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */,
 			);
 			path = UnitTests;
+			sourceTree = "<group>";
+		};
+		DB71C5912086694400D1A3DD /* Consent */ = {
+			isa = PBXGroup;
+			children = (
+				DB71C5922086696E00D1A3DD /* MPConsentState.h */,
+				DB71C5932086696E00D1A3DD /* MPConsentState.m */,
+				DBAE13A420866AEA00A982B3 /* MPGDPRConsent.h */,
+				DBAE13A520866AEA00A982B3 /* MPGDPRConsent.m */,
+			);
+			path = Consent;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -1239,6 +1271,7 @@
 				04F643F81EFC0487000FADE3 /* MPIdentityApi.h in Headers */,
 				C935A6D41D8A2DED00A1EE2F /* MPMessage.h in Headers */,
 				C935A7361D8A2E2200A1EE2F /* MPNetworkPerformance.h in Headers */,
+				DB71C5952086696E00D1A3DD /* MPConsentState.h in Headers */,
 				C935A7761D8A2E4000A1EE2F /* MPIHasher.h in Headers */,
 				C935A6C31D8A2DE700A1EE2F /* MPCustomModule.h in Headers */,
 				C935A7491D8A2E3800A1EE2F /* MPCurrentState.h in Headers */,
@@ -1274,6 +1307,7 @@
 				C935A6EC1D8A2DF400A1EE2F /* MPCommerceEvent+Dictionary.h in Headers */,
 				C935A7511D8A2E3800A1EE2F /* MPLaunchInfo.h in Headers */,
 				C935A7181D8A2E0500A1EE2F /* MPKitRegister.h in Headers */,
+				DBAE13A720866AEA00A982B3 /* MPGDPRConsent.h in Headers */,
 				C935A71E1D8A2E1500A1EE2F /* MPILogger.h in Headers */,
 				C935A7021D8A2DFD00A1EE2F /* MPEvent+MessageType.h in Headers */,
 				C935A7441D8A2E3200A1EE2F /* MPUserSegments+Setters.h in Headers */,
@@ -1362,6 +1396,7 @@
 				C9DD1FD81D8A13DC00D3ABBE /* MPTransactionAttributes+Dictionary.h in Headers */,
 				C9DD1FB11D8A13D600D3ABBE /* MPIntegrationAttributes.h in Headers */,
 				C9DD1FAA1D8A13D600D3ABBE /* MPConsumerInfo.h in Headers */,
+				DBAE13A620866AEA00A982B3 /* MPGDPRConsent.h in Headers */,
 				C9DD1FF41D8A13EA00D3ABBE /* MPKitInstanceValidator.h in Headers */,
 				C9DD1FA01D8A13D000D3ABBE /* MPAppboy.h in Headers */,
 				C9DD20301D8A142000D3ABBE /* MPLaunchInfo.h in Headers */,
@@ -1413,6 +1448,7 @@
 				DBB491611DA4192E002F46BD /* NSArray+MPCaseInsensitive.h in Headers */,
 				C9DD203C1D8A142000D3ABBE /* MPUserAttributeChange.h in Headers */,
 				C9DD1FD61D8A13DC00D3ABBE /* MPPromotion.h in Headers */,
+				DB71C5942086696E00D1A3DD /* MPConsentState.h in Headers */,
 				D3CE960620740893000D1A22 /* FilteredMPIdentityApiRequest.h in Headers */,
 				C9DD205B1D8A142900D3ABBE /* MPEnums.h in Headers */,
 				C9DD1FAF1D8A13D600D3ABBE /* MPForwardRecord.h in Headers */,
@@ -1606,6 +1642,7 @@
 				C911FD9B1D8A365A002A3516 /* MPKitTestClass.m in Sources */,
 				C911FD921D8A365A002A3516 /* MPEventTests.mm in Sources */,
 				DB3935151F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
+				DBC78E232087BB2800210806 /* MPGDPRConsentTests.m in Sources */,
 				C911FD931D8A365A002A3516 /* MPForwardQueueItemTests.m in Sources */,
 				C911FD9C1D8A365A002A3516 /* MPLaunchInfoTests.m in Sources */,
 				C911FD971D8A365A002A3516 /* MPKitConfigurationTests.mm in Sources */,
@@ -1626,6 +1663,7 @@
 				DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */,
 				C911FD901D8A365A002A3516 /* MPDataModelTests.m in Sources */,
 				C9AB50691DFF0C4B0036BEE9 /* MPKitActivityTests.m in Sources */,
+				DBC78E202087A5D900210806 /* MPConsentStateTests.m in Sources */,
 				DB678C3C1F1817EA0015587D /* MPUserIdentityChangeTests.m in Sources */,
 				C911FD961D8A365A002A3516 /* MPKitAppsFlyerTest.m in Sources */,
 				C911FD871D8A365A002A3516 /* BracketTests.mm in Sources */,
@@ -1672,6 +1710,7 @@
 				C935A6FB1D8A2DF400A1EE2F /* MPTransactionAttributes.m in Sources */,
 				C935A74F1D8A2E3800A1EE2F /* MPHasher.cpp in Sources */,
 				04F644101EFC8284000FADE3 /* MParticleUser.m in Sources */,
+				DB71C5972086696E00D1A3DD /* MPConsentState.m in Sources */,
 				DB678C381F180E130015587D /* MPUserIdentityChange.m in Sources */,
 				C935A6C21D8A2DE700A1EE2F /* MPAppboy.m in Sources */,
 				C935A6BC1D8A2DDF00A1EE2F /* MPAppDelegateProxy.m in Sources */,
@@ -1730,6 +1769,7 @@
 				C935A7371D8A2E2200A1EE2F /* MPNetworkPerformance.m in Sources */,
 				C935A7351D8A2E2200A1EE2F /* MPNetworkCommunication.mm in Sources */,
 				C935A74E1D8A2E3800A1EE2F /* MPDevice.m in Sources */,
+				DBAE13A920866AEA00A982B3 /* MPGDPRConsent.m in Sources */,
 				C935A7161D8A2E0500A1EE2F /* MPKitInstanceValidator.m in Sources */,
 				C935A7681D8A2E3800A1EE2F /* NSString+MPPercentEscape.m in Sources */,
 			);
@@ -1766,6 +1806,7 @@
 				C9DD202D1D8A142000D3ABBE /* MPDevice.m in Sources */,
 				C9DD20401D8A142000D3ABBE /* MPZip.cpp in Sources */,
 				C9DD1FBA1D8A13D600D3ABBE /* MPSession.m in Sources */,
+				DB71C5962086696E00D1A3DD /* MPConsentState.m in Sources */,
 				C9DD1FF51D8A13EA00D3ABBE /* MPKitInstanceValidator.m in Sources */,
 				04F6440E1EFC8278000FADE3 /* MParticleUser.m in Sources */,
 				C9DD1FA51D8A13D000D3ABBE /* MPCustomModulePreference.m in Sources */,
@@ -1824,6 +1865,7 @@
 				C9DD1FD71D8A13DC00D3ABBE /* MPPromotion.mm in Sources */,
 				C9DD1FB41D8A13D600D3ABBE /* MPMessage.m in Sources */,
 				C9DD20161D8A140800D3ABBE /* MPNetworkPerformance.m in Sources */,
+				DBAE13A820866AEA00A982B3 /* MPGDPRConsent.m in Sources */,
 				C9DD1FCF1D8A13DC00D3ABBE /* MPCommerceEventInstruction.m in Sources */,
 				C9DD20451D8A142000D3ABBE /* NSNumber+MPFormatter.m in Sources */,
 			);
@@ -1871,8 +1913,10 @@
 				C9DD20FE1D8A203200D3ABBE /* MPUploadBuilderTests.m in Sources */,
 				C9DD20F91D8A201E00D3ABBE /* MPNotificationControllerTests.m in Sources */,
 				C9DD20F31D8A1FF400D3ABBE /* MPKitContainerTests.m in Sources */,
+				DBC78E222087BB0E00210806 /* MPGDPRConsentTests.m in Sources */,
 				C9DD20F81D8A201200D3ABBE /* MPMessageBuilderTests.m in Sources */,
 				DBA42900205ADEB7006AB971 /* MPConvertJSTests.m in Sources */,
+				DBC78E1F2087A5D900210806 /* MPConsentStateTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
