@@ -17,7 +17,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
                                               @"ck",                /* kMPRemoteConfigCookiesKey */
                                               @"ltv",               /* kMPLifeTimeValueKey */
                                               @"is_ephemeral",      /* kMPIsEphemeralKey */
-                                              @"last_date_used"     /* kMPLastIdentifiedDate  */
+                                              @"last_date_used",     /* kMPLastIdentifiedDate  */
+                                              @"consent_state"     /* kMPConsentStateKey  */
                                               ];
     return userSpecificKeys;
 }
