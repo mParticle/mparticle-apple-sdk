@@ -46,6 +46,11 @@
         return;
     }
     
+    if (_gdprConsentState.count >= MAX_GDPR_CONSENT_PURPOSES) {
+        MPILogError("Cannot add more than %@ GDPR consent states.", @(MAX_GDPR_CONSENT_PURPOSES));
+        return;
+    }
+    
     _gdprConsentState[normalizedPurpose] = consent;
 }
 

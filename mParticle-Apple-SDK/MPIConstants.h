@@ -320,4 +320,7 @@ extern const NSInteger LIMIT_USER_ATTR_LENGTH;
 extern const NSInteger MAX_USER_ATTR_LIST_SIZE;
 extern const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH;
 
+// Consent limits
+extern const NSInteger MAX_GDPR_CONSENT_PURPOSES;
+
 #endif

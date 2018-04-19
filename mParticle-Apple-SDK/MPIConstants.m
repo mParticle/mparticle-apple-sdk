@@ -302,3 +302,6 @@ const NSInteger LIMIT_NAME = 256;
 const NSInteger LIMIT_USER_ATTR_LENGTH = 4096;
 const NSInteger MAX_USER_ATTR_LIST_SIZE = 1000;
 const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH = 512;
+
+// Consent limits
+const NSInteger MAX_GDPR_CONSENT_PURPOSES = 100;
