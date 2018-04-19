@@ -54,8 +54,8 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertEqualObjects(gdprDictionary[@"d"], @"foo-document-1");
     XCTAssertEqualObjects(gdprDictionary[@"l"], @"foo-location-1");
     XCTAssertEqualObjects(gdprDictionary[@"h"], @"foo-hardware-id-1");
-    XCTAssertLessThan(gdprDictionary[@"ts"], @"foo-timestamp-1");
-    XCTAssert(gdprDictionary[@"ts"], @"foo-timestamp-1");
+    XCTAssertNotNil(gdprDictionary[@"ts"]);
+    XCTAssertLessThan(((NSDate *)gdprDictionary[@"ts"]).timeIntervalSinceNow, epsilon);
 }
 
 - (void)testToString {
