@@ -28,7 +28,7 @@
     return [[source lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 }
 
-- (NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState {
+- (nullable NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState {
     return [_gdprConsentState copy];
 }
 

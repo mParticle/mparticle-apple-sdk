@@ -23,7 +23,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  * Note that all purpose keys will be lower-cased and trimmed.
  */
-- (NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState;
+- (nullable NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState;
 
 /**
  * Add or override a single GDPR consent state.
