@@ -464,6 +464,10 @@
 		DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
 		DB7ABA181DA6ED7C00367A6D /* MPSearchAdsAttribution.m in Sources */ = {isa = PBXBuildFile; fileRef = DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */; };
 		DB7ABA191DA6ED7F00367A6D /* MPSearchAdsAttribution.h in Headers */ = {isa = PBXBuildFile; fileRef = DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */; };
+		DB83983E2087E8780031AB1D /* MPConsentSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = DB83983C2087E8780031AB1D /* MPConsentSerialization.h */; };
+		DB83983F2087E8780031AB1D /* MPConsentSerialization.h in Headers */ = {isa = PBXBuildFile; fileRef = DB83983C2087E8780031AB1D /* MPConsentSerialization.h */; };
+		DB8398402087E8780031AB1D /* MPConsentSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = DB83983D2087E8780031AB1D /* MPConsentSerialization.m */; };
+		DB8398412087E8780031AB1D /* MPConsentSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = DB83983D2087E8780031AB1D /* MPConsentSerialization.m */; };
 		DB8C8A391FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */; };
 		DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */; };
 		DB9AA1A21EFD806000340D02 /* MPIUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */; };
@@ -754,6 +758,8 @@
 		DB71C5932086696E00D1A3DD /* MPConsentState.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentState.m; sourceTree = "<group>"; };
 		DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPSearchAdsAttribution.h; sourceTree = "<group>"; };
 		DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSearchAdsAttribution.m; sourceTree = "<group>"; };
+		DB83983C2087E8780031AB1D /* MPConsentSerialization.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConsentSerialization.h; sourceTree = "<group>"; };
+		DB83983D2087E8780031AB1D /* MPConsentSerialization.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentSerialization.m; sourceTree = "<group>"; };
 		DB8C8A381FBCA63200DEC7C2 /* MParticleOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleOptionsTests.m; sourceTree = "<group>"; };
 		DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIUserDefaults.h; sourceTree = "<group>"; };
 		DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaults.m; sourceTree = "<group>"; };
@@ -1255,6 +1261,8 @@
 				DB71C5932086696E00D1A3DD /* MPConsentState.m */,
 				DBAE13A420866AEA00A982B3 /* MPGDPRConsent.h */,
 				DBAE13A520866AEA00A982B3 /* MPGDPRConsent.m */,
+				DB83983C2087E8780031AB1D /* MPConsentSerialization.h */,
+				DB83983D2087E8780031AB1D /* MPConsentSerialization.m */,
 			);
 			path = Consent;
 			sourceTree = "<group>";
@@ -1274,6 +1282,7 @@
 				DB71C5952086696E00D1A3DD /* MPConsentState.h in Headers */,
 				C935A7761D8A2E4000A1EE2F /* MPIHasher.h in Headers */,
 				C935A6C31D8A2DE700A1EE2F /* MPCustomModule.h in Headers */,
+				DB83983F2087E8780031AB1D /* MPConsentSerialization.h in Headers */,
 				C935A7491D8A2E3800A1EE2F /* MPCurrentState.h in Headers */,
 				C935A6F21D8A2DF400A1EE2F /* MPProduct.h in Headers */,
 				C935A6C11D8A2DE700A1EE2F /* MPAppboy.h in Headers */,
@@ -1424,6 +1433,7 @@
 				C9DD1FF01D8A13EA00D3ABBE /* MPKitExecStatus.h in Headers */,
 				DB58FB011E9FD06800AB5402 /* MPConvertJS.h in Headers */,
 				C9DD20211D8A141400D3ABBE /* MPPersistenceController.h in Headers */,
+				DB83983E2087E8780031AB1D /* MPConsentSerialization.h in Headers */,
 				C9C9DC3A1DAC04670079A05D /* MPForwardQueueParameters.h in Headers */,
 				C9DD1FA21D8A13D000D3ABBE /* MPCustomModule.h in Headers */,
 				C9DD20271D8A142000D3ABBE /* MPBracket.h in Headers */,
@@ -1683,6 +1693,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB8398412087E8780031AB1D /* MPConsentSerialization.m in Sources */,
 				C935A75A1D8A2E3800A1EE2F /* MPStateMachine.mm in Sources */,
 				C935A6C81D8A2DED00A1EE2F /* MParticleUserNotification.m in Sources */,
 				C935A7641D8A2E3800A1EE2F /* NSDictionary+MPCaseInsensitive.m in Sources */,
@@ -1779,6 +1790,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB8398402087E8780031AB1D /* MPConsentSerialization.m in Sources */,
 				C9DD1FA91D8A13D600D3ABBE /* MPBreadcrumb.m in Sources */,
 				C9DD1FEF1D8A13EA00D3ABBE /* MPKitContainer.mm in Sources */,
 				C9DD1FE31D8A13E200D3ABBE /* MPEvent.mm in Sources */,
