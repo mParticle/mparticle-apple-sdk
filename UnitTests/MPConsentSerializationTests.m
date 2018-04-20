@@ -67,7 +67,8 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertEqualObjects(gdprStateDictionary[@"l"], @"foo-location-1");
     XCTAssertEqualObjects(gdprStateDictionary[@"h"], @"foo-hardware-id-1");
     XCTAssertNotNil(gdprStateDictionary[@"ts"]);
-    XCTAssertLessThan(((NSDate *)gdprStateDictionary[@"ts"]).timeIntervalSinceNow, epsilon);
+    double interval = ((NSNumber *)gdprStateDictionary[@"ts"]).doubleValue/1000;
+    XCTAssertLessThan([NSDate dateWithTimeIntervalSince1970:interval].timeIntervalSinceNow, epsilon);
 }
 
 - (void)testToString {
@@ -126,7 +127,7 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(gdprState);
     XCTAssertTrue(gdprState.consented);
     XCTAssertEqualObjects(gdprState.document, @"foo-document-1");
-    XCTAssertEqualObjects(gdprState.timestamp, [NSDate dateWithTimeIntervalSince1970:1524176880.888195]);
+    XCTAssertEqualObjects(gdprState.timestamp, [NSDate dateWithTimeIntervalSince1970:(1524176880.888195/1000)]);
     XCTAssertEqualObjects(gdprState.location, @"foo-location-1");
     XCTAssertEqualObjects(gdprState.hardwareId, @"foo-hardware-id-1");
 }
