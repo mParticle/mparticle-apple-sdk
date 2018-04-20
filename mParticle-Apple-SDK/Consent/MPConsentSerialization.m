@@ -2,6 +2,7 @@
 #import "MPConsentState.h"
 #import "MPILogger.h"
 #import "MPIConstants.h"
+#import "MPGDPRConsent.h"
 
 
 @implementation MPConsentSerialization
@@ -10,13 +11,97 @@
 
 + (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentState *)state {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    // ...
+    NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
+    if (!gdprStateDictionary || gdprStateDictionary.count == 0) {
+        return dictionary;
+    }
+    
+    NSMutableDictionary *gdprDictionary = [NSMutableDictionary dictionary];
+    for (NSString *purpose in gdprStateDictionary) {
+        MPGDPRConsent *gdprConsent = gdprStateDictionary[purpose];
+        NSMutableDictionary *gdprConsentDictionary = [NSMutableDictionary dictionary];
+        
+        if (gdprConsent.consented) {
+            gdprConsentDictionary[kMPConsentStateGDPRConsented] = @YES;
+        } else {
+            gdprConsentDictionary[kMPConsentStateGDPRConsented] = @NO;
+        }
+        
+        if (gdprConsent.document) {
+            gdprConsentDictionary[kMPConsentStateGDPRDocument] = gdprConsent.document;
+        }
+        
+        if (gdprConsent.timestamp) {
+            gdprConsentDictionary[kMPConsentStateGDPRTimestamp] = gdprConsent.timestamp;
+        }
+        
+        if (gdprConsent.location) {
+            gdprConsentDictionary[kMPConsentStateGDPRLocation] = gdprConsent.location;
+        }
+        
+        if (gdprConsent.hardwareId) {
+            gdprConsentDictionary[kMPConsentStateGDPRHardwareId] = gdprConsent.hardwareId;
+        }
+        
+        gdprDictionary[purpose] = [gdprConsentDictionary copy];
+    }
+    
+    if (gdprDictionary.count) {
+        dictionary[kMPConsentStateGDPR] = gdprDictionary;
+    }
     return dictionary;
 }
 
 + (nullable NSString *)stringFromConsentState:(MPConsentState *)state {
+    if (!state) {
+        return nil;
+    }
+    
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
-    // ...
+    
+    NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
+    if (!gdprStateDictionary || gdprStateDictionary.count == 0) {
+        return nil;
+    }
+    
+    NSMutableDictionary *gdprDictionary = [NSMutableDictionary dictionary];
+    for (NSString *purpose in gdprStateDictionary) {
+        MPGDPRConsent *gdprConsent = gdprStateDictionary[purpose];
+        NSMutableDictionary *gdprConsentDictionary = [NSMutableDictionary dictionary];
+        
+        if (gdprConsent.consented) {
+            gdprConsentDictionary[kMPConsentStateGDPRConsentedKey] = @YES;
+        } else {
+            gdprConsentDictionary[kMPConsentStateGDPRConsentedKey] = @NO;
+        }
+        
+        if (gdprConsent.document) {
+            gdprConsentDictionary[kMPConsentStateGDPRDocumentKey] = gdprConsent.document;
+        }
+        
+        if (gdprConsent.timestamp) {
+            gdprConsentDictionary[kMPConsentStateGDPRTimestampKey] = @(gdprConsent.timestamp.timeIntervalSince1970 * 1000);
+        }
+        
+        if (gdprConsent.location) {
+            gdprConsentDictionary[kMPConsentStateGDPRLocationKey] = gdprConsent.location;
+        }
+        
+        if (gdprConsent.hardwareId) {
+            gdprConsentDictionary[kMPConsentStateGDPRHardwareIdKey] = gdprConsent.hardwareId;
+        }
+        
+        gdprDictionary[purpose] = [gdprConsentDictionary copy];
+    }
+    
+    if (gdprDictionary.count) {
+        dictionary[kMPConsentStateGDPRKey] = gdprDictionary;
+    }
+    
+    if (dictionary.count == 0) {
+        return nil;
+    }
+    
     NSString *string = [self stringFromDictionary:dictionary];
     if (!string) {
         MPILogError(@"Failed to create string from consent dictionary=%@", dictionary);
@@ -32,7 +117,44 @@
         MPILogError(@"Failed to create consent state from string=%@", string);
         return nil;
     }
-    // ...
+    
+    NSDictionary *gdprDictionary = dictionary[kMPConsentStateGDPRKey];
+    if (!gdprDictionary) {
+        return nil;
+    }
+    
+    state = [[MPConsentState alloc] init];
+    
+    for (NSString *purpose in gdprDictionary) {
+        NSDictionary *gdprConsentDictionary = gdprDictionary[purpose];
+        MPGDPRConsent *gdprState = [[MPGDPRConsent alloc] init];
+        
+        if ([gdprConsentDictionary[kMPConsentStateGDPRConsentedKey] isEqual:@YES]) {
+            gdprState.consented = YES;
+        } else {
+            gdprState.consented = NO;
+        }
+        
+        if (gdprConsentDictionary[kMPConsentStateGDPRDocumentKey]) {
+            gdprState.document = gdprConsentDictionary[kMPConsentStateGDPRDocumentKey];
+        }
+        
+        if (gdprConsentDictionary[kMPConsentStateGDPRTimestampKey]) {
+            NSNumber *timestamp = gdprConsentDictionary[kMPConsentStateGDPRTimestampKey];
+            gdprState.timestamp = [NSDate dateWithTimeIntervalSince1970:(timestamp.intValue/1000)];
+        }
+        
+        if (gdprConsentDictionary[kMPConsentStateGDPRLocationKey]) {
+            gdprState.location = gdprConsentDictionary[kMPConsentStateGDPRLocationKey];
+        }
+        
+        if (gdprConsentDictionary[kMPConsentStateGDPRHardwareIdKey]) {
+            gdprState.hardwareId = gdprConsentDictionary[kMPConsentStateGDPRHardwareIdKey];
+        }
+        
+        [state addGDPRConsentState:gdprState purpose:purpose];
+    }
+    
     return state;
 }
 
@@ -53,7 +175,13 @@
     }
     
     NSError *error = nil;
-    id jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    id jsonObject = nil;
+    @try {
+        jsonObject = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    } @catch(NSException *e) {
+        MPILogError(@"Caught exception while creating dictionary from data: %@", data);
+        return nil;
+    }
     
     if (error) {
         MPILogError(@"Creating JSON object failed with error=%@ when trying to deserialize data=%@", error, data);
@@ -76,7 +204,14 @@
 
 + (nullable NSString *)stringFromDictionary:(NSDictionary *)dictionary {
     NSError *error = nil;
-    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+    NSData *data = nil;
+    @try {
+        data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:&error];
+    } @catch(NSException *e) {
+        MPILogError(@"Caught exception while creating data from dictionary: %@", dictionary);
+        return nil;
+    }
+
     if (error) {
         MPILogError(@"NSJSONSerialization returned an error=%@ when trying to serialize dictionary=%@", error, dictionary);
         return nil;

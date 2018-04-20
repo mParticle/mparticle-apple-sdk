@@ -5,6 +5,12 @@
 
 static NSTimeInterval epsilon = 0.05;
 
+@interface MPConsentSerialization ()
+
++ (nullable NSDictionary *)dictionaryFromString:(NSString *)string;
+
+@end
+
 @interface MPConsentSerializationTests : XCTestCase
 
 @end
@@ -26,11 +32,13 @@ static NSTimeInterval epsilon = 0.05;
     NSDictionary *dictionary = nil;
     
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
-    XCTAssertNil(dictionary);
+    XCTAssertNotNil(dictionary);
+    XCTAssertEqual(dictionary.count, 0);
     
     consentState = [[MPConsentState alloc] init];
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
-    XCTAssertNil(dictionary);
+    XCTAssertNotNil(dictionary);
+    XCTAssertEqual(dictionary.count, 0);
     
     NSDate *date = [NSDate date];
     
@@ -45,25 +53,82 @@ static NSTimeInterval epsilon = 0.05;
     dictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
+    
     NSDictionary *gdprDictionary = dictionary[@"gdpr"];
     XCTAssertNotNil(gdprDictionary);
     XCTAssertEqual(gdprDictionary.count, 1);
+    
     NSDictionary *gdprStateDictionary = gdprDictionary[@"test purpose 1"];
     XCTAssertNotNil(gdprStateDictionary);
     XCTAssertEqual(gdprStateDictionary.count, 5);
-    XCTAssertEqualObjects(gdprDictionary[@"d"], @"foo-document-1");
-    XCTAssertEqualObjects(gdprDictionary[@"l"], @"foo-location-1");
-    XCTAssertEqualObjects(gdprDictionary[@"h"], @"foo-hardware-id-1");
-    XCTAssertNotNil(gdprDictionary[@"ts"]);
-    XCTAssertLessThan(((NSDate *)gdprDictionary[@"ts"]).timeIntervalSinceNow, epsilon);
+    
+    XCTAssertEqualObjects(gdprStateDictionary[@"c"], @YES);
+    XCTAssertEqualObjects(gdprStateDictionary[@"d"], @"foo-document-1");
+    XCTAssertEqualObjects(gdprStateDictionary[@"l"], @"foo-location-1");
+    XCTAssertEqualObjects(gdprStateDictionary[@"h"], @"foo-hardware-id-1");
+    XCTAssertNotNil(gdprStateDictionary[@"ts"]);
+    XCTAssertLessThan(((NSDate *)gdprStateDictionary[@"ts"]).timeIntervalSinceNow, epsilon);
 }
 
 - (void)testToString {
+    MPConsentState *consentState = nil;
+    NSString *string = nil;
+    NSDictionary *dictionary = nil;
     
+    string = [MPConsentSerialization stringFromConsentState:consentState];
+    XCTAssertNil(string);
+    
+    consentState = [[MPConsentState alloc] init];
+    string = [MPConsentSerialization stringFromConsentState:consentState];
+    XCTAssertNil(string);
+    
+    NSDate *date = [NSDate date];
+    
+    MPGDPRConsent *gdprConsent = [[MPGDPRConsent alloc] init];
+    gdprConsent.consented = YES;
+    gdprConsent.document = @"foo-document-1";
+    gdprConsent.timestamp = date;
+    gdprConsent.location = @"foo-location-1";
+    gdprConsent.hardwareId = @"foo-hardware-id-1";
+    
+    [consentState addGDPRConsentState:gdprConsent purpose:@"test purpose 1"];
+    string = [MPConsentSerialization stringFromConsentState:consentState];
+    XCTAssertNotNil(string);
+    
+    dictionary = [MPConsentSerialization dictionaryFromString:string];
+    XCTAssertNotNil(dictionary);
+    XCTAssertEqual(dictionary.count, 1);
+    
+    NSDictionary *gdprDictionary = dictionary[@"gdpr"];
+    XCTAssertNotNil(gdprDictionary);
+    XCTAssertEqual(gdprDictionary.count, 1);
+    
+    NSDictionary *gdprStateDictionary = gdprDictionary[@"test purpose 1"];
+    XCTAssertNotNil(gdprStateDictionary);
+    XCTAssertEqual(gdprStateDictionary.count, 5);
+    
+    XCTAssertEqualObjects(gdprStateDictionary[@"consented"], @YES);
+    XCTAssertEqualObjects(gdprStateDictionary[@"document"], @"foo-document-1");
+    XCTAssertEqualObjects(gdprStateDictionary[@"location"], @"foo-location-1");
+    XCTAssertEqualObjects(gdprStateDictionary[@"hardware_id"], @"foo-hardware-id-1");
+    XCTAssertNotNil(gdprStateDictionary[@"timestamp"]);
+    NSNumber *timestampNumber = gdprStateDictionary[@"timestamp"];
+    NSDate *timestamp = [NSDate dateWithTimeIntervalSince1970:(timestampNumber.intValue/1000)];
+    XCTAssertLessThan(timestamp.timeIntervalSinceNow, epsilon);
 }
 
 - (void)testFromString {
-    
+    NSString *string = @"{\"gdpr\":{\"test purpose 1\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
+    MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
+    NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
+    XCTAssertEqual(gdprStateDictionary.count, 1);
+    MPGDPRConsent *gdprState = gdprStateDictionary[@"test purpose 1"];
+    XCTAssertNotNil(gdprState);
+    XCTAssertTrue(gdprState.consented);
+    XCTAssertEqualObjects(gdprState.document, @"foo-document-1");
+    XCTAssertEqualObjects(gdprState.timestamp, [NSDate dateWithTimeIntervalSince1970:1524176880.888195]);
+    XCTAssertEqualObjects(gdprState.location, @"foo-location-1");
+    XCTAssertEqualObjects(gdprState.hardwareId, @"foo-hardware-id-1");
 }
 
 @end
