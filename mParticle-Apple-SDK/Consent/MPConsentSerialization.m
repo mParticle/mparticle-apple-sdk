@@ -32,7 +32,7 @@
         }
         
         if (gdprConsent.timestamp) {
-            gdprConsentDictionary[kMPConsentStateGDPRTimestamp] = gdprConsent.timestamp;
+            gdprConsentDictionary[kMPConsentStateGDPRTimestamp] = @(gdprConsent.timestamp.timeIntervalSince1970 * 1000);
         }
         
         if (gdprConsent.location) {
