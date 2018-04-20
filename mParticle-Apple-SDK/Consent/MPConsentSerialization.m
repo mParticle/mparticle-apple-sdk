@@ -141,7 +141,7 @@
         
         if (gdprConsentDictionary[kMPConsentStateGDPRTimestampKey]) {
             NSNumber *timestamp = gdprConsentDictionary[kMPConsentStateGDPRTimestampKey];
-            gdprState.timestamp = [NSDate dateWithTimeIntervalSince1970:(timestamp.intValue/1000)];
+            gdprState.timestamp = [NSDate dateWithTimeIntervalSince1970:(timestamp.doubleValue/1000)];
         }
         
         if (gdprConsentDictionary[kMPConsentStateGDPRLocationKey]) {
