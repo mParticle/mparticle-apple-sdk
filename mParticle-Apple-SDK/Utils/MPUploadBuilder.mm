@@ -13,6 +13,8 @@
 #import "MPDevice.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
+#import "MPConsentState.h"
+#import "MPConsentSerialization.h"
 
 using namespace std;
 
@@ -165,6 +167,14 @@ using namespace std;
         }
         
         uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
+    }
+    
+    MPConsentState *consentState = [MPPersistenceController consentState];
+    if (consentState) {
+        NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
+        if (consentStateDictionary) {
+            uploadDictionary[kMPConsentState] = consentStateDictionary;
+        }
     }
     
     
