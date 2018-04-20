@@ -10,6 +10,7 @@
 @class MPForwardRecord;
 @class MPBreadcrumb;
 @class MPIntegrationAttributes;
+@class MPConsentState;
 
 #if TARGET_OS_IOS == 1
     @class MParticleUserNotification;
@@ -27,6 +28,8 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 + (nonnull instancetype)sharedInstance;
 + (nullable NSNumber *)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
++ (nullable MPConsentState *)consentState;
++ (void)setConsentState:(nullable MPConsentState *)state;
 - (nullable MPSession *)archiveSession:(nonnull MPSession *)session;
 - (BOOL)closeDatabase;
 - (void)deleteConsumerInfo;

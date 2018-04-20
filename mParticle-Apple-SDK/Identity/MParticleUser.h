@@ -7,6 +7,7 @@
 #import "MPUserSegments.h"
 #import "MPEnums.h"
 #import "MPCart.h"
+#import "MPConsentState.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -85,6 +86,17 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler;
 
+#pragma mark - Consent State
+/**
+ Sets the user's current consent state.
+ @param state A consent state object
+ */
+- (void)setConsentState:(MPConsentState *)state;
+/**
+ Gets the users consent state.
+ @returns The user's current consent state object
+ */
+- (nullable MPConsentState *)consentState;
 
 @end
 

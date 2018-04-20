@@ -18,6 +18,8 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "mParticle.h"
+#import "MPIConstants.h"
+#import "MPConsentSerialization.h"
 #import "sqlite3.h"
 
 #if TARGET_OS_IOS == 1
@@ -117,6 +119,37 @@ const int MaxBreadcrumbs = 50;
 + (void)setMpid:(NSNumber *)mpId {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[@"mpid"] = mpId;
+    [userDefaults synchronize];
+}
+
++ (nullable MPConsentState *)consentState {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSString *string = userDefaults[kMPConsentStateKey];
+    if (!string) {
+        return nil;
+    }
+    
+    MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
+    if (!state) {
+        return nil;
+    }
+    
+    return state;
+}
+
++ (void)setConsentState:(nullable MPConsentState *)state {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    if (!state) {
+        [userDefaults removeMPObjectForKey:kMPConsentStateKey];
+        [userDefaults synchronize];
+        return;
+    }
+    
+    NSString *string = [MPConsentSerialization stringFromConsentState:state];
+    if (!string) {
+        return;
+    }
+    userDefaults[kMPConsentStateKey] = string;
     [userDefaults synchronize];
 }
 

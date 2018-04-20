@@ -10,8 +10,11 @@
 #import "mParticle.h"
 #import "MPUserSegments.h"
 #import "MPUserSegments+Setters.h"
+#import "MPPersistenceController.h"
 
-@interface MParticleUser ()
+@interface MParticleUser () {
+    MPConsentState *_consentState;
+}
 
 @property (nonatomic, strong) MPBackendController *backendController;
 
@@ -40,6 +43,7 @@
     self = [super init];
     if (self) {
         _backendController = [MParticle sharedInstance].backendController;
+        _consentState = [MPPersistenceController consentState];
     }
     return self;
 }
@@ -367,6 +371,17 @@
             MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
         }
     });
+}
+
+#pragma mark - Consent State
+
+- (void)setConsentState:(MPConsentState *)state {
+    _consentState = state;
+    [MPPersistenceController setConsentState:state];
+}
+
+- (nullable MPConsentState *)consentState {
+    return _consentState;
 }
 
 
