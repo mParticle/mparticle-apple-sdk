@@ -8,10 +8,10 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MPGDPRConsent : NSObject
 
 @property (nonatomic, assign) BOOL consented;
-@property (nonatomic) NSString *document;
+@property (nonatomic, nullable) NSString *document;
 @property (nonatomic) NSDate *timestamp;
-@property (nonatomic) NSString *location;
-@property (nonatomic) NSString *hardwareId;
+@property (nonatomic, nullable) NSString *location;
+@property (nonatomic, nullable) NSString *hardwareId;
 
 @end
 
