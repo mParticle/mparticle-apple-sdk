@@ -51,7 +51,7 @@
         return;
     }
     
-    _gdprConsentState[normalizedPurpose] = consent;
+    _gdprConsentState[normalizedPurpose] = [consent copy];
 }
 
 - (void)removeGDPRConsentStateWithPurpose:(NSString *)purpose {

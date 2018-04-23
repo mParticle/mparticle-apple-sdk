@@ -16,4 +16,14 @@
     return self;
 }
 
+- (nonnull id)copyWithZone:(nullable NSZone *)zone {
+    MPGDPRConsent *copyObject = [[MPGDPRConsent alloc] init];
+    copyObject.consented = _consented;
+    copyObject.document = _document;
+    copyObject.timestamp = _timestamp;
+    copyObject.location = _location;
+    copyObject.hardwareId = _hardwareId;
+    return copyObject;
+}
+
 @end

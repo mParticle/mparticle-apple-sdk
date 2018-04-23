@@ -5,13 +5,13 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  * Record of consent under the GDPR.
  */
-@interface MPGDPRConsent : NSObject
+@interface MPGDPRConsent : NSObject <NSCopying>
 
 @property (nonatomic, assign) BOOL consented;
-@property (nonatomic, nullable) NSString *document;
-@property (nonatomic) NSDate *timestamp;
-@property (nonatomic, nullable) NSString *location;
-@property (nonatomic, nullable) NSString *hardwareId;
+@property (nonatomic, copy, nullable) NSString *document;
+@property (nonatomic, copy) NSDate *timestamp;
+@property (nonatomic, copy, nullable) NSString *location;
+@property (nonatomic, copy, nullable) NSString *hardwareId;
 
 @end
 
