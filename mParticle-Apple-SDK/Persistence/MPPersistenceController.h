@@ -28,8 +28,8 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 + (nonnull instancetype)sharedInstance;
 + (nullable NSNumber *)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
-+ (nullable MPConsentState *)consentState;
-+ (void)setConsentState:(nullable MPConsentState *)state;
++ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
++ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
 - (nullable MPSession *)archiveSession:(nonnull MPSession *)session;
 - (BOOL)closeDatabase;
 - (void)deleteConsumerInfo;

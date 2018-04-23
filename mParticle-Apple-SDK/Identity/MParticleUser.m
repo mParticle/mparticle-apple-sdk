@@ -43,7 +43,6 @@
     self = [super init];
     if (self) {
         _backendController = [MParticle sharedInstance].backendController;
-        _consentState = [MPPersistenceController consentState];
     }
     return self;
 }
@@ -376,12 +375,11 @@
 #pragma mark - Consent State
 
 - (void)setConsentState:(MPConsentState *)state {
-    _consentState = state;
-    [MPPersistenceController setConsentState:state];
+    [MPPersistenceController setConsentState:state forMpid:self.userId];
 }
 
 - (nullable MPConsentState *)consentState {
-    return _consentState;
+    return [MPPersistenceController consentStateForMpid:self.userId];
 }
 
 

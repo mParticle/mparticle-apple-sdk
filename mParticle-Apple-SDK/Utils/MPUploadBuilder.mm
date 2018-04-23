@@ -169,7 +169,7 @@ using namespace std;
         uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
     }
     
-    MPConsentState *consentState = [MPPersistenceController consentState];
+    MPConsentState *consentState = [MPPersistenceController consentStateForMpid:uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
         NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {

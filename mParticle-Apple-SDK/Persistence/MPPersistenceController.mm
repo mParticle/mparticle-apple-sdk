@@ -122,9 +122,9 @@ const int MaxBreadcrumbs = 50;
     [userDefaults synchronize];
 }
 
-+ (nullable MPConsentState *)consentState {
++ (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSString *string = userDefaults[kMPConsentStateKey];
+    NSString *string = [userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
     if (!string) {
         return nil;
     }
@@ -137,10 +137,10 @@ const int MaxBreadcrumbs = 50;
     return state;
 }
 
-+ (void)setConsentState:(nullable MPConsentState *)state {
++ (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     if (!state) {
-        [userDefaults removeMPObjectForKey:kMPConsentStateKey];
+        [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
         [userDefaults synchronize];
         return;
     }
@@ -149,7 +149,7 @@ const int MaxBreadcrumbs = 50;
     if (!string) {
         return;
     }
-    userDefaults[kMPConsentStateKey] = string;
+    [userDefaults setMPObject:string forKey:kMPConsentStateKey userId:mpid];
     [userDefaults synchronize];
 }
 
