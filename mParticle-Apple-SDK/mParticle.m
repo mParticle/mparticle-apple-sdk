@@ -394,24 +394,22 @@ NSString *const kMPStateKey = @"state";
     privateOptOut = @(optOut);
     
     dispatch_async([MParticle messageQueue], ^{
-    [self.backendController setOptOut:optOut
-                    completionHandler:^(BOOL optOut, MPExecStatus execStatus) {
+        // Forwarding calls to kits
+        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setOptOut:)
+                                                  event:nil
+                                            messageType:MPMessageTypeOptOut
+                                               userInfo:@{kMPStateKey:@(optOut)}
+                                             kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
+                                                 *execStatus = [kit setOptOut:optOut];
+                                             }];
+        
+        [self.backendController setOptOut:optOut
+                        completionHandler:^(BOOL optOut, MPExecStatus execStatus) {
 
-                        if (execStatus == MPExecStatusSuccess) {
-                            MPILogDebug(@"Set Opt Out: %d", optOut);
-                            
-                            dispatch_async([MParticle messageQueue], ^{
-                                // Forwarding calls to kits
-                                [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setOptOut:)
-                                                                          event:nil
-                                                                    messageType:MPMessageTypeOptOut
-                                                                       userInfo:@{kMPStateKey:@(optOut)}
-                                                                     kitHandler:^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-                                                                         *execStatus = [kit setOptOut:optOut];
-                                                                     }];
-                            });
-                        }
-                    }];
+                            if (execStatus == MPExecStatusSuccess) {
+                                MPILogDebug(@"Set Opt Out: %d", optOut);
+                            }
+                        }];
     });
 }
 

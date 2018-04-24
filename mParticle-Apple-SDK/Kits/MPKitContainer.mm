@@ -2065,7 +2065,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 - (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler {
     if (!self.kitsInitialized) {
-        if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
+        if (messageType == MPMessageTypePushRegistration) {
             return;
         }
         
