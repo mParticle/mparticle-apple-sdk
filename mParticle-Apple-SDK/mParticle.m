@@ -930,24 +930,26 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [self.backendController logError:message
-                           exception:nil
-                      topmostContext:nil
-                           eventInfo:eventInfo
-                   completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                       if (execStatus == MPExecStatusSuccess) {
-                           MPILogDebug(@"Logged error with message: %@", message);
-                           
-                           // Forwarding calls to kits
-                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logError:eventInfo:)
-                                                              errorMessage:message
-                                                                 exception:nil
-                                                                 eventInfo:eventInfo
-                                                                kitHandler:^(id<MPKitProtocol> kit, MPKitExecStatus *__autoreleasing *execStatus) {
-                                                                    *execStatus = [kit logError:message eventInfo:eventInfo];
-                                                                }];
-                       }
-                   }];
+    dispatch_async(messageQueue, ^{
+        [self.backendController logError:message
+                               exception:nil
+                          topmostContext:nil
+                               eventInfo:eventInfo
+                       completionHandler:^(NSString *message, MPExecStatus execStatus) {
+                           if (execStatus == MPExecStatusSuccess) {
+                               MPILogDebug(@"Logged error with message: %@", message);
+                               
+                               // Forwarding calls to kits
+                               [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logError:eventInfo:)
+                                                                  errorMessage:message
+                                                                     exception:nil
+                                                                     eventInfo:eventInfo
+                                                                    kitHandler:^(id<MPKitProtocol> kit, MPKitExecStatus *__autoreleasing *execStatus) {
+                                                                        *execStatus = [kit logError:message eventInfo:eventInfo];
+                                                                    }];
+                           }
+                       }];
+    });
 }
 
 - (void)logException:(NSException *)exception {
@@ -955,24 +957,26 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)logException:(NSException *)exception topmostContext:(id)topmostContext {
-    [self.backendController logError:nil
-                           exception:exception
-                      topmostContext:topmostContext
-                           eventInfo:nil
-                   completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                       if (execStatus == MPExecStatusSuccess) {
-                           MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
-                           
-                           // Forwarding calls to kits
-                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logError:eventInfo:)
-                                                              errorMessage:nil
-                                                                 exception:exception
-                                                                 eventInfo:nil
-                                                                kitHandler:^(id<MPKitProtocol> kit, MPKitExecStatus *__autoreleasing *execStatus) {
-                                                                    *execStatus = [kit logException:exception];
-                                                                }];
-                       }
-                   }];
+    dispatch_async(messageQueue, ^{
+        [self.backendController logError:nil
+                               exception:exception
+                          topmostContext:topmostContext
+                               eventInfo:nil
+                       completionHandler:^(NSString *message, MPExecStatus execStatus) {
+                           if (execStatus == MPExecStatusSuccess) {
+                               MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
+                               
+                               // Forwarding calls to kits
+                               [[MPKitContainer sharedInstance] forwardSDKCall:@selector(logError:eventInfo:)
+                                                                  errorMessage:nil
+                                                                     exception:exception
+                                                                     eventInfo:nil
+                                                                    kitHandler:^(id<MPKitProtocol> kit, MPKitExecStatus *__autoreleasing *execStatus) {
+                                                                        *execStatus = [kit logException:exception];
+                                                                    }];
+                           }
+                       }];
+    });
 }
 
 #pragma mark eCommerce transactions
