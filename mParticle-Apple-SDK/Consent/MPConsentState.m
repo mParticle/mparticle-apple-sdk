@@ -25,7 +25,12 @@
         return nil;
     }
     
-    return [[source lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    NSString *canonicalizedString = [[source lowercaseString] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+    if (MPIsNull(canonicalizedString) || canonicalizedString.length == 0) {
+        return nil;
+    }
+    
+    return canonicalizedString;
 }
 
 - (nullable NSDictionary<NSString *, MPGDPRConsent *> *)gdprConsentState {
