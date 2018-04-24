@@ -1233,11 +1233,15 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Session management
 - (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value {
-    NSNumber *newValue = [self.backendController incrementSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key byValue:value];
+    dispatch_async(messageQueue, ^{
+        
+        NSNumber *newValue = [self.backendController incrementSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key byValue:value];
+        
+        MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
+        
+    });
     
-    MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
-    
-    return newValue;
+    return @0;
 }
 
 - (void)setSessionAttribute:(NSString *)key value:(id)value {

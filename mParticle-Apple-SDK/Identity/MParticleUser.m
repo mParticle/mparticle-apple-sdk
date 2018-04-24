@@ -125,16 +125,17 @@
 }
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    if (stateMachine.optOut) {
-        return nil;
-    }
-    
-    NSNumber *newValue = [self.backendController incrementUserAttribute:key byValue:value];
-    
-    MPILogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
-    
     dispatch_async([MParticle messageQueue], ^{
+        
+        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+        if (stateMachine.optOut) {
+            return;
+        }
+        
+        NSNumber *newValue = [self.backendController incrementUserAttribute:key byValue:value];
+        
+        MPILogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
+        
         [[MPKitContainer sharedInstance] forwardSDKCall:@selector(incrementUserAttribute:byValue:)
                                        userAttributeKey:key
                                                   value:value
@@ -166,7 +167,7 @@
                                              }];
     });
     
-    return newValue;
+    return @0;
 }
 
 - (void)setUserAttribute:(NSString *)key value:(nullable id)value {
