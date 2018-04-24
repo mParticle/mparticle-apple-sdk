@@ -952,4 +952,15 @@
 #endif
 }
 
+- (void)testSessionAttributesAndIncrement {
+    [self.backendController setSessionAttribute:_session key:@"foo-session-attribute-1" value:@"foo-session-value-1"];
+    XCTAssertEqualObjects(_session.attributesDictionary[@"foo-session-attribute-1"], @"foo-session-value-1");
+    [self.backendController setSessionAttribute:_session key:@"foo-session-attribute-1" value:@"foo-session-value-2"];
+    XCTAssertEqualObjects(_session.attributesDictionary[@"foo-session-attribute-1"], @"foo-session-value-2");
+    [self.backendController setSessionAttribute:_session key:@"foo-session-attribute-1" value:@2];
+    XCTAssertEqualObjects(_session.attributesDictionary[@"foo-session-attribute-1"], @2);
+    [self.backendController incrementSessionAttribute:_session key:@"foo-session-attribute-1" byValue:@3];
+    XCTAssertEqualObjects(_session.attributesDictionary[@"foo-session-attribute-1"], @5);
+}
+
 @end
