@@ -587,10 +587,13 @@ NS_ASSUME_NONNULL_BEGIN
  Increments the value of a session attribute by the provided amount. If the key does not
  exist among the current session attributes, this method will add the key to the session attributes
  and set the value to the provided amount. If the key already exists and the existing value is not
- a number, the operation will abort and the returned value will be nil.
+ a number, the operation will abort.
+ 
+ Note: this method has been changed to be async, return value will always be @0.
+ 
  @param key The attribute key
  @param value The increment amount
- @returns The new value amount or nil, in case of failure
+ @returns The static value @0
  */
 - (nullable NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value;
 
