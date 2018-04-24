@@ -37,7 +37,7 @@
         BOOL shouldFilter = NO;
         
         if (self.kitConfiguration) {
-            NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)key];
+            NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", key.unsignedLongValue];
             shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
         }
         
