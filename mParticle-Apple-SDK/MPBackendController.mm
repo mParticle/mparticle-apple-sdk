@@ -1522,7 +1522,9 @@ static BOOL appBackgrounded = NO;
     
     session.attributesDictionary[localKey] = newValue;
     
-    [[MPPersistenceController sharedInstance] updateSession:session];
+    dispatch_async(messageQueue, ^{
+        [[MPPersistenceController sharedInstance] updateSession:session];
+    });
     
     return (NSNumber *)newValue;
 }

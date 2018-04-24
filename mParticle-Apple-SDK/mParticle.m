@@ -1215,18 +1215,22 @@ NSString *const kMPStateKey = @"state";
     networkPerformance.bytesOut = bytesSent;
     networkPerformance.bytesIn = bytesReceived;
     
-    [self.backendController logNetworkPerformanceMeasurement:networkPerformance
-                                           completionHandler:^(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus) {
-
-                                               if (execStatus == MPExecStatusSuccess) {
-                                                   MPILogDebug(@"Logged network performance measurement");
-                                               }
-                                           }];
+    
+    dispatch_async(messageQueue, ^{
+        
+        [self.backendController logNetworkPerformanceMeasurement:networkPerformance
+                                               completionHandler:^(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus) {
+                                                   
+                                                   if (execStatus == MPExecStatusSuccess) {
+                                                       MPILogDebug(@"Logged network performance measurement");
+                                                   }
+                                               }];
+        
+    });
 }
 
 #pragma mark Session management
 - (NSNumber *)incrementSessionAttribute:(NSString *)key byValue:(NSNumber *)value {
-
     NSNumber *newValue = [self.backendController incrementSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key byValue:value];
     
     MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
@@ -1235,13 +1239,15 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setSessionAttribute:(NSString *)key value:(id)value {
-    
-    MPExecStatus execStatus = [self.backendController setSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key value:value];
-    if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Set session attribute - %@:%@", key, value);
-    } else {
-        MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
-    }
+    dispatch_async(messageQueue, ^{
+        
+        MPExecStatus execStatus = [self.backendController setSessionAttribute:[MPStateMachine sharedInstance].currentSession key:key value:value];
+        if (execStatus == MPExecStatusSuccess) {
+            MPILogDebug(@"Set session attribute - %@:%@", key, value);
+        } else {
+            MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
+        }
+    });
 }
 
 - (void)upload {
