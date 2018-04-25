@@ -61,7 +61,10 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
                 NSMutableArray *userIdNumbers = [NSMutableArray array];
                 [userIds enumerateObjectsUsingBlock:^(NSString * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
                     NSNumber *userId = @(obj.longLongValue);
-                    [userIdNumbers addObject:userId];
+                    if (userId && ![userId isEqual:@0]) {
+                        [userIdNumbers addObject:userId];
+                    }
+                    
                 }];
                 
                 if (userIdNumbers) {
