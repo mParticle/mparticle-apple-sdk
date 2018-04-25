@@ -880,26 +880,32 @@ static BOOL appBackgrounded = NO;
 #endif
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    [self.session suspendSession];
-    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-    
     [self beginBackgroundTask];
+    
     if (MParticle.sharedInstance.automaticSessionTracking) {
         [self beginBackgroundTimer];
     }
+#endif
+    
     dispatch_async(messageQueue, ^{
+        
+        [self.session suspendSession];
+        [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
+        
+#if !defined(MPARTICLE_APP_EXTENSIONS)
         [self uploadDatabaseWithCompletionHandler:^{
             if (!MParticle.sharedInstance.automaticSessionTracking) {
                 [self endBackgroundTask];
             }
         }];
+#endif
     });
     
-#else
+    
+#if defined(MPARTICLE_APP_EXTENSIONS)
     [self endSession];
 #endif
-    
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
