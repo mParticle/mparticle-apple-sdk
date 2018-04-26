@@ -1059,10 +1059,6 @@ NSString *const kMPStateKey = @"state";
     
     if ([extension conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
         registrationSuccessful = [MPKitContainer registerKit:(id<MPExtensionKitProtocol>)extension];
-        
-        MPILogDebug(@"Registered kit extension: %@", extension);
-    } else {
-        MPILogError(@"Could not register extension: %@", extension);
     }
     
     return registrationSuccessful;
