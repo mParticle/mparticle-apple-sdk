@@ -88,7 +88,7 @@ NSString *const sessionUUIDKey = @"sessionId";
 
 #pragma mark Public accessors
 - (NSTimeInterval)foregroundTime {
-    return _length - _backgroundTime;
+    return _length - _backgroundTime;//sl
 }
 
 - (void)setEndTime:(NSTimeInterval)endTime {
@@ -102,7 +102,7 @@ NSString *const sessionUUIDKey = @"sessionId";
     }
 }
 
-- (NSTimeInterval)length {
+- (NSTimeInterval)length {//slx
     if (_length == 0 && _endTime > _startTime) {
         [self willChangeValueForKey:@"length"];
         _length = _endTime - _startTime;

@@ -108,6 +108,7 @@ static BOOL appBackgrounded = NO;
         uploadSource = nil;
         originalAppDelegateProxied = NO;
         backendSemaphore = dispatch_semaphore_create(1);
+        timeAppWentToBackground = 0;
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
@@ -497,9 +498,8 @@ static BOOL appBackgrounded = NO;
     
     NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
     if (endCurrentSession) {
-        self.session.endTime = [[NSDate date] timeIntervalSince1970];
         [persistence updateSession:self.session];
-        self.session = nil;
+        self->_session = nil;
         if (self.eventSet.count == 0) {
             self.eventSet = nil;
         }
@@ -1047,7 +1047,9 @@ static BOOL appBackgrounded = NO;
         BOOL sessionExpired = _session == nil;
         if (!sessionExpired) {
             NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-            _session.backgroundTime += currentTime - timeAppWentToBackground;
+            if (timeAppWentToBackground > 0) {
+                _session.backgroundTime += currentTime - timeAppWentToBackground;
+            }
             timeAppWentToBackground = 0.0;
             _session.endTime = currentTime;
             [[MPPersistenceController sharedInstance] updateSession:_session];
@@ -1090,12 +1092,10 @@ static BOOL appBackgrounded = NO;
                                       strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
                                       
                                       if (!strongSelf->longSession) {
-                                          NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-                                          
-                                          void(^processSession)(NSTimeInterval) = ^(NSTimeInterval timeout) {
+                                          NSTimeInterval timeInBackground =  [[NSDate date] timeIntervalSince1970] - timeAppWentToBackground;
+                                          if (timeInBackground >= strongSelf.sessionTimeout) {
                                               [strongSelf endBackgroundTimer];
-                                              strongSelf.session.backgroundTime += timeout;
-                                              [[MPPersistenceController sharedInstance] updateSession:strongSelf->_session];
+                                              [[MPPersistenceController sharedInstance] updateSession:strongSelf.session];
                                               
                                               [strongSelf processOpenSessionsEndingCurrent:YES
                                                                          completionHandler:^(BOOL success) {
@@ -1104,14 +1104,7 @@ static BOOL appBackgrounded = NO;
                                                                              MPILogDebug(@"SDK has ended background activity.");
                                                                              [strongSelf endBackgroundTask];
                                                                          }];
-                                          };
-                                          
-                                          if ((MINIMUM_SESSION_TIMEOUT + 0.1) >= strongSelf.sessionTimeout) {
-                                              processSession(strongSelf.sessionTimeout);
-                                          } else if (backgroundStartTime == 0) {
-                                              backgroundStartTime = currentTime;
-                                          } else if ((currentTime - backgroundStartTime) >= strongSelf.sessionTimeout) {
-                                              processSession(currentTime - timeAppWentToBackground);
+                                              
                                           }
                                       } else {
                                           backgroundStartTime = 0;
@@ -1273,55 +1266,35 @@ static BOOL appBackgrounded = NO;
     
     _session.endTime = [[NSDate date] timeIntervalSince1970];
     
-    MPSession *endSession = [_session copy];
-    NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(endSession.foregroundTime),
-                                          kMPSessionTotalLengthKey:MPMilliseconds(endSession.length),
-                                          kMPEventCounterKey:@(endSession.eventCounter)}
+    MPSession *sessionToEnd = [_session copy];
+    NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(sessionToEnd.foregroundTime),
+                                          kMPSessionTotalLengthKey:MPMilliseconds(sessionToEnd.length),
+                                          kMPEventCounterKey:@(sessionToEnd.eventCounter)}
                                         mutableCopy];
     
-    NSDictionary *sessionAttributesDictionary = [endSession.attributesDictionary transformValuesToString];
+    NSDictionary *sessionAttributesDictionary = [sessionToEnd.attributesDictionary transformValuesToString];
     if (sessionAttributesDictionary) {
         messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
     }
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    MPMessage *message = [persistence fetchSessionEndMessageInSession:endSession];
+    MPMessage *message = [persistence fetchSessionEndMessageInSession:sessionToEnd];
     
     if (!message) {
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:endSession messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:sessionToEnd messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
         messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
 #endif
-        message = (MPMessage *)[[messageBuilder withTimestamp:endSession.endTime] build];
+        message = (MPMessage *)[[messageBuilder withTimestamp:sessionToEnd.endTime] build];
         
         [self saveMessage:message updateSession:NO];
     }
     
-    [persistence archiveSession:endSession];
-    
-    __weak MPBackendController *weakSelf = self;
-    
-    [self requestConfig:^(BOOL uploadBatch) {
-        if (!uploadBatch) {
-            return;
-        }
-        
-        __strong MPBackendController *strongSelf = weakSelf;
-        if (!strongSelf) {
-            return;
-        }
-        
-        [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
-           if (!strongSelf) {
-               return;
-           }
-        }];
-    }];
-    
-    [self broadcastSessionDidEnd:endSession];
+    [persistence archiveSession:sessionToEnd];
+    [self broadcastSessionDidEnd:sessionToEnd];
     _session = nil;
     
-    MPILogVerbose(@"Session Ended: %@", endSession.uuid);
+    MPILogVerbose(@"Session Ended: %@", sessionToEnd.uuid);
 }
 
 - (void)beginTimedEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
@@ -1924,7 +1897,7 @@ static BOOL appBackgrounded = NO;
     MPILogVerbose(@"Source Event Id: %@", message.uuid);
     
     if (updateSession) {
-        if (self.session.persisted) {
+        if (messageTypeCode != MPMessageTypeSessionEnd && self.session.persisted) {
             self.session.endTime = [[NSDate date] timeIntervalSince1970];
             [persistence updateSession:self.session];
         } else {
