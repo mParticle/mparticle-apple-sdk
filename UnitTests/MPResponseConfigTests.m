@@ -2,6 +2,11 @@
 #import "MPResponseConfig.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
+#import "mParticle.h"
+
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
 
 @interface MPResponseConfigTests : XCTestCase
 
@@ -18,25 +23,36 @@
 }
 
 - (void)testInstance {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeIgnore,
                                     kMPRemoteConfigSessionTimeoutKey:@112};
+    dispatch_async([MParticle messageQueue], ^{
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        XCTAssertNotNil(responseConfig, @"Should not have been nil.");
+        [expectation fulfill];
+    });
     
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-    XCTAssertNotNil(responseConfig, @"Should not have been nil.");
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testInvalidConfigurations {
-    NSDictionary *configuration = nil;
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-    XCTAssertNil(responseConfig, @"Should have been nil.");
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSDictionary *configuration = nil;
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        XCTAssertNil(responseConfig, @"Should have been nil.");
+        
+        configuration = (NSDictionary *)[NSNull null];
+        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        XCTAssertNil(responseConfig, @"Should have been nil.");
+        [expectation fulfill];
+    });
     
-    configuration = (NSDictionary *)[NSNull null];
-    responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-    XCTAssertNil(responseConfig, @"Should have been nil.");
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testUpdateCustomModuleSettingsOnRestore {
@@ -66,29 +82,36 @@
 }
 
 - (void)testSaveRestore {
-    NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                    kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                    kMPRemoteConfigRampKey:@100,
-                                    kMPRemoteConfigTriggerKey:[NSNull null],
-                                    kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
+                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                        kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigTriggerKey:[NSNull null],
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        
+        
+        [MPResponseConfig save:responseConfig];
+        
+        MPResponseConfig *restoredResponseConfig = [MPResponseConfig restore];
+        XCTAssertNotNil(restoredResponseConfig);
+        XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
+        
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+        NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
+        
+        if ([fileManager fileExistsAtPath:configurationPath]) {
+            [fileManager removeItemAtPath:configurationPath error:nil];
+        }
+        [expectation fulfill];
+    });
     
-    [MPResponseConfig save:responseConfig];
-    
-    MPResponseConfig *restoredResponseConfig = [MPResponseConfig restore];
-    XCTAssertNotNil(restoredResponseConfig);
-    XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
-    
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
-    
-    if ([fileManager fileExistsAtPath:configurationPath]) {
-        [fileManager removeItemAtPath:configurationPath error:nil];
-    }
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 @end
