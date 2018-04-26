@@ -502,8 +502,6 @@ NSString *const kMPStateKey = @"state";
         self.uploadInterval = options.uploadInterval;
     }
     
-    self.options = options;
-    
     NSString *apiKey = options.apiKey;
     NSString *secret = options.apiSecret;
 
