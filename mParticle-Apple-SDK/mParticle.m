@@ -176,11 +176,6 @@ NSString *const kMPStateKey = @"state";
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
     _automaticSessionTracking = YES;
-    _backendController = [[MPBackendController alloc] initWithDelegate:self];
-    
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
-#endif
     
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     // OS Notifications
@@ -493,6 +488,12 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     sdkInitialized=YES;
+    
+    _backendController = [[MPBackendController alloc] initWithDelegate:self];
+
+#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
+    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
+#endif
 
     if (options.isLogLevelSet) {
         self.logLevel = options.logLevel;
@@ -511,6 +512,7 @@ NSString *const kMPStateKey = @"state";
     NSAssert((NSNull *)apiKey != [NSNull null] && (NSNull *)secret != [NSNull null], @"mParticle SDK apiKey and secret cannot be null.");
     
     self.options = options;
+    
     MPInstallationType installationType = options.installType;
     MPEnvironment environment = options.environment;
     BOOL proxyAppDelegate = options.proxyAppDelegate;
