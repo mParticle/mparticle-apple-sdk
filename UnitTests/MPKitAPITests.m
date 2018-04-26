@@ -87,6 +87,9 @@
 }
 
 - (void)testIntegrationAttributes {
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    
     [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
 
     NSArray *configurations = @[
@@ -115,6 +118,8 @@
 }
 
 - (void)testUserIdentities {
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     NSArray *userIdentities = @[@{
                                     @"n":@(MPUserIdentityEmail),
                                     @"i":@"example@example.com",

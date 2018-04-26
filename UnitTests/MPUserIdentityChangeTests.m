@@ -5,6 +5,11 @@
 #import "MParticle.h"
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
+#import "MPBackendController.h"
+
+@interface MParticle ()
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@end
 
 @interface MPUserIdentityChangeTests : XCTestCase
 
@@ -21,6 +26,9 @@
 }
 
 - (void)testUserIdentityRequest {
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
 
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
@@ -34,6 +42,9 @@
 }
 
 - (void)testSelectedUserIdentityRequest {
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    
     NSNumber *selectedUserID = [NSNumber numberWithInteger:58591];
 
 
