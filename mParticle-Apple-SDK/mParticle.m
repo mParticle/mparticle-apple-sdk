@@ -1077,7 +1077,10 @@ NSString *const kMPStateKey = @"state";
     MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
     
     if (integrationAttributes) {
-        [[MPPersistenceController sharedInstance] saveIntegrationAttributes:integrationAttributes];
+        dispatch_async(messageQueue, ^{
+            [[MPPersistenceController sharedInstance] saveIntegrationAttributes:integrationAttributes];
+        });
+        
     } else {
         returnCode = MPKitReturnCodeRequirementsNotMet;
     }
@@ -1090,7 +1093,9 @@ NSString *const kMPStateKey = @"state";
     BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:kitCode];
 
     if (validKitCode) {
-        [[MPPersistenceController sharedInstance] deleteIntegrationAttributesForKitCode:kitCode];
+        dispatch_async(messageQueue, ^{
+            [[MPPersistenceController sharedInstance] deleteIntegrationAttributesForKitCode:kitCode];
+        });
     } else {
         returnCode = MPKitReturnCodeRequirementsNotMet;
     }
