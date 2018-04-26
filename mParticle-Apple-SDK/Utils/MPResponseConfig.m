@@ -26,8 +26,11 @@
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     if (dataReceivedFromServer) {
-        [[MPKitContainer sharedInstance] configureKits:_configuration[kMPRemoteConfigKitsKey]];
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            [[MPKitContainer sharedInstance] configureKits:_configuration[kMPRemoteConfigKitsKey]];
+        });
     }
+    
     [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];
     [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
     [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
