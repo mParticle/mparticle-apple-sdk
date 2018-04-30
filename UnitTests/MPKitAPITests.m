@@ -87,26 +87,36 @@
 }
 
 - (void)testIntegrationAttributes {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    dispatch_async([MParticle messageQueue], ^{
+        
+        
+        mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+        
+        [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
+        
+        NSArray *configurations = @[
+                                    @{
+                                        @"id":@(42),
+                                        @"as":@{
+                                                @"testConfigKey":@"testConfigValue"
+                                                }
+                                        }
+                                    ];
+        
+        [_kitContainer configureKits:nil];
+        [_kitContainer configureKits:configurations];
+        
+        dispatch_async([MParticle messageQueue], ^{
+            NSDictionary *integrationAttributes = [_kitApi integrationAttributes];
+            NSString *value = integrationAttributes[@"Test key"];
+            XCTAssertEqualObjects(value, @"Test value");
+            [expectation fulfill];
+        });
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
     
-    [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
-
-    NSArray *configurations = @[
-                                @{
-                                    @"id":@(42),
-                                    @"as":@{
-                                            @"testConfigKey":@"testConfigValue"
-                                            }
-                                }
-                                ];
-    
-    [_kitContainer configureKits:nil];
-    [_kitContainer configureKits:configurations];
-    
-    NSDictionary *integrationAttributes = [_kitApi integrationAttributes];
-    NSString *value = integrationAttributes[@"Test key"];
-    XCTAssertEqualObjects(value, @"Test value");
 }
 
 - (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration {
