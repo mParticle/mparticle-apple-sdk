@@ -168,6 +168,11 @@ const int MaxBreadcrumbs = 50;
     documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
 #endif
     
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    if (![fileManager fileExistsAtPath:documentsDirectory]) {
+        [fileManager createDirectoryAtPath:documentsDirectory withIntermediateDirectories:YES attributes:nil error:nil];
+    }
+    
     NSNumber *currentDatabaseVersion = [databaseVersions lastObject];
     NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
     _databasePath = [documentsDirectory stringByAppendingPathComponent:databaseName];
