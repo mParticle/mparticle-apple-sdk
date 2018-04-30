@@ -243,7 +243,7 @@
         }
     }
 
-    [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
+    [userDefaults deleteConfiguration];
 }
 
 - (void)testComposingWithHeaderData {
@@ -377,7 +377,7 @@
         }
     }
     
-    [[MPKitContainer sharedInstance] removeAllKitConfigurations];
+    [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
 }
 
 @end

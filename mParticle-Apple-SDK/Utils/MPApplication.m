@@ -359,7 +359,6 @@ static NSString *kMPAppStoreReceiptString = nil;
     if (![application.version isEqualToString:application.storedVersion] || ![application.build isEqualToString:application.storedBuild]) {
         application.launchCountSinceUpgrade = @1;
         application.upgradeDate = MPCurrentEpochInMilliseconds;
-        [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
     } else {
         application.launchCountSinceUpgrade = @([application.launchCountSinceUpgrade integerValue] + 1);
     }

@@ -84,57 +84,17 @@
 #pragma mark Private methods
 
 #pragma mark Public class methods
-+ (void)save:(nonnull MPResponseConfig *)responseConfig {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-    }
-
-    if (!responseConfig || !responseConfig.configuration) {
-        // If a kit is registered against the core SDK, there is an eTag present, and there is no corresponding kit configuration, then
-        // delete the saved eTag, thus "forcing" a config refresh on the next call to the server
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
-        if (!eTag) {
-            return;
-        }
-
-        NSArray<NSNumber *> *supportedKits = [[MPKitContainer sharedInstance] supportedKits];
-        for (NSNumber *kitCode in supportedKits) {
-            NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.eks", kitCode]];
-
-            if (![fileManager fileExistsAtPath:kitPath]) {
-                [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
-                break;
-            }
-        }
-
-        return;
-    }
-
-    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
-    
-    if ([fileManager fileExistsAtPath:configurationPath]) {
-        [fileManager removeItemAtPath:configurationPath error:nil];
-    }
-    
-    BOOL configurationArchived = [NSKeyedArchiver archiveRootObject:responseConfig.configuration toFile:configurationPath];
-    if (!configurationArchived) {
-        MPILogError(@"RequestConfig could not be archived.");
++ (void)save:(nonnull MPResponseConfig *)responseConfig eTag:(nonnull NSString *)eTag {
+    if (responseConfig && responseConfig.configuration) {
+        NSMutableDictionary *dictMutable = [responseConfig.configuration mutableCopy];
+        [dictMutable removeObjectsForKeys:[responseConfig.configuration allKeysForObject:[NSNull null]]];
+        
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:dictMutable andETag:eTag];
     }
 }
 
 + (nullable MPResponseConfig *)restore {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
-
-    if (![fileManager fileExistsAtPath:configurationPath]) {
-        return nil;
-    }
-    
-    NSDictionary *configuration = [NSKeyedUnarchiver unarchiveObjectWithFile:configurationPath];
+    NSDictionary *configuration = [[MPIUserDefaults standardUserDefaults] getConfiguration];
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO];
     
     return responseConfig;

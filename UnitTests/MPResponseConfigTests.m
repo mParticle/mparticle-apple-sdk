@@ -3,6 +3,7 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "mParticle.h"
+#import "MPIUserDefaults.h"
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
@@ -81,10 +82,10 @@
     XCTAssertNotNil([customModule objectForKey: @"vid"]);
 }
 
-- (void)testSaveRestore {
-    
+- (void)testSaveRestore {    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
     dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
         NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
                                         kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                                         kMPRemoteConfigRampKey:@100,
@@ -95,19 +96,17 @@
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
         
-        [MPResponseConfig save:responseConfig];
+        [MPResponseConfig save:responseConfig eTag:eTag];
+
+        configuration = @{kMPRemoteConfigRampKey:@100,
+                          kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                          kMPRemoteConfigSessionTimeoutKey:@112};
         
         MPResponseConfig *restoredResponseConfig = [MPResponseConfig restore];
         XCTAssertNotNil(restoredResponseConfig);
         XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
         
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-        NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
-        
-        if ([fileManager fileExistsAtPath:configurationPath]) {
-            [fileManager removeItemAtPath:configurationPath error:nil];
-        }
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
         [expectation fulfill];
     });
     

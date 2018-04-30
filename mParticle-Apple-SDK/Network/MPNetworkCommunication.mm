@@ -266,7 +266,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 #pragma mark Public methods
-- (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary))completionHandler {
+- (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary, NSString *eTag))completionHandler {
     
     BOOL shouldSendRequest = YES;
     
@@ -281,7 +281,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     if (!shouldSendRequest) {
-        completionHandler(YES, nil);
+        completionHandler(YES, nil, nil);
         return;
     }
     
@@ -310,7 +310,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     __strong MPNetworkCommunication *strongSelf = weakSelf;
     if (!strongSelf) {
-        completionHandler(NO, nil);
+        completionHandler(NO, nil, nil);
         return;
     }
     
@@ -325,23 +325,23 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
     
     if (responseCode == HTTPStatusCodeNotModified) {
-        completionHandler(YES, nil);
+        completionHandler(YES, nil, nil);
         [self configRequestDidSucceed];
         return;
     }
     
-    NSDictionary *configurationDictionary = nil;
     MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
     BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
     
     if (!data && success) {
-        completionHandler(NO, nil);
+        completionHandler(NO, nil, nil);
         MPILogWarning(@"Failed config request");
         return;
     }
     
     NSDictionary *headersDictionary = [httpResponse allHeaderFields];
     NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
+    NSDictionary *configurationDictionary = nil;
     success = success && [data length] > 0;
     
     if (!MPIsNull(eTag) && success) {
@@ -366,9 +366,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
     
-    completionHandler(success, configurationDictionary);
-    
-    if (success) {
+    if (success && configurationDictionary) {
+        completionHandler(success, configurationDictionary, eTag);
         [self configRequestDidSucceed];
     }
     
@@ -380,7 +379,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         
         if (connector.active) {
             MPILogWarning(@"Failed config request");
-            completionHandler(NO, nil);
+            completionHandler(NO, nil, nil);
         }
         
         [connector cancelRequest];

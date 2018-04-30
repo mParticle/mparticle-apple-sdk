@@ -34,7 +34,7 @@ typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessRe
 @property (nonatomic, unsafe_unretained, readonly) BOOL inUse;
 @property (nonatomic, unsafe_unretained, readonly) BOOL retrievingSegments;
 
-- (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary))completionHandler;
+- (void)requestConfig:(void(^ _Nonnull)(BOOL success, NSDictionary * _Nullable configurationDictionary, NSString * _Nullable eTag))completionHandler;
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler;
 

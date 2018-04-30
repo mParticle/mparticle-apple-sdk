@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+@class MPKitConfiguration;
+
 @interface MPIUserDefaults : NSObject
 
 + (nonnull instancetype)standardUserDefaults;
@@ -13,6 +15,11 @@
 - (void)migrateUserKeysWithUserId:(nonnull NSNumber *)userId;
 - (void)migrateToSharedGroupIdentifier:(nonnull NSString *)groupIdentifier;
 - (void)migrateFromSharedGroupIdentifier;
+- (nullable NSDictionary *)getConfiguration;
+- (nullable NSArray *)getKitConfigurations;
+- (void)setConfiguration:(nonnull NSDictionary *)responseConfiguration andETag:(nonnull NSString *)eTag;
+- (void)migrateConfiguration;
+- (void)deleteConfiguration;
 - (BOOL)isExistingUserId:(nonnull NSNumber *)userId;
 
 @end

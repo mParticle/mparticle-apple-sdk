@@ -186,14 +186,6 @@ static BOOL runningInBackground = NO;
     if (self.storedSDKVersion && storedSDKVersion && [_storedSDKVersion isEqualToString:storedSDKVersion]) {
         return;
     }
-    
-    NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
-    NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
-    if (newSDKMajorVersion && ![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
-        dispatch_async(messageQueue, ^{
-            [[MPKitContainer sharedInstance] removeAllKitConfigurations];
-        });
-    }
 
     _storedSDKVersion = storedSDKVersion;
 
@@ -204,8 +196,6 @@ static BOOL runningInBackground = NO;
     } else {
         userDefaults[@"storedSDKVersion"] = _storedSDKVersion;
     }
-    
-    [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
 }
 
 #pragma mark Private methods

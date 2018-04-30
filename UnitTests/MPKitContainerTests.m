@@ -20,6 +20,7 @@
 #import "MPKitConfiguration.h"
 #import "MPIUserDefaults.h"
 #import "MPForwardQueueParameters.h"
+#import "MPResponseConfig.h"
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
@@ -32,7 +33,6 @@
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
-- (NSArray<NSString *> *)fetchKitConfigurationFileNames;
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (void)replayQueuedItems;
 - (NSDictionary *)validateAndTransformToSafeConfiguration:(NSDictionary *)configuration;
@@ -154,78 +154,50 @@
                                      };
     
     NSDictionary *configuration2 = @{
-                                     @"id":@42,
+                                     @"id":@312,
                                      @"as":@{
                                              @"appId":@"cool app key 2"
                                              }
                                      };
     
-    NSArray *kitConfigs = @[configuration1];
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+    NSArray *kitConfigs = @[configuration1, configuration2];
     
-    NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    BOOL found = NO;
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary __block *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                        kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigTriggerKey:[NSNull null],
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                if ([[kitConfiguration kitCode] isEqual:@(42)]){
-                    XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
-                    found = YES;
-                }
-            }
-        } @catch (NSException *exception) {
-        }
-    }
-    
-    XCTAssertTrue(found);
-    found = NO;
-    
-    kitConfigs = @[configuration2];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"cool app key 2", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
-    
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                if ([[kitConfiguration kitCode] isEqual:@(42)]){
-                    
-                    XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
-                    
-                    found = YES;
-                }
+        [MPResponseConfig save:responseConfig eTag:eTag];
+        
+        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        
+        NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
             }
-        } @catch (NSException *exception) {
+            
+            if ([[kitConfiguration kitCode] isEqual:@(312)]){
+                
+                XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+            }
         }
-    }
+        
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+        [self resetUserAttributesAndIdentities];
+        
+        [expectation fulfill];
+    });
     
-    XCTAssertTrue(found);
-    
-    NSDictionary *configuration = @{
-                                    @"id":@42,
-                                    @"as":@{
-                                            @"appId":@"MyAppId"
-                                            }
-                                    };
-    
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:@[configuration]];
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [kitContainer startKit:@42 configuration:kitConfiguration];
-    
-    [self resetUserAttributesAndIdentities];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testRemoveKitConfiguration {
@@ -234,86 +206,80 @@
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{
-                                             @"appKey":@"unique key"
+                                             @"appId":@"cool app key"
                                              }
                                      };
     
     NSDictionary *configuration2 = @{
-                                     @"id":@314,
+                                     @"id":@312,
                                      @"as":@{
-                                             @"appId":@"unique id"
+                                             @"appId":@"cool app key 2"
                                              }
                                      };
     
-    NSArray *kitConfigs = @[configuration1, configuration2];
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
-    XCTAssertEqual(@"unique id", [kitContainer.kitConfigurations objectForKey:@314].configuration[@"appId"]);
+    NSArray __block *kitConfigs = @[configuration1, configuration2];
     
-    NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    BOOL found = NO;
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                                kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                                kMPRemoteConfigRampKey:@100,
+                                                kMPRemoteConfigTriggerKey:[NSNull null],
+                                                kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                                kMPRemoteConfigSessionTimeoutKey:@112};
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                
-                if ([[kitConfiguration kitCode] isEqual:@42]){
-                    XCTAssertEqualObjects(@"unique key", kitConfiguration.configuration[@"appKey"]);
-                    found = YES;
-                } else if ([[kitConfiguration kitCode] isEqual:@314]){
-                    XCTAssertEqualObjects(@"unique id", kitConfiguration.configuration[@"appId"]);
-                    found = YES;
-                }
-                
-                XCTAssertTrue(found);
-            }
-        } @catch (NSException *exception) {
-        }
-    }
-    
-    found = NO;
-    kitConfigs = @[configuration1];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
-    
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                if ([[kitConfiguration kitCode] isEqual:@42]){
-                    XCTAssertEqualObjects(@"unique key", kitConfiguration.configuration[@"appKey"]);
-                    found = YES;
-                }
+        [MPResponseConfig save:responseConfig eTag:eTag];
+        
+        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        
+        NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
             }
-        } @catch (NSException *exception) {
+            
+            if ([[kitConfiguration kitCode] isEqual:@(312)]){
+                
+                XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+            }
         }
-    }
+        
+        kitConfigs = @[configuration1];
+
+        configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                          kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                          kMPRemoteConfigRampKey:@100,
+                          kMPRemoteConfigTriggerKey:[NSNull null],
+                          kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                          kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        
+        [MPResponseConfig save:responseConfig eTag:eTag];
+        
+        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        
+        directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
+            }
+            
+            XCTAssertFalse([[kitConfiguration kitCode] isEqual:@(312)]);
+        }
+        
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+        [self resetUserAttributesAndIdentities];
+        
+        [expectation fulfill];
+    });
     
-    XCTAssertTrue(found);
-    
-    NSDictionary *configuration = @{
-                                    @"id":@42,
-                                    @"as":@{
-                                            @"appId":@"MyAppId"
-                                            }
-                                    };
-    
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:@[configuration]];
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [kitContainer startKit:@42 configuration:kitConfiguration];
-    
-    [self resetUserAttributesAndIdentities];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testIsDisabledByBracketConfiguration {

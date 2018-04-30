@@ -15,6 +15,7 @@
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
 #import "MPKitInstanceValidator.h"
+#import "MPResponseConfig.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -689,9 +690,18 @@
                                                      }
                                              };
             
+            NSString *eTag = @"1.618-2.718-3.141-42";
             NSArray *kitConfigs = @[configuration1, configuration2];
-            [[MPKitContainer sharedInstance] configureKits:nil];
-            [[MPKitContainer sharedInstance] configureKits:kitConfigs];
+            NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                              kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                              kMPRemoteConfigRampKey:@100,
+                              kMPRemoteConfigTriggerKey:[NSNull null],
+                              kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                              kMPRemoteConfigSessionTimeoutKey:@112};
+            
+            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+            
+            [MPResponseConfig save:responseConfig eTag:eTag];
         }
         
         

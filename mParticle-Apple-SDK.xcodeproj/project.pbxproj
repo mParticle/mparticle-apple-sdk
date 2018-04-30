@@ -427,6 +427,8 @@
 		C9DD21001D8A203900D3ABBE /* MPUserAttributeChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
+		D3832205209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */; };
+		D3832206209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */; };
 		D3CE95FE2073C02E000D1A22 /* FilteredMParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = D3CE95FC2073C02E000D1A22 /* FilteredMParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D3CE95FF2073C02E000D1A22 /* FilteredMParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = D3CE95FC2073C02E000D1A22 /* FilteredMParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D3CE96002073C02E000D1A22 /* FilteredMParticleUser.m in Sources */ = {isa = PBXBuildFile; fileRef = D3CE95FD2073C02E000D1A22 /* FilteredMParticleUser.m */; };
@@ -739,6 +741,7 @@
 		C9DD20B51D8A190600D3ABBE /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaultsTests.m; sourceTree = "<group>"; };
 		D3CE95FC2073C02E000D1A22 /* FilteredMParticleUser.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FilteredMParticleUser.h; path = Identity/FilteredMParticleUser.h; sourceTree = "<group>"; };
 		D3CE95FD2073C02E000D1A22 /* FilteredMParticleUser.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FilteredMParticleUser.m; path = Identity/FilteredMParticleUser.m; sourceTree = "<group>"; };
 		D3CE960420740893000D1A22 /* FilteredMPIdentityApiRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FilteredMPIdentityApiRequest.h; path = Identity/FilteredMPIdentityApiRequest.h; sourceTree = "<group>"; };
@@ -1254,6 +1257,7 @@
 				DBC78E1E2087A5D900210806 /* MPConsentStateTests.m */,
 				DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */,
 				DB8398422088F0EC0031AB1D /* MPConsentSerializationTests.m */,
+				D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1667,6 +1671,7 @@
 				C911FD951D8A365A002A3516 /* MPIntegrationAttributesTest.m in Sources */,
 				B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */,
 				C911FD8D1D8A365A002A3516 /* MPCommerceEventTests.m in Sources */,
+				D3832206209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */,
 				C911FD8C1D8A365A002A3516 /* MPCartTests.m in Sources */,
 				C911FD981D8A365A002A3516 /* MPKitContainerTests.m in Sources */,
 				C911FDA31D8A365A002A3516 /* MPUploadBuilderTests.m in Sources */,
@@ -1913,6 +1918,7 @@
 				C9DD20E11D8A193000D3ABBE /* BracketTests.mm in Sources */,
 				C9DD20FC1D8A202A00D3ABBE /* MPResponseConfigTests.m in Sources */,
 				C9DD20F11D8A1FB700D3ABBE /* MPKitAppsFlyerTest.m in Sources */,
+				D3832205209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */,
 				C9DD20E51D8A195100D3ABBE /* MPBackendControllerTests.mm in Sources */,
 				C9DD20FA1D8A202200D3ABBE /* MPPersistenceControllerTests.mm in Sources */,
 				C9DD20F61D8A200500D3ABBE /* MPKitTestClass.m in Sources */,

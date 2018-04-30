@@ -1,6 +1,11 @@
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPIConstants.h"
+#import "MPILogger.h"
+#import "MParticle.h"
+#import "MPKitConfiguration.h"
+
+NSString *const kitFileExtension = @"eks";
 
 static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
@@ -169,6 +174,75 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     
     [standardUserDefaults removeObjectForKey:kMPUserIdentitySharedGroupIdentifier];
+}
+
+- (NSDictionary *)getConfiguration {
+    NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    if (![[NSUserDefaults standardUserDefaults] objectForKey:kMResponseConfigurationMigrationKey]) {
+        [self migrateConfiguration];
+    }
+    
+    NSDictionary *configuration = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
+    
+    return configuration;
+}
+
+- (NSArray *)getKitConfigurations {
+    NSArray *configuration = [self getConfiguration][kMPRemoteConfigKitsKey];
+    return configuration;
+}
+
+- (void)setConfiguration:(NSDictionary *)responseConfiguration andETag:(NSString *)eTag {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    if (!responseConfiguration || !eTag) {
+        MPILogDebug(@"Set Configuration Failed /neTag: %@ /nConfiguration: %@", eTag, responseConfiguration);
+        
+        return;
+    }
+    
+    NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
+    [userDefaults setMPObject:eTag forKey:kMPHTTPETagHeaderKey userId:userID];
+    [userDefaults setMPObject:responseConfiguration forKey:kMResponseConfigurationKey userId:userID];
+}
+
+- (void)migrateConfiguration {
+    NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSString *eTag = [userDefaults mpObjectForKey:kMPHTTPETagHeaderKey userId:userID];
+    
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
+    NSString *configurationPath = [stateMachineDirectoryPath stringByAppendingPathComponent:@"RequestConfig.cfg"];
+    
+    NSDictionary *configuration = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
+    
+    if ([fileManager fileExistsAtPath:configurationPath]) {
+        if (eTag) {
+            NSDictionary *directoryContents = [NSKeyedUnarchiver unarchiveObjectWithFile:configurationPath];
+            
+            [userDefaults setConfiguration:directoryContents andETag:eTag];
+        } else {
+            [fileManager removeItemAtPath:configurationPath error:nil];
+            [self deleteConfiguration];
+        }
+    } else if ((eTag && !configuration) || (!eTag && configuration)) {
+        [self deleteConfiguration];
+    }
+    
+    [[NSUserDefaults standardUserDefaults] setObject:@1 forKey:kMResponseConfigurationMigrationKey];
+    MPILogDebug(@"Configuration Migration Complete");
+}
+
+- (void)deleteConfiguration {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    [userDefaults removeMPObjectForKey:kMResponseConfigurationKey];
+    [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
+    
+    MPILogDebug(@"Configuration Deleted");
 }
 
 - (BOOL)isExistingUserId:(NSNumber *)userId {

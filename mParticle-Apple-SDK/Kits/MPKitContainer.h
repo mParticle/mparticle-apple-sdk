@@ -22,8 +22,6 @@
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
-- (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath;
-- (void)removeAllKitConfigurations;
 - (nullable NSArray<NSNumber *> *)supportedKits;
 
 - (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus * _Nonnull * _Nonnull execStatus))kitHandler;

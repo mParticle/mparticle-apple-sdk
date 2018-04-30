@@ -128,8 +128,8 @@
 }
 
 - (void)testUserIdentities {
-    MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+
     NSArray *userIdentities = @[@{
                                     @"n":@(MPUserIdentityEmail),
                                     @"i":@"example@example.com",
@@ -144,7 +144,7 @@
                                     }
                                 ];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    [userDefaults setMPObject:userIdentities forKey:@"ui" userId:[MPPersistenceController mpId]];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     [userDefaults removeMPObjectForKey:@"ua"];
     
     NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)MPUserIdentityEmail];

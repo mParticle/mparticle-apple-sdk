@@ -228,28 +228,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)initializeKits {
-    NSArray *directoryContents = [self fetchKitConfigurationFileNames];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    BOOL initializedArchivedKits = NO;
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+
+    NSArray *directoryContents = [userDefaults getKitConfigurations];
     
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+    for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+        self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
+        [self startKit:kitConfiguration.kitCode configuration:kitConfiguration];
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
-                [self startKit:kitConfiguration.kitCode configuration:kitConfiguration];
-                initializedArchivedKits = YES;
-            }
-        } @catch (NSException *exception) {
-            [self removeKitConfigurationAtPath:kitPath];
-        }
-    }
-    
-    if (initializedArchivedKits) {
         self.kitsInitialized = YES;
     }
     
@@ -270,25 +257,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         }
     });
-}
-
-- (NSArray<NSString *> *)fetchKitConfigurationFileNames {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSArray<NSString *> *directoryContents = nil;
-    
-    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
-        
-        if (directoryContents.count == 0) {
-            directoryContents = nil;
-        }
-    }
-    
-    return directoryContents;
 }
 
 - (NSDictionary *)methodMessageTypeMapping {
@@ -1816,9 +1784,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
     
     NSPredicate *predicate;
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    NSString *kitPath;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
@@ -1839,7 +1804,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     // Configure kits according to server instructions
     for (NSDictionary *kitConfigurationDictionary in kitConfigurations) {
         MPKitConfiguration *kitConfiguration = nil;
-        BOOL shouldPersistKit = YES;
         
         NSNumber *kitCode = kitConfigurationDictionary[@"id"];
         
@@ -1927,20 +1891,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     }
                 }
             }
-            
-            if (shouldPersistKit) {
-                if (![fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-                    [fileManager createDirectoryAtPath:stateMachineDirectoryPath withIntermediateDirectories:YES attributes:nil error:nil];
-                }
-                
-                kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
-                
-                if ([fileManager fileExistsAtPath:kitPath]) {
-                    [fileManager removeItemAtPath:kitPath error:nil];
-                }
-                
-                [NSKeyedArchiver archiveRootObject:kitConfiguration toFile:kitPath];
-            }
         } else {
             MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", kitCode);
         }
@@ -1967,36 +1917,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     self.kitsInitialized = YES;
 
     dispatch_semaphore_signal(kitsSemaphore);
-}
-
-- (void)removeKitConfigurationAtPath:(nonnull NSString *)kitPath {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    
-    if ([fileManager fileExistsAtPath:kitPath]) {
-        [fileManager removeItemAtPath:kitPath error:nil];
-        [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
-    }
-}
-
-- (void)removeAllKitConfigurations {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    
-    if ([fileManager fileExistsAtPath:stateMachineDirectoryPath]) {
-        NSArray *directoryContents = [fileManager contentsOfDirectoryAtPath:stateMachineDirectoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"pathExtension == '%@'", kitFileExtension];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
-        
-        if (directoryContents.count > 0) {
-            [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
-            
-            for (NSString *fileName in directoryContents) {
-                NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
-                [fileManager removeItemAtPath:kitPath error:nil];
-            }
-        }
-    }
 }
 
 - (nullable NSArray<NSNumber *> *)supportedKits {

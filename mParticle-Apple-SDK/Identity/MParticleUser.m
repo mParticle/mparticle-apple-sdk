@@ -11,6 +11,7 @@
 #import "MPUserSegments.h"
 #import "MPUserSegments+Setters.h"
 #import "MPPersistenceController.h"
+#import "MPIUserDefaults.h"
 
 @interface MParticleUser () {
     MPConsentState *_consentState;
@@ -56,7 +57,13 @@
 }
 
 -(NSDictionary*) userIdentities {
-    NSMutableArray<NSDictionary<NSString *, id> *> *userIdentitiesArray = [[MParticle sharedInstance].backendController userIdentitiesForUserId:self.userId];
+    NSMutableArray *userIdentitiesArray = [[NSMutableArray alloc] initWithCapacity:10];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
+    if (userIdentityArray) {
+        [userIdentitiesArray addObjectsFromArray:userIdentityArray];
+    }
+    
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
     [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *identity = obj[@"i"];

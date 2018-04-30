@@ -594,26 +594,26 @@ static BOOL appBackgrounded = NO;
         return;
     }
         
-    [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary) {
-        if (!success) {
+    [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary, NSString * _Nullable eTag) {
+        if (success) {
+            if (eTag && configurationDictionary) {
+                MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
+                [MPResponseConfig save:responseConfig eTag: eTag];
+            }
+            
+            if ([[MPStateMachine sharedInstance].minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
+                MPILogDebug(@"Throttling batches");
+                
+                if (completionHandler) {
+                    completionHandler(NO);
+                }
+            } else if (completionHandler) {
+                completionHandler(YES);
+            }
+        } else {
             if (completionHandler) {
                 completionHandler(NO);
             }
-            
-            return;
-        }
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
-        [MPResponseConfig save:responseConfig];
-        
-        if ([[MPStateMachine sharedInstance].minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-            MPILogDebug(@"Throttling batches");
-            
-            if (completionHandler) {
-                completionHandler(NO);
-            }
-        } else if (completionHandler) {
-            completionHandler(YES);
         }
     }];
 }
