@@ -1959,13 +1959,17 @@ static BOOL appBackgrounded = NO;
 - (void)setUserAttribute:(NSString *)key value:(id)value timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
-    
-    NSAssert(validKey, @"'key' must be a string.");
-    NSAssert(value == nil || (value != nil && ([value isKindOfClass:[NSString class]] || [value isKindOfClass:[NSNumber class]])), @"'value' must be either nil, string, or number.");
-    
     if (!validKey) {
         if (completionHandler) {
             completionHandler(keyCopy, value, MPExecStatusMissingParam);
+        }
+        
+        return;
+    }
+    
+    if (!(([value isKindOfClass:[NSString class]] && ((NSString *)value).length > 0) || [value isKindOfClass:[NSNumber class]])) {
+        if (completionHandler) {
+            completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
         }
         
         return;
@@ -1980,12 +1984,17 @@ static BOOL appBackgrounded = NO;
     NSString *keyCopy = [key mutableCopy];
     BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
     
-    NSAssert(validKey, @"'key' must be a string.");
-    NSAssert(values == nil || (values != nil && ([values isKindOfClass:[NSArray class]])), @"'values' must be either nil or array.");
-    
     if (!validKey) {
         if (completionHandler) {
             completionHandler(keyCopy, values, MPExecStatusMissingParam);
+        }
+        
+        return;
+    }
+    
+    if (!([values isKindOfClass:[NSArray class]] && values.count > 0)) {
+        if (completionHandler) {
+            completionHandler(keyCopy, values, MPExecStatusInvalidDataType);
         }
         
         return;
@@ -1995,6 +2004,22 @@ static BOOL appBackgrounded = NO;
     userAttributeChange.isArray = YES;
     
     
+    userAttributeChange.timestamp = timestamp;
+    [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
+}
+
+- (void)removeUserAttribute:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
+    NSString *keyCopy = [key mutableCopy];
+    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
+    if (!validKey) {
+        if (completionHandler) {
+            completionHandler(keyCopy, @"", MPExecStatusMissingParam);
+        }
+        
+        return;
+    }
+    
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController mpId]] copy] key:keyCopy value:@""];
     userAttributeChange.timestamp = timestamp;
     [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
 }

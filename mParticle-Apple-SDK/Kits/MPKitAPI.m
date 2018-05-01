@@ -137,12 +137,12 @@
     return [selectedUser incrementUserAttribute:key byValue:value];
 }
 
-- (void)setUserAttribute:(NSString *_Nonnull)key value:(nullable id)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser {
+- (void)setUserAttribute:(NSString *_Nonnull)key value:(id _Nonnull)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser {
     MParticleUser *selectedUser = [[[MParticle sharedInstance] identity] getUser:filteredUser.userId];
     [selectedUser setUserAttribute:key value:value];
 }
 
-- (void)setUserAttributeList:(NSString *_Nonnull)key values:(nullable NSArray<NSString *> *)values forUser:(FilteredMParticleUser *_Nonnull)filteredUser {
+- (void)setUserAttributeList:(NSString *_Nonnull)key values:(NSArray<NSString *> *_Nonnull)values forUser:(FilteredMParticleUser *_Nonnull)filteredUser {
     MParticleUser *selectedUser = [[[MParticle sharedInstance] identity] getUser:filteredUser.userId];
     
     [selectedUser setUserAttributeList:key values:values];

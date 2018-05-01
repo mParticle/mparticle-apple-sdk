@@ -16,8 +16,8 @@
 
 - (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit;
 - (nullable NSNumber *)incrementUserAttribute:(NSString *_Nonnull)key byValue:(NSNumber *_Nonnull)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
-- (void)setUserAttribute:(NSString *_Nonnull)key value:(nullable id)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
-- (void)setUserAttributeList:(NSString *_Nonnull)key values:(nullable NSArray<NSString *> *)values forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
+- (void)setUserAttribute:(NSString *_Nonnull)key value:(id _Nonnull)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
+- (void)setUserAttributeList:(NSString *_Nonnull)key values:(NSArray<NSString *> * _Nonnull)values forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
 - (void)setUserTag:(NSString *_Nonnull)tag forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
 - (void)removeUserAttribute:(NSString *_Nonnull)key forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
 

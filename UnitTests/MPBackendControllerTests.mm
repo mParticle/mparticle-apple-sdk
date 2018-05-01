@@ -750,7 +750,7 @@
         userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
         XCTAssertEqualObjects(userAttributes, attributes);
         
-        [self.backendController setUserAttribute:@"TardisKey1" value:@"" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+        [self.backendController removeUserAttribute:@"TardisKey1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
         userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
         XCTAssertNotEqualObjects(userAttributes, attributes);
         XCTAssertNil(userAttributes[@"TardisKey1"]);
@@ -762,19 +762,20 @@
         
         XCTAssertEqualObjects(userAttributes, attributes);
         
-        [self.backendController setUserAttribute:@"TardisKey2" value:nil timestamp:[NSDate date] completionHandler:nil];
+        [self.backendController removeUserAttribute:@"TardisKey2" timestamp:[NSDate date] completionHandler:nil];
         userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
         XCTAssertNotEqualObjects(userAttributes, attributes);
-        XCTAssertEqualObjects(userAttributes[@"TardisKey2"], [NSNull null]);
+        XCTAssertNil(userAttributes[@"TardisKey2"]);
         
-        attributes = @{@"TardisKey2":[NSNull null],
-                       @"TardisKey3":@42,
+        attributes = @{@"TardisKey3":@42,
                        @"TardisKey4":@"Door"
                        };
         
         XCTAssertEqualObjects(userAttributes, attributes);
         
-        [self.backendController incrementUserAttribute:@"TardisKey2" byValue:@1];
+        [self.backendController incrementUserAttribute:@"TardisKey4" byValue:@1];
+        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+
         XCTAssertEqualObjects(userAttributes, attributes);
         
         NSArray *values = @[@"alohomora", @314];
@@ -783,12 +784,11 @@
         userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
         XCTAssertEqualObjects(userAttributes, attributes);
         
-        [self.backendController setUserAttribute:@"TardisKey4" values:nil timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+        [self.backendController removeUserAttribute:@"TardisKey4" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
         userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
         XCTAssertNil(userAttributes[@"TardisKey4"]);
         
-        attributes = @{@"TardisKey2":[NSNull null],
-                       @"TardisKey3":@42
+        attributes = @{@"TardisKey3":@42
                        };
         
         userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
@@ -829,7 +829,7 @@
         messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
         XCTAssertNil(messages);
         
-        [self.backendController setUserAttribute:@"TardisModel" value:@"" timestamp:[NSDate date] completionHandler:nil];
+        [self.backendController removeUserAttribute:@"TardisModel" timestamp:[NSDate date] completionHandler:nil];
         messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
         message = [messages firstObject];
         messageDictionary = [message dictionaryRepresentation];
@@ -919,7 +919,7 @@
         XCTAssertNotNil(userAttributeValue);
         XCTAssertEqualObjects(userAttributeValue, @1);
         
-        [self.backendController setUserAttribute:userAttributeKey value:@"" timestamp:[NSDate date] completionHandler:{}];
+        [self.backendController removeUserAttribute:userAttributeKey timestamp:[NSDate date] completionHandler:{}];
         userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
         XCTAssertNil(userAttributeValue);
         [expectation fulfill];

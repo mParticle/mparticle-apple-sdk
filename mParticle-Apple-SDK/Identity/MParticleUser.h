@@ -50,20 +50,18 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Sets a single user attribute. The property will be combined with any existing attributes.
- There is a 100 count limit to user attributes. Passing in an empty string value (@"") for an
- existing key will remove the user attribute.
+ There is a 100 count limit to user attributes.
  @param key The user attribute key
  @param value The user attribute value
  */
-- (void)setUserAttribute:(NSString *)key value:(nullable id)value;
+- (void)setUserAttribute:(NSString *)key value:(id)value;
 
 /**
  Sets a list of user attributes associated with a key.
- Passing nil to values for an existing key will remove the user attribute.
  @param key The user attribute list key
  @param values An array of user attributes
  */
-- (void)setUserAttributeList:(NSString *)key values:(nullable NSArray<NSString *> *)values;
+- (void)setUserAttributeList:(NSString *)key values:(NSArray<NSString *> *)values;
 
 /**
  Sets a single user tag or attribute.  The property will be combined with any existing attributes.
