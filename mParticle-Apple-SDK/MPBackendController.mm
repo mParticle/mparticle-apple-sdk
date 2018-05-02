@@ -864,22 +864,6 @@ static BOOL appBackgrounded = NO;
     
     timeAppWentToBackground = [[NSDate date] timeIntervalSince1970];
     
-    [self setPreviousSessionSuccessfullyClosed:@YES];
-    [self cleanUp];
-    [self endUploadTimer];
-    
-    NSMutableDictionary *messageInfo = [@{kMPAppStateTransitionType:kMPASTBackgroundKey} mutableCopy];
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-    if ([MPLocationManager trackingLocation] && ![MPStateMachine sharedInstance].locationManager.backgroundLocationTracking) {
-        [[MPStateMachine sharedInstance].locationManager.locationManager stopUpdatingLocation];
-    }
-    
-    messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
-#endif
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
 #if !defined(MPARTICLE_APP_EXTENSIONS)
     [self beginBackgroundTask];
     
@@ -888,7 +872,24 @@ static BOOL appBackgrounded = NO;
     }
 #endif
     
+    [self endUploadTimer];
+    
     dispatch_async(messageQueue, ^{
+        
+        [self setPreviousSessionSuccessfullyClosed:@YES];
+        [self cleanUp];
+        
+        NSMutableDictionary *messageInfo = [@{kMPAppStateTransitionType:kMPASTBackgroundKey} mutableCopy];
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
+#if TARGET_OS_IOS == 1
+        if ([MPLocationManager trackingLocation] && ![MPStateMachine sharedInstance].locationManager.backgroundLocationTracking) {
+            [[MPStateMachine sharedInstance].locationManager.locationManager stopUpdatingLocation];
+        }
+        
+        messageBuilder = [messageBuilder withLocation:[MPStateMachine sharedInstance].location];
+#endif
+        MPMessage *message = (MPMessage *)[messageBuilder build];
         
         [self.session suspendSession];
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
@@ -899,13 +900,10 @@ static BOOL appBackgrounded = NO;
                 [self endBackgroundTask];
             }
         }];
+#else
+        [self endSession];
 #endif
     });
-    
-    
-#if defined(MPARTICLE_APP_EXTENSIONS)
-    [self endSession];
-#endif
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
