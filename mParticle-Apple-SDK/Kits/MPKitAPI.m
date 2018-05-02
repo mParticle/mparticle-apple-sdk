@@ -33,7 +33,7 @@
     
     if (kits && kitCode) {
         [kits enumerateObjectsUsingBlock:^(id<MPExtensionKitProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-            if (obj.code.intValue == _kitCode.intValue) {
+            if (obj.code.intValue == self->_kitCode.intValue) {
                 component = obj.name;
             }
         }];

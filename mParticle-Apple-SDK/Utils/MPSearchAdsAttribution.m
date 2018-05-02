@@ -60,7 +60,7 @@
     void(^onceCompletionBlock)(void) = ^(){
         if (!called) {
             called = YES;
-            dispatch_async(messageQueue, ^{
+            dispatch_async(self->messageQueue, ^{
                 completionHandler();
             });
         }

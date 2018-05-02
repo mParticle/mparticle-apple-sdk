@@ -86,7 +86,7 @@ using namespace std;
     
     [matches enumerateObjectsUsingBlock:^(NSDictionary * _Nonnull matchDictionary, NSUInteger idx, BOOL * _Nonnull stop) {
         MPProjectionMatch *projectionMatch = [[MPProjectionMatch alloc] init];
-        if (_messageType == MPMessageTypeCommerceEvent) {
+        if (self->_messageType == MPMessageTypeCommerceEvent) {
             auxString = matchDictionary[@"property_name"];
             projectionMatch.attributeKey = !MPIsNull(auxString) && auxString.length > 0 ? auxString : nil;
             

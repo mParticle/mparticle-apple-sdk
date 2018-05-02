@@ -60,10 +60,12 @@ static BOOL trackingLocation = NO;
         [self.locationManager startUpdatingLocation];
     }
 }
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation {
     self.location = newLocation;
 }
+#pragma clang diagnostic pop
 
 #pragma mark Public accessors
 - (CLLocationManager *)locationManager {

@@ -145,8 +145,8 @@ static NSArray *mpFiddlerCertificates = nil;
                 NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:trustRef];
                 completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);
             } else {
-                if (_active) {
-                    _active = NO;
+                if (self->_active) {
+                    self->_active = NO;
                 }
                 
                 completionHandler(NSURLSessionAuthChallengeCancelAuthenticationChallenge, nil);

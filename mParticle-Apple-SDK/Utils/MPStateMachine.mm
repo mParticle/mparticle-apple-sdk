@@ -447,7 +447,7 @@ static BOOL runningInBackground = NO;
         [self didChangeValueForKey:@"firstSeenInstallation"];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = _firstSeenInstallation;
+            userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
             [userDefaults synchronize];
         });
     }
@@ -468,7 +468,7 @@ static BOOL runningInBackground = NO;
         [self didChangeValueForKey:@"firstSeenInstallation"];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = _firstSeenInstallation;
+            userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
             [userDefaults synchronize];
         });
     }

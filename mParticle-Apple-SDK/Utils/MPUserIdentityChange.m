@@ -70,11 +70,11 @@
             MPUserIdentity idType = [ui[kMPUserIdentityTypeKey] unsignedIntegerValue];
             id idValue = ui[kMPUserIdentityIdKey];
 
-            if (idType == _userIdentityNew.type && [idValue isEqual:_userIdentityNew.value]) {
-                _changed = NO;
+            if (idType == self->_userIdentityNew.type && [idValue isEqual:self->_userIdentityNew.value]) {
+                self->_changed = NO;
             }
 
-            if (!_changed) {
+            if (!self->_changed) {
                 *stop = YES;
             }
         }];

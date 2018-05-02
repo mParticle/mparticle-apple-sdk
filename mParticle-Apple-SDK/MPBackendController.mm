@@ -729,12 +729,12 @@ static BOOL appBackgrounded = NO;
             MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
             
             if (!uploadBuilder || !strongSelf) {
-                sessionBeingUploaded = nil;
+                self->sessionBeingUploaded = nil;
                 completionHandlerCopy(YES);
                 return;
             }
             
-            [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
+            [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
             [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
             [uploadBuilder build:^(MPUpload *upload) {
                 //Save the Upload to the Database (3)
@@ -745,7 +745,7 @@ static BOOL appBackgrounded = NO;
                 
             }];
             
-            deletedUserAttributes = nil;
+            self->deletedUserAttributes = nil;
         }];
     }];
     
@@ -786,7 +786,7 @@ static BOOL appBackgrounded = NO;
             return;
         }
         
-        sessionBeingUploaded = nil;
+        self->sessionBeingUploaded = nil;
         completionHandlerCopy(success);
     }];
 }
@@ -939,8 +939,8 @@ static BOOL appBackgrounded = NO;
         
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         
-        if (_session) {
-            MPSession *sessionCopy = [_session copy];
+        if (self->_session) {
+            MPSession *sessionCopy = [self->_session copy];
             
             // App exit message
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:sessionCopy messageInfo:@{kMPAppStateTransitionType:kMPASTExitKey}];
@@ -982,7 +982,7 @@ static BOOL appBackgrounded = NO;
                                                                                  sessionTimeout:self.sessionTimeout
                                                                                  uploadInterval:self.uploadInterval];
                         
-                        [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:deletedUserAttributes];
+                        [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
                         [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                         [uploadBuilder build: ^(MPUpload * _Nullable upload) {
                             [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
@@ -1046,15 +1046,15 @@ static BOOL appBackgrounded = NO;
     }
     
     dispatch_async(messageQueue, ^{
-        BOOL sessionExpired = _session == nil;
+        BOOL sessionExpired = self->_session == nil;
         if (!sessionExpired) {
             NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-            if (timeAppWentToBackground > 0) {
-                _session.backgroundTime += currentTime - timeAppWentToBackground;
+            if (self->timeAppWentToBackground > 0) {
+                self->_session.backgroundTime += currentTime - self->timeAppWentToBackground;
             }
-            timeAppWentToBackground = 0.0;
-            _session.endTime = currentTime;
-            [[MPPersistenceController sharedInstance] updateSession:_session];
+            self->timeAppWentToBackground = 0.0;
+            self->_session.endTime = currentTime;
+            [[MPPersistenceController sharedInstance] updateSession:self->_session];
         }
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:@{kMPAppStateTransitionType:kMPASTForegroundKey}];
@@ -1094,7 +1094,7 @@ static BOOL appBackgrounded = NO;
                                       strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
                                       
                                       if (!strongSelf->longSession) {
-                                          NSTimeInterval timeInBackground =  [[NSDate date] timeIntervalSince1970] - timeAppWentToBackground;
+                                          NSTimeInterval timeInBackground =  [[NSDate date] timeIntervalSince1970] - self->timeAppWentToBackground;
                                           if (timeInBackground >= strongSelf.sessionTimeout) {
                                               [strongSelf endBackgroundTimer];
                                               [[MPPersistenceController sharedInstance] updateSession:strongSelf.session];
@@ -1109,7 +1109,7 @@ static BOOL appBackgrounded = NO;
                                               
                                           }
                                       } else {
-                                          backgroundStartTime = 0;
+                                          self->backgroundStartTime = 0;
                                           
                                           if (!strongSelf->uploadSource) {
                                               [strongSelf beginUploadTimer];

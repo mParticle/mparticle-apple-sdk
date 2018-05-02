@@ -41,7 +41,7 @@ using namespace std;
     _preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
 
     [messages enumerateObjectsUsingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
-        [_preparedMessageIds addObject:@(message.messageId)];
+        [self->_preparedMessageIds addObject:@(message.messageId)];
         
         NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
         if (messageDictionaryRepresentation) {

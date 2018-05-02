@@ -723,8 +723,8 @@ static NSArray *actionNames;
                                 [eventInfo addEntriesFromDictionary:productDictionary];
                             }
                             
-                            if (_userDefinedAttributes.count > 0) {
-                                [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                            if (self->_userDefinedAttributes.count > 0) {
+                                [eventInfo addEntriesFromDictionary:self->_userDefinedAttributes];
                             }
 
                             if (eventInfo.count > 0) {

@@ -27,7 +27,7 @@
     
     if (dataReceivedFromServer) {
         dispatch_sync(dispatch_get_main_queue(), ^{
-            [[MPKitContainer sharedInstance] configureKits:_configuration[kMPRemoteConfigKitsKey]];
+            [[MPKitContainer sharedInstance] configureKits:self->_configuration[kMPRemoteConfigKitsKey]];
         });
     }
     

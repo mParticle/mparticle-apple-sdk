@@ -1153,7 +1153,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "SELECT _id, timestamp, membership_action FROM segment_memberships WHERE segment_id = ? AND mpid = ? ORDER BY timestamp";
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, segmentId);
             sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
             
@@ -1389,12 +1389,12 @@ const int MaxBreadcrumbs = 50;
         NSString *sqlString = [NSString stringWithFormat:@"UPDATE %@ SET mpid = ? WHERE mpid = 0", obj];
         const string sqlStatement = string([sqlString UTF8String]);
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             
             sqlite3_bind_int64(preparedStatement, 1, [mpid longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while updating zero-mpid table: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while updating zero-mpid table: %s", sqlite3_errmsg(self->mParticleDB));
             }
             
             sqlite3_clear_bindings(preparedStatement);
@@ -1646,20 +1646,20 @@ const int MaxBreadcrumbs = 50;
         sqlite3_stmt *preparedStatement;
         const string sqlStatement = "INSERT INTO segment_memberships (segment_id, timestamp, membership_action, mpid) VALUES (?, ?, ?, ?)";
         
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, segmentMembership.segmentId);
             sqlite3_bind_double(preparedStatement, 2, segmentMembership.timestamp);
             sqlite3_bind_int(preparedStatement, 3, segmentMembership.action);
             sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(mParticleDB));
+                MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(self->mParticleDB));
                 sqlite3_clear_bindings(preparedStatement);
                 sqlite3_finalize(preparedStatement);
                 return;
             }
             
-            segmentMembership.segmentMembershipId = sqlite3_last_insert_rowid(mParticleDB);
+            segmentMembership.segmentMembershipId = sqlite3_last_insert_rowid(self->mParticleDB);
             
             sqlite3_clear_bindings(preparedStatement);
         }

@@ -162,51 +162,51 @@
             
             switch (identityType) {
                 case MPUserIdentityCustomerId:
-                    _customerId = obj;
+                    self->_customerId = obj;
                     break;
                     
                 case MPUserIdentityEmail:
-                    _email = obj;
+                    self->_email = obj;
                     break;
                     
                 case MPUserIdentityFacebook:
-                    _facebook = obj;
+                    self->_facebook = obj;
                     break;
                     
                 case MPUserIdentityFacebookCustomAudienceId:
-                    _facebookCustomAudienceId = obj;
+                    self->_facebookCustomAudienceId = obj;
                     break;
                     
                 case MPUserIdentityGoogle:
-                    _google = obj;
+                    self->_google = obj;
                     break;
                     
                 case MPUserIdentityMicrosoft:
-                    _microsoft = obj;
+                    self->_microsoft = obj;
                     break;
                     
                 case MPUserIdentityOther:
-                    _other = obj;
+                    self->_other = obj;
                     break;
                     
                 case MPUserIdentityTwitter:
-                    _twitter = obj;
+                    self->_twitter = obj;
                     break;
                     
                 case MPUserIdentityYahoo:
-                    _yahoo = obj;
+                    self->_yahoo = obj;
                     break;
                     
                 case MPUserIdentityOther2:
-                    _other2 = obj;
+                    self->_other2 = obj;
                     break;
                     
                 case MPUserIdentityOther3:
-                    _other3 = obj;
+                    self->_other3 = obj;
                     break;
                     
                 case MPUserIdentityOther4:
-                    _other4 = obj;
+                    self->_other4 = obj;
                     break;
                     
                 default:

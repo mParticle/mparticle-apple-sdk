@@ -271,7 +271,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     dispatch_async([MParticle messageQueue], ^{
         
-        [_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self->_apiManager loginRequest:loginRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:loginRequest identityRequestType:MPIdentityRequestLogin httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
         
@@ -292,7 +292,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     };
     
     dispatch_async([MParticle messageQueue], ^{
-        [_apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self->_apiManager logout:logoutRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onIdentityRequestComplete:logoutRequest identityRequestType:MPIdentityRequestLogout httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:wrappedCompletion error: error];
         }];
     });
@@ -311,7 +311,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         }
     };
     dispatch_async([MParticle messageQueue], ^{
-        [_apiManager modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
+        [self->_apiManager modify:modifyRequest completion:^(MPIdentityHTTPModifySuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
             [self onModifyRequestComplete:modifyRequest httpResponse:httpResponse completion:wrappedCompletion error: error];
         }];
     });
