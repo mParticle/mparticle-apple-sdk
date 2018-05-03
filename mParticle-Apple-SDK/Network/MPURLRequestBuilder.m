@@ -246,7 +246,8 @@ static NSString *mpUserAgent = nil;
                 
                 MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                 NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
-                if (eTag) {
+                NSDictionary *config = [userDefaults getConfiguration];
+                if (eTag && config) {
                     [urlRequest setValue:eTag forHTTPHeaderField:@"If-None-Match"];
                 }
                 

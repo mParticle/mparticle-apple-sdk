@@ -200,10 +200,29 @@
 
 - (void)testEtag {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
-    if (!eTag) {
-        userDefaults[kMPHTTPETagHeaderKey] = @"1.618-2.718-3.141-42";
-    }
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration andETag:eTag];
 
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];

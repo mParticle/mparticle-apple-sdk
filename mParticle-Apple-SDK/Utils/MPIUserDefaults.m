@@ -184,7 +184,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         [self migrateConfiguration];
     }
     
-    NSDictionary *configuration = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
+    NSData *configurationData = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
+    NSDictionary *configuration = [NSKeyedUnarchiver unarchiveObjectWithData:configurationData];
     
     return configuration;
 }
@@ -203,9 +204,11 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         return;
     }
     
+    NSData *configuration = [NSKeyedArchiver archivedDataWithRootObject:responseConfiguration];
     NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
+    
     [userDefaults setMPObject:eTag forKey:kMPHTTPETagHeaderKey userId:userID];
-    [userDefaults setMPObject:responseConfiguration forKey:kMResponseConfigurationKey userId:userID];
+    [userDefaults setMPObject:configuration forKey:kMResponseConfigurationKey userId:userID];
 }
 
 - (void)migrateConfiguration {

@@ -86,10 +86,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
     dispatch_async([MParticle messageQueue], ^{
         NSString *eTag = @"1.618-2.718-3.141-42";
-        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
+        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
                                         kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         

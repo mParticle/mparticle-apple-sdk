@@ -86,10 +86,7 @@
 #pragma mark Public class methods
 + (void)save:(nonnull MPResponseConfig *)responseConfig eTag:(nonnull NSString *)eTag {
     if (responseConfig && responseConfig.configuration) {
-        NSMutableDictionary *dictMutable = [responseConfig.configuration mutableCopy];
-        [dictMutable removeObjectsForKeys:[responseConfig.configuration allKeysForObject:[NSNull null]]];
-        
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:dictMutable andETag:eTag];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfig.configuration andETag:eTag];
     }
 }
 
