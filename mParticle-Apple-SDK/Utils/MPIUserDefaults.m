@@ -185,7 +185,17 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     
     NSData *configurationData = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
-    NSDictionary *configuration = [NSKeyedUnarchiver unarchiveObjectWithData:configurationData];
+    NSDictionary *configuration = nil;
+    @try {
+        configuration = [NSKeyedUnarchiver unarchiveObjectWithData:configurationData];
+    } @catch (NSException *e) {
+        MPILogError(@"Got an exception trying to unarchive configuration: %@", e);
+        return nil;
+    }
+    
+    if (![configuration isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
     
     return configuration;
 }
@@ -204,7 +214,14 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         return;
     }
     
-    NSData *configuration = [NSKeyedArchiver archivedDataWithRootObject:responseConfiguration];
+    NSData *configuration = nil;
+    @try {
+        configuration = [NSKeyedArchiver archivedDataWithRootObject:responseConfiguration];
+    } @catch (NSException *e) {
+        MPILogError(@"Got an exception trying to archive configuration: %@", e);
+        return;
+    }
+    
     NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
     
     [userDefaults setMPObject:eTag forKey:kMPHTTPETagHeaderKey userId:userID];
