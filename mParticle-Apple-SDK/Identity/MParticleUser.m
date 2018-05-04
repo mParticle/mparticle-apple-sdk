@@ -103,7 +103,6 @@
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    __weak MParticleUser *weakSelf;
     
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
@@ -111,7 +110,6 @@
                                    identityType:identityType
                                       timestamp:timestamp
                               completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                  __strong MParticleUser *strongSelf = weakSelf;
                                   
                                   if (execStatus == MPExecStatusSuccess) {
                                       MPILogDebug(@"Set user identity: %@", identityString);
@@ -121,10 +119,7 @@
                                                                          userIdentity:identityString
                                                                          identityType:identityType
                                                                            kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                               FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
-                                                                               
                                                                                [kit setUserIdentity:identityString identityType:identityType];
-                                                                               [kit onUserIdentified:filteredUser];
                                                                            }];
                                   }
                               }];

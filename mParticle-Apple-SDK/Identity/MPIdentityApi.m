@@ -200,11 +200,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             break;
         }
         default: {
-            [[MPKitContainer sharedInstance] forwardIdentitySDKCall:@selector(onUserIdentified:)
-                                                         kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                             FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
-                                                             [kit onUserIdentified:filteredUser];
-                                                         }];
+            MPILogError(@"Unknown identity request type: %@", @(identityRequestType));
             break;
         }
     }

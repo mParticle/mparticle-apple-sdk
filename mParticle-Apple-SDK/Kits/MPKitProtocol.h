@@ -93,7 +93,6 @@
 - (nonnull MPKitExecStatus *)onSetUserAttribute:(nonnull FilteredMParticleUser *)user;
 - (nonnull MPKitExecStatus *)onSetUserTag:(nonnull FilteredMParticleUser *)user;
 
-- (nonnull MPKitExecStatus *)onUserIdentified:(nonnull FilteredMParticleUser *)user;
 - (nonnull MPKitExecStatus *)onIdentifyComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
 - (nonnull MPKitExecStatus *)onLoginComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
 - (nonnull MPKitExecStatus *)onLogoutComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
