@@ -13,12 +13,9 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 
-@interface MParticleUser () {
-    MPConsentState *_consentState;
-}
+@interface MParticleUser ()
 
 @property (nonatomic, strong) MPBackendController *backendController;
-
 
 @end
 
@@ -32,6 +29,12 @@
 @interface MPCart ()
 
 - (nonnull instancetype)initWithUserId:(NSNumber *_Nonnull)userId;
+
+@end
+
+@interface MPKitContainer ()
+
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
 @end
 
@@ -346,7 +349,23 @@
 #pragma mark - Consent State
 
 - (void)setConsentState:(MPConsentState *)state {
+    
     [MPPersistenceController setConsentState:state forMpid:self.userId];
+    
+    NSArray<NSDictionary *> *kitConfig = [[MPKitContainer sharedInstance].originalConfig copy];
+    if (kitConfig) {
+        [[MPKitContainer sharedInstance] configureKits:kitConfig];
+    }
+    
+    
+    dispatch_async([MParticle messageQueue], ^{
+        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
+            MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
+            if (!status.success) {
+                MPILogError(@"Failed to set consent state for kit=%@", status.kitCode);
+            }
+        }];
+    });
 }
 
 - (nullable MPConsentState *)consentState {

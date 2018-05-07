@@ -33,6 +33,8 @@
 #import "MPIntegrationAttributes.h"
 #import "MPKitAPI.h"
 #import "mParticle.h"
+#import "MPConsentKitFilter.h"
+#import "MPIConstants.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -360,6 +362,56 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return !localBracket->shouldForward();
 }
 
+- (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter {
+    if (!kitFilter) {
+        return NO;
+    }
+    
+    BOOL isMatch = NO;
+    
+    NSArray<MPConsentKitFilterItem *> *itemsArray = kitFilter.filterItems;
+    for (MPConsentKitFilterItem *item in itemsArray) {
+        int hash = item.javascriptHash;
+        
+        NSString *hashString = @(hash).stringValue;
+        BOOL consented = item.consented;
+        
+        MPConsentState *state = [MParticle sharedInstance].identity.currentUser.consentState;
+        
+        if (state == nil) {
+            return NO;
+        }
+        
+        NSDictionary<NSString *, MPGDPRConsent *> *gdprConsentState = [state.gdprConsentState copy];
+        
+        for (NSString *purpose in gdprConsentState) {
+            
+            MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
+            BOOL userConsented = gdprConsent.consented;
+            
+            string stringToHash = string(kMPConsentHashStringForGDPR.UTF8String);
+            stringToHash += string([[purpose lowercaseString] UTF8String]);
+            NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+            
+            if (consented == userConsented && [purposeHash isEqual:hashString]) {
+                isMatch = YES;
+                break;
+            }
+        }
+        
+    }
+    
+    BOOL shouldInclude;
+    if (kitFilter.shouldIncludeOnMatch) {
+        shouldInclude = isMatch;
+    } else {
+        shouldInclude = !isMatch;
+    }
+    
+    BOOL shouldDisable = !shouldInclude;
+    return shouldDisable;
+}
+
 - (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
@@ -380,6 +432,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 - (void)startKitRegister:(nonnull id<MPExtensionKitProtocol>)kitRegister configuration:(nonnull MPKitConfiguration *)kitConfiguration {
     BOOL disabled = [self isDisabledByBracketConfiguration:kitConfiguration.bracketConfiguration];
     if (disabled) {
+        return;
+    }
+    
+    disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter];
+    if (disabled) {
+        kitRegister.wrapperInstance = nil;
         return;
     }
     
@@ -926,6 +984,68 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         shouldFilter = kitConfiguration.userIdentityFilters[identityTypeString] && [kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
         
         kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
+    }
+    
+    return kitFilter;
+}
+
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forConsentState:(MPConsentState *)state {
+    if (!state) {
+        return nil;
+    }
+    
+    MPKitFilter *kitFilter = nil;
+    
+    MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
+    
+    if (kitConfiguration) {
+        
+        NSDictionary<NSString *, MPGDPRConsent *> *gdprState = state.gdprConsentState;
+        
+        NSString *regulationString = nil;
+        
+        if (gdprState) {
+            regulationString = kMPConsentHashStringForGDPR;
+            
+            NSString *regulationHash = [NSString stringWithCString:mParticle::Hasher::hashString(string([[regulationString lowercaseString] UTF8String])).c_str()
+                                                       encoding:NSUTF8StringEncoding];
+            
+            if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
+                kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
+                return kitFilter;
+            }
+        }
+        
+        if (gdprState && gdprState.count > 0) {
+            
+            if (kitConfiguration.consentPurposeFilters) {
+                
+                NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
+                
+                for (NSString *purpose in gdprState) {
+                    
+                    NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(string(regulationString.UTF8String) + string([[purpose lowercaseString] UTF8String])).c_str()
+                                                               encoding:NSUTF8StringEncoding];
+                    
+                    BOOL shouldFilterPurpose = kitConfiguration.consentPurposeFilters[purposeHash] && [kitConfiguration.consentPurposeFilters[purposeHash] isEqual:@0];
+                    
+                    if (!shouldFilterPurpose) {
+                        MPGDPRConsent *consent = gdprState[purpose];
+                        [filteredGDPRState setObject:consent forKey:purpose];
+                    }
+                }
+                
+                if (filteredGDPRState.count > 0) {
+                    MPConsentState *filteredState = [[MPConsentState alloc] init];
+                    [filteredState setGDPRConsentState:filteredGDPRState];
+                    
+                    kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
+                }
+                
+            }
+            
+        }
+        
     }
     
     return kitFilter;
@@ -1764,7 +1884,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
         std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
         
-        if (active && (bracket == nullptr || (bracket != nullptr && bracket->shouldForward()))) {
+        BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
+        
+        if (active && (bracket == nullptr || (bracket != nullptr && bracket->shouldForward())) && !disabledByConsent) {
             [activeKitsRegistry addObject:kitRegister];
         }
     }
@@ -1783,6 +1905,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     dispatch_semaphore_wait(kitsSemaphore, DISPATCH_TIME_FOREVER);
+    
+    self.originalConfig = kitConfigurations;
     
     NSPredicate *predicate;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
@@ -1819,11 +1943,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             self.kitConfigurations[kitCode] = kitConfiguration;
             
             if (kitInstance) {
-                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
                 
-                if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
-                    [kitInstance setConfiguration:kitConfiguration.configuration];
+                BOOL disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter];
+                if (disabled) {
+                    kitRegister.wrapperInstance = nil;
+                } else {
+                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
+                    
+                    if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
+                        [kitInstance setConfiguration:kitConfiguration.configuration];
+                    }
                 }
+                
             } else {
                 [self startKitRegister:kitRegister configuration:kitConfiguration];
                 kitInstance = kitRegister.wrapperInstance;
@@ -2130,6 +2261,28 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 });
                 
                 MPILogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, kitRegister.name);
+            }
+        }
+    }
+}
+
+- (void)forwardSDKCall:(SEL)selector consentState:(MPConsentState *)state kitHandler:(void (^)(id<MPKitProtocol> kit, MPConsentState *filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler {
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+    
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+            MPKitFilter *kitFilter = [self filter:kitRegister forConsentState:state];
+            if (!kitFilter.shouldFilter) {
+                MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    @try {
+                        kitHandler(kitRegister.wrapperInstance, kitFilter.forwardConsentState, kitConfiguration);
+                    } @catch (NSException *e) {
+                        MPILogError(@"Kit handler threw an exception: %@", e);
+                    }
+                });
+                
+                MPILogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
             }
         }
     }

@@ -2,6 +2,7 @@
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
+#import "MPConsentKitFilter.h"
 
 static NSTimeInterval epsilon = 0.05;
 
@@ -130,6 +131,22 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertEqualObjects(gdprState.timestamp, [NSDate dateWithTimeIntervalSince1970:(1524176880.888195/1000)]);
     XCTAssertEqualObjects(gdprState.location, @"foo-location-1");
     XCTAssertEqualObjects(gdprState.hardwareId, @"foo-hardware-id-1");
+}
+
+- (void)testFilterFromDictionary {
+    NSDictionary *configDictionary = @{@"i":@YES, @"v":@[@{@"c":@YES,@"h":@48278946},@{@"c":@YES,@"h":@1556641}]};
+    MPConsentKitFilter *filter = [MPConsentSerialization filterFromDictionary:configDictionary];
+    XCTAssertTrue(filter.shouldIncludeOnMatch);
+    NSArray<MPConsentKitFilterItem *> *filterItems = filter.filterItems;
+    XCTAssertEqual(filterItems.count, 2);
+    MPConsentKitFilterItem *firstItem = filterItems[0];
+    MPConsentKitFilterItem *secondItem = filterItems[1];
+    XCTAssertNotNil(firstItem);
+    XCTAssertNotNil(secondItem);
+    XCTAssertTrue(firstItem.consented);
+    XCTAssertTrue(secondItem.consented);
+    XCTAssertEqual(firstItem.javascriptHash, 48278946);
+    XCTAssertEqual(secondItem.javascriptHash, 1556641);
 }
 
 @end

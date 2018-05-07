@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 
 @class MPEventProjection;
+@class MPConsentKitFilter;
 
 @interface MPKitConfiguration : NSObject <NSCoding, NSCopying>
 
@@ -32,6 +33,9 @@
 @property (nonatomic, weak, readonly, nullable) NSDictionary *addEventAttributeList;
 @property (nonatomic, weak, readonly, nullable) NSDictionary *removeEventAttributeList;
 @property (nonatomic, weak, readonly, nullable) NSDictionary *singleItemEventAttributeList;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *consentRegulationFilters;
+@property (nonatomic, weak, readonly, nullable) NSDictionary *consentPurposeFilters;
+@property (nonatomic, strong, readonly, nullable) MPConsentKitFilter *consentKitFilter;
 
 - (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)configurationDictionary;
 

@@ -66,6 +66,7 @@ NSString *const kMPStateKey = @"state";
 @property (nonatomic, unsafe_unretained) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite) MPNetworkOptions *networkOptions;
+@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 
 @end
 
@@ -557,6 +558,8 @@ NSString *const kMPStateKey = @"state";
     _customUserAgent = self.options.customUserAgent;
     _collectUserAgent = self.options.collectUserAgent;
     
+    MPConsentState *consentState = self.options.consentState;
+    
     id currentIdentifier = userDefaults[kMPUserIdentitySharedGroupIdentifier];
     if (options.sharedGroupID == currentIdentifier) {
         // Do nothing, we only want to update NSUserDefaults on a change
@@ -581,6 +584,7 @@ NSString *const kMPStateKey = @"state";
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
                           startKitsAsync:startKitsAsync
+                            consentState:consentState
                        completionHandler:^{
                            __strong MParticle *strongSelf = weakSelf;
                            
@@ -602,6 +606,18 @@ NSString *const kMPStateKey = @"state";
                                    MPILogError(@"Identify request failed with error: %@", error);
                                }
                                if (options.onIdentifyComplete) {
+                                   
+                                   NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration;
+                                   
+                                   if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
+                                       
+                                       dispatch_sync(dispatch_get_main_queue(), ^{
+                                           [[MPKitContainer sharedInstance] configureKits:deferredKitConfiguration];
+                                           weakSelf.deferredKitConfiguration = nil;
+                                       });
+                                       
+                                   }
+                                   
                                    dispatch_async(dispatch_get_main_queue(), ^{
                                        options.onIdentifyComplete(apiResult, error);
                                    });

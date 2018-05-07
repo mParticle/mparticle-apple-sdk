@@ -5,6 +5,7 @@
 #import "MPStateMachine.h"
 #include "MessageTypeName.h"
 #import "MPILogger.h"
+#import "MPConsentSerialization.h"
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -41,7 +42,7 @@
     }
     
     // Filters
-    [self setFilters:configurationDictionary[@"hs"]];
+    [self setFilters:configurationDictionary[kMPRemoteConfigKitHashesKey]];
     
     // Configuration
     _configuration = configurationDictionary[@"as"];
@@ -65,6 +66,11 @@
     
     // Projections
     [self configureProjections:configurationDictionary[@"pr"]];
+    
+    // Consent kit filter
+    if (configurationDictionary[kMPConsentKitFilter]) {
+        _consentKitFilter = [MPConsentSerialization filterFromDictionary:configurationDictionary[kMPConsentKitFilter]];
+    }
     
     // Kit instance
     _bracketConfiguration = !MPIsNull(configurationDictionary[kMPRemoteConfigBracketKey]) ? configurationDictionary[kMPRemoteConfigBracketKey] : nil;
@@ -155,6 +161,8 @@
     _addEventAttributeList = _filters[@"eaa"];
     _removeEventAttributeList = _filters[@"ear"];
     _singleItemEventAttributeList = _filters[@"eas"];
+    _consentRegulationFilters = _filters[kMPConsentRegulationFilters];
+    _consentPurposeFilters = _filters[kMPConsentPurposeFilters];
 }
 
 #pragma mark Public methods

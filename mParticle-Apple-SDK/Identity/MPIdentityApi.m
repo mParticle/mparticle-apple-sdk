@@ -49,6 +49,12 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (void)setUserId:(NSNumber *)userId;
 @end
 
+@interface MPKitContainer ()
+
+@property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
+
+@end
+
 @implementation MPIdentityApi
 
 @synthesize currentUser = _currentUser;
@@ -159,6 +165,11 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     if (user) {
         NSDictionary *userInfo = @{mParticleUserKey:user};
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
+    }
+    
+    NSArray<NSDictionary *> *kitConfig = [[MPKitContainer sharedInstance].originalConfig copy];
+    if (kitConfig) {
+        [[MPKitContainer sharedInstance] configureKits:kitConfig];
     }
     
     // Forwarding calls to kits

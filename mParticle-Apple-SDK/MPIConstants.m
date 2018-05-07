@@ -78,6 +78,17 @@ NSString *const kMPConsentStateGDPRTimestampKey = @"timestamp";
 NSString *const kMPConsentStateGDPRLocationKey = @"location";
 NSString *const kMPConsentStateGDPRHardwareIdKey = @"hardware_id";
 
+// Consent filtering
+NSString *const kMPConsentKitFilter = @"crvf";
+NSString *const kMPConsentKitFilterIncludeOnMatch = @"i";
+NSString *const kMPConsentKitFilterItems = @"v";
+NSString *const kMPConsentKitFilterItemConsented = @"c";
+NSString *const kMPConsentKitFilterItemHash = @"h";
+NSString *const kMPConsentRegulationFilters = @"reg";
+NSString *const kMPConsentPurposeFilters = @"pur";
+NSString *const kMPConsentHashStringForGDPR = @"1";
+
+
 // Push Notifications
 NSString *const kMPDeviceTokenKey = @"to";
 NSString *const kMPPushStatusKey = @"r";
@@ -161,6 +172,7 @@ NSString *const kMPRemoteConfigAppDefined = @"appdefined";
 NSString *const kMPRemoteConfigForceTrue = @"forcetrue";
 NSString *const kMPRemoteConfigForceFalse = @"forcefalse";
 NSString *const kMPRemoteConfigKitsKey = @"eks";
+NSString *const kMPRemoteConfigKitHashesKey = @"hs";
 NSString *const kMPRemoteConfigConsumerInfoKey = @"ci";
 NSString *const kMPRemoteConfigCookiesKey = @"ck";
 NSString *const kMPRemoteConfigMPIDKey = @"mpid";

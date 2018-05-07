@@ -71,6 +71,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
 @property (atomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 @property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
+@property (atomic, strong, nullable) MPConsentState *consentState;
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 @end

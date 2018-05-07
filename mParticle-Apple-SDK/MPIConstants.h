@@ -117,6 +117,16 @@ extern NSString * _Nonnull const kMPConsentStateGDPRTimestampKey;
 extern NSString * _Nonnull const kMPConsentStateGDPRLocationKey;
 extern NSString * _Nonnull const kMPConsentStateGDPRHardwareIdKey;
 
+// Consent filtering
+extern NSString * _Nonnull const kMPConsentKitFilter;
+extern NSString * _Nonnull const kMPConsentKitFilterIncludeOnMatch;
+extern NSString * _Nonnull const kMPConsentKitFilterItems;
+extern NSString * _Nonnull const kMPConsentKitFilterItemConsented;
+extern NSString * _Nonnull const kMPConsentKitFilterItemHash;
+extern NSString * _Nonnull const kMPConsentRegulationFilters;
+extern NSString * _Nonnull const kMPConsentPurposeFilters;
+extern NSString * _Nonnull const kMPConsentHashStringForGDPR;
+
 // Push Notifications
 extern NSString * _Nonnull const kMPDeviceTokenKey;
 extern NSString * _Nonnull const kMPPushStatusKey;
@@ -200,6 +210,7 @@ extern NSString * _Nonnull const kMPRemoteConfigAppDefined;
 extern NSString * _Nonnull const kMPRemoteConfigForceTrue;
 extern NSString * _Nonnull const kMPRemoteConfigForceFalse;
 extern NSString * _Nonnull const kMPRemoteConfigKitsKey;
+extern NSString * _Nonnull const kMPRemoteConfigKitHashesKey;
 extern NSString * _Nonnull const kMPRemoteConfigConsumerInfoKey;
 extern NSString * _Nonnull const kMPRemoteConfigCookiesKey;
 extern NSString * _Nonnull const kMPRemoteConfigMPIDKey;

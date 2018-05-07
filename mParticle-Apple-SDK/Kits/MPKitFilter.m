@@ -1,5 +1,6 @@
 #import "MPKitFilter.h"
 #import "MPEvent.h"
+#import "MPConsentState.h"
 
 @implementation MPKitFilter
 
@@ -53,6 +54,18 @@
     _shouldFilter = shouldFilter;
     _forwardCommerceEvent = commerceEvent;
     _appliedProjections = appliedProjections;
+    
+    return self;
+}
+
+- (nonnull instancetype)initWithConsentState:(nonnull MPConsentState *)state shouldFilter:(BOOL)shouldFilter {
+    self = [super init];
+    if (!self) {
+        return nil;
+    }
+    
+    _shouldFilter = shouldFilter;
+    _forwardConsentState = state;
     
     return self;
 }

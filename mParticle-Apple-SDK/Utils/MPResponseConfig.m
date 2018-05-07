@@ -5,10 +5,15 @@
 #import "MPKitContainer.h"
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
+#import "MPPersistenceController.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
 #endif
+
+@interface MParticle ()
+@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
+@end
 
 @implementation MPResponseConfig
 
@@ -26,9 +31,47 @@
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     
     if (dataReceivedFromServer) {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            [[MPKitContainer sharedInstance] configureKits:self->_configuration[kMPRemoteConfigKitsKey]];
-        });
+        BOOL hasConsentFilters = NO;
+        
+        if (!MPIsNull(self->_configuration[kMPRemoteConfigKitsKey])) {
+            for (NSDictionary *kitDictionary in self->_configuration[kMPRemoteConfigKitsKey]) {
+                
+                BOOL hasConsentKitFilter = kitDictionary[kMPConsentKitFilter] != nil;
+                BOOL hasRegulationOrPurposeFilters = NO;
+                
+                NSDictionary *hashes = kitDictionary[kMPRemoteConfigKitHashesKey];
+                
+                if (hashes != nil && [hashes isKindOfClass:[NSDictionary class]]) {
+                    
+                    if (hashes[kMPConsentRegulationFilters] != nil || hashes[kMPConsentPurposeFilters] != nil) {
+                        hasRegulationOrPurposeFilters = YES;
+                    }
+                    
+                }
+                
+                if (hasConsentKitFilter || hasRegulationOrPurposeFilters) {
+       
+                    hasConsentFilters = YES;
+                    break;
+                    
+                }
+            }
+        }
+        
+        
+        NSNumber *mpid = [MPPersistenceController mpId];
+        BOOL hasInitialIdentity = mpid != nil && ![mpid isEqual:@0];
+        
+        BOOL shouldDefer = hasConsentFilters && !hasInitialIdentity;
+        
+        if (!shouldDefer) {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                [[MPKitContainer sharedInstance] configureKits:self->_configuration[kMPRemoteConfigKitsKey]];
+            });
+        } else {
+            [MParticle sharedInstance].deferredKitConfiguration = [self->_configuration[kMPRemoteConfigKitsKey] copy];
+        }
+        
     }
     
     [stateMachine configureCustomModules:_configuration[kMPRemoteConfigCustomModuleSettingsKey]];

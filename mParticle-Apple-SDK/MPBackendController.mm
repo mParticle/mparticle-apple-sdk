@@ -1810,18 +1810,26 @@ static BOOL appBackgrounded = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
 #if !defined(MPARTICLE_APP_EXTENSIONS)
     if (proxyAppDelegate) {
         [self proxyOriginalAppDelegate];
     }
 #endif
+    
+    [MPPersistenceController setConsentState:consentState forMpid:[MPPersistenceController mpId]];
+    
+    dispatch_block_t startKitsBlock = ^{
+        [MPKitContainer sharedInstance];
+        MParticle.sharedInstance.identity.currentUser.consentState = consentState;
+    };
+    
     if (startKitsAsync) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [MPKitContainer sharedInstance];
+            startKitsBlock();
         });
     } else {
-        [MPKitContainer sharedInstance];
+        startKitsBlock();
     }
     
     

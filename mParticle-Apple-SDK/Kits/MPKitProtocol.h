@@ -14,6 +14,7 @@
 @class MPKitExecStatus;
 @class MPUserSegments;
 @class MPKitAPI;
+@class MPConsentState;
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
 
@@ -97,6 +98,9 @@
 - (nonnull MPKitExecStatus *)onLoginComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
 - (nonnull MPKitExecStatus *)onLogoutComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
 - (nonnull MPKitExecStatus *)onModifyComplete:(nonnull FilteredMParticleUser *)user request:(nonnull FilteredMPIdentityApiRequest *)request;
+
+#pragma mark Consent state
+- (nonnull MPKitExecStatus *)setConsentState:(nullable MPConsentState *)state;
 
 #pragma mark e-Commerce
 - (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
