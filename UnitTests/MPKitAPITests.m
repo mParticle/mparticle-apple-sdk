@@ -105,11 +105,11 @@
                                         }
                                     ];
         
-        [_kitContainer configureKits:nil];
-        [_kitContainer configureKits:configurations];
+        [self->_kitContainer configureKits:nil];
+        [self->_kitContainer configureKits:configurations];
         
         dispatch_async([MParticle messageQueue], ^{
-            NSDictionary *integrationAttributes = [_kitApi integrationAttributes];
+            NSDictionary *integrationAttributes = [self->_kitApi integrationAttributes];
             NSString *value = integrationAttributes[@"Test key"];
             XCTAssertEqualObjects(value, @"Test value");
             [expectation fulfill];

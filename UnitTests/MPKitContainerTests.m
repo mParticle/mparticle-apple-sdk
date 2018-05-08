@@ -176,7 +176,7 @@
         
         [MPResponseConfig save:responseConfig eTag:eTag];
         
-        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         
         NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
@@ -233,7 +233,7 @@
         
         [MPResponseConfig save:responseConfig eTag:eTag];
         
-        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         
         NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
@@ -261,7 +261,7 @@
         
         [MPResponseConfig save:responseConfig eTag:eTag];
         
-        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         
         directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
@@ -850,7 +850,7 @@
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
 
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+        [self->kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
                     userAttributeKey:key
                                value:values
                           kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
@@ -1360,7 +1360,7 @@
     event.info = @{@"plan":@"premium", @"plan_color":@"gold", @"boolean":@YES};
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(logEvent:)
+        [self->kitContainer forwardSDKCall:@selector(logEvent:)
                                event:event
                          messageType:MPMessageTypeEvent
                             userInfo:nil
@@ -1541,7 +1541,7 @@
     commerceEvent.transactionAttributes = transactionAttributes;
 
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardCommerceEventCall:commerceEvent
+        [self->kitContainer forwardCommerceEventCall:commerceEvent
                                     kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
                                         if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
                                             MPEvent *event = kitFilter.forwardEvent;
@@ -1644,7 +1644,7 @@
     __block NSMutableArray<NSString *> *foundEventNames = [NSMutableArray arrayWithCapacity:2];
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(logEvent:)
+        [self->kitContainer forwardSDKCall:@selector(logEvent:)
                                event:event
                          messageType:MPMessageTypeEvent
                             userInfo:nil
@@ -1729,7 +1729,7 @@
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription", @"gender":@"female"};
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(logEvent:)
+        [self->kitContainer forwardSDKCall:@selector(logEvent:)
                                event:event
                          messageType:MPMessageTypeEvent
                             userInfo:nil
@@ -1798,7 +1798,7 @@
     event.info = @{@"outcome":@"not_new_subscription"};
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(logEvent:)
+        [self->kitContainer forwardSDKCall:@selector(logEvent:)
                                event:event
                          messageType:MPMessageTypeEvent
                             userInfo:nil
@@ -1871,7 +1871,7 @@
     event.info = @{@"plan":@"premium"};
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(logEvent:)
+        [self->kitContainer forwardSDKCall:@selector(logEvent:)
                                event:event
                          messageType:MPMessageTypeEvent
                             userInfo:nil
@@ -1947,7 +1947,7 @@
     event.info = @{@"test_description":@"this is a description"};
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardSDKCall:@selector(logEvent:)
+        [self->kitContainer forwardSDKCall:@selector(logEvent:)
                                event:event
                          messageType:MPMessageTypeEvent
                             userInfo:nil
@@ -2058,7 +2058,7 @@
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
     
     dispatch_async([MParticle messageQueue], ^{
-        [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+        [self->kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
             if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
                 XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
                 
