@@ -13,6 +13,7 @@
 #import "MPForwardRecord.h"
 #import "MPKitExecStatus.h"
 #import "mParticle.h"
+#import "MPUploadBuilder.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
@@ -369,10 +370,16 @@
     MPForwardRecord *fetchedForwardRecord = [forwardRecords firstObject];
     XCTAssertEqualObjects(forwardRecord, fetchedForwardRecord);
     
-    NSArray *ids = nil;
-    [persistence deleteForwardRecordsIds:ids];
-    [persistence deleteForwardRecordsIds:@[]];
-    [persistence deleteForwardRecordsIds:@[@(forwardRecord.forwardRecordId)]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
+                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                   messages:@[]
+                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+
+    [uploadBuilder build: ^(MPUpload * _Nullable upload) {
+    }];
     
     forwardRecords = [persistence fetchForwardRecords];
     XCTAssertNil(forwardRecords);

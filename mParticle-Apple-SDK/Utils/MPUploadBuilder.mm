@@ -155,6 +155,7 @@ using namespace std;
         
         if (fsr.count > 0) {
             uploadDictionary[kMPForwardStatsRecord] = fsr;
+            [persistence deleteForwardRecordsIds:forwardRecordsIds];
         }
     }
     

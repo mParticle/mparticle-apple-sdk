@@ -292,7 +292,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return;
     }
     
-    for (MPForwardQueueItem *forwardQueueItem in _forwardQueue) {
+    NSMutableArray<MPForwardQueueItem *> *forwardQueueCopy = _forwardQueue;
+    _forwardQueue = nil;
+    
+    for (MPForwardQueueItem *forwardQueueItem in forwardQueueCopy) {
         switch (forwardQueueItem.queueItemType) {
             case MPQueueItemTypeEvent: {
                 dispatch_async([MParticle messageQueue], ^{
@@ -316,8 +319,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         }
     }
-    
-    _forwardQueue = nil;
 }
 
 - (BOOL)shouldIncludeEventWithAttributes:(NSDictionary<NSString *, id> *)attributes afterAttributeValueFilteringWithConfiguration:(MPKitConfiguration *)configuration {
