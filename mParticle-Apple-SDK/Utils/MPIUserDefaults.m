@@ -185,6 +185,10 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     
     NSData *configurationData = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
+    if (MPIsNull(configurationData)) {
+        return nil;
+    }
+    
     NSDictionary *configuration = nil;
     @try {
         configuration = [NSKeyedUnarchiver unarchiveObjectWithData:configurationData];
