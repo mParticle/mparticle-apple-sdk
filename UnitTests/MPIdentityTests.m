@@ -5,9 +5,18 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
 #import "MPIdentityDTO.h"
+#import "MPNetworkCommunication.h"
+#if TARGET_OS_IOS == 1
+#import "OCMock.h"
+#endif
 
 @interface MPIdentityTests : XCTestCase
 
+@end
+
+@interface MPNetworkCommunication ()
+- (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion;
+- (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 @end
 
 #pragma mark - MPStateMachine category
@@ -43,5 +52,29 @@
     XCTAssertEqual(@"other id 3", httpIdentities.other3);
     XCTAssertEqual(@"other id 4", httpIdentities.other4);
 }
+
+#if TARGET_OS_IOS == 1
+
+- (void)testNoEmptyModifyRequests {
+    MPNetworkCommunication *network = [[MPNetworkCommunication alloc] init];
+    
+    id partialMock = OCMPartialMock(network);
+    
+    [[[partialMock reject] ignoringNonObjectArgs] identityApiRequestWithURL:[OCMArg any] identityRequest:[OCMArg any] blockOtherRequests:[OCMArg any] completion:[OCMArg any]];
+    
+    [partialMock modifyWithIdentityChanges:nil blockOtherRequests:YES completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+        XCTAssertNil(error);
+        XCTAssertNotNil(httpResponse);
+        XCTAssert([httpResponse isKindOfClass:[MPIdentityHTTPModifySuccessResponse class]]);
+    }];
+
+    [partialMock modifyWithIdentityChanges:@[] blockOtherRequests:YES completion:^(MPIdentityHTTPModifySuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+        XCTAssertNil(error);
+        XCTAssertNotNil(httpResponse);
+        XCTAssert([httpResponse isKindOfClass:[MPIdentityHTTPModifySuccessResponse class]]);
+    }];
+}
+
+#endif
 
 @end

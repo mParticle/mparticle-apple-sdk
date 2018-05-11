@@ -835,6 +835,12 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion {
+    
+    if (identityChanges == nil || identityChanges.count == 0) {
+        completion([[MPIdentityHTTPModifySuccessResponse alloc] init], nil);
+        return;
+    }
+    
     NSString *mpid = [MPPersistenceController mpId].stringValue;
     MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
     
