@@ -12,7 +12,7 @@
 - (void)logVerbose:(NSString *_Nullable)format, ...;
 
 - (NSDictionary<NSString *, NSString *> *_Nullable)integrationAttributes;
-- (void)onAttributionCompleteWithResult:(MPAttributionResult *_Nonnull)result error:(NSError *_Nullable)error;
+- (void)onAttributionCompleteWithResult:(MPAttributionResult *_Nullable)result error:(NSError *_Nullable)error;
 
 - (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit;
 - (nullable NSNumber *)incrementUserAttribute:(NSString *_Nonnull)key byValue:(NSNumber *_Nonnull)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser;
