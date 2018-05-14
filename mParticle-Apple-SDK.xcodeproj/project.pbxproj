@@ -1067,8 +1067,6 @@
 		C9DD1CD11D8A112B00D3ABBE /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				D37A017020A0E5B200FF2B0F /* OCMock */,
-				D37A016B20A0D2C000FF2B0F /* libOCMock.a */,
 				C9DD1CD21D8A112B00D3ABBE /* Reachability */,
 			);
 			path = Libraries;
@@ -1220,6 +1218,7 @@
 		C9DD20901D8A190600D3ABBE /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				DBCBF44320A9F9310012ECAA /* Libraries */,
 				C9DD20931D8A190600D3ABBE /* Info.plist */,
 				C9DD20911D8A190600D3ABBE /* BracketTests.mm */,
 				C9DD20921D8A190600D3ABBE /* HasherTests.mm */,
@@ -1305,6 +1304,15 @@
 				DB83983D2087E8780031AB1D /* MPConsentSerialization.m */,
 			);
 			path = Consent;
+			sourceTree = "<group>";
+		};
+		DBCBF44320A9F9310012ECAA /* Libraries */ = {
+			isa = PBXGroup;
+			children = (
+				D37A017020A0E5B200FF2B0F /* OCMock */,
+				D37A016B20A0D2C000FF2B0F /* libOCMock.a */,
+			);
+			path = Libraries;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2244,13 +2252,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/mPArticle-Apple-SDK/Libraries";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
 				INFOPLIST_FILE = UnitTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/mParticle-Apple-SDK/Libraries",
+					"$(PROJECT_DIR)/UnitTests/Libraries",
 				);
 				MACH_O_TYPE = mh_dylib;
 				OTHER_LDFLAGS = "-ObjC";
@@ -2263,13 +2271,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/mPArticle-Apple-SDK/Libraries";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
 				INFOPLIST_FILE = UnitTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
-					"$(PROJECT_DIR)/mParticle-Apple-SDK/Libraries",
+					"$(PROJECT_DIR)/UnitTests/Libraries",
 				);
 				MACH_O_TYPE = mh_dylib;
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDKTests";
