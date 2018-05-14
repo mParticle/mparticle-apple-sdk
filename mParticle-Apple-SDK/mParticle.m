@@ -1431,7 +1431,7 @@ NSString *const kMPStateKey = @"state";
         } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
             [self.identity.currentUser setUserAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
-            [self.identity.currentUser setUserAttribute:eventDictionary[@"key"] value:nil];
+            [self.identity.currentUser removeUserAttribute:eventDictionary[@"key"]];
         } else if ([hostPath hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
             [self setSessionAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
         }
