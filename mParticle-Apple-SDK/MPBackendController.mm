@@ -142,11 +142,6 @@ static BOOL appBackgrounded = NO;
                                  object:nil];
         
         [notificationCenter addObserver:self
-                               selector:@selector(handleSignificantTimeChange:)
-                                   name:UIApplicationSignificantTimeChangeNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:self
                                selector:@selector(handleApplicationDidBecomeActive:)
                                    name:UIApplicationDidBecomeActiveNotification
                                  object:nil];
@@ -175,7 +170,6 @@ static BOOL appBackgrounded = NO;
     [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
     [notificationCenter removeObserver:self name:kMPNetworkPerformanceMeasurementNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationSignificantTimeChangeNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillResignActiveNotification object:nil];
     
@@ -1023,16 +1017,6 @@ static BOOL appBackgrounded = NO;
     MPNetworkPerformance *networkPerformance = userInfo[kMPNetworkPerformanceKey];
     
     [self logNetworkPerformanceMeasurement:networkPerformance completionHandler:nil];
-}
-
-- (void)handleSignificantTimeChange:(NSNotification *)notification {
-    if (!MParticle.sharedInstance.automaticSessionTracking) {
-        return;
-    }
-    
-    if (_session) {
-        [self beginSession:nil];
-    }
 }
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
