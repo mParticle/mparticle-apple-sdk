@@ -1,51 +1,19 @@
-//
-//  MPSurrogateAppDelegate.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPSurrogateAppDelegate.h"
 #import "MPAppDelegateProxy.h"
 #import "MPNotificationController.h"
 #import "MPAppNotificationHandler.h"
 
-@interface MPSurrogateAppDelegate() {
-    dispatch_queue_t userNotificationQueue;
-}
-@end
-
-
 @implementation MPSurrogateAppDelegate
-
-- (instancetype)init {
-    self = [super init];
-    if (!self) {
-        return nil;
-    }
-    
-    userNotificationQueue = dispatch_queue_create("com.mParticle.UserNotificationQueue", DISPATCH_QUEUE_SERIAL);
-    
-    return self;
-}
 
 #pragma mark UIApplicationDelegate
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-    NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+    NSDictionary *userInfo;
+#if !defined(MPARTICLE_APP_EXTENSIONS)
+    userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+#endif
     if (userInfo) {
         [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
     }
@@ -65,22 +33,16 @@
 }
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-    void (^userNotificationCompletionHandler)(UIBackgroundFetchResult) = ^(UIBackgroundFetchResult fetchResult) {
-        dispatch_async(userNotificationQueue, ^{
-            completionHandler(fetchResult);
-        });
-    };
-    
     MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
     [appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeAutoDetect];
     
     if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
-        [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:userNotificationCompletionHandler];
+        [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
     } else if ([_appDelegateProxy.originalAppDelegate respondsToSelector:@selector(application:didReceiveRemoteNotification:)] && appNotificationHandler.runningMode == MPUserNotificationRunningModeForeground) {
         [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo];
-        userNotificationCompletionHandler(UIBackgroundFetchResultNewData);
+        completionHandler(UIBackgroundFetchResultNewData);
     } else {
-        userNotificationCompletionHandler(UIBackgroundFetchResultNewData);
+        completionHandler(UIBackgroundFetchResultNewData);
     }
 }
 
@@ -111,7 +73,10 @@
 }
 
 - (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification completionHandler:(void (^)())completionHandler {
-    NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+    NSDictionary *userInfo;
+#if !defined(MPARTICLE_APP_EXTENSIONS)
+    userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+#endif
     if (userInfo) {
         [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
     }

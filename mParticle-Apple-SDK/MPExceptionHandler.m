@@ -1,21 +1,3 @@
-//
-//  MPExceptionHandler.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPExceptionHandler.h"
 #import "MPMessage.h"
 #import "MPIConstants.h"
@@ -30,6 +12,7 @@
 #import <dlfcn.h>
 #import <libkern/OSAtomic.h>
 #import "MPCurrentState.h"
+#import "MPIUserDefaults.h"
 #import "MPMessageBuilder.h"
 #import <UIKit/UIKit.h>
 #import "MPPersistenceController.h"
@@ -132,7 +115,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     NSArray<MPSession *> *sessions = [[MPPersistenceController sharedInstance] fetchPossibleSessionsFromCrash];
     
     for (MPSession *session in sessions) {
-        if (![session.sessionNumber isEqualToNumber:_session.sessionNumber]) {
+        if (![session isEqual:_session]) {
             crashSession = session;
             break;
         }
@@ -183,10 +166,13 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)topmostContext {
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
     id topmostContext = [self topViewControllerForController:rootViewController];
     NSString *topmostContextName = [[topmostContext class] description];
     return topmostContextName;
+#endif
+    return @"extension_context";
 }
 
 - (NSDictionary *)loadArchivedCrashInfo {
@@ -306,9 +292,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         [messageInfo addEntriesFromDictionary:archivedCrashInfo];
         
         MPSession *crashSession = [self crashSession];
-        if (crashSession) {
-            messageInfo[kMPSessionNumberKey] = crashSession.sessionNumber;
-        }
         
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];

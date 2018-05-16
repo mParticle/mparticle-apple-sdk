@@ -1,28 +1,21 @@
-//
-//  MPEventTests.mm
-//
-//  Copyright 2015 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
+#import "OCMock.h"
 #import "MPEvent.h"
 #import "MPEvent+Internal.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPProduct.h"
+#import "MPPersistenceController.h"
+#import "MParticle.h"
+#import "MPBackendController.h"
+
+#pragma mark - MParticle+Tests category
+@interface MParticle(Tests)
+
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+
+@end
 
 @interface MPEventTests : XCTestCase
 
@@ -144,7 +137,7 @@
 }
 
 - (void)testDictionaryRepresentation {
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.currentSession = session;
     
@@ -304,5 +297,35 @@
     XCTAssertNotNil(event.info, @"Should not have been nil.");
     XCTAssertEqualObjects(event.info, expectedEventInfo, @"Should have been equal.");
 }
+
+#if TARGET_OS_IOS == 1
+- (void)testWebEvent {
+    NSURL *oddURL = [[NSURL alloc] initWithString:@"mp-sdk://logEvent/%7B%22EventName%22:%22selected%20my%20response%22,%22EventCategory%22:1,%22UserAttributes%22:%7B%7D,%22UserIdentities%22:%7B%7D,%22Store%22:%7B%7D,%22EventAttributes%22:%7B%22question%20id%22:4644,%22question%20text%22:%22Do%20you%20want%20to%20build%20a%20snowman%3F%22,%22user%20response%22:%22no%22,%22debug_platform%22:%22ios%22%7D,%22SDKVersion%22:%222.3.3%22,%22SessionId%22:%22305b36bb-0eff-4fc1-a20a-7296264da842%22,%22EventDataType%22:4,%22Debug%22:false,%22Location%22:null,%22OptOut%22:null,%22ExpandedEventCount%22:0,%22ClientGeneratedId%22:%221e9c5dec-5171-4780-aa20-16bd6d16aac8%22,%22DeviceId%22:%22a571153f-aad2-4956-be9e-3d7b83051fc3%22,%22MPID%22:0,%22Timestamp%22:1524610824707%7D"];
+    
+    id mockBackendController = OCMClassMock([MPBackendController class]);
+    [MParticle sharedInstance].backendController = mockBackendController;
+    
+    MPEvent *testEvent = [[MPEvent alloc] init];
+    testEvent.name = @"selected my response";
+    testEvent.type = MPEventTypeNavigation;
+    testEvent.info = @{
+                       @"debug_platform": @"ios",
+                       @"question id": @4644,
+                       @"question text": @"Do you want to build a snowman?",
+                       @"user response": @"no"
+                       };
+    
+    [[MParticle sharedInstance] processWebViewLogEvent: oddURL];
+    
+    OCMVerify([mockBackendController logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
+        MPEvent *returnedEvent = ((MPEvent *)value);
+        XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
+        XCTAssertEqual(returnedEvent.type, testEvent.type);
+        XCTAssertEqualObjects(returnedEvent.info, testEvent.info);
+        return YES;
+    }]
+                            completionHandler:[OCMArg any]]);
+}
+#endif
 
 @end

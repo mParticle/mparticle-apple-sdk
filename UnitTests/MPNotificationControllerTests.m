@@ -1,21 +1,3 @@
-//
-//  MPNotificationControllerTests.m
-//
-//  Copyright 2015 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPStateMachine.h"
 #import "MPNotificationController.h"
@@ -81,9 +63,7 @@
     UIApplication *application = [UIApplication sharedApplication];
     [application registerUserNotificationSettings:userNotificationSettings];
     [application registerForRemoteNotifications];
-    
-    NSTimeInterval increment = expired ? -100 : 100;
-    
+        
     NSDictionary *remoteNotificationDictionary = @{@"aps":@{
                                                            @"alert":@{
                                                                    @"body":@"Your pre-historic ride has arrived.",
@@ -92,12 +72,7 @@
                                                            @"badge":@1,
                                                            @"sound":@"t-rex_roar.aiff",
                                                            @"category":@"DINOSAUR_TRANSPORTATION_CATEGORY"
-                                                           },
-                                                   @"m_cmd":@1,
-                                                   @"m_cid":@2,
-                                                   @"m_cntid":@3,
-                                                   @"m_expy":MPMilliseconds([[NSDate date] timeIntervalSince1970] + increment),
-                                                   @"m_uid":@(arc4random_uniform(INT_MAX))
+                                                           }
                                                    };
     
     return remoteNotificationDictionary;
@@ -115,16 +90,6 @@
                                                    };
     
     return remoteNotificationDictionary;
-}
-
-- (NSDictionary *)silentNotificationDictionary {
-    NSDictionary *silentNotificationDictionary = @{@"aps":@{
-                                                           @"content-available":@1,
-                                                           @"sound":@""
-                                                           }
-                                                   };
-    
-    return silentNotificationDictionary;
 }
 
 - (NSArray *)retrieveDisplayedUserNotificationsSince:(NSTimeInterval)referenceDate mode:(MPUserNotificationMode)mode {
@@ -149,29 +114,8 @@
     [self.notificationController handleApplicationDidFinishLaunching:notification];
     
     XCTAssertNotNil(self.userNotification, @"User notification should not have been nil.");
-    XCTAssertEqualObjects(self.userNotification.contentId, @3, @"Content id is incorrect.");
-    XCTAssertEqualObjects(self.userNotification.campaignId, @2, @"Campaign id is incorrect.");
     XCTAssertNotNil(self.userNotification.redactedUserNotificationString, @"Redacted notification should not have been nil.");
     XCTAssertEqual(self.userNotification.behavior, (MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead), @"Behavior is incorrect.");
-}
-
-- (void)testDidFinishLaunchingNotInfluencedOpen {
-    NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:YES];
-    
-    [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationReceivedNotification
-                                                        object:self
-                                                      userInfo:@{kMPUserNotificationDictionaryKey:remoteNotificationDictionary}];
-    
-    sleep(1);
-    
-    NSNotification *notification = [[NSNotification alloc] initWithName:@"Testing did finish launching"
-                                                                 object:nil
-                                                               userInfo:nil];
-    
-    [self.notificationController handleApplicationDidFinishLaunching:notification];
-    
-    XCTAssertFalse(self.userNotification.hasBeenUsedInInfluencedOpen, @"User notification should not have been marked as influenced open.");
-    XCTAssertFalse(self.userNotification.hasBeenUsedInDirectOpen, @"User notification should not have been marked as direct open.");
 }
 
 @end

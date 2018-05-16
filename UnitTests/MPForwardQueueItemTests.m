@@ -1,21 +1,3 @@
-//
-//  MPForwardQueueItemTests.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPForwardQueueItem.h"
 #import "MPCommerceEvent.h"
@@ -25,15 +7,20 @@
 #import "MPKitFilter.h"
 #import "MPEvent.h"
 #import "MPForwardQueueParameters.h"
+#import "MPKitInstanceValidator.h"
 
 #define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 1
+
+@interface MPKitInstanceValidator ()
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
+@end
 
 #pragma mark
 @interface MPKitMockTest : NSObject <MPKitProtocol>
 
 @property (nonatomic, unsafe_unretained, readonly) BOOL started;
 
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately;
+- (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
 
 + (nonnull NSNumber *)kitCode;
 
@@ -46,12 +33,13 @@
     return @11235813;
 }
 
-- (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration startImmediately:(BOOL)startImmediately {
-    self = [super init];
+- (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
+    MPKitExecStatus *execStatus = nil;
     
-    _started = startImmediately;
+    _started = YES;
     
-    return self;
+    execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
+    return execStatus;
 }
 
 @end
@@ -74,6 +62,7 @@
 }
 
 - (void)testCommerceInstance {
+    [MPKitInstanceValidator includeUnitTestKits:@[@11235813]];
     XCTestExpectation *expectation = [self expectationWithDescription:@"Forward Queue Item Test (Ecommerce)"];
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
@@ -92,7 +81,8 @@
     XCTAssertNil(forwardQueueItem.eventCompletionHandler, @"Should have been nil.");
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
+        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] init];
+        [kitMockTest didFinishLaunchingWithConfiguration:@{@"appKey":@"thisisaninvalidkey"}];
         MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:forwardQueueItem.commerceEvent shouldFilter:NO];
         MPKitExecStatus *execStatus = nil;
         
@@ -121,7 +111,8 @@
     XCTAssertNil(forwardQueueItem.commerceEventCompletionHandler, @"Should have been nil.");
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
+        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] init];
+        [kitMockTest didFinishLaunchingWithConfiguration:@{@"appKey":@"thisisaninvalidkey"}];
         MPKitExecStatus *execStatus = nil;
         
         forwardQueueItem.eventCompletionHandler(kitMockTest, forwardQueueItem.event, &execStatus);
@@ -196,7 +187,8 @@
     XCTAssertNil(forwardQueueItem.eventCompletionHandler, @"Should have been nil.");
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] initWithConfiguration:@{@"appKey":@"thisisaninvalidkey"} startImmediately:YES];
+        MPKitMockTest *kitMockTest = [[MPKitMockTest alloc] init];
+        [kitMockTest didFinishLaunchingWithConfiguration:@{@"appKey":@"thisisaninvalidkey"}];
         MPKitExecStatus *execStatus = nil;
         
         forwardQueueItem.generalPurposeCompletionHandler(kitMockTest, queueParameters, &execStatus);

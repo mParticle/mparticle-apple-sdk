@@ -1,27 +1,8 @@
-//
-//  MPMessageBuilderTests.m
-//
-//  Copyright 2015 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPMessageBuilder.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
 #import "MPMessage.h"
-#import "MPStandaloneMessage.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "MPPromotion.h"
@@ -34,7 +15,8 @@
 #import "MPCart+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
-#import "MPUserIdentityChange.h"
+#import "MPPersistenceController.h"
+#import "MParticle.h"
 
 @interface MPMessageBuilderTests : XCTestCase
 
@@ -49,7 +31,7 @@
         return _session;
     }
     
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     return _session;
 }
 
@@ -102,29 +84,7 @@
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     
     message = (MPMessage *)[messageBuilder build];
-    XCTAssertFalse([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
-}
-
-- (void)testBuildStandaloneMessage {
-    NSDictionary *messageInfo = @{@"ride_type":@"T-Rex"};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:nil
-                                                                       messageInfo:messageInfo];
-    
-    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
-    MPStandaloneMessage *standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
-    XCTAssertNotNil(standaloneMessage);
-    XCTAssertTrue([standaloneMessage isKindOfClass:[MPStandaloneMessage class]], @"Returning the wrong kind of class instance.");
-    
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                         session:nil
-                                                     messageInfo:nil];
-    
-    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
-    standaloneMessage = (MPStandaloneMessage *)[messageBuilder build];
-    XCTAssertNotNil(standaloneMessage);
-    XCTAssertTrue([standaloneMessage isKindOfClass:[MPStandaloneMessage class]], @"Returning the wrong kind of class instance.");
+    XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
 }
 
 - (void)testBuildCommerceEventProduct {
@@ -135,18 +95,18 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"Y";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     commerceEvent.checkoutOptions = @"option 1";
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
-    commerceEvent[@"key_date"] = [NSDate date];
+    commerceEvent[@"key_number"] = @"3.14";
+    commerceEvent[@"key_date"] = @"01/01/2000";
     
-    MPCart *cart = [MPCart sharedInstance];
+    MPCart *cart = [MParticle sharedInstance].identity.currentUser.cart;
     [cart clear];
     [cart addProducts:@[product] logEvent:NO updateProductList:YES];
     XCTAssertEqual(cart.products.count, 1, @"Incorrect product count.");

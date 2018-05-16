@@ -7,6 +7,8 @@
 #import "MPKitInstanceValidator.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
+#import "MPIConstants.h"
+#import "FilteredMParticleUser.h"
 
 @interface MPKitInstanceValidator(BackendControllerTests)
 
@@ -23,13 +25,13 @@
 
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end
 
 @interface MPBackendController ()
 
-@property (nonatomic, unsafe_unretained, readwrite) MPInitializationStatus initializationStatus;
 
 - (void)clearUserAttributes;
 
@@ -42,7 +44,8 @@
     
 @end
 
-@interface MPKitAPITests : XCTestCase
+#pragma mark - MPKitAPITests unit test class
+@interface MPKitAPITests : XCTestCase  <MPKitProtocol>
 
 @property (nonatomic) MPKitAPI *kitApi;
 @property (nonatomic) MPKitContainer *kitContainer;
@@ -54,15 +57,13 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].backendController.initializationStatus = MPInitializationStatusStarted;
-
     [MPKitInstanceValidator includeUnitTestKits:@[@42]];
     _kitContainer = [MPKitContainer sharedInstance];
     
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
         
         NSDictionary *configuration = @{
@@ -86,28 +87,65 @@
 }
 
 - (void)testIntegrationAttributes {
-    [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
+    MParticle *mParticle = [MParticle sharedInstance];
+    dispatch_async([MParticle messageQueue], ^{
+        
+        
+        mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+        
+        [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
+        
+        NSArray *configurations = @[
+                                    @{
+                                        @"id":@(42),
+                                        @"as":@{
+                                                @"testConfigKey":@"testConfigValue"
+                                                }
+                                        }
+                                    ];
+        
+        [_kitContainer configureKits:nil];
+        [_kitContainer configureKits:configurations];
+        
+        dispatch_async([MParticle messageQueue], ^{
+            NSDictionary *integrationAttributes = [_kitApi integrationAttributes];
+            NSString *value = integrationAttributes[@"Test key"];
+            XCTAssertEqualObjects(value, @"Test value");
+            [expectation fulfill];
+        });
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+    
+}
 
-    NSArray *configurations = @[
-                                @{
-                                    @"id":@(42),
-                                    @"as":@{
-                                            @"testConfigKey":@"testConfigValue"
-                                            }
-                                }
-                                ];
-    
-    [_kitContainer configureKits:nil];
-    [_kitContainer configureKits:configurations];
-    
-    NSDictionary *integrationAttributes = [_kitApi integrationAttributes];
-    NSString *value = integrationAttributes[@"Test key"];
-    XCTAssertEqualObjects(value, @"Test value");
+- (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration {
+    return [[MPKitExecStatus alloc] initWithSDKCode:@1 returnCode:MPKitReturnCodeSuccess];
+}
+
++ (nonnull NSNumber *)kitCode {
+    return @42;
 }
 
 - (void)testUserIdentities {
-    [[MParticle sharedInstance] setUserIdentity:@"example@example.com" identityType:MPUserIdentityEmail];
-    [[MParticle sharedInstance] setUserIdentity:@"12345" identityType:MPUserIdentityCustomerId];
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+
+    NSArray *userIdentities = @[@{
+                                    @"n":@(MPUserIdentityEmail),
+                                    @"i":@"example@example.com",
+                                    @"dfs":MPCurrentEpochInMilliseconds,
+                                    @"f":@NO
+                                    },
+                                @{
+                                    @"n":@(MPUserIdentityCustomerId),
+                                    @"i":@"12345",
+                                    @"dfs":MPCurrentEpochInMilliseconds,
+                                    @"f":@NO
+                                    }
+                                ];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    [userDefaults removeMPObjectForKey:@"ua"];
     
     NSString *identityTypeString = [[NSString alloc] initWithFormat:@"%lu", (unsigned long)MPUserIdentityEmail];
     
@@ -126,54 +164,18 @@
     [_kitContainer configureKits:nil];
     [_kitContainer configureKits:configurations];
     
-    NSDictionary *identities = _kitApi.userIdentities;
+    
+    MPKitAPI *kitAPI = [[MPKitAPI alloc] initWithKitCode:@42];
+    FilteredMParticleUser *kitUser = [kitAPI getCurrentUserWithKit:self];
+    NSDictionary *identities = kitUser.userIdentities;
     NSString *email = identities[@(MPUserIdentityEmail)];
     NSString *customerId = identities[@(MPUserIdentityCustomerId)];
     
     XCTAssertNil(email, @"Kit api is not filtering user identities");
     XCTAssertEqualObjects(customerId, @"12345", @"Kit api is filtering user identities when it shouldn't");
+    
 }
 
-- (void)testUserAttributes {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Test"];
-    MPBackendController *backendController = [MParticle sharedInstance].backendController;
-    [backendController clearUserAttributes];
-    
-    [[MParticle sharedInstance].backendController setUserAttribute:@"$Age" value:@24 attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {
-        [[MParticle sharedInstance].backendController setUserAttribute:@"teeth" value:@"sharp" attempt:0 completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {
-            
-            
-            NSArray *configurations = @[
-                                        @{
-                                            @"id":@(42),
-                                            @"as":@{
-                                                    @"testConfigKey":@"testConfigValue"
-                                                    },
-                                            @"hs":@{
-                                                    @"ua":@{
-                                                            @"1168987":@0 // $Age
-                                                            }
-                                                    }
-                                            }
-                                        ];
-            
-            [_kitContainer configureKits:nil];
-            [_kitContainer configureKits:configurations];
-            
-            NSDictionary<NSString *, id> *userAttributes = [_kitApi userAttributes];
-            NSString *age = userAttributes[@"$Age"];
-            NSString *teeth = userAttributes[@"teeth"];
-            
-            XCTAssertEqual(userAttributes.count, 1);
-            XCTAssertNil(age, @"User attribute should have been filtered.");
-            XCTAssertNotNil(teeth, @"User attribute should not have been filtered.");
-            [backendController clearUserAttributes];
-            [expectation fulfill];
-        }];
-    }];
-    
-    
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
+@synthesize started;
 
 @end

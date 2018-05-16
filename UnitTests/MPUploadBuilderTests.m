@@ -1,21 +1,3 @@
-//
-//  MPUploadBuilderTests.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPUploadBuilder.h"
 #import "MPSession.h"
@@ -23,7 +5,6 @@
 #import "MPMessageBuilder.h"
 #import "MPIConstants.h"
 #import "MPUpload.h"
-#import "MPStandaloneUpload.h"
 #import "MPStateMachine.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
@@ -120,7 +101,7 @@
 - (void)testInstanceWithSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
     
-    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
 
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",
@@ -135,7 +116,8 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithSession:session
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
+                                                                    sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
                                                              uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
@@ -164,7 +146,7 @@
     NSString *description = [uploadBuilder description];
     XCTAssertNotNil(description);
     
-    [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
         XCTAssertNotNil(upload);
         Class uploadClass = [MPUpload class];
         XCTAssertEqualObjects([upload class], uploadClass);
@@ -201,7 +183,7 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMessages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] messages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -227,12 +209,12 @@
     NSString *description = [uploadBuilder description];
     XCTAssertNotNil(description);
     
-    [uploadBuilder build:^(MPDataModelAbstract * _Nullable upload) {
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
         XCTAssertNotNil(upload);
-        Class uploadClass = [MPStandaloneUpload class];
+        Class uploadClass = [MPUpload class];
         XCTAssertEqualObjects([upload class], uploadClass);
         
-        NSDictionary *uploadDictionary = [(MPStandaloneUpload *)upload dictionaryRepresentation];
+        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
         XCTAssertNotNil(uploadDictionary);
         
         NSDictionary *referenceUserAttributes = @{@"Dinosaur":@"T-Rex",

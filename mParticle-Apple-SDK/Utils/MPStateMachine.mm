@@ -1,21 +1,3 @@
-//
-//  MPStateMachine.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
@@ -29,7 +11,6 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
-#import "MPBags.h"
 #include "MessageTypeName.h"
 #import "MPLocationManager.h"
 #import "MPKitContainer.h"
@@ -46,9 +27,14 @@ NSString *const kMinUploadDateKey = @"MinUploadDate";
 static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
 
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
 @interface MPStateMachine() {
     BOOL optOutSet;
     BOOL alwaysTryToCollectIDFASet;
+    dispatch_queue_t messageQueue;
 }
 
 @property (nonatomic, unsafe_unretained) MParticleNetworkStatus networkStatus;
@@ -74,6 +60,7 @@ static BOOL runningInBackground = NO;
 @synthesize storedSDKVersion = _storedSDKVersion;
 @synthesize triggerEventTypes = _triggerEventTypes;
 @synthesize triggerMessageTypes = _triggerMessageTypes;
+@synthesize automaticSessionTracking = _automaticSessionTracking;
 
 #if TARGET_OS_IOS == 1
 @synthesize location = _location;
@@ -82,6 +69,7 @@ static BOOL runningInBackground = NO;
 - (instancetype)init {
     self = [super init];
     if (self) {
+        messageQueue = [MParticle messageQueue];
         optOutSet = NO;
         _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
         _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
@@ -94,7 +82,6 @@ static BOOL runningInBackground = NO;
         _launchDate = [NSDate date];
         _launchOptions = nil;
         _logLevel = MPILogLevelNone;
-        _shouldUploadSessionHistory = YES;
         _searchAttribution = [[MPSearchAdsAttribution alloc] init];
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
@@ -199,12 +186,6 @@ static BOOL runningInBackground = NO;
     if (self.storedSDKVersion && storedSDKVersion && [_storedSDKVersion isEqualToString:storedSDKVersion]) {
         return;
     }
-    
-    NSString *storedSDKMajorVersion = [_storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
-    NSString *newSDKMajorVersion = [storedSDKVersion substringWithRange:NSMakeRange(0, 1)];
-    if (newSDKMajorVersion && ![storedSDKMajorVersion isEqualToString:newSDKMajorVersion]) {
-        [[MPKitContainer sharedInstance] removeAllKitConfigurations];
-    }
 
     _storedSDKVersion = storedSDKVersion;
 
@@ -215,8 +196,6 @@ static BOOL runningInBackground = NO;
     } else {
         userDefaults[@"storedSDKVersion"] = _storedSDKVersion;
     }
-    
-    [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
 }
 
 #pragma mark Private methods
@@ -368,15 +347,6 @@ static BOOL runningInBackground = NO;
 }
 
 #pragma mark Public accessors
-- (MPBags *)bags {
-    if (_bags) {
-        return _bags;
-    }
-    
-    _bags = [[MPBags alloc] init];
-    return _bags;
-}
-
 - (MPConsoleLogging)consoleLogging {
     if (_consoleLogging != MPConsoleLoggingAutoDetect) {
         return _consoleLogging;
@@ -406,7 +376,7 @@ static BOOL runningInBackground = NO;
     }
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-    _consumerInfo = [persistence fetchConsumerInfo];
+    _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
     
     if (!_consumerInfo) {
         _consumerInfo = [[MPConsumerInfo alloc] init];
@@ -467,7 +437,7 @@ static BOOL runningInBackground = NO;
         [self didChangeValueForKey:@"firstSeenInstallation"];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = _firstSeenInstallation;
+            userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
             [userDefaults synchronize];
         });
     }
@@ -488,7 +458,7 @@ static BOOL runningInBackground = NO;
         [self didChangeValueForKey:@"firstSeenInstallation"];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = _firstSeenInstallation;
+            userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
             [userDefaults synchronize];
         });
     }
@@ -620,10 +590,6 @@ static BOOL runningInBackground = NO;
 }
 
 - (BOOL)optOut {
-    if (optOutSet) {
-        return _optOut;
-    }
-    
     [self willChangeValueForKey:@"optOut"];
     
     optOutSet = YES;

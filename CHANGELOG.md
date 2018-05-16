@@ -1,47 +1,140 @@
 # mParticle Apple SDK CHANGELOG
 
-## 6.15.16
+## 7.2.0
+
+This is a *high priority* update for all users of SDK v7. This update:
+- Ensures database migrations from v6 to v7 occur on a background thread.
+- Reduces the amount of data that is migrated.
+- Simplifies batch upload creation and session deletion logic to ensure the SDK's database is fully cleared when appropriate.
+
+## 7.1.5
 
 ### Core SDK Updates
 
-This release fixes an issue with setting user attributes concurrently from multiple threads.
+- Avoid blocking the main thread while migrating the database
+- Clean up analyzer warnings
 
 ### Kit Updates
 
 - None
 
-## 6.15.15
+## 7.1.4
 
 ### Core SDK Updates
 
-This release introduces a new API to kit developers. Kits can now delay the first upload of the Core SDK. This is to allow for necessary 3rd-party ID collection.
+- None
 
 ### Kit Updates
 
-- Update Adobe kit to delay uploads prior to MCID collection
+- Leanplum
 
-## 6.15.14
+#### Leanplum Email Campaigns
+
+The Leanplum kit has been updated to set "email" as a user attribute on the Leanplum SDK to enable Leanplum email campaigns. If you would not like to send email to Leanplum, you may filter email to Leanplum via the mParticle Filters UI.
+
+## 7.1.3
 
 ### Core SDK Updates
 
-- Always forward didReceiveRemoteNotification API
-- Fix main thread error
+**This SDK release is a required update for all customers who are migrating from v6.**
+
+It fixes an issue where migrated user identities were not being included when building the initial identity request.
 
 ### Kit Updates
 
-- Add Carthage support to Leanplum
-- Update Apptentive SDK to 4.0.7
+- None
+
+## 7.1.2
+
+### Core SDK Updates
+
+- Cache user agent until OS version changes
+- Fix Nil User Identity Issue
+
+This release optimizes the capture of user agent to only happen when the OS version changes.
+
+### Kit Updates
+
+- None
+
+## 7.1.1
+
+### Core SDK Updates
+
+- Avoid requesting config before start
+
+This release fixes a bug where the SDK could trigger a call to config before start was called.
+
+### Kit Updates
+
+- None
+
+## 7.1.0
+
+# IDSync
+
+Version 7.1.0 is the first non-beta release of the new mParticle IDSync framework. It contains many new features as well as breaking changes:
+
+- New Identity APIs allowing custom IDSync "strategies" per customer. 
+- Included in the new APIs is a `MParticleUser` object, as well as the new APIs for `login`, `logout`, `modify`, and more! [You can read more about the new Identity APIs here](https://docs.mparticle.com/developers/sdk/ios/identity).
+- `MParticleOptions` object for explicit SDK configuration.
+- New "Attribution" API, which replaces the former "deferred deeplink" API.
+
+## Migrating from SDK v6
+
+Prior to upgrading to version 7, your mParticle org **must** be provisioned with an Identity Strategy. Please contact the mParticle Customer Success team at support@mparticle.com. 
+
+The new SDK contains multiple breaking API changes. To learn how to migrate your existing code, please [reference the iOS migration guide](https://docs.mparticle.com/developers/sdk/ios/getting-started#upgrade-to-version-7-of-the-sdk).
+
+## 7.0.9
+
+### Core SDK Updates
+
+This release updates MPIdentityApiRequest by removing the copyUserAttributes setting, and adding an optional onUserAlias block. By setting this block on your request, you can copy user attributes per your business logic from one user to the next. You can also copy object from the user's cart.
+
+### Kit Updates
+
+- Update AppsFlyer with new attribution API
+- Update BranchMetrics with new attribution API
+- Update Button with new attribution API
+- Update Iterable with new attribution API
+- Update Singular with new attribution API
+- Update Tune with new attribution API
 - Update BranchMetrics SDK to 0.20.2
-
-## 6.15.13
-
-### Core SDK Updates
-
-- None
-
-### Kit Updates
-
 - Update UrbanAirship kit with named user support
+
+## 7.0.8
+
+* [NEW] Introduce new deeplinking API
+
+## 7.0.7
+
+* [FIX] Allow concurrent internal modify requests
+
+## 7.0.6
+
+* [FIX] Ensure Identifying flag is flipped on API timeout
+
+## 7.0.5
+
+* [FIX] Fixes and enhancements to Identity API error callbacks
+
+## 7.0.4
+
+* [FIX] Remove MPUtils.h/m
+
+## 7.0.3
+
+* [FIX] Ensure the correct mpid is used in batches
+* [FIX] Fix device application stamp
+
+## 7.0.2
+
+* [FIX] Propagate Identity API errors to original caller
+
+## 7.0.0
+
+* [NEW] New identity APIs
 
 ## 6.15.12
 

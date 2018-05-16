@@ -1,27 +1,10 @@
-//
-//  MPCustomModulePreference.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPCustomModulePreference.h"
 #import "MPIUserDefaults.h"
 #import "MPAppboy.h"
 #import "MPStateMachine.h"
 #import "MPILogger.h"
 #import "MPDateFormatter.h"
+#import "MPPersistenceController.h"
 
 @interface MPCustomModulePreference()
 
@@ -94,6 +77,7 @@
     [coder encodeObject:self.value forKey:@"value"];
     [coder encodeObject:self.writeKey forKey:@"writeKey"];
     [coder encodeInteger:self.dataType forKey:@"dataType"];
+    [coder encodeInt64:self.moduleId.longLongValue forKey:@"moduleId"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -105,6 +89,7 @@
         _value = [coder decodeObjectForKey:@"value"];
         _writeKey = [coder decodeObjectForKey:@"writeKey"];
         _dataType = [coder decodeIntegerForKey:@"dataType"];
+        _moduleId = @([coder decodeInt64ForKey:@"moduleId"]);
     }
     
     return self;
@@ -199,29 +184,26 @@
 
 #pragma mark Public methods
 - (id)value {
-    if (_value) {
-        return _value;
-    }
-    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];
-    id valueWithDeprecatedKey = [userDefaults mpObjectForKey:deprecatedKey];
+    NSNumber *mpId = [MPPersistenceController mpId];
+    id valueWithDeprecatedKey = [userDefaults mpObjectForKey:deprecatedKey userId:mpId];
     if (valueWithDeprecatedKey) {
         _value = valueWithDeprecatedKey;
-        [userDefaults setMPObject:_value forKey:customModuleKey];
-        [userDefaults removeMPObjectForKey:deprecatedKey];
+        [userDefaults setMPObject:_value forKey:customModuleKey userId:mpId];
+        [userDefaults removeMPObjectForKey:deprecatedKey userId:mpId];
         return _value;
     }
-    _value = [userDefaults mpObjectForKey:customModuleKey];
+    _value = [userDefaults mpObjectForKey:customModuleKey userId:mpId];
     if (_value) {
         return _value;
     }
     
     NSDictionary *userDefaultsDictionary = [[NSUserDefaults standardUserDefaults] dictionaryRepresentation];
     NSArray *keys = [userDefaultsDictionary allKeys];
-    
+
     if ([keys containsObject:self.readKey]) {
         if ([_moduleId isEqual:@(MPCustomModuleIdAppBoy)]) {
             NSData *appboyData = [[NSUserDefaults standardUserDefaults] objectForKey:_readKey];
@@ -285,7 +267,7 @@
                 break;
         }
     }
-    [userDefaults setMPObject:_value forKey:customModuleKey];
+    [userDefaults setMPObject:_value forKey:customModuleKey userId:mpId];
     
     return _value;
 }

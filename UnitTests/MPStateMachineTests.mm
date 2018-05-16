@@ -1,21 +1,3 @@
-//
-//  MPStateMachineTests.mm
-//
-//  Copyright 2015 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPStateMachine.h"
 #import "MPHasher.h"
@@ -48,27 +30,6 @@
 
 - (void)tearDown {
     [super tearDown];
-}
-
-- (void)testMPID {
-    NSNumber *mpid = @(-7370019784850138375);
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.consumerInfo.mpId = mpid;
-    
-    XCTAssertEqualObjects(stateMachine.consumerInfo.mpId, mpid, @"mpIds are different.");
-    
-    stateMachine.consumerInfo.mpId = mpid;
-    XCTAssertNotNil(stateMachine.consumerInfo.mpId, @"mpId is not retaining its value.");
-}
-
-- (void)testGenerateMPID {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.consumerInfo.mpId = @0; // Reset mpId
-    XCTAssertNotNil(stateMachine.consumerInfo.mpId, @"mpId is not being generated.");
-    
-    NSNumber *mpIdCopy = [stateMachine.consumerInfo.mpId copy];
-    stateMachine.consumerInfo.mpId = @0; // Reset mpId
-    XCTAssertNotEqualObjects(mpIdCopy, stateMachine.consumerInfo.mpId, @"Regenerating the same mpId.");
 }
 
 - (void)testOptOut {

@@ -1,21 +1,3 @@
-//
-//  MPApplication.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPApplication.h"
 #import <mach-o/ldsyms.h>
 #import <dlfcn.h>
@@ -183,7 +165,7 @@ static NSString *kMPAppStoreReceiptString = nil;
         userDefaults[kMPAppInitialLaunchTimeKey] = _initialLaunchTime;
         syncUserDefaults = YES;
     }
-
+    
     return _initialLaunchTime;
 }
 
@@ -278,20 +260,40 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 #if TARGET_OS_IOS == 1
 - (NSNumber *)badgeNumber {
-    NSInteger appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
+#if !defined(MPARTICLE_APP_EXTENSIONS)
+    __block NSInteger appBadgeNumber = 0;
+    if ([NSThread isMainThread]) {
+        appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
+        });
+    }
     NSNumber *badgeNumber = appBadgeNumber != 0 ? @(appBadgeNumber) : nil;
     
     return badgeNumber;
+#endif
+    return 0;
 }
 
 - (NSNumber *)remoteNotificationTypes {
     NSNumber *notificationTypes;
+    
+#if !defined(MPARTICLE_APP_EXTENSIONS)
     UIApplication *app = [UIApplication sharedApplication];
     
     if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        UIUserNotificationSettings *userNotificationSettings = [app currentUserNotificationSettings];
+        __block UIUserNotificationSettings *userNotificationSettings = nil;
+        if ([NSThread isMainThread]) {
+           userNotificationSettings = [app currentUserNotificationSettings];
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                userNotificationSettings = [app currentUserNotificationSettings];
+            });
+        }
+        
 #pragma clang diagnostic pop
         notificationTypes = @(userNotificationSettings.types);
     } else {
@@ -300,6 +302,7 @@ static NSString *kMPAppStoreReceiptString = nil;
         notificationTypes = @([app enabledRemoteNotificationTypes]);
 #pragma clang diagnostic pop
     }
+#endif
     
     return notificationTypes;
 }
@@ -356,7 +359,6 @@ static NSString *kMPAppStoreReceiptString = nil;
     if (![application.version isEqualToString:application.storedVersion] || ![application.build isEqualToString:application.storedBuild]) {
         application.launchCountSinceUpgrade = @1;
         application.upgradeDate = MPCurrentEpochInMilliseconds;
-        [[MPIUserDefaults standardUserDefaults] removeMPObjectForKey:kMPHTTPETagHeaderKey];
     } else {
         application.launchCountSinceUpgrade = @([application.launchCountSinceUpgrade integerValue] + 1);
     }
@@ -452,14 +454,17 @@ static NSString *kMPAppStoreReceiptString = nil;
     }
     
 #if TARGET_OS_IOS == 1
-    applicationInfo[kMPDeviceSupportedPushNotificationTypesKey] = self.remoteNotificationTypes;
+    NSNumber *notificationTypes = self.remoteNotificationTypes;
+    if (notificationTypes != nil) {
+        applicationInfo[kMPDeviceSupportedPushNotificationTypesKey] = notificationTypes;
+    }
     
     NSNumber *badgeNumber = self.badgeNumber;
     if (badgeNumber != nil) {
         applicationInfo[kMPAppBadgeNumberKey] = badgeNumber;
     }
 #endif
-
+    
     appInfo = (NSDictionary *)applicationInfo;
     
     return appInfo;

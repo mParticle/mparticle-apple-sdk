@@ -1,24 +1,15 @@
-//
-//  MPUserIdentityChangeTests.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPUserIdentityChange.h"
+#import "MPIdentityApiRequest.h"
+#import "MParticleUser.h"
+#import "MParticle.h"
+#import "MPIUserDefaults.h"
 #import "MPIConstants.h"
+#import "MPBackendController.h"
+
+@interface MParticle ()
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@end
 
 @interface MPUserIdentityChangeTests : XCTestCase
 
@@ -32,6 +23,47 @@
 
 - (void)tearDown {
     [super tearDown];
+}
+
+- (void)testUserIdentityRequest {
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@example.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:currentUser];
+    XCTAssertEqualObjects(request.customerId, @"test");
+    XCTAssertEqualObjects(request.email, @"test@example.com");
+}
+
+- (void)testSelectedUserIdentityRequest {
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    
+    NSNumber *selectedUserID = [NSNumber numberWithInteger:58591];
+
+
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    //Set up Identity to exist
+    [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:selectedUserID];
+    
+    MParticleUser *selectedUser = [[MParticle sharedInstance].identity getUser:selectedUserID];
+    
+    XCTAssertNotNil(selectedUser);
+    
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@example.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:selectedUser.userId];
+    
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:selectedUser];
+    XCTAssertEqualObjects(request.customerId, @"test");
+    XCTAssertEqualObjects(request.email, @"test@example.com");
 }
 
 - (void)testUserIdentityInstance {

@@ -1,27 +1,17 @@
-//
-//  MPSearchAdsAttribution.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPSearchAdsAttribution.h"
+#import "mParticle.h"
+
 #if TARGET_OS_IOS == 1
     #import <iAd/ADClient.h>
 #endif
 
-@interface MPSearchAdsAttribution ()
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
+
+@interface MPSearchAdsAttribution () {
+    dispatch_queue_t messageQueue;
+}
 
 @property (nonatomic) NSDictionary *dictionary;
 
@@ -34,12 +24,13 @@
     self = [super init];
     if (self) {
         _dictionary = nil;
+        messageQueue = [MParticle messageQueue];
     }
     return self;
 }
 
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler {
-#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED > __IPHONE_9_3 && !defined(MPARTICLE_APP_EXTENSIONS)
     Class MPClientClass = NSClassFromString(@"ADClient");
     if (!MPClientClass) {
         completionHandler();
@@ -69,7 +60,9 @@
     void(^onceCompletionBlock)(void) = ^(){
         if (!called) {
             called = YES;
-            completionHandler();
+            dispatch_async(self->messageQueue, ^{
+                completionHandler();
+            });
         }
     };
     

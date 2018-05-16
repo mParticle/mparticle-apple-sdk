@@ -1,21 +1,3 @@
-//
-//  MPForwardRecordTests.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPForwardRecord.h"
 #import "MPKitFilter.h"
@@ -58,7 +40,7 @@
     
     NSData *dataRepresentation = [forwardRecord dataRepresentation];
     
-    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation];
+    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation mpid:@1];
     XCTAssertNotNil(derivedForwardRecord, @"Should not have been nil.");
     XCTAssertEqualObjects(forwardRecord, derivedForwardRecord, @"Should have been equal.");
     
@@ -191,6 +173,11 @@
     XCTAssertEqualObjects(forwardRecord1, forwardRecord2, @"Should have been equal");
 
     forwardRecord2.forwardRecordId = 321;
+    XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
+    
+    forwardRecord2.forwardRecordId = 123;
+    forwardRecord1.mpid = @1;
+    forwardRecord2.mpid = @2;
     XCTAssertNotEqualObjects(forwardRecord1, forwardRecord2, @"Should not have been equal");
     
     forwardRecord2 = nil;

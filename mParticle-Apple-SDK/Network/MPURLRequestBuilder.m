@@ -1,21 +1,3 @@
-//
-//  MPURLRequestBuilder.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPURLRequestBuilder.h"
 #import <CommonCrypto/CommonHMAC.h>
 #import "MPStateMachine.h"
@@ -25,7 +7,6 @@
 #import "MPKitContainer.h"
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
-#import "MParticle.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
@@ -86,24 +67,13 @@ static NSString *mpUserAgent = nil;
     return (NSString *)encodedMessage;
 }
 
-- (NSString *)fallbackUserAgent {
-    NSString *mpUserAgent;
-    NSMutableString *osVersion = [[UIDevice currentDevice].systemVersion mutableCopy];
-    [osVersion replaceOccurrencesOfString:@"." withString:@"_" options:NSCaseInsensitiveSearch range:NSMakeRange(0, osVersion.length)];
-
-#if TARGET_OS_IOS == 1
-    mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (iPhone; CPU iPhone OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
-#elif TARGET_OS_TV == 1
-    mpUserAgent = [NSString stringWithFormat:@"Mozilla/5.0 (AppleTV; CPU tv OS %@ like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Mobile/14B72 mParticle/%@", osVersion, kMParticleSDKVersion];
-#endif
-    return mpUserAgent;
-}
-
 - (NSString *)userAgent {
-    if ([[MParticle sharedInstance] customUserAgent] != nil) {
-        mpUserAgent = [[MParticle sharedInstance] customUserAgent];
-    } else if (!mpUserAgent) {
-        if ([[MParticle sharedInstance] collectUserAgent]) {
+    NSString *defaultUserAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+    
+    if (!mpUserAgent) {
+        if (MParticle.sharedInstance.customUserAgent != nil) {
+            mpUserAgent = MParticle.sharedInstance.customUserAgent;
+        } else if (MParticle.sharedInstance.collectUserAgent) {
 #if TARGET_OS_IOS == 1
             NSString *currentSystemVersion = [UIDevice currentDevice].systemVersion;
             NSString *savedSystemVersion = [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey];
@@ -115,14 +85,16 @@ static NSString *mpUserAgent = nil;
                 }
             }
             
-            if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                return [self fallbackUserAgent];
-            }
-            
             dispatch_block_t getUserAgent = ^{
+#if !defined(MPARTICLE_APP_EXTENSIONS)
+                if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
+                    mpUserAgent = defaultUserAgent;
+                    return;
+                }
+#endif
                 @try {
                     UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-                    mpUserAgent = [NSString stringWithFormat:@"%@ mParticle/%@", [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"], kMParticleSDKVersion];
+                    mpUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
                     NSString *systemVersion = [UIDevice currentDevice].systemVersion;
                     if (mpUserAgent && systemVersion) {
                         [MPIUserDefaults standardUserDefaults][kMPUserAgentValueUserDefaultsKey] = mpUserAgent;
@@ -130,7 +102,7 @@ static NSString *mpUserAgent = nil;
                         [[MPIUserDefaults standardUserDefaults] synchronize];
                     }
                 } @catch (NSException *exception) {
-                    mpUserAgent = [self fallbackUserAgent];
+                    mpUserAgent = nil;
                     MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
                 }
             };
@@ -140,14 +112,12 @@ static NSString *mpUserAgent = nil;
             } else {
                 dispatch_sync(dispatch_get_main_queue(), getUserAgent);
             }
-#elif TARGET_OS_TV == 1
-            mpUserAgent = [self fallbackUserAgent];
 #endif
         } else {
-            mpUserAgent = [self fallbackUserAgent];
+            return defaultUserAgent;
         }
     }
-
+    
     return mpUserAgent;
 }
 
@@ -183,9 +153,7 @@ static NSString *mpUserAgent = nil;
 }
 
 + (void)tryToCaptureUserAgent {
-    dispatch_async(dispatch_get_main_queue(),^{
-        [[[MPURLRequestBuilder alloc] init] userAgent];
-    });
+    [[[MPURLRequestBuilder alloc] init] userAgent];
 }
 
 #pragma mark Public instance methods
@@ -217,9 +185,11 @@ static NSString *mpUserAgent = nil;
     [urlRequest setTimeoutInterval:requestTimeout];
     [urlRequest setHTTPMethod:_httpMethod];
 
-    if (SDKURLRequest) {
+    BOOL isIdentityRequest = [urlRequest.URL.host rangeOfString:@"identity"].location != NSNotFound;
+    
+    if (SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
-        MPKitContainer *kitContainer = [MPKitContainer sharedInstance];
+        MPKitContainer *kitContainer = !isIdentityRequest ? [MPKitContainer sharedInstance] : nil;
         NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
         NSString *contentType = nil;
         NSString *kits = nil;
@@ -231,7 +201,12 @@ static NSString *mpUserAgent = nil;
         NSRange range;
         BOOL containsMessage = _message != nil;
         
-        if (containsMessage) { // /events
+        if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
+            contentType = @"application/json";
+            [urlRequest setValue:[MPStateMachine sharedInstance].apiKey forHTTPHeaderField:@"x-mp-key"];
+            NSString *postDataString = [[NSString alloc] initWithData:_postData encoding:NSUTF8StringEncoding];
+            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, postDataString];
+        } else if (containsMessage) { // /events
             contentType = @"application/json";
             
             if (supportedKits) {
@@ -271,7 +246,8 @@ static NSString *mpUserAgent = nil;
                 
                 MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
                 NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
-                if (eTag) {
+                NSDictionary *config = [userDefaults getConfiguration];
+                if (eTag && config) {
                     [urlRequest setValue:eTag forHTTPHeaderField:@"If-None-Match"];
                 }
                 
@@ -291,9 +267,17 @@ static NSString *mpUserAgent = nil;
             [urlRequest setValue:kits forHTTPHeaderField:@"x-mp-kits"];
         }
 
-        [urlRequest setValue:[self userAgent] forHTTPHeaderField:@"User-Agent"];
+        if (!isIdentityRequest) {
+            NSString *userAgent = [self userAgent];
+            if (userAgent) {
+                [urlRequest setValue:userAgent forHTTPHeaderField:@"User-Agent"];
+            }
+        }
+        
         [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Accept-Encoding"];
-        [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
+        if (!isIdentityRequest) {
+            [urlRequest setValue:@"gzip" forHTTPHeaderField:@"Content-Encoding"];
+        }
         [urlRequest setValue:deviceLocale forHTTPHeaderField:@"locale"];
         [urlRequest setValue:contentType forHTTPHeaderField:@"Content-Type"];
         [urlRequest setValue:[timeZone name] forHTTPHeaderField:@"timezone"];

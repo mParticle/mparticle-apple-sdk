@@ -1,21 +1,3 @@
-//
-//  MPKitContainerTests.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPKitContainer.h"
 #import "MPIConstants.h"
@@ -38,6 +20,11 @@
 #import "MPKitConfiguration.h"
 #import "MPIUserDefaults.h"
 #import "MPForwardQueueParameters.h"
+#import "MPResponseConfig.h"
+
+@interface MParticle ()
++ (dispatch_queue_t)messageQueue;
+@end
 
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
@@ -46,7 +33,6 @@
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
 @property (nonatomic, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
-- (NSArray<NSString *> *)fetchKitConfigurationFileNames;
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (void)replayQueuedItems;
 - (NSDictionary *)validateAndTransformToSafeConfiguration:(NSDictionary *)configuration;
@@ -83,19 +69,18 @@
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
-    stateMachine.consumerInfo.mpId = @(-986700791391657968);
     
     kitContainer = [MPKitContainer sharedInstance];
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClass" startImmediately:NO];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
         
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass" startImmediately:YES];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
         [MPKitContainer registerKit:kitRegister];
         
-        kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest" startImmediately:YES];
+        kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
         [MPKitContainer registerKit:kitRegister];
         
         NSDictionary *configuration = @{
@@ -112,7 +97,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 92"];
     id kitAppsFlyer = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     if (!kitAppsFlyer) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest" startImmediately:YES];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
         [MPKitContainer registerKit:kitRegister];
     }
 }
@@ -169,78 +154,50 @@
                                      };
     
     NSDictionary *configuration2 = @{
-                                     @"id":@42,
+                                     @"id":@312,
                                      @"as":@{
                                              @"appId":@"cool app key 2"
                                              }
                                      };
     
-    NSArray *kitConfigs = @[configuration1];
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+    NSArray *kitConfigs = @[configuration1, configuration2];
     
-    NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    BOOL found = NO;
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary __block *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                        kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigTriggerKey:[NSNull null],
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                if ([[kitConfiguration kitCode] isEqual:@(42)]){
-                    XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
-                    found = YES;
-                }
-            }
-        } @catch (NSException *exception) {
-        }
-    }
-    
-    XCTAssertTrue(found);
-    found = NO;
-    
-    kitConfigs = @[configuration2];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"cool app key 2", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
-    
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                if ([[kitConfiguration kitCode] isEqual:@(42)]){
-                    
-                    XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
-                    
-                    found = YES;
-                }
+        [MPResponseConfig save:responseConfig eTag:eTag];
+        
+        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        
+        NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
             }
-        } @catch (NSException *exception) {
+            
+            if ([[kitConfiguration kitCode] isEqual:@(312)]){
+                
+                XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+            }
         }
-    }
+        
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+        [self resetUserAttributesAndIdentities];
+        
+        [expectation fulfill];
+    });
     
-    XCTAssertTrue(found);
-    
-    NSDictionary *configuration = @{
-                                    @"id":@42,
-                                    @"as":@{
-                                            @"appId":@"MyAppId"
-                                            }
-                                    };
-    
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:@[configuration]];
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [kitContainer startKit:@42 configuration:kitConfiguration];
-    
-    [self resetUserAttributesAndIdentities];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testRemoveKitConfiguration {
@@ -249,86 +206,80 @@
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{
-                                             @"appKey":@"unique key"
+                                             @"appId":@"cool app key"
                                              }
                                      };
     
     NSDictionary *configuration2 = @{
-                                     @"id":@314,
+                                     @"id":@312,
                                      @"as":@{
-                                             @"appId":@"unique id"
+                                             @"appId":@"cool app key 2"
                                              }
                                      };
     
-    NSArray *kitConfigs = @[configuration1, configuration2];
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
-    XCTAssertEqual(@"unique id", [kitContainer.kitConfigurations objectForKey:@314].configuration[@"appId"]);
+    NSArray __block *kitConfigs = @[configuration1, configuration2];
     
-    NSArray *directoryContents = [kitContainer fetchKitConfigurationFileNames];
-    NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-    BOOL found = NO;
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                                kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                                kMPRemoteConfigRampKey:@100,
+                                                kMPRemoteConfigTriggerKey:[NSNull null],
+                                                kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                                kMPRemoteConfigSessionTimeoutKey:@112};
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                
-                if ([[kitConfiguration kitCode] isEqual:@42]){
-                    XCTAssertEqualObjects(@"unique key", kitConfiguration.configuration[@"appKey"]);
-                    found = YES;
-                } else if ([[kitConfiguration kitCode] isEqual:@314]){
-                    XCTAssertEqualObjects(@"unique id", kitConfiguration.configuration[@"appId"]);
-                    found = YES;
-                }
-                
-                XCTAssertTrue(found);
-            }
-        } @catch (NSException *exception) {
-        }
-    }
-    
-    found = NO;
-    kitConfigs = @[configuration1];
-    [kitContainer configureKits:kitConfigs];
-    XCTAssertEqual(@"unique key", [kitContainer.kitConfigurations objectForKey:@42].configuration[@"appKey"]);
-    
-    for (NSString *fileName in directoryContents) {
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:fileName];
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
-        @try {
-            id unarchivedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:kitPath];
-            
-            if ([unarchivedObject isKindOfClass:[MPKitConfiguration class]]) {
-                MPKitConfiguration *kitConfiguration = (MPKitConfiguration *)unarchivedObject;
-                if ([[kitConfiguration kitCode] isEqual:@42]){
-                    XCTAssertEqualObjects(@"unique key", kitConfiguration.configuration[@"appKey"]);
-                    found = YES;
-                }
+        [MPResponseConfig save:responseConfig eTag:eTag];
+        
+        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        
+        NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
             }
-        } @catch (NSException *exception) {
+            
+            if ([[kitConfiguration kitCode] isEqual:@(312)]){
+                
+                XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+            }
         }
-    }
+        
+        kitConfigs = @[configuration1];
+
+        configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                          kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                          kMPRemoteConfigRampKey:@100,
+                          kMPRemoteConfigTriggerKey:[NSNull null],
+                          kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                          kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        
+        [MPResponseConfig save:responseConfig eTag:eTag];
+        
+        XCTAssertEqual(@"cool app key", [kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        
+        directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
+            }
+            
+            XCTAssertFalse([[kitConfiguration kitCode] isEqual:@(312)]);
+        }
+        
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+        [self resetUserAttributesAndIdentities];
+        
+        [expectation fulfill];
+    });
     
-    XCTAssertTrue(found);
-    
-    NSDictionary *configuration = @{
-                                    @"id":@42,
-                                    @"as":@{
-                                            @"appId":@"MyAppId"
-                                            }
-                                    };
-    
-    [kitContainer configureKits:nil];
-    [kitContainer configureKits:@[configuration]];
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [kitContainer startKit:@42 configuration:kitConfiguration];
-    
-    [self resetUserAttributesAndIdentities];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testIsDisabledByBracketConfiguration {
@@ -897,19 +848,20 @@
     
     key = @"Dinosaur";
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
-    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
-                userAttributeKey:key
-                           value:values
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit) {
-                          XCTAssertNotNil(kit);
-                          
-                          MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
-                          XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
-                          NSArray *referenceValues = @[@"T-Rex", @"Short arms", @"Omnivore"];
-                          XCTAssertEqualObjects(kit.userAttributes[@"Dinosaur"], referenceValues);
-                          
-                          [expectation fulfill];
-                      }];
+
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                    userAttributeKey:key
+                               value:values
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+                              XCTAssertNotNil(kit);
+                              
+                              MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+                              XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+                              
+                              [expectation fulfill];
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
 }
@@ -939,7 +891,7 @@
     [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
                 userAttributeKey:key
                            value:values
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit) {
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
                           NSAssert(false, @"This line should never be executed.");
                       }];
     
@@ -1064,8 +1016,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -1075,7 +1027,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     transactionAttributes.affiliation = @"Doctor";
@@ -1120,8 +1072,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -1131,7 +1083,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
@@ -1187,8 +1139,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -1198,7 +1150,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
@@ -1407,20 +1359,22 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"subscription_success" type:MPEventTypeTransaction];
     event.info = @{@"plan":@"premium", @"plan_color":@"gold", @"boolean":@YES};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
-                              
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 3);
+                                  
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1586,18 +1540,20 @@
     transactionAttributes.transactionId = @"42";
     commerceEvent.transactionAttributes = transactionAttributes;
 
-    [kitContainer forwardCommerceEventCall:commerceEvent
-                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                    if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                        MPEvent *event = kitFilter.forwardEvent;
-                                        XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
-                                        XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
-                                        XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
-                                        XCTAssertEqualObjects(event.name, @"af_add_to_cart");
-                                        
-                                        [expectation fulfill];
-                                    }
-                                }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardCommerceEventCall:commerceEvent
+                                    kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                                        if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                            MPEvent *event = kitFilter.forwardEvent;
+                                            XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
+                                            XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
+                                            XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
+                                            XCTAssertEqualObjects(event.name, @"af_add_to_cart");
+                                            
+                                            [expectation fulfill];
+                                        }
+                                    }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1687,25 +1643,27 @@
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription"};
     __block NSMutableArray<NSString *> *foundEventNames = [NSMutableArray arrayWithCapacity:2];
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
-                              
-                              [foundEventNames addObject:forwardEvent.name];
-                              
-                              if (foundEventNames.count == 2) {
-                                  XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
-                                  XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
-                                  [expectation fulfill];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 2);
+                                  
+                                  [foundEventNames addObject:forwardEvent.name];
+                                  
+                                  if (foundEventNames.count == 2) {
+                                      XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
+                                      XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
+                                      [expectation fulfill];
+                                  }
                               }
-                          }
-                      }];
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1770,18 +1728,20 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription", @"gender":@"female"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
+                                  XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1837,18 +1797,20 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"outcome":@"not_new_subscription"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
+                                  XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1908,21 +1870,23 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.info = @{@"plan":@"premium"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 2);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
-                              
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 2);
+                                  XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
+                                  
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -1982,21 +1946,23 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.info = @{@"test_description":@"this is a description"};
     
-    [kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 1);
-                              XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
-                              
-                              [expectation fulfill];
-                          }
-                      }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardSDKCall:@selector(logEvent:)
+                               event:event
+                         messageType:MPMessageTypeEvent
+                            userInfo:nil
+                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
+                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                                  XCTAssertNotNil(forwardEvent);
+                                  XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
+                                  XCTAssertNotNil(forwardEvent.info);
+                                  XCTAssertEqual(forwardEvent.info.count, 1);
+                                  XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
+                                  
+                                  [expectation fulfill];
+                              }
+                          }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     
@@ -2091,13 +2057,15 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
     
-    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
-        if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-            XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
-            
-            [expectation fulfill];
-        }
-    }];
+    dispatch_async([MParticle messageQueue], ^{
+        [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
+            if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
+                XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
+                
+                [expectation fulfill];
+            }
+        }];
+    });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
     

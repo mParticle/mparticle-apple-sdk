@@ -1,21 +1,3 @@
-//
-//  MPCommerceEventTests.m
-//
-//  Copyright 2015 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import <XCTest/XCTest.h>
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
@@ -55,8 +37,8 @@
     product.variant = @"It depends";
     
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"Y";
     
     NSDictionary *productDictionary = [product dictionaryRepresentation];
     XCTAssertNotNil(productDictionary, @"Product dictionary representation should not have been nil.");
@@ -291,8 +273,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
     XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
@@ -302,7 +284,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     commerceEvent.currency = @"bitcoins";
     commerceEvent.nonInteractive = YES;
     commerceEvent.screenName = @"time machine screen";
@@ -333,6 +315,64 @@
     XCTAssertEqualObjects(commerceEventDictionary[@"cu"], @"bitcoins", @"Currency should have been present.");
     XCTAssertEqualObjects(commerceEventDictionary[@"sn"], @"time machine screen", @"Screen name should have been present.");
     XCTAssertEqualObjects(commerceEventDictionary[@"ni"], @YES, @"Non-interactive should have been present.");
+}
+
+- (void)testCustomAttributes {
+    MPProduct *product = [[MPProduct alloc] initWithName:@"prod1" sku:@"sku1" quantity:@1 price:@0];
+    XCTAssertNotNil(product, @"Instance should not have been nil.");
+    
+    product[@"TestCustomAttribute"] = @"4";
+    XCTAssertEqual(product[@"TestCustomAttribute"], @"4");
+    
+    int x = 0;
+    
+    @try {
+        product[@"TestCustomAttribute2"] = @(4);
+    }
+    
+    @catch ( NSException *e) {
+        x++;
+    }
+    
+    @finally {
+        XCTAssertEqual(x, 1, @"Exception should be called anytime a non-string object is added to this dictionary");
+    }
+    
+    @try {
+        product[@"TestCustomAttribute2"] = [UIColor blueColor];
+    }
+    
+    @catch ( NSException *e) {
+        x++;
+    }
+    
+    @finally {
+        XCTAssertEqual(x, 2, @"Exception should be called anytime a non-string object is added to this dictionary");
+    }
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
+    XCTAssertEqual(commerceEvent.products.count, 1, @"Incorrect product count.");
+    
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    commerceEvent[@"key_string"] = @"val_string";
+    commerceEvent.currency = @"bitcoins";
+    commerceEvent.nonInteractive = YES;
+    commerceEvent.screenName = @"time machine screen";
+    
+    @try {
+        commerceEvent[@"key_number"] = @3.14;
+    }
+    
+    @catch ( NSException *e) {
+        x++;
+    }
+    
+    @finally {
+        XCTAssertEqual(x, 3, @"Exception should be called anytime a non-string object is added to this dictionary");
+    }
 }
 
 - (void)testCommerceEventPromotion {
@@ -386,8 +426,8 @@
     product.position = 1;
     product.variant = @"It depends";
     product[@"key1"] = @"val1";
-    product[@"key_number"] = @1;
-    product[@"key_bool"] = @YES;
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"Y";
     
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
     
@@ -395,7 +435,7 @@
     commerceEvent.screenName = @"Time Traveling";
     commerceEvent.checkoutStep = 1;
     commerceEvent[@"key_string"] = @"val_string";
-    commerceEvent[@"key_number"] = @3.14;
+    commerceEvent[@"key_number"] = @"3.14";
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";

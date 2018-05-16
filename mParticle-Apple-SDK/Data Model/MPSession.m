@@ -1,39 +1,18 @@
-//
-//  MPSession.m
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPSession.h"
 #import "MPIConstants.h"
+#import "MPPersistenceController.h"
 
-NSString *const sessionNumberFileName = @"SessionNumber";
 NSString *const sessionUUIDKey = @"sessionId";
-NSString *const sessionNumberKey = @"sessionNumber";
 
 @implementation MPSession
 
-@synthesize sessionNumber = _sessionNumber;
-
 - (instancetype)init {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0];
+    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:[MPPersistenceController mpId] sessionUserIds:[[MPPersistenceController mpId] stringValue]];
 }
 
-- (instancetype)initWithStartTime:(NSTimeInterval)timestamp {
-    self = [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil sessionNumber:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0];
+- (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId {
+    self = [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:userId sessionUserIds:[userId stringValue]];
     
     return self;
 }
@@ -44,10 +23,11 @@ NSString *const sessionNumberKey = @"sessionNumber";
                         startTime:(NSTimeInterval)startTime
                           endTime:(NSTimeInterval)endTime
                        attributes:(NSMutableDictionary *)attributesDictionary
-                    sessionNumber:(NSNumber *)sessionNumber
             numberOfInterruptions:(uint)numberOfInterruptions
                      eventCounter:(uint)eventCounter
                       suspendTime:(NSTimeInterval)suspendTime
+                           userId:(NSNumber *)userId
+                   sessionUserIds:(NSString *)sessionUserIds
 {
     self = [super init];
     if (!self) {
@@ -64,10 +44,11 @@ NSString *const sessionNumberKey = @"sessionNumber";
     _persisted = sessionId != 0;
     _numberOfInterruptions = numberOfInterruptions;
     _suspendTime = suspendTime;
+    _sessionUserIds = sessionUserIds;
     
     _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
     
-    _sessionNumber = sessionNumber != nil ? sessionNumber : [self sessionNumber];
+    _userId = userId;
 
     return self;
 }
@@ -83,8 +64,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
     
     BOOL isEqual = _sessionId == object.sessionId &&
                    _eventCounter == object.eventCounter &&
-                   [_uuid isEqualToString:object.uuid] &&
-                   [_sessionNumber isEqualToNumber:object.sessionNumber];
+                   [_uuid isEqualToString:object.uuid];
     
     return isEqual;
 }
@@ -97,17 +77,18 @@ NSString *const sessionNumberKey = @"sessionNumber";
                                                        startTime:_startTime
                                                          endTime:_endTime
                                                       attributes:[_attributesDictionary mutableCopy]
-                                                   sessionNumber:[_sessionNumber copy]
                                            numberOfInterruptions:_numberOfInterruptions
                                                     eventCounter:_eventCounter
-                                                     suspendTime:_suspendTime];
+                                                     suspendTime:_suspendTime
+                                                          userId:_userId
+                                                  sessionUserIds:_sessionUserIds];
     
     return copyObject;
 }
 
 #pragma mark Public accessors
 - (NSTimeInterval)foregroundTime {
-    return _length - _backgroundTime;
+    return _length - _backgroundTime;//sl
 }
 
 - (void)setEndTime:(NSTimeInterval)endTime {
@@ -121,7 +102,7 @@ NSString *const sessionNumberKey = @"sessionNumber";
     }
 }
 
-- (NSTimeInterval)length {
+- (NSTimeInterval)length {//slx
     if (_length == 0 && _endTime > _startTime) {
         [self willChangeValueForKey:@"length"];
         _length = _endTime - _startTime;
@@ -136,22 +117,11 @@ NSString *const sessionNumberKey = @"sessionNumber";
     _persisted = sessionId != 0;
 }
 
-- (NSNumber *)sessionNumber {
-    //session number has been deprecated
-    return @0;
-}
-
 #pragma mark Public methods
 - (void)incrementCounter {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
     [self willChangeValueForKey:@"eventCounter"];
     ++_eventCounter;
     [self didChangeValueForKey:@"eventCounter"];
-    
-    if (_eventCounter > EVENT_LIMIT) {
-        [notificationCenter postNotificationName:kMPEventCounterLimitReachedNotification object:self userInfo:nil];
-    }
 }
 
 - (void)suspendSession {

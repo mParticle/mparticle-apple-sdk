@@ -1,21 +1,3 @@
-//
-//  MPCommerceEvent.mm
-//
-//  Copyright 2016 mParticle, Inc.
-//
-//  Licensed under the Apache License, Version 2.0 (the "License");
-//  you may not use this file except in compliance with the License.
-//  You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-//  Unless required by applicable law or agreed to in writing, software
-//  distributed under the License is distributed on an "AS IS" BASIS,
-//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-//  See the License for the specific language governing permissions and
-//  limitations under the License.
-//
-
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPProduct.h"
@@ -33,6 +15,7 @@
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "mParticle.h"
 #import "MPILogger.h"
 
 using namespace std;
@@ -79,7 +62,7 @@ static NSArray *actionNames;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *productImpressions;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *productsList;
 @property (nonatomic, strong) NSMutableDictionary *userDefinedAttributes;
-
+@property (nonatomic, strong) NSDictionary *shoppingCartState;
 @end
 
 @implementation MPCommerceEvent
@@ -115,7 +98,7 @@ static NSArray *actionNames;
     if (!self) {
         return nil;
     }
-
+    _shoppingCartState = [[MParticle sharedInstance].identity.currentUser.cart dictionaryRepresentation];
     commerceEventKind = MPCommerceEventKindProduct;
     self.action = action;
     [self setEventType];
@@ -326,6 +309,7 @@ static NSArray *actionNames;
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
     NSAssert(key != nil, @"'key' cannot be nil.");
     NSAssert(obj != nil, @"'obj' cannot be nil.");
+    NSAssert([obj isKindOfClass:[NSString class]], @"'obj' for custom attributes must be a NSString");
     
     if (obj == nil) {
         return;
@@ -336,10 +320,6 @@ static NSArray *actionNames;
 
 - (NSArray *)allKeys {
     return [self.userDefinedAttributes allKeys];
-}
-
-- (NSUInteger)count {
-    return [self.userDefinedAttributes count];
 }
 
 #pragma mark NSCopying
@@ -357,6 +337,7 @@ static NSArray *actionNames;
         copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];
+        copyObject->_shoppingCartState = _shoppingCartState ? [[NSMutableDictionary alloc] initWithDictionary:[_shoppingCartState copy]] : nil;
         copyObject->_currency = [_currency copy];
     }
     
@@ -411,6 +392,10 @@ static NSArray *actionNames;
     if (_nonInteractive) {
         [coder encodeBool:_nonInteractive forKey:@"nonInteractive"];
     }
+    
+    if (_shoppingCartState) {
+        [coder encodeObject:_shoppingCartState forKey:@"shoppingCartState"];
+    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -428,7 +413,7 @@ static NSArray *actionNames;
     if (dictionary) {
         self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
-
+    
     dictionary = [coder decodeObjectForKey:@"productImpressions"];
     if (dictionary.count > 0) {
         self->_productImpressions = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
@@ -464,6 +449,11 @@ static NSArray *actionNames;
     type = (MPEventType)[coder decodeIntegerForKey:@"type"];
     commerceEventKind = (MPCommerceEventKind)[coder decodeIntegerForKey:@"commerceEventKind"];
     
+    dictionary = [coder decodeObjectForKey:@"shoppingCartState"];
+    if (dictionary) {
+        self->_shoppingCartState = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+    }
+    
     return self;
 }
 
@@ -493,10 +483,8 @@ static NSArray *actionNames;
         dictionary[kMPCEUserDefinedAttributes] = [_userDefinedAttributes transformValuesToString];
     }
 
-    // Shopping cart state
-    NSDictionary *cartDictionary = [[MPCart sharedInstance] dictionaryRepresentation];
-    if (cartDictionary) {
-        dictionary[kMPCEShoppingCartState] = cartDictionary;
+    if (_shoppingCartState) {
+        dictionary[kMPCEShoppingCartState] = _shoppingCartState;
     }
     
     if (_currency) {
@@ -735,8 +723,8 @@ static NSArray *actionNames;
                                 [eventInfo addEntriesFromDictionary:productDictionary];
                             }
                             
-                            if (_userDefinedAttributes.count > 0) {
-                                [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                            if (self->_userDefinedAttributes.count > 0) {
+                                [eventInfo addEntriesFromDictionary:self->_userDefinedAttributes];
                             }
 
                             if (eventInfo.count > 0) {

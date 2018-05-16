@@ -1,11 +1,3 @@
-//
-//  AppDelegate.swift
-//  CarthageExample
-//
-//  Created by Peter Jenkins on 4/15/16.
-//  Copyright © 2016 mParticle. All rights reserved.
-//
-
 import UIKit
 
 @UIApplicationMain
