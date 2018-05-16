@@ -14,6 +14,7 @@
 #import "MPKitExecStatus.h"
 #import "mParticle.h"
 #import "MPUploadBuilder.h"
+#import "sqlite3.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
@@ -79,6 +80,14 @@
         workBlock();
     });
     workBlock();
+}
+
+- (void)testPlatformSqliteAssumptions {
+    int safe = sqlite3_threadsafe();
+    XCTAssertEqual(safe, 2);
+    const char *version = sqlite3_libversion();
+    NSString *stringVersion = [NSString stringWithCString:version encoding:NSUTF8StringEncoding];
+    XCTAssertEqualObjects(stringVersion, @"3.19.3");
 }
 
 - (void)testSession {
