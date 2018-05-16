@@ -1,6 +1,7 @@
 #import "MPTransactionAttributes.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSNumber+MPFormatter.h"
+#import "MPILogger.h"
 
 // Internal keys
 NSString *const kMPTAAffiliation = @"ta";
@@ -92,9 +93,21 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
 - (id)initWithCoder:(NSCoder *)coder {
     self = [self init];
     if (self) {
-        NSDictionary *dictionary = [coder decodeObjectForKey:@"attributes"];
-        if (dictionary.count > 0) {
-            self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        NSDictionary *dictionary;
+        
+        @try {
+            dictionary = [coder decodeObjectForKey:@"attributes"];
+        }
+        
+        @catch ( NSException *e) {
+            dictionary = nil;
+            MPILogError(@"Exception decoding MPTransactionAttributes: %@", [e reason]);
+        }
+        
+        @finally {
+            if (dictionary.count > 0) {
+                self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+            }
         }
         
         dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
