@@ -591,7 +591,7 @@
     sqlite3 *oldmParticleDB, *mParticleDB;
     NSString *dbPath;
     
-    if (sqlite3_open([databasePath UTF8String], &mParticleDB) != SQLITE_OK) {
+    if (sqlite3_open_v2([databasePath UTF8String], &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
         return;
     }
     
@@ -603,7 +603,7 @@
     
     dbPath = [documentsDirectory stringByAppendingPathComponent:databaseName];
     
-    if (![fileManager fileExistsAtPath:dbPath] || (sqlite3_open([dbPath UTF8String], &oldmParticleDB) != SQLITE_OK)) {
+    if (![fileManager fileExistsAtPath:dbPath] || (sqlite3_open_v2([dbPath UTF8String], &oldmParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK)) {
         return;
     }
     

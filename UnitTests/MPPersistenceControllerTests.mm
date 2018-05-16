@@ -61,6 +61,26 @@
     return remoteNotificationDictionary;
 }
 
+- (void)testMultiThreadedAccess {
+    NSDate *startDate = [NSDate date];
+    NSDate *endDate = [startDate dateByAddingTimeInterval:1];
+    dispatch_block_t workBlock = ^{
+        while (-[[NSDate date] timeIntervalSinceDate:endDate] > 0) {
+            MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+            
+            MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+            [persistence saveSession:session];
+            NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
+            [persistence deleteSession:session];
+            sessions = [persistence fetchSessions];
+        }
+    };
+    dispatch_async(messageQueue, ^{
+        workBlock();
+    });
+    workBlock();
+}
+
 - (void)testSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Session test"];
     

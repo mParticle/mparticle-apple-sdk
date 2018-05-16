@@ -284,7 +284,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)setupDatabase {
-    if (sqlite3_open([self.databasePath UTF8String], &mParticleDB) != SQLITE_OK) {
+    if (sqlite3_open_v2([self.databasePath UTF8String], &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
         return;
     }
     
@@ -292,7 +292,7 @@ const int MaxBreadcrumbs = 50;
     if (databaseState == MPDatabaseStateCorrupted) {
         [self removeDatabase];
         
-        sqlite3_open([self.databasePath UTF8String], &mParticleDB);
+        sqlite3_open_v2([self.databasePath UTF8String], &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL);
     }
     
     string sqlStatement = "PRAGMA user_version";
@@ -1416,14 +1416,14 @@ const int MaxBreadcrumbs = 50;
     
     int statusCode;
     const char *databasePath = [self.databasePath UTF8String];
-    statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE, NULL);
+    statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL);
     
     if (statusCode != SQLITE_OK) {
         MPDatabaseState databaseState = [self verifyDatabaseState];
         if (databaseState == MPDatabaseStateCorrupted) {
             [self removeDatabase];
             
-            statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE, NULL);
+            statusCode = sqlite3_open_v2(databasePath, &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL);
         }
     }
     
