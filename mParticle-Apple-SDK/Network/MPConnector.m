@@ -239,12 +239,6 @@ static NSArray *mpFiddlerCertificates = nil;
 #pragma mark Public methods
 - (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull NSURL *)url {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
-#if !defined(MP_UNIT_TESTING)
-    if ([MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
-        response.error = [NSError errorWithDomain:@"MPConnector" code:MPConnectivityErrorCodeNoConnection userInfo:nil];
-        return response;
-    }
-#endif
     
     NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
     
@@ -281,12 +275,6 @@ static NSArray *mpFiddlerCertificates = nil;
 
 - (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
-#if !defined(MP_UNIT_TESTING)
-    if ([MPStateMachine sharedInstance].networkStatus == MParticleNetworkStatusNotReachable) {
-        response.error = [NSError errorWithDomain:@"MPConnector" code:MPConnectivityErrorCodeNoConnection userInfo:nil];
-        return response;
-    }
-#endif
     
     NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost]
                                              withPostData:serializedParams]
