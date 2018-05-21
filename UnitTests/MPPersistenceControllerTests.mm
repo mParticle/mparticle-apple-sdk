@@ -15,6 +15,7 @@
 #import "mParticle.h"
 #import "MPUploadBuilder.h"
 #import "sqlite3.h"
+#import "MPIUserDefaults.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
@@ -124,6 +125,8 @@
 - (void)testMessage {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
     
+    [MPPersistenceController setMpid:@2];
+    
     dispatch_async(messageQueue, ^{
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         
@@ -160,8 +163,52 @@
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
+- (void)testResetDatabase {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
+    
+    [MPPersistenceController setMpid:@2];
+    
+    dispatch_async(messageQueue, ^{
+        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        
+        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        [persistence saveSession:session];
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                               session:session
+                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessage *message = (MPMessage *)[messageBuilder build];
+        [persistence saveMessage:message];
+        
+        XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
+        
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
+        MPMessage *fetchedMessage = [messages lastObject];
+        
+        XCTAssertEqualObjects(message, fetchedMessage, @"Message and fetchedMessage are not equal.");
+        
+        [[MPPersistenceController sharedInstance] resetDatabase];
+        
+        messagesDictionary = [persistence fetchMessagesForUploading];
+        messages = messagesDictionary[[MPPersistenceController mpId]];
+        if (messages) {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"messageId == %lld", fetchedMessage.messageId];
+            messages = [messages filteredArrayUsingPredicate:predicate];
+            XCTAssertTrue(messages.count == 0, @"Message is not being deleted.");
+        }
+        
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+}
+
 - (void)testDeleteMessages {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
+    
+    [MPPersistenceController setMpid:@2];
+
     dispatch_async(messageQueue, ^{
         MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
@@ -238,7 +285,9 @@
 }
 
 - (void)testSegments {
-    NSDictionary *segmentDictionary = @{@"id":@101,
+    [MPPersistenceController setMpid:@2];
+
+    NSDictionary *segmentDictionary = @{@"id":@2,
                                         @"n":@"External Name 101",
                                         @"c":@[@{@"ct":@1395014265365,
                                                  @"a":@"add"
@@ -326,6 +375,8 @@
 }
 
 - (void)testConsumerInfo {
+    [MPPersistenceController setMpid:@2];
+    
     NSDictionary *consumerInfoDictionary = @{
                                              @"ck":@{
                                                      @"rpl":@{
@@ -346,7 +397,7 @@
                                                              }
                                                      },
                                              @"das":@"7754fbee-1b83-4cab-9b59-34518c14ae85",
-                                             @"mpid":@3452189063653540060
+                                             @"mpid":@2
                                              };
     
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];

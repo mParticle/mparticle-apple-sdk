@@ -707,6 +707,13 @@ NSString *const kMPStateKey = @"state";
     return [[MPAppNotificationHandler sharedInstance] continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
+- (void)clearMParticleData {
+    dispatch_async(messageQueue, ^{
+        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [[MPPersistenceController sharedInstance] resetDatabase];
+    });
+}
+
 #pragma mark Basic tracking
 - (nullable NSSet *)activeTimedEvents {
     return self.backendController.eventSet;

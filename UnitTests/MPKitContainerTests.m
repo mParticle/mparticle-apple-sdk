@@ -104,6 +104,7 @@
 
 - (void)tearDown {
     kitContainer = nil;
+    [[MParticle sharedInstance] clearMParticleData];
 
     [super tearDown];
 }
@@ -133,13 +134,6 @@
     
     userDefaults[@"ui"] = userIdentities;
     
-    [userDefaults synchronize];
-}
-
-- (void)resetUserAttributesAndIdentities {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    [userDefaults removeMPObjectForKey:@"ua"];
-    [userDefaults removeMPObjectForKey:@"ui"];
     [userDefaults synchronize];
 }
 
@@ -190,10 +184,7 @@
                 XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
             }
         }
-        
-        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
-        [self resetUserAttributesAndIdentities];
-        
+
         [expectation fulfill];
     });
     
@@ -273,9 +264,6 @@
             XCTAssertFalse([[kitConfiguration kitCode] isEqual:@(312)]);
         }
         
-        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
-        [self resetUserAttributesAndIdentities];
-        
         [expectation fulfill];
     });
     
@@ -283,6 +271,9 @@
 }
 
 - (void)testIsDisabledByBracketConfiguration {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults[@"mpid"] = @2;
+    
     NSDictionary *bracketConfig = @{@"hi":@(0),@"lo":@(0)};
     XCTAssertTrue([kitContainer isDisabledByBracketConfiguration:bracketConfig]);
     
@@ -1377,8 +1368,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testForwardAppsFlyerCommerceEvent {
@@ -1556,8 +1545,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testMatchArrayProjection {
@@ -1666,8 +1653,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testNonMatchingMatchArrayProjection {
@@ -1744,8 +1729,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testNonMatchingAttributeArrayProjection {
@@ -1813,8 +1796,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testHashProjection {
@@ -1889,8 +1870,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testAttributeHashProjection {
@@ -1965,8 +1944,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testAllocationAndDeallocation {
@@ -2068,8 +2045,6 @@
     });
     
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [self resetUserAttributesAndIdentities];
 }
 
 - (void)testShouldDelayUploadMaxTime {

@@ -233,6 +233,20 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     }
 }
 
+- (NSArray<MParticleUser *> *)getAllUsers {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSMutableArray<MParticleUser *> *userArray = [[NSMutableArray alloc] init];
+    
+    for (NSNumber *userID in [userDefaults userIDsInUserDefaults]) {
+        MParticleUser *user = [[MParticleUser alloc] init];
+        user.userId = userID;
+        
+        [userArray addObject:user];
+    }
+    
+    return userArray;
+}
+
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
     [_apiManager identify:identifyRequest completion:^(MPIdentityHTTPBaseSuccessResponse * _Nonnull httpResponse, NSError * _Nullable error) {
         [self onIdentityRequestComplete:identifyRequest identityRequestType:MPIdentityRequestIdentify httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse completion:completion error: error];

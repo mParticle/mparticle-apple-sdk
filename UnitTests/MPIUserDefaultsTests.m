@@ -40,10 +40,41 @@
 }
 
 - (void)tearDown {
-    [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
-    [[MPIUserDefaults standardUserDefaults] synchronize];
+    [[MPIUserDefaults standardUserDefaults] resetDefaults];
 
     [super tearDown];
+}
+
+- (void)testUserIDsInUserDefaults {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MIN]];
+    [userDefaults synchronize];
+    
+    NSArray<NSNumber *> *array = [userDefaults userIDsInUserDefaults];
+    
+    XCTAssert([array containsObject:@1]);
+    XCTAssert([array containsObject:[NSNumber numberWithLongLong:INT64_MAX]]);
+    XCTAssert([array containsObject:[NSNumber numberWithLongLong:INT64_MIN]]);
+}
+
+- (void)testResetDefaults {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MIN]];
+    [userDefaults resetDefaults];
+    
+    [userDefaults synchronize];
+    
+    NSArray<NSNumber *> *array = [userDefaults userIDsInUserDefaults];
+    
+    XCTAssert(![array containsObject:@1]);
+    XCTAssert(![array containsObject:[NSNumber numberWithLongLong:INT64_MAX]]);
+    XCTAssert(![array containsObject:[NSNumber numberWithLongLong:INT64_MIN]]);
 }
 
 - (void)testValidConfiguration {

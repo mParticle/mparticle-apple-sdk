@@ -25,6 +25,8 @@ typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiRe
 
 - (nullable MParticleUser *)getUser:(NSNumber *)mpId;
 
+- (nonnull NSArray<MParticleUser *> *)getAllUsers;
+
 - (void)identify:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 
 - (void)identifyWithCompletion:(nullable MPIdentityApiResultCallback)completion;

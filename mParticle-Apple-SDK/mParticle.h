@@ -309,6 +309,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
 
+- (void)clearMParticleData;
+
 #pragma mark - Basic Tracking
 /**
  Contains a collection with all active timed events (timed events that had begun, but not yet ended). You should not keep a 

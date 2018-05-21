@@ -20,6 +20,8 @@
 }
 
 - (void)tearDown {
+    [[MPIUserDefaults standardUserDefaults] resetDefaults];
+
     [super tearDown];
 }
 
@@ -103,7 +105,6 @@
         XCTAssertNotNil(restoredResponseConfig);
         XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
         
-        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
         [expectation fulfill];
     });
     

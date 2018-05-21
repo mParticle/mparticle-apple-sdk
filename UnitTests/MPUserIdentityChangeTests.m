@@ -22,6 +22,8 @@
 }
 
 - (void)tearDown {
+    [[MPIUserDefaults standardUserDefaults] resetDefaults];
+
     [super tearDown];
 }
 

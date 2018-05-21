@@ -83,6 +83,8 @@
 }
 
 - (void)tearDown {
+    [[MPIUserDefaults standardUserDefaults] resetDefaults];
+
     [super tearDown];
 }
 
@@ -173,7 +175,6 @@
     
     XCTAssertNil(email, @"Kit api is not filtering user identities");
     XCTAssertEqualObjects(customerId, @"12345", @"Kit api is filtering user identities when it shouldn't");
-    
 }
 
 @synthesize started;

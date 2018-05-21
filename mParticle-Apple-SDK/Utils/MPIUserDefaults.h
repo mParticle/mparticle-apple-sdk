@@ -20,6 +20,8 @@
 - (void)setConfiguration:(nonnull NSDictionary *)responseConfiguration andETag:(nonnull NSString *)eTag;
 - (void)migrateConfiguration;
 - (void)deleteConfiguration;
+- (void)resetDefaults;
 - (BOOL)isExistingUserId:(nonnull NSNumber *)userId;
+- (nonnull NSArray<NSNumber *> *)userIDsInUserDefaults;
 
 @end

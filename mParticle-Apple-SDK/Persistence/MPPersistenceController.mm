@@ -225,6 +225,11 @@ const int MaxBreadcrumbs = 50;
     }
 }
 
+- (void)resetDatabase {
+    [self deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
+    [self closeDatabase];
+}
+
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
     sqlite3_stmt *preparedStatement;
     

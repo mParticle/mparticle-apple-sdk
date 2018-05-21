@@ -47,6 +47,8 @@
 }
 
 - (void)tearDown {
+    [[MPIUserDefaults standardUserDefaults] resetDefaults];
+
     [super tearDown];
 }
 
@@ -199,7 +201,6 @@
 }
 
 - (void)testEtag {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{
@@ -261,8 +262,6 @@
             XCTAssertEqualObjects(headerValue, @"1.618-2.718-3.141-42");
         }
     }
-
-    [userDefaults deleteConfiguration];
 }
 
 - (void)testComposingWithHeaderData {
@@ -395,8 +394,6 @@
             XCTAssertEqualObjects(headerValue, @"42");
         }
     }
-    
-    [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
 }
 
 @end
