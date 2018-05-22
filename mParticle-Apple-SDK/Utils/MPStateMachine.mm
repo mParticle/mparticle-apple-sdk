@@ -346,6 +346,14 @@ static BOOL runningInBackground = NO;
     runningInBackground = background;
 }
 
++ (BOOL)isAppExtension {
+#if TARGET_OS_IOS == 1
+    return [[NSBundle mainBundle].bundlePath hasSuffix:@".appex"];
+#else
+    return NO;
+#endif
+}
+
 #pragma mark Public accessors
 - (MPConsoleLogging)consoleLogging {
     if (_consoleLogging != MPConsoleLoggingAutoDetect) {

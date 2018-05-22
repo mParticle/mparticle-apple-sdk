@@ -24,7 +24,6 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 
 #if TARGET_OS_IOS == 1
 
-NS_EXTENSION_UNAVAILABLE_IOS("")
 @interface MParticleUserNotification : MPDataModelAbstract <NSCoding>
 
 @property (nonatomic, strong, nullable) NSString *actionIdentifier;

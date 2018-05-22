@@ -18,6 +18,7 @@
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
 #import "MPMessageBuilder.h"
+#import "MPApplication.h"
 
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     #import <mParticle-CrashReporter/CrashReporter.h>
@@ -166,12 +167,12 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSString *)topmostContext {
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    UIViewController *rootViewController = [UIApplication sharedApplication].keyWindow.rootViewController;
-    id topmostContext = [self topViewControllerForController:rootViewController];
-    NSString *topmostContextName = [[topmostContext class] description];
-    return topmostContextName;
-#endif
+    if (![MPStateMachine isAppExtension]) {
+        UIViewController *rootViewController = [MPApplication sharedUIApplication].keyWindow.rootViewController;
+        id topmostContext = [self topViewControllerForController:rootViewController];
+        NSString *topmostContextName = [[topmostContext class] description];
+        return topmostContextName;
+    }
     return @"extension_context";
 }
 

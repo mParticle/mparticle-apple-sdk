@@ -92,9 +92,9 @@
         return;
     }
     
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    [MPNotificationController setDeviceToken:nil];
-#endif
+    if (![MPStateMachine isAppExtension]) {
+        [MPNotificationController setDeviceToken:nil];
+    }
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
     
@@ -116,9 +116,10 @@
         return;
     }
     
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    [MPNotificationController setDeviceToken:deviceToken];
-#endif
+    if (![MPStateMachine isAppExtension]) {
+        [MPNotificationController setDeviceToken:deviceToken];
+    }
+
     SEL deviceTokenSelector = @selector(setDeviceToken:);
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];

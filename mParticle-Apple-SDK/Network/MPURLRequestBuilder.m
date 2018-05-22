@@ -7,6 +7,7 @@
 #import "MPKitContainer.h"
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
+#import "MPApplication.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
@@ -86,12 +87,13 @@ static NSString *mpUserAgent = nil;
             }
             
             dispatch_block_t getUserAgent = ^{
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-                if ([UIApplication sharedApplication].applicationState == UIApplicationStateBackground) {
-                    mpUserAgent = defaultUserAgent;
-                    return;
+                if (![MPStateMachine isAppExtension]) {
+                    if ([MPApplication sharedUIApplication].applicationState == UIApplicationStateBackground) {
+                        mpUserAgent = defaultUserAgent;
+                        return;
+                    }
                 }
-#endif
+
                 @try {
                     UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
                     mpUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];

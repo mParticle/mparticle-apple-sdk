@@ -61,6 +61,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 + (nullable NSString *)provisioningProfileString;
 + (BOOL)runningInBackground;
 + (void)setRunningInBackground:(BOOL)background;
++ (BOOL)isAppExtension;
 - (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings;
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;

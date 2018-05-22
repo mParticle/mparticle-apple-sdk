@@ -256,11 +256,11 @@ static BOOL appBackgrounded = NO;
 }
 
 #pragma mark Private methods
-- (void)beginBackgroundTask NS_EXTENSION_UNAVAILABLE_IOS(""){
+- (void)beginBackgroundTask {
     __weak MPBackendController *weakSelf = self;
     
     if (backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
-        backendBackgroundTaskIdentifier = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
+        backendBackgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
             MPILogDebug(@"SDK has ended background activity together with the app.");
 
             [MPStateMachine setRunningInBackground:NO];
@@ -288,9 +288,9 @@ static BOOL appBackgrounded = NO;
     }
 }
 
-- (void)endBackgroundTask NS_EXTENSION_UNAVAILABLE_IOS(""){
+- (void)endBackgroundTask {
     if (backendBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-        [[UIApplication sharedApplication] endBackgroundTask:backendBackgroundTaskIdentifier];
+        [[MPApplication sharedUIApplication] endBackgroundTask:backendBackgroundTaskIdentifier];
         backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
     }
 }
@@ -431,41 +431,41 @@ static BOOL appBackgrounded = NO;
     }
     
 #if TARGET_OS_IOS == 1
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    MParticleUserNotification *userNotification = nil;
-    NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
-    
-    if (pushNotificationDictionary) {
-        NSError *error = nil;
-        NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:pushNotificationDictionary options:0 error:&error];
+    if (![MPStateMachine isAppExtension]) {
+        MParticleUserNotification *userNotification = nil;
+        NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
         
-        int64_t launchNotificationHash = 0;
-        if (!error && remoteNotificationData.length > 0) {
-            launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
-        }
-        
-        if (launchNotificationHash != 0 && [MPNotificationController launchNotificationHash] != 0 && launchNotificationHash != [MPNotificationController launchNotificationHash]) {
-            astType = kMPASTForegroundKey;
-            userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
-                                                                             actionIdentifier:nil
-                                                                                        state:kMPPushNotificationStateNotRunning];
+        if (pushNotificationDictionary) {
+            NSError *error = nil;
+            NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:pushNotificationDictionary options:0 error:&error];
             
-            if (userNotification.redactedUserNotificationString) {
-                messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
+            int64_t launchNotificationHash = 0;
+            if (!error && remoteNotificationData.length > 0) {
+                launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
             }
             
-            if (_session) {
-                NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-                NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
-                sessionFinalized = backgroundedTime > self.sessionTimeout;
+            if (launchNotificationHash != 0 && [MPNotificationController launchNotificationHash] != 0 && launchNotificationHash != [MPNotificationController launchNotificationHash]) {
+                astType = kMPASTForegroundKey;
+                userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
+                                                                                 actionIdentifier:nil
+                                                                                            state:kMPPushNotificationStateNotRunning];
+                
+                if (userNotification.redactedUserNotificationString) {
+                    messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
+                }
+                
+                if (_session) {
+                    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+                    NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
+                    sessionFinalized = backgroundedTime > self.sessionTimeout;
+                }
             }
         }
+        
+        if (userNotification) {
+            [self receivedUserNotification:userNotification];
+        }
     }
-    
-    if (userNotification) {
-        [self receivedUserNotification:userNotification];
-    }
-#endif
 #endif
     
     messageInfo[kMPAppStateTransitionType] = astType;
@@ -569,15 +569,14 @@ static BOOL appBackgrounded = NO;
                           }];
 }
 
-- (void)proxyOriginalAppDelegate NS_EXTENSION_UNAVAILABLE_IOS("")
- {
+- (void)proxyOriginalAppDelegate {
     if (originalAppDelegateProxied) {
         return;
     }
     
     originalAppDelegateProxied = YES;
     
-    UIApplication *application = [UIApplication sharedApplication];
+    UIApplication *application = [MPApplication sharedUIApplication];
     appDelegateProxy = [[MPAppDelegateProxy alloc] initWithOriginalAppDelegate:application.delegate];
     application.delegate = appDelegateProxy;
 }
@@ -857,13 +856,13 @@ static BOOL appBackgrounded = NO;
     
     timeAppWentToBackground = [[NSDate date] timeIntervalSince1970];
     
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    [self beginBackgroundTask];
-    
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [self beginBackgroundTimer];
+    if (![MPStateMachine isAppExtension]) {
+        [self beginBackgroundTask];
+        
+        if (MParticle.sharedInstance.automaticSessionTracking) {
+            [self beginBackgroundTimer];
+        }
     }
-#endif
     
     [self endUploadTimer];
     
@@ -887,15 +886,15 @@ static BOOL appBackgrounded = NO;
         [self.session suspendSession];
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
-#if !defined(MPARTICLE_APP_EXTENSIONS)
+        if (![MPStateMachine isAppExtension]) {
         [self uploadDatabaseWithCompletionHandler:^{
             if (!MParticle.sharedInstance.automaticSessionTracking) {
                 [self endBackgroundTask];
             }
         }];
-#else
-        [self endSession];
-#endif
+        } else {
+            [self endSession];
+        }
     });
 }
 
@@ -908,9 +907,9 @@ static BOOL appBackgrounded = NO;
     [MPStateMachine setRunningInBackground:NO];
     resignedActive = NO;
     
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    [self endBackgroundTask];
-#endif
+    if (![MPStateMachine isAppExtension]) {
+        [self endBackgroundTask];
+    }
     
 #if TARGET_OS_IOS == 1
     if ([MPLocationManager trackingLocation] && ![MPStateMachine sharedInstance].locationManager.backgroundLocationTracking) {
@@ -996,9 +995,9 @@ static BOOL appBackgrounded = NO;
             [persistence closeDatabase];
         }
         
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-        [self endBackgroundTask];
-#endif
+        if (![MPStateMachine isAppExtension]) {
+            [self endBackgroundTask];
+        }
         
     });
 }
@@ -1058,13 +1057,13 @@ static BOOL appBackgrounded = NO;
 }
 
 #pragma mark Timers
-- (void)beginBackgroundTimer NS_EXTENSION_UNAVAILABLE_IOS(""){
+- (void)beginBackgroundTimer {
     __weak MPBackendController *weakSelf = self;
     
     backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
                                   eventHandler:^{
                                       
-                                      NSTimeInterval backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
+                                      NSTimeInterval backgroundTimeRemaining = [[MPApplication sharedUIApplication] backgroundTimeRemaining];
                                       
                                       dispatch_async([MParticle messageQueue], ^{
                                           
@@ -1821,11 +1820,11 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    if (proxyAppDelegate) {
-        [self proxyOriginalAppDelegate];
+    if (![MPStateMachine isAppExtension]) {
+        if (proxyAppDelegate) {
+            [self proxyOriginalAppDelegate];
+        }
     }
-#endif
     
     [MPPersistenceController setConsentState:consentState forMpid:[MPPersistenceController mpId]];
     
@@ -2197,16 +2196,16 @@ static BOOL appBackgrounded = NO;
         
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-        __block UIUserNotificationSettings *userNotificationSettings = nil;
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
-        });
-        
-        NSUInteger notificationTypes = userNotificationSettings.types;
+        if (![MPStateMachine isAppExtension]) {
+            __block UIUserNotificationSettings *userNotificationSettings = nil;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
+            });
+            
+            NSUInteger notificationTypes = userNotificationSettings.types;
 #pragma clang diagnostic pop
-        messageInfo[kMPDeviceSupportedPushNotificationTypesKey] = @(notificationTypes);
-#endif
+            messageInfo[kMPDeviceSupportedPushNotificationTypesKey] = @(notificationTypes);
+        }
         
         if ([MPStateMachine sharedInstance].deviceTokenType.length > 0) {
             messageInfo[kMPDeviceTokenTypeKey] = [MPStateMachine sharedInstance].deviceTokenType;

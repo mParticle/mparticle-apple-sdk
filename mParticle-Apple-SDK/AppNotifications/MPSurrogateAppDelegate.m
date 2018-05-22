@@ -2,6 +2,7 @@
 #import "MPAppDelegateProxy.h"
 #import "MPNotificationController.h"
 #import "MPAppNotificationHandler.h"
+#import "MPStateMachine.h"
 
 @implementation MPSurrogateAppDelegate
 
@@ -11,9 +12,10 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo;
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-#endif
+    if (![MPStateMachine isAppExtension]) {
+        userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+    }
+
     if (userInfo) {
         [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
     }
@@ -74,9 +76,10 @@
 
 - (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification completionHandler:(void (^)())completionHandler {
     NSDictionary *userInfo;
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-#endif
+    if (![MPStateMachine isAppExtension]) {
+        userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+    }
+
     if (userInfo) {
         [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
     }

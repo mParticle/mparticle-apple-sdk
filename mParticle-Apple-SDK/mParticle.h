@@ -245,7 +245,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Application notifications
 #if TARGET_OS_IOS == 1
-#if !defined(MPARTICLE_APP_EXTENSIONS)
 /**
  Informs the mParticle SDK a local notification has been received. This method should be called only if proxiedAppDelegate is disabled.
  @param notification A local notification received by the app
@@ -297,7 +296,6 @@ NS_ASSUME_NONNULL_BEGIN
  @see proxiedAppDelegate
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
-#endif
 #endif
 
 /**

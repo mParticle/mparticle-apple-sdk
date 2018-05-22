@@ -15,6 +15,7 @@
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"
+#import "MPApplication.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -77,12 +78,13 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     NSString *presentedViewControllerDescription = nil;
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-        UIViewController *presentedViewController = [UIApplication sharedApplication].keyWindow.rootViewController.presentedViewController;
-        presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
-#else
-        presentedViewControllerDescription = @"extension_message";
-#endif
+        if (![MPStateMachine isAppExtension]) {
+            UIViewController *presentedViewController = [MPApplication sharedUIApplication].keyWindow.rootViewController.presentedViewController;
+            presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
+        } else {
+            presentedViewControllerDescription = @"extension_message";
+        }
+        
         mainThreadFlag = @YES;
     } else {
         presentedViewControllerDescription = @"off_thread";

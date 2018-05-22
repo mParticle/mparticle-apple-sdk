@@ -258,51 +258,58 @@ static NSString *kMPAppStoreReceiptString = nil;
     return bundleInfoDictionary[@"CFBundleShortVersionString"];
 }
 
++ (UIApplication *)sharedUIApplication {
+    if ([[UIApplication class] respondsToSelector:@selector(sharedApplication)]) {
+        return [[UIApplication class] performSelector:@selector(sharedApplication)];
+    }
+    return nil;
+}
+
 #if TARGET_OS_IOS == 1
 - (NSNumber *)badgeNumber {
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    __block NSInteger appBadgeNumber = 0;
-    if ([NSThread isMainThread]) {
-        appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), ^{
-            appBadgeNumber = [UIApplication sharedApplication].applicationIconBadgeNumber;
-        });
+    if (![MPStateMachine isAppExtension]) {
+        __block NSInteger appBadgeNumber = 0;
+        if ([NSThread isMainThread]) {
+            appBadgeNumber = [MPApplication sharedUIApplication].applicationIconBadgeNumber;
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                appBadgeNumber = [MPApplication sharedUIApplication].applicationIconBadgeNumber;
+            });
+        }
+        NSNumber *badgeNumber = appBadgeNumber != 0 ? @(appBadgeNumber) : nil;
+        
+        return badgeNumber;
     }
-    NSNumber *badgeNumber = appBadgeNumber != 0 ? @(appBadgeNumber) : nil;
-    
-    return badgeNumber;
-#endif
     return 0;
 }
 
 - (NSNumber *)remoteNotificationTypes {
     NSNumber *notificationTypes;
     
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    UIApplication *app = [UIApplication sharedApplication];
-    
-    if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        __block UIUserNotificationSettings *userNotificationSettings = nil;
-        if ([NSThread isMainThread]) {
-           userNotificationSettings = [app currentUserNotificationSettings];
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                userNotificationSettings = [app currentUserNotificationSettings];
-            });
-        }
+    if (![MPStateMachine isAppExtension]) {
+        UIApplication *app = [[UIApplication class] performSelector:@selector(sharedApplication)];
         
-#pragma clang diagnostic pop
-        notificationTypes = @(userNotificationSettings.types);
-    } else {
+        if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        notificationTypes = @([app enabledRemoteNotificationTypes]);
+            __block UIUserNotificationSettings *userNotificationSettings = nil;
+            if ([NSThread isMainThread]) {
+                userNotificationSettings = [app currentUserNotificationSettings];
+            } else {
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    userNotificationSettings = [app currentUserNotificationSettings];
+                });
+            }
+            
 #pragma clang diagnostic pop
+            notificationTypes = @(userNotificationSettings.types);
+        } else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+            notificationTypes = @([app enabledRemoteNotificationTypes]);
+#pragma clang diagnostic pop
+        }
     }
-#endif
     
     return notificationTypes;
 }

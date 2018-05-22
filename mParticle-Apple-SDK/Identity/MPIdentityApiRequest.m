@@ -6,6 +6,7 @@
 #import "MPDevice.h"
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
+#import "MPStateMachine.h"
 
 @implementation MPIdentityApiRequest
 
@@ -114,12 +115,12 @@
     }
     
 #if TARGET_OS_IOS == 1
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
-    if (deviceToken && [deviceToken length] > 0) {
-        knownIdentities[@"push_token"] = deviceToken;
+    if (![MPStateMachine isAppExtension]) {
+        NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
+        if (deviceToken && [deviceToken length] > 0) {
+            knownIdentities[@"push_token"] = deviceToken;
+        }
     }
-#endif
 #endif
     
     return knownIdentities;

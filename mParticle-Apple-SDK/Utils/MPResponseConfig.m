@@ -6,6 +6,7 @@
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -159,19 +160,19 @@
 - (void)configurePushNotifications:(NSDictionary *)pushNotificationDictionary {
     NSString *pushNotificationMode = pushNotificationDictionary[kMPRemoteConfigPushNotificationModeKey];
     [MPStateMachine sharedInstance].pushNotificationMode = pushNotificationMode;
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    UIApplication *app = [UIApplication sharedApplication];
-    
-    if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceTrue]) {
-        NSNumber *pushNotificationType = pushNotificationDictionary[kMPRemoteConfigPushNotificationTypeKey];
+    if (![MPStateMachine isAppExtension]) {
+        UIApplication *app = [MPApplication sharedUIApplication];
+        
+        if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceTrue]) {
+            NSNumber *pushNotificationType = pushNotificationDictionary[kMPRemoteConfigPushNotificationTypeKey];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        [app registerForRemoteNotificationTypes:[pushNotificationType integerValue]];
+            [app registerForRemoteNotificationTypes:[pushNotificationType integerValue]];
 #pragma clang diagnostic pop
-    } else if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceFalse]) {
-        [app unregisterForRemoteNotifications];
+        } else if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceFalse]) {
+            [app unregisterForRemoteNotifications];
+        }
     }
-#endif
 }
 #endif
 

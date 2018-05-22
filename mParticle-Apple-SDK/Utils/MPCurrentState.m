@@ -1,6 +1,7 @@
 #import "MPCurrentState.h"
 #import <mach/mach.h>
 #import "MPStateMachine.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -189,12 +190,11 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 }
 
 - (NSNumber *)statusBarOrientation {
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-    if ([NSThread isMainThread]) {
-        _statusBarOrientation = @([[UIApplication sharedApplication] statusBarOrientation]);
+    if (![MPStateMachine isAppExtension]) {
+        if ([NSThread isMainThread]) {
+            _statusBarOrientation = @([[MPApplication sharedUIApplication] statusBarOrientation]);
+        }
     }
-#endif
-    
     return _statusBarOrientation;
 }
 #endif

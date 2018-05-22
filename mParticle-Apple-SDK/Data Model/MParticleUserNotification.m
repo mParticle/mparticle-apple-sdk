@@ -1,4 +1,5 @@
 #import "MParticleUserNotification.h"
+#import "MPApplication.h"
 
 NSString *const kMPUserNotificationApsKey = @"aps";
 NSString *const kMPUserNotificationAlertKey = @"alert";
@@ -45,10 +46,10 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
             __block UIUserNotificationSettings *userNotificationSettings = nil;
             if ([NSThread isMainThread]) {
-                userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+                userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
             } else {
                 dispatch_sync(dispatch_get_main_queue(), ^{
-                    userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+                    userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
                 });
             }
             

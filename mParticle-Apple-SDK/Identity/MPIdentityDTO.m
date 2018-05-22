@@ -70,12 +70,12 @@
         }
         
 #if TARGET_OS_IOS == 1
-#if !defined(MPARTICLE_APP_EXTENSIONS)
-        NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
-        if (deviceToken) {
-            _knownIdentities.pushToken = deviceToken;
+        if (![MPStateMachine isAppExtension]) {
+            NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
+            if (deviceToken) {
+                _knownIdentities.pushToken = deviceToken;
+            }
         }
-#endif
 #endif
     }
     return self;

@@ -661,22 +661,29 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Application notifications
 #if TARGET_OS_IOS == 1
-#if !defined(MPARTICLE_APP_EXTENSIONS)
 - (NSData *)pushNotificationToken {
-    return [MPNotificationController deviceToken];
+    if (![MPStateMachine isAppExtension]) {
+        return [MPNotificationController deviceToken];
+    } else {
+        return nil;
+    }
 }
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
-    [MPNotificationController setDeviceToken:pushNotificationToken];
+    if (![MPStateMachine isAppExtension]) {
+        [MPNotificationController setDeviceToken:pushNotificationToken];
+    }
 }
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)didReceiveLocalNotification:(UILocalNotification *)notification {
 #pragma clang diagnostic pop
-    NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-    if (userInfo && !self.proxiedAppDelegate) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
+    if (![MPStateMachine isAppExtension]) {
+        NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+        if (userInfo && !self.proxiedAppDelegate) {
+            [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
+        }
     }
 }
 
@@ -685,7 +692,9 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
+    if (![MPStateMachine isAppExtension]) {
+        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
+    }
 }
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
@@ -693,7 +702,9 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [[MPAppNotificationHandler sharedInstance] didFailToRegisterForRemoteNotificationsWithError:error];
+    if (![MPStateMachine isAppExtension]) {
+        [[MPAppNotificationHandler sharedInstance] didFailToRegisterForRemoteNotificationsWithError:error];
+    }
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
@@ -701,16 +712,20 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [[MPAppNotificationHandler sharedInstance] didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+    if (![MPStateMachine isAppExtension]) {
+        [[MPAppNotificationHandler sharedInstance] didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
+    }
 }
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification {
 #pragma clang diagnostic pop
-    NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-    if (userInfo && !self.proxiedAppDelegate) {
-        [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
+    if (![MPStateMachine isAppExtension]) {
+        NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
+        if (userInfo && !self.proxiedAppDelegate) {
+            [[MPAppNotificationHandler sharedInstance] receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
+        }
     }
 }
 
@@ -719,9 +734,10 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    [[MPAppNotificationHandler sharedInstance] handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+    if (![MPStateMachine isAppExtension]) {
+        [[MPAppNotificationHandler sharedInstance] handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+    }
 }
-#endif
 #endif
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {

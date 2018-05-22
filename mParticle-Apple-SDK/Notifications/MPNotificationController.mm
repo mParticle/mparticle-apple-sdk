@@ -5,6 +5,8 @@
 #include "MPHasher.h"
 #import "MParticle.h"
 #import "MPBackendController.h"
+#import "MPApplication.h"
+#import "MPStateMachine.h"
 
 @interface MPNotificationController() {
     BOOL appJustFinishedLaunching;
@@ -95,7 +97,7 @@ static int64_t launchNotificationHash = 0;
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     UIUserNotificationSettings *userNotificationSettings = nil;
     if ([NSThread isMainThread]) {
-        userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+        userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
     }
 
     if (!userNotificationSettings) {
@@ -195,7 +197,7 @@ static int64_t launchNotificationHash = 0;
         notificationLaunchedApp = NO;
     }
     
-    if (userNotification && shouldDelegateReceivedRemoteNotification) {
+    if (userNotification && shouldDelegateReceivedRemoteNotification && ![MPStateMachine isAppExtension]) {
         [self.delegate receivedUserNotification:userNotification];
     }
 }

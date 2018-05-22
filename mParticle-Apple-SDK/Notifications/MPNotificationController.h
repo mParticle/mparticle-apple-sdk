@@ -3,7 +3,6 @@
 #import "MParticleUserNotification.h"
 
 @protocol MPNotificationControllerDelegate;
-NS_EXTENSION_UNAVAILABLE_IOS("")
 @interface MPNotificationController : NSObject
 
 #if TARGET_OS_IOS == 1
@@ -25,6 +24,6 @@ NS_EXTENSION_UNAVAILABLE_IOS("")
 
 @protocol MPNotificationControllerDelegate <NSObject>
 #if TARGET_OS_IOS == 1
-- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification NS_EXTENSION_UNAVAILABLE_IOS("");
+- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 @end
