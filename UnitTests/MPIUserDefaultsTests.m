@@ -66,15 +66,18 @@
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
     [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MIN]];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:@"userSetting" forKey:@"userKey"];
+    
     [userDefaults resetDefaults];
-    
-    [userDefaults synchronize];
-    
+        
     NSArray<NSNumber *> *array = [userDefaults userIDsInUserDefaults];
     
     XCTAssert(![array containsObject:@1]);
     XCTAssert(![array containsObject:[NSNumber numberWithLongLong:INT64_MAX]]);
     XCTAssert(![array containsObject:[NSNumber numberWithLongLong:INT64_MIN]]);
+    
+    XCTAssert([[NSUserDefaults standardUserDefaults] objectForKey:@"userKey"]);
 }
 
 - (void)testValidConfiguration {

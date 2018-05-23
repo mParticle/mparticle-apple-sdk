@@ -49,10 +49,12 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     
     NSMutableSet<NSNumber *> *uniqueUserIDs = [[NSMutableSet alloc] init];
     for (NSString *key in keyArray) {
-        NSArray *keyComponents = [key componentsSeparatedByString:@"::"];
-        if (keyComponents.count == 3) {
-            NSNumber *userID = [NSNumber numberWithLongLong:[(NSString *)keyComponents[1] longLongValue]];
-            [uniqueUserIDs addObject:userID];
+        if ([[self customUserDefaults] objectForKey:key] != nil) {
+            NSArray *keyComponents = [key componentsSeparatedByString:@"::"];
+            if (keyComponents.count == 3) {
+                NSNumber *userID = [NSNumber numberWithLongLong:[(NSString *)keyComponents[1] longLongValue]];
+                [uniqueUserIDs addObject:userID];
+            }
         }
     }
 
@@ -287,7 +289,11 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 - (void)resetDefaults {
     NSUserDefaults * defs = [NSUserDefaults standardUserDefaults];
     NSDictionary * dict = [defs dictionaryRepresentation];
-    for (id key in dict) {
+    
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS %@", NSUserDefaultsPrefix];
+    NSArray *mParticleKeys = [dict.allKeys filteredArrayUsingPredicate:predicate];
+    
+    for (id key in mParticleKeys) {
         [defs removeObjectForKey:key];
     }
     [defs synchronize];
