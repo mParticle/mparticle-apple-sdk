@@ -1065,45 +1065,47 @@ static BOOL appBackgrounded = NO;
     backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
                                   eventHandler:^{
                                       
-                                      __block NSTimeInterval backgroundTimeRemaining;
-                                      dispatch_sync(dispatch_get_main_queue(), ^{
-                                          backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
-                                      });
+                                      NSTimeInterval backgroundTimeRemaining = [[UIApplication sharedApplication] backgroundTimeRemaining];
                                       
-                                      __strong MPBackendController *strongSelf = weakSelf;
-                                      if (!strongSelf) {
-                                          return;
-                                      }
-                                      
-                                      strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
-                                      
-                                      if (!strongSelf->longSession) {
-                                          NSTimeInterval timeInBackground =  [[NSDate date] timeIntervalSince1970] - self->timeAppWentToBackground;
-                                          if (timeInBackground >= strongSelf.sessionTimeout) {
-                                              [strongSelf endBackgroundTimer];
-                                              [[MPPersistenceController sharedInstance] updateSession:strongSelf.session];
-                                              
-                                              [strongSelf processOpenSessionsEndingCurrent:YES
-                                                                         completionHandler:^(BOOL success) {
-                                                                             [MPStateMachine setRunningInBackground:NO];
-                                                                             
-                                                                             MPILogDebug(@"SDK has ended background activity.");
-                                                                             [strongSelf endBackgroundTask];
-                                                                         }];
-                                              
-                                          }
-                                      } else {
-                                          self->backgroundStartTime = 0;
+                                      dispatch_async([MParticle messageQueue], ^{
                                           
-                                          if (!strongSelf->uploadSource) {
-                                              [strongSelf beginUploadTimer];
+                                          __strong MPBackendController *strongSelf = weakSelf;
+                                          if (!strongSelf) {
+                                              return;
                                           }
-                                      }
+                                          
+                                          strongSelf->longSession = backgroundTimeRemaining > kMPRemainingBackgroundTimeMinimumThreshold;
+                                          
+                                          if (!strongSelf->longSession) {
+                                              NSTimeInterval timeInBackground =  [[NSDate date] timeIntervalSince1970] - self->timeAppWentToBackground;
+                                              if (timeInBackground >= strongSelf.sessionTimeout) {
+                                                  [strongSelf endBackgroundTimer];
+                                                  [[MPPersistenceController sharedInstance] updateSession:strongSelf.session];
+                                                  
+                                                  [strongSelf processOpenSessionsEndingCurrent:YES
+                                                                             completionHandler:^(BOOL success) {
+                                                                                 [MPStateMachine setRunningInBackground:NO];
+                                                                                 
+                                                                                 MPILogDebug(@"SDK has ended background activity.");
+                                                                                 [strongSelf endBackgroundTask];
+                                                                             }];
+                                                  
+                                              }
+                                          } else {
+                                              self->backgroundStartTime = 0;
+                                              
+                                              if (!strongSelf->uploadSource) {
+                                                  [strongSelf beginUploadTimer];
+                                              }
+                                          }
+                                      });
                                   } cancelHandler:^{
-                                      __strong MPBackendController *strongSelf = weakSelf;
-                                      if (strongSelf) {
-                                          strongSelf->backgroundSource = nil;
-                                      }
+                                      dispatch_async([MParticle messageQueue], ^{
+                                          __strong MPBackendController *strongSelf = weakSelf;
+                                          if (strongSelf) {
+                                              strongSelf->backgroundSource = nil;
+                                          }
+                                      });
                                   }];
 }
 
@@ -1123,15 +1125,30 @@ static BOOL appBackgrounded = NO;
         
         strongSelf->uploadSource = [strongSelf createSourceTimer:strongSelf.uploadInterval
                                                     eventHandler:^{
-                                                        [strongSelf uploadDatabaseWithCompletionHandler:nil];
+                                                        dispatch_async([MParticle messageQueue], ^{
+                                                            __strong MPBackendController *strongSelf = weakSelf;
+                                                            if (!strongSelf) {
+                                                                return;
+                                                            }
+                                                            
+                                                            [strongSelf uploadDatabaseWithCompletionHandler:nil];
+                                                        });
+                                                        
                                                     } cancelHandler:^{
-                                                        strongSelf->uploadSource = nil;
+                                                        dispatch_async([MParticle messageQueue], ^{
+                                                            __strong MPBackendController *strongSelf = weakSelf;
+                                                            if (!strongSelf) {
+                                                                return;
+                                                            }
+                                                            
+                                                            strongSelf->uploadSource = nil;
+                                                        });
                                                     }];
     });
 }
 
 - (dispatch_source_t)createSourceTimer:(uint64_t)interval eventHandler:(dispatch_block_t)eventHandler cancelHandler:(dispatch_block_t)cancelHandler {
-    dispatch_source_t sourceTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, messageQueue);
+    dispatch_source_t sourceTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
     
     if (sourceTimer) {
         dispatch_source_set_timer(sourceTimer, dispatch_walltime(NULL, 0), interval * NSEC_PER_SEC, 0.1 * NSEC_PER_SEC);
