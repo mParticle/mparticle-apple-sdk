@@ -2,25 +2,23 @@
 
 # mParticle Apple SDK
 
-Hello! This is the public repository of the unified mParticle Apple SDK built for the iOS and tvOS platforms.
+This is the mParticle Apple SDK for iOS and tvOS.
 
-At mParticle our mission is straightforward: make it really easy for apps and app services to connect and take ownership of your 1st party data. Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing, monetization, etc. However, embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs.
+At mParticle our mission is straightforward: make it really easy for apps and app services to connect and allow you to take ownership of your 1st party data.
+Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing,
+monetization, etc. However, embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs.
 
-The mParticle platform addresses all these problems. We support an ever growing number of integrations with services and SDKs, including developer tools, analytics, attribution, messaging, advertising, and more. mParticle has been designed to be the central hub connecting all these services – check [our site](https://www.mparticle.com), or hit us at <support@mparticle.com> to learn more.
-
+The mParticle platform addresses all these problems. We support an ever growing number of integrations with services and SDKs, including developer
+tools, analytics, attribution, messaging, advertising, and more. mParticle has been designed to be the central hub connecting all these services –
+read the [docs](https://docs.mparticle.com/developers/sdk/ios/) or contact us at <support@mparticle.com> to learn more.
 
 ## Overview
 
 This document will help you:
 
-* Obtain the mParticle SDK via [CocoaPods](https://cocoapods.org/?q=mparticle) or via [Carthage](https://github.com/Carthage/Carthage)
-* Extend the mParticle SDK with [*Kits*](#currently-supported-kits)
+* Install the mParticle SDK using [CocoaPods](https://cocoapods.org/?q=mparticle) or [Carthage](https://github.com/Carthage/Carthage)
+* Add any desired [kits](#currently-supported-kits)
 * Initialize the mParticle SDK
-
-The mParticle SDK is composed of the _core_ library and a series of _kit_ libraries that depend on the core. With each integration with a partner we strive to implement as many features as possible in the server-to-server layer, however some times a deeper integration to work side-by-side with a 3rd party SDK comes with greater benefits to our clients. We use the term **Kit** to describe such integrations.
-
-The core SDK takes care of initializing the kits depending on what you've configured in [your app's dashboard](https://app.mparticle.com), so you just have to decide which kits you may use prior to submission to the App Store. You can easily include all of the kits, none of the kits, or individual kits – the choice is yours.
-
 
 ## Get the SDK
 
@@ -100,6 +98,8 @@ github "mparticle-integrations/mparticle-apple-integration-branchmetrics" ~> 7.0
 In this case, only the _Branch Metrics_ kit would be integrated; all other kits would be left out.
 
 #### Currently Supported Kits
+
+Several integrations require additional client-side add-on libraries called "kits." Some kits embed other SDKs, others just contain a bit of additional functionality. Kits are designed to feel just like server-side integrations; you enable, disable, filter, sample, and otherwise tweak kits completely from the mParticle platform UI. The Core SDK will detect kits at runtime, but you need to add them as dependencies to your app.
 
 Kit | CocoaPods | Carthage
 ----|:---------:|:-------:
@@ -232,8 +232,8 @@ Just by initializing the SDK you'll be set up to track user installs, engagement
 
 ## Support
 
-Questions? Have an issue? Consult the [Troubleshooting](https://github.com/mParticle/mparticle-apple-sdk/wiki/Troubleshooting) page or contact our **Customer Success** team at <support@mparticle.com>.
+Questions? Have an issue? Read the [docs](https://docs.mparticle.com/developers/sdk/ios/) or contact our **Customer Success** team at <support@mparticle.com>.
 
 ## License
 
-The mParticle-Apple-SDK is available under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0). See the LICENSE file for more info.
+Apache 2.0

@@ -4,22 +4,22 @@ Pod::Spec.new do |s|
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
-                         Hello! This is the unified mParticle Apple SDK built for the iOS and tvOS platforms.
-
-                         At mParticle our mission is straightforward: make it really easy for apps and app services to connect and take ownership of your 1st party data.
+                         This is the mParticle Apple SDK for iOS and tvOS.
+                         
+                         At mParticle our mission is straightforward: make it really easy for apps and app services to connect and allow you to take ownership of your 1st party data.
                          Like most app owners, you end up implementing and maintaining numerous SDKs ranging from analytics, attribution, push notification, remarketing,
                          monetization, etc. However, embedding multiple 3rd party libraries creates a number of unintended consequences and hidden costs.
 
                          The mParticle platform addresses all these problems. We support an ever growing number of integrations with services and SDKs, including developer
                          tools, analytics, attribution, messaging, advertising, and more. mParticle has been designed to be the central hub connecting all these services –
-                         check [our site](https://www.mparticle.com), or hit us at <dev@mparticle.com> to learn more.
+                         read the [docs](https://docs.mparticle.com/developers/sdk/ios/) or contact us at <support@mparticle.com> to learn more.
                          DESC
 
-    s.homepage          = "http://www.mparticle.com"
+    s.homepage          = "https://www.mparticle.com"
     s.license           = { :type => 'Apache 2.0', :file => 'LICENSE'}
     s.author            = { "mParticle" => "support@mparticle.com" }
     s.source            = { :git => "https://github.com/mParticle/mparticle-apple-sdk.git", :tag => s.version.to_s }
-    s.documentation_url = "http://docs.mparticle.com"
+    s.documentation_url = "https://docs.mparticle.com/developers/sdk/ios/"
     s.social_media_url  = "https://twitter.com/mparticles"
     s.requires_arc      = true
     s.default_subspec   = 'mParticle'
