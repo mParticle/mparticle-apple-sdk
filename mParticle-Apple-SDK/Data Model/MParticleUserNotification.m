@@ -43,7 +43,14 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         if (_categoryIdentifier) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+            __block UIUserNotificationSettings *userNotificationSettings = nil;
+            if ([NSThread isMainThread]) {
+                userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+            } else {
+                dispatch_sync(dispatch_get_main_queue(), ^{
+                    userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+                });
+            }
             
             if (userNotificationSettings) {
                 for (UIUserNotificationCategory *category in userNotificationSettings.categories) {

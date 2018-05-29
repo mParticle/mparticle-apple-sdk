@@ -2205,7 +2205,11 @@ static BOOL appBackgrounded = NO;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #if !defined(MPARTICLE_APP_EXTENSIONS)
-        UIUserNotificationSettings *userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+        __block UIUserNotificationSettings *userNotificationSettings = nil;
+        dispatch_sync(dispatch_get_main_queue(), ^{
+            userNotificationSettings = [[UIApplication sharedApplication] currentUserNotificationSettings];
+        });
+        
         NSUInteger notificationTypes = userNotificationSettings.types;
 #pragma clang diagnostic pop
         messageInfo[kMPDeviceSupportedPushNotificationTypesKey] = @(notificationTypes);
