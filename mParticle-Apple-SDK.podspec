@@ -49,7 +49,7 @@ Pod::Spec.new do |s|
         ss.source_files         = 'mParticle-Apple-SDK/**/*'
         ss.libraries            = 'c++', 'sqlite3', 'z'
 
-        ss.ios.frameworks       = 'Accounts', 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
+        ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
@@ -62,7 +62,7 @@ Pod::Spec.new do |s|
         ext.source_files         = 'mParticle-Apple-SDK/**/*'
         ext.libraries            = 'c++', 'sqlite3', 'z'
 
-        ext.ios.frameworks       = 'Accounts', 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'Social', 'SystemConfiguration', 'UIKit'
+        ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'

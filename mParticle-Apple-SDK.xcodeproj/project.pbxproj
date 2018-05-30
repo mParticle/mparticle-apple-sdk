@@ -382,7 +382,6 @@
 		C9DD20631D8A142900D3ABBE /* MPIHasher.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CFA1D8A112B00D3ABBE /* MPIHasher.mm */; };
 		C9DD20641D8A142900D3ABBE /* MPUserSegments.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CFB1D8A112B00D3ABBE /* MPUserSegments.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD20651D8A142900D3ABBE /* MPUserSegments.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CFC1D8A112B00D3ABBE /* MPUserSegments.m */; };
-		C9DD20681D8A146900D3ABBE /* Accounts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD20671D8A146900D3ABBE /* Accounts.framework */; };
 		C9DD206A1D8A146F00D3ABBE /* AdSupport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD20691D8A146F00D3ABBE /* AdSupport.framework */; };
 		C9DD206C1D8A147A00D3ABBE /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206B1D8A147A00D3ABBE /* UIKit.framework */; };
 		C9DD206E1D8A148400D3ABBE /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */; };
@@ -700,7 +699,6 @@
 		C9DD1D371D8A112B00D3ABBE /* NSString+MPPercentEscape.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+MPPercentEscape.h"; sourceTree = "<group>"; };
 		C9DD1D381D8A112B00D3ABBE /* NSString+MPPercentEscape.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+MPPercentEscape.m"; sourceTree = "<group>"; };
 		C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C9DD20671D8A146900D3ABBE /* Accounts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accounts.framework; path = System/Library/Frameworks/Accounts.framework; sourceTree = SDKROOT; };
 		C9DD20691D8A146F00D3ABBE /* AdSupport.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AdSupport.framework; path = System/Library/Frameworks/AdSupport.framework; sourceTree = SDKROOT; };
 		C9DD206B1D8A147A00D3ABBE /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
@@ -839,7 +837,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C9DD20681D8A146900D3ABBE /* Accounts.framework in Frameworks */,
 				C9DD206A1D8A146F00D3ABBE /* AdSupport.framework in Frameworks */,
 				C9DD20801D8A14E200D3ABBE /* CoreGraphics.framework in Frameworks */,
 				C9DD207E1D8A14D800D3ABBE /* CoreLocation.framework in Frameworks */,
@@ -1228,7 +1225,6 @@
 				C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */,
 				C9DD206B1D8A147A00D3ABBE /* UIKit.framework */,
 				C9DD20691D8A146F00D3ABBE /* AdSupport.framework */,
-				C9DD20671D8A146900D3ABBE /* Accounts.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
