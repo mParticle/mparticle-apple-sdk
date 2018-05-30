@@ -70,7 +70,9 @@
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
 #pragma clang diagnostic ignored "-Wunreachable-code"
     if (@available(iOS 9.0, *)) {
-        _annotationKey = &UIApplicationOpenURLOptionsAnnotationKey != NULL ? UIApplicationOpenURLOptionsAnnotationKey : @"UIApplicationOpenURLOptionsAnnotationKey";
+        _annotationKey = UIApplicationOpenURLOptionsAnnotationKey;
+    } else {
+        _annotationKey = @"UIApplicationOpenURLOptionsAnnotationKey";
     }
 #pragma clang diagnostic pop
     
@@ -85,7 +87,9 @@
 #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
 #pragma clang diagnostic ignored "-Wunreachable-code"
     if (@available(iOS 9.0, *)) {
-        _sourceAppKey = &UIApplicationOpenURLOptionsSourceApplicationKey != NULL ? UIApplicationOpenURLOptionsSourceApplicationKey : @"UIApplicationOpenURLOptionsSourceApplicationKey" ;
+        _sourceAppKey = UIApplicationOpenURLOptionsSourceApplicationKey;
+    } else {
+        _sourceAppKey = @"UIApplicationOpenURLOptionsSourceApplicationKey";
     }
 #pragma clang diagnostic pop
 
