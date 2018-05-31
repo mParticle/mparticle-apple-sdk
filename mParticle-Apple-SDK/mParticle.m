@@ -96,10 +96,6 @@ NSString *const kMPStateKey = @"state";
 {
     self = [super init];
     if (self) {
-        _configHost = nil;
-        _eventsHost = nil;
-        _identityHost = nil;
-        _certificates = nil;
         _pinningDisabledInDevelopment = NO;
     }
     return self;
