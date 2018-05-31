@@ -386,11 +386,19 @@ static BOOL runningInBackground = NO;
     return _consumerInfo;
 }
 
+- (MPILogLevel)logLevel {
+    @synchronized(self) {
+        return _logLevel;
+    }
+}
+
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    _logLevel = logLevel;
-    
-    if (logLevel == MPILogLevelNone) {
-        _consoleLogging = MPConsoleLoggingSuppress;
+    @synchronized(self) {
+        _logLevel = logLevel;
+        
+        if (logLevel == MPILogLevelNone) {
+            _consoleLogging = MPConsoleLoggingSuppress;
+        }
     }
 }
 

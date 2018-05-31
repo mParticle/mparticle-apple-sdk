@@ -399,9 +399,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    dispatch_async(messageQueue, ^{
-        [MPStateMachine sharedInstance].logLevel = logLevel;
-    });
+    [MPStateMachine sharedInstance].logLevel = logLevel;
 }
 
 - (BOOL)optOut {
