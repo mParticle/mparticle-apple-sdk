@@ -486,7 +486,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(void (^)(BOOL success))completionHandler {
-    [self endUploadTimer];
     
     MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
     
@@ -1028,7 +1027,7 @@ static BOOL appBackgrounded = NO;
         resignedActive = NO;
         return;
     }
-    
+    [self beginUploadTimer];
     dispatch_async(messageQueue, ^{
         BOOL sessionExpired = self->_session == nil;
         if (!sessionExpired) {
@@ -1049,7 +1048,7 @@ static BOOL appBackgrounded = NO;
         MPMessage *message = (MPMessage *)[messageBuilder build];
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
-        [self beginUploadTimer];
+       
         MPILogVerbose(@"Application Did Become Active");
     });
 }
@@ -1135,14 +1134,7 @@ static BOOL appBackgrounded = NO;
                                                         });
                                                         
                                                     } cancelHandler:^{
-                                                        dispatch_async([MParticle messageQueue], ^{
-                                                            __strong MPBackendController *strongSelf = weakSelf;
-                                                            if (!strongSelf) {
-                                                                return;
-                                                            }
-                                                            
-                                                            strongSelf->uploadSource = nil;
-                                                        });
+                                                        
                                                     }];
     });
 }
@@ -1155,7 +1147,7 @@ static BOOL appBackgrounded = NO;
         dispatch_source_set_event_handler(sourceTimer, eventHandler);
         dispatch_source_set_cancel_handler(sourceTimer, cancelHandler);
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)), messageQueue, ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
             dispatch_resume(sourceTimer);
         });
     }
@@ -1172,6 +1164,7 @@ static BOOL appBackgrounded = NO;
 - (void)endUploadTimer {
     if (uploadSource) {
         dispatch_source_cancel(uploadSource);
+        uploadSource = nil;
     }
 }
 
