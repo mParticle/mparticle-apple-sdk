@@ -599,19 +599,19 @@ NSString *const kMPStateKey = @"state";
                                if (error) {
                                    MPILogError(@"Identify request failed with error: %@", error);
                                }
+                               
+                               NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration;
+                               
+                               if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
+                                   
+                                   dispatch_sync(dispatch_get_main_queue(), ^{
+                                       [[MPKitContainer sharedInstance] configureKits:deferredKitConfiguration];
+                                       weakSelf.deferredKitConfiguration = nil;
+                                   });
+                                   
+                               }
+                               
                                if (options.onIdentifyComplete) {
-                                   
-                                   NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration;
-                                   
-                                   if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
-                                       
-                                       dispatch_sync(dispatch_get_main_queue(), ^{
-                                           [[MPKitContainer sharedInstance] configureKits:deferredKitConfiguration];
-                                           weakSelf.deferredKitConfiguration = nil;
-                                       });
-                                       
-                                   }
-                                   
                                    dispatch_async(dispatch_get_main_queue(), ^{
                                        options.onIdentifyComplete(apiResult, error);
                                    });
