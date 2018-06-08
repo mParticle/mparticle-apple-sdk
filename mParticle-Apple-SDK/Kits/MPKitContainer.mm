@@ -445,15 +445,23 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     configuration = [self validateAndTransformToSafeConfiguration:configuration];
     
     if (configuration) {
-        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+        dispatch_block_t kitBlock = ^{
+            kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+            
+            MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+            if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
+                [kitRegister.wrapperInstance setKitApi:kitApi];
+            }
+            
+            if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
+                [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+            }
+        };
         
-        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
-            [kitRegister.wrapperInstance setKitApi:kitApi];
-        }
-        
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
-            [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+        if ([NSThread isMainThread]) {
+            kitBlock();
+        } else {
+            dispatch_sync(dispatch_get_main_queue(), kitBlock);
         }
     }
 }
