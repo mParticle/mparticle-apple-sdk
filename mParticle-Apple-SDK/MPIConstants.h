@@ -11,6 +11,15 @@
 #define STATE_MACHINE_DIRECTORY_PATH [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES)[0] stringByAppendingPathComponent:@"StateMachine"];
 
 #define MPIsNull(object) ((object) == nil || (NSNull *)(object) == [NSNull null])
+#define MPIsDictionary(object) (!MPIsNull(object) && [object isKindOfClass:[NSDictionary class]])
+#define MPIsArray(object) (!MPIsNull(object) && [object isKindOfClass:[NSArray class]])
+#define MPIsString(object) (!MPIsNull(object) && [object isKindOfClass:[NSString class]])
+#define MPIsNumber(object) (!MPIsNull(object) && [object isKindOfClass:[NSNumber class]])
+
+#define MPIsNonEmptyDictionary(object) (MPIsDictionary(object) && ((NSDictionary *)object).count > 0)
+#define MPIsNonEmptyArray(object) (MPIsArray(object) && ((NSArray *)object).count > 0)
+#define MPIsNonEmptyString(object) (MPIsString(object) && ((NSString *)object).length > 0)
+#define MPIsNonZeroNumber(object) (MPIsNumber(object) && ![(NSNumber *)object) isEqual:@0])
 
 typedef NS_ENUM(NSInteger, MPUploadStatus) {
     MPUploadStatusUnknown = -1,

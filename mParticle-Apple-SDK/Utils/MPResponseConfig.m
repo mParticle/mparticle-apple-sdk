@@ -37,14 +37,22 @@
         if (!MPIsNull(self->_configuration[kMPRemoteConfigKitsKey])) {
             for (NSDictionary *kitDictionary in self->_configuration[kMPRemoteConfigKitsKey]) {
                 
-                BOOL hasConsentKitFilter = kitDictionary[kMPConsentKitFilter] != nil;
+                NSDictionary *consentKitFilter = kitDictionary[kMPConsentKitFilter];
+                BOOL hasConsentKitFilter = MPIsNonEmptyDictionary(consentKitFilter);
+                
                 BOOL hasRegulationOrPurposeFilters = NO;
                 
                 NSDictionary *hashes = kitDictionary[kMPRemoteConfigKitHashesKey];
                 
-                if (hashes != nil && [hashes isKindOfClass:[NSDictionary class]]) {
+                if (MPIsNonEmptyDictionary(hashes)) {
                     
-                    if (hashes[kMPConsentRegulationFilters] != nil || hashes[kMPConsentPurposeFilters] != nil) {
+                    NSDictionary *regulationFilters = hashes[kMPConsentRegulationFilters];
+                    NSDictionary *purposeFilters = hashes[kMPConsentPurposeFilters];
+                    
+                    BOOL hasRegulationFilters = MPIsNonEmptyDictionary(regulationFilters);
+                    BOOL hasPurposeFilters = MPIsNonEmptyDictionary(purposeFilters);
+                    
+                    if (hasRegulationFilters || hasPurposeFilters) {
                         hasRegulationOrPurposeFilters = YES;
                     }
                     
