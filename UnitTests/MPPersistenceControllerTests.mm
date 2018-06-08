@@ -204,41 +204,6 @@
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
-- (void)testDeleteMessages {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Message test"];
-    
-    [MPPersistenceController setMpid:@2];
-
-    dispatch_async(messageQueue, ^{
-        MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        
-        for (int i = 0; i < 10; ++i) {
-            NSString *key = [NSString stringWithFormat:@"Key%@", @(i)];
-            NSString *value = [NSString stringWithFormat:@"Value%@", @(i)];
-            
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                                   session:session
-                                                                               messageInfo:@{key:value}];
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            [persistence saveMessage:message];
-        }
-        
-        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
-        [persistence deleteMessages:messages];
-        
-        messagesDictionary = [persistence fetchMessagesForUploading];
-        messages = messagesDictionary[[MPPersistenceController mpId]];
-        XCTAssertNil(messages, @"Should have been nil.");
-        
-        [expectation fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-}
-
 - (void)testUpload {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
