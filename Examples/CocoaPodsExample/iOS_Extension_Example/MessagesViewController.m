@@ -44,14 +44,14 @@
 
 #pragma mark - Conversation Handling
 
--(void)didBecomeActiveWithConversation:(MSConversation *)conversation {
+-(void)didBecomeActiveWithConversation:(MSConversation *)conversation NS_AVAILABLE_IOS(10_0){
     // Called when the extension is about to move from the inactive to active state.
     // This will happen when the extension is about to present UI.
     
     // Use this method to configure the extension and restore previously stored state.
 }
 
--(void)willResignActiveWithConversation:(MSConversation *)conversation {
+-(void)willResignActiveWithConversation:(MSConversation *)conversation NS_AVAILABLE_IOS(10_0){
     // Called when the extension is about to move from the active to inactive state.
     // This will happen when the user dissmises the extension, changes to a different
     // conversation or quits Messages.
