@@ -80,6 +80,31 @@
     return copyObject;
 }
 
+#pragma mark NSCoding
+- (void)encodeWithCoder:(NSCoder *)coder {
+    [coder encodeObject:self.sessionId forKey:@"sessionId"];
+    [coder encodeInt64:self.messageId forKey:@"messageId"];
+    [coder encodeObject:self.uuid forKey:@"uuid"];
+    [coder encodeObject:self.messageType forKey:@"messageType"];
+    [coder encodeObject:self.messageData forKey:@"messageData"];
+    [coder encodeDouble:self.timestamp forKey:@"timestamp"];
+    [coder encodeInteger:self.uploadStatus forKey:@"uploadStatus"];
+    [coder encodeInt64:_userId.longLongValue forKey:@"mpid"];
+}
+
+- (id)initWithCoder:(NSCoder *)coder {
+    self = [self initWithSessionId:[coder decodeObjectForKey:@"sessionId"]
+                         messageId:[coder decodeInt64ForKey:@"messageId"]
+                              UUID:[coder decodeObjectForKey:@"uuid"]
+                       messageType:[coder decodeObjectForKey:@"messageType"]
+                       messageData:[coder decodeObjectForKey:@"messageData"]
+                         timestamp:[coder decodeDoubleForKey:@"timestamp"]
+                      uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]
+                            userId:@([coder decodeInt64ForKey:@"mpid"])];
+    
+    return self;
+}
+
 #pragma mark Public methods
 - (NSDictionary *)dictionaryRepresentation {
     NSError *error = nil;

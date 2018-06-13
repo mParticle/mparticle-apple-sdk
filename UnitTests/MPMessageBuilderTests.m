@@ -87,6 +87,61 @@
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
 }
 
+- (void)testEncodingandDecodingMessage {
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:self.session
+                                                                       messageInfo:messageInfo];
+    
+    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
+    XCTAssertEqualObjects(messageBuilder.messageType, @"e", @"Message type not being set properly.");
+    XCTAssertEqualObjects(messageBuilder.session, self.session, @"Message session differ from the one set.");
+    
+    BOOL containsDictionary = NO;
+    NSArray *keys = [messageInfo allKeys];
+    for (NSString *key in keys) {
+        containsDictionary = [messageBuilder.messageInfo[key] isEqualToString:messageInfo[key]];
+        
+        if (!containsDictionary) {
+            break;
+        }
+    }
+    
+    XCTAssertTrue(containsDictionary, @"Message info dictionary is not contained in the message's dictionary.");
+    
+    NSTimeInterval timestamp = messageBuilder.timestamp;
+    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    XCTAssertNotEqual(messageBuilder.timestamp, timestamp, @"Timestamp is not being updated.");
+    
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    XCTAssertNotNil(message, @"MPMessage is not being built.");
+    XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
+    XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
+    
+    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                         session:nil
+                                                     messageInfo:messageInfo];
+    
+    XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
+    
+    message = (MPMessage *)[messageBuilder build];
+    XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
+    
+    NSData *messageData = [NSKeyedArchiver archivedDataWithRootObject:message];
+    MPMessage *messageFromData = [NSKeyedUnarchiver unarchiveObjectWithData:messageData];
+    
+    XCTAssertEqualObjects(message.sessionId, messageFromData.sessionId);
+    XCTAssertEqualObjects(message.messageType, messageFromData.messageType);
+    XCTAssertEqualObjects(message.messageData, messageFromData.messageData);
+    XCTAssertEqual(message.timestamp, messageFromData.timestamp);
+    XCTAssertEqual(message.messageId, messageFromData.messageId);
+    XCTAssertEqualObjects(message.userId, messageFromData.userId);
+    XCTAssertEqual(message.uploadStatus, messageFromData.uploadStatus);
+}
+
 - (void)testBuildCommerceEventProduct {
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
     product.brand = @"DLC";

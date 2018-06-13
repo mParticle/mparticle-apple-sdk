@@ -16,12 +16,21 @@
 #import "MPKitConfiguration.h"
 #import "MPKitInstanceValidator.h"
 #import "MPResponseConfig.h"
+#import "MPExceptionHandler.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
 #endif
 
 #define BACKEND_TESTS_EXPECTATIONS_TIMEOUT 10
+
+@interface MPExceptionHandler(Tests)
+
+#if TARGET_OS_IOS == 1
+- (void)handleCrashReportOccurred:(NSNotification *)notification;
+#endif
+
+@end
 
 #pragma mark - MParticle+Tests category
 @interface MParticle(Tests)

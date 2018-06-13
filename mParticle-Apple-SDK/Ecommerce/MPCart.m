@@ -121,7 +121,12 @@
         return nil;
     }
     
-    MPCart *cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:_cartFile];
+    MPCart *cart;
+    @try {
+        cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:_cartFile];
+    } @catch(NSException *ex) {
+        MPILogger(MPILogLevelError, @"Failed To retrieve cart: %@", ex);
+    }
     return cart;
 }
 

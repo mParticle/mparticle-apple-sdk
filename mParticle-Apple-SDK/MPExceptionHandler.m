@@ -221,30 +221,46 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
             id value = nil;
             switch (idx) {
                 case CrashArchiveTypeCurrentState:
-                    value = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+                    @try {
+                        value = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+                    } @catch (NSException* ex) {
+                        MPILogger(MPILogLevelError, @"Failed To retrieve crash current state type: %@", ex);
+                    }
                     break;
 
                 case CrashArchiveTypeException: {
-                    NSException *exception = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-                    
-                    crashInfo[kMPErrorMessage] = [exception reason];
-                    crashInfo[kMPCrashingClass] = [exception name];
+                    @try {
+                        NSException *exception = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+                        
+                        crashInfo[kMPErrorMessage] = [exception reason];
+                        crashInfo[kMPCrashingClass] = [exception name];
+                    } @catch (NSException* ex) {
+                        MPILogger(MPILogLevelError, @"Failed To retrieve crash exception type: %@", ex);
+                    }
                 }
                     break;
                     
                 case CrashArchiveTypeAppImageInfo:
-                    unarchivedDictionary = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-                    key = kMPAppImageBaseAddressKey;
-                    value = unarchivedDictionary[key];
-                    crashInfo[key] = value;
-                    
-                    key = kMPAppImageSizeKey;
-                    value = unarchivedDictionary[key];
+                    @try {
+                        unarchivedDictionary = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+                        key = kMPAppImageBaseAddressKey;
+                        value = unarchivedDictionary[key];
+                        crashInfo[key] = value;
+                        
+                        key = kMPAppImageSizeKey;
+                        value = unarchivedDictionary[key];
+                    } @catch (NSException* ex) {
+                        MPILogger(MPILogLevelError, @"Failed To retrieve crash app image info type: %@", ex);
+                    }
                     break;
                     
                 default:
-                    unarchivedDictionary = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-                    value = unarchivedDictionary[key];
+                    @try {
+                        unarchivedDictionary = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+                        value = unarchivedDictionary[key];
+                    } @catch (NSException* ex) {
+                        MPILogger(MPILogLevelError, @"Failed To retrieve crash default type: %@", ex);
+                    }
                     break;
             }
             

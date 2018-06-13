@@ -528,13 +528,17 @@ static BOOL appBackgrounded = NO;
         
         for (NSString *fileName in directoryContents) {
             NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
-            MPMessage *message = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-            
-            if (message) {
-                [self saveMessage:message updateSession:NO];
+            @try {
+                MPMessage *message = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+                
+                if (message) {
+                    [self saveMessage:message updateSession:NO];
+                }
+            } @catch (NSException* ex) {
+                MPILogger(MPILogLevelError, @"Failed To retrieve crash messages from archive: %@", ex);
+            } @finally {
+                [fileManager removeItemAtPath:filePath error:nil];
             }
-            
-            [fileManager removeItemAtPath:filePath error:nil];
         }
     }];
 }
