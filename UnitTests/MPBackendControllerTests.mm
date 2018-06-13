@@ -89,43 +89,30 @@
     [MParticle sharedInstance];
     messageQueue = [MParticle messageQueue];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Set up"];
-    dispatch_async(messageQueue, ^{
-        [MPPersistenceController setMpid:@1];
-        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-        stateMachine.apiKey = @"unit_test_app_key";
-        stateMachine.secret = @"unit_test_secret";
-        
-        [[MPPersistenceController sharedInstance] openDatabase];
-        self->_session = self.backendController.session;
-        [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
-        
-        [self notificationController];
-        [expectation fulfill];
-    });
+    [MPPersistenceController setMpid:@1];
+    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    stateMachine.apiKey = @"unit_test_app_key";
+    stateMachine.secret = @"unit_test_secret";
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [[MPPersistenceController sharedInstance] openDatabase];
+    self->_session = self.backendController.session;
+    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
+    
+    [self notificationController];
 }
 
 - (void)tearDown {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Tear down"];
-    dispatch_async([MParticle messageQueue], ^{
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
-        NSMutableArray *sessions = [persistence fetchSessions];
-        for (MPSession *session in sessions) {
-            [persistence deleteSession:session];
-        }
-        
-        sessions = [persistence fetchSessions];
-        XCTAssertEqual(sessions.count, 0, @"Sessions have not been deleted.");
-        [persistence closeDatabase];
-        [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
-        [expectation fulfill];
-    });
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
+    NSMutableArray *sessions = [persistence fetchSessions];
+    for (MPSession *session in sessions) {
+        [persistence deleteSession:session];
+    }
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
+    sessions = [persistence fetchSessions];
+    XCTAssertEqual(sessions.count, 0, @"Sessions have not been deleted.");
+    [persistence closeDatabase];
+    [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
     [super tearDown];
 }
 
