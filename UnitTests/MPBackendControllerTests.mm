@@ -379,59 +379,46 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.info = @{@"key":@"value"};
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Batch cycle test"];
-    dispatch_async(messageQueue, ^{
+    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    
+    [self.backendController logEvent:event
+                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+    }
+    
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100];
+    XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+    
+    [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
+    [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
+    [uploadBuilder build:^(MPUpload *upload) {
+        [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
         
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        NSArray *messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
         
-        [self.backendController logEvent:event
-                       completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
-        
-        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-        XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+        XCTAssertNotNil(messages, @"There are no messages in session.");
         
         for (MPMessage *message in messages) {
-            XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+            XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
         }
         
-        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100];
-        XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+        NSArray *uploads = [persistence fetchUploads];
+        XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
         
-        if (!uploadBuilder) {
-            return;
+        for (MPUpload *upload in uploads) {
+            [persistence deleteUpload:upload];
         }
         
-        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
-        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController mpId]]];
-        [uploadBuilder build:^(MPUpload *upload) {
-            [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-            
-            NSArray *messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
-            
-            XCTAssertNotNil(messages, @"There are no messages in session.");
-            
-            for (MPMessage *message in messages) {
-                XCTAssertTrue(message.uploadStatus == MPUploadStatusUploaded, @"Messages are not being marked as uploaded.");
-            }
-            
-            NSArray *uploads = [persistence fetchUploads];
-            XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
-            
-            for (MPUpload *upload in uploads) {
-                [persistence deleteUpload:upload];
-            }
-            
-            uploads = [persistence fetchUploads];
-            XCTAssertNil(uploads, @"Uploads are not being deleted.");
-            
-            [expectation fulfill];
-        }];
-    });
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-
+        uploads = [persistence fetchUploads];
+        XCTAssertNil(uploads, @"Uploads are not being deleted.");
+    }];
 }
 
 - (void)testRampUpload {
