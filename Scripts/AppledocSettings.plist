@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>--project-name</key>
+	<string>mParticle Apple SDK</string>
+	<key>--logformat</key>
+	<string>1</string>
+	<key>--verbose</key>
+	<string>4</string>
+	<key>--input</key>
+	<array>
+		<string>../mParticle-Apple-SDK/mParticle.h</string>
+		<string>../mParticle-Apple-SDK/Event</string>
+		<string>../mParticle-Apple-SDK/Ecommerce</string>
+		<string>../mParticle-Apple-SDK/Identity</string>
+		<string>../mParticle-Apple-SDK/Consent</string>
+		<string>../mParticle-Apple-SDK/MPEnums.h</string>
+		<string>../mParticle-Apple-SDK/Segments</string>
+	</array>
+	<key>--output</key>
+	<string>Docs</string>
+	<key>--no-create-docset</key>
+	<true/>
+	<key>--create-html</key>
+	<true/>
+	<key>--company-id</key>
+	<string>com.mparticle</string>
+	<key>--project-company</key>
+	<string>mParticle</string>
+</dict>
+</plist>
