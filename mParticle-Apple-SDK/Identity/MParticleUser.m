@@ -109,24 +109,32 @@
     
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
-        [self.backendController setUserIdentity:identityString
-                                   identityType:identityType
-                                      timestamp:timestamp
-                              completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                  
-                                  if (execStatus == MPExecStatusSuccess) {
-                                      MPILogDebug(@"Set user identity: %@", identityString);
-                                      
-                                      // Forwarding calls to kits
-                                      [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserIdentity:identityType:)
-                                                                         userIdentity:identityString
-                                                                         identityType:identityType
-                                                                           kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                               [kit setUserIdentity:identityString identityType:identityType];
-                                                                           }];
-                                  }
-                              }];
+        [self setUserIdentitySync:identityString identityType:identityType timestamp:timestamp];
     });
+}
+
+- (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+    [self setUserIdentitySync:identityString identityType:identityType timestamp:[NSDate date]];
+}
+
+- (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp {
+    [self.backendController setUserIdentity:identityString
+                               identityType:identityType
+                                  timestamp:timestamp
+                          completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                              
+                              if (execStatus == MPExecStatusSuccess) {
+                                  MPILogDebug(@"Set user identity: %@", identityString);
+                                  
+                                  // Forwarding calls to kits
+                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserIdentity:identityType:)
+                                                                     userIdentity:identityString
+                                                                     identityType:identityType
+                                                                       kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                                           [kit setUserIdentity:identityString identityType:identityType];
+                                                                       }];
+                              }
+                          }];
 }
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {

@@ -45,7 +45,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MParticleUser ()
 
-- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType;
+- (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType;
 - (void)setUserId:(NSNumber *)userId;
 @end
 
@@ -81,7 +81,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             if ((NSNull *)identityValue == [NSNull null]) {
                 identityValue = nil;
             }
-            [self.currentUser setUserIdentity:identityValue identityType:identityType];
+            [self.currentUser setUserIdentitySync:identityValue identityType:identityType];
         }];
     }
     
@@ -138,7 +138,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     if (request.userIdentities) {
         [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
             MPUserIdentity identityType = (MPUserIdentity)key.intValue;
-            [self.currentUser setUserIdentity:identityValue identityType:identityType];
+            [self.currentUser setUserIdentitySync:identityValue identityType:identityType];
         }];
     }
     
