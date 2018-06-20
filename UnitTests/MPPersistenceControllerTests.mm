@@ -55,7 +55,7 @@
 
 - (void)testMultiThreadedAccess {
     NSDate *startDate = [NSDate date];
-    NSDate *endDate = [startDate dateByAddingTimeInterval:1];
+    NSDate *endDate = [startDate dateByAddingTimeInterval:0.1];
     dispatch_block_t workBlock = ^{
         while (-[[NSDate date] timeIntervalSinceDate:endDate] > 0) {
             MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];

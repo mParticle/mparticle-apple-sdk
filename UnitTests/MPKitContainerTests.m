@@ -854,11 +854,11 @@
                           NSAssert(false, @"This line should never be executed.");
                       }];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:1.1 handler:nil];
+    [self waitForExpectationsWithTimeout:0.11 handler:nil];
 }
 
 - (void)testFilterForUserAttributes {
@@ -1866,11 +1866,11 @@
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
     XCTAssertNotNil(localKitContainer);
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:1.01 handler:nil];
+    [self waitForExpectationsWithTimeout:0.11 handler:nil];
 }
 
 - (void)testExpandedCommerceEventProjection {

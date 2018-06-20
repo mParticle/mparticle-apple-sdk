@@ -115,16 +115,14 @@
 }
 
 - (void)testCustomModule {
-    NSDate *referenceDate = [NSDate date];
-    NSDate *futureReferenceDate = [referenceDate dateByAddingTimeInterval:2];
+    NSDate *referenceDate = [[NSDate date] dateByAddingTimeInterval:-1.0];
+    NSDate *futureReferenceDate = [referenceDate dateByAddingTimeInterval:2.0];
     NSDate *preferenceDate;
     NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
     NSLocale *enUSPOSIXLocale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US_POSIX"];
     [dateFormatter setLocale:enUSPOSIXLocale];
     [dateFormatter setDateFormat:@"yyyy'-'MM'-'dd' 'HH':'mm':'ss Z"];
     [dateFormatter setTimeZone:[NSTimeZone timeZoneForSecondsFromGMT:0]];
-
-    sleep(1);
     
     MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:self.customModuleConfiguration];
     XCTAssertNotNil(customModule.customModuleId, @"Custom module id is not being set.");
@@ -140,8 +138,8 @@
         
         if ([preference.readKey isEqualToString:@"OMCK1"] || [preference.readKey isEqualToString:@"OMCK5"]) {
             preferenceDate = [dateFormatter dateFromString:preference.defaultValue];
-            XCTAssert([preferenceDate compare:referenceDate] == NSOrderedDescending, @"Custom module preference date default values are too low.");
-            XCTAssert([preferenceDate compare:futureReferenceDate] == NSOrderedAscending, @"Custom module preference date default values are too high.");
+            XCTAssertGreaterThan(preferenceDate.timeIntervalSinceReferenceDate, referenceDate.timeIntervalSinceReferenceDate, @"Custom module preference date default values are too low.");
+            XCTAssertLessThan(preferenceDate.timeIntervalSinceReferenceDate, futureReferenceDate.timeIntervalSinceReferenceDate, @"Custom module preference date default values are too low.");
         } else if ([preference.readKey isEqualToString:@"APP_MEASUREMENT_VISITOR_ID"]) {
             XCTAssertGreaterThan(preference.defaultValue.length, 0, @"GUID default value is not being set.");
             XCTAssertEqual([preference.defaultValue rangeOfString:@"-"].location, NSNotFound, @"Dashes are not being removed from GUID");
