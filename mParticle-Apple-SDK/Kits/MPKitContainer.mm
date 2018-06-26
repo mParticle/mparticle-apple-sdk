@@ -35,6 +35,7 @@
 #import "mParticle.h"
 #import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
+#import "MPILogger.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -95,10 +96,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         } copy];
         
-        if (![MPStateMachine sharedInstance].optOut) {
-            [self initializeKits];
-        }
-        
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         [notificationCenter addObserver:self
                                selector:@selector(handleApplicationDidBecomeActive:)
@@ -122,40 +119,44 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 #pragma mark Notification handlers
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-    SEL didBecomeActiveSelector = @selector(didBecomeActive);
-    
-    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:didBecomeActiveSelector]) {
-            [kitRegister.wrapperInstance didBecomeActive];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+        SEL didBecomeActiveSelector = @selector(didBecomeActive);
+        
+        for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
+            if ([kitRegister.wrapperInstance respondsToSelector:didBecomeActiveSelector]) {
+                [kitRegister.wrapperInstance didBecomeActive];
+            }
         }
-    }
+    });
 }
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
-    stateMachine.launchOptions = [notification userInfo];
-    SEL launchOptionsSelector = @selector(setLaunchOptions:);
-    SEL startSelector = @selector(start);
-    
-    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
-        id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+        stateMachine.launchOptions = [notification userInfo];
+        SEL launchOptionsSelector = @selector(setLaunchOptions:);
+        SEL startSelector = @selector(start);
         
-        if (kitInstance && ![kitInstance started]) {
-            if ([kitInstance respondsToSelector:launchOptionsSelector]) {
-                [kitInstance setLaunchOptions:stateMachine.launchOptions];
-            }
+        for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+            id<MPKitProtocol> kitInstance = kitRegister.wrapperInstance;
             
-            if ([kitInstance respondsToSelector:startSelector]) {
-                @try {
-                    [kitInstance start];
+            if (kitInstance && ![kitInstance started]) {
+                if ([kitInstance respondsToSelector:launchOptionsSelector]) {
+                    [kitInstance setLaunchOptions:stateMachine.launchOptions];
                 }
-                @catch (NSException *exception) {
-                    MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
+                
+                if ([kitInstance respondsToSelector:startSelector]) {
+                    @try {
+                        [kitInstance start];
+                    }
+                    @catch (NSException *exception) {
+                        MPILogError(@"Exception thrown while starting kit (%@): %@", kitInstance, exception);
+                    }
                 }
             }
         }
-    }
+    });
 }
 
 #pragma mark Private accessors
@@ -193,9 +194,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (void)flushSerializedKits {
-    for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
-        [self freeKit:kitRegister.code];
-    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
+            [self freeKit:kitRegister.code];
+        }
+    });
 }
 
 - (void)freeKit:(NSNumber *)kitCode {
@@ -219,17 +222,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             [fileManager removeItemAtPath:kitPath error:nil];
         }
 
-        dispatch_async(dispatch_get_main_queue(), ^{
-            NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode};
-            
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
-                                                                object:nil
-                                                              userInfo:userInfo];
-        });
+        NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode};
+        
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
+                                                            object:nil
+                                                          userInfo:userInfo];
     }
 }
 
 - (void)initializeKits {
+    if (self.kitsInitialized) {
+        return;
+    }
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
 
     NSArray *directoryContents = [userDefaults getKitConfigurations];
@@ -241,24 +245,21 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         self.kitsInitialized = YES;
     }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
-            NSArray<NSNumber *> *supportedKits = [self supportedKits];
-            
-            if (supportedKits.count > 0) {
-                NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
-                for (NSNumber *supportedKit in supportedKits) {
-                    [listOfKits appendFormat:@"%@, ", [self nameForKitCode:supportedKit]];
-                }
-                
-                [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
-                [listOfKits appendString:@"}"];
-                
-                MPILogDebug(@"%@", listOfKits);
+    if ([MPStateMachine sharedInstance].logLevel >= MPILogLevelDebug) {
+        NSArray<NSNumber *> *supportedKits = [self supportedKits];
+        
+        if (supportedKits.count > 0) {
+            NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
+            for (NSNumber *supportedKit in supportedKits) {
+                [listOfKits appendFormat:@"%@, ", [self nameForKitCode:supportedKit]];
             }
+            
+            [listOfKits deleteCharactersInRange:NSMakeRange(listOfKits.length - 2, 2)];
+            [listOfKits appendString:@"}"];
+            
+            MPILogDebug(@"%@", listOfKits);
         }
-    });
+    }
 }
 
 - (NSDictionary *)methodMessageTypeMapping {
@@ -300,21 +301,21 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (MPForwardQueueItem *forwardQueueItem in forwardQueueCopy) {
         switch (forwardQueueItem.queueItemType) {
             case MPQueueItemTypeEvent: {
-                dispatch_async([MParticle messageQueue], ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardSDKCall:forwardQueueItem.selector event:forwardQueueItem.event messageType:forwardQueueItem.messageType userInfo:nil kitHandler:forwardQueueItem.eventCompletionHandler];
                 });
                 break;
             }
                 
             case MPQueueItemTypeEcommerce: {
-                dispatch_async([MParticle messageQueue], ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardCommerceEventCall:forwardQueueItem.commerceEvent kitHandler:forwardQueueItem.commerceEventCompletionHandler];
                 });
                 break;
             }
                 
             case MPQueueItemTypeGeneralPurpose: {
-                dispatch_async([MParticle messageQueue], ^{
+                dispatch_async(dispatch_get_main_queue(), ^{
                     [self forwardSDKCall:forwardQueueItem.selector parameters:forwardQueueItem.queueParameters messageType:forwardQueueItem.messageType kitHandler:forwardQueueItem.generalPurposeCompletionHandler];
                 });
                 break;
@@ -445,23 +446,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     configuration = [self validateAndTransformToSafeConfiguration:configuration];
     
     if (configuration) {
-        dispatch_block_t kitBlock = ^{
-            kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
-            
-            MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
-            if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
-                [kitRegister.wrapperInstance setKitApi:kitApi];
-            }
-            
-            if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
-                [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
-            }
-        };
+        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
         
-        if ([NSThread isMainThread]) {
-            kitBlock();
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), kitBlock);
+        MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
+            [kitRegister.wrapperInstance setKitApi:kitApi];
+        }
+        
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
+            [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
         }
     }
 }
@@ -2083,44 +2076,45 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         return;
     }
-    
-    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
-    
-    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        __block NSNumber *lastKit = nil;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
         
-        [self filter:kitRegister forCommerceEvent:commerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-            if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
-                return;
-            }
+        for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
+            __block NSNumber *lastKit = nil;
             
-            if (kitFilter.forwardCommerceEvent || kitFilter.forwardEvent) {
-                __block MPKitExecStatus *execStatus = nil;
-                
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, kitFilter, &execStatus);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
-                
-                NSNumber *currentKit = kitRegister.code;
-                if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
-                    lastKit = currentKit;
-                    
-                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
-                                                                                       execStatus:execStatus
-                                                                                        kitFilter:kitFilter
-                                                                                    originalEvent:commerceEvent];
-                    
-                    [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                    
-                    MPILogDebug(@"Forwarded logCommerceEvent call to kit: %@", kitRegister.name);
+            [self filter:kitRegister forCommerceEvent:commerceEvent completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
+                if (kitFilter.shouldFilter && !kitFilter.filteredAttributes) {
+                    return;
                 }
-            }
-        }];
-    }
+                
+                if (kitFilter.forwardCommerceEvent || kitFilter.forwardEvent) {
+                    __block MPKitExecStatus *execStatus = nil;
+                    
+                    
+                        @try {
+                            kitHandler(kitRegister.wrapperInstance, kitFilter, &execStatus);
+                        } @catch (NSException *e) {
+                            MPILogError(@"Kit handler threw an exception: %@", e);
+                        }
+                    
+                    
+                    NSNumber *currentKit = kitRegister.code;
+                    if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
+                        lastKit = currentKit;
+                        
+                        MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
+                                                                                           execStatus:execStatus
+                                                                                            kitFilter:kitFilter
+                                                                                        originalEvent:commerceEvent];
+                        dispatch_async([MParticle messageQueue], ^{
+                            [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                        });
+                        MPILogDebug(@"Forwarded logCommerceEvent call to kit: %@", kitRegister.name);
+                    }
+                }
+            }];
+        }
+    });
 }
 
 - (void)forwardSDKCall:(SEL)selector event:(MPEvent *)event messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo kitHandler:(void (^)(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus))kitHandler {
@@ -2132,6 +2126,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         MPForwardQueueItem *forwardQueueItem = [[MPForwardQueueItem alloc] initWithSelector:selector event:event messageType:messageType completionHandler:kitHandler];
         
         if (forwardQueueItem) {
+            MPILogVerbose(@"Queueing event message for kits: %@", event);
             [self.forwardQueue addObject:forwardQueueItem];
         }
         
@@ -2150,17 +2145,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             if (kitFilter.forwardEvent) {
                 __block MPKitExecStatus *execStatus = nil;
-                
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, kitFilter.forwardEvent, &execStatus);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
+
+                @try {
+                    MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                    kitHandler(kitRegister.wrapperInstance, kitFilter.forwardEvent, &execStatus);
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@", e);
+                }
                 
                 NSNumber *currentKit = kitRegister.code;
-                if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && kitFilter.forwardEvent && messageType != MPMessageTypeUnknown) {
+                if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && messageType != MPMessageTypeUnknown) {
                     lastKit = currentKit;
                     
                     MPForwardRecord *forwardRecord = nil;
@@ -2175,10 +2169,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                                                                            kitFilter:kitFilter
                                                                        originalEvent:event];
                     }
-                    
-                    [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
-                    
-                    MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                    dispatch_async([MParticle messageQueue], ^{
+                        [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                    });
                 }
             }
         };
@@ -2216,13 +2209,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             if (!kitFilter.shouldFilter) {
                 MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
                 
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, kitConfiguration);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
+                @try {
+                    kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@", e);
+                }
                 
                 MPILogDebug(@"Forwarded user attribute key: %@ value: %@ to kit: %@", key, value, kitRegister.name);
             }
@@ -2238,13 +2229,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributes:userAttributes];
             
             MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                @try {
-                    kitHandler(kitRegister.wrapperInstance, kitFilter.filteredAttributes, kitConfiguration);
-                } @catch (NSException *e) {
-                    MPILogError(@"Kit handler threw an exception: %@", e);
-                }
-            });
+            
+            @try {
+                kitHandler(kitRegister.wrapperInstance, kitFilter.filteredAttributes, kitConfiguration);
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@", e);
+            }
             
             MPILogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
         }
@@ -2260,13 +2250,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             if (!kitFilter.shouldFilter) {
                 MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, kitConfiguration);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
+                
+                @try {
+                    kitHandler(kitRegister.wrapperInstance, kitConfiguration);
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@", e);
+                }
                 
                 MPILogDebug(@"Forwarded setting user identity: %@ to kit: %@", identityString, kitRegister.name);
             }
@@ -2282,13 +2271,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             MPKitFilter *kitFilter = [self filter:kitRegister forConsentState:state];
             if (!kitFilter.shouldFilter) {
                 MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, kitFilter.forwardConsentState, kitConfiguration);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
+                
+                @try {
+                    kitHandler(kitRegister.wrapperInstance, kitFilter.forwardConsentState, kitConfiguration);
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@", e);
+                }
                 
                 MPILogDebug(@"Forwarded user attributes to kit: %@", kitRegister.name);
             }
@@ -2305,16 +2293,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             if (!kitFilter.shouldFilter) {
                 __block MPKitExecStatus *execStatus = nil;
-                
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, &execStatus);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
-                
-                MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+            
+                @try {
+                    MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                    kitHandler(kitRegister.wrapperInstance, &execStatus);
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@", e);
+                }
             }
         }
     }
@@ -2327,15 +2312,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             __block MPKitExecStatus *execStatus = nil;
             
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                @try {
-                    kitHandler(kitRegister.wrapperInstance, &execStatus);
-                } @catch (NSException *e) {
-                    MPILogError(@"Kit handler threw an exception: %@", e);
-                }
-            });
-            
-            MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+            @try {
+                MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                kitHandler(kitRegister.wrapperInstance, &execStatus);
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@", e);
+            }
         }
     }
 }
@@ -2361,13 +2343,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 __block MPKitExecStatus *execStatus = nil;
                 NSNumber *currentKit = kitRegister.code;
                 
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    @try {
-                        kitHandler(kitRegister.wrapperInstance, parameters, &execStatus);
-                    } @catch (NSException *e) {
-                        MPILogError(@"Kit handler threw an exception: %@", e);
-                    }
-                });
+                @try {
+                    MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+                    kitHandler(kitRegister.wrapperInstance, parameters, &execStatus);
+                } @catch (NSException *e) {
+                    MPILogError(@"Kit handler threw an exception: %@", e);
+                }
                 
                 if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
                     lastKit = currentKit;
@@ -2390,11 +2371,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         }
                         
                         if (forwardRecord) {
-                            [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                            dispatch_async([MParticle messageQueue], ^{
+                                [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                            });
                         }
                     }
-                    
-                    MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
                 }
             } @catch (NSException *exception) {
                 MPILogError(@"An exception happened forwarding %@ to kit: %@\n  reason: %@", NSStringFromSelector(selector), kitRegister.name, [exception reason]);
@@ -2410,9 +2391,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
             
+            MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
             kitHandler(kitRegister.wrapperInstance, kitConfiguration);
-            
-            MPILogDebug(@"Forwarded %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
         }
     }
 }

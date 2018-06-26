@@ -11,6 +11,13 @@
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
+#import "MPKitInstanceValidator.h"
+
+@interface MPKitInstanceValidator ()
+
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
+
+@end
 
 #pragma mark - MPURLRequestBuilder category
 @interface MPURLRequestBuilder(Tests)
@@ -31,6 +38,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
     
     MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
     stateMachine.apiKey = @"unit_test_app_key";

@@ -74,7 +74,7 @@
         BOOL shouldDefer = hasConsentFilters && !hasInitialIdentity;
         
         if (!shouldDefer) {
-            dispatch_sync(dispatch_get_main_queue(), ^{
+            dispatch_async(dispatch_get_main_queue(), ^{
                 [[MPKitContainer sharedInstance] configureKits:self->_configuration[kMPRemoteConfigKitsKey]];
             });
         } else {

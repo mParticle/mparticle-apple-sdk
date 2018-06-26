@@ -79,35 +79,37 @@
         void (^requestBlock)(void) = ^{
             if (!called) {
                 [MPClientSharedInstance performSelector:requestDetailsSelector withObject:^(NSDictionary *attributionDetails, NSError *error) {
-                    ++numRequestsCompleted;
-                    
-                    __strong MPSearchAdsAttribution *strongSelf = weakSelf;
-                    if (!strongSelf) {
-                        return;
-                    }
-                    
-                    if (!strongSelf.dictionary && attributionDetails && !error) {
-                        NSDictionary* deepCopyDetails = nil;
-                        @try {
-                            deepCopyDetails = [NSKeyedUnarchiver unarchiveObjectWithData:
-                                               [NSKeyedArchiver archivedDataWithRootObject:attributionDetails]];
-                        }
-                        @catch (NSException *e) {
-                            deepCopyDetails = [attributionDetails copy];
+                    dispatch_async([MParticle messageQueue], ^{
+                        ++numRequestsCompleted;
+                        
+                        __strong MPSearchAdsAttribution *strongSelf = weakSelf;
+                        if (!strongSelf) {
+                            return;
                         }
                         
-                        if (deepCopyDetails) {
-                            strongSelf.dictionary = deepCopyDetails;
+                        if (!strongSelf.dictionary && attributionDetails && !error) {
+                            NSDictionary* deepCopyDetails = nil;
+                            @try {
+                                deepCopyDetails = [NSKeyedUnarchiver unarchiveObjectWithData:
+                                                   [NSKeyedArchiver archivedDataWithRootObject:attributionDetails]];
+                            }
+                            @catch (NSException *e) {
+                                deepCopyDetails = [attributionDetails copy];
+                            }
+                            
+                            if (deepCopyDetails) {
+                                strongSelf.dictionary = deepCopyDetails;
+                            }
+                            
+                            onceCompletionBlock();
                         }
-                        
-                        onceCompletionBlock();
-                    }
-                    else if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
-                        onceCompletionBlock();
-                    }
-                    else if (numRequestsCompleted >= numRequests) {
-                        onceCompletionBlock();
-                    }
+                        else if (error.code == 1 /* ADClientErrorLimitAdTracking */) {
+                            onceCompletionBlock();
+                        }
+                        else if (numRequestsCompleted >= numRequests) {
+                            onceCompletionBlock();
+                        }
+                    });
                 }];
             }
         };

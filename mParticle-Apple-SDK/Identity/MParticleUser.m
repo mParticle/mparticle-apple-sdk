@@ -22,6 +22,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
++ (dispatch_queue_t)networkQueue;
 @property (nonatomic, strong) MPBackendController *backendController;
 
 @end
@@ -127,12 +128,14 @@
                                   MPILogDebug(@"Set user identity: %@", identityString);
                                   
                                   // Forwarding calls to kits
-                                  [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserIdentity:identityType:)
-                                                                     userIdentity:identityString
-                                                                     identityType:identityType
-                                                                       kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                           [kit setUserIdentity:identityString identityType:identityType];
-                                                                       }];
+                                  dispatch_async(dispatch_get_main_queue(), ^{
+                                      [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserIdentity:identityType:)
+                                                                         userIdentity:identityString
+                                                                         identityType:identityType
+                                                                           kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                                               [kit setUserIdentity:identityString identityType:identityType];
+                                                                           }];
+                                  });
                               }
                           }];
 }
@@ -148,36 +151,37 @@
         NSNumber *newValue = [self.backendController incrementUserAttribute:key byValue:value];
         
         MPILogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
-        
-        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(incrementUserAttribute:byValue:)
-                                       userAttributeKey:key
-                                                  value:value
-                                             kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                 FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:self kitConfiguration:kitConfig];
-                                                 
-                                                 if ([kit respondsToSelector:@selector(incrementUserAttribute:byValue:)]) {
-                                                     [kit incrementUserAttribute:key byValue:value];
-                                                 }
-                                                 if ([kit respondsToSelector:@selector(onIncrementUserAttribute:)] && filteredUser != nil) {
-                                                     [kit onIncrementUserAttribute:filteredUser];
-                                                 }
-                                             }];
-        
-        [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:value:)
-                                       userAttributeKey:key
-                                                  value:newValue
-                                             kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                 if (![kit respondsToSelector:@selector(incrementUserAttribute:byValue:)]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(incrementUserAttribute:byValue:)
+                                           userAttributeKey:key
+                                                      value:value
+                                                 kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
                                                      FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:self kitConfiguration:kitConfig];
                                                      
-                                                     if ([kit respondsToSelector:@selector(setUserAttribute:value:)]) {
-                                                         [kit setUserAttribute:key value:newValue];
+                                                     if ([kit respondsToSelector:@selector(incrementUserAttribute:byValue:)]) {
+                                                         [kit incrementUserAttribute:key byValue:value];
                                                      }
-                                                     if ([kit respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
-                                                         [kit onSetUserAttribute:filteredUser];
+                                                     if ([kit respondsToSelector:@selector(onIncrementUserAttribute:)] && filteredUser != nil) {
+                                                         [kit onIncrementUserAttribute:filteredUser];
                                                      }
-                                                 }
-                                             }];
+                                                 }];
+            
+            [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:value:)
+                                           userAttributeKey:key
+                                                      value:newValue
+                                                 kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                     if (![kit respondsToSelector:@selector(incrementUserAttribute:byValue:)]) {
+                                                         FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:self kitConfiguration:kitConfig];
+                                                         
+                                                         if ([kit respondsToSelector:@selector(setUserAttribute:value:)]) {
+                                                             [kit setUserAttribute:key value:newValue];
+                                                         }
+                                                         if ([kit respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
+                                                             [kit onSetUserAttribute:filteredUser];
+                                                         }
+                                                     }
+                                                 }];
+        });
     });
     
     return @0;
@@ -206,19 +210,20 @@
                                        } else {
                                            MPILogDebug(@"Reset user attribute - %@", key);
                                        }
-                                       
-                                       // Forwarding calls to kits
-                                       [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:value:)
-                                                                      userAttributeKey:key
-                                                                                 value:value
-                                                                            kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
-                                                                                
-                                                                                [kit setUserAttribute:key value:value];
-                                                                                if ([kit respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
-                                                                                    [kit onSetUserAttribute:filteredUser];
-                                                                                }
-                                                                            }];
+                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                           // Forwarding calls to kits
+                                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserAttribute:value:)
+                                                                          userAttributeKey:key
+                                                                                     value:value
+                                                                                kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                                                    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
+                                                                                    
+                                                                                    [kit setUserAttribute:key value:value];
+                                                                                    if ([kit respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
+                                                                                        [kit onSetUserAttribute:filteredUser];
+                                                                                    }
+                                                                                }];
+                                        });
                                    }
                                }];
     });
@@ -249,23 +254,25 @@
                                        }
                                        
                                        // Forwarding calls to kits
-                                       SEL setUserAttributeSelector = @selector(setUserAttribute:value:);
-                                       SEL setUserAttributeListSelector = @selector(setUserAttribute:values:);
-                                       
-                                       [[MPKitContainer sharedInstance] forwardSDKCall:setUserAttributeListSelector
-                                                                      userAttributeKey:key
-                                                                                 value:values
-                                                                            kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
-                                                                                if ([kit respondsToSelector:setUserAttributeListSelector]) {
-                                                                                    [kit setUserAttribute:key values:values];
-                                                                                } else if ([kit respondsToSelector:setUserAttributeSelector]) {
-                                                                                    NSString *csvValues = [values componentsJoinedByString:@","];
-                                                                                    [kit setUserAttribute:key value:csvValues];
-                                                                                } else if ([kit respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
-                                                                                    [kit onSetUserAttribute:filteredUser];
-                                                                                }
-                                                                            }];
+                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                           SEL setUserAttributeSelector = @selector(setUserAttribute:value:);
+                                           SEL setUserAttributeListSelector = @selector(setUserAttribute:values:);
+                                           
+                                           [[MPKitContainer sharedInstance] forwardSDKCall:setUserAttributeListSelector
+                                                                          userAttributeKey:key
+                                                                                     value:values
+                                                                                kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                                                    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
+                                                                                    if ([kit respondsToSelector:setUserAttributeListSelector]) {
+                                                                                        [kit setUserAttribute:key values:values];
+                                                                                    } else if ([kit respondsToSelector:setUserAttributeSelector]) {
+                                                                                        NSString *csvValues = [values componentsJoinedByString:@","];
+                                                                                        [kit setUserAttribute:key value:csvValues];
+                                                                                    } else if ([kit respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
+                                                                                        [kit onSetUserAttribute:filteredUser];
+                                                                                    }
+                                                                                }];
+                                       });
                                    }
                                }];
     });
@@ -285,17 +292,19 @@
                                        MPILogDebug(@"Set user tag - %@", tag);
                                        
                                        // Forwarding calls to kits
-                                       [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserTag:)
-                                                                      userAttributeKey:tag
-                                                                                 value:nil
-                                                                            kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
-                                                                                
-                                                                                [kit setUserTag:tag];
-                                                                                if ([kit respondsToSelector:@selector(onSetUserTag:)] && filteredUser != nil) {
-                                                                                    [kit onSetUserTag:filteredUser];
-                                                                                }
-                                                                            }];
+                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                           [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setUserTag:)
+                                                                          userAttributeKey:tag
+                                                                                     value:nil
+                                                                                kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                                                    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
+                                                                                    
+                                                                                    [kit setUserTag:tag];
+                                                                                    if ([kit respondsToSelector:@selector(onSetUserTag:)] && filteredUser != nil) {
+                                                                                        [kit onSetUserTag:filteredUser];
+                                                                                    }
+                                                                                }];
+                                        });
                                    }
                                }];
     });
@@ -315,17 +324,19 @@
                                        MPILogDebug(@"Removed user attribute - %@", key);
                                        
                                        // Forwarding calls to kits
-                                       [[MPKitContainer sharedInstance] forwardSDKCall:_cmd
-                                                                      userAttributeKey:key
-                                                                                 value:nil
-                                                                            kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                                                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
-                                                                                
-                                                                                [kit removeUserAttribute:key];
-                                                                                if ([kit respondsToSelector:@selector(onRemoveUserAttribute:)] && filteredUser != nil) {
-                                                                                    [kit onRemoveUserAttribute:filteredUser];
-                                                                                }
-                                                                            }];
+                                       dispatch_async(dispatch_get_main_queue(), ^{
+                                           [[MPKitContainer sharedInstance] forwardSDKCall:_cmd
+                                                                          userAttributeKey:key
+                                                                                     value:nil
+                                                                                kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                                                                                    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
+                                                                                    
+                                                                                    [kit removeUserAttribute:key];
+                                                                                    if ([kit respondsToSelector:@selector(onRemoveUserAttribute:)] && filteredUser != nil) {
+                                                                                        [kit onRemoveUserAttribute:filteredUser];
+                                                                                    }
+                                                                                }];
+                                       });
                                    }
                            }];
     });
@@ -334,23 +345,29 @@
 #pragma mark - User Segments
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler {
     dispatch_async([MParticle messageQueue], ^{
-        MPExecStatus execStatus = [self.backendController fetchSegments:timeout
-                                                             endpointId:endpointId
-                                                      completionHandler:^(NSArray *segments, NSTimeInterval elapsedTime, NSError *error) {
-                                                          if (!segments) {
-                                                              completionHandler(nil, error);
-                                                              return;
-                                                          }
-                                                          
-                                                          MPUserSegments *userSegments = [[MPUserSegments alloc] initWithSegments:segments];
-                                                          completionHandler(userSegments, error);
-                                                      }];
-        
-        if (execStatus == MPExecStatusSuccess) {
-            MPILogDebug(@"Fetching user segments");
-        } else {
-            MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
-        }
+        dispatch_async([MParticle networkQueue], ^{
+            MPExecStatus execStatus = [self.backendController fetchSegments:timeout
+                                                                 endpointId:endpointId
+                                                          completionHandler:^(NSArray *segments, NSTimeInterval elapsedTime, NSError *error) {
+                                                              if (!segments) {
+                                                                  dispatch_async(dispatch_get_main_queue(), ^{
+                                                                      completionHandler(nil, error);
+                                                                  });
+                                                                  return;
+                                                              }
+                                                              
+                                                              MPUserSegments *userSegments = [[MPUserSegments alloc] initWithSegments:segments];
+                                                              dispatch_async(dispatch_get_main_queue(), ^{
+                                                                  completionHandler(userSegments, error);
+                                                              });
+                                                          }];
+            
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Fetching user segments");
+            } else {
+                MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
+            }
+        });
     });
 }
 
@@ -362,11 +379,12 @@
     
     NSArray<NSDictionary *> *kitConfig = [[MPKitContainer sharedInstance].originalConfig copy];
     if (kitConfig) {
-        [[MPKitContainer sharedInstance] configureKits:kitConfig];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[MPKitContainer sharedInstance] configureKits:kitConfig];
+        });
     }
     
-    
-    dispatch_async([MParticle messageQueue], ^{
+    dispatch_async(dispatch_get_main_queue(), ^{
         [[MPKitContainer sharedInstance] forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
             if (!status.success) {
