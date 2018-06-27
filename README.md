@@ -58,7 +58,7 @@ In the cases above, the _Appboy_, _Branch Metrics_, and _Localytics_ kits would 
 
 #### Working with Static Libraries
 
-mParticle's iOS SDK and its embedded kits are [dynamic libraries](https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/OverviewOfDynamicLibraries.html), meaning their code is loaded into an app's address space only as needed, as opposed to a 'static' library, which is always included in full in the app's executable file. Some mParticle embedded kits rely on static libraries maintained by our partners. A static framework, wrapped in a dynamic library is incompatible with CocoaPods' `use frameworks!` option. Affected kits are: Appboy, AppsFlyer, comScore, Kahuna, Kochava and Localytics.
+mParticle's iOS SDK and its embedded kits are [dynamic libraries](https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/OverviewOfDynamicLibraries.html), meaning their code is loaded into an app's address space only as needed, as opposed to a 'static' library, which is always included in full in the app's executable file. Some mParticle embedded kits rely on static libraries maintained by our partners. A static framework, wrapped in a dynamic library is incompatible with CocoaPods' `use frameworks!` option. Affected kits are: Appboy, AppsFlyer, comScore, Kahuna, Kochava, Localytics and Radar.
 
 Attempting to use these kits with `use_frameworks!` will result in the following error message:
 
@@ -121,7 +121,7 @@ Kit | CocoaPods | Carthage
 [Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)            |  ✓ | ✓
 [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ |  
 [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
-[Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                  |  ✓ | 
+[Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                  |  ✓ | ✓
 [Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)   |  ✓ |  
 [Singular](https://github.com/mparticle-integrations/mparticle-apple-integration-singular)            |  ✓ |  
 [Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)              |  ✓ |  
