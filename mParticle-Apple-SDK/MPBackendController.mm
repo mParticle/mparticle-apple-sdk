@@ -945,7 +945,7 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
-    dispatch_async(messageQueue, ^{
+    dispatch_sync(messageQueue, ^{
         
         MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
         
@@ -1018,6 +1018,8 @@ static BOOL appBackgrounded = NO;
         }
         
     });
+    dispatch_suspend(messageQueue);
+    dispatch_suspend(networkQueue);
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
