@@ -34,7 +34,6 @@
 #endif
 
 static dispatch_queue_t messageQueue = nil;
-static dispatch_queue_t networkQueue = nil;
 static NSArray *eventTypeStrings = nil;
 
 NSString *const kMPEventNameLogTransaction = @"Purchase";
@@ -187,10 +186,6 @@ NSString *const kMPStateKey = @"state";
     return messageQueue;
 }
 
-+ (dispatch_queue_t)networkQueue {
-    return networkQueue;
-}
-
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -198,7 +193,6 @@ NSString *const kMPStateKey = @"state";
     }
 
     messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
-    networkQueue = dispatch_queue_create("com.mparticle.networkQueue", DISPATCH_QUEUE_SERIAL);
     sdkInitialized = NO;
     privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;

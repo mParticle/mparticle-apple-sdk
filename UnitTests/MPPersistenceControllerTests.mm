@@ -364,6 +364,7 @@
 }
 
 - (void)testForwardRecord {
+    [[MParticle sharedInstance] clearMParticleData];
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
     
     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration

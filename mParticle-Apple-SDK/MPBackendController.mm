@@ -54,7 +54,6 @@ static BOOL appBackgrounded = NO;
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
-+ (dispatch_queue_t)networkQueue;
 @end
 
 @interface MPBackendController() {
@@ -70,11 +69,9 @@ static BOOL appBackgrounded = NO;
     UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
     dispatch_semaphore_t backendSemaphore;
     dispatch_queue_t messageQueue;
-    dispatch_queue_t networkQueue;
     BOOL longSession;
     BOOL originalAppDelegateProxied;
     BOOL resignedActive;
-    BOOL retrievingSegments;
 }
 
 @end
@@ -97,11 +94,10 @@ static BOOL appBackgrounded = NO;
     self = [super init];
     if (self) {
         messageQueue = [MParticle messageQueue];
-        networkQueue = [MParticle networkQueue];
+        _networkCommunication = [[MPNetworkCommunication alloc] init];
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
         backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        retrievingSegments = NO;
         _delegate = delegate;
         backgroundStartTime = 0;
         longSession = NO;
@@ -191,18 +187,6 @@ static BOOL appBackgrounded = NO;
     
     _eventSet = [[NSMutableSet alloc] initWithCapacity:1];
     return _eventSet;
-}
-
-- (MPNetworkCommunication *)networkCommunication {
-    if (_networkCommunication) {
-        return _networkCommunication;
-    }
-    
-    [self willChangeValueForKey:@"networkCommunication"];
-    _networkCommunication = [[MPNetworkCommunication alloc] init];
-    [self didChangeValueForKey:@"networkCommunication"];
-    
-    return _networkCommunication;
 }
 
 - (MPSession *)session {
@@ -589,10 +573,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
-    if (self.networkCommunication.inUse) {
-        return;
-    }
-        
     [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary, NSString * _Nullable eTag) {
         if (success) {
             if (eTag && configurationDictionary) {
@@ -834,23 +814,21 @@ static BOOL appBackgrounded = NO;
     __weak MPBackendController *weakSelf = self;
     
     dispatch_async(messageQueue, ^{
-        dispatch_async(self->networkQueue, ^{
-            [self requestConfig:^(BOOL uploadBatch) {
-                if (!uploadBatch) {
-                    invokeCompletionHandler(NO);
-                    return;
-                }
+        [self requestConfig:^(BOOL uploadBatch) {
+            if (!uploadBatch) {
+                invokeCompletionHandler(NO);
+                return;
+            }
+            
+            __strong MPBackendController *strongSelf = weakSelf;
+            
+            [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
+                session = nil;
                 
-                __strong MPBackendController *strongSelf = weakSelf;
-                
-                [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
-                    session = nil;
-                    
-                    invokeCompletionHandler(success);
-                }];
-                
+                invokeCompletionHandler(success);
             }];
-        });
+            
+        }];
     });
     
 }
@@ -899,7 +877,6 @@ static BOOL appBackgrounded = NO;
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
         if (![MPStateMachine isAppExtension]) {
-            dispatch_async(self->networkQueue, ^{
                 [self uploadDatabaseWithCompletionHandler:^{
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (!MParticle.sharedInstance.automaticSessionTracking) {
@@ -907,7 +884,6 @@ static BOOL appBackgrounded = NO;
                         }
                     });
                 }];
-            });
         } else {
             [self endSession];
         }
@@ -934,9 +910,7 @@ static BOOL appBackgrounded = NO;
 #endif
     
     dispatch_async(messageQueue, ^{
-        dispatch_async(self->networkQueue, ^{
-            [self requestConfig:nil];
-        });
+        [self requestConfig:nil];
     });
 }
 
@@ -1019,7 +993,6 @@ static BOOL appBackgrounded = NO;
         
     });
     dispatch_suspend(messageQueue);
-    dispatch_suspend(networkQueue);
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
@@ -1147,13 +1120,11 @@ static BOOL appBackgrounded = NO;
         strongSelf->uploadSource = [strongSelf createSourceTimer:strongSelf.uploadInterval
                                                     eventHandler:^{
                                                         dispatch_async([MParticle messageQueue], ^{
-                                                            dispatch_async(self->networkQueue, ^{
-                                                                __strong MPBackendController *strongSelf = weakSelf;
-                                                                if (!strongSelf) {
-                                                                    return;
-                                                                }
-                                                                [strongSelf uploadDatabaseWithCompletionHandler:nil];
-                                                            });
+                                                            __strong MPBackendController *strongSelf = weakSelf;
+                                                            if (!strongSelf) {
+                                                                return;
+                                                            }
+                                                            [strongSelf uploadDatabaseWithCompletionHandler:nil];
                                                         });
                                                         
                                                     } cancelHandler:^{
@@ -1426,10 +1397,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPExecStatus)fetchSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(void (^)(NSArray *segments, NSTimeInterval elapsedTime, NSError *error))completionHandler {
-
-    if (self.networkCommunication.retrievingSegments) {
-        return MPExecStatusDataBeingFetched;
-    }
     
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     
@@ -1891,17 +1858,13 @@ static BOOL appBackgrounded = NO;
         
         [stateMachine.searchAttribution requestAttributionDetailsWithBlock:^{
             [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
-            dispatch_async(self->networkQueue, ^{
-                [strongSelf uploadDatabaseWithCompletionHandler:nil];
-            });
+            [strongSelf uploadDatabaseWithCompletionHandler:nil];
         }];
         
         [strongSelf processPendingArchivedMessages];
         
         [MPResponseConfig restore];
-        dispatch_async(self->networkQueue, ^{
-            [self requestConfig:nil];
-        });
+        [self requestConfig:nil];
         MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
         
         completionHandler();
@@ -1949,9 +1912,7 @@ static BOOL appBackgrounded = NO;
     
     if (shouldUpload) {
         dispatch_async(self->messageQueue, ^{
-            dispatch_async(self->networkQueue, ^{
-                [self uploadDatabaseWithCompletionHandler:nil];
-            });
+            [self uploadDatabaseWithCompletionHandler:nil];
         });
     }
 }

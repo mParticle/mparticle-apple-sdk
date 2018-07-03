@@ -22,7 +22,6 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-+ (dispatch_queue_t)networkQueue;
 @property (nonatomic, strong) MPBackendController *backendController;
 
 @end
@@ -345,29 +344,27 @@
 #pragma mark - User Segments
 - (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler {
     dispatch_async([MParticle messageQueue], ^{
-        dispatch_async([MParticle networkQueue], ^{
-            MPExecStatus execStatus = [self.backendController fetchSegments:timeout
-                                                                 endpointId:endpointId
-                                                          completionHandler:^(NSArray *segments, NSTimeInterval elapsedTime, NSError *error) {
-                                                              if (!segments) {
-                                                                  dispatch_async(dispatch_get_main_queue(), ^{
-                                                                      completionHandler(nil, error);
-                                                                  });
-                                                                  return;
-                                                              }
-                                                              
-                                                              MPUserSegments *userSegments = [[MPUserSegments alloc] initWithSegments:segments];
+        MPExecStatus execStatus = [self.backendController fetchSegments:timeout
+                                                             endpointId:endpointId
+                                                      completionHandler:^(NSArray *segments, NSTimeInterval elapsedTime, NSError *error) {
+                                                          if (!segments) {
                                                               dispatch_async(dispatch_get_main_queue(), ^{
-                                                                  completionHandler(userSegments, error);
+                                                                  completionHandler(nil, error);
                                                               });
-                                                          }];
-            
-            if (execStatus == MPExecStatusSuccess) {
-                MPILogDebug(@"Fetching user segments");
-            } else {
-                MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
-            }
-        });
+                                                              return;
+                                                          }
+                                                          
+                                                          MPUserSegments *userSegments = [[MPUserSegments alloc] initWithSegments:segments];
+                                                          dispatch_async(dispatch_get_main_queue(), ^{
+                                                              completionHandler(userSegments, error);
+                                                          });
+                                                      }];
+        
+        if (execStatus == MPExecStatusSuccess) {
+            MPILogDebug(@"Fetching user segments");
+        } else {
+            MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
+        }
     });
 }
 

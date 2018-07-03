@@ -55,10 +55,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 @end
 
-@interface MPNetworkCommunication() {
-    BOOL retrievingSegments;
-    BOOL identifying;
-}
+@interface MPNetworkCommunication()
 
 @property (nonatomic, strong, readonly) NSURL *segmentURL;
 @property (nonatomic, strong, readonly) NSURL *configURL;
@@ -69,6 +66,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 @property (nonatomic, strong, readonly) NSURL *modifyURL;
 
 @property (nonatomic, strong) NSString *context;
+@property (nonatomic, assign) BOOL identifying;
 
 @end
 
@@ -79,6 +77,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 @synthesize identifyURL = _identifyURL;
 @synthesize loginURL = _loginURL;
 @synthesize logoutURL = _logoutURL;
+@synthesize identifying = _identifying;
 
 - (instancetype)init {
     self = [super init];
@@ -86,22 +85,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return nil;
     }
     
-    retrievingSegments = NO;
-    identifying = NO;
-    
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    
-    [notificationCenter addObserver:self
-                           selector:@selector(handleReachabilityChanged:)
-                               name:MParticleReachabilityChangedNotification
-                             object:nil];
+    self.identifying = NO;
     
     return self;
-}
-
-- (void)dealloc {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
 }
 
 #pragma mark Private accessors
@@ -193,6 +179,18 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     return modifyURL;
 }
 
+- (BOOL)identifying {
+    @synchronized(self) {
+        return _identifying;
+    }
+}
+
+- (void)setIdentifying:(BOOL)identifying {
+    @synchronized(self) {
+        _identifying = identifying;
+    }
+}
+
 #pragma mark Private methods
 - (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPUpload *)batchObject {
     [self processNetworkResponseAction:responseAction batchObject:batchObject httpResponse:nil];
@@ -252,20 +250,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
 }
 
-#pragma mark Notification handlers
-- (void)handleReachabilityChanged:(NSNotification *)notification {
-    retrievingSegments = NO;
-}
-
 #pragma mark Public accessors
-- (BOOL)inUse {
-    return retrievingSegments;
-}
-
-- (BOOL)retrievingSegments {
-    return retrievingSegments;
-}
-
 - (void)configRequestDidSucceed {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPLastConfigReceivedKey] = @([NSDate timeIntervalSinceReferenceDate]);
@@ -274,7 +259,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 #pragma mark Public methods
 - (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary, NSString *eTag))completionHandler {
-    
     BOOL shouldSendRequest = YES;
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
@@ -298,7 +282,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-
+    
     if (![MPStateMachine isAppExtension]) {
         backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
@@ -312,7 +296,11 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     NSString *const connectionId = [[NSUUID UUID] UUIDString];
     connector.connectionId = connectionId;
     
+    
+    
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
+    
+    
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -378,29 +366,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         completionHandler(success, configurationDictionary, eTag);
         [self configRequestDidSucceed];
     }
-    
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
-            return;
-        }
-        
-        if (connector.active) {
-            MPILogWarning(@"Failed config request");
-            completionHandler(NO, nil, nil);
-        }
-        
-        [connector cancelRequest];
-    });
 }
 
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler {
-    if (retrievingSegments) {
-        return;
-    }
-    
-    retrievingSegments = YES;
-    
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     if (![MPStateMachine isAppExtension]) {
@@ -441,7 +409,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     NSMutableArray<MPSegment *> *segments = nil;
     BOOL success = NO;
-    strongSelf->retrievingSegments = NO;
     
     NSArray *segmentsList = nil;
     NSInteger responseCode = [httpResponse statusCode];
@@ -502,24 +469,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         
         completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
     }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        __strong MPNetworkCommunication *strongSelf = weakSelf;
-        
-        if (strongSelf && !strongSelf->retrievingSegments) {
-            return;
-        }
-        
-        NSError *error = [NSError errorWithDomain:@"mParticle Segments"
-                                             code:MPNetworkErrorTimeout
-                                         userInfo:@{@"message":@"Segment request timeout."}];
-        
-        completionHandler(YES, nil, timeout, error);
-        
-        if (strongSelf) {
-            strongSelf->retrievingSegments = NO;
-        }
-    });
 }
 
 - (void)upload:(NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler {
@@ -620,31 +569,18 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     if (!finished) {
         [strongSelf upload:uploads index:(index + 1) completionHandler:completionHandler];
     }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
-            return;
-        }
-        
-        if (connector.active) {
-            MPILogWarning(@"Failed Uploading Source Batch Id: %@", upload.uuid);
-            completionHandler(NO, upload, nil, YES);
-        }
-        
-        [connector cancelRequest];
-    });
 }
 
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion {
     
-    if (identifying) {
+    if (self.identifying) {
         if (completion) {
             completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeRequestInProgress userInfo:@{mParticleIdentityErrorKey:@"Identity API request in progress."}]);
         }
         return;
     }
     if (blockOtherRequests) {
-        identifying = YES;
+        self.identifying = YES;
     }
     __weak MPNetworkCommunication *weakSelf = self;
     
@@ -655,7 +591,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                 __strong MPNetworkCommunication *strongSelf = weakSelf;
                 if (strongSelf) {
-                    strongSelf->identifying = NO;
+                    strongSelf.identifying = NO;
                 }
                 
                 [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
@@ -729,7 +665,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
     
-    strongSelf->identifying = NO;
+    strongSelf.identifying = NO;
     
     if (success) {
         if (responseString) {
@@ -764,27 +700,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:errorResponse.code userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
         }
     }
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)([MPURLRequestBuilder requestTimeout] * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        if (!connector || ![connector.connectionId isEqualToString:connectionId]) {
-            return;
-        }
-        __strong MPNetworkCommunication *strongSelf = weakSelf;
-        
-        if (strongSelf) {
-            strongSelf->identifying = NO;
-        }
-        
-        if (connector.active) {
-            MPILogWarning(@"Failed to call identify API with request: %@", dictionary);
-            if (completion) {
-                MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithCode:MPIdentityErrorResponseCodeClientSideTimeout message:@"API call timed out. Please check device connectivity and try again." error:nil];
-                completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeClientSideTimeout userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
-            }
-        }
-        
-        [connector cancelRequest];
-    });
 }
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {

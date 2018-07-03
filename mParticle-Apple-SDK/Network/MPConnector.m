@@ -75,7 +75,8 @@ static NSArray *mpStoredCertificates = nil;
     }
     
     NSURLSessionConfiguration *sessionConfiguration = [NSURLSessionConfiguration ephemeralSessionConfiguration];
-    
+    sessionConfiguration.timeoutIntervalForRequest = 30;
+    sessionConfiguration.timeoutIntervalForResource = 30;
     _urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
                                                 delegate:self
                                            delegateQueue:[NSOperationQueue mainQueue]];

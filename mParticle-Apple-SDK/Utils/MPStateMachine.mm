@@ -61,6 +61,7 @@ static BOOL runningInBackground = NO;
 @synthesize triggerEventTypes = _triggerEventTypes;
 @synthesize triggerMessageTypes = _triggerMessageTypes;
 @synthesize automaticSessionTracking = _automaticSessionTracking;
+@synthesize networkStatus = _networkStatus;
 
 #if TARGET_OS_IOS == 1
 @synthesize location = _location;
@@ -150,25 +151,16 @@ static BOOL runningInBackground = NO;
     return _reachability;
 }
 
-- (void)setNetworkStatus:(MParticleNetworkStatus)networkStatus {
-    _networkStatus = networkStatus;
-
-    NSString *networkStatusDescription;
-    switch (networkStatus) {
-        case MParticleNetworkStatusReachableViaWiFi:
-            networkStatusDescription = @"Reachable via Wi-Fi";
-            break;
-            
-        case MParticleNetworkStatusReachableViaWAN:
-            networkStatusDescription = @"Reachable via WAN";
-            break;
-            
-        case MParticleNetworkStatusNotReachable:
-            networkStatusDescription = @"Not reachable";
-            break;
+- (MParticleNetworkStatus)networkStatus {
+    @synchronized(self) {
+        return _networkStatus;
     }
-    
-    MPILogVerbose(@"Network Status: %@", networkStatusDescription);
+}
+
+- (void)setNetworkStatus:(MParticleNetworkStatus)networkStatus {
+    @synchronized(self) {
+        _networkStatus = networkStatus;
+    }
 }
 
 - (NSString *)storedSDKVersion {
@@ -304,17 +296,21 @@ static BOOL runningInBackground = NO;
 }
 
 + (MPEnvironment)environment {
-    if (runningEnvironment != MPEnvironmentAutoDetect) {
+    @synchronized(self) {
+        if (runningEnvironment != MPEnvironmentAutoDetect) {
+            return runningEnvironment;
+        }
+        
+        runningEnvironment = [MPStateMachine getEnvironment];
+        
         return runningEnvironment;
     }
-    
-    runningEnvironment = [MPStateMachine getEnvironment];
-    
-    return runningEnvironment;
 }
 
 + (void)setEnvironment:(MPEnvironment)environment {
-    runningEnvironment = environment;
+    @synchronized(self) {
+        runningEnvironment = environment;
+    }
 }
 
 + (NSString *)provisioningProfileString {
@@ -339,11 +335,15 @@ static BOOL runningInBackground = NO;
 }
 
 + (BOOL)runningInBackground {
-    return runningInBackground;
+    @synchronized(self) {
+        return runningInBackground;
+    }
 }
 
 + (void)setRunningInBackground:(BOOL)background {
-    runningInBackground = background;
+    @synchronized(self) {
+        runningInBackground = background;
+    }
 }
 
 + (BOOL)isAppExtension {
