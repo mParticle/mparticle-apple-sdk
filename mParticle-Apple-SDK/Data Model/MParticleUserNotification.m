@@ -1,5 +1,6 @@
 #import "MParticleUserNotification.h"
 #import "MPApplication.h"
+#import "MParticle.h"
 
 NSString *const kMPUserNotificationApsKey = @"aps";
 NSString *const kMPUserNotificationAlertKey = @"alert";
@@ -12,7 +13,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 #import "MPIConstants.h"
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
-#import "MPStateMachine.h"
 #import "MPILogger.h"
 
 @implementation MParticleUserNotification

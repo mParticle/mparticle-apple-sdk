@@ -4,12 +4,16 @@
 #import "MPStateMachine.h"
 #import "mParticle.h"
 #import "MPIUserDefaults.h"
+#import "MPBaseTestCase.h"
 
 @interface MParticle ()
+
 + (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
 @end
 
-@interface MPResponseConfigTests : XCTestCase
+@interface MPResponseConfigTests : MPBaseTestCase
 
 @end
 
@@ -17,6 +21,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
 }
 
 - (void)tearDown {
@@ -26,20 +32,15 @@
 }
 
 - (void)testInstance {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
                                     kMPRemoteConfigRampKey:@100,
                                     kMPRemoteConfigTriggerKey:[NSNull null],
                                     kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeIgnore,
                                     kMPRemoteConfigSessionTimeoutKey:@112};
-    dispatch_async([MParticle messageQueue], ^{
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        XCTAssertNotNil(responseConfig, @"Should not have been nil.");
-        [expectation fulfill];
-    });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+    XCTAssertNotNil(responseConfig, @"Should not have been nil.");
 }
 
 - (void)testInvalidConfigurations {
@@ -64,7 +65,7 @@
                                                          options:NSJSONReadingMutableContainers
                                                            error:nil];
     
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.customModules = nil;
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
                                     kMPRemoteConfigCustomModuleSettingsKey:cmsDict,

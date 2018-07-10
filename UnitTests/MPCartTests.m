@@ -2,8 +2,9 @@
 #import "MPCart.h"
 #import "MPCart+Tests.h"
 #import "MPProduct.h"
+#import "MPBaseTestCase.h"
 
-@interface MPCartTests : XCTestCase
+@interface MPCartTests : MPBaseTestCase
 
 @end
 

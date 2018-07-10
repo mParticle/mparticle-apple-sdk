@@ -2,6 +2,7 @@
 #import <mach/mach.h>
 #import "MPStateMachine.h"
 #import "MPApplication.h"
+#import "MParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -24,6 +25,12 @@ NSString *const kMPStateDataConnectionKey = @"dct";
 NSString *const kMPStateGPSKey = @"gps";
 NSString *const kMPStateTotalDiskSpaceKey = @"tds";
 NSString *const kMPStateFreeDiskSpaceKey = @"fds";
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
 
 @interface MPCurrentState () {
 #if TARGET_OS_IOS == 1
@@ -117,7 +124,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 - (NSString *)dataConnectionStatus {
     NSString *dataConnectionStatus;
     
-    switch ([MPStateMachine sharedInstance].networkStatus) {
+    switch ([MParticle sharedInstance].stateMachine.networkStatus) {
         case MParticleNetworkStatusReachableViaWAN:
             dataConnectionStatus = kDataConnectionMobile;
             break;
@@ -164,7 +171,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 
 - (NSNumber *)timeSinceStart {
     NSDate *now = [NSDate date];
-    NSNumber *timeSinceStart = MPMilliseconds([now timeIntervalSinceDate:[MPStateMachine sharedInstance].startTime]);
+    NSNumber *timeSinceStart = MPMilliseconds([now timeIntervalSinceDate:[MParticle sharedInstance].stateMachine.startTime]);
     return timeSinceStart;
 }
 

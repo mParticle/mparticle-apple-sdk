@@ -25,7 +25,6 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
 
-+ (nonnull instancetype)sharedInstance;
 + (nullable NSNumber *)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;

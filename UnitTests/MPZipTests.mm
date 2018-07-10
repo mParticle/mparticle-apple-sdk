@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "MPZip.h"
+#import "MPBaseTestCase.h"
 
-@interface ZipTests : XCTestCase
+@interface ZipTests : MPBaseTestCase
 
 @end
 

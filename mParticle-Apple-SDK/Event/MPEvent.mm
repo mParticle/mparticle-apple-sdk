@@ -6,6 +6,7 @@
 #import "MPILogger.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
+#import "MParticle.h"
 
 @interface MPEvent()
 

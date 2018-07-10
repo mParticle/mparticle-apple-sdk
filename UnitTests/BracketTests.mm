@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "MPBracket.h"
+#import "MPBaseTestCase.h"
 
-@interface BracketTests : XCTestCase
+@interface BracketTests : MPBaseTestCase
 
 @end
 

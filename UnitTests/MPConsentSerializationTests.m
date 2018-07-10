@@ -3,6 +3,7 @@
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
 #import "MPConsentKitFilter.h"
+#import "MPBaseTestCase.h"
 
 static NSTimeInterval epsilon = 0.05;
 
@@ -12,7 +13,7 @@ static NSTimeInterval epsilon = 0.05;
 
 @end
 
-@interface MPConsentSerializationTests : XCTestCase
+@interface MPConsentSerializationTests : MPBaseTestCase
 
 @end
 

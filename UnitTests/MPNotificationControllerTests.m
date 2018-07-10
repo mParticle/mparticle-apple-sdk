@@ -4,8 +4,9 @@
 #import "MPNotificationController+Tests.h"
 #import "MPIConstants.h"
 #import "MParticleUserNotification.h"
+#import "MPBaseTestCase.h"
 
-@interface MPNotificationControllerTests : XCTestCase <MPNotificationControllerDelegate>
+@interface MPNotificationControllerTests : MPBaseTestCase <MPNotificationControllerDelegate>
 
 @property (nonatomic, strong) MPNotificationController *notificationController;
 @property (nonatomic, strong) MParticleUserNotification *userNotification;

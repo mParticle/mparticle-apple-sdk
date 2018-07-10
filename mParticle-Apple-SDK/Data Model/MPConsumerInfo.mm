@@ -6,10 +6,17 @@
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
 #import "NSString+MPPercentEscape.h"
+#import "mParticle.h"
 
 NSString *const kMPCKContent = @"c";
 NSString *const kMPCKDomain = @"d";
 NSString *const kMPCKExpiration = @"e";
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+
+@end
 
 #pragma mark - MPCookie
 @implementation MPCookie
@@ -205,7 +212,7 @@ NSString *const kMPCKExpiration = @"e";
         return;
     }
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     NSMutableArray<MPCookie *> *cookies = [[NSMutableArray alloc] init];
     NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPPersistenceController mpId]];

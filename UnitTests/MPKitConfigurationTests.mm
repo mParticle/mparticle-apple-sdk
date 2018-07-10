@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "MPKitConfiguration.h"
+#import "MPBaseTestCase.h"
 
-@interface MPKitConfigurationTests : XCTestCase {
+@interface MPKitConfigurationTests : MPBaseTestCase {
     MPKitConfiguration *kitConfiguration;
 }
 

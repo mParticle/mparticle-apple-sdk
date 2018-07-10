@@ -19,7 +19,6 @@
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
-+ (nonnull MPKitContainer *)sharedInstance;
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;

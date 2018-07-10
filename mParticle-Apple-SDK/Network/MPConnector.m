@@ -1,7 +1,6 @@
 #import "MPConnector.h"
 #import <dispatch/dispatch.h>
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 #import "MPURLRequestBuilder.h"
 #import "MPNetworkCommunication.h"
 #import "MPILogger.h"

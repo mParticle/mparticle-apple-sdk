@@ -24,15 +24,19 @@
 #import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPKitInstanceValidator.h"
+#import "MPBaseTestCase.h"
 
 @interface MParticle ()
+
 + (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPKitContainer *kitContainer;
+
 @end
 
 @interface MPKitInstanceValidator(BackendControllerTests)
 + (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
 @end
-
 
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
@@ -63,7 +67,7 @@
 
 
 #pragma mark - MPKitContainerTests
-@interface MPKitContainerTests : XCTestCase {
+@interface MPKitContainerTests : MPBaseTestCase {
     MPKitContainer *kitContainer;
 }
 
@@ -75,11 +79,13 @@
 - (void)setUp {
     [super setUp];
     
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
     
-    kitContainer = [MPKitContainer sharedInstance];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer;
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
@@ -114,7 +120,6 @@
 
 - (void)tearDown {
     kitContainer = nil;
-    [[MParticle sharedInstance] clearMParticleData];
 
     [super tearDown];
 }
@@ -166,39 +171,30 @@
     
     NSArray *kitConfigs = @[configuration1, configuration2];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
-    dispatch_async([MParticle messageQueue], ^{
-        NSString *eTag = @"1.618-2.718-3.141-42";
-        NSDictionary __block *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
-                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                        kMPRemoteConfigSessionTimeoutKey:@112};
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
-        
-        XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
-        
-        NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
-        for (NSDictionary *kitConfigurationDictionary in directoryContents) {
-            MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-            if ([[kitConfiguration kitCode] isEqual:@(42)]){
-                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
-            }
-            
-            if ([[kitConfiguration kitCode] isEqual:@(312)]){
-                
-                XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
-            }
-        }
-
-        [expectation fulfill];
-    });
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary __block *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigTriggerKey:[NSNull null],
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+    
+    [MPResponseConfig save:responseConfig eTag:eTag];
+        
+    NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+    for (NSDictionary *kitConfigurationDictionary in directoryContents) {
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
+        if ([[kitConfiguration kitCode] isEqual:@(42)]){
+            XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
+        }
+        
+        if ([[kitConfiguration kitCode] isEqual:@(312)]){
+            
+            XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+        }
+    }    
 }
 
 - (void)testRemoveKitConfiguration {
@@ -825,9 +821,7 @@
 
 }
 
-- (void)testNotForwardUserAttributeList {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Not forwarding user attribute list"];
-    
+- (void)testNotForwardUserAttributeList {    
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),
@@ -853,12 +847,6 @@
                       kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
                           NSAssert(false, @"This line should never be executed.");
                       }];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:0.11 handler:nil];
 }
 
 - (void)testFilterForUserAttributes {
@@ -1860,17 +1848,9 @@
                           }];
 }
 
-- (void)testAllocationAndDeallocation {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Allocation and deallocation"];
-    
+- (void)testAllocation {    
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
     XCTAssertNotNil(localKitContainer);
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:0.11 handler:nil];
 }
 
 - (void)testExpandedCommerceEventProjection {
@@ -1998,11 +1978,11 @@
     [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
-    BOOL isDisabled = [[MPKitContainer sharedInstance] isDisabledByConsentKitFilter:filter];
+    BOOL isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
     filter.shouldIncludeOnMatch = NO;
-    isDisabled = [[MPKitContainer sharedInstance] isDisabledByConsentKitFilter:filter];
+    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
     
 }

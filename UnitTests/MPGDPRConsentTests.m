@@ -1,9 +1,10 @@
 #import <XCTest/XCTest.h>
 #import "MPGDPRConsent.h"
+#import "MPBaseTestCase.h"
 
 static NSTimeInterval epsilon = 0.05;
 
-@interface MPGDPRConsentTests : XCTestCase {
+@interface MPGDPRConsentTests : MPBaseTestCase {
     MPGDPRConsent *_state;
 }
 

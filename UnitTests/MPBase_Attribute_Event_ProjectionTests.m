@@ -2,8 +2,9 @@
 #import "MPBaseProjection.h"
 #import "MPAttributeProjection.h"
 #import "MPEventProjection.h"
+#import "MPBaseTestCase.h"
 
-@interface MPBase_Attribute_Event_ProjectionTests : XCTestCase
+@interface MPBase_Attribute_Event_ProjectionTests : MPBaseTestCase
 
 @end
 

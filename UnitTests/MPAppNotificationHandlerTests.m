@@ -2,8 +2,16 @@
 #import "MPAppNotificationHandler.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
+#import "MPBaseTestCase.h"
 
-@interface MPAppNotificationHandlerTests : XCTestCase
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPAppNotificationHandler *appNotificationHandler;
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+
+@end
+
+@interface MPAppNotificationHandlerTests : MPBaseTestCase
 
 @end
 
@@ -25,42 +33,42 @@
 }
 
 - (void)testFailedToRegisterForRemoteNotification {
-    MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
     XCTAssertNotNil(appNotificationHandler, @"Should not have been nil.");
     
     NSError *error = [NSError errorWithDomain:@"com.mParticle" code:123 userInfo:@{@"some":@"error"}];
     [MParticle sharedInstance];
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     error = nil;
     [appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     
-    forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
 - (void)testRegisterForRemoteNotification {
-    MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
     XCTAssertNotNil(appNotificationHandler, @"Should not have been nil.");
     
     NSData *deviceToken = [@"<1234 5678>" dataUsingEncoding:NSUTF8StringEncoding];
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
     
     deviceToken = nil;
     [appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     
-    forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
 - (void)testHandleActionWithIdentifierForRemoteNotification {
-    MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
     
     NSString *actionIdentifier = @"Action 1";
     NSDictionary *notificationDictionary = @{};
@@ -70,12 +78,12 @@
     notificationDictionary = nil;
     [appNotificationHandler handleActionWithIdentifier:actionIdentifier forRemoteNotification:notificationDictionary];
     
-    NSArray<MPForwardRecord *> *forwardedRecords = [[MPPersistenceController sharedInstance] fetchForwardRecords];
+    NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
 
 - (void)testOpenURLOptions {
-    MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
     
     NSURL *url = [NSURL URLWithString:@"http://mparticle.com"];
     NSDictionary *options;
@@ -100,7 +108,7 @@
 }
 
 - (void)testReceivedUserNotification {
-    MPAppNotificationHandler *appNotificationHandler = [MPAppNotificationHandler sharedInstance];
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
     
     NSDictionary *notification = @{};
     NSString *action = @"";

@@ -10,6 +10,7 @@
 
 @interface MParticle ()
 
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end

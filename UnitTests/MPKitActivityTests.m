@@ -8,6 +8,14 @@
 #import "MPStateMachine.h"
 #import "MPKitInstanceValidator.h"
 #import <XCTest/XCTest.h>
+#import "MPBaseTestCase.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPKitContainer *kitContainer;
+
+@end
 
 @interface MPKitInstanceValidator ()
 + (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
@@ -21,7 +29,7 @@
 @end
 
 #pragma mark - MPKitActivityTests
-@interface MPKitActivityTests : XCTestCase
+@interface MPKitActivityTests : MPBaseTestCase
 
 @property (nonatomic, strong) MPKitActivity *kitActivity;
 
@@ -35,9 +43,12 @@
 
     _kitActivity = [[MPKitActivity alloc] init];
     
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
+    
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
     
     [MPKitInstanceValidator includeUnitTestKits:@[@42]];
     
@@ -54,7 +65,7 @@
                                         };
         
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-        [[MPKitContainer sharedInstance] startKit:@42 configuration:kitConfiguration];
+        [[[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration] start];
     }
 }
 
@@ -81,23 +92,7 @@
         [expectation fulfill];
     }];
     
-    NSDictionary *configuration = @{
-                                    @"id":@42,
-                                    @"as":@{
-                                            @"appId":@"cool app key"
-                                            }
-                                    };
-    
-    NSArray *kitConfigs = @[configuration];
-    [[MPKitContainer sharedInstance] configureKits:nil];
-    [[MPKitContainer sharedInstance] configureKits:kitConfigs];
-
-    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [[MPKitContainer sharedInstance] startKit:@42 configuration:kitConfiguration];
-    
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    
-    [[MPKitContainer sharedInstance] configureKits:nil];
 }
 
 - (void)testKitAlreadyStarted {
@@ -109,11 +104,11 @@
                                     };
     
     NSArray *kitConfigs = @[configuration];
-    [[MPKitContainer sharedInstance] configureKits:nil];
-    [[MPKitContainer sharedInstance] configureKits:kitConfigs];
+    [[MParticle sharedInstance].kitContainer configureKits:nil];
+    [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
     
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [[MPKitContainer sharedInstance] startKit:@42 configuration:kitConfiguration];
+    [[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration];
     
     BOOL isKitActive = [self.kitActivity isKitActive:@42];
     XCTAssertTrue(isKitActive);
@@ -126,8 +121,6 @@
         XCTAssertNotNil(syncKitInstance);
         XCTAssertTrue([syncKitInstance isKindOfClass:[MPKitTestClassNoStartImmediately class]]);
     }];
-    
-    [[MPKitContainer sharedInstance] configureKits:nil];
 }
 
 @end

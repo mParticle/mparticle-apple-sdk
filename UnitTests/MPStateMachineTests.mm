@@ -3,6 +3,8 @@
 #import "MPHasher.h"
 #import "MPConsumerInfo.h"
 #import "MPLaunchInfo.h"
+#import "MPBaseTestCase.h"
+#import "MParticle.h"
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine(Tests)
@@ -16,9 +18,14 @@
 
 @end
 
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
 
 #pragma mark - MPStateMachineTests
-@interface MPStateMachineTests : XCTestCase
+@interface MPStateMachineTests : MPBaseTestCase
 
 @end
 
@@ -26,6 +33,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
 }
 
 - (void)tearDown {
@@ -33,7 +42,7 @@
 }
 
 - (void)testOptOut {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.optOut = YES;
     XCTAssertTrue(stateMachine.optOut, @"OptOut is not being set.");
     
@@ -42,7 +51,7 @@
 }
 
 - (void)testRamp {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     [stateMachine configureRampPercentage:@100];
     XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
     
@@ -54,7 +63,7 @@
 }
 
 - (void)testConfigureTriggers {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *hashEvent1 = [NSString stringWithCString:mParticle::Hasher::hashEvent([@"Button Tapped" cStringUsingEncoding:NSUTF8StringEncoding], [@"Transaction" cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
                                               encoding:NSUTF8StringEncoding];
@@ -82,7 +91,7 @@
 }
 
 - (void)testNullConfigureTriggers {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *hashEvent1 = [NSString stringWithCString:mParticle::Hasher::hashEvent([@"Button Tapped" cStringUsingEncoding:NSUTF8StringEncoding], [@"Transaction" cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
                                               encoding:NSUTF8StringEncoding];
@@ -131,7 +140,7 @@
 
 - (void)testStateTransitions {
     XCTestExpectation *expectation = [self expectationWithDescription:@"State transitions"];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"http://mparticle.com"]
                                                          options:@{@"Launching":@"WooHoo"}];
@@ -165,7 +174,7 @@
 }
 
 - (void)testRamping {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     [stateMachine configureRampPercentage:@0];
     XCTAssertTrue(stateMachine.dataRamped, @"Should have been true.");
     
@@ -176,7 +185,7 @@
 - (void)testEventAndMessageTriggers {
     NSDictionary *configuration = @{@"evts":@[@"events"],
                                     @"dts":@[@"messages"]};
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     [stateMachine configureTriggers:configuration];
     XCTAssertNotNil(stateMachine.triggerEventTypes, @"Should not have been nil.");
     XCTAssertNotNil(stateMachine.triggerMessageTypes, @"Should not have been nil.");

@@ -13,7 +13,12 @@
 #endif
 
 @interface MParticle ()
+
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+
 @end
 
 @implementation MPResponseConfig
@@ -29,7 +34,7 @@
     }
 
     _configuration = [configuration copy];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (dataReceivedFromServer) {
         BOOL hasConsentFilters = NO;
@@ -75,7 +80,7 @@
         
         if (!shouldDefer) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[MPKitContainer sharedInstance] configureKits:self->_configuration[kMPRemoteConfigKitsKey]];
+                [[MParticle sharedInstance].kitContainer configureKits:self->_configuration[kMPRemoteConfigKitsKey]];
             });
         } else {
             [MParticle sharedInstance].deferredKitConfiguration = [self->_configuration[kMPRemoteConfigKitsKey] copy];
@@ -153,7 +158,7 @@
 #if TARGET_OS_IOS == 1
 - (void)configureLocationTracking:(NSDictionary *)locationDictionary {
     NSString *locationMode = locationDictionary[kMPRemoteConfigLocationModeKey];
-    [MPStateMachine sharedInstance].locationTrackingMode = locationMode;
+    [MParticle sharedInstance].stateMachine.locationTrackingMode = locationMode;
     
     if ([locationMode isEqualToString:kMPRemoteConfigForceTrue]) {
         NSNumber *accurary = locationDictionary[kMPRemoteConfigLocationAccuracyKey];
@@ -167,7 +172,7 @@
 
 - (void)configurePushNotifications:(NSDictionary *)pushNotificationDictionary {
     NSString *pushNotificationMode = pushNotificationDictionary[kMPRemoteConfigPushNotificationModeKey];
-    [MPStateMachine sharedInstance].pushNotificationMode = pushNotificationMode;
+    [MParticle sharedInstance].stateMachine.pushNotificationMode = pushNotificationMode;
     if (![MPStateMachine isAppExtension]) {
         UIApplication *app = [MPApplication sharedUIApplication];
         

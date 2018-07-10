@@ -6,8 +6,16 @@
 #import "MPBreadcrumb.h"
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
+#import "MPBaseTestCase.h"
+#import "MParticle.h"
 
-@interface MPDataModelTests : XCTestCase
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
+
+@interface MPDataModelTests : MPBaseTestCase
 
 @end
 
@@ -16,7 +24,8 @@
 - (void)setUp {
     [super setUp];
     
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
 }

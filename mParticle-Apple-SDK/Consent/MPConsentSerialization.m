@@ -4,7 +4,7 @@
 #import "MPIConstants.h"
 #import "MPGDPRConsent.h"
 #import "MPConsentKitFilter.h"
-
+#import "MParticle.h"
 
 @implementation MPConsentSerialization
 

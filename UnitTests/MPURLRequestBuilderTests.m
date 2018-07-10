@@ -12,6 +12,15 @@
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
 #import "MPKitInstanceValidator.h"
+#import "MPBaseTestCase.h"
+#import "MPKitConfiguration.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPKitContainer *kitContainer;
+
+@end
 
 @interface MPKitInstanceValidator ()
 
@@ -29,8 +38,17 @@
 
 @end
 
+#pragma mark - MPKitContainer category for unit tests
+@interface MPKitContainer(Tests)
+
+- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+
+@end
+
 #pragma mark - MPURLRequestBuilderTests
-@interface MPURLRequestBuilderTests : XCTestCase
+@interface MPURLRequestBuilderTests : MPBaseTestCase {
+    MPKitContainer *kitContainer;
+}
 
 @end
 
@@ -39,25 +57,42 @@
 - (void)setUp {
     [super setUp];
     
-    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
+    [MPPersistenceController setMpid:@12];
     
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
     
-    if (![MPKitContainer registeredKits]) {
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer;
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
-        [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:@{@"appKey":@"🔑"}];
         [MPKitContainer registerKit:kitRegister];
+        
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
         [MPKitContainer registerKit:kitRegister];
-    }
+        
+        kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+        [MPKitContainer registerKit:kitRegister];
+        
+        NSDictionary *configuration = @{
+                                        @"id":@42,
+                                        @"as":@{
+                                                @"appId":@"MyAppId"
+                                                }
+                                        };
+        
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+        [MPKitInstanceValidator includeUnitTestKits:@[@42]];
+        [kitContainer startKit:@42 configuration:kitConfiguration];
+    }    
 }
 
 - (void)tearDown {
-    [[MPIUserDefaults standardUserDefaults] resetDefaults];
-
+    kitContainer = nil;
     [super tearDown];
 }
 
@@ -74,11 +109,9 @@
     
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
-#if TARGET_OS_IOS == 1
+
         XCTAssertNotNil(userAgent, @"Should not have been nil.");
-#else
-        XCTAssertNil(userAgent, @"Should have been nil.");
-#endif
+
         [expectation fulfill];
     });
     
@@ -138,7 +171,7 @@
 
 - (void)testHMACSha256Encode {
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
     NSString *referenceEncodedMessage = @"ceefdfeab2fe404a7cbb75f6f6a01443286fab507eb85c213fce3d812e8b615c";
@@ -149,7 +182,7 @@
 
 - (void)testInvalidHMACSha256Encode {
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = nil;
     NSString *encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:stateMachine.apiKey];
@@ -361,8 +394,8 @@
                                      };
     
     NSArray *kitConfigs = @[configuration1];
-    [[MPKitContainer sharedInstance] configureKits:nil];
-    [[MPKitContainer sharedInstance] configureKits:kitConfigs];
+    [[MParticle sharedInstance].kitContainer configureKits:nil];
+    [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
     
     MParticle.sharedInstance.collectUserAgent = YES;
     MParticle.sharedInstance.customUserAgent = nil;

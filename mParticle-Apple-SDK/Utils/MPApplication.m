@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPSearchAdsAttribution.h"
+#import "MParticle.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
 NSString *const kMPApplicationNameKey = @"an";
@@ -30,6 +31,12 @@ NSString *const kMPAppBadgeNumberKey = @"bn";
 NSString *const kMPAppStoreReceiptKey = @"asr";
 
 static NSString *kMPAppStoreReceiptString = nil;
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
 
 @interface MPApplication() {
     NSDictionary *appInfo;
@@ -150,7 +157,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 }
 
 - (NSNumber *)firstSeenInstallation {
-    return [MPStateMachine sharedInstance].firstSeenInstallation;
+    return [MParticle sharedInstance].stateMachine.firstSeenInstallation;
 }
 
 - (NSNumber *)initialLaunchTime {
@@ -177,7 +184,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 - (NSNumber *)lastUseDate {
     NSNumber *lastUseDate = userDefaults[kMPAppLastUseDateKey];
     if (lastUseDate == nil) {
-        lastUseDate = MPMilliseconds([[MPStateMachine sharedInstance].launchDate timeIntervalSince1970]);
+        lastUseDate = MPMilliseconds([[MParticle sharedInstance].stateMachine.launchDate timeIntervalSince1970]);
     }
     
     return lastUseDate;
@@ -316,7 +323,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 #endif
 
 - (NSDictionary *)searchAdsAttribution {
-    MPSearchAdsAttribution *searchAttribution = [MPStateMachine sharedInstance].searchAttribution;
+    MPSearchAdsAttribution *searchAttribution = [MParticle sharedInstance].stateMachine.searchAttribution;
     return [searchAttribution dictionaryRepresentation];
 }
 

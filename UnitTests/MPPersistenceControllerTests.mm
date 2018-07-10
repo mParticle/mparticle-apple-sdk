@@ -16,10 +16,20 @@
 #import "MPUploadBuilder.h"
 #import "sqlite3.h"
 #import "MPIUserDefaults.h"
+#import "MPBaseTestCase.h"
+#import "MPStateMachine.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
-@interface MPPersistenceControllerTests : XCTestCase
+@interface MParticle ()
+
++ (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
+
+@interface MPPersistenceControllerTests : MPBaseTestCase
 
 @end
 
@@ -27,12 +37,15 @@
 
 - (void)setUp {
     [super setUp];
-    [MParticle sharedInstance];
-    [[MPPersistenceController sharedInstance] openDatabase];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+
+    [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+    [[MParticle sharedInstance].persistenceController openDatabase];
 }
 
 - (void)tearDown {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
     [persistence closeDatabase];
     
@@ -60,7 +73,7 @@
         while (-[[NSDate date] timeIntervalSinceDate:endDate] > 0) {
             MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
             
-            MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+            MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
             [persistence saveSession:session];
             NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
             [persistence deleteSession:session];
@@ -86,7 +99,7 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveSession:session];
     
     XCTAssertTrue(session.sessionId > 0, @"Session id not greater than zero: %lld", session.sessionId);
@@ -108,7 +121,7 @@
 - (void)testMessage {
     [MPPersistenceController setMpid:@2];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     [persistence saveSession:session];
@@ -143,7 +156,7 @@
     
     [MPPersistenceController setMpid:@2];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     [persistence saveSession:session];
@@ -163,7 +176,7 @@
     
     XCTAssertEqualObjects(message, fetchedMessage, @"Message and fetchedMessage are not equal.");
     
-    [[MPPersistenceController sharedInstance] resetDatabase];
+    [[MParticle sharedInstance].persistenceController resetDatabase];
     
     messagesDictionary = [persistence fetchMessagesForUploading];
     messages = messagesDictionary[[MPPersistenceController mpId]];
@@ -192,7 +205,7 @@
     
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     NSArray *nilArray = nil;
     [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
@@ -240,13 +253,15 @@
     
     MPSegment *segment = [[MPSegment alloc] initWithDictionary:segmentDictionary];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveSegment:segment];
     
     XCTAssertTrue([segment.segmentId integerValue] > 0, @"Segment id not greater than zero: %@", segment.segmentId);
     
-    MPSegment *fetchedSegment = [[persistence fetchSegments] lastObject];
+    NSArray<MPSegment *> * fetchedSegments = [persistence fetchSegments];
+    MPSegment *fetchedSegment = [fetchedSegments lastObject];
     
+    XCTAssertEqual(fetchedSegments.count, 1);
     XCTAssertEqualObjects(segment, fetchedSegment, @"Segment and fetchedSegment are not equal.");
     
     [persistence deleteSegments];
@@ -260,7 +275,7 @@
 }
 
 - (void)testIntegrationAttributes {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence deleteIntegrationAttributesForKitCode:@42];
     
     NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
@@ -336,42 +351,48 @@
                                              @"mpid":@2
                                              };
     
-    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    __block MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
     [consumerInfo updateWithConfiguration:consumerInfoDictionary];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveConsumerInfo:consumerInfo];
     
-    MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotNil(fetchedConsumerInfo);
-    
-    NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
-    NSDictionary *fetchedCookiesDictionary = [fetchedConsumerInfo cookiesDictionaryRepresentation];
-    XCTAssertEqualObjects(cookiesDictionary, fetchedCookiesDictionary);
-    
-    [persistence deleteConsumerInfo];
-    fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
-    XCTAssertNil(fetchedConsumerInfo);
-    
-    consumerInfo = [[MPConsumerInfo alloc] init];
-    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
-    [persistence saveConsumerInfo:consumerInfo];
-    [persistence updateConsumerInfo:consumerInfo];
-    
-    consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotNil(consumerInfo);
-    [persistence deleteConsumerInfo];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
+
+    dispatch_sync([MParticle messageQueue], ^{
+        MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+        XCTAssertNotNil(fetchedConsumerInfo);
+        
+        NSDictionary *cookiesDictionary = [consumerInfo cookiesDictionaryRepresentation];
+        NSDictionary *fetchedCookiesDictionary = [fetchedConsumerInfo cookiesDictionaryRepresentation];
+        XCTAssertEqualObjects(cookiesDictionary, fetchedCookiesDictionary);
+        
+        [persistence deleteConsumerInfo];
+        fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+        XCTAssertNil(fetchedConsumerInfo);
+        
+        consumerInfo = [[MPConsumerInfo alloc] init];
+        [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+        [persistence saveConsumerInfo:consumerInfo];
+        [persistence updateConsumerInfo:consumerInfo];
+        
+        consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+        XCTAssertNotNil(consumerInfo);
+        [persistence deleteConsumerInfo];
+        
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testForwardRecord {
-    [[MParticle sharedInstance] clearMParticleData];
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
     
     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
                                                                        execStatus:execStatus
                                                                         stateFlag:YES];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveForwardRecord:forwardRecord];
     
     NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];

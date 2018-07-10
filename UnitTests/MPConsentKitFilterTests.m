@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "MPConsentKitFilter.h"
+#import "MPBaseTestCase.h"
 
-@interface MPConsentKitFilterTests : XCTestCase
+@interface MPConsentKitFilterTests : MPBaseTestCase
 
 @end
 

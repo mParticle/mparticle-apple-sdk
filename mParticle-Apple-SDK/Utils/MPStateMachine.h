@@ -55,7 +55,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
 @property (nonatomic, assign) BOOL automaticSessionTracking;
 
-+ (nonnull instancetype)sharedInstance;
 + (MPEnvironment)environment;
 + (void)setEnvironment:(MPEnvironment)environment;
 + (nullable NSString *)provisioningProfileString;

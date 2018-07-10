@@ -2,6 +2,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSNumber+MPFormatter.h"
 #import "MPILogger.h"
+#import "MParticle.h"
 
 // Internal keys
 NSString *const kMPTAAffiliation = @"ta";

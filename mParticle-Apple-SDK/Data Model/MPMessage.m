@@ -1,6 +1,7 @@
 #import "MPMessage.h"
 #import "MPSession.h"
 #import "MPILogger.h"
+#import "MParticle.h"
 
 @interface MPMessage()
 

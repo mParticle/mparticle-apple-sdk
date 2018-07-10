@@ -9,14 +9,16 @@
 #import "MPKitFilter.h"
 #import "MPProduct.h"
 #import "MPCommerceEvent.h"
-
-@interface MPForwardRecordTests : XCTestCase
+#import "MPBaseTestCase.h"
+#import "MPPersistenceController.h"
+@interface MPForwardRecordTests : MPBaseTestCase
 
 @end
 
 @implementation MPForwardRecordTests
 
 - (void)setUp {
+    
     [super setUp];
 }
 
@@ -40,7 +42,7 @@
     
     NSData *dataRepresentation = [forwardRecord dataRepresentation];
     
-    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation mpid:@1];
+    MPForwardRecord *derivedForwardRecord = [[MPForwardRecord alloc] initWithId:314 data:dataRepresentation mpid:@0];
     XCTAssertNotNil(derivedForwardRecord, @"Should not have been nil.");
     XCTAssertEqualObjects(forwardRecord, derivedForwardRecord, @"Should have been equal.");
     

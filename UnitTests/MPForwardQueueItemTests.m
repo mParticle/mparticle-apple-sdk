@@ -8,6 +8,7 @@
 #import "MPEvent.h"
 #import "MPForwardQueueParameters.h"
 #import "MPKitInstanceValidator.h"
+#import "MPBaseTestCase.h"
 
 #define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 1
 
@@ -46,7 +47,7 @@
 
 
 #pragma mark - MPForwardQueueItemTests
-@interface MPForwardQueueItemTests : XCTestCase
+@interface MPForwardQueueItemTests : MPBaseTestCase
 
 @end
 

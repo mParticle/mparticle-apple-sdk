@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "MPDateFormatter.h"
+#import "MPBaseTestCase.h"
 
-@interface MPDateFormatterTests : XCTestCase {
+@interface MPDateFormatterTests : MPBaseTestCase {
     NSDate *referenceDate;
 }
 

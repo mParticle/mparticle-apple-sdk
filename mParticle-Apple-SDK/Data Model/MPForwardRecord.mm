@@ -10,6 +10,7 @@
 #import "MPEventProjection.h"
 #import "MPKitExecStatus.h"
 #import "MPPersistenceController.h"
+#import "MParticle.h"
 
 NSString *const kMPFRModuleId = @"mid";
 NSString *const kMPFRProjections = @"proj";

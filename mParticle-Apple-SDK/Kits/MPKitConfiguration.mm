@@ -6,6 +6,7 @@
 #include "MessageTypeName.h"
 #import "MPILogger.h"
 #import "MPConsentSerialization.h"
+#import "MParticle.h"
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;

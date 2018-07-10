@@ -9,15 +9,17 @@
 #import "MPPersistenceController.h"
 #import "MParticle.h"
 #import "MPBackendController.h"
+#import "MPBaseTestCase.h"
 
 #pragma mark - MParticle+Tests category
-@interface MParticle(Tests)
+@interface MParticle (Tests)
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
 
 @end
 
-@interface MPEventTests : XCTestCase
+@interface MPEventTests : MPBaseTestCase
 
 @end
 
@@ -25,6 +27,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
 }
 
 - (void)tearDown {
@@ -139,7 +143,7 @@
 
 - (void)testDictionaryRepresentation {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
     NSNumber *eventDuration = @2;

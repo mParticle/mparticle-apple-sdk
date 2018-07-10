@@ -22,7 +22,12 @@
 #endif
 
 @interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 + (dispatch_queue_t)messageQueue;
+
 @end
 
 @interface MPKitAPI ()
@@ -61,17 +66,6 @@
     [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
 }
 
-+ (instancetype)sharedInstance {
-    static MPAppNotificationHandler *sharedInstance = nil;
-    static dispatch_once_t predicate;
-    
-    dispatch_once(&predicate, ^{
-        sharedInstance = [[MPAppNotificationHandler alloc] init];
-    });
-    
-    return sharedInstance;
-}
-
 #pragma mark Notification handlers
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
 #if TARGET_OS_IOS == 1
@@ -88,7 +82,7 @@
 #pragma mark Public methods
 #if TARGET_OS_IOS == 1
 - (void)didFailToRegisterForRemoteNotificationsWithError:(NSError *)error {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -102,7 +96,7 @@
     [queueParameters addParameter:error];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:failedRegistrationSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:failedRegistrationSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -112,7 +106,7 @@
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -126,7 +120,7 @@
     [queueParameters addParameter:deviceToken];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:deviceTokenSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:deviceTokenSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -139,7 +133,7 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
 #pragma clang diagnostic pop
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -149,7 +143,7 @@
     [queueParameters addParameter:notificationSettings];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:didRegisterUserNotificationSettingsSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:didRegisterUserNotificationSettingsSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -159,7 +153,7 @@
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -172,7 +166,7 @@
     [queueParameters addParameter:userInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -182,7 +176,7 @@
 }
 
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -196,7 +190,7 @@
     [queueParameters addParameter:responseInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:handleActionWithIdentifierSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -206,7 +200,7 @@
 }
 
 - (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode {
-    if ([MPStateMachine sharedInstance].optOut || !userInfo) {
+    if ([MParticle sharedInstance].stateMachine.optOut || !userInfo) {
         return;
     }
     
@@ -234,7 +228,7 @@
         [queueParameters addParameter:userInfo];
         
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[MPKitContainer sharedInstance] forwardSDKCall:receivedNotificationSelector
+            [[MParticle sharedInstance].kitContainer forwardSDKCall:receivedNotificationSelector
                                                  parameters:queueParameters
                                                 messageType:MPMessageTypePushNotification
                                                  kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -245,7 +239,7 @@
 }
 
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -256,7 +250,7 @@
     [queueParameters addParameter:userActivity];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:didUpdateUserActivitySelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:didUpdateUserActivitySelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -268,7 +262,7 @@
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center willPresentNotification:(nonnull UNNotification *)notification {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -281,7 +275,7 @@
                                                           userInfo:userNotificationDictionary];
         
         SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
         
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
@@ -292,7 +286,7 @@
 }
 
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response {
-    if ([MPStateMachine sharedInstance].optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
     
@@ -310,7 +304,7 @@
                                                             object:self
                                                           userInfo:userNotificationDictionary];
         
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MPKitContainer sharedInstance] activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
         NSNumber *lastKit = nil;
         
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
@@ -324,7 +318,7 @@
                                                                                        execStatus:execStatus];
                     
                     dispatch_async([MParticle messageQueue], ^{
-                        [[MPPersistenceController sharedInstance] saveForwardRecord:forwardRecord];
+                        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
                     });
                     
                     MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
@@ -336,7 +330,7 @@
 #endif
 
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return NO;
     }
@@ -350,7 +344,7 @@
     [queueParameters addParameter:restorationHandler];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:continueUserActivitySelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:continueUserActivitySelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -371,7 +365,7 @@
 }
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -385,7 +379,7 @@
     [queueParameters addParameter:options];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:openURLOptionsSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLOptionsSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
@@ -395,7 +389,7 @@
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -412,7 +406,7 @@
     [queueParameters addParameter:annotation];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MPKitContainer sharedInstance] forwardSDKCall:openURLSourceAppAnnotationSelector
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLSourceAppAnnotationSelector
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
                                              kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {

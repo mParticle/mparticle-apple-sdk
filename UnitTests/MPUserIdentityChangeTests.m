@@ -6,12 +6,13 @@
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "MPBackendController.h"
+#import "MPBaseTestCase.h"
 
 @interface MParticle ()
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 @end
 
-@interface MPUserIdentityChangeTests : XCTestCase
+@interface MPUserIdentityChangeTests : MPBaseTestCase
 
 @end
 

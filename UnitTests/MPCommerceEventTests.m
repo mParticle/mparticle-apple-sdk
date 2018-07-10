@@ -7,8 +7,9 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
+#import "MPBaseTestCase.h"
 
-@interface MPCommerceEventTests : XCTestCase
+@interface MPCommerceEventTests : MPBaseTestCase
 
 @end
 

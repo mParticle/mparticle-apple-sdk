@@ -4,10 +4,17 @@
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPILogger.h"
+#import "MParticle.h"
 
 NSString *const kMPEventCategoryKey = @"$Category";
 NSString *const kMPAttrsEventLengthKey = @"EventLength";
 NSString *const kMPEventCustomFlags = @"flags";
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
 
 @implementation MPEvent(Internal)
 
@@ -45,7 +52,7 @@ NSString *const kMPEventCustomFlags = @"flags";
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     NSMutableDictionary<NSString *, id> *eventDictionary = [@{kMPEventNameKey:self.name,
                                                               kMPEventTypeKey:self.typeName,
-                                                              kMPEventCounterKey:@([MPStateMachine sharedInstance].currentSession.eventCounter)}
+                                                              kMPEventCounterKey:@([MParticle sharedInstance].stateMachine.currentSession.eventCounter)}
                                                             mutableCopy];
     
     NSDictionary *info = self.info;

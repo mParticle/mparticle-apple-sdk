@@ -15,8 +15,16 @@
 #import "MPIntegrationAttributes.h"
 #import "MPConsentState.h"
 #import "MPConsentSerialization.h"
+#import "mParticle.h"
 
 using namespace std;
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
 
 @interface MPUploadBuilder() {
     NSMutableDictionary<NSString *, id> *uploadDictionary;
@@ -56,7 +64,7 @@ using namespace std;
         ltv = @0;
     }
     
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     uploadDictionary = [@{kMPOptOutKey:@(stateMachine.optOut),
                           kMPUploadIntervalKey:@(uploadInterval),
@@ -111,7 +119,7 @@ using namespace std;
 
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
     uploadDictionary[kMPmParticleSDKVersionKey] = kMParticleSDKVersion;
@@ -137,7 +145,7 @@ using namespace std;
         uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
     }
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
     NSMutableArray<NSNumber *> *forwardRecordsIds = nil;
     

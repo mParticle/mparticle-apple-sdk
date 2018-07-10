@@ -57,6 +57,12 @@ static NSDictionary *jailbrokenInfo;
 
 int main(int argc, char *argv[]);
 
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
+
 @interface MPDevice() {
     NSCalendar *calendar;
     NSDictionary *deviceInfo;
@@ -122,7 +128,7 @@ int main(int argc, char *argv[]);
         selector = NSSelectorFromString(@"isAdvertisingTrackingEnabled");
         BOOL advertisingTrackingEnabled = (BOOL)[adIdentityManager performSelector:selector];
         isAdTrackingLimited = !advertisingTrackingEnabled;
-        BOOL alwaysTryToCollectIDFA = [MPStateMachine sharedInstance].alwaysTryToCollectIDFA;
+        BOOL alwaysTryToCollectIDFA = [MParticle sharedInstance].stateMachine.alwaysTryToCollectIDFA;
         if (advertisingTrackingEnabled || alwaysTryToCollectIDFA) {
             selector = NSSelectorFromString(@"advertisingIdentifier");
             _advertiserId = [[adIdentityManager performSelector:selector] UUIDString];
@@ -527,8 +533,8 @@ int main(int argc, char *argv[]);
     }
 #endif
     
-    if ([MPStateMachine sharedInstance].deviceTokenType.length > 0) {
-        deviceDictionary[kMPDeviceTokenTypeKey] = [MPStateMachine sharedInstance].deviceTokenType;
+    if ([MParticle sharedInstance].stateMachine.deviceTokenType.length > 0) {
+        deviceDictionary[kMPDeviceTokenTypeKey] = [MParticle sharedInstance].stateMachine.deviceTokenType;
     }
     
     BOOL cacheDeviceInfo = (auxString != nil) && (limitAdTracking != nil);

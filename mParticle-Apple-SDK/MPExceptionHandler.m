@@ -19,6 +19,7 @@
 #import "MPILogger.h"
 #import "MPMessageBuilder.h"
 #import "MPApplication.h"
+#import "mParticle.h"
 
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     #import <mParticle-CrashReporter/CrashReporter.h>
@@ -64,6 +65,12 @@ static BinaryImage *nextImageList(BinaryImageList *list, BinaryImage *current);
 static void addImageListCallback(const struct mach_header *mh, intptr_t vmaddr_slide);
 static void processBinaryImage(const char *name, const void *header, struct uuid_command *out_uuid, uintptr_t *out_baseaddr, uintptr_t *out_cmdsize);
 
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
 
 @implementation MPExceptionHandler
 
@@ -113,7 +120,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 #pragma mark Private methods
 - (MPSession *)crashSession {
     MPSession *crashSession = nil;
-    NSArray<MPSession *> *sessions = [[MPPersistenceController sharedInstance] fetchPossibleSessionsFromCrash];
+    NSArray<MPSession *> *sessions = [[MParticle sharedInstance].persistenceController fetchPossibleSessionsFromCrash];
     
     for (MPSession *session in sessions) {
         if (![session isEqual:_session]) {
@@ -310,7 +317,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         
         MPSession *crashSession = [self crashSession];
         
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];
         
         if (fetchedbreadcrumbs) {
@@ -435,7 +442,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (void)handleConfigureExceptionHandling:(NSNotification *)notification {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if ([stateMachine.exceptionHandlingMode isEqualToString:kMPRemoteConfigExceptionHandlingModeIgnore] && handlingExceptions) {
         [self endUncaughtExceptionLogging];
@@ -515,7 +522,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 #pragma mark Public methods
 - (void)beginUncaughtExceptionLogging {
-    if (handlingExceptions || [[MPStateMachine sharedInstance].exceptionHandlingMode isEqualToString:kMPRemoteConfigExceptionHandlingModeIgnore]) {
+    if (handlingExceptions || [[MParticle sharedInstance].stateMachine.exceptionHandlingMode isEqualToString:kMPRemoteConfigExceptionHandlingModeIgnore]) {
         return;
     }
     
@@ -538,7 +545,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (void)endUncaughtExceptionLogging {
-    if ([[MPStateMachine sharedInstance].exceptionHandlingMode isEqualToString:kMPRemoteConfigExceptionHandlingModeForce]) {
+    if ([[MParticle sharedInstance].stateMachine.exceptionHandlingMode isEqualToString:kMPRemoteConfigExceptionHandlingModeForce]) {
         return;
     }
     
@@ -559,7 +566,7 @@ void SignalHandler(int signal) {
 	NSString *callStack = [MPExceptionHandler callStack];
 	NSDictionary *userInfo = @{kMPCrashSignal:@(signal), kMPStackTrace:callStack};
 	
-    MPExceptionHandler *exceptionHandler = [[MPExceptionHandler alloc] initWithSession:[MPStateMachine sharedInstance].currentSession];
+    MPExceptionHandler *exceptionHandler = [[MPExceptionHandler alloc] initWithSession:[MParticle sharedInstance].stateMachine.currentSession];
     NSException *exceptionToLog = [NSException exceptionWithName:@"UncaughtExceptionSignal" reason:[NSString stringWithFormat:@"Signal %d raised.", signal] userInfo:userInfo];
     [exceptionHandler logException:exceptionToLog];
 }
@@ -593,7 +600,7 @@ void handleException(NSException *exception) {
     NSArray *callStack = [exception callStackSymbols];
     userInfo[kMPStackTrace] = [callStack componentsJoinedByString:@"\n"];
     
-    MPExceptionHandler *exceptionHandler = [[MPExceptionHandler alloc] initWithSession:[MPStateMachine sharedInstance].currentSession];
+    MPExceptionHandler *exceptionHandler = [[MPExceptionHandler alloc] initWithSession:[MParticle sharedInstance].stateMachine.currentSession];
     NSException *exceptionToLog = [NSException exceptionWithName:exception.name reason:exception.reason userInfo:userInfo];
     [exceptionHandler logException:exceptionToLog];
 }

@@ -1,8 +1,9 @@
 #import <XCTest/XCTest.h>
 #import "MPConvertJS.h"
 #import "mParticle.h"
+#import "MPBaseTestCase.h"
 
-@interface MPConvertJSTests : XCTestCase
+@interface MPConvertJSTests : MPBaseTestCase
 
 @end
 

@@ -3,8 +3,9 @@
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "EventTypeName.h"
+#import "MPBaseTestCase.h"
 
-@interface HasherTests : XCTestCase
+@interface HasherTests : MPBaseTestCase
 
 @end
 

@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
+#import "MPBaseTestCase.h"
 
-@interface MPNetworkOptionsTests : XCTestCase
+@interface MPNetworkOptionsTests : MPBaseTestCase
 
 @end
 

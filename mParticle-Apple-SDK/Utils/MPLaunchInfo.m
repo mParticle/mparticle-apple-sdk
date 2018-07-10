@@ -3,6 +3,7 @@
 #import <UIKit/UIKit.h>
 #import "MPDateFormatter.h"
 #import "MPILogger.h"
+#import "MParticle.h"
 
 @interface MPLaunchInfo() {
     NSString *sourceApp;

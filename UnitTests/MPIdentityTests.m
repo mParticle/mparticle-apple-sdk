@@ -9,8 +9,9 @@
 #if TARGET_OS_IOS == 1
 #import "OCMock.h"
 #endif
+#import "MPBaseTestCase.h"
 
-@interface MPIdentityTests : XCTestCase
+@interface MPIdentityTests : MPBaseTestCase
 
 @end
 

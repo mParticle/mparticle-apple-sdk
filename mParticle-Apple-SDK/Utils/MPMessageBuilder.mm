@@ -16,6 +16,7 @@
 #import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
+#import "MParticle.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -31,6 +32,12 @@ NSString *const kMPUserAttributeOldValueKey = @"ov";
 NSString *const kMPUserAttributeNewlyAddedKey = @"na";
 NSString *const kMPUserIdentityNewValueKey = @"ni";
 NSString *const kMPUserIdentityOldValueKey = @"oi";
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
 
 @implementation MPMessageBuilder
 
@@ -134,7 +141,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 #pragma mark Private methods
 - (BOOL)shouldBuildMessage {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     BOOL shouldBuildMessage = !stateMachine.optOut || messageTypeValue == MPMessageTypeOptOut;
     return shouldBuildMessage;
@@ -229,7 +236,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 }
 
 - (MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(MPSession *)previousSession {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (stateMachine.launchInfo.sourceApplication) {
         messageDictionary[kMPLaunchSourceKey] = stateMachine.launchInfo.sourceApplication;
@@ -270,7 +277,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 #if TARGET_OS_IOS == 1
 - (MPMessageBuilder *)withLocation:(CLLocation *)location {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if ([MPStateMachine runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
         return self;
     }

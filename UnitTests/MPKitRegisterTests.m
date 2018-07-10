@@ -2,8 +2,14 @@
 #import "MPKitRegister.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassNoStartImmediately.h"
+#import "MPKitInstanceValidator.h"
+#import "MPBaseTestCase.h"
 
-@interface MPKitRegisterTests : XCTestCase
+@interface MPKitInstanceValidator(BackendControllerTests)
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
+@end
+
+@interface MPKitRegisterTests : MPBaseTestCase
 
 @end
 
@@ -11,6 +17,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
 }
 
 - (void)tearDown {

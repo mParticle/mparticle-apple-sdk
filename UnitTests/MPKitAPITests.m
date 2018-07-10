@@ -9,6 +9,7 @@
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "FilteredMParticleUser.h"
+#import "MPBaseTestCase.h"
 
 @interface MPKitInstanceValidator(BackendControllerTests)
 
@@ -27,6 +28,8 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPKitContainer *kitContainer;
 
 @end
 
@@ -45,7 +48,7 @@
 @end
 
 #pragma mark - MPKitAPITests unit test class
-@interface MPKitAPITests : XCTestCase  <MPKitProtocol>
+@interface MPKitAPITests : MPBaseTestCase  <MPKitProtocol>
 
 @property (nonatomic) MPKitAPI *kitApi;
 @property (nonatomic) MPKitContainer *kitContainer;
@@ -57,9 +60,11 @@
 - (void)setUp {
     [super setUp];
     
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
     [MPKitInstanceValidator includeUnitTestKits:@[@42]];
-    _kitContainer = [MPKitContainer sharedInstance];
+    _kitContainer = [MParticle sharedInstance].kitContainer;
     
+    [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
@@ -76,9 +81,7 @@
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
         [_kitContainer startKit:@42 configuration:kitConfiguration];
     }
-    
-    [[MPPersistenceController sharedInstance] openDatabase];
-    
+        
     _kitApi = [[MPKitAPI alloc] initWithKitCode:@42];
 }
 
@@ -91,34 +94,17 @@
 - (void)testIntegrationAttributes {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
-    dispatch_async([MParticle messageQueue], ^{
-        
-        
-        mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
-        
-        [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
-        
-        NSArray *configurations = @[
-                                    @{
-                                        @"id":@(42),
-                                        @"as":@{
-                                                @"testConfigKey":@"testConfigValue"
-                                                }
-                                        }
-                                    ];
-        
-        [self->_kitContainer configureKits:nil];
-        [self->_kitContainer configureKits:configurations];
-        
-        dispatch_async([MParticle messageQueue], ^{
-            NSDictionary *integrationAttributes = [self->_kitApi integrationAttributes];
-            NSString *value = integrationAttributes[@"Test key"];
-            XCTAssertEqualObjects(value, @"Test value");
-            [expectation fulfill];
-        });
+    
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    
+    [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
+    dispatch_sync([MParticle messageQueue], ^{
+        NSDictionary *integrationAttributes = [self->_kitApi integrationAttributes];
+        NSString *value = integrationAttributes[@"Test key"];
+        XCTAssertEqualObjects(value, @"Test value");
+        [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
-    
 }
 
 - (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration {

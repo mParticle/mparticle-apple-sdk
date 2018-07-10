@@ -4,6 +4,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSNumber+MPFormatter.h"
 #import "MPILogger.h"
+#import "MParticle.h"
 
 // Internal
 NSString *const kMPProductBrand = @"br";
@@ -35,7 +36,6 @@ NSString *const kMPExpProductCouponCode = @"Coupon Code";
 NSString *const kMPExpProductVariant = @"Variant";
 NSString *const kMPExpProductPosition = @"Position";
 NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
-
 
 @interface MPProduct()
 

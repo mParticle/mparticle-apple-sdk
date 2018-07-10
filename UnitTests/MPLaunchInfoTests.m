@@ -1,8 +1,9 @@
 #import <XCTest/XCTest.h>
 #import "MPLaunchInfo.h"
 #import "MPDateFormatter.h"
+#import "MPBaseTestCase.h"
 
-@interface MPLaunchInfoTests : XCTestCase
+@interface MPLaunchInfoTests : MPBaseTestCase
 
 @property (nonatomic, strong) id annotation;
 @property (nonatomic, strong) NSURL *url;

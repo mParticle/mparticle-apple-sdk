@@ -17,6 +17,7 @@
 #import "MPKitInstanceValidator.h"
 #import "MPResponseConfig.h"
 #import "MPExceptionHandler.h"
+#import "MPBaseTestCase.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -33,10 +34,13 @@
 @end
 
 #pragma mark - MParticle+Tests category
-@interface MParticle(Tests)
+@interface MParticle (Tests)
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPKitContainer *kitContainer;
 
 @end
 
@@ -81,7 +85,7 @@
 @end
 
 #pragma mark - MPBackendControllerTests unit test class
-@interface MPBackendControllerTests : XCTestCase <MPBackendControllerDelegate> {
+@interface MPBackendControllerTests : MPBaseTestCase <MPBackendControllerDelegate> {
     dispatch_queue_t messageQueue;
 }
 
@@ -95,23 +99,30 @@
 
 - (void)setUp {
     [super setUp];
-    [MParticle sharedInstance];
     messageQueue = [MParticle messageQueue];
     
     [MPPersistenceController setMpid:@1];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
     
-    [[MPPersistenceController sharedInstance] openDatabase];
-    self->_session = self.backendController.session;
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    self.backendController = [MParticle sharedInstance].backendController;
+    self.session = self.backendController.session;
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     
     [self notificationController];
 }
 
 - (void)tearDown {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    [MParticle sharedInstance].stateMachine.launchInfo = nil;
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
     NSMutableArray *sessions = [persistence fetchSessions];
     for (MPSession *session in sessions) {
@@ -136,16 +147,6 @@
 - (void)sessionDidBegin:(MPSession *)session {}
 
 - (void)sessionDidEnd:(MPSession *)session {}
-
-- (MPBackendController *)backendController {
-    if (_backendController) {
-        return _backendController;
-    }
-    
-    _backendController = [[MPBackendController alloc] initWithDelegate:self];
-    
-    return _backendController;
-}
 
 #if TARGET_OS_IOS == 1
 - (NSDictionary *)remoteNotificationDictionary {
@@ -210,7 +211,7 @@
     }
     
     _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]  userId:[MPPersistenceController mpId]];
-    [[MPPersistenceController sharedInstance] saveSession:_session];
+    [[MParticle sharedInstance].persistenceController saveSession:_session];
     return _session;
 }
 
@@ -237,8 +238,8 @@
 
 - (void)testBeginSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin session test"];
-    dispatch_async(messageQueue, ^{
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    dispatch_sync(messageQueue, ^{
+        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
@@ -259,14 +260,13 @@
 }
 
 - (void)testEndSession {
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"End session test"];
-    dispatch_async([MParticle messageQueue], ^{
-        
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
-        
+    dispatch_sync(messageQueue, ^{
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -375,7 +375,7 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.info = @{@"key":@"value"};
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
@@ -427,7 +427,7 @@
                                                                            messageInfo:@{@"MessageKey1":@"MessageValue1"}];
         MPMessage *message = (MPMessage *)[messageBuilder build];
         
-        MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
         [persistence saveMessage:message];
         
@@ -449,7 +449,7 @@
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
             
-            MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+            MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
             [stateMachine configureRampPercentage:@100];
             
             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
@@ -487,8 +487,7 @@
 
 - (void)testDidBecomeActiveWithAppLink {
 #if TARGET_OS_IOS == 1
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active with AppLink test"];
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -500,39 +499,33 @@
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    dispatch_async(messageQueue, ^{
-        
-        NSDictionary *messagesDictionary = [[MPPersistenceController sharedInstance] fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-        XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-        
-        for (MPMessage *message in messages) {
-            if ([message.messageType isEqualToString:@"ast"]) {
-                NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-                NSRange testRange = [messageString rangeOfString:@"al_applink_data"];
-                XCTAssertNotEqual(testRange.location, NSNotFound, @"AppLinks is not in the launch URL.");
-                
-                testRange = [messageString rangeOfString:@"\"src\":\"AppLink(com.mParticle.UnitTest)\""];
-                XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
-                
-                testRange = [messageString rangeOfString:@"\"nsi\""];
-                XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
-                
-                testRange = [messageString rangeOfString:@"lpr"];
-                XCTAssertNotEqual(testRange.location, NSNotFound);
-            }
+    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
+    
+    for (MPMessage *message in messages) {
+        if ([message.messageType isEqualToString:@"ast"]) {
+            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+            NSRange testRange = [messageString rangeOfString:@"al_applink_data"];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"AppLinks is not in the launch URL.");
+            
+            testRange = [messageString rangeOfString:@"\"src\":\"AppLink(com.mParticle.UnitTest)\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
+            
+            testRange = [messageString rangeOfString:@"\"nsi\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
+            
+            testRange = [messageString rangeOfString:@"lpr"];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
         }
-        
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    }
 #endif
 }
 
 - (void)testDidBecomeActive {
 #if TARGET_OS_IOS == 1
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -544,38 +537,30 @@
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Did become active test"];
+    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
     
-    dispatch_async(messageQueue, ^{
-        NSDictionary *messagesDictionary = [[MPPersistenceController sharedInstance] fetchMessagesForUploading];
-        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-        XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-        
-        for (MPMessage *message in messages) {
-            if ([message.messageType isEqualToString:@"ast"]) {
-                NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-                NSRange testRange = [messageString rangeOfString:@"particlebox"];
-                XCTAssertNotEqual(testRange.location, NSNotFound, @"particlebox is not in the launch URL.");
-                
-                testRange = [messageString rangeOfString:@"\"src\":\"com.mParticle.UnitTest\""];
-                XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
-                
-                testRange = [messageString rangeOfString:@"\"nsi\""];
-                XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
-                
-                testRange = [messageString rangeOfString:@"lpr"];
-                XCTAssertNotEqual(testRange.location, NSNotFound);
-                
-                testRange = [messageString rangeOfString:@"key2"];
-                XCTAssertNotEqual(testRange.location, NSNotFound);
-            }
+    for (MPMessage *message in messages) {
+        if ([message.messageType isEqualToString:@"ast"]) {
+            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+            NSRange testRange = [messageString rangeOfString:@"particlebox"];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"particlebox is not in the launch URL.");
+            
+            testRange = [messageString rangeOfString:@"\"src\":\"com.mParticle.UnitTest\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
+            
+            testRange = [messageString rangeOfString:@"\"nsi\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
+            
+            testRange = [messageString rangeOfString:@"lpr"];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
+            
+            testRange = [messageString rangeOfString:@"key2"];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
         }
-        
-        [expectation fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    }
 #endif
 }
 
@@ -778,14 +763,14 @@
         XCTAssertEqualObjects(userAttributes, attributes);
         
         
-        [[MPKitContainer sharedInstance] configureKits:nil];
+        [[MParticle sharedInstance].kitContainer configureKits:nil];
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testUserAttributeChanged {
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveSession:self.backendController.session];
     
     [self.backendController setUserAttribute:@"TardisModel" value:@"Police Call Box" timestamp:[NSDate date] completionHandler:nil];
@@ -824,7 +809,7 @@
 - (void)testUserIdentityChanged {
     XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
     __weak MPBackendControllerTests *weakSelf = self;
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveSession:weakSelf.session];
     
     [weakSelf.backendController setUserIdentity:@"The Most Interesting Man in the World" identityType:MPUserIdentityCustomerId timestamp:[NSDate date] completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
@@ -880,8 +865,7 @@
 
 - (void)testIncrementUserAttribute {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Increment user attribute"];
-    dispatch_async(messageQueue, ^{
-        
+    dispatch_sync(messageQueue, ^{
         NSString *userAttributeKey = @"Number of time travels";
         NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
         XCTAssertNil(userAttributeValue);
@@ -906,13 +890,13 @@
     
 #if TARGET_OS_IOS == 1
     CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
-    [MPStateMachine sharedInstance].location = location;
+    [MParticle sharedInstance].stateMachine.location = location;
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Set location"];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];

@@ -5,6 +5,14 @@
 #import "MParticle.h"
 #import "MPKitConfiguration.h"
 
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+
+@end
+
+static MPIUserDefaults *standardUserDefaults = nil;
+
 NSString *const kitFileExtension = @"eks";
 
 static NSString *const NSUserDefaultsPrefix = @"mParticle::";
@@ -96,9 +104,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
 #pragma mark Public class methods
 + (nonnull instancetype)standardUserDefaults {
-    static MPIUserDefaults *standardUserDefaults = nil;
     static dispatch_once_t predicate;
-
+    
     dispatch_once(&predicate, ^{
         standardUserDefaults = [[MPIUserDefaults alloc] init];
     });
@@ -318,7 +325,11 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
     if (obj) {
-        [self setMPObject:obj forKey:key userId:[MPPersistenceController mpId]];
+        if ([key isEqualToString:@"mpid"]) {
+            [self setMPObject:obj forKey:key userId:@0];
+        } else {
+            [self setMPObject:obj forKey:key userId:[MPPersistenceController mpId]];
+        }
     } else {
         [self removeMPObjectForKey:key userId:[MPPersistenceController mpId]];
     }

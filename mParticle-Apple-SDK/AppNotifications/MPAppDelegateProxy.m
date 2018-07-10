@@ -1,8 +1,8 @@
 #import "MPAppDelegateProxy.h"
-#import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPSurrogateAppDelegate.h"
 #import "MPILogger.h"
+#import "MParticle.h"
 
 @interface MPAppDelegateProxy() {
     SEL applicationOpenURLOptionsSelector;

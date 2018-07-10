@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
+#import "MPBaseTestCase.h"
 
 #pragma mark - MPConsumerInfo(Tests)
 @interface MPConsumerInfo(Tests)
@@ -11,7 +12,7 @@
 
 
 #pragma mark - MPConsumerInfoTests
-@interface MPConsumerInfoTests : XCTestCase {
+@interface MPConsumerInfoTests : MPBaseTestCase {
     NSDictionary *responseDictionary;
     NSDictionary *consumerInfoDictionary;
 }

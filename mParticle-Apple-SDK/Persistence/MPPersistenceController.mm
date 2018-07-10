@@ -58,6 +58,13 @@ static const NSArray *databaseVersions;
 
 const int MaxBreadcrumbs = 50;
 
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
+
 @interface MPPersistenceController() {
     BOOL databaseOpen;
     sqlite3 *mParticleDB;
@@ -226,8 +233,8 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)resetDatabase {
-    [self deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
     [self closeDatabase];
+    [self removeDatabase];
 }
 
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
@@ -516,17 +523,6 @@ const int MaxBreadcrumbs = 50;
 }
 
 #pragma mark Class methods
-+ (instancetype)sharedInstance {
-    static MPPersistenceController *sharedInstance = nil;
-    static dispatch_once_t persistenceControllerPredicate;
-    
-    dispatch_once(&persistenceControllerPredicate, ^{
-        sharedInstance = [[MPPersistenceController alloc] init];
-        [sharedInstance openDatabase];
-    });
-    
-    return sharedInstance;
-}
 
 #pragma mark Public methods
 
@@ -1467,6 +1463,8 @@ const int MaxBreadcrumbs = 50;
         }
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1484,6 +1482,8 @@ const int MaxBreadcrumbs = 50;
         }
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1524,6 +1524,8 @@ const int MaxBreadcrumbs = 50;
         consumerInfo.consumerInfoId = sqlite3_last_insert_rowid(mParticleDB);
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1568,6 +1570,8 @@ const int MaxBreadcrumbs = 50;
         forwardRecord.forwardRecordId = sqlite3_last_insert_rowid(mParticleDB);
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1603,6 +1607,8 @@ const int MaxBreadcrumbs = 50;
         }
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1641,6 +1647,8 @@ const int MaxBreadcrumbs = 50;
         message.messageId = sqlite3_last_insert_rowid(mParticleDB);
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1667,6 +1675,8 @@ const int MaxBreadcrumbs = 50;
             segmentMembership.segmentMembershipId = sqlite3_last_insert_rowid(self->mParticleDB);
             
             sqlite3_clear_bindings(preparedStatement);
+        } else {
+            MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(self->mParticleDB));
         }
         
         sqlite3_finalize(preparedStatement);
@@ -1701,6 +1711,8 @@ const int MaxBreadcrumbs = 50;
         }
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1740,6 +1752,8 @@ const int MaxBreadcrumbs = 50;
             session.sessionId = sqlite3_last_insert_rowid(mParticleDB);
             
             sqlite3_clear_bindings(preparedStatement);
+        } else {
+            MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
         }
         
         sqlite3_finalize(preparedStatement);
@@ -1774,6 +1788,8 @@ const int MaxBreadcrumbs = 50;
         upload.uploadId = sqlite3_last_insert_rowid(mParticleDB);
         
         sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);
@@ -1846,6 +1862,8 @@ const int MaxBreadcrumbs = 50;
             }
             
             sqlite3_clear_bindings(preparedStatement);
+        } else {
+            MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
         }
         
         sqlite3_finalize(preparedStatement);

@@ -2,8 +2,10 @@
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "mParticle.h"
+#import "MPPersistenceController.h"
+#import "MPBaseTestCase.h"
 
-@interface MPIUserDefaultsTests : XCTestCase
+@interface MPIUserDefaultsTests : MPBaseTestCase
 @property (nonatomic, strong) NSDictionary *initialResponseConfiguration;
 
 @end
@@ -13,6 +15,8 @@
 - (void)setUp {
     [super setUp];
     
+    [MPPersistenceController setMpid:@12];
+
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{

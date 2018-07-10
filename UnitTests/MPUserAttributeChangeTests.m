@@ -1,7 +1,8 @@
 #import <XCTest/XCTest.h>
 #import "MPUserAttributeChange.h"
+#import "MPBaseTestCase.h"
 
-@interface MPUserAttributeChangeTests : XCTestCase
+@interface MPUserAttributeChangeTests : MPBaseTestCase
 
 @end
 

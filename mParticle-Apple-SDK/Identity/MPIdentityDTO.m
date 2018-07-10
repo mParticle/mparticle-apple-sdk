@@ -10,6 +10,13 @@
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
 
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+
+@end
+
 @implementation MPIdentityHTTPBaseRequest
 
 - (NSDictionary *)dictionaryRepresentation {
@@ -64,7 +71,7 @@
             _knownIdentities.vendorId = vendorId;
         }
         
-        NSString *deviceApplicationStamp = [MPStateMachine sharedInstance].consumerInfo.deviceApplicationStamp;
+        NSString *deviceApplicationStamp = [MParticle sharedInstance].stateMachine.consumerInfo.deviceApplicationStamp;
         if (deviceApplicationStamp) {
             _knownIdentities.deviceApplicationStamp = deviceApplicationStamp;
         }

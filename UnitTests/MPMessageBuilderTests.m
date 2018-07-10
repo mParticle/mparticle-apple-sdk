@@ -17,8 +17,16 @@
 #import "MPUserAttributeChange.h"
 #import "MPPersistenceController.h"
 #import "MParticle.h"
+#import "MPBaseTestCase.h"
+#import "MPStateMachine.h"
 
-@interface MPMessageBuilderTests : XCTestCase
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
+
+@interface MPMessageBuilderTests : MPBaseTestCase
 
 @property (nonatomic, strong) MPSession *session;
 
@@ -37,6 +45,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
 }
 
 - (void)tearDown {

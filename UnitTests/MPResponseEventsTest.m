@@ -3,8 +3,16 @@
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
+#import "MPBaseTestCase.h"
+#import "MParticle.h"
 
-@interface MPResponseEventsTest : XCTestCase
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
+
+@interface MPResponseEventsTest : MPBaseTestCase
 //- (BOOL)areEqual:(NSDictionary *)cookies1 cookies2: (NSArray<MPCookie *> *)cookies2;
 @end
 
@@ -12,6 +20,8 @@
 
 - (void)setUp {
     [super setUp];
+    
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
 }
 
 - (void)tearDown {
@@ -19,7 +29,7 @@
 }
 
 - (void)testParseConfiguration {
-    MPStateMachine *stateMachine = [MPStateMachine sharedInstance];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
 //    XCTAssertNil(stateMachine.consumerInfo.mpId);
     
     NSNumber *originalMpId = @10;

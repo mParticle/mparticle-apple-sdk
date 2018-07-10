@@ -5,6 +5,12 @@
 #import "MPKitProtocol.h"
 #import "MPKitRegister.h"
 
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+
+@end
+
 #pragma mark - MPKitActivityMapping
 @interface MPKitActivityMapping : NSObject
 
@@ -70,7 +76,7 @@
 #pragma mark Private methods
 - (void)kitInstanceAndConfiguration:(NSNumber *)kitCode handler:(void(^)(id instance, NSDictionary *configuration))handler {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    id<MPExtensionKitProtocol> kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+    id<MPExtensionKitProtocol> kitRegister = [[[[MParticle sharedInstance].kitContainer activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
     
     id kitInstance = [wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [wrapperInstance providerKitInstance] : nil;
@@ -82,7 +88,7 @@
 #pragma mark Public methods
 - (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
-    id<MPExtensionKitProtocol> kitRegister = [[[[MPKitContainer sharedInstance] activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+    id<MPExtensionKitProtocol> kitRegister = [[[[MParticle sharedInstance].kitContainer activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     
     return kitRegister != nil;
 }

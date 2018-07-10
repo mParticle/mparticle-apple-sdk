@@ -1,8 +1,9 @@
 #import <XCTest/XCTest.h>
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
+#import "MPBaseTestCase.h"
 
-@interface MPConsentStateTests : XCTestCase {
+@interface MPConsentStateTests : MPBaseTestCase {
     MPConsentState *_globalState;
     MPGDPRConsent *_state;
 }

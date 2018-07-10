@@ -3,8 +3,9 @@
 #import "MPCustomModulePreference.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
+#import "MPBaseTestCase.h"
 
-@interface MPCustomModuleTests : XCTestCase
+@interface MPCustomModuleTests : MPBaseTestCase
 
 @property (nonatomic, strong) NSString *customModulesString;
 @property (nonatomic, strong) NSDictionary *customModuleConfiguration;

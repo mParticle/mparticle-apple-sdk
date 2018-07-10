@@ -8,8 +8,17 @@
 #import "MPStateMachine.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
+#import "MPBaseTestCase.h"
+#import "mParticle.h"
 
-@interface MPUploadBuilderTests : XCTestCase
+@interface MParticle ()
+
+@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
+
+@interface MPUploadBuilderTests : MPBaseTestCase
 
 @end
 
@@ -18,7 +27,10 @@
 - (void)setUp {
     [super setUp];
     
-    MPPersistenceController *persistence = [MPPersistenceController sharedInstance];
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+
+    [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"clientID":@"123abc",
@@ -36,7 +48,7 @@
 - (void)tearDown {
     [super tearDown];
     
-    [[MPPersistenceController sharedInstance] deleteAllIntegrationAttributes];
+    [[MParticle sharedInstance].persistenceController deleteAllIntegrationAttributes];
 }
 
 - (void)configureCustomModules {
@@ -95,7 +107,7 @@
                                                                   ]
                                                           }];
     
-    [[MPStateMachine sharedInstance] configureCustomModules:customModuleSettings];
+    [[MParticle sharedInstance].stateMachine configureCustomModules:customModuleSettings];
 }
 
 - (void)testInstanceWithSession {
