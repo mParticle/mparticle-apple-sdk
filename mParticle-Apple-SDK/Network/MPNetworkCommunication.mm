@@ -23,6 +23,7 @@
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
+#import "NSString+MPPercentEscape.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Version, path
@@ -100,7 +101,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPApplication *application = [[MPApplication alloc] init];
     NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
     NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
-    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, application.version, kMParticleSDKVersion];
+    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     _configURL = [NSURL URLWithString:urlString];
     
     return _configURL;

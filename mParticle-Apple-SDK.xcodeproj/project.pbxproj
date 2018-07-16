@@ -439,6 +439,7 @@
 		D3CE960920740893000D1A22 /* FilteredMPIdentityApiRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = D3CE960520740893000D1A22 /* FilteredMPIdentityApiRequest.m */; };
 		DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
 		DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
+		DB0773BD20F8F550006A48CE /* MPNetworkCommunicationTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB0773BC20F8F550006A48CE /* MPNetworkCommunicationTests.m */; };
 		DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
 		DB3935151F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */; };
 		DB3935161F8E4F5600AD073E /* MPKitTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */; };
@@ -767,6 +768,7 @@
 		D3CE960420740893000D1A22 /* FilteredMPIdentityApiRequest.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = FilteredMPIdentityApiRequest.h; path = Identity/FilteredMPIdentityApiRequest.h; sourceTree = "<group>"; };
 		D3CE960520740893000D1A22 /* FilteredMPIdentityApiRequest.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = FilteredMPIdentityApiRequest.m; path = Identity/FilteredMPIdentityApiRequest.m; sourceTree = "<group>"; };
 		DB00F6371F4E11380070A74B /* MPKitAPITests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAPITests.m; sourceTree = "<group>"; };
+		DB0773BC20F8F550006A48CE /* MPNetworkCommunicationTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPNetworkCommunicationTests.m; sourceTree = "<group>"; };
 		DB3935101F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitSecondTestClassNoStartImmediately.m; sourceTree = "<group>"; };
 		DB3935111F8E4F5500AD073E /* MPKitSecondTestClassNoStartImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitSecondTestClassNoStartImmediately.h; sourceTree = "<group>"; };
 		DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClassNoStartImmediately.m; sourceTree = "<group>"; };
@@ -1288,6 +1290,7 @@
 				D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */,
 				DBF4CB8A208F919A00CE831F /* MPNetworkOptionsTests.m */,
 				DB556EC620A4D3A2001EDBC3 /* MPConsentKitFilterTests.m */,
+				DB0773BC20F8F550006A48CE /* MPNetworkCommunicationTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1959,6 +1962,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB0773BD20F8F550006A48CE /* MPNetworkCommunicationTests.m in Sources */,
 				C9DD21001D8A203900D3ABBE /* MPUserAttributeChangeTests.m in Sources */,
 				DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */,
 				C9DD20F21D8A1FF000D3ABBE /* MPKitConfigurationTests.mm in Sources */,
