@@ -587,6 +587,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
         return;
     }
+    
+    if ([MParticle sharedInstance].stateMachine.optOut) {
+        if (completion) {
+            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeOptOut userInfo:@{mParticleIdentityErrorKey:@"Opt Out Enabled."}]);
+        }
+        return;
+    }
+    
     if (blockOtherRequests) {
         self.identifying = YES;
     }

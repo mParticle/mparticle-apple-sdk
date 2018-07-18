@@ -267,6 +267,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     MPIdentityErrorResponseCodeClientNoConnection = 3,
     /** Client side error: SSL connection failed to be established due to invalid server certificate. mParticle performs SSL pinning - you cannot use a proxy to read traffic. */
     MPIdentityErrorResponseCodeSSLError = 3,
+    /** Client side error: User has enabled OptOut. */
+    MPIdentityErrorResponseCodeOptOut = 4,
     /** HTTP Error 401: Unauthorized. Ensure that you've initialized the mParticle SDK with a valid workspace key and secret. */
     MPIdentityErrorResponseCodeUnauthorized = 401,
     /** HTTP Error 504: Identity request should be retried */

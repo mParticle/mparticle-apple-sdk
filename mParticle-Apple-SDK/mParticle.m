@@ -56,7 +56,6 @@ NSString *const kMPStateKey = @"state";
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     MPExceptionHandler *exceptionHandler;
 #endif
-    NSNumber *privateOptOut;
     BOOL isLoggingUncaughtExceptions;
     BOOL sdkInitialized;
 }
@@ -204,7 +203,6 @@ NSString *const kMPStateKey = @"state";
 
     messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
     sdkInitialized = NO;
-    privateOptOut = nil;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
     _kitActivity = [[MPKitActivity alloc] init];
@@ -401,12 +399,12 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setOptOut:(BOOL)optOut {
-    if (privateOptOut && _optOut == optOut) {
+    if (self.stateMachine.optOut == optOut) {
         return;
     }
     
     _optOut = optOut;
-    privateOptOut = @(optOut);
+    self.stateMachine.optOut = optOut;
     
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding calls to kits
@@ -423,6 +421,8 @@ NSString *const kMPStateKey = @"state";
 
                             if (execStatus == MPExecStatusSuccess) {
                                 MPILogDebug(@"Set Opt Out: %d", optOut);
+                            } else {
+                                MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
                             }
                         }];
     });
@@ -626,7 +626,6 @@ NSString *const kMPStateKey = @"state";
                            }
 
                            strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
-                           strongSelf->privateOptOut = @(strongSelf->_optOut);
                            
                            if (strongSelf.configSettings) {
                                

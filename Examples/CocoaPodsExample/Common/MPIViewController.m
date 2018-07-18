@@ -125,6 +125,12 @@ static NSString *const PlaybackControllerRateObservationContext = @"PlaybackView
                 [self logException];
                 break;
                 
+            case 11: // Toggle Opt Out
+                [[MParticle sharedInstance] setOptOut:![[MParticle sharedInstance] optOut]];
+                _streams = [[[StreamsStorage alloc] init] fetchStreams];
+                [tableView reloadRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationNone];
+                break;
+                
             default:
                 break;
         }

@@ -541,7 +541,8 @@ static BOOL appBackgrounded = NO;
     __weak MPBackendController *weakSelf = self;
     
     NSArray<MPUpload *> *uploads = [persistence fetchUploads];
-    if (!uploads) {
+    
+    if (!uploads || uploads.count == 0) {
         return;
     }
     
@@ -739,7 +740,8 @@ static BOOL appBackgrounded = NO;
     
     // Fetch all Uploads (6)
     NSArray<MPUpload *> *uploads = [persistence fetchUploads];
-    if (!uploads) {
+    
+    if (!uploads || uploads.count == 0) {
         sessionBeingUploaded = nil;
         completionHandlerCopy(YES);
         return;
@@ -1207,13 +1209,6 @@ static BOOL appBackgrounded = NO;
 #pragma mark Public methods
 - (void)beginSession:(void (^)(MPSession *session, MPSession *previousSession, MPExecStatus execStatus))completionHandler {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.optOut) {
-        if (completionHandler) {
-            completionHandler(nil, nil, MPExecStatusOptOut);
-        }
-        
-        return;
-    }
     
     if (_session) {
         [self endSession];
@@ -1769,8 +1764,7 @@ static BOOL appBackgrounded = NO;
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
     
     MPExecStatus execStatus = MPExecStatusFail;
-    
-    
+        
     [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
@@ -1880,6 +1874,11 @@ static BOOL appBackgrounded = NO;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([message.messageType UTF8String]));
+    
+    if ([MParticle sharedInstance].stateMachine.optOut && (messageTypeCode != MPMessageTypeOptOut)) {
+        return;
+    }
+    
     if (messageTypeCode == MPMessageTypeBreadcrumb) {
         [persistence saveBreadcrumb:message session:self.session];
     } else {

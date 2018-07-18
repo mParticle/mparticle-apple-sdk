@@ -1,6 +1,13 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
+#import "MPStateMachine.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
 
 @interface MParticleTests : MPBaseTestCase {
 }
@@ -29,6 +36,19 @@
     MParticle *instance4 = [MParticle sharedInstance];
     XCTAssertNotEqual(instance, instance3);
     XCTAssertEqual(instance3, instance4);
+}
+
+- (void)testOptOut {
+    MParticle *instance = [MParticle sharedInstance];
+    instance.stateMachine = [[MPStateMachine alloc] init];
+    
+    XCTAssertFalse(instance.optOut, "By Default Opt Out should be set to false");
+    
+    instance.optOut = YES;
+    XCTAssert(instance.optOut, "Opt Out failed to set True");
+    
+    instance.optOut = NO;
+    XCTAssertFalse(instance.optOut, "Opt Out failed to set False");
 }
 
 @end

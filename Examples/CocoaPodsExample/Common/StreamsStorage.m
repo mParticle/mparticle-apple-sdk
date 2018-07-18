@@ -1,5 +1,6 @@
 #import "StreamsStorage.h"
 #import "Stream.h"
+#import "MParticle.h"
 
 @interface StreamsStorage()
 
@@ -25,7 +26,8 @@
                         @"Sintel Trailer",
                         @"\"Purchase\" of video (eCommerce)",
                         @"This will log an error",
-                        @"This will log an exception"];
+                        @"This will log an exception",
+                        [NSString stringWithFormat:@"This will toggle Opt Out state: %@", [[MParticle sharedInstance] optOut] ? @"Opted-Out" : @"Opted-In"]];
     
     NSArray *urls = @[@"http://devimages.apple.com/iphone/samples/bipbop/bipbopall.m3u8",
                       @"http://cdn3.viblast.com/streams/hls/airshow/playlist.m3u8",
@@ -37,7 +39,8 @@
                       @"http://walterebert.com/playground/video/hls/sintel-trailer.m3u8",
                       @"http://video-to-be-purchased",
                       @"This://is-not-a-valid-URL",
-                      @"Exception"];
+                      @"Exception",
+                      @"OptOut"];
     
     NSUInteger idx = 0;
 

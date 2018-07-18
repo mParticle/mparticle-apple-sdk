@@ -41,13 +41,9 @@
     [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
 
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
-    [[MParticle sharedInstance].persistenceController openDatabase];
 }
 
 - (void)tearDown {
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
-    [persistence closeDatabase];
     
     [super tearDown];
 }
@@ -229,6 +225,75 @@
     }
     
     [expectation fulfill];
+    
+    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+}
+
+- (void)testUploadWithOptOut {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload Opt Out test"];
+    [MParticle sharedInstance].stateMachine.optOut = YES;
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10];
+    
+    [uploadBuilder build:^(MPUpload *upload) {        
+        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+        
+        NSArray *nilArray = nil;
+        [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
+                
+        NSArray<MPUpload *> *uploads = [persistence fetchUploads];
+        
+        XCTAssertTrue(uploads.count == 0, @"Uploads are not being blocked by OptOut.");
+        
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+}
+
+- (void)testUploadWithOptOutMessage {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload Opt Out Message test"];
+    [MParticle sharedInstance].stateMachine.optOut = YES;
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
+
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10];
+    
+    [uploadBuilder build:^(MPUpload *upload) {
+        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+        
+        NSArray *nilArray = nil;
+        [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
+        
+        XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
+        
+        NSArray<MPUpload *> *uploads = [persistence fetchUploads];
+        MPUpload *fetchedUpload = [uploads lastObject];
+        
+        XCTAssertEqualObjects(upload, fetchedUpload, @"Opt Out event upload is being blocked by OptOut.");
+        
+        [persistence deleteUpload:upload];
+        
+        uploads = [persistence fetchUploads];
+        if (uploads) {
+            NSPredicate *predicate = [NSPredicate predicateWithFormat:@"uploadId == %lld", fetchedUpload.uploadId];
+            uploads = [uploads filteredArrayUsingPredicate:predicate];
+            XCTAssertTrue(uploads.count == 0, @"Upload is not being deleted.");
+        }
+        
+        [expectation fulfill];
+    }];
     
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }

@@ -1762,6 +1762,10 @@ const int MaxBreadcrumbs = 50;
 
 - (void)saveUpload:(MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation {
     // Save upload
+    if ([MParticle sharedInstance].stateMachine.optOut && !upload.containsOptOutMessage) {
+        return;
+    }
+    
     sqlite3_stmt *preparedStatement;
     string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
     

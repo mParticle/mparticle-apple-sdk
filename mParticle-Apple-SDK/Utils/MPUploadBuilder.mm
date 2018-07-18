@@ -16,6 +16,7 @@
 #import "MPConsentState.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
+#include "MessageTypeName.h"
 
 using namespace std;
 
@@ -28,6 +29,7 @@ using namespace std;
 
 @interface MPUploadBuilder() {
     NSMutableDictionary<NSString *, id> *uploadDictionary;
+    BOOL containsOptOutMessage;
 }
 
 @end
@@ -43,12 +45,17 @@ using namespace std;
     }
     
     _sessionId = sessionId;
+    containsOptOutMessage = NO;
     
     NSUInteger numberOfMessages = messages.count;
     NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
     _preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
 
     [messages enumerateObjectsUsingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
+        if ([message.messageType isEqualToString:[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(MPMessageTypeOptOut)).c_str() encoding:NSUTF8StringEncoding]]) {
+            self->containsOptOutMessage = YES;
+        }
+        
         [self->_preparedMessageIds addObject:@(message.messageId)];
         
         NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
@@ -188,6 +195,7 @@ using namespace std;
     
     
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId uploadDictionary:uploadDictionary];
+    upload.containsOptOutMessage = containsOptOutMessage;
     completionHandler(upload);
 }
 

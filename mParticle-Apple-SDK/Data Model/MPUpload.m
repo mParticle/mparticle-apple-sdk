@@ -22,6 +22,7 @@
         _uuid = uuid;
         _timestamp = timestamp;
         _uploadData = uploadData;
+        _containsOptOutMessage = NO;
     }
     
     return self;

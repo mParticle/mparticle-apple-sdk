@@ -498,6 +498,8 @@
                                                      annotation:annotation];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
+    dispatch_sync(messageQueue, ^{
+    });
     
     NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
@@ -931,6 +933,49 @@
     XCTAssertEqualObjects(session.attributesDictionary[@"foo-session-attribute-1"], @2);
     [self.backendController incrementSessionAttribute:session key:@"foo-session-attribute-1" byValue:@3];
     XCTAssertEqualObjects(session.attributesDictionary[@"foo-session-attribute-1"], @5);
+}
+
+- (void)testMessageWithOptOut {
+    [MPPersistenceController setMpid:@2];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    [MParticle sharedInstance].stateMachine.optOut = YES;
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
+    
+    XCTAssertEqual(messages.count, 0, @"No Messages should be saved.");
+}
+
+- (void)testMessageWithOptOutMessage {
+    [MPPersistenceController setMpid:@2];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    [MParticle sharedInstance].stateMachine.optOut = YES;
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
+    
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
+    
+    XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
+    
+    XCTAssertEqual(messages.count, 1, @"The Opt Out Message wasn't saved.");
 }
 
 @end

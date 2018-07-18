@@ -140,13 +140,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 }
 
 #pragma mark Private methods
-- (BOOL)shouldBuildMessage {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    BOOL shouldBuildMessage = !stateMachine.optOut || messageTypeValue == MPMessageTypeOptOut;
-    return shouldBuildMessage;
-}
-
 - (MPMessageBuilder *)withCurrentState {
     MPCurrentState *currentState = [[MPCurrentState alloc] init];
     messageDictionary[kMPStateInformationKey] = [currentState dictionaryRepresentation];

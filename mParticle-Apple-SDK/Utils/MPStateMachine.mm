@@ -599,9 +599,9 @@ static BOOL runningInBackground = NO;
 }
 
 - (BOOL)optOut {
-    [self willChangeValueForKey:@"optOut"];
-    
-    optOutSet = YES;
+    if (optOutSet) {
+        return _optOut;
+    }
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
@@ -614,9 +614,8 @@ static BOOL runningInBackground = NO;
             [userDefaults synchronize];
         });
     }
-    
-    [self didChangeValueForKey:@"optOut"];
-    
+    optOutSet = YES;
+        
     return _optOut;
 }
 
