@@ -132,11 +132,6 @@ static BOOL appBackgrounded = NO;
                                  object:nil];
         
         [notificationCenter addObserver:self
-                               selector:@selector(handleApplicationWillTerminate:)
-                                   name:UIApplicationWillTerminateNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:self
                                selector:@selector(handleNetworkPerformanceNotification:)
                                    name:kMPNetworkPerformanceMeasurementNotification
                                  object:nil];
@@ -172,7 +167,6 @@ static BOOL appBackgrounded = NO;
     [notificationCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
     [notificationCenter removeObserver:self name:kMPNetworkPerformanceMeasurementNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -924,83 +918,6 @@ static BOOL appBackgrounded = NO;
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
     didFinishLaunchingNotification = [notification copy];
-}
-
-- (void)handleApplicationWillTerminate:(NSNotification *)notification {
-    dispatch_sync(messageQueue, ^{
-        
-        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-        
-        if (self->_session) {
-            MPSession *sessionCopy = [self->_session copy];
-            
-            // App exit message
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:sessionCopy messageInfo:@{kMPAppStateTransitionType:kMPASTExitKey}];
-            MPMessage *message = (MPMessage *)[messageBuilder build];
-            
-            [persistence saveMessage:message];
-            
-            // Session end message
-            sessionCopy.endTime = [[NSDate date] timeIntervalSince1970];
-            
-            NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(sessionCopy.foregroundTime),
-                                                  kMPSessionTotalLengthKey:MPMilliseconds(sessionCopy.length),
-                                                  kMPEventCounterKey:@(sessionCopy.eventCounter)}
-                                                mutableCopy];
-            
-            NSDictionary *sessionAttributesDictionary = [sessionCopy.attributesDictionary transformValuesToString];
-            if (sessionAttributesDictionary) {
-                messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
-            }
-            
-            messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:sessionCopy messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
-#endif
-            message = (MPMessage *)[[messageBuilder withTimestamp:sessionCopy.endTime] build];
-            [persistence saveMessage:message];
-            
-            // Generate the upload batch
-            NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
-            if (mpidMessages) {
-                [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
-                    [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
-                        
-                        NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
-                        
-                        MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:mpid
-                                                                                      sessionId:nullableSessionID
-                                                                                       messages:messages
-                                                                                 sessionTimeout:self.sessionTimeout
-                                                                                 uploadInterval:self.uploadInterval];
-                        
-                        [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
-                        [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
-                        [uploadBuilder build: ^(MPUpload * _Nullable upload) {
-                            [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationDelete];
-                        }];
-                    }];
-                }];
-            }
-            
-            // Archive session
-            MPSession *archivedSession = [persistence archiveSession:sessionCopy];
-            if (archivedSession) {
-                [persistence deleteSession:archivedSession];
-            }
-        }
-        
-        // Close the database
-        if (persistence.databaseOpen) {
-            [persistence closeDatabase];
-        }
-        
-        if (![MPStateMachine isAppExtension]) {
-            [self endBackgroundTask];
-        }
-        
-    });
-    dispatch_suspend(messageQueue);
 }
 
 - (void)handleMemoryWarningNotification:(NSNotification *)notification {
