@@ -313,6 +313,52 @@ extern NSString * _Nonnull const kMParticleWebViewPathLogout;
 extern NSString * _Nonnull const kMParticleWebViewPathLogin;
 extern NSString * _Nonnull const kMParticleWebViewPathModify;
 
+// Message type strings
+extern NSString * _Nonnull const kMPMessageTypeStringUnknown;
+extern NSString * _Nonnull const kMPMessageTypeStringSessionStart;
+extern NSString * _Nonnull const kMPMessageTypeStringSessionEnd;
+extern NSString * _Nonnull const kMPMessageTypeStringScreenView;
+extern NSString * _Nonnull const kMPMessageTypeStringEvent;
+extern NSString * _Nonnull const kMPMessageTypeStringCrashReport;
+extern NSString * _Nonnull const kMPMessageTypeStringOptOut;
+extern NSString * _Nonnull const kMPMessageTypeStringFirstRun;
+extern NSString * _Nonnull const kMPMessageTypeStringPreAttribution;
+extern NSString * _Nonnull const kMPMessageTypeStringPushRegistration;
+extern NSString * _Nonnull const kMPMessageTypeStringAppStateTransition;
+extern NSString * _Nonnull const kMPMessageTypeStringPushNotification;
+extern NSString * _Nonnull const kMPMessageTypeStringNetworkPerformance;
+extern NSString * _Nonnull const kMPMessageTypeStringBreadcrumb;
+extern NSString * _Nonnull const kMPMessageTypeStringProfile;
+extern NSString * _Nonnull const kMPMessageTypeStringPushNotificationInteraction;
+extern NSString * _Nonnull const kMPMessageTypeStringCommerceEvent;
+extern NSString * _Nonnull const kMPMessageTypeStringUserAttributeChange;
+extern NSString * _Nonnull const kMPMessageTypeStringUserIdentityChange;
+
+// Event type strings
+extern NSString * _Nonnull const kMPEventTypeStringUnknown;
+extern NSString * _Nonnull const kMPEventTypeStringNavigation;
+extern NSString * _Nonnull const kMPEventTypeStringLocation;
+extern NSString * _Nonnull const kMPEventTypeStringSearch;
+extern NSString * _Nonnull const kMPEventTypeStringTransaction;
+extern NSString * _Nonnull const kMPEventTypeStringUserContent;
+extern NSString * _Nonnull const kMPEventTypeStringUserPreference;
+extern NSString * _Nonnull const kMPEventTypeStringSocial;
+extern NSString * _Nonnull const kMPEventTypeStringOther;
+extern NSString * _Nonnull const kMPEventTypeStringMediaDiscontinued;
+extern NSString * _Nonnull const kMPEventTypeStringProductAddToCart;
+extern NSString * _Nonnull const kMPEventTypeStringProductRemoveFromCart;
+extern NSString * _Nonnull const kMPEventTypeStringProductCheckout;
+extern NSString * _Nonnull const kMPEventTypeStringProductCheckoutOption;
+extern NSString * _Nonnull const kMPEventTypeStringProductClick;
+extern NSString * _Nonnull const kMPEventTypeStringProductViewDetail;
+extern NSString * _Nonnull const kMPEventTypeStringProductPurchase;
+extern NSString * _Nonnull const kMPEventTypeStringProductRefund;
+extern NSString * _Nonnull const kMPEventTypeStringPromotionView;
+extern NSString * _Nonnull const kMPEventTypeStringPromotionClick;
+extern NSString * _Nonnull const kMPEventTypeStringProductAddToWishlist;
+extern NSString * _Nonnull const kMPEventTypeStringProductRemoveFromWishlist;
+extern NSString * _Nonnull const kMPEventTypeStringProductImpression;
+
 //
 // Primitive data type constants
 //

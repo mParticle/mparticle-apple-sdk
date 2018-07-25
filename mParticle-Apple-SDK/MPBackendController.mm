@@ -1557,7 +1557,7 @@ static BOOL appBackgrounded = NO;
                 [breadcrumbs addObject:[breadcrumb dictionaryRepresentation]];
             }
             
-            NSString *messageTypeBreadcrumbKey = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding];
+            NSString *messageTypeBreadcrumbKey = kMPMessageTypeStringBreadcrumb;
             messageInfo[messageTypeBreadcrumbKey] = breadcrumbs;
         }
     } else {
@@ -1790,7 +1790,7 @@ static BOOL appBackgrounded = NO;
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
-    MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([message.messageType UTF8String]));
+    MPMessageType messageTypeCode = [MPMessageBuilder messageTypeForString:message.messageType];
     
     if ([MParticle sharedInstance].stateMachine.optOut && (messageTypeCode != MPMessageTypeOptOut)) {
         return;

@@ -344,4 +344,20 @@
     XCTAssertEqualObjects(@YES, messageDictionary[@"na"]);
 }
 
+- (void)testMessageTypeNameConversions {
+    
+    for (int i = 0; i < MPMessageTypeUserIdentityChange; i++) {
+        
+        MPMessageType expectedType = (MPMessageType)i;
+        
+        if (expectedType == MPMessageTypePreAttribution) {
+            expectedType = MPMessageTypeUnknown;
+        }
+        
+        XCTAssertEqual(expectedType, [MPMessageBuilder messageTypeForString:[MPMessageBuilder stringForMessageType:(MPMessageType)i]]);
+        
+    }
+    
+}
+
 @end

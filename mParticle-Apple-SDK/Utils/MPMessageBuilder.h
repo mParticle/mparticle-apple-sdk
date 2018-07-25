@@ -23,6 +23,8 @@
 @property (nonatomic, strong, readonly, nonnull) NSDictionary *messageInfo;
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval timestamp;
 
++ (NSString *_Nullable)stringForMessageType:(MPMessageType)type;
++ (MPMessageType)messageTypeForString:(NSString *_Nonnull)string;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session commerceEvent:(nonnull MPCommerceEvent *)commerceEvent;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;

@@ -267,22 +267,22 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (NSDictionary *)methodMessageTypeMapping {
-    NSString *messageTypeEvent = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Event).c_str() encoding:NSUTF8StringEncoding];
+    NSString *messageTypeEvent = kMPMessageTypeStringEvent;
     
     NSDictionary *methodMessageTypeDictionary = @{@"logEvent:":messageTypeEvent,
-                                                  @"logScreen:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::ScreenView).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logScreenEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::ScreenView).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"beginSession":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::SessionStart).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"endSession":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::SessionEnd).c_str() encoding:NSUTF8StringEncoding],
+                                                  @"logScreen:":kMPMessageTypeStringScreenView,
+                                                  @"logScreenEvent:":kMPMessageTypeStringScreenView,
+                                                  @"beginSession":kMPMessageTypeStringSessionStart,
+                                                  @"endSession":kMPMessageTypeStringSessionEnd,
                                                   @"logTransaction:":messageTypeEvent,
                                                   @"logLTVIncrease:eventName:eventInfo:":messageTypeEvent,
-                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logError:exception:topmostContext:eventInfo:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CrashReport).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logNetworkPerformanceMeasurement:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::NetworkPerformance).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"profileChange:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Profile).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"setOptOut:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::OptOut).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"logCommerceEvent:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding],
-                                                  @"leaveBreadcrumb:":[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::Breadcrumb).c_str() encoding:NSUTF8StringEncoding]
+                                                  @"leaveBreadcrumb:":kMPMessageTypeStringBreadcrumb,
+                                                  @"logError:exception:topmostContext:eventInfo:":kMPMessageTypeStringCrashReport,
+                                                  @"logNetworkPerformanceMeasurement:":kMPMessageTypeStringNetworkPerformance,
+                                                  @"profileChange:":kMPMessageTypeStringProfile,
+                                                  @"setOptOut:":kMPMessageTypeStringOptOut,
+                                                  @"logCommerceEvent:":kMPMessageTypeStringCommerceEvent,
+                                                  @"leaveBreadcrumb:":kMPMessageTypeStringBreadcrumb
                                                   };
     
     return methodMessageTypeDictionary;

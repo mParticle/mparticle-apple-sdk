@@ -799,7 +799,7 @@ static BOOL runningInBackground = NO;
         }
     }
     
-    NSString *messageTypeCommerceEventKey = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(mParticle::CommerceEvent).c_str() encoding:NSUTF8StringEncoding];
+    NSString *messageTypeCommerceEventKey = kMPMessageTypeStringCommerceEvent;
     NSMutableArray *messageTypes = [@[messageTypeCommerceEventKey] mutableCopy];
     NSArray *configMessageTypes = triggerDictionary[kMPRemoteConfigTriggerMessageTypesKey];
     

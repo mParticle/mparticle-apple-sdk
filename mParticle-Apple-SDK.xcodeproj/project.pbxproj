@@ -121,9 +121,9 @@
 		C935A6F91D8A2DF400A1EE2F /* MPTransactionAttributes+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAE1D8A112B00D3ABBE /* MPTransactionAttributes+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A6FA1D8A2DF400A1EE2F /* MPTransactionAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAF1D8A112B00D3ABBE /* MPTransactionAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C935A6FB1D8A2DF400A1EE2F /* MPTransactionAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB01D8A112B00D3ABBE /* MPTransactionAttributes.m */; };
-		C935A6FC1D8A2DFD00A1EE2F /* EventTypeName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB21D8A112B00D3ABBE /* EventTypeName.cpp */; };
+		C935A6FC1D8A2DFD00A1EE2F /* EventTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB21D8A112B00D3ABBE /* EventTypeName.mm */; };
 		C935A6FD1D8A2DFD00A1EE2F /* EventTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */; };
-		C935A6FE1D8A2DFD00A1EE2F /* MessageTypeName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */; };
+		C935A6FE1D8A2DFD00A1EE2F /* MessageTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.mm */; };
 		C935A6FF1D8A2DFD00A1EE2F /* MessageTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */; };
 		C935A7001D8A2DFD00A1EE2F /* MPEvent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */; };
 		C935A7011D8A2DFD00A1EE2F /* MPEvent+Internal.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */; };
@@ -281,9 +281,9 @@
 		C9DD1FD81D8A13DC00D3ABBE /* MPTransactionAttributes+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAE1D8A112B00D3ABBE /* MPTransactionAttributes+Dictionary.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FD91D8A13DC00D3ABBE /* MPTransactionAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CAF1D8A112B00D3ABBE /* MPTransactionAttributes.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		C9DD1FDA1D8A13DC00D3ABBE /* MPTransactionAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB01D8A112B00D3ABBE /* MPTransactionAttributes.m */; };
-		C9DD1FDB1D8A13E200D3ABBE /* EventTypeName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB21D8A112B00D3ABBE /* EventTypeName.cpp */; };
+		C9DD1FDB1D8A13E200D3ABBE /* EventTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB21D8A112B00D3ABBE /* EventTypeName.mm */; };
 		C9DD1FDC1D8A13E200D3ABBE /* EventTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */; };
-		C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */; };
+		C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.mm */; };
 		C9DD1FDE1D8A13E200D3ABBE /* MessageTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */; };
 		C9DD1FDF1D8A13E200D3ABBE /* MPEvent+Internal.h in Headers */ = {isa = PBXBuildFile; fileRef = C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */; };
 		C9DD1FE01D8A13E200D3ABBE /* MPEvent+Internal.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */; };
@@ -602,9 +602,9 @@
 		C9DD1CAE1D8A112B00D3ABBE /* MPTransactionAttributes+Dictionary.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPTransactionAttributes+Dictionary.h"; sourceTree = "<group>"; };
 		C9DD1CAF1D8A112B00D3ABBE /* MPTransactionAttributes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPTransactionAttributes.h; sourceTree = "<group>"; };
 		C9DD1CB01D8A112B00D3ABBE /* MPTransactionAttributes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPTransactionAttributes.m; sourceTree = "<group>"; };
-		C9DD1CB21D8A112B00D3ABBE /* EventTypeName.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = EventTypeName.cpp; sourceTree = "<group>"; };
+		C9DD1CB21D8A112B00D3ABBE /* EventTypeName.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EventTypeName.mm; sourceTree = "<group>"; };
 		C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventTypeName.h; sourceTree = "<group>"; };
-		C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = MessageTypeName.cpp; sourceTree = "<group>"; };
+		C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MessageTypeName.mm; sourceTree = "<group>"; };
 		C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageTypeName.h; sourceTree = "<group>"; };
 		C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPEvent+Internal.h"; sourceTree = "<group>"; };
 		C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = "MPEvent+Internal.mm"; sourceTree = "<group>"; };
@@ -1040,9 +1040,9 @@
 		C9DD1CB11D8A112B00D3ABBE /* Event */ = {
 			isa = PBXGroup;
 			children = (
-				C9DD1CB21D8A112B00D3ABBE /* EventTypeName.cpp */,
+				C9DD1CB21D8A112B00D3ABBE /* EventTypeName.mm */,
 				C9DD1CB31D8A112B00D3ABBE /* EventTypeName.h */,
-				C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.cpp */,
+				C9DD1CB41D8A112B00D3ABBE /* MessageTypeName.mm */,
 				C9DD1CB51D8A112B00D3ABBE /* MessageTypeName.h */,
 				C9DD1CB61D8A112B00D3ABBE /* MPEvent+Internal.h */,
 				C9DD1CB71D8A112B00D3ABBE /* MPEvent+Internal.mm */,
@@ -1840,7 +1840,7 @@
 				C935A6C01D8A2DDF00A1EE2F /* MPSurrogateAppDelegate.m in Sources */,
 				C935A6F31D8A2DF400A1EE2F /* MPProduct.mm in Sources */,
 				C935A6D91D8A2DED00A1EE2F /* MPSegmentMembership.m in Sources */,
-				C935A6FE1D8A2DFD00A1EE2F /* MessageTypeName.cpp in Sources */,
+				C935A6FE1D8A2DFD00A1EE2F /* MessageTypeName.mm in Sources */,
 				C9C9DC3C1DAC05C90079A05D /* MPForwardQueueParameters.m in Sources */,
 				C935A6D71D8A2DED00A1EE2F /* MPSegment.m in Sources */,
 				C935A70C1D8A2E0500A1EE2F /* MPForwardQueueItem.m in Sources */,
@@ -1853,7 +1853,7 @@
 				C935A6D11D8A2DED00A1EE2F /* MPForwardRecord.mm in Sources */,
 				C935A7771D8A2E4000A1EE2F /* MPIHasher.mm in Sources */,
 				C935A6E91D8A2DF400A1EE2F /* MPCart.m in Sources */,
-				C935A6FC1D8A2DFD00A1EE2F /* EventTypeName.cpp in Sources */,
+				C935A6FC1D8A2DFD00A1EE2F /* EventTypeName.mm in Sources */,
 				DB58FB041E9FD07E00AB5402 /* MPConvertJS.m in Sources */,
 				C935A6F81D8A2DF400A1EE2F /* MPPromotion.mm in Sources */,
 				C935A6E31D8A2DED00A1EE2F /* MPUpload.m in Sources */,
@@ -1924,7 +1924,7 @@
 				C9DD202B1D8A142000D3ABBE /* MPDateFormatter.m in Sources */,
 				C9DD1FED1D8A13EA00D3ABBE /* MPKitConfiguration.mm in Sources */,
 				C9DD1FE71D8A13EA00D3ABBE /* MPBaseProjection.m in Sources */,
-				C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.cpp in Sources */,
+				C9DD1FDD1D8A13E200D3ABBE /* MessageTypeName.mm in Sources */,
 				C9DD20261D8A142000D3ABBE /* MPBracket.cpp in Sources */,
 				C9DD1FA71D8A13D600D3ABBE /* MParticleUserNotification.m in Sources */,
 				C9DD1FF31D8A13EA00D3ABBE /* MPKitFilter.m in Sources */,
@@ -1956,7 +1956,7 @@
 				C9DD1FC81D8A13DC00D3ABBE /* MPCart.m in Sources */,
 				C9DD20331D8A142000D3ABBE /* MPMessageBuilder.mm in Sources */,
 				C9DD20611D8A142900D3ABBE /* MPIConstants.m in Sources */,
-				C9DD1FDB1D8A13E200D3ABBE /* EventTypeName.cpp in Sources */,
+				C9DD1FDB1D8A13E200D3ABBE /* EventTypeName.mm in Sources */,
 				C9DD205C1D8A142900D3ABBE /* MPEnums.m in Sources */,
 				C9DD1FF11D8A13EA00D3ABBE /* MPKitExecStatus.m in Sources */,
 				C9DD20141D8A140800D3ABBE /* MPNetworkCommunication.mm in Sources */,
