@@ -55,15 +55,6 @@ static NSString *kMPAppStoreReceiptString = nil;
 @synthesize initialLaunchTime = _initialLaunchTime;
 @synthesize pirated = _pirated;
 
-+ (void)initialize {
-    NSURL *url = [[NSBundle mainBundle] appStoreReceiptURL];
-    NSData *appStoreReceiptData = [NSData dataWithContentsOfURL:url];
-    
-    if (appStoreReceiptData) {
-        kMPAppStoreReceiptString = [appStoreReceiptData base64EncodedStringWithOptions:0];
-    }
-}
-
 - (id)init {
     self = [super init];
     if (!self) {
@@ -343,6 +334,15 @@ static NSString *kMPAppStoreReceiptString = nil;
 
 #pragma mark Class methods
 + (NSString *)appStoreReceipt {
+    if (MPIsNull(kMPAppStoreReceiptString)) {
+        NSURL *url = [[NSBundle mainBundle] appStoreReceiptURL];
+        NSData *appStoreReceiptData = [NSData dataWithContentsOfURL:url];
+        
+        if (appStoreReceiptData) {
+            kMPAppStoreReceiptString = [appStoreReceiptData base64EncodedStringWithOptions:0];
+        }
+    }
+    
     return kMPAppStoreReceiptString;
 }
 
@@ -463,8 +463,8 @@ static NSString *kMPAppStoreReceiptString = nil;
         applicationInfo[kMPAppBuildNumberKey] = auxString;
     }
     
-    if (kMPAppStoreReceiptString) {
-        applicationInfo[kMPAppStoreReceiptKey] = kMPAppStoreReceiptString;
+    if ([MParticle sharedInstance].stateMachine.allowASR && [MPApplication appStoreReceipt]) {
+        applicationInfo[kMPAppStoreReceiptKey] = [MPApplication appStoreReceipt];
     }
     
 #if TARGET_OS_IOS == 1

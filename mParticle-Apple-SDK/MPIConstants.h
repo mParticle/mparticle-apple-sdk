@@ -249,6 +249,7 @@ extern NSString * _Nonnull const kMPRemoteConfigTriggerMessageTypesKey;
 extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
 extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
 extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
+extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;

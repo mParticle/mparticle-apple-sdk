@@ -65,6 +65,7 @@ static BOOL runningInBackground = NO;
 @synthesize triggerEventTypes = _triggerEventTypes;
 @synthesize triggerMessageTypes = _triggerMessageTypes;
 @synthesize automaticSessionTracking = _automaticSessionTracking;
+@synthesize allowASR = _allowASR;
 @synthesize networkStatus = _networkStatus;
 
 #if TARGET_OS_IOS == 1
