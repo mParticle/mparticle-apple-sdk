@@ -76,10 +76,13 @@
             sessions = [persistence fetchSessions];
         }
     };
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         workBlock();
+        [expectation fulfill];
     });
     workBlock();
+    [self waitForExpectationsWithTimeout:0.11 handler:nil];
 }
 
 - (void)testPlatformSqliteAssumptions {
