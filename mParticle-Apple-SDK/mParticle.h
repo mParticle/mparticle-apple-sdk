@@ -315,7 +315,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param options The dictionary of launch options
  @see proxiedAppDelegate
  */
-- (void)openURL:(NSURL *)url options:(nullable NSDictionary<NSString *, id> *)options;
+- (void)openURL:(NSURL *)url options:(nullable NSDictionary *)options;
 
 /**
  Informs the mParticle SDK the app has been asked to open to continue an NSUserActivity.
