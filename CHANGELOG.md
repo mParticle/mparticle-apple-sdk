@@ -1,5 +1,129 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.5.2
+
+- This release updates the `mParticleSessionDidBeginNotification` and `mParticleSessionDidEndNotification` notifications to contain the session GUID rather than the SQLite autoincrement ID. This GUID will match the GUID that is communicated via mParticle's server-to-server integrations.
+- This release also updates the UIApplication `openURL` signature exposed by the SDK to be more compatible with Swift.
+
+## 7.5.1
+
+- This release completely removes the SDK's primary UIApplication termination listener. Prior to this change, the SDK could prevent process termination while it was performing several cleanup activities.
+
+## 7.5.0
+
+### iOS 12 beta and iOS 12 support
+
+This release updates the SDK to handle several changes present in the latest beta builds of Xcode 10 and iOS 12.
+
+## 7.4.2
+
+- This releases addresses several synchronization issues with internal SDK properties that could lead to crashes.  
+
+## 7.4.1
+
+- This releases updates the SDK's UIAppication termination handler to perform operations sychronously. This handler is used to capture the latest device state prior to app force-closes such that subsequent uploads are accurate. Doing this sychronously on the main thread is required to avoid undefined behavior due to iOS process destruction.
+
+## 7.4.0
+
+- This release is a follow up to version 7.3.11 and moves all kit APIs invocations to the main thread rather than the mParticle SDK's message queue.
+
+## 7.3.13
+
+- This release updates the timing of when user identities are set on the MParticleUser object. This makes it so that once an identity callback is returned, the provided MParticleUser object has the most up-to-date identities present and queryable.
+
+## 7.3.12
+
+- This release addresses a migration-crash for customers upgrading from version 6 of the SDK and who are using the SDK's crash-detection APIs.
+- This release also adds an appledoc plist to source such that the Appledocs can be generated more easily. We also host the Appledocs on the mParticle documentation site: https://docs.mparticle.com/developers/sdk/ios/appledocs/index.html
+
+## 7.3.11
+
+- This release ensures that kits are always started on the main thread rather than the SDK's internal serial queue. Kits will still not be started sychronously when calling `MParticle.start`, but they will be initialized on the main thread on a later run-loop. 
+
+## 7.3.10
+
+- This release updates the SDK's app extension support. The `MPARTICLE_APP_EXTENSIONS` flag is no longer necessary and the SDK will determine if it's running in an app extension based off the `appex` suffix in the app bundle.
+
+## 7.3.9
+
+- This release addresses warnings due to the Xcode main thread checker and adds additional synchronization for internal properties that are accessed acrossed threads.
+
+## 7.3.8
+
+## Core SDK Updates
+
+- This release fixes an issue where uploads could be delayed until app background
+
+## Kit Updates
+
+- Kochava: Fix user identity usage to conform to the latest `FilteredMParticleUser` APIs
+
+## 7.3.7
+
+### Core SDK Updates
+
+#### GDPR Consent Management
+
+The SDK can now dynamically enable and disable kits based on the current user's ConsentState, for GDPR and any other regulation. This lets you enable or disable individual kits only if a given Consent purpose or purposes have been granted or rejected by the user.
+
+##### Additional Updates
+
+- New NetworkOptions API letting you customize SSL pinning and SDK endpoints.
+- Ability to query for all users that the SDK has tracked locally on the device.
+- Bugfix to address simulator reachability issues
+
+### Kit Updates
+
+- Leanplum: Fix user identity query to conform to the latest `FilteredMParticleUser` APIs
+
+## 7.3.6
+
+- This release updates the SDK's SQLite connection to allow for full multi-threaded access. The SDK does not generally access SQLite outside of a single serial queue, but in certain situations it will and could have potentially caused a crash due to simultanous access.
+
+## 7.3.5
+
+- This release fixes potential SQLite crashes caused by multi-threaded SQLite access caused by the SDK's significant time-change listener.
+- This release addresses a potential crash or error log caused by kits that implement the attribution API and return a nil attribution result.
+
+## 7.3.4 
+
+- This is a **critical** bug fix release. Prior to this, the SDK would upload duplicate kit forwarding statistics. These statistic do not impact forwarding - but they populate the mParticle Event Forwarding dashboard. This change is crucial for proper reporting as well as reducing the amount of SDK SQL storage and upload payload size.
+
+## 7.3.3
+
+- This release makes a change to the KitProtocol to remove the `onUserIdentified` API.
+
+## 7.3.2
+
+This release replaces the previous release 7.3.1, addressing a crash that can occur on startup when certain configuration settings are present.
+
+The following changes from 7.3.1 are also included:
+
+Addresses an issue where configuration could be purged by the OS on low disk space devices and cleans up some compiler warnings.
+
+Updates the Branch kit with support for Branch's v2 event tracking APIs, collecting search ads attribution and various other improvements.
+
+## 7.3.1
+
+- This release moves kit configuration cache into NSUserDefaults to ensure it is not deleted on devices with low storage space.
+
+## 7.3.0
+
+- This release introduces a series of enhancements to the SDK to ensure that all database and filesystem operations are performed off of the main thread. The SDK's internal message queue is now relied on for all operations.
+
+## 7.2.1
+
+This release optimizes SDK startup time by deferring or avoiding expensive operations that otherwise were taking place during SDK start.
+
+In addition, it introduces an option to start kits asynchronously.
+
+Here are a few important notes about this release:
+
+- If you are using the Adjust kit, you must update to version 7.2.1 of the kit in coordination with this update to the core SDK. Otherwise your Adjust environment will not be set properly.
+- The SDK no longer automatically disables logging in production. The default log level is now set to "none". If you increase the log level for your development builds, please ensure that change does not get compiled into the release version of your app.
+- App delegate proxying was incorrectly disabled by default. This has been fixed.
+- The SDK now collects user agent by default
+
 ## 7.2.0
 
 This is a *high priority* update for all users of SDK v7. This update:
