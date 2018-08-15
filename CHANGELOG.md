@@ -1,5 +1,16 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.5.3
+
+## Core SDK Updates
+
+- None
+
+## Kit Updates
+
+- AppsFlyer: Map MPCommerceEvent product SKUs to af_content_id
+- Localytics: Add Carthage support
+
 ## 7.5.2
 
 - This release updates the `mParticleSessionDidBeginNotification` and `mParticleSessionDidEndNotification` notifications to contain the session GUID rather than the SQLite autoincrement ID. This GUID will match the GUID that is communicated via mParticle's server-to-server integrations.
