@@ -82,7 +82,19 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         return;
     }
     if (request.userIdentities) {
-        [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id identityValue, BOOL * _Nonnull stop) {
+        NSMutableDictionary *userIDsCopy = [request.userIdentities mutableCopy];
+        
+        if (userIDsCopy[@(MPUserIdentityCustomerId)]) {
+            [self.currentUser setUserIdentitySync:userIDsCopy[@(MPUserIdentityCustomerId)] identityType:MPUserIdentityCustomerId];
+            [userIDsCopy removeObjectForKey:@(MPUserIdentityCustomerId)];
+        }
+        
+        if (userIDsCopy[@(MPUserIdentityEmail)]) {
+            [self.currentUser setUserIdentitySync:userIDsCopy[@(MPUserIdentityEmail)] identityType:MPUserIdentityEmail];
+            [userIDsCopy removeObjectForKey:@(MPUserIdentityEmail)];
+        }
+        
+        [userIDsCopy enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
             MPUserIdentity identityType = (MPUserIdentity)key.intValue;
             if ((NSNull *)identityValue == [NSNull null]) {
                 identityValue = nil;
@@ -144,7 +156,19 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[MParticle sharedInstance].persistenceController updateSession:session];
     
     if (request.userIdentities) {
-        [request.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
+        NSMutableDictionary *userIDsCopy = [request.userIdentities mutableCopy];
+        
+        if (userIDsCopy[@(MPUserIdentityCustomerId)]) {
+            [self.currentUser setUserIdentitySync:userIDsCopy[@(MPUserIdentityCustomerId)] identityType:MPUserIdentityCustomerId];
+            [userIDsCopy removeObjectForKey:@(MPUserIdentityCustomerId)];
+        }
+        
+        if (userIDsCopy[@(MPUserIdentityEmail)]) {
+            [self.currentUser setUserIdentitySync:userIDsCopy[@(MPUserIdentityEmail)] identityType:MPUserIdentityEmail];
+            [userIDsCopy removeObjectForKey:@(MPUserIdentityEmail)];
+        }
+        
+        [userIDsCopy enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
             MPUserIdentity identityType = (MPUserIdentity)key.intValue;
             [self.currentUser setUserIdentitySync:identityValue identityType:identityType];
         }];
