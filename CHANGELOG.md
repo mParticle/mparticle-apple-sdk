@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.5.4
+
+## Core SDK Updates
+
+- Update the order of forwarding identities to kits
+
+## Kit Updates
+
+- Braze (mParticle-Appboy): Implement modify and login MPKitProtocol methods. This ensures that users are assigned the correct email address when sharing the same device.
+
+**Warning**: You must be using version 7.3.0 or later of the core SDK in order to use this version of the Braze kit.
+
 ## 7.5.3
 
 ## Core SDK Updates
