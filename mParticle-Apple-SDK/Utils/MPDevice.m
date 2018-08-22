@@ -12,6 +12,7 @@
 #import "MPIConstants.h"
 #import "MParticle.h"
 #import "MPBackendController.h"
+#import "MPILogger.h"
 
 #if !defined(MP_NO_IDFA)
     #import "AdSupport/ASIdentifierManager.h"
@@ -378,63 +379,74 @@ int main(int argc, char *argv[]);
     BOOL jailbroken = NO;
     
 #if !TARGET_OS_SIMULATOR
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *filePath;
-    NSString *signerIdentityKey = nil;
-    NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
-    NSEnumerator *infoEnumerator = [bundleInfoDictionary keyEnumerator];
-    NSString *key;
-    
-    while ((key = [infoEnumerator nextObject])) {
-        if ([[key lowercaseString] isEqualToString:kMPDeviceSignerIdentityString]) {
-            signerIdentityKey = [key copy];
-            break;
-        }
-    }
-    
-    jailbroken = signerIdentityKey != nil;
-    
-    if (!jailbroken) {
-        NSArray *filePaths = @[@"/usr/sbin/sshd",
-                               @"/Library/MobileSubstrate/MobileSubstrate.dylib",
-                               @"/bin/bash",
-                               @"/usr/libexec/sftp-server",
-                               @"/Applications/Cydia.app",
-                               @"/Applications/blackra1n.app",
-                               @"/Applications/FakeCarrier.app",
-                               @"/Applications/Icy.app",
-                               @"/Applications/IntelliScreen.app",
-                               @"/Applications/MxTube.app",
-                               @"/Applications/RockApp.app",
-                               @"/Applications/SBSettings.app",
-                               @"/Applications/WinterBoard.app",
-                               @"/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist",
-                               @"/Library/MobileSubstrate/DynamicLibraries/Veency.plist",
-                               @"/private/var/lib/apt",
-                               @"/private/var/lib/cydia",
-                               @"/private/var/mobile/Library/SBSettings/Themes",
-                               @"/private/var/stash",
-                               @"/private/var/tmp/cydia.log",
-                               @"/System/Library/LaunchDaemons/com.ikey.bbot.plist",
-                               @"/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"];
+    @try {
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        NSString *filePath;
+        NSString *signerIdentityKey = nil;
+        NSDictionary *bundleInfoDictionary = [[NSBundle mainBundle] infoDictionary];
+        NSEnumerator *infoEnumerator = [bundleInfoDictionary keyEnumerator];
+        NSString *key;
         
-        for (filePath in filePaths) {
-            jailbroken = [fileManager fileExistsAtPath:filePath];
-            
-            if (jailbroken) {
+        while ((key = [infoEnumerator nextObject])) {
+            if ([[key lowercaseString] isEqualToString:kMPDeviceSignerIdentityString]) {
+                signerIdentityKey = [key copy];
                 break;
             }
         }
-    }
-    
-    if (!jailbroken) {
-        // Valid test only if running as root on a jailbroken device
-        NSData *jailbrokenTestData = [@"Jailbroken filesystem test." dataUsingEncoding:NSUTF8StringEncoding];
-        filePath = @"/private/mpjailbrokentest.txt";
-        jailbroken = [jailbrokenTestData writeToFile:filePath atomically:NO];
         
-        if (jailbroken) {
-            [fileManager removeItemAtPath:filePath error:nil];
+        jailbroken = signerIdentityKey != nil;
+        
+        if (!jailbroken) {
+            NSArray *filePaths = @[@"/usr/sbin/sshd",
+                                   @"/Library/MobileSubstrate/MobileSubstrate.dylib",
+                                   @"/bin/bash",
+                                   @"/usr/libexec/sftp-server",
+                                   @"/Applications/Cydia.app",
+                                   @"/Applications/blackra1n.app",
+                                   @"/Applications/FakeCarrier.app",
+                                   @"/Applications/Icy.app",
+                                   @"/Applications/IntelliScreen.app",
+                                   @"/Applications/MxTube.app",
+                                   @"/Applications/RockApp.app",
+                                   @"/Applications/SBSettings.app",
+                                   @"/Applications/WinterBoard.app",
+                                   @"/Library/MobileSubstrate/DynamicLibraries/LiveClock.plist",
+                                   @"/Library/MobileSubstrate/DynamicLibraries/Veency.plist",
+                                   @"/private/var/lib/apt",
+                                   @"/private/var/lib/cydia",
+                                   @"/private/var/mobile/Library/SBSettings/Themes",
+                                   @"/private/var/stash",
+                                   @"/private/var/tmp/cydia.log",
+                                   @"/System/Library/LaunchDaemons/com.ikey.bbot.plist",
+                                   @"/System/Library/LaunchDaemons/com.saurik.Cydia.Startup.plist"];
+            
+            for (filePath in filePaths) {
+                jailbroken = [fileManager fileExistsAtPath:filePath];
+                
+                if (jailbroken) {
+                    break;
+                }
+            }
+        }
+        
+        if (!jailbroken) {
+            // Valid test only if running as root on a jailbroken device
+            NSData *jailbrokenTestData = [@"Jailbroken filesystem test." dataUsingEncoding:NSUTF8StringEncoding];
+            filePath = @"/private/mpjailbrokentest.txt";
+            jailbroken = [jailbrokenTestData writeToFile:filePath atomically:NO];
+            
+            if (jailbroken) {
+                [fileManager removeItemAtPath:filePath error:nil];
+            }
+        }
+    } @catch (NSException *e) {
+        MPILogError(@"Caught an exception trying to determine if jailbroken: %@", e);
+        
+        if (!jailbroken) {
+            NSString *symbols = [e.callStackSymbols description];
+            if ([symbols containsString:@"xCon.dylib"]) {
+                jailbroken = YES;
+            }
         }
     }
 #endif
