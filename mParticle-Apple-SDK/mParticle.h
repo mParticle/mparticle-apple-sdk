@@ -58,14 +58,23 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ Attribution information returned by a kit.
+ */
 @interface MPAttributionResult : NSObject
 
+/**
+ Free-form attribution info dictionary.
+ */
 @property (nonatomic) NSDictionary *linkInfo;
 @property (nonatomic, readonly) NSNumber *kitCode;
 @property (nonatomic, readonly) NSString *kitName;
 
 @end
 
+/**
+ Allows you to override the default HTTPS hosts and certificates used by the SDK.
+ */
 @interface MPNetworkOptions : NSObject
 
 @property (nonatomic) NSString *configHost;
@@ -77,26 +86,144 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+/**
+ Main configuration object for initial SDK setup.
+ */
 @interface MParticleOptions : NSObject
 
+/**
+ Creates an options object with your specified App key and Secret.
+ 
+ These values can be retrieved from your App's dashboard within the mParticle platform.
+ */
 + (MParticleOptions*)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
+
+/*
+ App key. mParticle uses this to attribute incoming data to your app's acccount/workspace/platform.
+ */
 @property (nonatomic, strong, readwrite) NSString *apiKey;
+
+/*
+ App secret. An additional authentication token used to produce a signature header required by the server.
+ */
 @property (nonatomic, strong, readwrite) NSString *apiSecret;
+
+/*
+ If you have an App and App Extension, setting this value will share user defaults data between them.
+ */
 @property (nonatomic, strong, readwrite) NSString *sharedGroupID;
+
+
+/*
+ Allows you to specify a specific installation type, or specify that the SDK should detect automatically.
+ 
+ You can specify that this is a known-install, known-upgrade or known-same-version.
+ 
+ For the first release of your app with the SDK, all users will appear as new to the SDK since it has no persistence.
+ To avoid inflated install count, you will want to override this setting from autodetect and specifically
+ tell the SDK whether or not this is an install, based on your app's existing persistence mechanisms.
+ 
+ For future releases, the mParticle SDK will already be in the installed app, so you can change this value back to auto detect.
+ */
 @property (nonatomic, unsafe_unretained, readwrite) MPInstallationType installType;
+
+/*
+ This identity request object allows you to customize the information included in the initial Identify request sent by the SDK.
+ */
 @property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest;
+
+/*
+ SDK Environment. Autodetected as development or production, you can also override.
+ */
 @property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
+
+/*
+ Whether the SDK should automatically collect UIApplicationDelegate information.
+ 
+ If set to NO, you will need to manually add some calls to the SDK within certain AppDelegate methods.
+ If set to YES (the default), the SDK will intercept app delegate messages before forwarding them to your app.
+ 
+ This mechanism is acheived using NSProxy and without introducing dangerous swizzling.
+ */
 @property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
+
+/*
+ Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.
+ 
+ If set to YES, the SDK will start a timer when the app enters the background and will end the session if a
+ user leaves the app for a configurable number of seconds without bringing it back to foreground.
+ 
+ Note that the above behavior does not apply to apps with long-running background sessions.
+ */
 @property (nonatomic, unsafe_unretained, readwrite) BOOL automaticSessionTracking;
+
+/*
+ The browser user agent.
+ 
+ This is normally collected by the SDK automatically. If you are already incurring the cost of instantiating
+ a webview to collect this, and wish to avoid the performance cost of duplicate work, (or if you need to customize
+ the value) you can pass this into the SDK as a string.
+ */
 @property (atomic, strong, nullable) NSString *customUserAgent;
+
+/*
+ Whether browser user agent should be collected by the SDK. This value is ignored (always NO) if you specify a non-nil custom user agent.
+ */
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+
+/*
+ This value is not currently read by the SDK and should not be used at this time.
+ */
 @property (atomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
+
+/*
+ Log level. (Defaults to 'None'.)
+ 
+ This controls the verbosity of the SDK.
+ 
+ By default the SDK will produce no output. If you modify this for your development builds, please consider using
+ a preprocessor directive or similar mechanism to ensure your change is not accidentally applied in production.
+ */
 @property (atomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
+
+/**
+ Upload interval.
+ 
+ Batches of data are sent periodically to the mParticle servers at the rate defined by this property. Batches are also uploaded
+ when the application is sent to the background.
+ */
 @property (atomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
+
+/**
+ Allows you to override the default HTTPS hosts and certificates used by the SDK, if required.
+ 
+ (Provided to accomodate certain advanced use cases. Most integrations of the SDK will not require modifying this property.)
+ */
 @property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
+
+/**
+ Consent state.
+ 
+ Allows you to record one or more consent purposes and whether or not the user agreed to each one.
+ */
 @property (atomic, strong, nullable) MPConsentState *consentState;
+
+/**
+ Identify callback.
+ 
+ This will be called when an identify request completes.
+ 
+ This applies to both the initial identify request triggered by the SDK and any identify requests you may send.
+ */
 @property (nonatomic, copy) void (^onIdentifyComplete)(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error);
+
+/**
+ Attribution callback.
+ 
+ This will be called each time a kit returns attribution info.
+ */
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
+
 @end
 
 /**
