@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.5.5
+
+## Core SDK Updates
+
+- Allow querying the SDK for session ID
+
+## Kit Updates
+
+- Branch: Handle deep links at app startup
+
 ## 7.5.4
 
 ## Core SDK Updates
