@@ -2,9 +2,11 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
+#import "MPSession.h"
 
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 
 @end
@@ -49,6 +51,43 @@
     
     instance.optOut = NO;
     XCTAssertFalse(instance.optOut, "Opt Out failed to set False");
+}
+
+- (void)testOptOutEndsSession {
+    MParticle *instance = [MParticle sharedInstance];
+    instance.stateMachine = [[MPStateMachine alloc] init];
+    instance.optOut = YES;
+    
+    MParticleSession *session = instance.currentSession;
+    XCTAssertNil(session, "Setting Opt Out failed end the current session");
+}
+
+- (void)testNonOptOutHasSession {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNotNil(session, "Not Opted Out but nil current session");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testNormalSessionContents {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticle.sharedInstance.stateMachine.currentSession.uuid = @"76F1ABB9-7A9A-4D4E-AB4D-56C8FF79CAD1";
+        MParticleSession *session = instance.currentSession;
+        NSNumber *sessionID = session.sessionID;
+        NSString *uuid = session.UUID;
+        XCTAssertEqualObjects(@"76F1ABB9-7A9A-4D4E-AB4D-56C8FF79CAD1", uuid);
+        XCTAssertEqual(-6881666186511944082, sessionID.integerValue);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 @end

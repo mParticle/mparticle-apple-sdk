@@ -35,6 +35,29 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ An SDK session.
+ 
+ Sessions are typically started and ended automatically by the SDK based on App lifecycle events.
+ 
+ Automatic session management can be disabled if desired and is always disabled in App Extensions.
+ 
+ @see currentSession
+ */
+@interface MParticleSession : NSObject
+
+/**
+ A hash of the session UUID.
+ */
+@property (nonatomic, readonly) NSNumber *sessionID;
+
+/**
+ The session UUID.
+ */
+@property (nonatomic, readonly) NSString *UUID;
+
+@end
+
 @interface MPAttributionResult : NSObject
 
 @property (nonatomic) NSDictionary *linkInfo;
@@ -167,6 +190,11 @@ NS_ASSUME_NONNULL_BEGIN
  @see MParticleOptions
  */
 @property (nonatomic, unsafe_unretained, readonly) BOOL automaticSessionTracking;
+
+/**
+ The current session. You can access properties for Session ID and UUID.
+ */
+@property (atomic, strong, nullable, readonly) MParticleSession *currentSession;
 
 /**
  Gets/Sets the user agent to a custom value.

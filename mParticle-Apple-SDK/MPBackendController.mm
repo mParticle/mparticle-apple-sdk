@@ -59,6 +59,7 @@ static BOOL appBackgrounded = NO;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 + (dispatch_queue_t)messageQueue;
+- (NSNumber *)sessionIDFromUUID:(NSString *)uuid;
 
 @end
 
@@ -288,14 +289,22 @@ static BOOL appBackgrounded = NO;
     });
     
     __weak MPBackendController *weakSelf = self;
-    NSString *sessionId = session.uuid;
+    NSNumber *sessionId = [MParticle.sharedInstance sessionIDFromUUID:session.uuid];
+    NSString *sessionUUID = session.uuid;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
         if (strongSelf) {
+            NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
+            if (sessionId) {
+                mutableInfo[mParticleSessionId] = sessionId;
+            }
+            if (sessionUUID) {
+                mutableInfo[mParticleSessionUUID] = sessionUUID;
+            }
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
                                                                 object:strongSelf.delegate
-                                                              userInfo:@{mParticleSessionId:sessionId}];
+                                                              userInfo:[mutableInfo copy]];
         }
     });
 }
@@ -1200,7 +1209,7 @@ static BOOL appBackgrounded = NO;
     [persistence archiveSession:sessionToEnd];
     [self broadcastSessionDidEnd:sessionToEnd];
     _session = nil;
-    
+    [MParticle sharedInstance].stateMachine.currentSession = nil;
     MPILogVerbose(@"Session Ended: %@", sessionToEnd.uuid);
 }
 

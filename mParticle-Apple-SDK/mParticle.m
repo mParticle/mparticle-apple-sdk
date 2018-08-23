@@ -24,6 +24,7 @@
 #import "MPConvertJS.h"
 #import "MPIdentityApi.h"
 #import "MPEvent+Internal.h"
+#import "MPIHasher.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -93,6 +94,16 @@ NSString *const kMPStateKey = @"state";
     return description;
 }
 
+@end
+
+@interface MParticleSession ()
+
+@property (nonatomic, readwrite) NSNumber *sessionID;
+@property (nonatomic, readwrite) NSString *UUID;
+
+@end
+
+@implementation MParticleSession
 @end
 
 @implementation MPNetworkOptions
@@ -661,6 +672,29 @@ NSString *const kMPStateKey = @"state";
                            });
                            
                        }];
+}
+
+- (NSNumber *)sessionIDFromUUID:(NSString *)uuid {
+    NSNumber *sessionID = nil;
+    sessionID = @([MPIHasher hashStringUTF16:uuid].integerValue);
+    return sessionID;
+}
+
+- (MParticleSession *)currentSession {
+    MParticleSession *session = nil;
+    
+    MPSession *sessionInternal = MParticle.sharedInstance.stateMachine.currentSession;
+    
+    if (sessionInternal) {
+        NSNumber *sessionID = [self sessionIDFromUUID:sessionInternal.uuid];
+        NSString *uuid = sessionInternal.uuid;
+        
+        session = [[MParticleSession alloc] init];
+        session.sessionID = sessionID;
+        session.UUID = uuid;
+    }
+    
+    return session;
 }
 
 #pragma mark Application notifications

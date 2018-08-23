@@ -297,6 +297,12 @@ extern NSString * _Nonnull const mParticleSessionDidEndNotification;
  */
 extern NSString * _Nonnull const mParticleSessionId;
 
+/** This constant is used as key for the userInfo dictionary in the
+ mParticleSessionDidBeginNotification and mParticleSessionDidEndNotification notifications. The value
+ of this key is the UUID of the session.
+ */
+extern NSString * _Nonnull const mParticleSessionUUID;
+
 /** Posted immediately after the SDK becomes initialized.
  
  @discussion You can register to receive this notification using NSNotificationCenter. This notification is broadcast when the mParticle SDK successfully

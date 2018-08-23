@@ -4,6 +4,7 @@
 #import "MPEvent.h"
 #import "EventTypeName.h"
 #import "MPBaseTestCase.h"
+#import "MPIHasher.h"
 
 @interface HasherTests : MPBaseTestCase
 
@@ -108,9 +109,23 @@
 - (void)testRampHash {
     NSString *rampString = @"E1492888-3B7C-4FB2-98A5-6C483BF9EBEB";
     NSData *rampData = [rampString dataUsingEncoding:NSUTF8StringEncoding];
-    uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+    int64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
     
-    XCTAssertEqual(rampHash, 8288906072899054792, @"Ramp hash is being calculated incorrectly.");
+    XCTAssertEqual(rampHash, -1177587625323713153, @"Ramp hash is being calculated incorrectly.");
+}
+
+- (void)testNegativeSessionIDHash {
+    NSString *sessionUUID = @"76F1ABB9-7A9A-4D4E-AB4D-56C8FF79CAD1";
+    int64_t sessionID = [MPIHasher hashStringUTF16:sessionUUID].integerValue;
+    
+    XCTAssertEqual(sessionID, -6881666186511944082, @"Negative Session ID hash is being calculated incorrectly.");
+}
+
+- (void)testPositiveSessionIDHash {
+    NSString *sessionUUID = @"222F6BEA-F6A8-4DFC-A950-744EFD6FEC3D";
+    int64_t sessionID = [MPIHasher hashStringUTF16:sessionUUID].integerValue;
+    
+    XCTAssertEqual(sessionID, 7868951891731938297, @"Positive Session ID hash is being calculated incorrectly.");
 }
 
 - (void)testEventTypeHash {
