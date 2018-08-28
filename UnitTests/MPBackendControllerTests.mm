@@ -1013,6 +1013,13 @@
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
+- (void)testSetUserTag {
+    [self.backendController setUserAttribute:@"foo tag 1" value:nil timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqual(attributes.count, 1);
+    NSString *value = attributes[@"foo tag 1"];
+    XCTAssertEqualObjects(value, [NSNull null]);
+}
 
 - (void)testUserAttributeChanged {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;

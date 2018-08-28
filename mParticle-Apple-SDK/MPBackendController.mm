@@ -629,14 +629,6 @@ static BOOL appBackgrounded = NO;
     id<NSObject> userAttributeValue = nil;
     NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
     
-    if (!userAttributeChange.value && !userAttributes[localKey]) {
-        if (completionHandler) {
-            completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusSuccess);
-        }
-        
-        return;
-    }
-    
     NSError *error = nil;
     NSUInteger maxValueLength = userAttributeChange.isArray ? MAX_USER_ATTR_LIST_ENTRY_LENGTH : LIMIT_USER_ATTR_LENGTH;
     BOOL validAttributes = [self checkAttribute:userAttributeChange.userAttributes key:localKey value:userAttributeChange.value maxValueLength:maxValueLength error:&error];
@@ -1884,7 +1876,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    if (!(([value isKindOfClass:[NSString class]] && ((NSString *)value).length > 0) || [value isKindOfClass:[NSNumber class]])) {
+    if (!(([value isKindOfClass:[NSString class]] && ((NSString *)value).length > 0) || [value isKindOfClass:[NSNumber class]]) && value != nil) {
         if (completionHandler) {
             completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
         }
