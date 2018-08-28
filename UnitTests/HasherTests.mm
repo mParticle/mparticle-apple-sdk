@@ -128,6 +128,13 @@
     XCTAssertEqual(sessionID, 7868951891731938297, @"Positive Session ID hash is being calculated incorrectly.");
 }
 
+- (void)testOverflowSessionIDHash {
+    NSString *sessionUUID = @"B469F3A1-79B6-4E83-823A-53CFC41C3880";
+    int64_t sessionID = [MPIHasher hashStringUTF16:sessionUUID].integerValue;
+    
+    XCTAssertEqual(sessionID, -5269132687922921892, @"Overflow Session ID hash is being calculated incorrectly.");
+}
+
 - (void)testEventTypeHash {
     NSString *hashString = @"49";
     MPEventType eventType = (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([hashString cStringUsingEncoding:NSUTF8StringEncoding]));

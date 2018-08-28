@@ -62,6 +62,7 @@ namespace mParticle {
         return Hasher::hashString(eventName);
     }
 
+    __attribute__((no_sanitize("integer")))
     int64_t Hasher::hashFNV1a(const char *bytes, int length) {
         // FNV-1a hashing
         int64_t rampHash = 0xcbf29ce484222325;
