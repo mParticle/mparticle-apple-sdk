@@ -1,5 +1,19 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.5.6
+
+## Core SDK Updates
+
+- Update JS snippet to initialize webview
+- Enable undefined behavior sanitizer for unit tests
+- Silence sanitizer for hashing
+- Fix validation for set user tag
+- Allow disabling location tracking using ifdef
+
+## Kit Updates
+
+- Branch: Fix mapping of events to Branch events
+
 ## 7.5.5
 
 ## Core SDK Updates
