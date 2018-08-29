@@ -1440,7 +1440,7 @@ NSString *const kMPStateKey = @"state";
 #if TARGET_OS_IOS == 1
 // Updates isIOS flag in JS API to true via webview.
 - (void)initializeWebView:(UIWebView *)webView {
-    [webView stringByEvaluatingJavaScriptFromString:@"mParticle.isIOS = true;"];
+    [webView stringByEvaluatingJavaScriptFromString:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true;"];
 }
 
 // A url is mParticle sdk url when it has prefix mp-sdk://
