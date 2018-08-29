@@ -313,14 +313,22 @@ static BOOL appBackgrounded = NO;
     [self.delegate sessionDidEnd:session];
     
     __weak MPBackendController *weakSelf = self;
-    NSString *sessionId = session.uuid;
+    NSNumber *sessionId = [MParticle.sharedInstance sessionIDFromUUID:session.uuid];
+    NSString *sessionUUID = session.uuid;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
-        if (strongSelf && sessionId) {
+        if (strongSelf) {
+            NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
+            if (sessionId) {
+                mutableInfo[mParticleSessionId] = sessionId;
+            }
+            if (sessionUUID) {
+                mutableInfo[mParticleSessionUUID] = sessionUUID;
+            }
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
                                                                 object:strongSelf.delegate
-                                                              userInfo:@{mParticleSessionId:sessionId}];
+                                                              userInfo:[mutableInfo copy]];
         }
     });
 }
