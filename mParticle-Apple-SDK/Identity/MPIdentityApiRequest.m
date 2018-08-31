@@ -20,12 +20,12 @@
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    if (!identityString || [identityString length] > 0) {
-        if (!identityString) {
-            identityString = (NSString *)[NSNull null];
-        }
-        
-        [_userIdentities setObject:identityString forKey:@(identityType)];
+    if (MPIsNull(identityString)) {
+        [_userIdentities setObject:(NSString *)[NSNull null]
+                            forKey:@(identityType)];
+    } else if ([identityString length] > 0) {
+        [_userIdentities setObject:identityString
+                            forKey:@(identityType)];
     }
 }
 

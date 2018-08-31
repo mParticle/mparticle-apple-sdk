@@ -535,6 +535,54 @@
 #endif
 }
 
+- (void)testSetIdentityToNil {
+    [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
+                                     timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                
+                            }];
+    NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.userIdentities;
+    XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
+    [[self backendController] setUserIdentity:(id)[NSNull null] identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                
+                            }];
+    
+    identities = [MParticle sharedInstance].identity.currentUser.userIdentities;
+    XCTAssertNil([identities objectForKey:@(MPUserIdentityEmail)]);
+}
+
+- (void)testDoNotSetDuplicateIdentityCasing {
+    __block MPExecStatus status = MPExecStatusFail;
+    [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                
+                            }];
+    [[self backendController] setUserIdentity:@"FOO" identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                status = execStatus;
+                            }];
+    XCTAssertEqual(MPExecStatusSuccess, status);
+}
+
+- (void)testDoNotSetDuplicateIdentity {
+    __block MPExecStatus status = MPExecStatusSuccess;
+    [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                
+                            }];
+    [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
+                                    timestamp:[NSDate date]
+                            completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                status = execStatus;
+                            }];
+    XCTAssertEqual(MPExecStatusFail, status);
+}
+
 - (void)testDidBecomeActive {
 #if TARGET_OS_IOS == 1
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;

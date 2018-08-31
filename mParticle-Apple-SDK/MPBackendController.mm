@@ -1955,13 +1955,16 @@ static BOOL appBackgrounded = NO;
     NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
-    NSDictionary *userIdentity = [[[self userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
+    NSDictionary *currentIdentities = [[[self userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
     
-    if (userIdentity && !MPIsNull(userIdentity[kMPUserIdentityIdKey])) {
-        if ([userIdentity[kMPUserIdentityIdKey] caseInsensitiveCompare:userIdentityChange.userIdentityNew.value] == NSOrderedSame &&
-            ![userIdentity[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.userIdentityNew.value]) {
-            return;
-        }
+    BOOL oldIdentityIsValid = currentIdentities && !MPIsNull(currentIdentities[kMPUserIdentityIdKey]);
+    BOOL newIdentityIsValid = !MPIsNull(userIdentityChange.userIdentityNew.value);
+    
+    if (oldIdentityIsValid
+        && newIdentityIsValid
+        && [currentIdentities[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.userIdentityNew.value]) {
+        completionHandler(identityString, identityType, MPExecStatusFail);
+        return;
     }
     
     BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
@@ -2009,10 +2012,10 @@ static BOOL appBackgrounded = NO;
                 
                 [userIdentities addObject:identityDictionary];
             } else {
-                userIdentity = userIdentities[existingEntryIndex];
-                userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:userIdentity];
+                currentIdentities = userIdentities[existingEntryIndex];
+                userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:currentIdentities];
                 
-                NSNumber *timeIntervalMilliseconds = userIdentity[kMPDateUserIdentityWasFirstSet];
+                NSNumber *timeIntervalMilliseconds = currentIdentities[kMPDateUserIdentityWasFirstSet];
                 userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
                 userIdentityChange.userIdentityNew.isFirstTimeSet = NO;
                 
