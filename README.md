@@ -119,7 +119,7 @@ Kit | CocoaPods | Carthage
 [Kahuna](https://github.com/mparticle-integrations/mparticle-apple-integration-kahuna)                |  ✓ |  
 [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
 [Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)            |  ✓ | ✓
-[Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ |  
+[Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ | ✓
 [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
 [Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                  |  ✓ | ✓
 [Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)   |  ✓ |  
