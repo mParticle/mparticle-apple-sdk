@@ -1,5 +1,18 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.5.7
+
+## Core SDK Updates
+
+- Simplify backend attribute tests
+- Update readme for Localytics Carthage support
+- Prevent non-modular include error
+- Fix potential crash if called with nil identity
+
+## Kit Updates
+
+- None
+
 ## 7.5.6
 
 ## Core SDK Updates
