@@ -697,368 +697,80 @@
     XCTAssertFalse(validAttributes);
 }
 
-- (void)testSetUserAttributes {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test user attributes"];
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
-    if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
-        
-        NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
-        
-        NSString *eTag = @"1.618-2.718-3.141-42";
-        NSArray *kitConfigs = @[configuration1, configuration2];
-        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
-                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                        kMPRemoteConfigSessionTimeoutKey:@112};
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
-    }
-    
-    
-    NSDictionary *attributes = @{@"TardisKey1":@"Master",
-                                 @"TardisKey2":@"Guest",
-                                 @"TardisKey3":@42,
-                                 @"TardisKey4":@[@"alohomora", @"open sesame"]
-                                 };
-    
-    [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[NSArray class]]) {
-            [self.backendController setUserAttribute:key values:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-        } else {
-            [self.backendController setUserAttribute:key value:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-        }
-    }];
-    
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+- (void)testSetStringAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    NSString *value = attributes[@"foo attribute 1"];
+    XCTAssertEqualObjects(value, @"foo value 1");
 }
 
-- (void)testSetExistingUserAttribute {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test user attributes"];
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
-    if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
-        
-        NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
-        
-        NSString *eTag = @"1.618-2.718-3.141-42";
-        NSArray *kitConfigs = @[configuration1, configuration2];
-        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
-                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                        kMPRemoteConfigSessionTimeoutKey:@112};
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
-    }
-    
-    
-    NSDictionary *attributes = @{@"TardisKey1":@"Master",
-                                 @"TardisKey2":@"Guest",
-                                 @"TardisKey3":@42,
-                                 @"TardisKey4":@[@"alohomora", @"open sesame"]
-                                 };
-    
-    [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[NSArray class]]) {
-            [self.backendController setUserAttribute:key values:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-        } else {
-            [self.backendController setUserAttribute:key value:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-        }
-    }];
-    
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    [self.backendController setUserAttribute:@"TardisKey4" value:@"Door" timestamp:[NSDate date] completionHandler:nil];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotEqualObjects(userAttributes, attributes);
-    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
-    
-    attributes = @{@"TardisKey1":@"Master",
-                   @"TardisKey2":@"Guest",
-                   @"TardisKey3":@42,
-                   @"TardisKey4":@"Door"
-                   };
-    
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+- (void)testSetExistingStringAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    NSString *value = attributes[@"foo attribute 1"];
+    XCTAssertEqualObjects(value, @"foo value 2");
 }
 
-- (void)testUserAttributesTooLong {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test user attributes"];
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
-    if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
-        
-        NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
-        
-        NSString *eTag = @"1.618-2.718-3.141-42";
-        NSArray *kitConfigs = @[configuration1, configuration2];
-        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
-                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                        kMPRemoteConfigSessionTimeoutKey:@112};
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
-    }
-    
-    __weak MPBackendControllerTests *weakSelf = self;
-    
-    [weakSelf.backendController setUserAttribute:@"TardisKey1" value:@"Master" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {
-        NSDictionary *userAttributes = [weakSelf.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-        XCTAssertEqualObjects(userAttributes, @{@"TardisKey1":@"Master"});
-        
-        NSMutableString *longString = [[NSMutableString alloc] initWithCapacity:(LIMIT_USER_ATTR_LENGTH + 1)];
-        for (int i = 0; i < (LIMIT_USER_ATTR_LENGTH + 1); ++i) {
-            [longString appendString:@"T"];
-        }
-        
-        [weakSelf.backendController setUserAttribute:@"TardisKey1" value:longString timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-        userAttributes = [weakSelf.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-        XCTAssertEqualObjects(userAttributes, @{@"TardisKey1":@"Master"});
-        [expectation fulfill];
-    }];
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+- (void)testSetStringArrayAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 1" values:@[@"foo value 1", @"foo value 2"] timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    NSArray *array = attributes[@"foo attribute 1"];
+    NSArray *result = @[@"foo value 1", @"foo value 2"];
+    XCTAssertEqualObjects(array, result);
 }
 
-
-- (void)testUserAttributesDelete {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test user attributes"];
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
-    if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
-        
-        NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
-        
-        NSString *eTag = @"1.618-2.718-3.141-42";
-        NSArray *kitConfigs = @[configuration1, configuration2];
-        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
-                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                        kMPRemoteConfigSessionTimeoutKey:@112};
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
-    }
-    
-    
-    __block NSDictionary *attributes = @{@"TardisKey1":@"Master",
-                                 @"TardisKey2":@"Guest",
-                                 @"TardisKey3":@42,
-                                 @"TardisKey4":@[@"alohomora", @"open sesame"]
-                                 };
-    
-    [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[NSArray class]]) {
-            [self.backendController setUserAttribute:key values:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-        } else {
-            [self.backendController setUserAttribute:key value:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-        }
-    }];
-    
-    __block NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController removeUserAttribute:@"TardisKey1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-        XCTAssertNotEqualObjects(userAttributes, attributes);
-        XCTAssertNil(userAttributes[@"TardisKey1"]);
-        
-        attributes = @{@"TardisKey2":@"Guest",
-                       @"TardisKey3":@42,
-                       @"TardisKey4":@[@"alohomora", @"open sesame"]
-                       };
-        
-        XCTAssertEqualObjects(userAttributes, attributes);
-        [expectation fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+- (void)testSetNumberAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 2" value:@12.34 timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    NSNumber *value = attributes[@"foo attribute 2"];
+    XCTAssertEqualObjects(value, @12.34);
 }
 
-- (void)testUserAttributesIncrementInvalid {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"test user attributes"];
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
-    if (![MPKitContainer registeredKits]) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
-        
-        NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
-        
-        NSString *eTag = @"1.618-2.718-3.141-42";
-        NSArray *kitConfigs = @[configuration1, configuration2];
-        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
-                                        kMPRemoteConfigRampKey:@100,
-                                        kMPRemoteConfigTriggerKey:[NSNull null],
-                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                        kMPRemoteConfigSessionTimeoutKey:@112};
-        
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
+- (void)testSetTooLongAttribute {
+    NSMutableString *longValue = [[NSMutableString alloc] initWithCapacity:(LIMIT_USER_ATTR_LENGTH + 1)];
+    for (int i = 0; i < (LIMIT_USER_ATTR_LENGTH + 1); ++i) {
+        [longValue appendString:@"T"];
     }
-    
-    
-    NSDictionary *attributes = @{@"TardisKey1":@"Master",
-                                 @"TardisKey2":@"Guest",
-                                 @"TardisKey3":@42,
-                                 @"TardisKey4":@[@"alohomora", @"open sesame"]
-                                 };
-    
-    [attributes enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj isKindOfClass:[NSArray class]]) {
-            [self.backendController setUserAttribute:key values:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
-        } else {
-            [self.backendController setUserAttribute:key value:obj timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
-        }
-    }];
-    
-    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    
-    [self.backendController setUserAttribute:@"TardisKey4" value:@"Door" timestamp:[NSDate date] completionHandler:nil];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertNotEqualObjects(userAttributes, attributes);
-    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
-    
-    attributes = @{@"TardisKey1":@"Master",
-                   @"TardisKey2":@"Guest",
-                   @"TardisKey3":@42,
-                   @"TardisKey4":@"Door"
-                   };
-    
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [self.backendController incrementUserAttribute:@"TardisKey4" byValue:@1];
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    NSArray *values = @[@"alohomora", @314];
-    [self.backendController setUserAttribute:@"TardisKey4" values:values timestamp:[NSDate date] completionHandler:nil];
-    XCTAssertEqualObjects(userAttributes[@"TardisKey4"], @"Door");
-    userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
-    XCTAssertEqualObjects(userAttributes, attributes);
-    
-    [[MParticle sharedInstance].kitContainer configureKits:nil];
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self.backendController setUserAttribute:@"foo attribute 2" value:longValue timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqualObjects(attributes, @{});
+}
+
+- (void)testSetInvalidDateAttribute {
+    NSDate *date = [NSDate date];
+    [self.backendController setUserAttribute:@"foo attribute 2" value:date timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqualObjects(attributes, @{});
+}
+
+- (void)testSetInvalidNullAttribute {
+    NSNull *nullObject = [NSNull null];
+    [self.backendController setUserAttribute:@"foo attribute 2" value:nullObject timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqualObjects(attributes, @{});
+}
+
+- (void)testIncrementInvalidAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 2" value:@"foo value 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    [self.backendController incrementUserAttribute:@"foo attribute 2" byValue:@1];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    NSString *value = attributes[@"foo attribute 2"];
+    XCTAssertEqualObjects(value, @"foo value 2");
+}
+
+- (void)testRemoveNumberAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 2" value:@12.34 timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    [self.backendController removeUserAttribute:@"foo attribute 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqualObjects(attributes, @{});
+}
+
+- (void)testRemoveStringAttribute {
+    [self.backendController setUserAttribute:@"foo attribute 2" value:@"foo value 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    [self.backendController removeUserAttribute:@"foo attribute 2" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+    NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqualObjects(attributes, @{});
 }
 
 - (void)testSetUserTag {
@@ -1067,6 +779,50 @@
     XCTAssertEqual(attributes.count, 1);
     NSString *value = attributes[@"foo tag 1"];
     XCTAssertEqualObjects(value, [NSNull null]);
+}
+
+- (void)testSetUserAttributeKits {
+    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
+    
+    if (![MPKitContainer registeredKits]) {
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
+        [MPKitContainer registerKit:kitRegister];
+        
+        kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
+        [MPKitContainer registerKit:kitRegister];
+        
+        NSDictionary *configuration1 = @{
+                                         @"id":@42,
+                                         @"as":@{
+                                                 @"appId":@"MyAppId"
+                                                 }
+                                         };
+        
+        NSDictionary *configuration2 = @{
+                                         @"id":@314,
+                                         @"as":@{
+                                                 @"appId":@"unique id"
+                                                 }
+                                         };
+        
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSArray *kitConfigs = @[configuration1, configuration2];
+        NSDictionary *configuration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                        kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
+                                        kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigTriggerKey:[NSNull null],
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+        
+        [MPResponseConfig save:responseConfig eTag:eTag];
+    }
+    
+    [self.backendController setUserAttribute:@"foo attribute 3" value:@"foo value 3" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];
+    
+    NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+    XCTAssertEqualObjects(userAttributes, @{@"foo attribute 3":@"foo value 3"});
 }
 
 - (void)testUserAttributeChanged {
