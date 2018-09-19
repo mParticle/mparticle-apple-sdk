@@ -188,7 +188,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Adobe */
     MPKitInstanceAdobe = 124,
     /** Kit code for Instabot */
-    MPKitInstanceInstabot = 123
+    MPKitInstanceInstabot = 123,
+    /** Kit code for Appsee */
+    MPKitInstanceAppsee = 126
 };
 
 /// Log Levels

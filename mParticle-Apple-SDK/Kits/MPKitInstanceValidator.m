@@ -34,7 +34,9 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceSingular),
                                       @(MPKitInstanceAdobe),
                                       @(MPKitInstanceInstabot),
-                                      @(MPKitInstanceCarnival)];
+                                      @(MPKitInstanceCarnival),
+                                      @(MPKitInstanceAppsee),
+                                      ];
 
     validKitCodes = [[NSMutableArray alloc] initWithCapacity:kitCodes.count];
     
@@ -73,6 +75,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceAdobe:
             case MPKitInstanceInstabot:
             case MPKitInstanceCarnival:
+            case MPKitInstanceAppsee:
                 [validKitCodes addObject:kitCode];
                 break;
         }
