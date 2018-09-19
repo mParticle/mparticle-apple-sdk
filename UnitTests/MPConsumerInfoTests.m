@@ -62,8 +62,7 @@
 
 - (void)testInstance {
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
-//    XCTAssertNotNil(consumerInfo.mpId, @"Should not have been nil.");
-
+    
     [consumerInfo updateWithConfiguration:consumerInfoDictionary];
     XCTAssertNotNil(consumerInfo, @"Consumer info instance should not have been nil.");
     
@@ -71,9 +70,6 @@
     XCTAssertNotNil(consumerInfoData, @"Should not have been nil.");
     MPConsumerInfo *deserializedConsumerInfo = [NSKeyedUnarchiver unarchiveObjectWithData:consumerInfoData];
     XCTAssertNotNil(deserializedConsumerInfo, @"Should not have been nil.");
-    
-//    NSNumber *mpId = [consumerInfo generateMpId];
-//    XCTAssertNotNil(mpId, @"Should not have been nil.");
     
     consumerInfo = [[MPConsumerInfo alloc] init];
     [consumerInfo updateWithConfiguration:@{}];

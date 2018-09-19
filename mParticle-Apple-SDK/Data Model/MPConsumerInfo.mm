@@ -45,25 +45,6 @@ NSString *const kMPCKExpiration = @"e";
     }
     
     BOOL isEqual = [_name isEqualToString:object.name];
-    
-//    if (isEqual && _content && object.content) {
-//        isEqual = [_content isEqualToString:object.content];
-//    } else if (isEqual && (_content || object.content)) {
-//        return NO;
-//    }
-//    
-//    if (isEqual && _domain && object.domain) {
-//        isEqual = [_domain isEqualToString:object.domain];
-//    } else if (isEqual && (_domain || object.domain)) {
-//        return NO;
-//    }
-//    
-//    if (isEqual && _expiration && object.expiration) {
-//        isEqual = [_expiration isEqualToString:object.expiration];
-//    } else if (isEqual && (_expiration || object.expiration)) {
-//        return NO;
-//    }
-    
     return isEqual;
 }
 

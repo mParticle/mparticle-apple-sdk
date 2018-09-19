@@ -21,12 +21,6 @@ namespace mParticle {
         stream.next_in = (Bytef *)data;
         stream.avail_in = length;
         
-        // Compression Levels:
-        //  Z_NO_COMPRESSION
-        //  Z_BEST_SPEED
-        //  Z_BEST_COMPRESSION
-        //  Z_DEFAULT_COMPRESSION
-        
         if (deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, (15+16), 8, Z_DEFAULT_STRATEGY) != Z_OK) {
             return {nullptr, 0};
         }

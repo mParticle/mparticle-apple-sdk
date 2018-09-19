@@ -33,7 +33,6 @@ NSString *const kMPAppImageSizeKey = @"is";
 static BOOL handlingExceptions;
 
 void SignalHandler(int signal);
-//void BeginUncaughtExceptionLogging();
 void EndUncaughtExceptionLogging(void);
 void handleException(NSException *exception);
 static bool debuggerRunning(void);
@@ -285,13 +284,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 #endif
     
     if (crashData) {
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-//--- Do Not Uncomment, for debugging purposes only.
-//        PLCrashReport *report = [[PLCrashReport alloc] initWithData:crashData error:&error];
-//        NSString *reportString = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
-//        NSLog(@"\nCrash report: %@", reportString);
-//---
-#endif
         NSString *base64CrashString = [crashData base64EncodedStringWithOptions:0];
         
         NSMutableDictionary *messageInfo = [@{kMPCrashingSeverity:@"fatal",
@@ -496,12 +488,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     liveExceptionReport = [[MPExceptionHandler crashReporter] generateLiveReportAndReturnError:&error];
-    
-//--- Do Not Uncomment. For debugging purposes only
-//    PLCrashReport *report = [[PLCrashReport alloc] initWithData:liveExceptionReport error:&error];
-//    NSString *reportString = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
-//    NSLog(@"\nLive exception report: %@", reportString);
-//---
 #endif
     
     if (error) {
@@ -561,16 +547,6 @@ void SignalHandler(int signal) {
     NSException *exceptionToLog = [NSException exceptionWithName:@"UncaughtExceptionSignal" reason:[NSString stringWithFormat:@"Signal %d raised.", signal] userInfo:userInfo];
     [exceptionHandler logException:exceptionToLog];
 }
-
-//void BeginUncaughtExceptionLogging() {
-//	NSSetUncaughtExceptionHandler(&handleException);
-//	signal(SIGABRT, SignalHandler);
-//	signal(SIGILL, SignalHandler);
-//	signal(SIGSEGV, SignalHandler);
-//	signal(SIGFPE, SignalHandler);
-//	signal(SIGBUS, SignalHandler);
-//	signal(SIGPIPE, SignalHandler);
-//}
 
 void EndUncaughtExceptionLogging() {
 	NSSetUncaughtExceptionHandler(nil);
