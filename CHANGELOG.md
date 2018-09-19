@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.6.0
+
+## Core SDK Updates
+
+- Updates for better iOS 12 and Xcode 10 support. We upgraded to NSSecureCoding and silenced other deprecation warnings to maintain support for older iOS versions.
+- Code cleanup and additional unit tests for session notifications
+
+## Kit Updates
+
+- Update Radar kit
+- Add Appsee kit
+
 ## 7.5.7
 
 ## Core SDK Updates
