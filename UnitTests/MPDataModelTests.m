@@ -192,4 +192,39 @@
     XCTAssertNotNil(dictionaryRepresentation, @"Should not have been nil.");
 }
 
+- (void)testMessageEncoding {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    
+    XCTAssertNotNil(message, @"Should not have been nil.");
+    
+    
+    MPMessage *persistedMessage = [self attemptSecureEncodingwithClass:[MPMessage class] Object:message];
+    XCTAssertEqualObjects(message, persistedMessage, @"Message should have been a match.");
+}
+
+- (void)testBreadcrumbEncoding {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = (MPMessage *)[messageBuilder build];
+    
+    MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:session.uuid
+                                                            breadcrumbId:0
+                                                                    UUID:[[NSUUID UUID] UUIDString]
+                                                          breadcrumbData:message.messageData
+                                                               timestamp:[[NSDate date] timeIntervalSince1970]];
+    XCTAssertNotNil(breadcrumb, @"Should not have been nil.");
+
+    
+    MPBreadcrumb *persistedBreadcrumb = [self attemptSecureEncodingwithClass:[MPBreadcrumb class] Object:breadcrumb];
+    XCTAssertEqualObjects(breadcrumb, persistedBreadcrumb, @"Breadcrumb should have been a match.");
+}
+
 @end

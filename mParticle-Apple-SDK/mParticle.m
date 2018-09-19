@@ -1438,9 +1438,17 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Web Views
 #if TARGET_OS_IOS == 1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 // Updates isIOS flag in JS API to true via webview.
 - (void)initializeWebView:(UIWebView *)webView {
     [webView stringByEvaluatingJavaScriptFromString:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true;"];
+}
+#pragma clang diagnostic pop
+
+// Updates isIOS flag in JS API to true via webview.
+- (void)initializeWKWebView:(WKWebView *)webView {
+    [webView evaluateJavaScript:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true;" completionHandler:nil];
 }
 
 // A url is mParticle sdk url when it has prefix mp-sdk://
@@ -1448,7 +1456,7 @@ NSString *const kMPStateKey = @"state";
     return [[requestUrl scheme] isEqualToString:kMParticleWebViewSdkScheme];
 }
 
-// Process web log event that is raised in iOS hybrid apps that are using UIWebView
+// Process web log event that is raised in iOS hybrid apps that are using UIWebView or WKWebView
 - (void)processWebViewLogEvent:(NSURL *)requestUrl {
     if (![self isMParticleWebViewSdkUrl:requestUrl]) {
         return;
@@ -1551,7 +1559,7 @@ NSString *const kMPStateKey = @"state";
             [self setSessionAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
         }
     } @catch (NSException *e) {
-        MPILogError(@"Exception processing UIWebView event: %@", e.reason)
+        MPILogError(@"Exception processing WebView event: %@", e.reason)
     }
 }
 #endif

@@ -327,4 +327,37 @@
     removeKeysFromUserDefaults();
 }
 
+- (void)testCustomModuleEncoding {
+    NSDictionary *customModuleConfiguration = @{
+                                                @"id":@11,
+                                                @"pr":@[
+                                                        @{@"f":@"NSUserDefaults",
+                                                          @"m":@0,
+                                                          @"ps":@[
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_1",
+                                                                    @"t":@1,
+                                                                    @"n":@"vid",
+                                                                    @"d":@"%oaid%"
+                                                                    },
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_2",
+                                                                    @"t":@1,
+                                                                    @"n":@"aid",
+                                                                    @"d":@"%oaid%"
+                                                                    },
+                                                                  @{@"k":@"mParticle_UNIT_TEST_CustomModule_3",
+                                                                    @"t":@2,
+                                                                    @"n":@"ltv",
+                                                                    @"d":@"0"
+                                                                    }
+                                                                  ]
+                                                          }
+                                                        ]
+                                                };
+    
+    MPCustomModule *customModule = [[MPCustomModule alloc] initWithDictionary:customModuleConfiguration];
+    
+    MPCustomModule *persistedCustomModule = [self attemptSecureEncodingwithClass:[MPCustomModule class] Object:customModule];
+    XCTAssertEqualObjects(customModule, persistedCustomModule, @"Custom Module should have been a match.");
+}
+
 @end

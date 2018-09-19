@@ -214,7 +214,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     return redactedNotificationString;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:_receiptTime forKey:@"receiptTime"];
     [coder encodeObject:_state forKey:@"state"];
@@ -257,21 +257,21 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     }
     
     _shouldPersist = YES;
-    _receiptTime = [coder decodeObjectForKey:@"receiptTime"];
-    _state = [coder decodeObjectForKey:@"state"];
-    _type = [coder decodeObjectForKey:@"type"];
-    _uuid = [coder decodeObjectForKey:@"uuid"];
+    _receiptTime = [coder decodeObjectOfClass:[NSDate class] forKey:@"receiptTime"];
+    _state = [coder decodeObjectOfClass:[NSString class] forKey:@"state"];
+    _type = [coder decodeObjectOfClass:[NSString class] forKey:@"type"];
+    _uuid = [coder decodeObjectOfClass:[NSString class] forKey:@"uuid"];
     _userNotificationId = [coder decodeInt64ForKey:@"userNotificationId"];
     _behavior = [coder decodeIntegerForKey:@"behavior"];
     _mode = [coder decodeIntegerForKey:@"mode"];
     _runningMode = [coder decodeIntegerForKey:@"runningMode"];
     
-    id object = [coder decodeObjectForKey:@"categoryIdentifier"];
+    id object = [coder decodeObjectOfClass:[NSString class] forKey:@"categoryIdentifier"];
     if (object) {
         _categoryIdentifier = (NSString *)object;
     }
     
-    object = [coder decodeObjectForKey:@"redactedUserNotificationString"];
+    object = [coder decodeObjectOfClass:[NSString class] forKey:@"redactedUserNotificationString"];
     if (object) {
         _redactedUserNotificationString = (NSString *)object;
     }
@@ -297,6 +297,10 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     }
     
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 @end

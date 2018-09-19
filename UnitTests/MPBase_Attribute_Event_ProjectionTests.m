@@ -346,4 +346,58 @@
     XCTAssertFalse(eventProjection.isDefault, @"Should have been false.");
 }
 
+- (void)testBaseProjectionEncoding {
+    NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"
+                                                },
+                                    @"id":@"314",
+                                    @"matches":@[@{@"event":@"Non-projected event",
+                                                   @"event_match_type":@"String"
+                                                   }]
+                                    };
+    
+    MPBaseProjection *baseProjection = [[MPBaseProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeEvent attributeIndex:0];
+    
+    MPBaseProjection *persistedBaseProjection = [self attemptSecureEncodingwithClass:[MPBaseProjection class] Object:baseProjection];
+    XCTAssertEqualObjects(baseProjection, persistedBaseProjection, @"Base Projection should have been a match.");
+}
+
+- (void)testEventProjectionEncoding {
+    NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event",
+                                                @"outbound_message_type":@"4"
+                                                },
+                                    @"id":@"314",
+                                    @"matches":@[@{@"event":@"52",
+                                                   @"event_match_type":@"String",
+                                                   @"attribute_key":@"aKey",
+                                                   @"attribute_values":@[@"aValue"]
+                                                   }],
+                                    @"behavior":@{@"append_unmapped_as_is":@YES,
+                                                  @"is_default":@NO,
+                                                  @"max_custom_params":@42
+                                                  }
+                                    };
+    
+    MPEventProjection *eventProjection = [[MPEventProjection alloc] initWithConfiguration:configuration];
+    
+    MPEventProjection *persistedEventProjection = [self attemptSecureEncodingwithClass:[MPEventProjection class] Object:eventProjection];
+    XCTAssertEqualObjects(eventProjection, persistedEventProjection, @"Event Projection should have been a match.");
+}
+
+- (void)testAttributeProjectionEncoding {
+    NSDictionary *configuration = @{@"action":@{@"attribute_maps":@[@{@"value":@"original attribute",
+                                                                      @"projected_attribute_name":@"projected attribute",
+                                                                      @"property":@"EventAttribute",
+                                                                      @"data_type":@(MPDataTypeString),
+                                                                      @"is_required":@YES
+                                                                      }
+                                                                    ]
+                                                }
+                                    };
+    
+    MPAttributeProjection *attributeProjection = [[MPAttributeProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeAttribute attributeIndex:0];
+    
+    MPAttributeProjection *persistedAttributeProjection = [self attemptSecureEncodingwithClass:[MPAttributeProjection class] Object:attributeProjection];
+    XCTAssertEqualObjects(attributeProjection, persistedAttributeProjection, @"Attribute Projection should have been a match.");
+}
+
 @end

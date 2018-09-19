@@ -35,6 +35,7 @@
 #import "MPUserIdentityChange.h"
 #import "MPSearchAdsAttribution.h"
 #import "MPURLRequestBuilder.h"
+#import "MPArchivist.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -533,8 +534,8 @@ static BOOL appBackgrounded = NO;
         for (NSString *fileName in directoryContents) {
             NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
             @try {
-                MPMessage *message = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
-                
+                MPMessage *message = [MPArchivist unarchiveObjectOfClass:[MPMessage class] withFile:filePath error:nil];
+
                 if (message) {
                     [self saveMessage:message updateSession:NO];
                 }

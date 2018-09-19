@@ -24,7 +24,7 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 
 #if TARGET_OS_IOS == 1
 
-@interface MParticleUserNotification : MPDataModelAbstract <NSCoding>
+@interface MParticleUserNotification : MPDataModelAbstract <NSSecureCoding>
 
 @property (nonatomic, strong, nullable) NSString *actionIdentifier;
 @property (nonatomic, strong, nullable) NSString *actionTitle;

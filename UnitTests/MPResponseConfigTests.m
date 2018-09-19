@@ -112,4 +112,15 @@
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
+- (void)testResponseConfigEncoding {
+    NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
+                                    kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                    kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
+    
+    MPResponseConfig *persistedResponseConfig = [self attemptSecureEncodingwithClass:[MPResponseConfig class] Object:responseConfig];
+    XCTAssertEqualObjects(responseConfig.configuration, persistedResponseConfig.configuration, @"Response Config should have been a match.");
+}
+
 @end

@@ -518,4 +518,44 @@
     XCTAssertEqualObjects(beautifiedAttributes[@"Total Amount"], @"2");
 }
 
+- (void)testPromotionEncoding {
+    MPPromotion *promotion = [[MPPromotion alloc] init];
+    promotion.creative = @"ACME";
+    promotion.name = @"Bird Seed";
+    promotion.position = @"bottom";
+    promotion.promotionId = @"catch_a_roadrunner";
+    
+    MPPromotion *persistedPromotion = [self attemptSecureEncodingwithClass:[MPPromotion class] Object:promotion];
+    XCTAssertEqualObjects(promotion, persistedPromotion, @"Promotion should have been a match.");
+}
+
+- (void)testTransactionAttributesEncoding {
+    MPTransactionAttributes *attributes = [[MPTransactionAttributes alloc] init];
+    attributes.transactionId = @"<transaction id>";
+    attributes.revenue = @1;
+    attributes.tax = @0.5;
+    attributes.shipping = @2;
+    attributes.couponCode = @"<coupon code>";
+    
+    MPTransactionAttributes *persisteAttributes = [self attemptSecureEncodingwithClass:[MPTransactionAttributes class] Object:attributes];
+    XCTAssertEqualObjects(attributes, persisteAttributes, @"Attributes should have been a match.");
+}
+
+- (void)testCommerceEventEncoding {
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    product[@"key1"] = @"val1";
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    
+    MPCommerceEvent *persistedCommerceEvent = [self attemptSecureEncodingwithClass:[MPCommerceEvent class] Object:commerceEvent];
+    XCTAssertEqualObjects([commerceEvent dictionaryRepresentation], [persistedCommerceEvent dictionaryRepresentation], @"Commerce Event should have been a match.");
+}
+
 @end

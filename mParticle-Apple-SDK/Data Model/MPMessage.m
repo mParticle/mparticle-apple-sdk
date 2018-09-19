@@ -81,7 +81,7 @@
     return copyObject;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:self.sessionId forKey:@"sessionId"];
     [coder encodeInt64:self.messageId forKey:@"messageId"];
@@ -94,16 +94,20 @@
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    self = [self initWithSessionId:[coder decodeObjectForKey:@"sessionId"]
+    self = [self initWithSessionId:[coder decodeObjectOfClass:[NSNumber class] forKey:@"sessionId"]
                          messageId:[coder decodeInt64ForKey:@"messageId"]
-                              UUID:[coder decodeObjectForKey:@"uuid"]
-                       messageType:[coder decodeObjectForKey:@"messageType"]
-                       messageData:[coder decodeObjectForKey:@"messageData"]
+                              UUID:[coder decodeObjectOfClass:[NSString class] forKey:@"uuid"]
+                       messageType:[coder decodeObjectOfClass:[NSString class] forKey:@"messageType"]
+                       messageData:[coder decodeObjectOfClass:[NSData class] forKey:@"messageData"]
                          timestamp:[coder decodeDoubleForKey:@"timestamp"]
                       uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]
                             userId:@([coder decodeInt64ForKey:@"mpid"])];
     
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark Public methods

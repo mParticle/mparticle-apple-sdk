@@ -196,11 +196,17 @@ int main(int argc, char *argv[]);
 
 #if TARGET_OS_IOS == 1
 - (CTCarrier *)carrier {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     return telephonyNetworkInfo.subscriberCellularProvider;
+#pragma clang diagnostic pop
 }
 
 - (NSString *)radioAccessTechnology {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSString *radioAccessTechnology = telephonyNetworkInfo.currentRadioAccessTechnology;
+#pragma clang diagnostic pop
     
     if (radioAccessTechnology) {
         NSRange range = [radioAccessTechnology rangeOfString:@"CTRadioAccessTechnology"];

@@ -90,8 +90,11 @@
                         if (!strongSelf.dictionary && attributionDetails && !error) {
                             NSDictionary* deepCopyDetails = nil;
                             @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                                 deepCopyDetails = [NSKeyedUnarchiver unarchiveObjectWithData:
                                                    [NSKeyedArchiver archivedDataWithRootObject:attributionDetails]];
+#pragma clang diagnostic pop
                             }
                             @catch (NSException *e) {
                                 deepCopyDetails = [attributionDetails copy];

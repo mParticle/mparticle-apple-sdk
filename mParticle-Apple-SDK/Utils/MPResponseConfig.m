@@ -127,16 +127,20 @@
     return self;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:_configuration forKey:@"configuration"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
-    NSDictionary *configuration = [coder decodeObjectForKey:@"configuration"];
+    NSDictionary *configuration = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"configuration"];
     self = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO];
     
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark Private methods

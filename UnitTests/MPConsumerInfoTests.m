@@ -224,4 +224,12 @@
     XCTAssertNil(cookie, @"Should have been nil.");
 }
 
+- (void)testConsumerInfoEncoding {
+    MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
+    [consumerInfo updateWithConfiguration:consumerInfoDictionary];
+    
+    MPConsumerInfo *persistedConsumerInfo = [self attemptSecureEncodingwithClass:[MPConsumerInfo class] Object:consumerInfo];
+    XCTAssertEqualObjects(consumerInfo.uniqueIdentifier, persistedConsumerInfo.uniqueIdentifier, @"Consumer Info should have been a match.");
+}
+
 @end

@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 
-@interface MPResponseConfig : NSObject <NSCoding>
+@interface MPResponseConfig : NSObject <NSSecureCoding>
 
 @property (nonatomic, copy, nonnull, readonly) NSDictionary *configuration;
 

@@ -26,6 +26,7 @@
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
+    #import <WebKit/WebKit.h>
 #endif
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
@@ -820,11 +821,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Web Views
 #if TARGET_OS_IOS == 1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 /**
  Updates isIOS flag to true in JS API via given webview.
  @param webView The web view to be initialized
  */
 - (void)initializeWebView:(UIWebView *)webView;
+#pragma clang diagnostic pop
+
+/**
+ Updates isIOS flag to true in JS API via given webview.
+ @param webView The web view to be initialized
+ */
+- (void)initializeWKWebView:(WKWebView *)webView;
 
 /**
  Verifies if the url is mParticle sdk url i.e mp-sdk://
@@ -833,7 +843,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isMParticleWebViewSdkUrl:(NSURL *)requestUrl;
 
 /**
- Process log event from hybrid apps that are using iOS UIWebView control.
+ Process log event from hybrid apps that are using iOS UIWebView or WKWebView control.
  @param requestUrl The request URL
  */
 - (void)processWebViewLogEvent:(NSURL *)requestUrl;

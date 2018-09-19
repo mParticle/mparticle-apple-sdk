@@ -426,6 +426,11 @@
 		C9DD21001D8A203900D3ABBE /* MPUserAttributeChangeTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */; };
 		C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */ = {isa = PBXBuildFile; fileRef = C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */; };
 		C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD1DFF1D8A118400D3ABBE /* mParticle_Apple_SDK.framework */; };
+		D30FE279212C9290000A92E8 /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D30FE278212C9290000A92E8 /* WebKit.framework */; };
+		D3356CE6212F09BB00BC81ED /* MPArchivist.h in Headers */ = {isa = PBXBuildFile; fileRef = D3356CE4212F09BB00BC81ED /* MPArchivist.h */; };
+		D3356CE7212F09BB00BC81ED /* MPArchivist.h in Headers */ = {isa = PBXBuildFile; fileRef = D3356CE4212F09BB00BC81ED /* MPArchivist.h */; };
+		D3356CE8212F09BB00BC81ED /* MPArchivist.m in Sources */ = {isa = PBXBuildFile; fileRef = D3356CE5212F09BB00BC81ED /* MPArchivist.m */; };
+		D3356CE9212F09BB00BC81ED /* MPArchivist.m in Sources */ = {isa = PBXBuildFile; fileRef = D3356CE5212F09BB00BC81ED /* MPArchivist.m */; };
 		D36997ED20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
 		D36997EE20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
 		D37A016E20A0D2C000FF2B0F /* libOCMock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D37A016B20A0D2C000FF2B0F /* libOCMock.a */; };
@@ -757,6 +762,9 @@
 		C9DD20B51D8A190600D3ABBE /* MPURLRequestBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilderTests.m; sourceTree = "<group>"; };
 		C9DD20B61D8A190600D3ABBE /* MPUserAttributeChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserAttributeChangeTests.m; sourceTree = "<group>"; };
 		C9DD20B81D8A190600D3ABBE /* MPZipTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPZipTests.mm; sourceTree = "<group>"; };
+		D30FE278212C9290000A92E8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		D3356CE4212F09BB00BC81ED /* MPArchivist.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPArchivist.h; sourceTree = "<group>"; };
+		D3356CE5212F09BB00BC81ED /* MPArchivist.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPArchivist.m; sourceTree = "<group>"; };
 		D36997EC20FF879E009613E5 /* MParticleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleTests.m; sourceTree = "<group>"; };
 		D37A016B20A0D2C000FF2B0F /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libOCMock.a; sourceTree = "<group>"; };
 		D37A017120A0E5B200FF2B0F /* OCMockObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMockObject.h; sourceTree = "<group>"; };
@@ -849,6 +857,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D30FE279212C9290000A92E8 /* WebKit.framework in Frameworks */,
 				C9DD206A1D8A146F00D3ABBE /* AdSupport.framework in Frameworks */,
 				C9DD20801D8A14E200D3ABBE /* CoreGraphics.framework in Frameworks */,
 				C9DD207E1D8A14D800D3ABBE /* CoreLocation.framework in Frameworks */,
@@ -1172,6 +1181,8 @@
 		C9DD1D141D8A112B00D3ABBE /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				D3356CE4212F09BB00BC81ED /* MPArchivist.h */,
+				D3356CE5212F09BB00BC81ED /* MPArchivist.m */,
 				DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */,
 				DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */,
 				DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */,
@@ -1223,6 +1234,7 @@
 		C9DD20661D8A146900D3ABBE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D30FE278212C9290000A92E8 /* WebKit.framework */,
 				DB93D90B20AC86B700A974E7 /* libsqlite3.tbd */,
 				C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */,
 				C9DD207F1D8A14E200D3ABBE /* CoreGraphics.framework */,
@@ -1369,6 +1381,7 @@
 				C935A7491D8A2E3800A1EE2F /* MPCurrentState.h in Headers */,
 				C935A6F21D8A2DF400A1EE2F /* MPProduct.h in Headers */,
 				C935A6C11D8A2DE700A1EE2F /* MPAppboy.h in Headers */,
+				D3356CE7212F09BB00BC81ED /* MPArchivist.h in Headers */,
 				C935A6BB1D8A2DDF00A1EE2F /* MPAppDelegateProxy.h in Headers */,
 				C935A7051D8A2E0500A1EE2F /* MPAttributeProjection.h in Headers */,
 				DBA894691F17CBF1005B21FB /* MPIdentityDTO.h in Headers */,
@@ -1519,6 +1532,7 @@
 				DB58FB011E9FD06800AB5402 /* MPConvertJS.h in Headers */,
 				C9DD20211D8A141400D3ABBE /* MPPersistenceController.h in Headers */,
 				DB83983E2087E8780031AB1D /* MPConsentSerialization.h in Headers */,
+				D3356CE6212F09BB00BC81ED /* MPArchivist.h in Headers */,
 				C9C9DC3A1DAC04670079A05D /* MPForwardQueueParameters.h in Headers */,
 				C9DD1FA21D8A13D000D3ABBE /* MPCustomModule.h in Headers */,
 				C9DD20271D8A142000D3ABBE /* MPBracket.h in Headers */,
@@ -1839,6 +1853,7 @@
 				C935A74C1D8A2E3800A1EE2F /* MPDateFormatter.m in Sources */,
 				C935A6D51D8A2DED00A1EE2F /* MPMessage.m in Sources */,
 				C935A7471D8A2E3800A1EE2F /* MPBracket.cpp in Sources */,
+				D3356CE9212F09BB00BC81ED /* MPArchivist.m in Sources */,
 				C935A74A1D8A2E3800A1EE2F /* MPCurrentState.m in Sources */,
 				C935A7141D8A2E0500A1EE2F /* MPKitFilter.m in Sources */,
 				C935A76E1D8A2E4000A1EE2F /* MPBackendController.mm in Sources */,
@@ -1937,6 +1952,7 @@
 				C9DD1FE91D8A13EA00D3ABBE /* MPEventProjection.mm in Sources */,
 				C9DD205A1D8A142900D3ABBE /* MPBackendController.mm in Sources */,
 				C9DD1FB01D8A13D600D3ABBE /* MPForwardRecord.mm in Sources */,
+				D3356CE8212F09BB00BC81ED /* MPArchivist.m in Sources */,
 				C9DD1FD21D8A13DC00D3ABBE /* MPProduct.mm in Sources */,
 				C9DD1FC21D8A13D600D3ABBE /* MPUpload.m in Sources */,
 				C9DD20221D8A141400D3ABBE /* MPPersistenceController.mm in Sources */,

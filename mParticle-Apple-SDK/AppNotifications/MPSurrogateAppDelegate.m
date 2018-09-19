@@ -18,6 +18,7 @@
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
     NSDictionary *userInfo;
     if (![MPStateMachine isAppExtension]) {
@@ -75,6 +76,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wstrict-prototypes"
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
     id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
     if ([originalAppDelegate respondsToSelector:_cmd]) {
@@ -174,10 +176,14 @@
 #if TARGET_OS_IOS == 1
     else if ([originalAppDelegate respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)]) {
         if (@available(iOS 9.0, *)) {
-            NSString *sourceApplication = &UIApplicationOpenURLOptionsSourceApplicationKey != NULL ? options[UIApplicationOpenURLOptionsSourceApplicationKey] : options[@"UIApplicationOpenURLOptionsSourceApplicationKey"];
-            id annotation = &UIApplicationOpenURLOptionsAnnotationKey != NULL ? options[UIApplicationOpenURLOptionsAnnotationKey] : options[@"UIApplicationOpenURLOptionsAnnotationKey"];
-
-            return [originalAppDelegate application:app openURL:url sourceApplication:sourceApplication annotation:annotation];
+            NSString *sourceApplication = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+            id annotation = options[UIApplicationOpenURLOptionsAnnotationKey];
+            if (options && annotation) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                return [originalAppDelegate application:app openURL:url sourceApplication:sourceApplication annotation:annotation];
+#pragma clang diagnostic pop
+            }
         } else {
             // Fallback on earlier versions
         }

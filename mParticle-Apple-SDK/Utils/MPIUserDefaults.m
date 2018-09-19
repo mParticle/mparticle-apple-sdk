@@ -4,6 +4,7 @@
 #import "MPILogger.h"
 #import "MParticle.h"
 #import "MPKitConfiguration.h"
+#import "MPArchivist.h"
 
 @interface MParticle ()
 
@@ -213,6 +214,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         return nil;
     }
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     NSDictionary *configuration = nil;
     @try {
         configuration = [NSKeyedUnarchiver unarchiveObjectWithData:configurationData];
@@ -220,6 +223,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         MPILogError(@"Got an exception trying to unarchive configuration: %@", e);
         return nil;
     }
+#pragma clang diagnostic pop
     
     if (![configuration isKindOfClass:[NSDictionary class]]) {
         return nil;
@@ -243,12 +247,15 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     
     NSData *configuration = nil;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     @try {
         configuration = [NSKeyedArchiver archivedDataWithRootObject:responseConfiguration];
     } @catch (NSException *e) {
         MPILogError(@"Got an exception trying to archive configuration: %@", e);
         return;
     }
+#pragma clang diagnostic pop
     
     NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
     
@@ -269,8 +276,8 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     
     if ([fileManager fileExistsAtPath:configurationPath]) {
         if (eTag) {
-            NSDictionary *directoryContents = [NSKeyedUnarchiver unarchiveObjectWithFile:configurationPath];
-            
+            NSDictionary *directoryContents = [MPArchivist unarchiveObjectOfClass:[NSDictionary class] withFile:configurationPath error:nil];
+
             [userDefaults setConfiguration:directoryContents andETag:eTag];
         } else {
             [fileManager removeItemAtPath:configurationPath error:nil];

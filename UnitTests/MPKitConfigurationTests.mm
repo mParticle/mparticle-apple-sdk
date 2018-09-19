@@ -211,4 +211,9 @@
     XCTAssertFalse(kitConfig.attributeValueFilteringShouldIncludeMatches, @"Should have been false.");
 }
 
+- (void)testKitConfigurationEncoding {
+    MPKitConfiguration *persistedKitConfiguration = [self attemptSecureEncodingwithClass:[MPKitConfiguration class] Object:kitConfiguration];
+    XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration, @"KitConfiguration should have been a match.");
+}
+
 @end

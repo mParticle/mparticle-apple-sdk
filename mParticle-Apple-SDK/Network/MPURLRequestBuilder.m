@@ -102,7 +102,10 @@ static NSString *mpUserAgent = nil;
                 }
 
                 @try {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
                     UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
+#pragma clang diagnostic pop
                     mpUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
                     NSString *systemVersion = [UIDevice currentDevice].systemVersion;
                     if (mpUserAgent && systemVersion) {

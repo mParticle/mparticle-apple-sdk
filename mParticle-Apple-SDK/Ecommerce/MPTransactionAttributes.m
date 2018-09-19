@@ -80,7 +80,7 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
     return copyObject;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     if (_attributes) {
         [coder encodeObject:_attributes forKey:@"attributes"];
@@ -97,7 +97,7 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
         NSDictionary *dictionary;
         
         @try {
-            dictionary = [coder decodeObjectForKey:@"attributes"];
+            dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"attributes"];
         }
         
         @catch ( NSException *e) {
@@ -111,13 +111,17 @@ NSString *const kMPExpTACouponCode = @"Coupon Code";
             }
         }
         
-        dictionary = [coder decodeObjectForKey:@"beautifiedAttributes"];
+        dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"beautifiedAttributes"];
         if (dictionary) {
             self->_beautifiedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
         }
     }
     
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark MPTransactionAttributes+Dictionary

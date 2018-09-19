@@ -6,6 +6,7 @@
 #import "MPIConstants.h"
 #import "mParticle.h"
 #import "MPILogger.h"
+#import "MPArchivist.h"
 
 @interface MPCart()
 
@@ -78,9 +79,8 @@
     NSFileManager *fileManager = [NSFileManager defaultManager];
     if ([fileManager fileExistsAtPath:self.cartFile]) {
         MPCart *cart = nil;
-        @try {
-            cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:oldCartFile];
-        } @catch(NSException *ex) { }
+        
+        cart = [MPArchivist unarchiveObjectOfClass:[MPCart class] withFile:oldCartFile error:nil];
         
         if (!cart) {
             MPILogError(@"Unable to migrate cart.");
@@ -100,7 +100,9 @@
     }
     
     if (self.productsList.count > 0) {
-        if (![NSKeyedArchiver archiveRootObject:self toFile:self.cartFile]) {
+        NSError *error = nil;
+        [MPArchivist archiveDataWithRootObject:self toFile:self.cartFile error:&error];
+        if (error != nil) {
             MPILogError(@"Cart was not persisted.");
         }
     }
@@ -122,15 +124,13 @@
     }
     
     MPCart *cart;
-    @try {
-        cart = (MPCart *)[NSKeyedUnarchiver unarchiveObjectWithFile:_cartFile];
-    } @catch(NSException *ex) {
-        MPILogger(MPILogLevelError, @"Failed To retrieve cart: %@", ex);
-    }
+    NSError *error = nil;
+    cart = [MPArchivist unarchiveObjectOfClass:[MPCart class] withFile:_cartFile error:&error];
+    
     return cart;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     if (_productsList) {
         [coder encodeObject:_productsList forKey:@"productsList"];
@@ -140,13 +140,17 @@
 - (id)initWithCoder:(NSCoder *)coder {
     self = [[MPCart alloc] init];
     if (self) {
-        NSArray *productList = [coder decodeObjectForKey:@"productsList"];
+        NSArray *productList = [coder decodeObjectOfClass:[NSArray<MPProduct *> class] forKey:@"productsList"];
         if (productList) {
             _productsList = [[NSMutableArray alloc] initWithArray:productList];
         }
     }
 
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark MPCart+Dictionary

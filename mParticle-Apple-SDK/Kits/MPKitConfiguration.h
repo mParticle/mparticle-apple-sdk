@@ -3,7 +3,7 @@
 @class MPEventProjection;
 @class MPConsentKitFilter;
 
-@interface MPKitConfiguration : NSObject <NSCoding, NSCopying>
+@interface MPKitConfiguration : NSObject <NSSecureCoding, NSCopying>
 
 @property (nonatomic, strong, readonly, nonnull) NSNumber *configurationHash;
 @property (nonatomic, strong, nonnull) NSDictionary *configuration;

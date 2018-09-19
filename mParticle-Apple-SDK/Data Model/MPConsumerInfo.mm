@@ -67,7 +67,7 @@ NSString *const kMPCKExpiration = @"e";
     return isEqual;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:_name forKey:@"name"];
 
@@ -88,17 +88,17 @@ NSString *const kMPCKExpiration = @"e";
     NSString *name = [coder decodeObjectForKey:@"name"];
     
     NSMutableDictionary *configuration = [[NSMutableDictionary alloc] initWithCapacity:2];
-    NSString *value = [coder decodeObjectForKey:@"content"];
+    NSString *value = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"content"];
     if (value) {
         configuration[kMPCKContent] = value;
     }
     
-    value = [coder decodeObjectForKey:@"domain"];
+    value = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"domain"];
     if (value) {
         configuration[kMPCKDomain] = value;
     }
     
-    value = [coder decodeObjectForKey:@"expiration"];
+    value = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"expiration"];
     if (value) {
         configuration[kMPCKExpiration] = value;
     }
@@ -106,6 +106,10 @@ NSString *const kMPCKExpiration = @"e";
     self = [self initWithName:name configuration:configuration];
     
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark Public accessors
@@ -186,7 +190,7 @@ NSString *const kMPCKExpiration = @"e";
     return self;
 }
 
-#pragma mark NSCoding
+#pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     if (self.cookies) {
         [coder encodeObject:_cookies forKey:@"cookies"];
@@ -199,11 +203,15 @@ NSString *const kMPCKExpiration = @"e";
 - (id)initWithCoder:(NSCoder *)coder {
     self = [super init];
     if (self) {
-        _cookies = [coder decodeObjectForKey:@"cookies"];
-        _uniqueIdentifier = [coder decodeObjectForKey:@"uniqueIdentifier"];
+        _cookies = [coder decodeObjectOfClass:[NSArray<MPCookie *> class] forKey:@"cookies"];
+        _uniqueIdentifier = [coder decodeObjectOfClass:[NSString class] forKey:@"uniqueIdentifier"];
     }
     
     return self;
+}
+
++ (BOOL)supportsSecureCoding {
+    return YES;
 }
 
 #pragma mark Private methods

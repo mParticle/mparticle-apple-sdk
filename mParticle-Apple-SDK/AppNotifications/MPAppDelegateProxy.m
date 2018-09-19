@@ -30,13 +30,16 @@
 #if TARGET_OS_IOS == 1
     applicationOpenURLSelector = @selector(application:openURL:sourceApplication:annotation:);
     didFailToRegisterForRemoteNotificationSelector = @selector(application:didFailToRegisterForRemoteNotificationsWithError:);
-    didReceiveLocalNotificationSelector = @selector(application:didReceiveLocalNotification:);
     didReceiveRemoteNotificationSelector = @selector(application:didReceiveRemoteNotification:fetchCompletionHandler:);
     didRegisterForRemoteNotificationSelector = @selector(application:didRegisterForRemoteNotificationsWithDeviceToken:);
-    handleActionWithIdentifierForLocalNotificationSelector = @selector(application:handleActionWithIdentifier:forLocalNotification:completionHandler:);
-    handleActionWithIdentifierForRemoteNotificationSelector = @selector(application:handleActionWithIdentifier:forRemoteNotification:completionHandler:);
     continueUserActivityRestorationHandlerSelector = @selector(application:continueUserActivity:restorationHandler:);
     didUpdateUserActivitySelector = @selector(application:didUpdateUserActivity:);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    didReceiveLocalNotificationSelector = @selector(application:didReceiveLocalNotification:);
+    handleActionWithIdentifierForLocalNotificationSelector = @selector(application:handleActionWithIdentifier:forLocalNotification:completionHandler:);
+    handleActionWithIdentifierForRemoteNotificationSelector = @selector(application:handleActionWithIdentifier:forRemoteNotification:completionHandler:);
+#pragma clang diagnostic pop
 #endif
     
     return self;
