@@ -190,7 +190,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Instabot */
     MPKitInstanceInstabot = 123,
     /** Kit code for Appsee */
-    MPKitInstanceAppsee = 126
+    MPKitInstanceAppsee = 126,
+    /** Kit code for Taplytics */
+    MPKitInstanceTaplytics = 129
 };
 
 /// Log Levels
