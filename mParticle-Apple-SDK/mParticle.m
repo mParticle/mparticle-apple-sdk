@@ -145,6 +145,7 @@ NSString *const kMPStateKey = @"state";
     if (self) {
         _proxyAppDelegate = YES;
         _collectUserAgent = YES;
+        _trackNotifications = YES;
         _automaticSessionTracking = YES;
         _startKitsAsync = NO;
         _logLevel = MPILogLevelNone;
@@ -218,6 +219,8 @@ NSString *const kMPStateKey = @"state";
     _initialized = NO;
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
+    _collectUserAgent = YES;
+    _trackNotifications = YES;
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine alloc] init];
@@ -509,7 +512,8 @@ NSString *const kMPStateKey = @"state";
     options.apiSecret = secret;
     options.automaticSessionTracking = [self.configSettings[kMPConfigSharedGroupID] boolValue];
     options.customUserAgent = self.configSettings[kMPConfigCustomUserAgent];
-    options.collectUserAgent = [self.configSettings[kMPConfigCollectUserAgent] boolValue];
+    options.collectUserAgent = (self.configSettings[kMPConfigCollectUserAgent] != nil && self.configSettings[kMPConfigCollectUserAgent] != [NSNull null]) ? [self.configSettings[kMPConfigCollectUserAgent] boolValue] : YES;
+    options.trackNotifications = (self.configSettings[kMPConfigTrackNotifications] != nil && self.configSettings[kMPConfigTrackNotifications] != [NSNull null]) ? [self.configSettings[kMPConfigTrackNotifications] boolValue] : YES;
     options.installType = MPInstallationTypeAutodetect;
     options.environment = MPEnvironmentAutoDetect;
     options.proxyAppDelegate = YES;
@@ -562,6 +566,7 @@ NSString *const kMPStateKey = @"state";
     _automaticSessionTracking = self.options.automaticSessionTracking;
     _customUserAgent = self.options.customUserAgent;
     _collectUserAgent = self.options.collectUserAgent;
+    _trackNotifications = self.options.trackNotifications;
     
     MPConsentState *consentState = self.options.consentState;
     
@@ -1561,6 +1566,41 @@ NSString *const kMPStateKey = @"state";
     } @catch (NSException *e) {
         MPILogError(@"Exception processing WebView event: %@", e.reason)
     }
+}
+
+#pragma mark - Manual Notification logging
+/**
+ Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
+ */
+- (void)logNotificationReceivedWithUserInfo:(nonnull NSDictionary *)userInfo {
+    [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorReceived];
+}
+
+/**
+ Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
+ */
+- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo {
+    [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorRead | MPUserNotificationBehaviorDirectOpen];
+}
+
+/**
+ Logs a Notification event. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only submit Notification events manually:
+ */
+- (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior {
+    NSDictionary *notificationDictionary = userInfo[kMPUserNotificationDictionaryKey];
+    NSString *actionIdentifier = userInfo[kMPUserNotificationActionKey];
+    
+    MPUserNotificationRunningMode runningMode = [userInfo[kMPUserNotificationRunningModeKey] integerValue];
+    NSString *stateString = kMPPushNotificationStateForeground;
+    
+    MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:notificationDictionary
+                                                                                       actionIdentifier:actionIdentifier
+                                                                                                  state:stateString
+                                                                                               behavior:behavior
+                                                                                                   mode:MPUserNotificationModeRemote
+                                                                                            runningMode:runningMode];
+    
+    [self.backendController logUserNotification:userNotification];
 }
 #endif
 

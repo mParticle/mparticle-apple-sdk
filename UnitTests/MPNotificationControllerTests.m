@@ -116,7 +116,7 @@
     
     XCTAssertNotNil(self.userNotification, @"User notification should not have been nil.");
     XCTAssertNotNil(self.userNotification.redactedUserNotificationString, @"Redacted notification should not have been nil.");
-    XCTAssertEqual(self.userNotification.behavior, (MPUserNotificationBehaviorReceived | MPUserNotificationBehaviorRead), @"Behavior is incorrect.");
+    XCTAssertEqual(self.userNotification.behavior, (MPUserNotificationBehaviorDirectOpen | MPUserNotificationBehaviorRead), @"Behavior is incorrect.");
 }
 
 - (void)testUserNotificationEncoding {

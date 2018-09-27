@@ -22,10 +22,6 @@
 #import "MPConsentSerialization.h"
 #import "sqlite3.h"
 
-#if TARGET_OS_IOS == 1
-    #import "MParticleUserNotification.h"
-#endif
-
 using namespace std;
 using namespace mParticle;
 

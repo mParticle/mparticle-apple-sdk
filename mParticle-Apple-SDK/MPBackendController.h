@@ -88,6 +88,7 @@ typedef NS_ENUM(NSUInteger, MPExecStatus) {
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (MPExecStatus)endLocationTracking;
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
+- (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 - (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 

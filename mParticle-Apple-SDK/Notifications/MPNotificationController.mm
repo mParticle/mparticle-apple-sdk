@@ -134,7 +134,7 @@ static int64_t launchNotificationHash = 0;
     if (notificationLaunchedApp || actionIdentifier) {
         notificationLaunchedApp = NO;
         
-        behavior |= MPUserNotificationBehaviorRead;
+        behavior = MPUserNotificationBehaviorRead | MPUserNotificationBehaviorDirectOpen;
     }
     
     MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:notificationDictionary

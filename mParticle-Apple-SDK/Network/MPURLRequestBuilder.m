@@ -81,8 +81,8 @@ static NSString *mpUserAgent = nil;
     if (!mpUserAgent) {
         if (MParticle.sharedInstance.customUserAgent != nil) {
             mpUserAgent = MParticle.sharedInstance.customUserAgent;
-        } else if (MParticle.sharedInstance.collectUserAgent) {
 #if TARGET_OS_IOS == 1
+        } else if (MParticle.sharedInstance.collectUserAgent) {
             NSString *currentSystemVersion = [UIDevice currentDevice].systemVersion;
             NSString *savedSystemVersion = [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey];
             if ([currentSystemVersion isEqualToString:savedSystemVersion]) {

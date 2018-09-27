@@ -3,9 +3,16 @@
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
+#import "MPIConstants.h"
+#import "MPStateMachine.h"
+#if TARGET_OS_IOS == 1
+#import "OCMock.h"
+#endif
 
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong, readonly) MPAppNotificationHandler *appNotificationHandler;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 
@@ -107,20 +114,87 @@
     [appNotificationHandler openURL:url options:options];
 }
 
+#if TARGET_OS_IOS == 1
 - (void)testReceivedUserNotification {
     MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
     
+    id mockNotificationCenter = OCMClassMock([NSNotificationCenter class]);
+    [[[mockNotificationCenter stub] andReturn:mockNotificationCenter] defaultCenter];
+    
     NSDictionary *notification = @{};
     NSString *action = @"";
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeLocal];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeAutoDetect];
     
-    notification = nil;
-    action = nil;
+    [[[mockNotificationCenter expect] ignoringNonObjectArgs] postNotificationName:kMPRemoteNotificationReceivedNotification object:OCMOCK_ANY userInfo:OCMOCK_ANY];
+
     [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeLocal];
-    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeAutoDetect];
+    
+    [mockNotificationCenter verifyWithDelay:2];
+    
+    [mockNotificationCenter stopMocking];
 }
+
+- (void)testReceivedUserNotificationWithNilInfo {
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
+    
+    id mockNotificationCenter = OCMClassMock([NSNotificationCenter class]);
+    [[[mockNotificationCenter stub] andReturn:mockNotificationCenter] defaultCenter];
+    
+    NSDictionary *notification = nil;
+    NSString *action = @"";
+    
+    [[[mockNotificationCenter reject] ignoringNonObjectArgs] postNotificationName:kMPRemoteNotificationReceivedNotification object:OCMOCK_ANY userInfo:OCMOCK_ANY];
+    
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
+    
+    [mockNotificationCenter verifyWithDelay:2];
+    
+    [mockNotificationCenter stopMocking];
+}
+
+- (void)testReceivedUserNotificationWithOptOut {
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
+    MParticle *instance = [MParticle sharedInstance];
+    instance.stateMachine = [[MPStateMachine alloc] init];
+    instance.optOut = YES;
+    
+    id mockNotificationCenter = OCMClassMock([NSNotificationCenter class]);
+    [[[mockNotificationCenter stub] andReturn:mockNotificationCenter] defaultCenter];
+    
+    NSDictionary *notification = @{};
+    NSString *action = @"";
+
+    [[[mockNotificationCenter reject] ignoringNonObjectArgs] postNotificationName:kMPRemoteNotificationReceivedNotification object:OCMOCK_ANY userInfo:OCMOCK_ANY];
+    
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
+
+    [mockNotificationCenter verifyWithDelay:2];
+    
+    [mockNotificationCenter stopMocking];
+}
+
+- (void)testReceivedUserNotificationWithDisabledNotificationTracking {
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturnValue:OCMOCK_VALUE(NO)] trackNotifications];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
+    
+    id mockNotificationCenter = OCMClassMock([NSNotificationCenter class]);
+    [[[mockNotificationCenter stub] andReturn:mockNotificationCenter] defaultCenter];
+    
+    NSDictionary *notification = @{};
+    NSString *action = @"";
+    
+    [[[mockNotificationCenter reject] ignoringNonObjectArgs] postNotificationName:kMPRemoteNotificationReceivedNotification object:OCMOCK_ANY userInfo:OCMOCK_ANY];
+    
+    [appNotificationHandler receivedUserNotification:notification actionIdentifier:action userNotificationMode:MPUserNotificationModeRemote];
+    
+    [mockNotificationCenter verifyWithDelay:2];
+    
+    [mockNotificationCenter stopMocking];
+    [mockInstance stopMocking];
+}
+#endif
 
 @end

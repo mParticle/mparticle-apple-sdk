@@ -2144,8 +2144,7 @@ static BOOL appBackgrounded = NO;
     });
 }
 
-#pragma mark MPNotificationControllerDelegate
-- (void)receivedUserNotification:(MParticleUserNotification *)userNotification {
+- (void)logUserNotification:(MParticleUserNotification *)userNotification {
     NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", [MPNotificationController deviceToken]],
                                           kMPPushNotificationStateKey:userNotification.state,
                                           kMPPushMessageProviderKey:kMPPushMessageProviderValue,
@@ -2174,6 +2173,13 @@ static BOOL appBackgrounded = NO;
     MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:(_session != nil)];
+}
+
+#pragma mark MPNotificationControllerDelegate
+- (void)receivedUserNotification:(MParticleUserNotification *)userNotification {
+    if (MParticle.sharedInstance.trackNotifications) {
+        [self logUserNotification:userNotification];
+    }
 }
 #endif
 

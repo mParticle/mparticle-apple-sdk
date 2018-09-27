@@ -171,6 +171,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
 
+/**
+ Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES
+ */
+@property (atomic, unsafe_unretained, readwrite) BOOL trackNotifications;
+
 /*
  This value is not currently read by the SDK and should not be used at this time.
  */
@@ -348,6 +353,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, strong, nullable) NSData *pushNotificationToken;
 #endif
+
+/**
+ Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES
+ */
+@property (atomic, unsafe_unretained, readonly) BOOL trackNotifications;
 
 /**
  Gets/Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or
@@ -847,6 +857,18 @@ NS_ASSUME_NONNULL_BEGIN
  @param requestUrl The request URL
  */
 - (void)processWebViewLogEvent:(NSURL *)requestUrl;
+
+#pragma mark - Manual Notification logging
+/**
+ Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
+ */
+- (void)logNotificationReceivedWithUserInfo:(nonnull NSDictionary *)userInfo;
+
+/**
+ Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
+ */
+- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo;
+
 #endif
 
 @end

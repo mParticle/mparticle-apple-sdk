@@ -7,7 +7,6 @@
 #import "MPSegmentMembership.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
-#import "MParticleUserNotification.h"
 #import "MPIntegrationAttributes.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"

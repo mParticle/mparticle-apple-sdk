@@ -199,7 +199,7 @@
 }
 
 - (void)receivedUserNotification:(NSDictionary *)userInfo actionIdentifier:(NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode {
-    if ([MParticle sharedInstance].stateMachine.optOut || !userInfo) {
+    if ([MParticle sharedInstance].stateMachine.optOut || !userInfo || ![MParticle sharedInstance].trackNotifications) {
         return;
     }
     
@@ -261,7 +261,7 @@
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center willPresentNotification:(nonnull UNNotification *)notification {
-    if ([MParticle sharedInstance].stateMachine.optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut || ![MParticle sharedInstance].trackNotifications) {
         return;
     }
     
@@ -285,7 +285,7 @@
 }
 
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response {
-    if ([MParticle sharedInstance].stateMachine.optOut) {
+    if ([MParticle sharedInstance].stateMachine.optOut || ![MParticle sharedInstance].trackNotifications) {
         return;
     }
     

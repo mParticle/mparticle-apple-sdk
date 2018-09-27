@@ -223,6 +223,7 @@ NSString *const kMPConfigSecret = @"api_secret";
 NSString *const kMPConfigSharedGroupID = @"shared_group_id";
 NSString *const kMPConfigCustomUserAgent = @"custom_user_agent";
 NSString *const kMPConfigCollectUserAgent = @"collect_user_agent";
+NSString *const kMPConfigTrackNotifications = @"track_notifications";
 NSString *const kMPConfigSessionTimeout = @"session_timeout";
 NSString *const kMPConfigUploadInterval = @"upload_interval";
 NSString *const kMPConfigEnableSSL = @"enable_secure_transport";

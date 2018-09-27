@@ -4,6 +4,7 @@
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPBackendController.h"
+#import "OCMock.h"
 
 @interface MParticle ()
 
@@ -105,6 +106,57 @@
     lastNotification = notification;
 }
 
+#if TARGET_OS_IOS == 1
+- (void)testTrackNotificationsDefault {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    [mockInstance startWithOptions:options];
+    
+    XCTAssertTrue(instance.trackNotifications, "By Default Track Notifications should be set to true");
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testTrackNotificationsOff {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.trackNotifications = NO;
+    [mockInstance startWithOptions:options];
+    
+    XCTAssertFalse(instance.trackNotifications, "Track Notifications failed to set False");
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testTrackNotificationsOn {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.trackNotifications = YES;
+    [mockInstance startWithOptions:options];
+    
+    XCTAssertTrue(instance.trackNotifications, "Track Notifications failed to set True");
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
 - (void)testSessionStartNotification {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTestSessionStart:) name:mParticleSessionDidBeginNotification object:nil];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
@@ -143,5 +195,26 @@
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
+
+- (void)testLogNotificationWithUserInfo {
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturnValue:OCMOCK_VALUE(NO)] trackNotifications];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+
+    id mockBackendController = OCMClassMock([MPBackendController class]);
+    instance.backendController = mockBackendController;
+    
+    NSNotification *testNotification = [[NSNotification alloc] initWithName:@"tester" object:self userInfo:nil];
+    
+    [[mockBackendController expect] logUserNotification:OCMOCK_ANY];
+    
+    [mockInstance logNotificationOpenedWithUserInfo:[testNotification userInfo]];
+    
+    [mockBackendController verifyWithDelay:1.0];
+    [mockBackendController stopMocking];
+    [mockInstance stopMocking];
+}
+#endif
 
 @end

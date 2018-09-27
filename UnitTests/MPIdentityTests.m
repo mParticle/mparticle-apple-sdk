@@ -123,6 +123,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
 
     [mockUser verify];
+    
+    [mockUser stopMocking];
 }
 
 - (void)testModifyRequestComplete {
@@ -149,6 +151,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock onModifyRequestComplete:request httpResponse:httpResponse completion:nil error:error];
     
     [mockUser verify];
+    
+    [mockUser stopMocking];
 }
 
 - (void)testIdentify {

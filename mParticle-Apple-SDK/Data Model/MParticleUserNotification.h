@@ -2,6 +2,7 @@
 
 typedef NS_OPTIONS(NSUInteger, MPUserNotificationBehavior) {
     MPUserNotificationBehaviorReceived = 1 << 0,
+    MPUserNotificationBehaviorDirectOpen = 1 << 1,
     MPUserNotificationBehaviorRead = 1 << 2,
 };
 

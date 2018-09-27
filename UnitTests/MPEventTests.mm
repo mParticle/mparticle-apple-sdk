@@ -320,16 +320,21 @@
                        @"user response": @"no"
                        };
     
-    [[MParticle sharedInstance] processWebViewLogEvent: oddURL];
-    
-    OCMVerify([mockBackendController logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
+    [[[mockBackendController expect] ignoringNonObjectArgs] logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
         MPEvent *returnedEvent = ((MPEvent *)value);
         XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
         XCTAssertEqual(returnedEvent.type, testEvent.type);
         XCTAssertEqualObjects(returnedEvent.info, testEvent.info);
+        
         return YES;
     }]
-                            completionHandler:[OCMArg any]]);
+                                                   completionHandler:[OCMArg any]];
+    
+    [[MParticle sharedInstance] processWebViewLogEvent: oddURL];
+
+    [mockBackendController verifyWithDelay:2];
+    
+    [mockBackendController stopMocking];
 }
 #endif
 
