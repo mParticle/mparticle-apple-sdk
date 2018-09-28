@@ -9,11 +9,10 @@
 #if TARGET_OS_IOS == 1
     SEL applicationOpenURLSelector;
     SEL didFailToRegisterForRemoteNotificationSelector;
-    SEL didReceiveLocalNotificationSelector;
     SEL didReceiveRemoteNotificationSelector;
     SEL didRegisterForRemoteNotificationSelector;
-    SEL handleActionWithIdentifierForLocalNotificationSelector;
     SEL handleActionWithIdentifierForRemoteNotificationSelector;
+    SEL handleActionWithIdentifierForRemoteNotificationSelectorWithResponseInfo;
     SEL continueUserActivityRestorationHandlerSelector;
     SEL didUpdateUserActivitySelector;
 #endif
@@ -36,12 +35,10 @@
     didUpdateUserActivitySelector = @selector(application:didUpdateUserActivity:);
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    didReceiveLocalNotificationSelector = @selector(application:didReceiveLocalNotification:);
-    handleActionWithIdentifierForLocalNotificationSelector = @selector(application:handleActionWithIdentifier:forLocalNotification:completionHandler:);
     handleActionWithIdentifierForRemoteNotificationSelector = @selector(application:handleActionWithIdentifier:forRemoteNotification:completionHandler:);
+    handleActionWithIdentifierForRemoteNotificationSelectorWithResponseInfo = @selector(application:handleActionWithIdentifier:forRemoteNotification:withResponseInfo:completionHandler:);
 #pragma clang diagnostic pop
 #endif
-    
     return self;
 }
 
@@ -123,15 +120,14 @@
                              ||
                              (aSelector == applicationOpenURLSelector) ||
                              (aSelector == didFailToRegisterForRemoteNotificationSelector) ||
-                             (aSelector == didReceiveLocalNotificationSelector) ||
                              (aSelector == didReceiveRemoteNotificationSelector) ||
                              (aSelector == didRegisterForRemoteNotificationSelector) ||
-                             (aSelector == handleActionWithIdentifierForLocalNotificationSelector) ||
                              (aSelector == handleActionWithIdentifierForRemoteNotificationSelector) ||
+                             (aSelector == handleActionWithIdentifierForRemoteNotificationSelectorWithResponseInfo) ||
                              (aSelector == continueUserActivityRestorationHandlerSelector) ||
                              (aSelector == didUpdateUserActivitySelector);
 #else
-                             ;
+        ;
 #endif
     }
     

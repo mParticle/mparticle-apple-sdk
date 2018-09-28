@@ -103,6 +103,9 @@ static BOOL appBackgrounded = NO;
     if (self) {
         messageQueue = [MParticle messageQueue];
         _networkCommunication = [[MPNetworkCommunication alloc] init];
+#if TARGET_OS_IOS == 1
+        _notificationController = [[MPNotificationController alloc] init];
+#endif
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
         backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
@@ -260,7 +263,6 @@ static BOOL appBackgrounded = NO;
             if (strongSelf) {
                 [strongSelf endBackgroundTimer];
                 
-                strongSelf->_networkCommunication = nil;
                 
                 if (strongSelf->_session) {
                     [strongSelf broadcastSessionDidEnd:strongSelf->_session];
@@ -425,7 +427,6 @@ static BOOL appBackgrounded = NO;
     messageInfo[kMPASTPreviousSessionSuccessfullyClosedKey] = [self previousSessionSuccessfullyClosed];
     
     NSDictionary *userInfo = [notification userInfo];
-    BOOL sessionFinalized = YES;
     
     if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
         NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
@@ -435,51 +436,13 @@ static BOOL appBackgrounded = NO;
         }
     }
     
-#if TARGET_OS_IOS == 1
-    if (![MPStateMachine isAppExtension]) {
-        MParticleUserNotification *userNotification = nil;
-        NSDictionary *pushNotificationDictionary = userInfo[UIApplicationLaunchOptionsRemoteNotificationKey];
-        
-        if (pushNotificationDictionary) {
-            NSError *error = nil;
-            NSData *remoteNotificationData = [NSJSONSerialization dataWithJSONObject:pushNotificationDictionary options:0 error:&error];
-            
-            int64_t launchNotificationHash = 0;
-            if (!error && remoteNotificationData.length > 0) {
-                launchNotificationHash = mParticle::Hasher::hashFNV1a(static_cast<const char *>([remoteNotificationData bytes]), static_cast<int>([remoteNotificationData length]));
-            }
-            
-            if (launchNotificationHash != 0 && [MPNotificationController launchNotificationHash] != 0 && launchNotificationHash != [MPNotificationController launchNotificationHash]) {
-                astType = kMPASTForegroundKey;
-                userNotification = [self.notificationController newUserNotificationWithDictionary:pushNotificationDictionary
-                                                                                 actionIdentifier:nil
-                                                                                            state:kMPPushNotificationStateNotRunning];
-                
-                if (userNotification.redactedUserNotificationString) {
-                    messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
-                }
-                
-                if (_session) {
-                    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-                    NSTimeInterval backgroundedTime = (currentTime - _session.endTime) > 0 ? (currentTime - _session.endTime) : 0;
-                    sessionFinalized = backgroundedTime > self.sessionTimeout;
-                }
-            }
-        }
-        
-        if (userNotification) {
-            [self receivedUserNotification:userNotification];
-        }
-    }
-#endif
-    
     messageInfo[kMPAppStateTransitionType] = astType;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    messageBuilder = [messageBuilder withStateTransition:sessionFinalized previousSession:nil];
+    messageBuilder = [messageBuilder withStateTransition:YES previousSession:nil];
     MPMessage *message = (MPMessage *)[messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
@@ -2074,14 +2037,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPNotificationController *)notificationController {
-    if (_notificationController) {
-        return _notificationController;
-    }
-    
-    [self willChangeValueForKey:@"notificationController"];
-    _notificationController = [[MPNotificationController alloc] initWithDelegate:self];
-    [self didChangeValueForKey:@"notificationController"];
-    
     return _notificationController;
 }
 
@@ -2175,12 +2130,6 @@ static BOOL appBackgrounded = NO;
     [self saveMessage:message updateSession:(_session != nil)];
 }
 
-#pragma mark MPNotificationControllerDelegate
-- (void)receivedUserNotification:(MParticleUserNotification *)userNotification {
-    if (MParticle.sharedInstance.trackNotifications) {
-        [self logUserNotification:userNotification];
-    }
-}
 #endif
 
 @end

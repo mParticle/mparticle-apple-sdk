@@ -205,7 +205,7 @@
     id mockBackendController = OCMClassMock([MPBackendController class]);
     instance.backendController = mockBackendController;
     
-    NSNotification *testNotification = [[NSNotification alloc] initWithName:@"tester" object:self userInfo:nil];
+    NSNotification *testNotification = [[NSNotification alloc] initWithName:@"tester" object:self userInfo:@{@"foo-notif-key-1":@"foo-notif-value-1"}];
     
     [[mockBackendController expect] logUserNotification:OCMOCK_ANY];
     

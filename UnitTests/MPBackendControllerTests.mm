@@ -221,8 +221,7 @@
         return _notificationController;
     }
     
-    __weak id<MPNotificationControllerDelegate> backendController = (id<MPNotificationControllerDelegate>)self.backendController;
-    _notificationController = [[MPNotificationController alloc] initWithDelegate:backendController];
+    _notificationController = [[MPNotificationController alloc] init];
     
     return _notificationController;
 }

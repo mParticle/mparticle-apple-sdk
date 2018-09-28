@@ -207,14 +207,11 @@ NSString *const kMPRemoteConfigAllowASR = @"iasr";
 // Notifications
 NSString *const kMPCrashReportOccurredNotification = @"MPCrashReportOccurredNotification";
 NSString *const kMPConfigureExceptionHandlingNotification = @"MPConfigureExceptionHandlingNotification";
-NSString *const kMPRemoteNotificationReceivedNotification = @"MPRemoteNotificationReceivedNotification";
 NSString *const kMPUserNotificationDictionaryKey = @"MPUserNotificationDictionaryKey";
 NSString *const kMPUserNotificationActionKey = @"MPUserNotificationActionKey";
 NSString *const kMPRemoteNotificationDeviceTokenNotification = @"MPRemoteNotificationDeviceTokenNotification";
 NSString *const kMPRemoteNotificationDeviceTokenKey = @"MPRemoteNotificationDeviceTokenKey";
 NSString *const kMPRemoteNotificationOldDeviceTokenKey = @"MPRemoteNotificationOldDeviceTokenKey";
-NSString *const kMPLocalNotificationReceivedNotification = @"MPLocalNotificationReceivedNotification";
-NSString *const kMPUserNotificationRunningModeKey = @"MPUserNotificationRunningModeKey";
 
 // Config.plist keys
 NSString *const kMPConfigPlist = @"MParticleConfig";

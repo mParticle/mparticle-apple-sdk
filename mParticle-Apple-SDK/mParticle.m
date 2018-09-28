@@ -718,25 +718,13 @@ NSString *const kMPStateKey = @"state";
     }
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)didReceiveLocalNotification:(UILocalNotification *)notification {
-#pragma clang diagnostic pop
-    if (![MPStateMachine isAppExtension]) {
-        NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-        if (userInfo && !self.proxiedAppDelegate) {
-            [[MParticle sharedInstance].appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
-        }
-    }
-}
-
 - (void)didReceiveRemoteNotification:(NSDictionary *)userInfo {
     if (self.proxiedAppDelegate) {
         return;
     }
     
     if (![MPStateMachine isAppExtension]) {
-        [[MParticle sharedInstance].appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
+        [[MParticle sharedInstance].appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
 
@@ -760,18 +748,6 @@ NSString *const kMPStateKey = @"state";
     }
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification {
-#pragma clang diagnostic pop
-    if (![MPStateMachine isAppExtension]) {
-        NSDictionary *userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-        if (userInfo && !self.proxiedAppDelegate) {
-            [[MParticle sharedInstance].appNotificationHandler receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
-        }
-    }
-}
-
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
     if (self.proxiedAppDelegate) {
         return;
@@ -779,6 +755,16 @@ NSString *const kMPStateKey = @"state";
     
     if (![MPStateMachine isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
+    }
+}
+
+- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo {
+    if (self.proxiedAppDelegate) {
+        return;
+    }
+    
+    if (![MPStateMachine isAppExtension]) {
+        [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
 #endif
@@ -806,6 +792,8 @@ NSString *const kMPStateKey = @"state";
 
     return [[MParticle sharedInstance].appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
+
+
 
 - (void)reset {
     dispatch_sync(messageQueue, ^{
@@ -1433,10 +1421,16 @@ NSString *const kMPStateKey = @"state";
 #pragma mark User Notifications
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center willPresentNotification:(UNNotification *)notification {
+    if (!notification.request.content.userInfo) {
+        return;
+    }
     [[MParticle sharedInstance].appNotificationHandler userNotificationCenter:center willPresentNotification:notification];
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter *)center didReceiveNotificationResponse:(UNNotificationResponse *)response {
+    if (!response.notification.request.content.userInfo) {
+        return;
+    }
     [[MParticle sharedInstance].appNotificationHandler userNotificationCenter:center didReceiveNotificationResponse:response];
 }
 #endif
@@ -1573,6 +1567,9 @@ NSString *const kMPStateKey = @"state";
  Logs a Notification event for a notification that has been reviewed but not acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
 - (void)logNotificationReceivedWithUserInfo:(nonnull NSDictionary *)userInfo {
+    if (userInfo == nil) {
+        return;
+    }
     [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorReceived];
 }
 
@@ -1580,6 +1577,9 @@ NSString *const kMPStateKey = @"state";
  Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
 - (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo {
+    if (userInfo == nil) {
+        return;
+    }
     [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorRead | MPUserNotificationBehaviorDirectOpen];
 }
 
@@ -1587,18 +1587,14 @@ NSString *const kMPStateKey = @"state";
  Logs a Notification event. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only submit Notification events manually:
  */
 - (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior {
-    NSDictionary *notificationDictionary = userInfo[kMPUserNotificationDictionaryKey];
-    NSString *actionIdentifier = userInfo[kMPUserNotificationActionKey];
+    UIApplicationState state = [UIApplication sharedApplication].applicationState;
+    NSString *stateString = state == UIApplicationStateActive ? kMPPushNotificationStateForeground : kMPPushNotificationStateBackground;
     
-    MPUserNotificationRunningMode runningMode = [userInfo[kMPUserNotificationRunningModeKey] integerValue];
-    NSString *stateString = kMPPushNotificationStateForeground;
-    
-    MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:notificationDictionary
-                                                                                       actionIdentifier:actionIdentifier
+    MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:userInfo
+                                                                                       actionIdentifier:nil
                                                                                                   state:stateString
                                                                                                behavior:behavior
-                                                                                                   mode:MPUserNotificationModeRemote
-                                                                                            runningMode:runningMode];
+                                                                                                   mode:MPUserNotificationModeRemote];
     
     [self.backendController logUserNotification:userNotification];
 }

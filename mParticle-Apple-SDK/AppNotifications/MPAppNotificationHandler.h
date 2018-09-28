@@ -14,7 +14,6 @@
 @interface MPAppNotificationHandler : NSObject
 
 #if TARGET_OS_IOS == 1
-@property (nonatomic, unsafe_unretained, readonly) MPUserNotificationRunningMode runningMode;
 
 - (void)didFailToRegisterForRemoteNotificationsWithError:(nullable NSError *)error;
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(nonnull NSData *)deviceToken;
@@ -24,7 +23,7 @@
 #pragma clang diagnostic pop
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nullable NSDictionary *)responseInfo;
-- (void)receivedUserNotification:(nonnull NSDictionary *)userInfo actionIdentifier:(nullable NSString *)actionIdentifier userNotificationMode:(MPUserNotificationMode)userNotificationMode;
+- (void)didReceiveRemoteNotification:(NSDictionary *_Nonnull)userInfo;
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity;
 #endif
 

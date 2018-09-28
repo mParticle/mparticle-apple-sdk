@@ -16,42 +16,13 @@
 
 #pragma mark UIApplicationDelegate
 #if TARGET_OS_IOS == 1
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)application:(UIApplication *)application didReceiveLocalNotification:(UILocalNotification *)notification {
-    NSDictionary *userInfo;
-    if (![MPStateMachine isAppExtension]) {
-        userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-    }
-
-    if (userInfo) {
-        [[MParticle sharedInstance].appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeLocal];
-    }
-    
-    if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
-        [_appDelegateProxy.originalAppDelegate application:application didReceiveLocalNotification:notification];
-    }
-}
-#pragma clang diagnostic pop
-
-- (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo {
-    [[MParticle sharedInstance].appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeRemote];
-    
-    if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
-        [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo];
-    }
-}
 
 - (void)application:(UIApplication *)application didReceiveRemoteNotification:(NSDictionary *)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
     MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
-    [appNotificationHandler receivedUserNotification:userInfo actionIdentifier:nil userNotificationMode:MPUserNotificationModeAutoDetect];
+    [appNotificationHandler didReceiveRemoteNotification:userInfo];
     
     if ([_appDelegateProxy.originalAppDelegate respondsToSelector:_cmd]) {
         [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo fetchCompletionHandler:completionHandler];
-    } else if ([_appDelegateProxy.originalAppDelegate respondsToSelector:@selector(application:didReceiveRemoteNotification:)] && appNotificationHandler.runningMode == MPUserNotificationRunningModeForeground) {
-        [_appDelegateProxy.originalAppDelegate application:application didReceiveRemoteNotification:userInfo];
-        completionHandler(UIBackgroundFetchResultNewData);
     } else {
         completionHandler(UIBackgroundFetchResultNewData);
     }
@@ -77,32 +48,7 @@
 #pragma clang diagnostic ignored "-Wstrict-prototypes"
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wdeprecated-implementations"
-- (void)application:(UIApplication *)application didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
-    id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
-    if ([originalAppDelegate respondsToSelector:_cmd]) {
-        [originalAppDelegate application:application didRegisterUserNotificationSettings:notificationSettings];
-    }
-}
-
-- (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forLocalNotification:(UILocalNotification *)notification completionHandler:(void (^)())completionHandler {
-    NSDictionary *userInfo;
-    if (![MPStateMachine isAppExtension]) {
-        userInfo = [MPNotificationController dictionaryFromLocalNotification:notification];
-    }
-
-    if (userInfo) {
-        [[MParticle sharedInstance].appNotificationHandler receivedUserNotification:userInfo actionIdentifier:identifier userNotificationMode:MPUserNotificationModeLocal];
-    }
-    
-    id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
-    if ([originalAppDelegate respondsToSelector:_cmd]) {
-        [originalAppDelegate application:application handleActionWithIdentifier:identifier forLocalNotification:notification completionHandler:completionHandler];
-    } else {
-        completionHandler();
-    }
-}
-
-- (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo completionHandler:(void (^)(void))completionHandler {
+- (void)application:(UIApplication *)application handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo completionHandler:(void (^)())completionHandler {
     [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     
     id<UIApplicationDelegate> originalAppDelegate = _appDelegateProxy.originalAppDelegate;
@@ -128,6 +74,7 @@
     }
 }
 #pragma clang diagnostic pop
+
 
 - (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     [[MParticle sharedInstance].appNotificationHandler openURL:url sourceApplication:sourceApplication annotation:annotation];
@@ -162,6 +109,7 @@
         [originalAppDelegate application:application didUpdateUserActivity:userActivity];
     }
 }
+
 #endif
 
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {

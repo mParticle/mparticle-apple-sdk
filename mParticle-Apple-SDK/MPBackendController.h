@@ -44,8 +44,6 @@ typedef NS_ENUM(NSUInteger, MPExecStatus) {
 
 @interface MPBackendController : NSObject
 #if TARGET_OS_IOS == 1
-<MPNotificationControllerDelegate>
-
 @property (nonatomic, strong, nonnull) MPNotificationController *notificationController;
 #endif
 
@@ -89,7 +87,6 @@ typedef NS_ENUM(NSUInteger, MPExecStatus) {
 - (MPExecStatus)endLocationTracking;
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
-- (void)receivedUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 
 @end

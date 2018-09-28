@@ -17,13 +17,12 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 
 @implementation MParticleUserNotification
 
-- (instancetype)initWithDictionary:(NSDictionary *)notificationDictionary actionIdentifier:(NSString *)actionIdentifier state:(NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode runningMode:(MPUserNotificationRunningMode)runningMode {
+- (instancetype)initWithDictionary:(NSDictionary *)notificationDictionary actionIdentifier:(NSString *)actionIdentifier state:(NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode {
     self = [super init];
     if (!self || !state) {
         return nil;
     }
     
-    _runningMode = runningMode;
     _shouldPersist = YES;
     
     if (mode == MPUserNotificationModeAutoDetect) {
@@ -223,7 +222,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     [coder encodeInt64:_userNotificationId forKey:@"userNotificationId"];
     [coder encodeInteger:_behavior forKey:@"behavior"];
     [coder encodeInteger:_mode forKey:@"mode"];
-    [coder encodeInteger:_runningMode forKey:@"runningMode"];
     
     if (_redactedUserNotificationString) {
         [coder encodeObject:_redactedUserNotificationString forKey:@"redactedUserNotificationString"];
@@ -264,7 +262,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     _userNotificationId = [coder decodeInt64ForKey:@"userNotificationId"];
     _behavior = [coder decodeIntegerForKey:@"behavior"];
     _mode = [coder decodeIntegerForKey:@"mode"];
-    _runningMode = [coder decodeIntegerForKey:@"runningMode"];
     
     id object = [coder decodeObjectOfClass:[NSString class] forKey:@"categoryIdentifier"];
     if (object) {

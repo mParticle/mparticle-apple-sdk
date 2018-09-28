@@ -410,15 +410,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Application notifications
 #if TARGET_OS_IOS == 1
-/**
- Informs the mParticle SDK a local notification has been received. This method should be called only if proxiedAppDelegate is disabled.
- @param notification A local notification received by the app
- @see proxiedAppDelegate
- */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)didReceiveLocalNotification:(UILocalNotification *)notification;
-#pragma clang diagnostic pop
 
 /**
  Informs the mParticle SDK a remote notification has been received. This method should be called only if proxiedAppDelegate is disabled.
@@ -442,18 +433,6 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken;
 
 /**
- Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a local notification.
- This method should be called only if proxiedAppDelegate is disabled.
- @param identifier The identifier associated with the custom action
- @param notification The local notification object that was triggered
- @see proxiedAppDelegate
- */
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)handleActionWithIdentifier:(nullable NSString *)identifier forLocalNotification:(nullable UILocalNotification *)notification;
-#pragma clang diagnostic pop
-
-/**
  Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
  This method should be called only if proxiedAppDelegate is disabled.
  @param identifier The identifier associated with the custom action
@@ -461,6 +440,17 @@ NS_ASSUME_NONNULL_BEGIN
  @see proxiedAppDelegate
  */
 - (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo;
+
+/**
+ Informs the mParticle SDK the app has been activated because the user selected a custom action from the alert panel of a remote notification.
+ This method should be called only if proxiedAppDelegate is disabled.
+ @param identifier The identifier associated with the custom action
+ @param userInfo A dictionary that contains information related to the remote notification
+ @param responseInfo The data dictionary sent by the action
+ @see proxiedAppDelegate
+ */
+- (void)handleActionWithIdentifier:(nullable NSString *)identifier forRemoteNotification:(nullable NSDictionary *)userInfo withResponseInfo:(nonnull NSDictionary *)responseInfo;
+
 #endif
 
 /**

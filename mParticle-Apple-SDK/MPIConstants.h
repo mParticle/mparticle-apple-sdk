@@ -254,14 +254,11 @@ extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
 extern NSString * _Nonnull const kMPConfigureExceptionHandlingNotification;
-extern NSString * _Nonnull const kMPRemoteNotificationReceivedNotification;
 extern NSString * _Nonnull const kMPUserNotificationDictionaryKey;
 extern NSString * _Nonnull const kMPUserNotificationActionKey;
 extern NSString * _Nonnull const kMPRemoteNotificationDeviceTokenNotification;
 extern NSString * _Nonnull const kMPRemoteNotificationDeviceTokenKey;
 extern NSString * _Nonnull const kMPRemoteNotificationOldDeviceTokenKey;
-extern NSString * _Nonnull const kMPLocalNotificationReceivedNotification;
-extern NSString * _Nonnull const kMPUserNotificationRunningModeKey;
 
 // Config.plist keys
 extern NSString * _Nonnull const kMPConfigPlist;

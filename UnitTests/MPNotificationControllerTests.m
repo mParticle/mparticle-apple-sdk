@@ -6,7 +6,7 @@
 #import "MParticleUserNotification.h"
 #import "MPBaseTestCase.h"
 
-@interface MPNotificationControllerTests : MPBaseTestCase <MPNotificationControllerDelegate>
+@interface MPNotificationControllerTests : MPBaseTestCase
 
 @property (nonatomic, strong) MPNotificationController *notificationController;
 @property (nonatomic, strong) MParticleUserNotification *userNotification;
@@ -33,7 +33,7 @@
         return _notificationController;
     }
     
-    _notificationController = [[MPNotificationController alloc] initWithDelegate:self];
+    _notificationController = [[MPNotificationController alloc] init];
     
     return _notificationController;
 }
@@ -103,35 +103,6 @@
 
 - (void)receivedUserNotification:(MParticleUserNotification *)userNotification {
     self.userNotification = userNotification;
-}
-
-- (void)testDidFinishLaunchingWithRemoteNotification {
-    NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:NO];
-    
-    NSNotification *notification = [[NSNotification alloc] initWithName:@"Testing did finish launching"
-                                                                 object:nil
-                                                               userInfo:@{UIApplicationLaunchOptionsRemoteNotificationKey:remoteNotificationDictionary}];
-    
-    [self.notificationController handleApplicationDidFinishLaunching:notification];
-    
-    XCTAssertNotNil(self.userNotification, @"User notification should not have been nil.");
-    XCTAssertNotNil(self.userNotification.redactedUserNotificationString, @"Redacted notification should not have been nil.");
-    XCTAssertEqual(self.userNotification.behavior, (MPUserNotificationBehaviorDirectOpen | MPUserNotificationBehaviorRead), @"Behavior is incorrect.");
-}
-
-- (void)testUserNotificationEncoding {
-    NSDictionary *remoteNotificationDictionary = [self remoteNotificationDictionary:NO];
-    
-    NSNotification *notification = [[NSNotification alloc] initWithName:@"Testing did finish launching"
-                                                                 object:nil
-                                                               userInfo:@{UIApplicationLaunchOptionsRemoteNotificationKey:remoteNotificationDictionary}];
-    
-    [self.notificationController handleApplicationDidFinishLaunching:notification];
-    
-    XCTAssertNotNil(self.userNotification, @"User notification should not have been nil.");
-
-    MParticleUserNotification *persistedUserNotification = [self attemptSecureEncodingwithClass:[MParticleUserNotification class] Object:self.userNotification];
-    XCTAssertEqualObjects(self.userNotification, persistedUserNotification, @"User Notification should have been a match.");
 }
 
 @end
