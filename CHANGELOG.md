@@ -1,5 +1,19 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.7.0
+
+## Core SDK Updates
+
+- We've cleaned up and addressed several bugs around automatic push-notification event tracking.
+- Several new APIs have also been introduced to control the tracking of push notifications. You can now manually log that a push has been received or opened. You can also disable the automatic collection of those two events via the MParticleOptions "trackNotifications" property.
+- We've also addressed an issue whereby NSNull is passed to the legacy, pre-IDSync kit APIs as several kits, such as Branch, were unable to handle NSNull.
+
+## Kit Updates
+
+### Taplytics Kit
+
+The Taplytics kit has been released with much help from the Taplytics team!
+
 ## 7.6.0
 
 ## Core SDK Updates
