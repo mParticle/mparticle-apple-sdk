@@ -25,6 +25,7 @@
 #import "MPIdentityApi.h"
 #import "MPEvent+Internal.h"
 #import "MPIHasher.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -1587,7 +1588,8 @@ NSString *const kMPStateKey = @"state";
  Logs a Notification event. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only submit Notification events manually:
  */
 - (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior {
-    UIApplicationState state = [UIApplication sharedApplication].applicationState;
+    UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
+    
     NSString *stateString = state == UIApplicationStateActive ? kMPPushNotificationStateForeground : kMPPushNotificationStateBackground;
     
     MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:userInfo

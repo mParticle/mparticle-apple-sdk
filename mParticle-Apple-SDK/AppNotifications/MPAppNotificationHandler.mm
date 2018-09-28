@@ -11,6 +11,7 @@
 #include "MPHasher.h"
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -177,7 +178,7 @@
     
     if ([MParticle sharedInstance].trackNotifications) {
         if ([self is9]) {
-            UIApplicationState state = [UIApplication sharedApplication].applicationState;
+            UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
             if (state != UIApplicationStateActive || ![self hasContentAvail:userInfo]) {
                 [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo];
             }else {
