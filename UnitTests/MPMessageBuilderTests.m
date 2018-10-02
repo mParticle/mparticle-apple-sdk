@@ -19,10 +19,20 @@
 #import "MParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
+#import "OCMock.h"
+
+NSString *const kMPStateInformationKey = @"cs";
+NSString *const kMPStateDataConnectionKey = @"dct";
 
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
+
+@interface MPStateMachine ()
+
+@property (nonatomic, strong) MParticleReachability *reachability;
 
 @end
 
@@ -96,6 +106,95 @@
     message = (MPMessage *)[messageBuilder build];
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
 }
+
+- (void)testMessageCurrentStateFields {
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:self.session
+                                                                       messageInfo:messageInfo];
+    
+    XCTAssertEqualObjects(@"offline", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
+}
+
+#if TARGET_OS_IOS == 1
+- (void)testMessageCurrentStateFieldsWWAN {
+    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    id mockStateMachine = OCMPartialMock(stateMachine);
+    
+    [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(MParticleNetworkStatusReachableViaWAN)] networkStatus];
+
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:self.session
+                                                                       messageInfo:messageInfo];
+    
+    XCTAssertEqualObjects(@"mobile", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
+    
+    [mockStateMachine stopMocking];
+    [mockInstance stopMocking];
+}
+
+- (void)testMessageCurrentStateFieldsWifi {
+    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    id mockStateMachine = OCMPartialMock(stateMachine);
+    
+    [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(MParticleNetworkStatusReachableViaWiFi)] networkStatus];
+    
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:self.session
+                                                                       messageInfo:messageInfo];
+    
+    XCTAssertEqualObjects(@"wifi", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
+    
+    [mockStateMachine stopMocking];
+    [mockInstance stopMocking];
+}
+
+- (void)testMessageCurrentStateFieldsOffline {
+    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    id mockStateMachine = OCMPartialMock(stateMachine);
+    
+    [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(MParticleNetworkStatusNotReachable)] networkStatus];
+    
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:self.session
+                                                                       messageInfo:messageInfo];
+    
+    XCTAssertEqualObjects(@"offline", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
+    
+    [mockStateMachine stopMocking];
+    [mockInstance stopMocking];
+}
+#endif
 
 - (void)testEncodingandDecodingMessage {
     NSDictionary *messageInfo = @{@"key1":@"value1",

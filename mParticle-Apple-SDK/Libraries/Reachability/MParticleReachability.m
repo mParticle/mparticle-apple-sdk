@@ -242,7 +242,7 @@ static void ReachabilityCallback(SCNetworkReachabilityRef target, SCNetworkReach
 		return MParticleNetworkStatusNotReachable;
 	}
 
-	BOOL returnValue = MParticleNetworkStatusNotReachable;
+	MParticleNetworkStatus returnValue = MParticleNetworkStatusNotReachable;
 
 	if ((flags & kSCNetworkReachabilityFlagsConnectionRequired) == 0)
 	{
