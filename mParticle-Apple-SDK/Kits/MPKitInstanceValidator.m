@@ -24,6 +24,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceApptentive),
                                       @(MPKitInstanceLeanplum),
                                       @(MPKitInstancePrimer),
+                                      @(MPKitInstanceResponsys),
                                       @(MPKitInstanceUrbanAirship),
                                       @(MPKitInstanceApptimize),
                                       @(MPKitInstanceButton),
@@ -65,6 +66,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceApptentive:
             case MPKitInstanceLeanplum:
             case MPKitInstancePrimer:
+            case MPKitInstanceResponsys:
             case MPKitInstanceUrbanAirship:
             case MPKitInstanceApptimize:
             case MPKitInstanceButton:

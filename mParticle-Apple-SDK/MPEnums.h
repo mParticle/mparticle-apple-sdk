@@ -171,6 +171,8 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceCarnival = 99,
     /** Kit code for Primer */
     MPKitInstancePrimer = 100,
+    /** Kit code for Responsys */
+    MPKitInstanceResponsys = 102,
     /** Kit code for Apptimize */
     MPKitInstanceApptimize = 105,
     /** Kit code for Reveal Mobile */

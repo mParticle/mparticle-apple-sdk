@@ -128,6 +128,7 @@ Kit | CocoaPods | Carthage
 [Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)              |  ✓ |  
 [Taplytics](https://github.com/mparticle-integrations/mparticle-apple-integration-taplytics)          |  ✓ |
 [Tune](https://github.com/mparticle-integrations/mparticle-apple-integration-tune)                    |  ✓ | ✓
+[Responsys](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys)                |   |
 [Urban Airship](https://github.com/mparticle-integrations/mparticle-apple-integration-urbanairship)   |  ✓ |  
 [Wootric](https://github.com/mparticle-integrations/mparticle-apple-integration-wootric)              |  ✓ |  
 
