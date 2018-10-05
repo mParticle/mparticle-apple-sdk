@@ -124,6 +124,7 @@ Kit | CocoaPods | Carthage
 [Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)         |  ✓ | ✓
 [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
 [Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                  |  ✓ | ✓
+[Responsys](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys)                |   |
 [Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)   |  ✓ |  
 [Singular](https://github.com/mparticle-integrations/mparticle-apple-integration-singular)            |  ✓ |  
 [Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)              |  ✓ |  
