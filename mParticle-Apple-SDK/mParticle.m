@@ -1465,7 +1465,7 @@ NSString *const kMPStateKey = @"state";
     @try {
         NSError *error = nil;
         NSString *hostPath = [requestUrl host];
-        NSString *paramStr = [[requestUrl pathComponents] objectAtIndex:1];
+        NSString *paramStr = [[requestUrl path] substringFromIndex:1];
         NSData *eventDataStr = [paramStr dataUsingEncoding:NSUTF8StringEncoding];
         NSDictionary *eventDictionary = [NSJSONSerialization JSONObjectWithData:eventDataStr options:kNilOptions error:&error];
         

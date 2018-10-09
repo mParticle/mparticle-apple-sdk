@@ -215,6 +215,23 @@
     [mockBackendController stopMocking];
     [mockInstance stopMocking];
 }
+
+- (void)testLogWebviewEventContainingSlash {
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    [(MParticle *)[mockInstance expect] logEvent:[OCMArg checkWithBlock:^BOOL(MPEvent *value) {
+        return [value.info[@"referrer_source"] isEqual:@"http://example.com/foo?bar=1"];
+    }]];
+    
+    NSURL *url = [NSURL URLWithString:@"mp-sdk://logEvent/%7B%22EventName%22%3A%22foo%20content%20view%22%2C%22EventCategory%22%3A1%2C%22UserAttributes%22%3A%7B%7D%2C%22UserIdentities%22%3A%7B%7D%2C%22Store%22%3A%7B%7D%2C%22EventAttributes%22%3A%7B%22foo%20document%20id%22%3A12345%2C%22referrer_source%22%3A%22http%3A%2F%2Fexample.com%2Ffoo%3Fbar%3D1%22%7D%2C%22SDKVersion%22%3A%221.2.3.4%22%2C%22SessionId%22%3Anull%2C%22EventDataType%22%3A4%2C%22Debug%22%3Afalse%2C%22Location%22%3Anull%2C%22OptOut%22%3Anull%2C%22ExpandedEventCount%22%3A0%2C%22AppVersion%22%3Anull%2C%22ClientGeneratedId%22%3Anull%2C%22DeviceId%22%3Anull%2C%22MPID%22%3Anull%2C%22ConsentState%22%3Anull%2C%22Timestamp%22%3A12345%7D"];
+                  
+    [mockInstance processWebViewLogEvent:url];
+
+    [mockInstance verifyWithDelay:1.0];
+    [mockInstance stopMocking];
+}
 #endif
 
 @end
