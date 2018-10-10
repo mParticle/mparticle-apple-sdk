@@ -119,7 +119,6 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     XCTAssertEqualObjects(@"offline", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
 }
 
-#if TARGET_OS_IOS == 1
 - (void)testMessageCurrentStateFieldsWWAN {
     MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
     id mockStateMachine = OCMPartialMock(stateMachine);
@@ -194,7 +193,6 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     [mockStateMachine stopMocking];
     [mockInstance stopMocking];
 }
-#endif
 
 - (void)testEncodingandDecodingMessage {
     NSDictionary *messageInfo = @{@"key1":@"value1",

@@ -6,9 +6,7 @@
 #import "mParticle.h"
 #import "MPIdentityDTO.h"
 #import "MPNetworkCommunication.h"
-#if TARGET_OS_IOS == 1
 #import "OCMock.h"
-#endif
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
@@ -76,8 +74,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertEqual(@"other id 3", httpIdentities.other3);
     XCTAssertEqual(@"other id 4", httpIdentities.other4);
 }
-
-#if TARGET_OS_IOS == 1
 
 - (void)testNoEmptyModifyRequests {
     MPNetworkCommunication *network = [[MPNetworkCommunication alloc] init];
@@ -230,6 +226,5 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     [mockManager verifyWithDelay:0.2];
 }
-#endif
 
 @end
