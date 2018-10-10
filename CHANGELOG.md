@@ -1,5 +1,29 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.7.2
+
+## Core SDK Updates
+
+- Fix a bug where webview events with an encoded slash in the event info were being dropped
+- Fix retain cycles in MPConnector
+
+## Kit Updates
+
+### Kochava
+- Ensure log level from config is always respected, not overridden by environment
+- Don't set Kochava delegate unless retrieveAttribution setting is turned on
+- Remove use of undocumented isNewUser flag
+
+## 7.7.1
+
+## Core SDK Updates
+
+- Fix Reachability bug where we were incorrectly reporting users as being on wifi when they were actually using mobile data
+
+## Kit Updates
+
+- Kochava - Add support for mParticle Attribution API
+
 ## 7.7.0
 
 ## Core SDK Updates
