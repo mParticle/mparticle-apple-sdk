@@ -301,10 +301,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     MPConnector *connector = [[MPConnector alloc] init];
-    NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
-    
-    
     
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
     
@@ -496,8 +492,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPUpload *upload = uploads[index];
     NSString *uploadString = [upload serializedString];
     MPConnector *connector = [[MPConnector alloc] init];
-    NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
     
     MPILogVerbose(@"Source Batch Id: %@", upload.uuid);
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
@@ -617,8 +611,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     MPConnector *connector = [[MPConnector alloc] init];
-    NSString *const connectionId = [[NSUUID UUID] UUIDString];
-    connector.connectionId = connectionId;
     
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
