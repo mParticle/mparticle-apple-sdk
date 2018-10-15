@@ -9,6 +9,8 @@
 
 @property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *appliedProjections;
 @property (nonatomic, strong, readonly, nullable) NSDictionary *filteredAttributes;
+@property (nonatomic, strong, readonly, nullable) MPCommerceEvent *originalCommerceEvent;
+@property (nonatomic, strong, readonly, nullable) MPEvent *originalEvent;
 @property (nonatomic, strong, readonly, nullable) MPCommerceEvent *forwardCommerceEvent;
 @property (nonatomic, strong, readonly, nullable) MPEvent *forwardEvent;
 @property (nonatomic, strong, readonly, nullable) MPConsentState *forwardConsentState;

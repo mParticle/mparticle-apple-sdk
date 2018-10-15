@@ -5,6 +5,8 @@
 #import "MPLaunchInfo.h"
 #import "MPBaseTestCase.h"
 #import "MParticle.h"
+#import "MPKitContainer.h"
+#import "OCMock.h"
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine(Tests)
@@ -21,6 +23,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPKitContainer * kitContainer;
 
 @end
 
@@ -203,6 +206,31 @@
     [MPStateMachine setEnvironment:MPEnvironmentDevelopment];
     environment = [MPStateMachine environment];
     XCTAssertEqual(environment, MPEnvironmentDevelopment, @"Should have been equal.");
+}
+
+- (void)testSetLocation {
+#if TARGET_OS_IOS == 1
+    id mockKitContainer = OCMClassMock([MPKitContainer class]);
+    [MParticle sharedInstance].kitContainer = mockKitContainer;
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Set Location"];
+    MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
+    
+    [MParticle sharedInstance].location = [[CLLocation alloc] init];
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        OCMVerify([kitContainer forwardSDKCall:@selector(setLocation:)
+                                         event:OCMOCK_ANY
+                                    parameters:OCMOCK_ANY
+                                   messageType:MPMessageTypeEvent
+                                      userInfo:OCMOCK_ANY
+                   ]);
+        [expectation fulfill];
+    });
+
+
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+#endif
 }
 
 @end

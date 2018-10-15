@@ -11,7 +11,11 @@
 @interface FilteredMParticleUser : NSObject
 
 @property(readonly, strong, nonnull) NSNumber *userId;
-@property(readonly) BOOL knownUser;
+
+/**
+ Returns whether this user is currently logged in
+ */
+@property(readonly) BOOL isLoggedIn;
 
 /**
  Gets current user identities (readonly)

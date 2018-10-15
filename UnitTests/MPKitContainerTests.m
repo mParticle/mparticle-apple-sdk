@@ -25,6 +25,8 @@
 #import "MPPersistenceController.h"
 #import "MPKitInstanceValidator.h"
 #import "MPBaseTestCase.h"
+#import "OCMock.h"
+#import "MPKitProtocol.h"
 
 @interface MParticle ()
 
@@ -62,12 +64,14 @@
 - (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
 - (void)flushSerializedKits;
 - (NSDictionary *)methodMessageTypeMapping;
-- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler;
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forSelector:(SEL)selector;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributes:(NSDictionary *)userAttributes;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType;
-- (void)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent completionHandler:(void (^)(MPKitFilter *kitFilter, BOOL finished))completionHandler;
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forCommerceEvent:(MPCommerceEvent *const)commerceEvent;
+- (void)attemptToLogEventToKit:(id<MPExtensionKitProtocol>)kitRegister kitFilter:(MPKitFilter *)kitFilter selector:(SEL)selector parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo;
+
 
 @end
 
@@ -424,16 +428,12 @@
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
-    
-    void (^kitHandler)(id<MPKitProtocol>, MPKitFilter *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPKitFilter *kitFilter, MPKitExecStatus **execStatus) {
-    };
 
-    [kitContainer forwardCommerceEventCall:commerceEvent kitHandler:kitHandler];
+    [kitContainer forwardCommerceEventCall:commerceEvent];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 1, @"Should have been equal.");
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEcommerce, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.commerceEvent, commerceEvent, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.commerceEventCompletionHandler, kitHandler, @"Should have been equal.");
 
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -448,15 +448,11 @@
     SEL selector = @selector(logEvent:);
     MPEvent *event = [[MPEvent alloc] initWithName:@"Time travel" type:MPEventTypeNavigation];
     
-    void (^kitHandler)(id<MPKitProtocol>, MPEvent *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPEvent *forwardEvent, MPKitExecStatus **execStatus) {
-    };
-    
-    [kitContainer forwardSDKCall:selector event:event messageType:MPMessageTypeEvent userInfo:nil kitHandler:kitHandler];
+    [kitContainer forwardSDKCall:selector event:event parameters:nil messageType:MPMessageTypeEvent userInfo:nil];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 1, @"Should have been equal.");
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeEvent, @"Should have been equal.");
     XCTAssertEqualObjects(forwardQueueItem.event, event, @"Should have been equal.");
-    XCTAssertEqualObjects(forwardQueueItem.eventCompletionHandler, kitHandler, @"Should have been equal.");
     
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -470,9 +466,8 @@
     
     SEL selector = @selector(logEvent:);
     MPEvent *event = nil;
-    void (^kitHandler)(id<MPKitProtocol>, MPEvent *, MPKitExecStatus **) = nil;
     
-    [kitContainer forwardSDKCall:selector event:event messageType:MPMessageTypeEvent userInfo:nil kitHandler:kitHandler];
+    [kitContainer forwardSDKCall:selector event:event parameters:nil messageType:MPMessageTypeEvent userInfo:nil];
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
     XCTAssertNil(forwardQueueItem, @"Should have been nil.");
@@ -484,9 +479,6 @@
     
     kitContainer.kitsInitialized = NO;
     
-    void (^kitHandler)(id<MPKitProtocol>, MPForwardQueueParameters *, MPKitExecStatus **) = ^(id<MPKitProtocol> kit, MPForwardQueueParameters *forwardParameters, MPKitExecStatus **execStatus) {
-    };
-    
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
     NSURL *url = [NSURL URLWithString:@"mparticle://baseurl?query"];
     [queueParameters addParameter:url];
@@ -494,15 +486,15 @@
     [queueParameters addParameter:options];
     
     [kitContainer forwardSDKCall:@selector(openURL:options:)
+                           event:nil
                       parameters:queueParameters
                      messageType:MPMessageTypeUnknown
-                      kitHandler:kitHandler];
+                        userInfo:nil];
     
     MPForwardQueueItem *forwardQueueItem = [kitContainer.forwardQueue firstObject];
     XCTAssertEqual(kitContainer.forwardQueue.count, 1);
     XCTAssertEqual(forwardQueueItem.queueItemType, MPQueueItemTypeGeneralPurpose);
     XCTAssertEqualObjects(forwardQueueItem.queueParameters, queueParameters);
-    XCTAssertEqualObjects(forwardQueueItem.generalPurposeCompletionHandler, kitHandler);
     
     kitContainer.kitsInitialized = YES;
     XCTAssertEqual(kitContainer.forwardQueue.count, 0, @"Should have been equal.");
@@ -547,17 +539,12 @@
         return NO;
     }] anyObject];
 
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Filtering event type"];
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
-           [expectation fulfill];
-       }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+    XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
 }
 
 - (void)testForwardLoggedOutUser {
@@ -758,17 +745,11 @@
         return NO;
     }] anyObject];
     
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Filtering message type"];
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
-           [expectation fulfill];
-       }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+    XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
 }
 
 - (void)testFilterEventTypeNavigation {
@@ -800,26 +781,15 @@
         return NO;
     }] anyObject];
     
-    XCTestExpectation *notFilteringExpectation = [self expectationWithDescription:@"Not filtering screen events by event type"];
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logScreen:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertFalse(kitFilter.shouldFilter, @"Event type filtering should not be taking place for screen events.");
-           [notFilteringExpectation fulfill];
-       }];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logScreen:)];
     
-    XCTestExpectation *filteringExpectation = [self expectationWithDescription:@"Filtering non-screen events by event type"];
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Non-screen event should have been filtered by event type");
-           [filteringExpectation fulfill];
-       }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"Event type filtering should not be taking place for screen events.");
+    
+    kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Non-screen event should have been filtered by event type");
 }
 
 - (void)testFilterEventNameAndAttributes {
@@ -856,15 +826,10 @@
         return NO;
     }] anyObject];
     
-    XCTestExpectation *expectation1 = [self expectationWithDescription:@"Filtering event name and attributes"];
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           [expectation1 fulfill];
-       }];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
     
     configurations = @[
                        @{
@@ -888,18 +853,12 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    XCTestExpectation *expectation2 = [self expectationWithDescription:@"Filtering event name and attributes"];
-    [kitContainer filter:registeredKit
-                forEvent:event
-                selector:@selector(logEvent:)
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-           XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
-           XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
-           XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
-           [expectation2 fulfill];
-       }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+    XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
+    XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
 }
 
 - (void)testFilterForSelector {
@@ -1153,11 +1112,9 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
 
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-       }];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
 }
 
 - (void)testFilterCommerceEvent_EntityType {
@@ -1218,11 +1175,9 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
 
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-       }];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
 }
 
 - (void)testFilterCommerceEvent_Other {
@@ -1285,16 +1240,12 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
     
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-       }];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
 }
 
 - (void)testFilterCommerceEvent_TransactionAttributes {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Transaction attributes"];
-    
     NSArray *configurations = @[
                                 @{
                                     @"id":@(42),
@@ -1351,22 +1302,17 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     XCTAssertNotNil(commerceEvent.transactionAttributes);
     
-    [kitContainer filter:registeredKit
-        forCommerceEvent:commerceEvent
-       completionHandler:^(MPKitFilter *kitFilter, BOOL finished) {
-           XCTAssertNotNil(kitFilter);
-           XCTAssertNotNil(kitFilter.forwardCommerceEvent);
-           XCTAssertNotNil(kitFilter.forwardCommerceEvent.transactionAttributes);
-           XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.affiliation);
-           XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.revenue);
-           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.shipping, @3);
-           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.tax, @4.56);
-           XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.transactionId, @"42");
-           
-           [expectation fulfill];
-       }];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    XCTAssertNotNil(kitFilter);
+    XCTAssertNotNil(kitFilter.forwardCommerceEvent);
+    XCTAssertNotNil(kitFilter.forwardCommerceEvent.transactionAttributes);
+    XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.affiliation);
+    XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.revenue);
+    XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.shipping, @3);
+    XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.tax, @4.56);
+    XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.transactionId, @"42");
+    
 }
 
 - (void)testForwardAppsFlyerEvent {
@@ -1472,18 +1418,14 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"subscription_success" type:MPEventTypeTransaction];
     event.info = @{@"plan":@"premium", @"plan_color":@"gold", @"boolean":@YES};
     
-    [self->kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
-                              XCTAssertNotNil(forwardEvent.info);
-                              XCTAssertEqual(forwardEvent.info.count, 3);
-                          }
-                      }];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+
+    MPEvent *forwardEvent = kitFilter.forwardEvent;
+    XCTAssertNotNil(forwardEvent);
+    XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
+    XCTAssertNotNil(forwardEvent.info);
+    XCTAssertEqual(forwardEvent.info.count, 3);
 }
 
 - (void)testForwardAppsFlyerCommerceEvent {
@@ -1642,17 +1584,15 @@
     transactionAttributes.revenue = @18;
     transactionAttributes.transactionId = @"42";
     commerceEvent.transactionAttributes = transactionAttributes;
-
-    [self->kitContainer forwardCommerceEventCall:commerceEvent
-                                kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                    if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                        MPEvent *event = kitFilter.forwardEvent;
-                                        XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
-                                        XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
-                                        XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
-                                        XCTAssertEqualObjects(event.name, @"af_add_to_cart");
-                                    }
-                                }];
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forCommerceEvent:commerceEvent];
+    
+    MPEvent *event = kitFilter.forwardEvent;
+    XCTAssertEqualObjects(event.info[@"af_quantity"], @"1");
+    XCTAssertEqualObjects(event.info[@"af_content_id"], @"OutATime");
+    XCTAssertEqualObjects(event.info[@"af_content_type"], @"Time Machine");
+    XCTAssertEqualObjects(event.name, @"af_add_to_cart");
 }
 
 - (void)testMatchArrayProjection {
@@ -1734,25 +1674,22 @@
 
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription"};
-    __block NSMutableArray<NSString *> *foundEventNames = [NSMutableArray arrayWithCapacity:2];
+    NSMutableArray<NSString *> *foundEventNames = [NSMutableArray arrayWithCapacity:2];
 
-        [self->kitContainer forwardSDKCall:@selector(logEvent:)
-                               event:event
-                         messageType:MPMessageTypeEvent
-                            userInfo:nil
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                  XCTAssertNotNil(forwardEvent);
-                                  XCTAssertNotNil(forwardEvent.info);
-                                  XCTAssertEqual(forwardEvent.info.count, 2);
-                                  
-                                  [foundEventNames addObject:forwardEvent.name];
-                                  
-                                  if (foundEventNames.count == 2) {
-                                      XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
-                                      XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
-                                  }
-                              }}];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+
+    MPEvent *forwardEvent = kitFilter.forwardEvent;
+    XCTAssertNotNil(forwardEvent);
+    XCTAssertNotNil(forwardEvent.info);
+    XCTAssertEqual(forwardEvent.info.count, 2);
+    
+    [foundEventNames addObject:forwardEvent.name];
+    
+    if (foundEventNames.count == 2) {
+        XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
+        XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
+    }
 }
 
 - (void)testNonMatchingMatchArrayProjection {
@@ -1811,17 +1748,13 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"plan_id":@"3", @"outcome":@"new_subscription", @"gender":@"female"};
     
-    [self->kitContainer forwardSDKCall:@selector(logEvent:)
-                           event:event
-                     messageType:MPMessageTypeEvent
-                        userInfo:nil
-                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                          if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                              XCTAssertNotNil(forwardEvent);
-                              XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
-                              XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
-                          }
-                      }];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+    
+    MPEvent *forwardEvent = kitFilter.forwardEvent;
+    XCTAssertNotNil(forwardEvent);
+    XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_MALE_SUBSCRIPTION");
+    XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
 }
 
 - (void)testNonMatchingAttributeArrayProjection {
@@ -1871,17 +1804,13 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
     event.info = @{@"outcome":@"not_new_subscription"};
     
-        [self->kitContainer forwardSDKCall:@selector(logEvent:)
-                               event:event
-                         messageType:MPMessageTypeEvent
-                            userInfo:nil
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                  XCTAssertNotNil(forwardEvent);
-                                  XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
-                                  XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
-                              }
-                          }];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+    
+    MPEvent *forwardEvent = kitFilter.forwardEvent;
+    XCTAssertNotNil(forwardEvent);
+    XCTAssertNotEqualObjects(forwardEvent.name, @"X_NEW_SUBSCRIPTION");
+    XCTAssertEqualObjects(forwardEvent.name, @"SUBSCRIPTION_END");
 }
 
 - (void)testHashProjection {
@@ -1935,19 +1864,15 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.info = @{@"plan":@"premium"};
     
-        [self->kitContainer forwardSDKCall:@selector(logEvent:)
-                               event:event
-                         messageType:MPMessageTypeEvent
-                            userInfo:nil
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                  XCTAssertNotNil(forwardEvent);
-                                  XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
-                                  XCTAssertNotNil(forwardEvent.info);
-                                  XCTAssertEqual(forwardEvent.info.count, 2);
-                                  XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
-                              }
-                          }];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+    
+    MPEvent *forwardEvent = kitFilter.forwardEvent;
+    XCTAssertNotNil(forwardEvent);
+    XCTAssertEqualObjects(forwardEvent.name, @"af_add_payment_info");
+    XCTAssertNotNil(forwardEvent.info);
+    XCTAssertEqual(forwardEvent.info.count, 2);
+    XCTAssertEqualObjects(forwardEvent.info[@"af_success"], @"True");
 }
 
 - (void)testAttributeHashProjection {
@@ -2001,19 +1926,15 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.info = @{@"test_description":@"this is a description"};
     
-        [self->kitContainer forwardSDKCall:@selector(logEvent:)
-                               event:event
-                         messageType:MPMessageTypeEvent
-                            userInfo:nil
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPEvent * _Nullable forwardEvent, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                              if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                                  XCTAssertNotNil(forwardEvent);
-                                  XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
-                                  XCTAssertNotNil(forwardEvent.info);
-                                  XCTAssertEqual(forwardEvent.info.count, 1);
-                                  XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
-                              }
-                          }];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+    
+    MPEvent *forwardEvent = kitFilter.forwardEvent;
+    XCTAssertNotNil(forwardEvent);
+    XCTAssertEqualObjects(forwardEvent.name, @"af_achievement_unlocked");
+    XCTAssertNotNil(forwardEvent.info);
+    XCTAssertEqual(forwardEvent.info.count, 1);
+    XCTAssertEqualObjects(forwardEvent.info[@"af_description"], @"this is a description");
 }
 
 - (void)testAllocation {    
@@ -2094,12 +2015,10 @@
     MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
     
-
-        [self->kitContainer forwardCommerceEventCall:commerceEvent kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitFilter * _Nonnull kitFilter, MPKitExecStatus *__autoreleasing  _Nonnull * _Nonnull execStatus) {
-            if ([[[kit class] kitCode] isEqualToNumber:@(MPKitInstanceAppsFlyer)]) {
-                XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
-            }
-        }];
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forCommerceEvent:commerceEvent];
+    
+    XCTAssertEqualObjects(kitFilter.forwardEvent.name, @"af_content_view");
 }
 
 - (void)testShouldDelayUploadMaxTime {
@@ -2154,5 +2073,68 @@
     XCTAssertTrue(isDisabled);
     
 }
+
+#if TARGET_OS_IOS == 1
+- (void)testAttemptToLogEventToKit {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
+    event.info = @{@"plan":@"premium"};
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forEvent:event selector:@selector(logEvent:)];
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] logEvent:OCMOCK_ANY];
+
+    [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+    [kitWrapperMock stopMocking];
+    [kitRegisterMock stopMocking];
+}
+
+- (void)testAttemptToSurveyToKit {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    
+    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+    NSURL *url = [NSURL URLWithString:@"mparticle://baseurl?query"];
+    [queueParameters addParameter:url];
+    NSDictionary *options = @{@"key":@"val"};
+    [queueParameters addParameter:options];
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] surveyURLWithUserAttributes:OCMOCK_ANY];
+    
+    [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:nil selector:@selector(surveyURLWithUserAttributes:) parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:[[NSDictionary alloc] init]];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+    [kitWrapperMock stopMocking];
+    [kitRegisterMock stopMocking];
+}
+
+- (void)testAttemptToShouldDelayEventToKit {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] shouldDelayMParticleUpload];
+    
+    [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:nil selector:@selector(shouldDelayMParticleUpload) parameters:nil messageType:MPMessageTypeUnknown userInfo:[[NSDictionary alloc] init]];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+    [kitWrapperMock stopMocking];
+    [kitRegisterMock stopMocking];
+}
+#endif
 
 @end

@@ -20,6 +20,7 @@
     
     _shouldFilter = shouldFilter;
     _filteredAttributes = filteredAttributes;
+    _originalEvent = nil;
     _forwardEvent = nil;
     
     return self;
@@ -35,6 +36,7 @@
         return nil;
     }
     
+    _originalEvent = event;
     _forwardEvent = event;
     _appliedProjections = appliedProjections;
     
@@ -52,6 +54,7 @@
     }
     
     _shouldFilter = shouldFilter;
+    _originalCommerceEvent = commerceEvent;
     _forwardCommerceEvent = commerceEvent;
     _appliedProjections = appliedProjections;
     

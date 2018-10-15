@@ -942,7 +942,6 @@
 }
 
 - (void)testSetLocation {
-    
 #if TARGET_OS_IOS == 1
     CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
     [MParticle sharedInstance].stateMachine.location = location;

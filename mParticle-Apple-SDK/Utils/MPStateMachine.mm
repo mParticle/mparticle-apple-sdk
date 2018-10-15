@@ -16,6 +16,7 @@
 #import "MPKitContainer.h"
 #import "MPSearchAdsAttribution.h"
 #import <UIKit/UIKit.h>
+#import "MPForwardQueueParameters.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>

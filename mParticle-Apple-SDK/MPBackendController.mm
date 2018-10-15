@@ -1652,26 +1652,27 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
-    
-    MPExecStatus execStatus = MPExecStatusFail;
+    dispatch_async(messageQueue, ^{
+        MPExecStatus execStatus = MPExecStatusFail;
         
-    [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
+        [MParticle sharedInstance].stateMachine.optOut = optOutStatus;
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
 #if TARGET_OS_IOS == 1
-    messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+        messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *message = (MPMessage *)[messageBuilder build];
-    
-    [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
-    
-    if (optOutStatus) {
-        [self endSession];
-    }
-    
-    execStatus = MPExecStatusSuccess;
-    
-    completionHandler(optOutStatus, execStatus);
+        MPMessage *message = (MPMessage *)[messageBuilder build];
+        
+        [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
+        
+        if (optOutStatus) {
+            [self endSession];
+        }
+        
+        execStatus = MPExecStatusSuccess;
+        
+        completionHandler(optOutStatus, execStatus);
+    });
 }
 
 - (MPExecStatus)setSessionAttribute:(MPSession *)session key:(NSString *)key value:(id)value {

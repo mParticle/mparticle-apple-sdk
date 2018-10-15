@@ -63,11 +63,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:failedRegistrationSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit failedToRegisterForUserNotifications:forwardParameters[0]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -97,11 +97,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:deviceTokenSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit setDeviceToken:forwardParameters[0]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -120,11 +120,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:didRegisterUserNotificationSettingsSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit didRegisterUserNotificationSettings:forwardParameters[0]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -141,11 +141,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -163,11 +163,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit handleActionWithIdentifier:forwardParameters[0] forRemoteNotification:forwardParameters[1] withResponseInfo:forwardParameters[2]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -198,11 +198,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:receivedNotificationSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypePushNotification
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit receivedUserNotification:forwardParameters[0]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypePushNotification
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -219,11 +219,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:didUpdateUserActivitySelector
+                                                          event:nil
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit didUpdateUserActivity:forwardParameters[0]];
-                                             }];
+                                                       userInfo:nil
+         ];
     });
 }
 #endif
@@ -305,11 +305,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:continueUserActivitySelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit continueUserActivity:forwardParameters[0] restorationHandler:forwardParameters[1]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
     
     NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
@@ -340,11 +340,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLOptionsSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit openURL:forwardParameters[0] options:forwardParameters[1]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
@@ -367,11 +367,11 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLSourceAppAnnotationSelector
-                                             parameters:queueParameters
-                                            messageType:MPMessageTypeUnknown
-                                             kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPForwardQueueParameters * _Nullable forwardParameters, MPKitExecStatus *__autoreleasing _Nonnull * _Nonnull execStatus) {
-                                                 *execStatus = [kit openURL:forwardParameters[0] sourceApplication:forwardParameters[1] annotation:forwardParameters[2]];
-                                             }];
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
     });
 }
 
