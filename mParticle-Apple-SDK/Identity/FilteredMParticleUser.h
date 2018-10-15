@@ -11,6 +11,7 @@
 @interface FilteredMParticleUser : NSObject
 
 @property(readonly, strong, nonnull) NSNumber *userId;
+@property(readonly) BOOL knownUser;
 
 /**
  Gets current user identities (readonly)

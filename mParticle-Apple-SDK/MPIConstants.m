@@ -203,6 +203,7 @@ NSString *const kMPRemoteConfigUniqueIdentifierKey = @"das";
 NSString *const kMPRemoteConfigBracketKey = @"bk";
 NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
 NSString *const kMPRemoteConfigAllowASR = @"iasr";
+NSString *const kMPRemoteConfigExcludeAnonymousUsersKey = @"eau";
 
 // Notifications
 NSString *const kMPCrashReportOccurredNotification = @"MPCrashReportOccurredNotification";

@@ -34,6 +34,12 @@
 
 @end
 
+@interface MParticleUser ()
+
+@property(readwrite) BOOL isLoggedIn;
+
+@end
+
 @interface MPKitInstanceValidator(BackendControllerTests)
 + (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
 @end
@@ -107,7 +113,7 @@
         
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
         [MPKitInstanceValidator includeUnitTestKits:@[@42]];
-        [kitContainer startKit:@42 configuration:kitConfiguration];
+        [[kitContainer startKit:@42 configuration:kitConfiguration] start];
     }
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 92"];
@@ -119,6 +125,9 @@
 }
 
 - (void)tearDown {
+    for (MPKitRegister *kitRegister in [MPKitContainer registeredKits]) {
+        kitRegister.wrapperInstance = nil;
+    }
     kitContainer = nil;
 
     [super tearDown];
@@ -549,6 +558,165 @@
            [expectation fulfill];
        }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testForwardLoggedOutUser {
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            }                                    }
+                                ];
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 1);
+    XCTAssertEqual(activeKits[0].code, @42);
+
+    
+    configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@true
+                                    }
+                                ];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 0);
+}
+
+- (void)testForwardLoggedOutUserWithMultipleKits {
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            }
+                                    },
+                                @{
+                                    @"id":@314,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    }
+                                ];
+    
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[1]];
+    [MPKitInstanceValidator includeUnitTestKits:@[@314]];
+    [[kitContainer startKit:@314 configuration:kitConfiguration] start];
+
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 2);
+    
+    configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@true
+                                    },
+                                @{
+                                    @"id":@314,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    }
+                                ];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 1);
+    XCTAssertEqual(activeKits[0].code, @314);
+}
+
+- (void)testForwardLoggedInUserWithMultipleKits {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    currentUser.isLoggedIn = true;
+    
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            }
+                                    },
+                                @{
+                                    @"id":@314,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    }
+                                ];
+    
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[1]];
+    [MPKitInstanceValidator includeUnitTestKits:@[@314]];
+    [[kitContainer startKit:@314 configuration:kitConfiguration] start];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 2);
+    XCTAssertTrue([activeKits[0].code integerValue] == 42 || [activeKits[0].code integerValue] == 314);
+    XCTAssertTrue([activeKits[1].code integerValue] == 42 || [activeKits[1].code integerValue] == 314);
+    
+    configurations = @[
+                       @{
+                           @"id":@(42),
+                           @"as":@{
+                                   @"secretKey":@"MySecretKey",
+                                   @"sendTransactionData":@"true"
+                                   },
+                           @"eau":@true
+                           },
+                       @{
+                           @"id":@314,
+                           @"as":@{
+                                   @"secretKey":@"MySecretKey",
+                                   @"sendTransactionData":@"true"
+                                   },
+                           @"eau":@false
+                           }
+                       ];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 2);
+    XCTAssertTrue([activeKits[0].code integerValue] == 42 || [activeKits[0].code integerValue] == 314);
+    XCTAssertTrue([activeKits[1].code integerValue] == 42 || [activeKits[1].code integerValue] == 314);
 }
 
 - (void)testFilterMessageType {

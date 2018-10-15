@@ -383,13 +383,14 @@
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
     self = [super init];
     if (self) {
-        _context = dictionary[@"context"];
-        NSString *mpidString = dictionary[@"mpid"];
+        _context = dictionary[kMPIdentityRequestKeyContext];
+        NSString *mpidString = dictionary[kMPIdentityRequestKeyMPID];
         if (mpidString) {
             _mpid = [NSNumber numberWithLongLong:(long long)[mpidString longLongValue]];
         }
-        _isEphemeral = [[dictionary valueForKey:@"is_ephemeral"] boolValue];
-        
+        _isEphemeral = [[dictionary valueForKey:kMPIdentityRequestKeyIsEphemeral] boolValue];
+        _isLoggedIn =  [[dictionary valueForKey:kMPIdentityRequestKeyIsLoggedIn] boolValue];
+
     }
     return self;
 }

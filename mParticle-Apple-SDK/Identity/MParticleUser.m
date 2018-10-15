@@ -50,6 +50,7 @@
     self = [super init];
     if (self) {
         _backendController = [MParticle sharedInstance].backendController;
+        _isLoggedIn = false;
     }
     return self;
 }
@@ -106,6 +107,10 @@
 - (void)setUserId:(NSNumber *)userId {
     _userId = userId;
     _cart = [[MPCart alloc] initWithUserId:userId];
+}
+
+- (void)setIsLoggedIn:(BOOL)isLoggedIn {
+    _isLoggedIn = isLoggedIn;
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {

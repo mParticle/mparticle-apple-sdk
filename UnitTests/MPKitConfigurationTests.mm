@@ -80,57 +80,58 @@
 }
 
 - (void)testInstance {
-    XCTAssertNotNil(kitConfiguration, @"Should not have been nil.");
-    XCTAssertEqualObjects(kitConfiguration.configurationHash, @(-2046674642), @"Should have been equal.");
-    XCTAssertEqualObjects(kitConfiguration.kitCode, @37, @"Should have been equal.");
-    XCTAssertEqualObjects(kitConfiguration.attributeValueFilteringHashedAttribute, @"12345", @"Should have been equal.");
-    XCTAssertEqualObjects(kitConfiguration.attributeValueFilteringHashedValue, @"54321", @"Should have been equal.");
+    XCTAssertNotNil(kitConfiguration);
+    XCTAssertEqualObjects(kitConfiguration.configurationHash, @(-2046674642));
+    XCTAssertEqualObjects(kitConfiguration.kitCode, @37);
+    XCTAssertEqualObjects(kitConfiguration.attributeValueFilteringHashedAttribute, @"12345");
+    XCTAssertEqualObjects(kitConfiguration.attributeValueFilteringHashedValue, @"54321");
     
-    XCTAssertNotNil(kitConfiguration.filters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.eventTypeFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.eventNameFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.eventAttributeFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.messageTypeFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.screenNameFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.screenAttributeFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.userIdentityFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.userAttributeFilters, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.addEventAttributeList, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.removeEventAttributeList, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.singleItemEventAttributeList, @"Should not have been nil.");
-    XCTAssertNotNil(kitConfiguration.bracketConfiguration, @"Should not have been nil.");
-
-    XCTAssertNil(kitConfiguration.commerceEventAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfiguration.commerceEventEntityTypeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfiguration.commerceEventAppFamilyAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfiguration.configuredMessageTypeProjections, @"Should have been nil.");
-    XCTAssertNil(kitConfiguration.defaultProjections, @"Should have been nil.");
-    XCTAssertNil(kitConfiguration.projections, @"Should have been nil.");
+    XCTAssertNotNil(kitConfiguration.filters);
+    XCTAssertNotNil(kitConfiguration.eventTypeFilters);
+    XCTAssertNotNil(kitConfiguration.eventNameFilters);
+    XCTAssertNotNil(kitConfiguration.eventAttributeFilters);
+    XCTAssertNotNil(kitConfiguration.messageTypeFilters);
+    XCTAssertNotNil(kitConfiguration.screenNameFilters);
+    XCTAssertNotNil(kitConfiguration.screenAttributeFilters);
+    XCTAssertNotNil(kitConfiguration.userIdentityFilters);
+    XCTAssertNotNil(kitConfiguration.userAttributeFilters);
+    XCTAssertNotNil(kitConfiguration.addEventAttributeList);
+    XCTAssertNotNil(kitConfiguration.removeEventAttributeList);
+    XCTAssertNotNil(kitConfiguration.singleItemEventAttributeList);
+    XCTAssertNotNil(kitConfiguration.bracketConfiguration);
     
-    XCTAssertTrue(kitConfiguration.attributeValueFilteringIsActive, @"Should have been true.");
-    XCTAssertTrue(kitConfiguration.attributeValueFilteringShouldIncludeMatches, @"Should have been true.");
+    XCTAssertNil(kitConfiguration.commerceEventAttributeFilters);
+    XCTAssertNil(kitConfiguration.commerceEventEntityTypeFilters);
+    XCTAssertNil(kitConfiguration.commerceEventAppFamilyAttributeFilters);
+    XCTAssertNil(kitConfiguration.configuredMessageTypeProjections);
+    XCTAssertNil(kitConfiguration.defaultProjections);
+    XCTAssertNil(kitConfiguration.projections);
+    
+    XCTAssertTrue(kitConfiguration.attributeValueFilteringIsActive);
+    XCTAssertTrue(kitConfiguration.attributeValueFilteringShouldIncludeMatches);
+    XCTAssertFalse(kitConfiguration.excludeAnonymousUsers);
 }
 
 - (void)testCopyAndCoding {
     MPKitConfiguration *copyKitConfiguration = [kitConfiguration copy];
-    XCTAssertEqualObjects(kitConfiguration, copyKitConfiguration, @"Should have been equal.");
+    XCTAssertEqualObjects(kitConfiguration, copyKitConfiguration);
     
     NSData *kitConfigurationData = [NSKeyedArchiver archivedDataWithRootObject:kitConfiguration];
-    XCTAssertNotNil(kitConfigurationData, @"Should not have been nil.");
+    XCTAssertNotNil(kitConfigurationData);
     
     MPKitConfiguration *deserializedKitConfiguration = [NSKeyedUnarchiver unarchiveObjectWithData:kitConfigurationData];
-    XCTAssertNotNil(deserializedKitConfiguration, @"Should not have been nil.");
-    XCTAssertEqualObjects(deserializedKitConfiguration, copyKitConfiguration, @"Should have been equal.");
+    XCTAssertNotNil(deserializedKitConfiguration);
+    XCTAssertEqualObjects(deserializedKitConfiguration, copyKitConfiguration);
 }
 
 - (void)testInvalidConfiguration {
     NSDictionary *configuration = nil;
     MPKitConfiguration *kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    XCTAssertNil(kitConfig, @"Should have been nil");
+    XCTAssertNil(kitConfig);
     
     configuration = (NSDictionary *)[NSNull null];
     kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    XCTAssertNil(kitConfig, @"Should have been nil");
+    XCTAssertNil(kitConfig);
     
     configuration = @{
                       @"id":[NSNull null],
@@ -168,8 +169,8 @@
                       };
     
     kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    XCTAssertNil(kitConfig, @"Should have been nil");
-
+    XCTAssertNil(kitConfig);
+    
     configuration = @{
                       @"id":@80,
                       @"avf":[NSNull null],
@@ -181,39 +182,40 @@
                       };
     
     kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    XCTAssertNotNil(kitConfig, @"Should not have been nil");
-    XCTAssertEqualObjects(kitConfig.configurationHash, @(-299494203), @"Should have been equal.");
-    XCTAssertEqualObjects(kitConfig.kitCode, @80, @"Should have been equal.");
+    XCTAssertNotNil(kitConfig);
+    XCTAssertEqualObjects(kitConfig.configurationHash, @(-299494203));
+    XCTAssertEqualObjects(kitConfig.kitCode, @80);
     
-    XCTAssertNil(kitConfig.filters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.eventTypeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.eventNameFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.eventAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.messageTypeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.screenNameFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.screenAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.userIdentityFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.userAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.addEventAttributeList, @"Should have been nil.");
-    XCTAssertNil(kitConfig.removeEventAttributeList, @"Should have been nil.");
-    XCTAssertNil(kitConfig.singleItemEventAttributeList, @"Should have been nil.");
-    XCTAssertNil(kitConfig.bracketConfiguration, @"Should have been nil.");
-    XCTAssertNil(kitConfig.commerceEventAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.commerceEventEntityTypeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.commerceEventAppFamilyAttributeFilters, @"Should have been nil.");
-    XCTAssertNil(kitConfig.configuredMessageTypeProjections, @"Should have been nil.");
-    XCTAssertNil(kitConfig.defaultProjections, @"Should have been nil.");
-    XCTAssertNil(kitConfig.projections, @"Should have been nil.");
-    XCTAssertNil(kitConfig.attributeValueFilteringHashedAttribute, @"Should have been nil.");
-    XCTAssertNil(kitConfig.attributeValueFilteringHashedValue, @"Should have been nil.");
+    XCTAssertNil(kitConfig.filters);
+    XCTAssertNil(kitConfig.eventTypeFilters);
+    XCTAssertNil(kitConfig.eventNameFilters);
+    XCTAssertNil(kitConfig.eventAttributeFilters);
+    XCTAssertNil(kitConfig.messageTypeFilters);
+    XCTAssertNil(kitConfig.screenNameFilters);
+    XCTAssertNil(kitConfig.screenAttributeFilters);
+    XCTAssertNil(kitConfig.userIdentityFilters);
+    XCTAssertNil(kitConfig.userAttributeFilters);
+    XCTAssertNil(kitConfig.addEventAttributeList);
+    XCTAssertNil(kitConfig.removeEventAttributeList);
+    XCTAssertNil(kitConfig.singleItemEventAttributeList);
+    XCTAssertNil(kitConfig.bracketConfiguration);
+    XCTAssertNil(kitConfig.commerceEventAttributeFilters);
+    XCTAssertNil(kitConfig.commerceEventEntityTypeFilters);
+    XCTAssertNil(kitConfig.commerceEventAppFamilyAttributeFilters);
+    XCTAssertNil(kitConfig.configuredMessageTypeProjections);
+    XCTAssertNil(kitConfig.defaultProjections);
+    XCTAssertNil(kitConfig.projections);
+    XCTAssertNil(kitConfig.attributeValueFilteringHashedAttribute);
+    XCTAssertNil(kitConfig.attributeValueFilteringHashedValue);
     
-    XCTAssertFalse(kitConfig.attributeValueFilteringIsActive, @"Should have been false.");
-    XCTAssertFalse(kitConfig.attributeValueFilteringShouldIncludeMatches, @"Should have been false.");
+    XCTAssertFalse(kitConfig.attributeValueFilteringIsActive);
+    XCTAssertFalse(kitConfig.attributeValueFilteringShouldIncludeMatches);
+    XCTAssertFalse(kitConfig.excludeAnonymousUsers);
 }
 
 - (void)testKitConfigurationEncoding {
     MPKitConfiguration *persistedKitConfiguration = [self attemptSecureEncodingwithClass:[MPKitConfiguration class] Object:kitConfiguration];
-    XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration, @"KitConfiguration should have been a match.");
+    XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration);
 }
 
 @end

@@ -80,6 +80,7 @@
     
     if (_kitCode != nil) {
         _configurationDictionary = configurationDictionary;
+        _excludeAnonymousUsers = [configurationDictionary[kMPRemoteConfigExcludeAnonymousUsersKey] boolValue];
     } else {
         return nil;
     }

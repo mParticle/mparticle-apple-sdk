@@ -36,6 +36,7 @@
 @property (nonatomic, weak, readonly, nullable) NSDictionary *consentRegulationFilters;
 @property (nonatomic, weak, readonly, nullable) NSDictionary *consentPurposeFilters;
 @property (nonatomic, strong, readonly, nullable) MPConsentKitFilter *consentKitFilter;
+@property (nonatomic, readonly) BOOL excludeAnonymousUsers;
 
 - (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)configurationDictionary;
 

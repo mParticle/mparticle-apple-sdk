@@ -86,6 +86,13 @@
 
 @end
 
+static NSString *kMPIdentityRequestKeyMPID = @"mpid";
+static NSString *kMPIdentityRequestKeyContext = @"context";
+static NSString *kMPIdentityRequestKeyIsEphemeral = @"is_ephemeral";
+static NSString *kMPIdentityRequestKeyIsLoggedIn = @"is_logged_in";
+static NSString *kMPIdentityRequestKeyCode = @"code";
+static NSString *kMPIdentityRequestKeyMessage = @"message";
+
 @interface MPIdentityHTTPBaseSuccessResponse : NSObject
 
 @end
@@ -101,5 +108,6 @@
 @property (nonatomic) NSString *context;
 @property (nonatomic) NSNumber *mpid;
 @property (nonatomic) BOOL isEphemeral;
+@property (nonatomic) BOOL isLoggedIn;
 
 @end

@@ -53,6 +53,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType;
 - (void)setUserId:(NSNumber *)userId;
+- (void)setIsLoggedIn:(BOOL)isLoggedIn;
 @end
 
 @interface MPKitContainer ()
@@ -133,6 +134,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MParticleUser *previousUser = self.currentUser;
     MParticleUser *user = [[MParticleUser alloc] init];
     user.userId = httpResponse.mpid;
+    user.isLoggedIn = httpResponse.isLoggedIn;
     apiResult.user = user;
     self.currentUser = user;
     MPSession *session = [MParticle sharedInstance].backendController.session;
@@ -389,8 +391,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     if (self) {
         _httpCode = httpCode;
         if (dictionary) {
-            _code = [dictionary[@"code"] unsignedIntegerValue];
-            _message = dictionary[@"message"];
+            _code = [dictionary[kMPIdentityRequestKeyCode] unsignedIntegerValue];
+            _message = dictionary[kMPIdentityRequestKeyMessage];
         } else {
             _code = httpCode;
         }

@@ -210,7 +210,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
-
+    
     if (kitRegister.wrapperInstance) {
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(deinit)]) {
             [kitRegister.wrapperInstance deinit];
@@ -225,7 +225,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         if ([fileManager fileExistsAtPath:kitPath]) {
             [fileManager removeItemAtPath:kitPath error:nil];
         }
-
+        
         NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode};
         
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
@@ -239,7 +239,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         return;
     }
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-
+    
     NSArray *directoryContents = [userDefaults getKitConfigurations];
     
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
@@ -560,7 +560,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
     bracketIterator = brackets.find(kitCode);
-
+    
     if (!configuration) {
         if (bracketIterator != brackets.end()) {
             brackets.erase(bracketIterator);
@@ -1002,7 +1002,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             regulationString = kMPConsentHashStringForGDPR;
             
             NSString *regulationHash = [NSString stringWithCString:mParticle::Hasher::hashString(string([[regulationString lowercaseString] UTF8String])).c_str()
-                                                       encoding:NSUTF8StringEncoding];
+                                                          encoding:NSUTF8StringEncoding];
             
             if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
                 kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
@@ -1877,10 +1877,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
         BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
         std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
+        MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
         
         BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
+        BOOL disabledByexcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
+        BOOL disabledByRamping =  !(bracket == nullptr || (bracket != nullptr && bracket->shouldForward()));
         
-        if (active && (bracket == nullptr || (bracket != nullptr && bracket->shouldForward())) && !disabledByConsent) {
+        if (active && !disabledByRamping && !disabledByConsent && !disabledByexcludingAnonymousUsers) {
             [activeKitsRegistry addObject:kitRegister];
         }
     }
@@ -1913,7 +1916,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     Class NSStringClass = [NSString class];
     Class NSNumberClass = [NSNumber class];
     Class NSArrayClass = [NSArray class];
-
+    
     // Adds all currently configured kits to a list
     vector<NSNumber *> deactivateKits;
     for (kitRegister in activeKitsRegistry) {
@@ -1928,7 +1931,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         predicate = [NSPredicate predicateWithFormat:@"SELF == %@", kitCode];
         BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
-
+        
         if (isKitSupported) {
             predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
@@ -1981,13 +1984,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     [synchedUserAttributes addObjectsFromArray:alreadySynchedUserAttributes];
                     [synchedUserAttributes addObject:kitCode];
                     userDefaults[kMPSynchedUserAttributesKey] = synchedUserAttributes;
-
+                    
                     NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
                     NSString *key;
                     id value;
                     while ((key = [attributeEnumerator nextObject])) {
                         value = userAttributes[key];
-
+                        
                         FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
                         if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
                             [kitInstance onSetUserAttribute:filteredUser];
@@ -2001,18 +2004,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         }
                     }
                 }
-
+                
                 NSArray *alreadySynchedUserIdentities = userDefaults[kMPSynchedUserIdentitiesKey];
                 if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)] && ![alreadySynchedUserIdentities containsObject:kitCode]) {
                     NSMutableArray *synchedUserIdentities = [[NSMutableArray alloc] initWithCapacity:alreadySynchedUserIdentities.count + 1];
                     [synchedUserIdentities addObjectsFromArray:alreadySynchedUserIdentities];
                     [synchedUserIdentities addObject:kitCode];
                     userDefaults[kMPSynchedUserIdentitiesKey] = synchedUserIdentities;
-
+                    
                     for (NSDictionary *userIdentity in userIdentities) {
                         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
                         NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-
+                        
                         [kitInstance setUserIdentity:identityString identityType:identityType];
                     }
                 }
@@ -2041,7 +2044,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     self.kitsInitialized = YES;
-
+    
     dispatch_semaphore_signal(kitsSemaphore);
 }
 
@@ -2084,11 +2087,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     __block MPKitExecStatus *execStatus = nil;
                     
                     
-                        @try {
-                            kitHandler(kitRegister.wrapperInstance, kitFilter, &execStatus);
-                        } @catch (NSException *e) {
-                            MPILogError(@"Kit handler threw an exception: %@", e);
-                        }
+                    @try {
+                        kitHandler(kitRegister.wrapperInstance, kitFilter, &execStatus);
+                    } @catch (NSException *e) {
+                        MPILogError(@"Kit handler threw an exception: %@", e);
+                    }
                     
                     
                     NSNumber *currentKit = kitRegister.code;
@@ -2138,7 +2141,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             if (kitFilter.forwardEvent) {
                 __block MPKitExecStatus *execStatus = nil;
-
+                
                 @try {
                     MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
                     kitHandler(kitRegister.wrapperInstance, kitFilter.forwardEvent, &execStatus);
@@ -2286,7 +2289,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             if (!kitFilter.shouldFilter) {
                 __block MPKitExecStatus *execStatus = nil;
-            
+                
                 @try {
                     MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
                     kitHandler(kitRegister.wrapperInstance, &execStatus);
@@ -2400,7 +2403,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
-        
+    
     [userIdentities enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         MPUserIdentity identityType = (MPUserIdentity)[obj[kMPUserIdentityTypeKey] integerValue];
         NSString *identityString = obj[kMPUserIdentityIdKey];
@@ -2427,7 +2430,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 
 /*
- * Original intention of this method is to ensure that any kits that set 
+ * Original intention of this method is to ensure that any kits that set
  * integration attributes have done so prior to the SDK's first upload.
  */
 - (BOOL)shouldDelayUpload: (NSTimeInterval) maxWaitTime  {

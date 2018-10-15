@@ -31,6 +31,10 @@
     return self.user.userId;
 }
 
+-(BOOL)isLoggedIn {
+    return self.user.isLoggedIn;
+}
+
 -(NSDictionary<NSNumber *, NSString *> *) userIdentities {
     NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.user.userIdentities;
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];

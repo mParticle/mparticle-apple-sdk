@@ -250,6 +250,8 @@ extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
 extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
 extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
+extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
+
 
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;
