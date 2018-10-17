@@ -1,5 +1,18 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.7.3
+
+### Disable kits for Anonymous Users
+
+You can now control which kits are enabled and disabled based on a user's "logged in" state. A common use case would be to initialize a given kit for non-anonymous (logged in) users. Navigate to a kit's connection settings in your mParticle dashboard to give this a try.
+
+- Mark user segments API deprecated
+- Fix kit location forwarding
+
+## Kit Updates
+
+- Update Taplytics to 2.33.0
+
 ## 7.7.2
 
 ## Core SDK Updates
