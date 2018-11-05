@@ -1,4 +1,4 @@
-#import "MPTransactionAttributes+Dictionary.h"
+#import "MPTransactionAttributes.h"
 
 @interface MPTransactionAttributes(Dictionary)
 
