@@ -365,3 +365,8 @@ const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH = 512;
 
 // Consent limits
 const NSInteger MAX_GDPR_CONSENT_PURPOSES = 100;
+
+// Size limits
+const NSInteger MAX_BYTES_PER_EVENT = 100*1024;
+const NSInteger MAX_BYTES_PER_BATCH = 2 * MAX_BYTES_PER_EVENT;
+const NSInteger MAX_EVENTS_PER_BATCH = 100;

@@ -663,6 +663,38 @@ static BOOL appBackgrounded = NO;
     }
 }
 
+- (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes {
+    NSMutableArray *batchMessageArrays = [NSMutableArray array];
+    int batchMessageCount = 0;
+    int batchByteCount = 0;
+    
+    NSMutableArray *batchMessages = [NSMutableArray array];
+    
+    for (int i = 0; i < messages.count; i += 1) {
+        MPMessage *message = messages[i];
+        
+        if (message.messageData.length > maxMessageBytes) continue;
+        
+        if (batchMessageCount + 1 > maxBatchMessages || batchByteCount + message.messageData.length > maxBatchBytes) {
+            
+            [batchMessageArrays addObject:[batchMessages copy]];
+            
+            batchMessages = [NSMutableArray array];
+            batchMessageCount = 0;
+            batchByteCount = 0;
+            
+        }
+        [batchMessages addObject:message];
+        batchMessageCount += 1;
+        batchByteCount += message.messageData.length;
+    }
+    
+    if (batchMessages.count > 0) {
+        [batchMessageArrays addObject:[batchMessages copy]];
+    }
+    return [batchMessageArrays copy];
+}
+
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
     const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
     __weak MPBackendController *weakSelf = self;
@@ -679,24 +711,30 @@ static BOOL appBackgrounded = NO;
             //In batches broken up by mpid and then sessionID create the Uploads (2)
             __strong MPBackendController *strongSelf = weakSelf;
             NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
-            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:messages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
             
-            if (!uploadBuilder || !strongSelf) {
-                self->sessionBeingUploaded = nil;
-                completionHandlerCopy(YES);
-                return;
+            //Within a session, we also break up based on limits for messages per batch and (approximately) bytes per batch
+            NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
+            
+            for (int i = 0; i < batchMessageArrays.count; i += 1) {
+                NSArray *limitedMessages = batchMessageArrays[i];
+                MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
+                
+                if (!uploadBuilder || !strongSelf) {
+                    self->sessionBeingUploaded = nil;
+                    completionHandlerCopy(YES);
+                    return;
+                }
+                
+                [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
+                [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
+                [uploadBuilder build:^(MPUpload *upload) {
+                    //Save the Upload to the Database (3)
+                    [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
+                }];
             }
             
-            [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
-            [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
-            [uploadBuilder build:^(MPUpload *upload) {
-                //Save the Upload to the Database (3)
-                [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                
-                //Delete all messages associated with this batch (4)
-                [persistence deleteMessages:messages];
-                
-            }];
+            //Delete all messages associated with the batches (4)
+            [persistence deleteMessages:messages];
             
             self->deletedUserAttributes = nil;
         }];

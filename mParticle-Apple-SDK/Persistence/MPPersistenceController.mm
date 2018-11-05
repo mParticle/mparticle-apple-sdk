@@ -1611,6 +1611,11 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveMessage:(MPMessage *)message {
+    if (message.messageData.length > MAX_BYTES_PER_EVENT) {
+        MPILogError(@"Unable to save message exceeding max message size!");
+        return;
+    }
+    
     sqlite3_stmt *preparedStatement;
     const string sqlStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
     

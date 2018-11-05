@@ -392,4 +392,9 @@ extern const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH;
 // Consent limits
 extern const NSInteger MAX_GDPR_CONSENT_PURPOSES;
 
+// Size limits
+extern const NSInteger MAX_BYTES_PER_EVENT;
+extern const NSInteger MAX_BYTES_PER_BATCH;
+extern const NSInteger MAX_EVENTS_PER_BATCH;
+
 #endif

@@ -484,4 +484,25 @@
     XCTAssertNil(forwardRecords);
 }
 
+- (void)testTooLargeMessageSaving {
+    NSString *longString = @"a";
+    while (longString.length < 100001) {
+        longString = [NSString stringWithFormat:@"%@%@", longString, longString];
+    }
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessage *message = [messageBuilder build];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSArray *messages = [persistence fetchMessagesInSession:session userId:[MPPersistenceController mpId]];
+    [persistence deleteMessages:messages];
+    
+    [persistence saveMessage:message];
+    messages = [persistence fetchMessagesInSession:session userId:[MPPersistenceController mpId]];
+    
+    XCTAssertEqual(messages.count, 0);
+}
+
 @end

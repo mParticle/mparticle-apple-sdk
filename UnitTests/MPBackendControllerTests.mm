@@ -81,6 +81,7 @@
 - (void)uploadMessagesFromSession:(MPSession *)session completionHandler:(void(^)(MPSession *uploadedSession))completionHandler;
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error;
 - (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value maxValueLength:(NSUInteger)maxValueLength error:(out NSError *__autoreleasing *)error;
+- (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes;
 
 @end
 
@@ -1034,6 +1035,102 @@
     NSArray<MPMessage *> *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
     
     XCTAssertEqual(messages.count, 1, @"The Opt Out Message wasn't saved.");
+}
+
+- (void)testBatchAndMessageLimitsMessagesPerBatch {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<10; i++) {        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                               session:session
+                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessage *message = [messageBuilder build];
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages maxBatchMessages:1 maxBatchBytes:NSIntegerMax maxMessageBytes:NSIntegerMax];
+    XCTAssertEqual(batchArrays.count, 10);
+    for (int i=0; i<batchArrays.count; i++) {
+        NSArray *batchMessages = batchArrays[i];
+        XCTAssertEqual(batchMessages.count, 1);
+    }
+}
+
+- (void)testBatchAndMessageLimitsMultipleMessagesPerBatch {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<10; i++) {
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                               session:session
+                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessage *message = [messageBuilder build];
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages maxBatchMessages:2 maxBatchBytes:NSIntegerMax maxMessageBytes:NSIntegerMax];
+    XCTAssertEqual(batchArrays.count, 5);
+    for (int i=0; i<batchArrays.count; i++) {
+        NSArray *batchMessages = batchArrays[i];
+        XCTAssertEqual(batchMessages.count, 2);
+    }
+}
+
+- (void)testBatchAndMessageLimitsBytesPerBatch {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessage *message = [messageBuilder build];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<10; i++) {    
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages maxBatchMessages:NSIntegerMax maxBatchBytes:message.messageData.length*3 maxMessageBytes:NSIntegerMax];
+    XCTAssertEqual(batchArrays.count, 4);
+    for (int i=0; i<batchArrays.count; i++) {
+        NSArray *batchMessages = batchArrays[i];
+        if (i+1<batchArrays.count) {
+            XCTAssertEqual(batchMessages.count, 3);
+        } else {
+            XCTAssertEqual(batchMessages.count, 1);
+        }
+        
+    }
+}
+
+- (void)testBatchAndMessageLimitsBytesPerMessage {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    NSString *longString = @"a";
+    while (longString.length < 1000) {
+        longString = [NSString stringWithFormat:@"%@%@", longString, longString];
+    }
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessage *message = [messageBuilder build];
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<10; i++) {
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages maxBatchMessages:NSIntegerMax maxBatchBytes:NSIntegerMax maxMessageBytes:message.messageData.length-1];
+    XCTAssertEqual(batchArrays.count, 0);
+    
+    batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages maxBatchMessages:NSIntegerMax maxBatchBytes:NSIntegerMax maxMessageBytes:message.messageData.length];
+    XCTAssertEqual(batchArrays.count, 1);
+    XCTAssertEqual(((NSArray *)batchArrays[0]).count, 10);
+    
+    
+    batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages maxBatchMessages:NSIntegerMax maxBatchBytes:message.messageData.length maxMessageBytes:NSIntegerMax];
+    XCTAssertEqual(batchArrays.count, 10);
+    for (int i=0; i<10; i++) {
+        XCTAssertEqual(((NSArray *)batchArrays[i]).count, 1);
+    }
+    
 }
 
 @end
