@@ -76,7 +76,10 @@
     XCTAssertNotEqualObjects(copyEvent, event, @"Copied event object should have been different.");
 
     XCTAssertNotNil(event.category, @"Should not have been nil.");
-    event.category = @"Bacon ipsum dolor amet mollit reprehenderit occaecat shankle officia fatback, enim corned beef ham sunt adipisicing swine. Frankfurter duis ground round shoulder nostrud do jowl ea adipisicing exercitation fugiat. Tempor consectetur chicken anim pork belly pancetta et. Venison deserunt cillum sed aliqua ipsum landjaeger rump et qui.";
+    id mock = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mock length]).andReturn(LIMIT_ATTR_VALUE_LENGTH+1);
+    event.category = mock;
+    
     XCTAssertNil(event.category, @"Should have been nil.");
     
     XCTAssertNotNil(event.info, @"Should not have been nil.");
@@ -106,14 +109,15 @@
 }
 
 - (void)testInvalidNames {
-    NSString *longName = @"The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog. The quick brown fox jumps over the lazy dog.";
-    
     NSString *nilName = nil;
     
     MPEvent *event = [[MPEvent alloc] initWithName:nilName type:MPEventTypeOther];
     XCTAssertNil(event, @"Event cannot be created with a nil name.");
     
-    event = [[MPEvent alloc] initWithName:longName type:MPEventTypeOther];
+    id mockLongName = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockLongName length]).andReturn(LIMIT_ATTR_KEY_LENGTH+1);
+    
+    event = [[MPEvent alloc] initWithName:mockLongName type:MPEventTypeOther];
     XCTAssertNil(event, @"Event cannot be created with a name longer than 100 characters.");
     
     event = [[MPEvent alloc] initWithName:@"" type:MPEventTypeOther];
@@ -126,7 +130,7 @@
     event.name = @"";
     XCTAssertEqualObjects(event.name, @"Dino", @"Cannot set an empty name.");
     
-    event.name = longName;
+    event.name = mockLongName;
     XCTAssertEqualObjects(event.name, @"Dino", @"Cannot set an event name longer than 100 characters.");
 }
 
@@ -186,6 +190,24 @@
     XCTAssertNil(dictionaryRepresentation[kMPEventLength], @"Length should have been nil.");
     XCTAssertNil(dictionaryRepresentation[kMPEventCounterKey], @"Counter should have been nil for screen events.");
     XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], event.info, @"Attributes are not being set correctly.");
+}
+
+- (void)testSetEventAttributes {
+    MPEvent *event = [[MPEvent alloc] initWithName:@"foo" type:MPEventTypeNavigation];
+    XCTAssertNil(event.info);
+    id mockLongValue = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockLongValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH); //just short enough
+    event.info = @{@"foo-attribute-key":mockLongValue};
+    XCTAssertNotNil(event.info);
+}
+
+- (void)testSetLongEventAttributes {
+    MPEvent *event = [[MPEvent alloc] initWithName:@"foo" type:MPEventTypeNavigation];
+    XCTAssertNil(event.info);
+    id mockLongValue = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockLongValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH+1); //just a bit too long
+    event.info = @{@"foo-attribute-key":mockLongValue};
+    XCTAssertNil(event.info);
 }
 
 - (void)testScreenDictionaryRepresentation {

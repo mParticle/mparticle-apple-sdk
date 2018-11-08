@@ -248,7 +248,6 @@
 - (void)setUserAttributeList:(nonnull NSString *)key values:(nonnull NSArray<NSString *> *)values {
     if (values.count == 0) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
-        
         return;
     }
 

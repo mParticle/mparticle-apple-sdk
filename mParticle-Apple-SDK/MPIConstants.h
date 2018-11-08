@@ -383,9 +383,8 @@ extern const NSTimeInterval CONFIG_REQUESTS_QUIET_INTERVAL;
 
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_COUNT;
-extern const NSInteger LIMIT_ATTR_LENGTH;
-extern const NSInteger LIMIT_NAME;
-extern const NSInteger LIMIT_USER_ATTR_LENGTH;
+extern const NSInteger LIMIT_ATTR_KEY_LENGTH;
+extern const NSInteger LIMIT_ATTR_VALUE_LENGTH;
 extern const NSInteger MAX_USER_ATTR_LIST_SIZE;
 extern const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH;
 

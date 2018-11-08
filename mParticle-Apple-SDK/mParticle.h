@@ -540,7 +540,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param eventName The name of the event to be logged (required not nil.) The string cannot be longer than 255 characters
  @param eventType An enum value that indicates the type of event to be logged
  @param eventInfo A dictionary containing further information about the event. This dictionary is limited to 100 key
-                  value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 255 characters), 
+                  value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 4096 characters),
                   numbers, booleans, or dates
  @see logEvent:
  */
@@ -559,7 +559,7 @@ NS_ASSUME_NONNULL_BEGIN
  of MPEvent and calls logScreenEvent:
  @param screenName The name of the screen to be logged (required not nil and up to 255 characters)
  @param eventInfo A dictionary containing further information about the screen. This dictionary is limited to 100 key
- value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 255 characters), numbers,
+ value pairs. Keys must be strings (up to 255 characters) and values can be strings (up to 4096 characters), numbers,
  booleans, or dates
  @see logScreenEvent:
  */
@@ -606,7 +606,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Logs an error with a message and an attributes dictionary. The eventInfo is limited to
- 100 key value pairs. The strings in eventInfo cannot contain more than 255 characters.
+ 100 key value pairs. The values in eventInfo cannot contain more than 4096 characters.
  @param message The name of the error event (required not nil)
  @param eventInfo A dictionary containing further information about the error
  */

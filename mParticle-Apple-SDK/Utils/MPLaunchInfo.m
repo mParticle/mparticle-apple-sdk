@@ -131,11 +131,6 @@
         }
         
         NSString *serializedAnnotation = !error ? [[NSString alloc] initWithData:annotationData encoding:NSUTF8StringEncoding] : nil;
-        
-        if (serializedAnnotation.length > LIMIT_USER_ATTR_LENGTH) {
-            serializedAnnotation = nil;
-        }
-        
         return serializedAnnotation;
     };
     
@@ -164,7 +159,7 @@
         
         _annotation = serializeDataObject(annotationArray);
     } else if ([annotation isKindOfClass:[NSString class]]) {
-        _annotation = [annotation length] < LIMIT_USER_ATTR_LENGTH ? annotation : nil;
+        _annotation = annotation;
     } else if ([annotation isKindOfClass:[NSNumber class]]) {
         _annotation = [annotation stringValue];
     } else if ([annotation isKindOfClass:NSDateClass]) {

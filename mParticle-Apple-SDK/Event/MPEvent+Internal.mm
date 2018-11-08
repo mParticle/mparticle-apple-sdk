@@ -83,7 +83,7 @@ NSString *const kMPEventCustomFlags = @"flags";
         }
         
         if (category) {
-            if (category.length <= LIMIT_NAME) {
+            if (category.length <= LIMIT_ATTR_VALUE_LENGTH) {
                 attributes[kMPEventCategoryKey] = category;
             } else {
                 MPILogError(@"The event category is too long. Discarding category.");

@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import "OCMock.h"
 #import "MPBackendController.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
@@ -313,62 +314,111 @@
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
-- (void)testCheckAttribute {
-    // Add and tests valid attributes
-    NSString *key;
-    NSString *value;
-    NSError *error;
-    int i;
-    int quantityLimit = 99;
-    int lengthLimit = 254;
-    BOOL validAttributes;
-    for (i = 0; i < quantityLimit; ++i) {
-        key = [NSString stringWithFormat:@"Key%d", i];
-        value = [NSString stringWithFormat:@"Value%d", i];
-        error = nil;
-        validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
-        XCTAssertTrue(validAttributes, @"Checking attributes did not work.");
-        self.session.attributesDictionary[key] = value;
-    }
+- (void)testCheckAttributeValueEmpty {
+    NSError *error = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
+                                     value:@"  "
+                                     error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kEmptyAttributeValue, error.code);
     
-    // Adds one attribute over the limit
-    key = [NSString stringWithFormat:@"Key%d", quantityLimit];
-    value = [NSString stringWithFormat:@"Value%d", quantityLimit];
-    self.session.attributesDictionary[key] = value;
     error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
-    XCTAssertFalse(validAttributes, @"Checking attributes count limit did not work.");
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
+                                     value:@""
+                                     error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kEmptyAttributeValue, error.code);
+}
+
+- (void)testCheckAttributeStringAttribute {
+    NSError *error = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:@"bar" error:&error];
+    XCTAssertNil(error);
+}
+
+- (void)testCheckAttributeNumberAttribute {
+    NSError *error = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:@123.0 error:&error];
+    XCTAssertNil(error);
+}
+
+- (void)testCheckAttributeArrayAttribute {
+    NSError *error = nil;
+    NSArray *arrayValue = @[ @"foo", @"bar"];
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    XCTAssertNil(error);
+}
+
+- (void)testCheckAttributeArrayValuesTooLongAttribute {
+    NSError *error = nil;
+    id mockValue = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
+    NSArray *arrayValue = @[@"foo", mockValue];
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+}
+
+- (void)testCheckAttributeArrayValueInvalidLongAttribute {
+    NSError *error = nil;
+    id mockValue = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
+    NSArray *arrayValue = @[@"foo", @10.0];
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kInvalidDataType, error.code);
+}
+
+
+- (void)testCheckAttributeTooManyAttributes {
+    id mockAttributes = [OCMockObject mockForClass:[NSMutableDictionary class]];
+    OCMStub([mockAttributes count]).andReturn(LIMIT_ATTR_COUNT);
+    NSError *error = nil;
+    [MPBackendController checkAttribute:mockAttributes key:@"foo" value:@"bar" error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kExceededAttributeCountLimit, error.code);
+}
+
+- (void)testCheckAttributeKeyTooLong {
+    id mockKey = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockKey length]).andReturn(LIMIT_ATTR_KEY_LENGTH+1);
     
-    // Removes most attributes
-    for (i = 0; i < quantityLimit; ++i) {
-        key = [NSString stringWithFormat:@"Key%d", i];
-        [self.session.attributesDictionary removeObjectForKey:key];
-    }
+    NSError *error = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kExceededAttributeKeyMaximumLength, error.code);
+}
+
+- (void)testCheckAttributeValueTooLong {
+    id mockValue = [OCMockObject mockForClass:[NSString class]];
+    OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH+1);
+    OCMStub([mockValue stringByTrimmingCharactersInSet:OCMOCK_ANY]).andReturn(@"foo");
+    NSError *error = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
+}
+
+- (void)testCheckAttributeValueNil {
+    NSError *error = nil;
+    NSString *nilValue = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kNilAttributeValue, error.code);
+}
+
+- (void)testCheckAttributeKeyNullNil {
+    NSError *error = nil;
+    NSString *nilKey = (NSString*)[NSNull null];
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kInvalidKey, error.code);
     
-    // Builds and tests a long key
-    for (i = 0; i < lengthLimit; ++i) {
-        key = [key stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
-    }
-    value = [NSString stringWithFormat:@"Value%d", 0];
     error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
-    XCTAssertFalse(validAttributes, @"Accepting keys that are too long.");
-    
-    // Builds and tests a long value
-    for (i = 0; i < lengthLimit; ++i) {
-        value = [value stringByAppendingString:[NSString stringWithFormat:@"%d", i]];
-    }
-    key = [NSString stringWithFormat:@"Key%d", 0];
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
-    XCTAssertFalse(validAttributes, @"Accepting values that are too long.");
-    
-    // Nil values
-    key = [NSString stringWithFormat:@"Key%d", 0];
-    value = nil;
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:self.session.attributesDictionary key:key value:value error:&error];
-    XCTAssertFalse(validAttributes, @"Accepting nil values.");
+    nilKey = nil;
+    [MPBackendController checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
+    XCTAssertNotNil(error);
+    XCTAssertEqual(kInvalidKey, error.code);
 }
 
 - (void)testBatchCycle {
@@ -629,74 +679,6 @@
 #endif
 }
 
-- (void)testCheckAttributes {
-    NSMutableDictionary *dictionary = [@{@"Transport":@"Time Machine",
-                                         @"Model":@"Tardis",
-                                         @"Keywords":@[@"It is bigger on the inside", @"Looks like a police callbox", @"It is blue"]} mutableCopy];
-    
-    NSError *error = nil;
-    BOOL validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertTrue(validAttributes);
-    
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"Temperamental" error:&error];
-    XCTAssertTrue(validAttributes);
-    
-    NSMutableString *invalidLengthString = [[NSMutableString alloc] initWithCapacity:(MAX_USER_ATTR_LIST_ENTRY_LENGTH + 1)];
-    for (int i = 0; i < (MAX_USER_ATTR_LIST_ENTRY_LENGTH + 1); ++i) {
-        [invalidLengthString appendString:@"T"];
-    }
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@[invalidLengthString] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    NSMutableArray *invalidValues = [[NSMutableArray alloc] initWithCapacity:(MAX_USER_ATTR_LIST_SIZE + 1)];
-    for (int i = 0; i < (MAX_USER_ATTR_LIST_SIZE + 1); ++i) {
-        [invalidValues addObject:@"Use the stabilisers"];
-    }
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:invalidValues maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:nil maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:invalidLengthString maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    NSString *key = nil;
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:key value:@[@"Noisy breaks", @"Temperamental"] maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    key = (NSString *)[NSNull null];
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:key value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    invalidLengthString = [[NSMutableString alloc] initWithCapacity:(LIMIT_NAME + 1)];
-    for (int i = 0; i < (LIMIT_NAME + 1); ++i) {
-        [invalidLengthString appendString:@"K"];
-    }
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:invalidLengthString value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-    
-    for (int i = 0; i < LIMIT_ATTR_COUNT; ++i) {
-        key = [@(i) stringValue];
-        dictionary[key] = key;
-    }
-    error = nil;
-    validAttributes = [self.backendController checkAttribute:dictionary key:@"New Attributes" value:@"Noisy breaks" maxValueLength:MAX_USER_ATTR_LIST_ENTRY_LENGTH error:&error];
-    XCTAssertFalse(validAttributes);
-}
-
 - (void)testSetStringAttribute {
     [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
@@ -728,8 +710,8 @@
 }
 
 - (void)testSetTooLongAttribute {
-    NSMutableString *longValue = [[NSMutableString alloc] initWithCapacity:(LIMIT_USER_ATTR_LENGTH + 1)];
-    for (int i = 0; i < (LIMIT_USER_ATTR_LENGTH + 1); ++i) {
+    NSMutableString *longValue = [[NSMutableString alloc] initWithCapacity:(LIMIT_ATTR_VALUE_LENGTH + 1)];
+    for (int i = 0; i < (LIMIT_ATTR_VALUE_LENGTH + 1); ++i) {
         [longValue appendString:@"T"];
     }
     [self.backendController setUserAttribute:@"foo attribute 2" value:longValue timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
@@ -774,11 +756,12 @@
 }
 
 - (void)testSetUserTag {
-    [self.backendController setUserAttribute:@"foo tag 1" value:nil timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+    [self.backendController setUserAttribute:@"foo tag 1" value:@"  " timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
     XCTAssertEqual(attributes.count, 1);
     NSString *value = attributes[@"foo tag 1"];
     XCTAssertEqualObjects(value, [NSNull null]);
+
 }
 
 - (void)testSetUserAttributeKits {
