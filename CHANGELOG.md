@@ -1,5 +1,50 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.7.4
+
+## Core SDK Updates
+
+### Carthage binary artifacts
+
+In addition to directly attaching binary artifacts to GitHub releases,
+we will be providing Carthage json manifest files in the root of each repo
+that supports Carthage.
+
+This helps support the use of some command line flags (like --no-use-binaries)
+that may not otherwise work properly with certain kits (e.g. Braze/mParticle-Appboy)
+
+Please note that due to the required sequence of steps for the release process,
+the json files will be generated and published prior to the artifacts being
+uploaded, so the links in the json files may be invalid for a short period of time
+after initially being committed.
+
+### Updated SDK limits
+
+The SDK no longer limits the size of non-array event attribute values to 255 characters,
+lengths of up to 4096 characters are now supported.
+
+Some obsolete limits have been removed.
+
+### New SDK limits
+
+Add limits for message, batch size
+
+This release results in messages larger than 100K being dropped.
+
+If your log level is set to Error or higher, a message will be logged
+when this occurs.
+
+This release also limits the total message bytes and total number
+of messages that can be packed into each batch.
+
+However, these batch-level limits will not result in dropped data
+since the SDK will enforce the limits by producing smaller batches.
+
+## Kit Updates
+
+- Appboy - Bugfix for in app message delegate
+- AppsFlyer - Mark as static_framework to support `use_frameworks!`
+
 ## 7.7.3
 
 ### Disable kits for Anonymous Users
