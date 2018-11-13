@@ -126,7 +126,7 @@
                                                                        messageInfo:messageInfo];
     
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
                                                                     sessionId:[NSNumber numberWithLong:session.sessionId]
@@ -193,7 +193,7 @@
                                                                        messageInfo:messageInfo];
     
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] messages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
     

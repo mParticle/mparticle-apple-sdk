@@ -444,7 +444,7 @@ static BOOL appBackgrounded = NO;
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
     messageBuilder = [messageBuilder withStateTransition:YES previousSession:nil];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     [MPApplication updateStoredVersionAndBuildNumbers];
@@ -819,7 +819,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-        message = (MPMessage *)[[messageBuilder withTimestamp:session.endTime] build];
+        message = [[messageBuilder withTimestamp:session.endTime] build];
         
         [self saveMessage:message updateSession:NO];
         MPILogVerbose(@"Session Ended: %@", session.uuid);
@@ -885,7 +885,7 @@ static BOOL appBackgrounded = NO;
         
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-        MPMessage *message = (MPMessage *)[messageBuilder build];
+        MPMessage *message = [messageBuilder build];
         
         [self.session suspendSession];
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
@@ -974,7 +974,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-        MPMessage *message = (MPMessage *)[messageBuilder build];
+        MPMessage *message = [messageBuilder build];
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
         MPILogVerbose(@"Application Did Become Active");
@@ -1163,7 +1163,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:stateMachine.location];
 #endif
-    MPMessage *message = (MPMessage *)[[messageBuilder withTimestamp:_session.startTime] build];
+    MPMessage *message = [[messageBuilder withTimestamp:_session.startTime] build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
@@ -1204,7 +1204,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-        message = (MPMessage *)[[messageBuilder withTimestamp:sessionToEnd.endTime] build];
+        message = [[messageBuilder withTimestamp:sessionToEnd.endTime] build];
         
         [self saveMessage:message updateSession:NO];
     }
@@ -1454,7 +1454,7 @@ static BOOL appBackgrounded = NO;
     if (event.timestamp) {
         [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
     }
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
@@ -1479,7 +1479,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     [self.session incrementCounter];
@@ -1568,7 +1568,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *errorMessage = (MPMessage *)[messageBuilder build];
+    MPMessage *errorMessage = [messageBuilder build];
     
     [self saveMessage:errorMessage updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
@@ -1593,7 +1593,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
@@ -1618,7 +1618,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
@@ -1650,7 +1650,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
     
@@ -1675,7 +1675,7 @@ static BOOL appBackgrounded = NO;
 #if TARGET_OS_IOS == 1
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
-        MPMessage *message = (MPMessage *)[messageBuilder build];
+        MPMessage *message = [messageBuilder build];
         
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
@@ -1754,7 +1754,7 @@ static BOOL appBackgrounded = NO;
         [strongSelf beginUploadTimer];
         
         if (firstRun) {
-            MPMessage *message = (MPMessage *)[messageBuilder build];
+            MPMessage *message = [messageBuilder build];
             message.uploadStatus = MPUploadStatusBatch;
             
             [strongSelf saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];

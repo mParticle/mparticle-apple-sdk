@@ -146,7 +146,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     }
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:exceptionInfo];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSString *crashLogsDirectoryPath = CRASH_LOGS_DIRECTORY_PATH;
@@ -310,7 +310,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         }
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo];
-        MPMessage *message = (MPMessage *)[messageBuilder build];
+        MPMessage *message = [messageBuilder build];
         [persistence saveMessage:message];
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     } else {

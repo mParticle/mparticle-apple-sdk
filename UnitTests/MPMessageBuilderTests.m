@@ -92,7 +92,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     XCTAssertNotEqual(messageBuilder.timestamp, timestamp, @"Timestamp is not being updated.");
     
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
@@ -103,7 +103,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     
-    message = (MPMessage *)[messageBuilder build];
+    message = [messageBuilder build];
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
 }
 
@@ -223,7 +223,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     XCTAssertNotEqual(messageBuilder.timestamp, timestamp, @"Timestamp is not being updated.");
     
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
@@ -234,7 +234,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     
-    message = (MPMessage *)[messageBuilder build];
+    message = [messageBuilder build];
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     
     NSData *messageData = [NSKeyedArchiver archivedDataWithRootObject:message];
@@ -298,7 +298,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");
     
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
@@ -324,7 +324,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");
     
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
@@ -370,7 +370,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                                                            session:self.session
                                                                userAttributeChange:userAttributeChange];
     XCTAssertNotNil(messageBuilder);
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     XCTAssertNotNil(message);
     
     NSDictionary *messageDictionary = [message dictionaryRepresentation];
@@ -390,7 +390,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                              userAttributeChange:userAttributeChange];
 
     XCTAssertNotNil(messageBuilder);
-    message = (MPMessage *)[messageBuilder build];
+    message = [messageBuilder build];
     XCTAssertNotNil(message);
     
     messageDictionary = [message dictionaryRepresentation];
@@ -410,7 +410,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                              userAttributeChange:userAttributeChange];
 
     XCTAssertNotNil(messageBuilder);
-    message = (MPMessage *)[messageBuilder build];
+    message = [messageBuilder build];
     XCTAssertNotNil(message);
     
     messageDictionary = [message dictionaryRepresentation];
@@ -429,7 +429,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                              userAttributeChange:userAttributeChange];
 
     XCTAssertNotNil(messageBuilder);
-    message = (MPMessage *)[messageBuilder build];
+    message = [messageBuilder build];
     XCTAssertNotNil(message);
     
     messageDictionary = [message dictionaryRepresentation];

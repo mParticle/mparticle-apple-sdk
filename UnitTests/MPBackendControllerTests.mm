@@ -475,7 +475,7 @@
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                                session:session
                                                                            messageInfo:@{@"MessageKey1":@"MessageValue1"}];
-        MPMessage *message = (MPMessage *)[messageBuilder build];
+        MPMessage *message = [messageBuilder build];
         
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
@@ -988,7 +988,7 @@
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
                                                                            session:session
                                                                        messageInfo:@{@"MessageKey1":@"MessageValue1"}];
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -1008,7 +1008,7 @@
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
     
-    MPMessage *message = (MPMessage *)[messageBuilder build];
+    MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
     
     XCTAssertTrue(message.messageId > 0, @"Message id not greater than zero: %lld", message.messageId);
