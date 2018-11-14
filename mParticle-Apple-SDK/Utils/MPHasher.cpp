@@ -13,7 +13,7 @@ namespace mParticle {
         transform(lowerCaseStringToHash.begin(), lowerCaseStringToHash.end(), lowerCaseStringToHash.begin(), ::tolower);
         
         int hash = 0;
-        for (auto &character : stringToHash) {
+        for (auto &character : lowerCaseStringToHash) {
             hash = ((hash << 5) - hash) + character;
         }
         

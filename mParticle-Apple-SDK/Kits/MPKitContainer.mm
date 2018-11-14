@@ -867,8 +867,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             
             if (!attributeFilterValue || (attributeFilterValue && !attributeFilterIsFalse)) {
                 filteredAttributes[key] = obj;
-            } else if (attributeFilterValue && attributeFilterIsFalse) {
-                shouldFilter = YES;
             }
         }];
         
@@ -2064,8 +2062,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        MPKitFilter* kitFilter = [self filter:kitRegister forCommerceEvent:commerceEvent];
-        [self attemptToLogCommerceEventToKit:kitRegister kitFilter:kitFilter];
+        [self filter:kitRegister forCommerceEvent:commerceEvent];
     }
 }
 
@@ -2157,8 +2154,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
             if (event) {
-                MPKitFilter *kitFilter = [self filter:kitRegister forEvent:event selector:selector];
-                [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:parameters messageType:messageType userInfo:userInfo];
+                [self filter:kitRegister forEvent:event selector:selector];
             } else {
                 MPKitFilter *kitFilter = [self filter:kitRegister forSelector:selector];
                 [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:parameters messageType:messageType userInfo:userInfo];

@@ -839,7 +839,7 @@
                                    @"sendTransactionData":@"true"
                                    },
                            @"hs":@{
-                                   @"ea":@{@"1152562650":@0}
+                                   @"ea":@{@"484927002":@0}
                                    }
                            }
                        ];
@@ -856,7 +856,6 @@
     kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
     
     XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
-    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
     XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
     XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
 }

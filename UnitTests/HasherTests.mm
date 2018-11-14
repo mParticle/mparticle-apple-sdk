@@ -35,7 +35,7 @@
     XCTAssertEqual(hash, 0, @"Should have been equal.");
     
     std::string hashedEvent = mParticle::Hasher::hashEvent("Loaded screen", "Navigation");
-    XCTAssertEqual(hashedEvent, "1247535675", @"Should have been equal.");
+    XCTAssertEqual(hashedEvent, "431828539", @"Should have been equal.");
 }
 
 - (void)testHashingPerformance {
