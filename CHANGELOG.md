@@ -1,6 +1,10 @@
 # mParticle Apple SDK CHANGELOG
 
-## 7.7.4
+## 7.7.5
+
+## Critical Bug Fix
+
+This release contains a bug fix for a regression present in SDK versions 7.7.3 and 7.7.4. The issue only affects customers using client-side "kit" integrations. For these customers, events are sent as duplicates to each integration. If your app is on an impacted SDK, you can use mParticle's server-side filtering features to prevent events from being sent until you can upgrade to SDK 7.7.5 or later.
 
 ## Core SDK Updates
 
@@ -40,13 +44,6 @@ of messages that can be packed into each batch.
 However, these batch-level limits will not result in dropped data
 since the SDK will enforce the limits by producing smaller batches.
 
-## Kit Updates
-
-- Appboy - Bugfix for in app message delegate
-- AppsFlyer - Mark as static_framework to support `use_frameworks!`
-
-## 7.7.3
-
 ### Disable kits for Anonymous Users
 
 You can now control which kits are enabled and disabled based on a user's "logged in" state. A common use case would be to initialize a given kit for non-anonymous (logged in) users. Navigate to a kit's connection settings in your mParticle dashboard to give this a try.
@@ -56,6 +53,8 @@ You can now control which kits are enabled and disabled based on a user's "logge
 
 ## Kit Updates
 
+- Appboy - Bugfix for in app message delegate
+- AppsFlyer - Mark as static_framework to support `use_frameworks!`
 - Update Taplytics to 2.33.0
 
 ## 7.7.2
