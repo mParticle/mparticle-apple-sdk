@@ -11,6 +11,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceTune),
                                       @(MPKitInstanceKochava),
                                       @(MPKitInstanceComScore),
+                                      @(MPKitInstanceOptimizely),
                                       @(MPKitInstanceKahuna),
                                       @(MPKitInstanceNielsen),
                                       @(MPKitInstanceForesee),
@@ -38,7 +39,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceAppsee),
                                       @(MPKitInstanceTaplytics),
                                       ];
-
+    
     validKitCodes = [[NSMutableArray alloc] initWithCapacity:kitCodes.count];
     
     for (NSNumber *kitCode in kitCodes) {
@@ -52,6 +53,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceTune:
             case MPKitInstanceKochava:
             case MPKitInstanceComScore:
+            case MPKitInstanceOptimizely:
             case MPKitInstanceKahuna:
             case MPKitInstanceNielsen:
             case MPKitInstanceForesee:

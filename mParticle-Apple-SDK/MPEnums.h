@@ -141,6 +141,8 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceKochava = 37,
     /** Kit code for comScore */
     MPKitInstanceComScore = 39,
+    /** Kit code for Optimizely */
+    MPKitInstanceOptimizely = 54,
     /** Kit code for Kahuna */
     MPKitInstanceKahuna = 56,
     /** Kit code for Nielsen */

@@ -23,6 +23,8 @@ typedef void (^MPIdentityApiResultCallback)(MPIdentityApiResult *_Nullable apiRe
 
 @property(nonatomic, strong, readonly, nullable) MParticleUser *currentUser;
 
+@property(nonatomic, strong, readonly, nonnull) NSString *deviceApplicationStamp;
+
 - (nullable MParticleUser *)getUser:(NSNumber *)mpId;
 
 - (nonnull NSArray<MParticleUser *> *)getAllUsers;

@@ -14,6 +14,7 @@
 #import "MPEnums.h"
 #import "MPILogger.h"
 #import "MPKitContainer.h"
+#import "MPDevice.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -296,6 +297,12 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     }
     
     return userArray;
+}
+
+- (NSString *)deviceApplicationStamp {
+    MPDevice *device = [[MPDevice alloc] init];
+
+    return device.deviceIdentifier;
 }
 
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion {

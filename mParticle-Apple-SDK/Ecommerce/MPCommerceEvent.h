@@ -102,6 +102,11 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 @property (nonatomic, strong, nullable) MPTransactionAttributes *transactionAttributes;
 
 /**
+Custom flags are a collection of attributes used to trigger functionality in specific integrations. By default, most integrations will ignore custom flags. Reference the documentation for your integrations to see if they make use of custom flags.
+ */
+@property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
+
+/**
  A value from the <b>MPCommerceEventAction</b> enum describing the commerce event action.
  */
 @property (nonatomic, unsafe_unretained) MPCommerceEventAction action;
@@ -202,6 +207,20 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 
 - (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
 - (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
+
+/**
+ Adds a custom flag associated with a key to the event.
+ @param customFlag A string attribute
+ @param key The key associated with the custom flag.
+ */
+- (void)addCustomFlag:(nonnull NSString *)customFlag withKey:(nonnull NSString *)key;
+
+/**
+ Adds an array of custom flags associated with a key to the event.
+ @param customFlags An array of string attributes
+ @param key The key associated with the custom flags.
+ */
+- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key;
 
 @end
 

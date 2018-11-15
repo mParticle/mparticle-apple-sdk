@@ -31,6 +31,7 @@ NSString *const kMPCEAction = @"an";
 NSString *const kMPCECheckoutStep = @"cs";
 NSString *const kMPCEScreenName = @"sn";
 NSString *const kMPCENonInteractive = @"ni";
+NSString *const kMPEventCustomFlags = @"flags";
 NSString *const kMPCEPromotions = @"pm";
 NSString *const kMPCEImpressions = @"pi";
 NSString *const kMPCEImpressionList = @"pil";
@@ -63,6 +64,7 @@ static NSArray *actionNames;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *productsList;
 @property (nonatomic, strong) NSMutableDictionary *userDefinedAttributes;
 @property (nonatomic, strong) NSDictionary *shoppingCartState;
+@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlagsDictionary;
 @end
 
 @implementation MPCommerceEvent
@@ -334,6 +336,7 @@ static NSArray *actionNames;
         copyObject.promotionContainer = [_promotionContainer copy];
         copyObject.transactionAttributes = [_transactionAttributes copy];
         copyObject->_userDefinedAttributes = _userDefinedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_userDefinedAttributes copy]] : nil;
+        copyObject->_customFlagsDictionary = _customFlagsDictionary ? [[NSMutableDictionary alloc] initWithDictionary:[_customFlagsDictionary copy]] : nil;
         copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];
@@ -502,6 +505,11 @@ static NSArray *actionNames;
     if (_nonInteractive) {
         dictionary[kMPCENonInteractive] = @(_nonInteractive);
     }
+    
+    if (self.customFlags) {
+        dictionary[kMPEventCustomFlags] = self.customFlags;
+    }
+
     
     // Product/Promotion
     switch (commerceEventKind) {
@@ -816,7 +824,21 @@ static NSArray *actionNames;
     _timestamp = timestamp;
 }
 
+#pragma mark Private accessors
+- (NSMutableDictionary *)customFlagsDictionary {
+    if (_customFlagsDictionary) {
+        return _customFlagsDictionary;
+    }
+    
+    _customFlagsDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
+    return _customFlagsDictionary;
+}
+
 #pragma mark Public accessors
+- (NSDictionary *)customFlags {
+    return (NSDictionary *)_customFlagsDictionary;
+}
+
 - (NSString *)checkoutOptions {
     return self.attributes[kMPCECheckoutOptions];
 }
@@ -974,6 +996,56 @@ static NSArray *actionNames;
     } else {
         _userDefinedAttributes = nil;
     }
+}
+
+- (void)addCustomFlag:(NSString *)customFlag withKey:(NSString *)key {
+    if (MPIsNull(customFlag)) {
+        MPILogError(@"'customFlag' cannot be nil or null.");
+        return;
+    }
+    
+    if (MPIsNull(key)) {
+        MPILogError(@"'key' cannot be nil or null.");
+        return;
+    }
+    
+    [self addCustomFlags:@[customFlag] withKey:key];
+}
+
+- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key {
+    if (MPIsNull(customFlags)) {
+        MPILogError(@"'customFlags' cannot be nil or null.");
+        return;
+    }
+    
+    if (MPIsNull(key)) {
+        MPILogError(@"'key' cannot be nil or null.");
+        return;
+    }
+    
+    BOOL validDataType = [customFlags isKindOfClass:[NSArray class]];
+    NSAssert(validDataType, @"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
+    if (!validDataType) {
+        MPILogError(@"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
+        return;
+    }
+    
+    for (id item in customFlags) {
+        validDataType = [item isKindOfClass:[NSString class]];
+        NSAssert(validDataType, @"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
+        if (!validDataType) {
+            MPILogError(@"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
+            return;
+        }
+    }
+    
+    NSMutableArray<NSString *> *flags = self.customFlagsDictionary[key];
+    if (!flags) {
+        flags = [[NSMutableArray alloc] initWithCapacity:1];
+    }
+    
+    [flags addObjectsFromArray:customFlags];
+    self.customFlagsDictionary[key] = flags;
 }
 
 @end
