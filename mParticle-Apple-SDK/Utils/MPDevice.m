@@ -103,7 +103,7 @@ int main(int argc, char *argv[]);
     
     calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
     
-#if TARGET_OS_IOS == 1
+#if TARGET_OS_IOS == 1 && !TARGET_OS_SIMULATOR
     telephonyNetworkInfo = [[CTTelephonyNetworkInfo alloc] init];
 #endif
     

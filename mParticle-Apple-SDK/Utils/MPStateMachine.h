@@ -53,6 +53,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained) BOOL optOut;
 @property (nonatomic, unsafe_unretained) BOOL alwaysTryToCollectIDFA;
 @property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
+@property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
 @property (nonatomic, assign) BOOL automaticSessionTracking;
 @property (nonatomic, assign) BOOL allowASR;
 

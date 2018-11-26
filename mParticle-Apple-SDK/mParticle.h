@@ -171,6 +171,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
 
+/*
+ Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES
+ */
+@property (atomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;
+
 /**
  Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES
  */
@@ -340,6 +345,11 @@ NS_ASSUME_NONNULL_BEGIN
  an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
  */
 @property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+
+/*
+ Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES
+ */
+@property (atomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;
 
 /**
  Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.

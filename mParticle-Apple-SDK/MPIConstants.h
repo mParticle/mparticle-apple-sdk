@@ -381,6 +381,11 @@ extern const NSTimeInterval INITIAL_UPLOAD_TIME;
 extern const NSTimeInterval DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL;
 extern const NSTimeInterval CONFIG_REQUESTS_QUIET_INTERVAL;
 
+// Search Ads timeout/retry
+extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS;
+extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY;
+extern const NSInteger SEARCH_ADS_ATTRIBUTION_MAX_RETRIES;
+
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_COUNT;
 extern const NSInteger LIMIT_ATTR_KEY_LENGTH;

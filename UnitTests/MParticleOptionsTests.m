@@ -62,4 +62,25 @@
     XCTAssertEqual(_options.logLevel, MPILogLevelDebug, @"Debug Level was was not set correctly");
 }
 
+- (void)testSetSearchAdsAttributionDefault {
+    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    
+    XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution should be collected by default");
+}
+
+- (void)testSetSearchAdsAttributionSet {
+    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    _options.collectSearchAdsAttribution = NO;
+    
+    XCTAssertFalse(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
+}
+
+- (void)testSetSearchAdsAttributionReset {
+    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    _options.collectSearchAdsAttribution = NO;
+    
+    _options.collectSearchAdsAttribution = YES;
+    XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
+}
+
 @end

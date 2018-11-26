@@ -314,8 +314,7 @@ static NSString *kMPAppStoreReceiptString = nil;
 #endif
 
 - (NSDictionary *)searchAdsAttribution {
-    MPSearchAdsAttribution *searchAttribution = [MParticle sharedInstance].stateMachine.searchAttribution;
-    return [searchAttribution dictionaryRepresentation];
+    return MParticle.sharedInstance.stateMachine.searchAdsInfo;
 }
 
 #pragma mark NSCopying
