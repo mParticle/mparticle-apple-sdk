@@ -1,5 +1,42 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.8.1
+
+## Core
+
+- Updates retry logic for collecting Apple Search Ads and introduces an option to disable collection.
+
+## Kits
+
+### Responsys Kit
+
+We've released an integration with Oracle Responsys! Check out the [docs here](https://docs.mparticle.com/integrations/responsys/event/) and the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys).
+
+## Static Framework updates
+
+We've marked several kits as static frameworks to make them usable with CocoaPods `use_frameworks!`:
+
+- Appsee
+- Apteligent/Crittercism
+- Instabot
+- Kahuna
+- Kochava
+- Radar
+- Taplytics
+
+## 7.8.0
+
+## Core
+
+- Introduced an API to query for the "Device Application Stamp": `MParticle.sharedInstance.identity.deviceApplicationStamp`
+- Added Custom Flag support to `MPCommerceEvent`
+
+## Kits
+
+### Optimizely Kit
+
+We've released an integration with Optimizely! Check out the [docs here](https://docs.mparticle.com/integrations/optimizely/event/) and the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely).
+
 ## 7.7.5
 
 ## Critical Bug Fix
