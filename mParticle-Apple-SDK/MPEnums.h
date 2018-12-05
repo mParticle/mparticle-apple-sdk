@@ -379,6 +379,8 @@ extern NSString * _Nonnull const mParticleEmbeddedSDKDidBecomeInactiveNotificati
 extern NSString * _Nonnull const mParticleKitInstanceKey;
 extern NSString * _Nonnull const mParticleEmbeddedSDKInstanceKey;
 
+/** Posted immediately after the user's MPID changes (or in other terms when a different user becomes active).
+ */
 extern NSString * _Nonnull const mParticleIdentityStateChangeListenerNotification;
 extern NSString * _Nonnull const mParticleUserKey;
 extern NSString * _Nonnull const mParticleIdentityErrorDomain;

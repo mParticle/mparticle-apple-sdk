@@ -10,6 +10,8 @@
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
+#import "MPKitContainer.h"
+#import "MPPersistenceController.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -18,7 +20,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestModify = 3
 };
 
-@interface MPIdentityTests : MPBaseTestCase
+@interface MPIdentityTests : MPBaseTestCase {
+    MPKitContainer *kitContainer;
+}
 
 @end
 
@@ -43,12 +47,18 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 #pragma mark - MPStateMachine category
 
-@interface MPIdentityHTTPIdentities(Tests)
+@interface MPIdentityHTTPIdentities(Tests) 
 
 - (instancetype)initWithIdentities:(NSDictionary *)identities;
 
 @end
 
+@interface MParticle ()
+
+@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+
+@end
 
 @implementation MPIdentityTests
 
@@ -123,6 +133,229 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [mockUser stopMocking];
 }
 
+- (void)testIdentifyIdentityRequestCompleteWithKits {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"42"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+    
+    
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
+    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
+    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @892;
+    
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestIdentify httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+}
+
+- (void)testLoginIdentityRequestCompleteWithKits {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"42"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+        
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+
+    
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
+    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
+    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @892;
+
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+}
+
+- (void)testLogoutIdentityRequestCompleteWithKits {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"42"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+    
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:mockUser];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @892;
+
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogout httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+}
+
+- (void)testIdentifyIdentityRequestCompleteWithKitsAndNoUserChange {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"42"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+    
+    
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
+    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
+    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @42;
+    
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestIdentify httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+}
+
+- (void)testLoginIdentityRequestCompleteWithKitsAndNoUserChange {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"42"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+    
+    
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
+    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
+    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @42;
+    
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+}
+
+- (void)testLogoutIdentityRequestCompleteWithKitsAndNoUserChange {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"42"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+    
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:mockUser];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @42;
+    
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogout httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+}
+
+- (void)testMPIdZeroToMPId {
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[[mockPersistenceController stub] andReturn:@"0"] mpId];
+    
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockPersistenceController] persistenceController];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    [[[identityMock stub] andReturn:mockUser] currentUser];
+    
+    
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
+    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
+    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    
+    NSError *error;
+    MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
+    httpResponse.mpid = @42;
+    
+    [[mockPersistenceController expect] moveContentFromMpidZeroToMpid:@42];
+    [[mockPersistenceController reject] moveContentFromMpidZeroToMpid:@60];
+    
+    [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
+    
+    [mockPersistenceController verifyWithDelay:0.2];
+    
+    [mockContainer stopMocking];
+    [identityMock stopMocking];
+    [mockInstance stopMocking];
+    [mockPersistenceController stopMocking];
+}
+
 - (void)testModifyRequestComplete {
     id mockUser = OCMClassMock([MParticleUser class]);
     
@@ -149,6 +382,36 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [mockUser verify];
     
     [mockUser stopMocking];
+}
+
+- (void)testModifyRequestCompleteWithKits {
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    id mockUser = OCMClassMock([MParticleUser class]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    id identityMock = OCMPartialMock(identity);
+    OCMStub([identityMock currentUser]).andReturn(mockUser);
+    
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
+    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
+    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    
+    NSError *error;
+    MPIdentityHTTPModifySuccessResponse *httpResponse = [[MPIdentityHTTPModifySuccessResponse alloc] init];
+
+    [[mockContainer expect] forwardIdentitySDKCall:[OCMArg anySelector] kitHandler:OCMOCK_ANY];
+    [identityMock onModifyRequestComplete:request httpResponse:httpResponse completion:nil error:error];
+    
+    [mockContainer verifyWithDelay:0.2];
+    
+    [mockContainer stopMocking];
+    [identityMock stopMocking];
+    [mockInstance stopMocking];
 }
 
 - (void)testIdentify {
