@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.8.2
+
+## Core
+
+- Fix kit identity forwarding
+
+If the mpid did not change, we were not forwarding identity events to kits. This change ensures that we are always forwarding identity events to our kits by removing the early return and restructuring the code for clarity in the future.
+
+## Kits
+
+- Optimizely - Update for tvOS
+
 ## 7.8.1
 
 ## Core
