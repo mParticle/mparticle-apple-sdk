@@ -10,5 +10,8 @@
 	},
 	{
 		"7.8.1": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/7.8.1/mParticle_Apple_SDK.framework.zip"
+	},
+	{
+		"7.8.2": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/7.8.2/mParticle_Apple_SDK.framework.zip"
 	}
 ]
