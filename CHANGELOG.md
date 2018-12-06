@@ -22,7 +22,7 @@ If the mpid did not change, we were not forwarding identity events to kits. This
 
 ### Responsys Kit
 
-We've released an integration with Oracle Responsys! Check out the [docs here](https://docs.mparticle.com/integrations/responsys/event/) and the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys).
+We've released an integration with Oracle Responsys! Check out the [docs here](https://docs.mparticle.com/integrations/oracle-responsys/event/) and the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys).
 
 ## Static Framework updates
 
