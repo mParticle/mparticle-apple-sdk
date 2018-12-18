@@ -196,7 +196,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Appsee */
     MPKitInstanceAppsee = 126,
     /** Kit code for Taplytics */
-    MPKitInstanceTaplytics = 129
+    MPKitInstanceTaplytics = 129,
+    /** Kit code for CleverTap */
+    MPKitInstanceCleverTap = 135
 };
 
 /// Log Levels
