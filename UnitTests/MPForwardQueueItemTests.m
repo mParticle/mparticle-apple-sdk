@@ -13,7 +13,7 @@
 #define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 1
 
 @interface MPKitInstanceValidator ()
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 @end
 
 #pragma mark

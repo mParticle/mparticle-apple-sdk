@@ -6,7 +6,7 @@
 #import "MPBaseTestCase.h"
 
 @interface MPKitInstanceValidator(BackendControllerTests)
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 @end
 
 @interface MPKitRegisterTests : MPBaseTestCase

@@ -82,7 +82,7 @@ NSString *const kMPFROptOutState = @"s";
     _forwardRecordId = 0;
     _mpid = [MPPersistenceController mpId];
     _dataDictionary = [[NSMutableDictionary alloc] init];
-    _dataDictionary[kMPFRModuleId] = execStatus.kitCode;
+    _dataDictionary[kMPFRModuleId] = execStatus.integrationId;
     _dataDictionary[kMPTimestampKey] = MPCurrentEpochInMilliseconds;
     _dataDictionary[kMPMessageTypeKey] = [NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(messageType)).c_str()
                                                             encoding:NSUTF8StringEncoding];

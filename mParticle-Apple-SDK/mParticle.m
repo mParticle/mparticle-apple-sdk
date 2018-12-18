@@ -1128,10 +1128,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Integration attributes
-- (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)kitCode {
+- (nonnull MPKitExecStatus *)setIntegrationAttributes:(nonnull NSDictionary<NSString *, NSString *> *)attributes forKit:(nonnull NSNumber *)integrationId {
     __block MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
 
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     
     if (integrationAttributes) {
         dispatch_async(messageQueue, ^{
@@ -1142,22 +1142,19 @@ NSString *const kMPStateKey = @"state";
         returnCode = MPKitReturnCodeRequirementsNotMet;
     }
     
-    return [[MPKitExecStatus alloc] initWithSDKCode:kitCode returnCode:returnCode forwardCount:0];
+    return [[MPKitExecStatus alloc] initWithSDKCode:integrationId returnCode:returnCode forwardCount:0];
 }
 
-- (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)kitCode {
-    MPKitReturnCode returnCode = MPKitReturnCodeSuccess;
-    BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:kitCode];
+- (nonnull MPKitExecStatus *)clearIntegrationAttributesForKit:(nonnull NSNumber *)integrationId {
+    dispatch_async(messageQueue, ^{
+        [[MParticle sharedInstance].persistenceController deleteIntegrationAttributesForIntegrationId:integrationId];
+    });
 
-    if (validKitCode) {
-        dispatch_async(messageQueue, ^{
-            [[MParticle sharedInstance].persistenceController deleteIntegrationAttributesForKitCode:kitCode];
-        });
-    } else {
-        returnCode = MPKitReturnCodeRequirementsNotMet;
-    }
+    return [[MPKitExecStatus alloc] initWithSDKCode:integrationId returnCode:MPKitReturnCodeSuccess forwardCount:0];
+}
 
-    return [[MPKitExecStatus alloc] initWithSDKCode:kitCode returnCode:returnCode forwardCount:0];
+- (nullable NSDictionary *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
+    return [[MParticle sharedInstance].persistenceController fetchIntegrationAttributesForId:integrationId];
 }
 
 #pragma mark Kits

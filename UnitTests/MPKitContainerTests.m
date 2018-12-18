@@ -43,7 +43,7 @@
 @end
 
 @interface MPKitInstanceValidator(BackendControllerTests)
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 @end
 
 #pragma mark - MPKitContainer category for unit tests
@@ -60,8 +60,8 @@
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
-- (nullable NSString *)nameForKitCode:(nonnull NSNumber *)kitCode;
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+- (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId;
+- (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 - (void)flushSerializedKits;
 - (NSDictionary *)methodMessageTypeMapping;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector;
@@ -199,11 +199,11 @@
     NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-        if ([[kitConfiguration kitCode] isEqual:@(42)]){
+        if ([[kitConfiguration integrationId] isEqual:@(42)]){
             XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
         }
         
-        if ([[kitConfiguration kitCode] isEqual:@(312)]){
+        if ([[kitConfiguration integrationId] isEqual:@(312)]){
             
             XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
         }
@@ -250,11 +250,11 @@
         NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+            if ([[kitConfiguration integrationId] isEqual:@(42)]){
                 XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
             }
             
-            if ([[kitConfiguration kitCode] isEqual:@(312)]){
+            if ([[kitConfiguration integrationId] isEqual:@(312)]){
                 
                 XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
             }
@@ -278,11 +278,11 @@
         directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-            if ([[kitConfiguration kitCode] isEqual:@(42)]){
+            if ([[kitConfiguration integrationId] isEqual:@(42)]){
                 XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
             }
             
-            XCTAssertFalse([[kitConfiguration kitCode] isEqual:@(312)]);
+            XCTAssertFalse([[kitConfiguration integrationId] isEqual:@(312)]);
         }
         
         [expectation fulfill];

@@ -401,7 +401,7 @@
         [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
             if (!status.success) {
-                MPILogError(@"Failed to set consent state for kit=%@", status.kitCode);
+                MPILogError(@"Failed to set consent state for kit=%@", status.integrationId);
             }
         }];
     });

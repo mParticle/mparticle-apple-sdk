@@ -82,7 +82,7 @@
 - (void)testInstance {
     XCTAssertNotNil(kitConfiguration);
     XCTAssertEqualObjects(kitConfiguration.configurationHash, @(762651950));
-    XCTAssertEqualObjects(kitConfiguration.kitCode, @37);
+    XCTAssertEqualObjects(kitConfiguration.integrationId, @37);
     XCTAssertEqualObjects(kitConfiguration.attributeValueFilteringHashedAttribute, @"12345");
     XCTAssertEqualObjects(kitConfiguration.attributeValueFilteringHashedValue, @"54321");
     
@@ -184,7 +184,7 @@
     kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
     XCTAssertNotNil(kitConfig);
     XCTAssertEqualObjects(kitConfig.configurationHash, @(1495473349));
-    XCTAssertEqualObjects(kitConfig.kitCode, @80);
+    XCTAssertEqualObjects(kitConfig.integrationId, @80);
     
     XCTAssertNil(kitConfig.filters);
     XCTAssertNil(kitConfig.eventTypeFilters);

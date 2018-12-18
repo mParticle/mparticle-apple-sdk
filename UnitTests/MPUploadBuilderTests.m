@@ -32,16 +32,16 @@
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
-    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"clientID":@"123abc",
                                                          @"key":@"value"};
     
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     [persistence saveIntegrationAttributes:integrationAttributes];
 
-    kitCode = @(MPKitInstanceButton);
+    integrationId = @(MPKitInstanceButton);
     attributes = @{@"keyB":@"valueB"};
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     [persistence saveIntegrationAttributes:integrationAttributes];
 }
 

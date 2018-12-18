@@ -19,68 +19,70 @@
 }
 
 - (void)testInstance {
-    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNotNil(integrationAttributes);
-    XCTAssertEqualObjects(integrationAttributes.kitCode, @(MPKitInstanceUrbanAirship));
+    XCTAssertEqualObjects(integrationAttributes.integrationId, @(MPKitInstanceUrbanAirship));
     XCTAssertEqualObjects(integrationAttributes.attributes, @{@"key":@"value"});
 }
 
 - (void)testDataInstance {
-    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     NSData *attributesData = [NSJSONSerialization dataWithJSONObject:integrationAttributes.attributes options:0 error:nil];
     
-    MPIntegrationAttributes *integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributesData:attributesData];
+    MPIntegrationAttributes *integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributesData:attributesData];
     XCTAssertNotNil(integrationAttributes2);
     
     attributesData = nil;
-    integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributesData:attributesData];
+    integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributesData:attributesData];
     XCTAssertNil(integrationAttributes2);
     
     attributesData = (NSData *)[NSNull null];
-    integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributesData:attributesData];
+    integrationAttributes2 = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributesData:attributesData];
     XCTAssertNil(integrationAttributes2);
 }
 
-- (void)testInvalidInstance {
-    NSNumber *kitCode = @(9999);
+- (void)testNonKitInstance {
+    NSNumber *integrationId = @(9999);
     NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
+    XCTAssertNotNil(integrationAttributes);
+}
+- (void)testInvalidInstance {
+    NSNumber *integrationId = nil;
+    NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
-    kitCode = nil;
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    integrationId = (NSNumber *)@"This is not a number";
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
-    kitCode = (NSNumber *)@"This is not a number";
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
-    XCTAssertNil(integrationAttributes);
-    
-    kitCode = @(MPKitInstanceUrbanAirship);
+    integrationId = @(MPKitInstanceUrbanAirship);
     attributes = nil;
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
     attributes = @{@"pi":(NSString *)@314};
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
     attributes = @{(NSString *)@628:@"tau"};
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNil(integrationAttributes);
     
     attributes = (NSDictionary *)[NSNull null];
-    integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     XCTAssertNil(integrationAttributes);
 }
 
 - (void)testDictionaryRepresentation {
-    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     NSDictionary *dictionaryRepresentation = [integrationAttributes dictionaryRepresentation];
     XCTAssertNotNil(dictionaryRepresentation);
     
@@ -89,9 +91,9 @@
 }
 
 - (void)testSerialization {
-    NSNumber *kitCode = @(MPKitInstanceUrbanAirship);
+    NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};
-    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:kitCode attributes:attributes];
+    MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     NSString *serializedString = [integrationAttributes serializedString];
     XCTAssertNotNil(serializedString);
 }

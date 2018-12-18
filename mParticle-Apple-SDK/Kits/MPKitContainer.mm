@@ -54,7 +54,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @interface MPKitAPI ()
 
-- (id)initWithKitCode:(NSNumber *)kitCode;
+- (id)initWithKitCode:(NSNumber *)integrationId;
 
 @end
 
@@ -187,11 +187,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 #pragma mark Private methods
-- (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
+- (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)integrationId {
+    NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
-    bracketIterator = brackets.find(kitCode);
+    bracketIterator = brackets.find(integrationId);
     
     shared_ptr<mParticle::Bracket> bracket = bracketIterator != brackets.end() ? bracketIterator->second : nullptr;
     return bracket;
@@ -205,10 +205,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     });
 }
 
-- (void)freeKit:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
+- (void)freeKit:(NSNumber *)integrationId {
+    NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
     if (kitRegister.wrapperInstance) {
@@ -220,13 +220,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         NSFileManager *fileManager = [NSFileManager defaultManager];
         NSString *stateMachineDirectoryPath = STATE_MACHINE_DIRECTORY_PATH;
-        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", kitCode, kitFileExtension]];
+        NSString *kitPath = [stateMachineDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"EmbeddedKit%@.%@", integrationId, kitFileExtension]];
         
         if ([fileManager fileExistsAtPath:kitPath]) {
             [fileManager removeItemAtPath:kitPath error:nil];
         }
         
-        NSDictionary *userInfo = @{mParticleKitInstanceKey:kitCode};
+        NSDictionary *userInfo = @{mParticleKitInstanceKey:integrationId};
         
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeInactiveNotification
                                                             object:nil
@@ -244,8 +244,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-        self.kitConfigurations[kitConfiguration.kitCode] = kitConfiguration;
-        [self startKit:kitConfiguration.kitCode configuration:kitConfiguration];
+        self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
+        [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
         
         self.kitsInitialized = YES;
     }
@@ -288,8 +288,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return methodMessageTypeDictionary;
 }
 
-- (nullable NSString *)nameForKitCode:(nonnull NSNumber *)kitCode {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+- (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     return kitRegister.name;
 }
@@ -417,8 +417,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return shouldDisable;
 }
 
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+- (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
     if (!kitRegister) {
@@ -555,11 +555,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return value;
 }
 
-- (void)updateBracketsWithConfiguration:(NSDictionary *)configuration kitCode:(NSNumber *)kitCode {
-    NSAssert(kitCode != nil, @"Required parameter. It cannot be nil.");
+- (void)updateBracketsWithConfiguration:(NSDictionary *)configuration integrationId:(NSNumber *)integrationId {
+    NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>>::iterator bracketIterator;
-    bracketIterator = brackets.find(kitCode);
+    bracketIterator = brackets.find(integrationId);
     
     if (!configuration) {
         if (bracketIterator != brackets.end()) {
@@ -580,7 +580,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         bracket->low = low;
         bracket->high = high;
     } else {
-        brackets[kitCode] = make_shared<mParticle::Bracket>(mpId, low, high);
+        brackets[integrationId] = make_shared<mParticle::Bracket>(mpId, low, high);
     }
 }
 
@@ -1913,17 +1913,17 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     for (NSDictionary *kitConfigurationDictionary in kitConfigurations) {
         MPKitConfiguration *kitConfiguration = nil;
         
-        NSNumber *kitCode = kitConfigurationDictionary[@"id"];
+        NSNumber *integrationId = kitConfigurationDictionary[@"id"];
         
-        predicate = [NSPredicate predicateWithFormat:@"SELF == %@", kitCode];
+        predicate = [NSPredicate predicateWithFormat:@"SELF == %@", integrationId];
         BOOL isKitSupported = [supportedKits filteredArrayUsingPredicate:predicate].count > 0;
         
         if (isKitSupported) {
-            predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+            predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
             kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
             kitInstance = kitRegister.wrapperInstance;
             kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-            self.kitConfigurations[kitCode] = kitConfiguration;
+            self.kitConfigurations[integrationId] = kitConfiguration;
             
             if (kitInstance) {
                 
@@ -1931,7 +1931,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 if (disabled) {
                     kitRegister.wrapperInstance = nil;
                 } else {
-                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
+                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
                     
                     if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
                         [kitInstance setConfiguration:kitConfiguration.configuration];
@@ -1943,7 +1943,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 kitInstance = kitRegister.wrapperInstance;
                 
                 if (kitInstance) {
-                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
+                    [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
                     if (![kitInstance started]) {
                         if ([kitInstance respondsToSelector:@selector(setLaunchOptions:)]) {
                             [kitInstance performSelector:@selector(setLaunchOptions:) withObject:stateMachine.launchOptions];
@@ -1960,15 +1960,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     }
                 }
                 
-                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration kitCode:kitCode];
+                [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
             }
             
             if (kitInstance) {
                 NSArray *alreadySynchedUserAttributes = userDefaults[kMPSynchedUserAttributesKey];
-                if (userAttributes && ![alreadySynchedUserAttributes containsObject:kitCode]) {
+                if (userAttributes && ![alreadySynchedUserAttributes containsObject:integrationId]) {
                     NSMutableArray *synchedUserAttributes = [[NSMutableArray alloc] initWithCapacity:alreadySynchedUserAttributes.count + 1];
                     [synchedUserAttributes addObjectsFromArray:alreadySynchedUserAttributes];
-                    [synchedUserAttributes addObject:kitCode];
+                    [synchedUserAttributes addObject:integrationId];
                     userDefaults[kMPSynchedUserAttributesKey] = synchedUserAttributes;
                     
                     NSEnumerator *attributeEnumerator = [userAttributes keyEnumerator];
@@ -1992,10 +1992,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 }
                 
                 NSArray *alreadySynchedUserIdentities = userDefaults[kMPSynchedUserIdentitiesKey];
-                if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)] && ![alreadySynchedUserIdentities containsObject:kitCode]) {
+                if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)] && ![alreadySynchedUserIdentities containsObject:integrationId]) {
                     NSMutableArray *synchedUserIdentities = [[NSMutableArray alloc] initWithCapacity:alreadySynchedUserIdentities.count + 1];
                     [synchedUserIdentities addObjectsFromArray:alreadySynchedUserIdentities];
-                    [synchedUserIdentities addObject:kitCode];
+                    [synchedUserIdentities addObject:integrationId];
                     userDefaults[kMPSynchedUserIdentitiesKey] = synchedUserIdentities;
                     
                     for (NSDictionary *userIdentity in userIdentities) {
@@ -2007,12 +2007,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 }
             }
         } else {
-            MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", kitCode);
+            MPILogWarning(@"SDK is trying to configure a kit (code = %@). However, it is not currently registered with the core SDK.", integrationId);
         }
         
         if (!deactivateKits.empty()) {
             for (size_t i = 0; i < deactivateKits.size(); ++i) {
-                if ([deactivateKits.at(i) isEqualToNumber:kitCode]) {
+                if ([deactivateKits.at(i) isEqualToNumber:integrationId]) {
                     deactivateKits.erase(deactivateKits.begin() + i);
                     break;
                 }
@@ -2375,8 +2375,8 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 }
 
-- (NSArray<NSDictionary<NSString *, id> *> *)userIdentitiesArrayForKit:(NSNumber *)kitCode {
-    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", kitCode];
+- (NSArray<NSDictionary<NSString *, id> *> *)userIdentitiesArrayForKit:(NSNumber *)integrationId {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     if (!kitRegister) {
         return nil;
@@ -2398,11 +2398,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return forwardUserIdentities;
 }
 
-- (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)kitCode {
+- (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)integrationId {
     NSArray<MPIntegrationAttributes *> *array = [[MParticle sharedInstance].persistenceController fetchIntegrationAttributes];
     __block NSDictionary<NSString *, NSString *> *dictionary = nil;
     [array enumerateObjectsUsingBlock:^(MPIntegrationAttributes * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        if (obj.kitCode.intValue == kitCode.intValue) {
+        if (obj.integrationId.intValue == integrationId.intValue) {
             dictionary = obj.attributes;
             *stop = YES;
         }

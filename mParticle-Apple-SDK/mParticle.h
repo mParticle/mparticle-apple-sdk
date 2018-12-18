@@ -669,9 +669,57 @@ NS_ASSUME_NONNULL_BEGIN
 + (BOOL)registerExtension:(id<MPExtensionProtocol>)extension;
 
 #pragma mark - Integration Attributes
-- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)kitCode;
 
-- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)kitCode;
+/**
+ * Set the integration attributes for a given integration ID.
+ *
+ * Integration attributes are keys and values specific to a given integration. For example,
+ * many integrations have their own internal user/device ID. mParticle will store integration attributes
+ * for a given device, and will be able to use these values for server-to-server communication to services.
+ * This is often useful when used in combination with a server-to-server feed, allowing the feed to be enriched
+ * with the necessary integration attributes to be properly forwarded to the given integration.
+ *
+ * Note: this action will be performed asynchronously.
+ *
+ * @param attributes a dictionary of attributes that will replace any current attributes. The keys are predefined by mParticle.
+ *                   Please consult with the mParticle docs or your solutions consultant for the correct value. You may
+ *                   also pass a null or empty map here to remove all of the attributes.
+ * @param integrationId mParticle integration ID. This may be the ID for a kit, or any mParticle integration.
+ * @see MPKitInstance
+ */
+- (MPKitExecStatus *)setIntegrationAttributes:(NSDictionary<NSString *, NSString *> *)attributes forKit:(NSNumber *)integrationId;
+
+/**
+ * Clear the integration attributes for a given integration ID.
+ *
+ * Integration attributes are keys and values specific to a given integration. For example,
+ * many integrations have their own internal user/device ID. mParticle will store integration attributes
+ * for a given device, and will be able to use these values for server-to-server communication to services.
+ * This is often useful when used in combination with a server-to-server feed, allowing the feed to be enriched
+ * with the necessary integration attributes to be properly forwarded to the given integration.
+ *
+ * Note: this action will be performed asynchronously.
+ *
+ * @param integrationId mParticle integration ID. This may be the ID for a kit, or any mParticle integration.
+ * @see MPKitInstance
+ */
+- (MPKitExecStatus *)clearIntegrationAttributesForKit:(NSNumber *)integrationId;
+
+/**
+ * Get the integration attributes for a given integration ID.
+ *
+ * Integration attributes are keys and values specific to a given integration. For example,
+ * many integrations have their own internal user/device ID. mParticle will store integration attributes
+ * for a given device, and will be able to use these values for server-to-server communication to services.
+ * This is often useful when used in combination with a server-to-server feed, allowing the feed to be enriched
+ * with the necessary integration attributes to be properly forwarded to the given integration.
+ *
+ * Note: this will make a direct call to SQLite and should not be called on the main thread.
+ *
+ * @param integrationId mParticle integration ID. This may be the ID for a kit, or any mParticle integration.
+ * @see MPKitInstance
+ */
+- (nullable NSDictionary *)integrationAttributesForKit:(NSNumber *)integrationId;
 
 #pragma mark - Kits
 /**
@@ -685,21 +733,21 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Returns whether a kit is active or not. You can retrieve if a kit has been already initialized and
  can be used.
- @param kitCode An NSNumber representing the kit to be checked
+ @param integrationId An NSNumber representing the kit to be checked
  @returns Whether the kit is active or not.
  */
-- (BOOL)isKitActive:(NSNumber *)kitCode;
+- (BOOL)isKitActive:(NSNumber *)integrationId;
 
 /**
  Retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.
  
  This method is only applicable to kits that allocate themselves as an object instance or as a singleton. For the cases
  where kits are implemented with class methods, you can call those class methods directly
- @param kitCode An NSNumber representing the kit to be retrieved
+ @param integrationId An NSNumber representing the kit to be retrieved
  @returns The internal instance of the kit, or nil, if the kit is not active
  @see MPKitInstance
  */
-- (nullable id const)kitInstance:(NSNumber *)kitCode;
+- (nullable id const)kitInstance:(NSNumber *)integrationId;
 
 /**
  Asynchronously retrieves the internal instance of a kit, for cases where you need to use properties and methods of that kit directly.

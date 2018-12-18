@@ -2,6 +2,6 @@
 
 @interface MPKitInstanceValidator : NSObject
 
-+ (BOOL)isValidKitCode:(nonnull NSNumber *)kitCode;
++ (BOOL)isValidKitCode:(nonnull NSNumber *)integrationId;
 
 @end

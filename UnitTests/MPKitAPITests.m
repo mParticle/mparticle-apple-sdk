@@ -13,14 +13,14 @@
 
 @interface MPKitInstanceValidator(BackendControllerTests)
 
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 
 @end
 
 
 @interface MPKitContainer ()
 
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+- (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
 @end
 
@@ -43,7 +43,7 @@
 
 @interface MPKitAPI ()
 
-- (id)initWithKitCode:(NSNumber *)kitCode;
+- (id)initWithKitCode:(NSNumber *)integrationId;
     
 @end
 

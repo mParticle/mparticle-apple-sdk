@@ -31,7 +31,7 @@
 @end
 
 @interface MPKitAPI ()
-- (id)initWithKitCode:(NSNumber *)kitCode;
+- (id)initWithKitCode:(NSNumber *)integrationId;
 @end
 
 @implementation MPAppNotificationHandler

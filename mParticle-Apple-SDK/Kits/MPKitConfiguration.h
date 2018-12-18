@@ -12,7 +12,7 @@
 @property (nonatomic, strong, readonly, nullable) NSArray<NSNumber *> *configuredMessageTypeProjections;
 @property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *defaultProjections;
 @property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *projections;
-@property (nonatomic, strong, readonly, nullable) NSNumber *kitCode;
+@property (nonatomic, strong, readonly, nullable) NSNumber *integrationId;
 
 @property (nonatomic, assign) BOOL attributeValueFilteringIsActive;
 @property (nonatomic, assign) BOOL attributeValueFilteringShouldIncludeMatches;

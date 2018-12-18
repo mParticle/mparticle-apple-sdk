@@ -7,7 +7,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
 @implementation MPKitInstanceValidator
 
 + (void)initialize {
-    NSArray<NSNumber *> *kitCodes = @[@(MPKitInstanceAppboy),
+    NSArray<NSNumber *> *integrationIds = @[@(MPKitInstanceAppboy),
                                       @(MPKitInstanceTune),
                                       @(MPKitInstanceKochava),
                                       @(MPKitInstanceComScore),
@@ -41,10 +41,10 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceTaplytics),
                                       ];
     
-    validKitCodes = [[NSMutableArray alloc] initWithCapacity:kitCodes.count];
+    validKitCodes = [[NSMutableArray alloc] initWithCapacity:integrationIds.count];
     
-    for (NSNumber *kitCode in kitCodes) {
-        MPKitInstance kitInstance = (MPKitInstance)[kitCode integerValue];
+    for (NSNumber *integrationId in integrationIds) {
+        MPKitInstance kitInstance = (MPKitInstance)[integrationId integerValue];
         
         // There should be no default clause in this switch statement
         // In case a new kit is added and we forget to add it to the list above, the code below
@@ -82,28 +82,28 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceCarnival:
             case MPKitInstanceAppsee:
             case MPKitInstanceTaplytics:
-                [validKitCodes addObject:kitCode];
+                [validKitCodes addObject:integrationId];
                 break;
         }
     }
 }
 
-+ (BOOL)isValidKitCode:(NSNumber *)kitCode {
-    if (MPIsNull(kitCode) || ![kitCode isKindOfClass:[NSNumber class]]) {
++ (BOOL)isValidKitCode:(NSNumber *)integrationId {
+    if (MPIsNull(integrationId) || ![integrationId isKindOfClass:[NSNumber class]]) {
         return NO;
     }
     
-    return [validKitCodes containsObject:kitCode];
+    return [validKitCodes containsObject:integrationId];
 }
 
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes {
-    if (MPIsNull(kitCodes)) {
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds {
+    if (MPIsNull(integrationIds)) {
         return;
     }
     
-    for (NSNumber *kitCode in kitCodes) {
-        if (![validKitCodes containsObject:kitCode]) {
-            [validKitCodes addObject:kitCode];
+    for (NSNumber *integrationId in integrationIds) {
+        if (![validKitCodes containsObject:integrationId]) {
+            [validKitCodes addObject:integrationId];
         }
     }
 }

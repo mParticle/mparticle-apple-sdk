@@ -633,16 +633,8 @@ const int MaxBreadcrumbs = 50;
     sqlite3_finalize(preparedStatement);
 }
 
-- (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes {
-    if (MPIsNull(integrationAttributes)) {
-        return;
-    }
-    
-    [self deleteIntegrationAttributesForKitCode:integrationAttributes.kitCode];
-}
-
-- (void)deleteIntegrationAttributesForKitCode:(nonnull NSNumber *)kitCode {
-    if (MPIsNull(kitCode)) {
+- (void)deleteIntegrationAttributesForIntegrationId:(nonnull NSNumber *)integrationId {
+    if (MPIsNull(integrationId)) {
         return;
     }
     
@@ -650,7 +642,7 @@ const int MaxBreadcrumbs = 50;
     const string sqlStatement = "DELETE FROM integration_attributes WHERE kit_code = ?";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        sqlite3_bind_int(preparedStatement, 1, [kitCode intValue]);
+        sqlite3_bind_int(preparedStatement, 1, [integrationId intValue]);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while deleting integration attributes: %s", sqlite3_errmsg(mParticleDB));
@@ -964,7 +956,7 @@ const int MaxBreadcrumbs = 50;
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-            MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithKitCode:@(intValue(preparedStatement, 0))
+            MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:@(intValue(preparedStatement, 0))
                                                                                                attributesData:dataValue(preparedStatement, 1)];
             
             if (integrationAttributes) {
@@ -981,6 +973,26 @@ const int MaxBreadcrumbs = 50;
     
     NSArray<MPIntegrationAttributes *> *integrationAttributesArray = [NSArray arrayWithObjects:&integrationAttributesVector[0] count:integrationAttributesVector.size()];
     return integrationAttributesArray;
+}
+
+- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber *)integrationId {
+    if (MPIsNull(integrationId)) {
+        return nil;
+    }
+    MPIntegrationAttributes *integrationAttributes;
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT attributes_data FROM integration_attributes WHERE kit_code = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, integrationId.intValue);
+        if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId
+                                                                            attributesData:dataValue(preparedStatement, 0)];
+        }
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    return [integrationAttributes attributes];
 }
 
 - (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(MPSession *)session userId:(NSNumber *)userId {
@@ -1574,7 +1586,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes {
-    [self deleteIntegrationAttributesForKitCode:integrationAttributes.kitCode];
+    [self deleteIntegrationAttributesForIntegrationId:integrationAttributes.integrationId];
     
     sqlite3_stmt *preparedStatement;
     const string sqlStatement = "INSERT INTO integration_attributes (kit_code, attributes_data) VALUES (?, ?)";
@@ -1592,7 +1604,7 @@ const int MaxBreadcrumbs = 50;
             return;
         }
         
-        sqlite3_bind_int(preparedStatement, 1, [integrationAttributes.kitCode intValue]);
+        sqlite3_bind_int(preparedStatement, 1, [integrationAttributes.integrationId intValue]);
         sqlite3_bind_blob(preparedStatement, 2, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {

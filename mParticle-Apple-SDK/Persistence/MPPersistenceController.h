@@ -36,8 +36,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)deleteCookie:(nonnull MPCookie *)cookie;
 - (void)deleteForwardRecordsIds:(nonnull NSArray<NSNumber *> *)forwardRecordsIds;
 - (void)deleteAllIntegrationAttributes;
-- (void)deleteIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
-- (void)deleteIntegrationAttributesForKitCode:(nonnull NSNumber *)kitCode;
+- (void)deleteIntegrationAttributesForIntegrationId:(nonnull NSNumber *)integrationId;
 - (void)deleteMessages:(nonnull NSArray<MPMessage *> *)messages;
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;
@@ -52,6 +51,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (nullable NSArray<MPCookie *> *)fetchCookiesForUserId:(NSNumber * _Nonnull)userId;
 - (nullable NSArray<MPForwardRecord *> *)fetchForwardRecords;
 - (nullable NSArray<MPIntegrationAttributes *> *)fetchIntegrationAttributes;
+- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber * _Nonnull)integrationId;
 - (nullable NSMutableDictionary *)fetchMessagesForUploading;
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (nullable MPSession *)fetchPreviousSession;

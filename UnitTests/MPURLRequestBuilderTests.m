@@ -24,7 +24,7 @@
 
 @interface MPKitInstanceValidator ()
 
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)kitCodes;
++ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 
 @end
 
@@ -41,7 +41,7 @@
 #pragma mark - MPKitContainer category for unit tests
 @interface MPKitContainer(Tests)
 
-- (id<MPKitProtocol>)startKit:(NSNumber *)kitCode configuration:(MPKitConfiguration *)kitConfiguration;
+- (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
 @end
 
