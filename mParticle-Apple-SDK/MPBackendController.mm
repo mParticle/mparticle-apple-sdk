@@ -1771,7 +1771,7 @@ static BOOL appBackgrounded = NO;
         };
         
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS * NSEC_PER_SEC)), dispatch_get_main_queue(), searchAdsCompletion);
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS * NSEC_PER_SEC)), [MParticle messageQueue], searchAdsCompletion);
             [stateMachine.searchAttribution requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
         } else {
             searchAdsCompletion();
