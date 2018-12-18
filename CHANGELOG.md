@@ -1,5 +1,21 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.8.3
+
+## Core
+
+- Add new and updated existing integration attribute APIs
+
+    - Allow integration attributes to be set for any ID (not just known kit IDs)
+    - Add a public query API for specific integration attributes by ID
+    - Rename the private usages and APIs from kitCode to integrationId
+
+- Fix a potential hang that could occur if Apple Search Ads timed out
+
+## Kits
+
+- None
+
 ## 7.8.2
 
 ## Core
