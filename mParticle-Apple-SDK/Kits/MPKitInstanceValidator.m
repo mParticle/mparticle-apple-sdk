@@ -40,6 +40,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
                                       @(MPKitInstanceAppsee),
                                       @(MPKitInstanceTaplytics),
                                       @(MPKitInstanceCleverTap),
+                                      @(MPKitInstancePilgrim)
                                       ];
     
     validKitCodes = [[NSMutableArray alloc] initWithCapacity:integrationIds.count];
@@ -84,6 +85,7 @@ static NSMutableArray<NSNumber *> *validKitCodes;
             case MPKitInstanceAppsee:
             case MPKitInstanceTaplytics:
             case MPKitInstanceCleverTap:
+            case MPKitInstancePilgrim:
                 [validKitCodes addObject:integrationId];
                 break;
         }
