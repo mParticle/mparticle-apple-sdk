@@ -156,9 +156,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     
     NSString *crashLogPath = [crashLogsDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@-%.0f.log", message.uuid, message.timestamp]];
     NSError *error = nil;
-    [MPArchivist archiveDataWithRootObject:message toFile:crashLogPath error:&error];
-    if (error) {
-        NSLog(@"mParticle -> Crash log not archived.");
+    BOOL success = [MPArchivist archiveDataWithRootObject:message toFile:crashLogPath error:&error];
+    if (!success) {
+        NSLog(@"mParticle -> Crash log not archived. error=%@", error);
     }
 }
 
@@ -365,14 +365,15 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     
     NSTimeInterval timestamp = trunc([[NSDate date] timeIntervalSince1970]);
     NSString *filePath;
+    BOOL success;
 
     // Current State
     filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"CurrentState-%.0f.cs", timestamp]];
     MPCurrentState *currentState = [[MPCurrentState alloc] init];
     NSError *error = nil;
-    [MPArchivist archiveDataWithRootObject:[currentState dictionaryRepresentation] toFile:filePath error:&error];
-    if (error) {
-        MPILogError(@"Application will crash, current state not archived.");
+    success = [MPArchivist archiveDataWithRootObject:[currentState dictionaryRepresentation] toFile:filePath error:&error];
+    if (!success) {
+        MPILogError(@"Application will crash, current state not archived. error=%@", error);
     }
     
     // Topmost Context
@@ -382,9 +383,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         archiveDictionary = @{kMPTopmostContext:topmostContextName};
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"TopmostContext-%.0f.tc", timestamp]];
         NSError *error = nil;
-        [MPArchivist archiveDataWithRootObject:archiveDictionary toFile:filePath error:&error];
-        if (error) {
-            MPILogError(@"Application will crash, topmost context not archived.");
+        success = [MPArchivist archiveDataWithRootObject:archiveDictionary toFile:filePath error:&error];
+        if (!success) {
+            MPILogError(@"Application will crash, topmost context not archived. error=%@", error);
         }
     }
     
@@ -394,9 +395,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     if (exception) {
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"Exception-%.0f.ex", timestamp]];
         NSError *error = nil;
-        [MPArchivist archiveDataWithRootObject:exception toFile:filePath error:&error];
-        if (error) {
-            MPILogError(@"Application will crash, topmost context not archived.");
+        success = [MPArchivist archiveDataWithRootObject:exception toFile:filePath error:&error];
+        if (!success) {
+            MPILogError(@"Application will crash, topmost context not archived. error=%@", error);
         }
     }
 
@@ -406,9 +407,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         archiveDictionary = @{kMPStackTrace:[callStack componentsJoinedByString:@"\n"]};
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"StackTrace-%.0f.st", timestamp]];
         NSError *error = nil;
-        [MPArchivist archiveDataWithRootObject:archiveDictionary toFile:filePath error:&error];
-        if (error) {
-            MPILogError(@"Application will crash, stack trace not archived.");
+        success = [MPArchivist archiveDataWithRootObject:archiveDictionary toFile:filePath error:&error];
+        if (!success) {
+            MPILogError(@"Application will crash, stack trace not archived. error=%@", error);
         }
     }
     
@@ -417,9 +418,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     if (archiveDictionary) {
         filePath = [archivedMessagesDirectoryPath stringByAppendingPathComponent:[NSString stringWithFormat:@"AppImageInfo-%.0f.aii", timestamp]];
         NSError *error = nil;
-        [MPArchivist archiveDataWithRootObject:archiveDictionary toFile:filePath error:&error];
-        if (error) {
-            MPILogError(@"Application will crash, app image info not archived.");
+        success = [MPArchivist archiveDataWithRootObject:archiveDictionary toFile:filePath error:&error];
+        if (!success) {
+            MPILogError(@"Application will crash, app image info not archived. error=%@", error);
         }
     }
 }

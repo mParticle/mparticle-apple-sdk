@@ -336,7 +336,7 @@ static NSArray *actionNames;
         copyObject.promotionContainer = [_promotionContainer copy];
         copyObject.transactionAttributes = [_transactionAttributes copy];
         copyObject->_userDefinedAttributes = _userDefinedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_userDefinedAttributes copy]] : nil;
-        copyObject->_customFlagsDictionary = _customFlagsDictionary ? [[NSMutableDictionary alloc] initWithDictionary:[_customFlagsDictionary copy]] : nil;
+        copyObject->_customFlagsDictionary = [_customFlagsDictionary mutableCopy];
         copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
         copyObject->_timestamp = [_timestamp copy];

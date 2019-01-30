@@ -300,7 +300,7 @@ static BOOL appBackgrounded = NO;
         
         if (strongSelf) {
             NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
-            if (sessionId) {
+            if (sessionId != nil) {
                 mutableInfo[mParticleSessionId] = sessionId;
             }
             if (sessionUUID) {
@@ -324,7 +324,7 @@ static BOOL appBackgrounded = NO;
         
         if (strongSelf) {
             NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
-            if (sessionId) {
+            if (sessionId != nil) {
                 mutableInfo[mParticleSessionId] = sessionId;
             }
             if (sessionUUID) {
@@ -504,7 +504,7 @@ static BOOL appBackgrounded = NO;
                     [self saveMessage:message updateSession:NO];
                 }
             } @catch (NSException* ex) {
-                MPILogger(MPILogLevelError, @"Failed To retrieve crash messages from archive: %@", ex);
+                MPILogError(@"Failed To retrieve crash messages from archive: %@", ex);
             } @finally {
                 [fileManager removeItemAtPath:filePath error:nil];
             }
@@ -594,12 +594,12 @@ static BOOL appBackgrounded = NO;
     NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
     
     NSError *error = nil;
-    [MPBackendController checkAttribute:userAttributeChange.userAttributes
+    BOOL success = [MPBackendController checkAttribute:userAttributeChange.userAttributes
                      key:localKey
                    value:userAttributeChange.value
                    error:&error];
     
-    if (error && error.code == kInvalidDataType) {
+    if ((!success && error) && error.code == kInvalidDataType) {
         if (completionHandler) {
             completionHandler(userAttributeChange.key, userAttributeChange.value, MPExecStatusInvalidDataType);
         }
@@ -1222,30 +1222,38 @@ static BOOL appBackgrounded = NO;
     completionHandler(event, MPExecStatusSuccess);
 }
 
-+ (void)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
++ (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
     if (attributesDictionary.count >= LIMIT_ATTR_COUNT) {
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeCountLimit userInfo:nil];
+        if (error) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeCountLimit userInfo:nil];
+        }
         MPILogError(@"Error while setting attribute: there are more attributes than the maximum number allowed.");
-        return;
+        return NO;
     }
     
     if (MPIsNull(key)) {
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];
+        if (error) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];
+        }
         MPILogError(@"Error while setting attribute key: the key parameter cannot be nil");
-        return;
+        return NO;
     }
     
     if (key.length > LIMIT_ATTR_KEY_LENGTH) {
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeKeyMaximumLength userInfo:nil];
+        if (error) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeKeyMaximumLength userInfo:nil];
+        }
         MPILogError(@"Error while setting attribute key: the key parameter is longer than the maximum allowed length.");
-        return;
+        return NO;
     }
     
     if (!value) {
         //don't log an error here, as this may just be treated as a removal.
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kNilAttributeValue userInfo:nil];
-        return;
+        if (error) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kNilAttributeValue userInfo:nil];
+        }
+        return NO;
     }
     
     BOOL isStringValue = [value isKindOfClass:[NSString class]];
@@ -1253,23 +1261,29 @@ static BOOL appBackgrounded = NO;
     BOOL isNumberValue = [value isKindOfClass:[NSNumber class]];
     
     if (!isStringValue && !isArrayValue && !isNumberValue) {
-        *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
+        if (error) {
+            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
+        }
         MPILogError(@"Error while setting attribute value: must be an NSString or NSArray");
-        return;
+        return NO;
     }
     
     if (isStringValue) {
         NSCharacterSet *set = [NSCharacterSet whitespaceCharacterSet];
         if ([[value stringByTrimmingCharactersInSet: set] length] == 0) {
             //don't log an error here, as this may just be treated as a tag.
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kEmptyAttributeValue userInfo:nil];
-            return;
+            if (error) {
+                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kEmptyAttributeValue userInfo:nil];
+            }
+            return NO;
         }
         
         if (((NSString *)value).length > LIMIT_ATTR_VALUE_LENGTH) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
+            if (error) {
+                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
+            }
             MPILogError(@"Error while setting attribute value: value is longer than the maximum allowed %@", value);
-            return;
+            return NO;
         }
     }
     
@@ -1279,18 +1293,24 @@ static BOOL appBackgrounded = NO;
         NSInteger totalValueLength = 0;
         for (id entryValue in values) {
             if (![entryValue isKindOfClass:stringClass]) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
+                if (error) {
+                    *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
+                }
                 MPILogError(@"Error while setting attribute value list: all user attribute entries in the array must be of type string. Error entry: %@", entryValue);
-                return;
+                return NO;
             }
             totalValueLength += ((NSString *)entryValue).length;
         }
         if (totalValueLength > LIMIT_ATTR_VALUE_LENGTH) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
+            if (error) {
+                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
+            }
             MPILogError(@"Error while setting attribute value list: combined length of list values longer than the maximum alowed.");
-            return;
+            return NO;
         }
     }
+    
+    return YES;
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
@@ -1702,11 +1722,11 @@ static BOOL appBackgrounded = NO;
     
     NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
     NSError *error = nil;
-    [MPBackendController checkAttribute:session.attributesDictionary
+    BOOL success = [MPBackendController checkAttribute:session.attributesDictionary
                                     key:localKey
                                   value:value
                                   error:&error];
-    if (error || [session.attributesDictionary[localKey] isEqual:value]) {
+    if ((!success && error) || [session.attributesDictionary[localKey] isEqual:value]) {
         return MPExecStatusInvalidDataType;
     }
     
@@ -1988,7 +2008,6 @@ static BOOL appBackgrounded = NO;
             persistUserIdentities = YES;
         }
     } else {
-        identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
         existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
         
         if (existingEntryIndex == NSNotFound) {

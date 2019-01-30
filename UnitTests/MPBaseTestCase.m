@@ -37,7 +37,8 @@
     }
     
     NSError *error = nil;
-    [MPArchivist archiveDataWithRootObject:object toFile:testFile error:&error];
+    BOOL success = [MPArchivist archiveDataWithRootObject:object toFile:testFile error:&error];
+    XCTAssertTrue(success);
     XCTAssertNil(error);
     
     //Retrieve Object

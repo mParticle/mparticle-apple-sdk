@@ -4,16 +4,19 @@
 
 @implementation MPArchivist
 
-+ (void)archiveDataWithRootObject:(id)object toFile:(NSString *)path error:(NSError ** _Nullable)error {
++ (BOOL)archiveDataWithRootObject:(id)object toFile:(NSString *)path error:(NSError ** _Nullable)error {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     @try {
         if (![NSKeyedArchiver archiveRootObject:object toFile:path]) {
             MPILogError(@"Object was not persisted.");
+            return NO;
         }
     } @catch(NSException *ex) {
-        MPILogger(MPILogLevelError, @"Failed To archive: %@", ex);
+        MPILogError(@"Failed To archive: %@", ex);
+        return NO;
     }
+    return YES;
 #pragma clang diagnostic pop
 }
 
@@ -25,7 +28,7 @@
         object = [NSKeyedUnarchiver unarchiveObjectWithFile:path];
 #pragma clang diagnostic pop
     } @catch(NSException *ex) {
-        MPILogger(MPILogLevelError, @"Failed To retrieve %@: %@", cls, ex);
+        MPILogError(@"Failed To retrieve %@: %@", cls, ex);
     }
     
     return object;

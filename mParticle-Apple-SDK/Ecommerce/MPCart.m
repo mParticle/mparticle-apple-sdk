@@ -101,9 +101,9 @@
     
     if (self.productsList.count > 0) {
         NSError *error = nil;
-        [MPArchivist archiveDataWithRootObject:self toFile:self.cartFile error:&error];
-        if (error != nil) {
-            MPILogError(@"Cart was not persisted.");
+        BOOL success = [MPArchivist archiveDataWithRootObject:self toFile:self.cartFile error:&error];
+        if (!success) {
+            MPILogError(@"Cart was not persisted. error=%@", error);
         }
     }
 }

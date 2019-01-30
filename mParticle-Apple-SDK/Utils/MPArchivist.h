@@ -4,7 +4,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPArchivist : NSObject
 
-+ (void)archiveDataWithRootObject:(id)object toFile:(NSString *)path error:(NSError ** _Nullable)error;
++ (BOOL)archiveDataWithRootObject:(id)object toFile:(NSString *)path error:(NSError ** _Nullable)error;
 + (id)unarchiveObjectOfClass:(Class)cls withFile:(NSString *)path error:(NSError ** _Nullable)error;
 
 @end

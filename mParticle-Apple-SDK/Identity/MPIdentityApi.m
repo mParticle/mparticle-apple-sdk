@@ -96,7 +96,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             [userIDsCopy removeObjectForKey:@(MPUserIdentityEmail)];
         }
         
-        [userIDsCopy enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull identityValue, BOOL * _Nonnull stop) {
+        [userIDsCopy enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id identityValue, BOOL * _Nonnull stop) {
             MPUserIdentity identityType = (MPUserIdentity)key.intValue;
             if ((NSNull *)identityValue == [NSNull null]) {
                 identityValue = nil;
