@@ -1,5 +1,19 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.8.4
+
+## Core
+
+This release helps make our AppDelegate proxy mechanism more transparent by allowing KVO/KVC messages to pass through to the original AppDelegate as expected. It also cleans up a few analyzer warnings that were introduced and removes some validation code that could interfere with partner kit development or certain customer use cases.
+
+- Fix analyzer warnings
+- Fix AppDelegate KVO when proxying is enabled
+- Remove MPKitInstanceValidator
+
+## Kits
+
+- ComScore - Add tvOS support
+
 ## 7.8.3
 
 ## Core
