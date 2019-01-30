@@ -11,6 +11,8 @@
 
 @property (nonatomic, weak) MPAppDelegateProxy *appDelegateProxy;
 
+- (BOOL)implementsSelector:(SEL)aSelector;
+
 - (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<NSString *,id> *)options;
 
 #if TARGET_OS_IOS == 1

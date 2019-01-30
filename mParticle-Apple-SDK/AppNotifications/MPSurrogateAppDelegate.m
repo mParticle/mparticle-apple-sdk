@@ -12,7 +12,51 @@
 
 @end
 
+@interface MPSurrogateAppDelegate () {
+    SEL applicationOpenURLOptionsSelector;
+    NSArray *selectorArray;
+}
+@end
+
 @implementation MPSurrogateAppDelegate
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        applicationOpenURLOptionsSelector = @selector(application:openURL:options:);
+        selectorArray = @[
+                          [NSValue valueWithPointer:applicationOpenURLOptionsSelector]
+#if TARGET_OS_IOS == 1
+                          ,
+                          [NSValue valueWithPointer:@selector(application:openURL:sourceApplication:annotation:)],
+                          [NSValue valueWithPointer:@selector(application:didFailToRegisterForRemoteNotificationsWithError:)],
+                          [NSValue valueWithPointer:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)],
+                          [NSValue valueWithPointer:@selector(application:didRegisterForRemoteNotificationsWithDeviceToken:)],
+                          [NSValue valueWithPointer:@selector(application:continueUserActivity:restorationHandler:)],
+                          [NSValue valueWithPointer:@selector(application:didUpdateUserActivity:)],
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+                          [NSValue valueWithPointer:@selector(application:handleActionWithIdentifier:forRemoteNotification:completionHandler:)],
+                          [NSValue valueWithPointer:@selector(application:handleActionWithIdentifier:forRemoteNotification:withResponseInfo:completionHandler:)]
+#pragma clang diagnostic pop
+#endif
+                          ];
+    }
+    return self;
+}
+
+- (BOOL)implementsSelector:(SEL)aSelector {
+    if (![selectorArray containsObject:[NSValue valueWithPointer:aSelector]]) {
+        return NO;
+    }
+    
+    if (aSelector == applicationOpenURLOptionsSelector && [[[UIDevice currentDevice] systemVersion] floatValue] < 9.0) {
+        return NO;
+    }
+    
+    return YES;
+}
 
 #pragma mark UIApplicationDelegate
 #if TARGET_OS_IOS == 1

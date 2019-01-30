@@ -465,6 +465,7 @@
 		DB4552BF1F01895600B6924C /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */; };
 		DB4552C01F01895600B6924C /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */; };
 		DB556EC720A4D3A2001EDBC3 /* MPConsentKitFilterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB556EC620A4D3A2001EDBC3 /* MPConsentKitFilterTests.m */; };
+		DB560AF321FFC4D800489DC9 /* MPSurrogateAppDelegateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB560AF221FFC4D800489DC9 /* MPSurrogateAppDelegateTests.m */; };
 		DB575012208A7C250033B699 /* MPConsentKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB575010208A7C250033B699 /* MPConsentKitFilter.h */; };
 		DB575013208A7C250033B699 /* MPConsentKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB575010208A7C250033B699 /* MPConsentKitFilter.h */; };
 		DB575014208A7C250033B699 /* MPConsentKitFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB575011208A7C250033B699 /* MPConsentKitFilter.m */; };
@@ -803,6 +804,7 @@
 		DB4552BC1F01895600B6924C /* MPIdentityApiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityApiManager.m; path = Identity/MPIdentityApiManager.m; sourceTree = "<group>"; };
 		DB4F166C1F1511B100D625CD /* MPIdentityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityTests.m; sourceTree = "<group>"; };
 		DB556EC620A4D3A2001EDBC3 /* MPConsentKitFilterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentKitFilterTests.m; sourceTree = "<group>"; };
+		DB560AF221FFC4D800489DC9 /* MPSurrogateAppDelegateTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPSurrogateAppDelegateTests.m; sourceTree = "<group>"; };
 		DB575010208A7C250033B699 /* MPConsentKitFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConsentKitFilter.h; sourceTree = "<group>"; };
 		DB575011208A7C250033B699 /* MPConsentKitFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentKitFilter.m; sourceTree = "<group>"; };
 		DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
@@ -1328,6 +1330,7 @@
 				DB0773BC20F8F550006A48CE /* MPNetworkCommunicationTests.m */,
 				D36997EC20FF879E009613E5 /* MParticleTests.m */,
 				DB339D412167C82C00F0B76E /* MPConnectorTests.m */,
+				DB560AF221FFC4D800489DC9 /* MPSurrogateAppDelegateTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -2048,6 +2051,7 @@
 				C9DD20F71D8A200F00D3ABBE /* MPLaunchInfoTests.m in Sources */,
 				C9DD20FF1D8A203500D3ABBE /* MPURLRequestBuilderTests.m in Sources */,
 				C9DD20EA1D8A1F9A00D3ABBE /* MPCustomModuleTests.m in Sources */,
+				DB560AF321FFC4D800489DC9 /* MPSurrogateAppDelegateTests.m in Sources */,
 				B2AE029E1FFD59CF00C4DD89 /* MPResponseEventsTest.m in Sources */,
 				C9DD20E91D8A1F9700D3ABBE /* MPConsumerInfoTests.m in Sources */,
 				C9DD21021D8A204000D3ABBE /* MPZipTests.mm in Sources */,
