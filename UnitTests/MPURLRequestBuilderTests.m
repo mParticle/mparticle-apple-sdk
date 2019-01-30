@@ -11,7 +11,6 @@
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPMessage.h"
-#import "MPKitInstanceValidator.h"
 #import "MPBaseTestCase.h"
 #import "MPKitConfiguration.h"
 
@@ -19,12 +18,6 @@
 
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
-
-@end
-
-@interface MPKitInstanceValidator ()
-
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 
 @end
 
@@ -86,7 +79,6 @@
                                         };
         
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-        [MPKitInstanceValidator includeUnitTestKits:@[@42]];
         [kitContainer startKit:@42 configuration:kitConfiguration];
     }    
 }

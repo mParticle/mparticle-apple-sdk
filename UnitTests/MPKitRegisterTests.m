@@ -2,12 +2,7 @@
 #import "MPKitRegister.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassNoStartImmediately.h"
-#import "MPKitInstanceValidator.h"
 #import "MPBaseTestCase.h"
-
-@interface MPKitInstanceValidator(BackendControllerTests)
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
-@end
 
 @interface MPKitRegisterTests : MPBaseTestCase
 
@@ -16,9 +11,7 @@
 @implementation MPKitRegisterTests
 
 - (void)setUp {
-    [super setUp];
-    
-    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
+    [super setUp];    
 }
 
 - (void)tearDown {

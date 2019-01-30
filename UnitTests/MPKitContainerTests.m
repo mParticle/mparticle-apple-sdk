@@ -23,7 +23,6 @@
 #import "MPResponseConfig.h"
 #import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
-#import "MPKitInstanceValidator.h"
 #import "MPBaseTestCase.h"
 #import "OCMock.h"
 #import "MPKitProtocol.h"
@@ -40,10 +39,6 @@
 
 @property(readwrite) BOOL isLoggedIn;
 
-@end
-
-@interface MPKitInstanceValidator(BackendControllerTests)
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 @end
 
 #pragma mark - MPKitContainer category for unit tests
@@ -116,7 +111,6 @@
                                         };
         
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-        [MPKitInstanceValidator includeUnitTestKits:@[@42]];
         [[kitContainer startKit:@42 configuration:kitConfiguration] start];
     }
     
@@ -604,7 +598,6 @@
                                 ];
     
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[1]];
-    [MPKitInstanceValidator includeUnitTestKits:@[@314]];
     [[kitContainer startKit:@314 configuration:kitConfiguration] start];
 
     [kitContainer configureKits:nil];
@@ -665,7 +658,6 @@
                                 ];
     
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[1]];
-    [MPKitInstanceValidator includeUnitTestKits:@[@314]];
     [[kitContainer startKit:@314 configuration:kitConfiguration] start];
     
     [kitContainer configureKits:nil];

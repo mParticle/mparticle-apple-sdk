@@ -12,7 +12,6 @@
 #import "MPKitActivity.h"
 #import "MPKitContainer.h"
 #import "MPKitFilter.h"
-#import "MPKitInstanceValidator.h"
 #import "MPNetworkPerformance.h"
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
@@ -1176,29 +1175,15 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (BOOL)isKitActive:(nonnull NSNumber *)kitCode {
-    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
-    NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
-    
-    if (!isValidKitCode) {
-        return NO;
-    }
-
     return [self.kitActivity isKitActive:kitCode];
 }
 
 - (nullable id const)kitInstance:(nonnull NSNumber *)kitCode {
-    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
-    NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
-
-    if (!isValidKitCode) {
-        return nil;
-    }
-    
     return [self.kitActivity kitInstance:kitCode];
 }
 
 - (void)kitInstance:(NSNumber *)kitCode completionHandler:(void (^)(id _Nullable kitInstance))completionHandler {
-    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]] && [MPKitInstanceValidator isValidKitCode:kitCode];
+    BOOL isValidKitCode = [kitCode isKindOfClass:[NSNumber class]];
     BOOL isValidCompletionHandler = completionHandler != nil;
     NSAssert(isValidKitCode, @"The value in kitCode is not valid. See MPKitInstance.");
     NSAssert(isValidCompletionHandler, @"The parameter completionHandler is required.");

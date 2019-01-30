@@ -4,19 +4,11 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPKitConfiguration.h"
-#import "MPKitInstanceValidator.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "FilteredMParticleUser.h"
 #import "MPBaseTestCase.h"
-
-@interface MPKitInstanceValidator(BackendControllerTests)
-
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
-
-@end
-
 
 @interface MPKitContainer ()
 
@@ -61,7 +53,6 @@
     [super setUp];
     
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
-    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
     _kitContainer = [MParticle sharedInstance].kitContainer;
     
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];

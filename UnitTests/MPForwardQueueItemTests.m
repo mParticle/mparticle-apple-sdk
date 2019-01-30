@@ -7,14 +7,9 @@
 #import "MPKitFilter.h"
 #import "MPEvent.h"
 #import "MPForwardQueueParameters.h"
-#import "MPKitInstanceValidator.h"
 #import "MPBaseTestCase.h"
 
 #define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 1
-
-@interface MPKitInstanceValidator ()
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
-@end
 
 #pragma mark
 @interface MPKitMockTest : NSObject <MPKitProtocol>
@@ -63,7 +58,6 @@
 }
 
 - (void)testCommerceInstance {
-    [MPKitInstanceValidator includeUnitTestKits:@[@11235813]];
     XCTestExpectation *expectation = [self expectationWithDescription:@"Forward Queue Item Test (Ecommerce)"];
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];

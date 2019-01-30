@@ -1,7 +1,7 @@
 #import "MPKitExecStatus.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MPKitInstanceValidator.h"
+#import "mParticle.h"
 
 @implementation MPKitExecStatus
 
@@ -20,13 +20,10 @@
 }
 
 - (instancetype)initWithSDKCode:(NSNumber *)integrationId returnCode:(MPKitReturnCode)returnCode forwardCount:(NSUInteger)forwardCount {
-    BOOL validKitCode = [MPKitInstanceValidator isValidKitCode:integrationId];
-    NSAssert(validKitCode, @"The 'integrationId' variable is not valid.");
-    
     BOOL validReturnCode = returnCode >= MPKitReturnCodeSuccess && returnCode <= MPKitReturnCodeRequirementsNotMet;
-    NSAssert(validReturnCode, @"The 'returnCode' variable is not valid.");
+    if (!validReturnCode) MPILogDebug(@"The 'returnCode': %lu variable is not valid.", (unsigned long)returnCode);
 
-    if (!validKitCode || !validReturnCode) {
+    if (!validReturnCode) {
         return nil;
     }
 

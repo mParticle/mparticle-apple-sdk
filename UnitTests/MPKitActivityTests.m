@@ -6,7 +6,6 @@
 #import "MPKitRegister.h"
 #import "MPKitTestClassNoStartImmediately.h"
 #import "MPStateMachine.h"
-#import "MPKitInstanceValidator.h"
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
 
@@ -15,10 +14,6 @@
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 
-@end
-
-@interface MPKitInstanceValidator ()
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 @end
 
 #pragma mark - MPKitContainer category for unit tests
@@ -49,9 +44,7 @@
     stateMachine.secret = @"unit_test_secret";
     
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
-    
-    [MPKitInstanceValidator includeUnitTestKits:@[@42]];
-    
+        
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];

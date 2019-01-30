@@ -1,5 +1,4 @@
 #import "MPIntegrationAttributes.h"
-#import "MPKitInstanceValidator.h"
 #import "MPILogger.h"
 #import "MParticle.h"
 #import "MPStateMachine.h"

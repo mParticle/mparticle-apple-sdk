@@ -15,7 +15,6 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
-#import "MPKitInstanceValidator.h"
 #import "MPResponseConfig.h"
 #import "MPExceptionHandler.h"
 #import "MPBaseTestCase.h"
@@ -49,13 +48,6 @@
 @interface MPKitContainer(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
-
-@end
-
-#pragma mark - MPKitInstanceValidator category for unit tests
-@interface MPKitInstanceValidator(BackendControllerTests)
-
-+ (void)includeUnitTestKits:(NSArray<NSNumber *> *)integrationIds;
 
 @end
 
@@ -776,9 +768,7 @@
 
 }
 
-- (void)testSetUserAttributeKits {
-    [MPKitInstanceValidator includeUnitTestKits:@[@42, @314]];
-    
+- (void)testSetUserAttributeKits {    
     if (![MPKitContainer registeredKits]) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
