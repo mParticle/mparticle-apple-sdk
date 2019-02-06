@@ -200,7 +200,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for CleverTap */
     MPKitInstanceCleverTap = 135,
     /** Kit code for Pilgrim */
-    MPKitInstancePilgrim = 211
+    MPKitInstancePilgrim = 211,
+    /** Kit code for Google Analytics for Firebase */
+    MPKitInstanceGoogleAnalyticsFirebase = 136
 };
 
 /// Log Levels
