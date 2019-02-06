@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.8.5
+
+## Core
+
+- None
+
+## Kits
+
+### Google Analytics for Firebase Kit
+
+We've released an integration with Google Analytics for Firebase! Check out the [docs here](https://docs.mparticle.com/integrations/firebase/event/) and the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase).
+
 ## 7.8.4
 
 ## Core
