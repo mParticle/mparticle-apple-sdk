@@ -44,6 +44,8 @@
 }
 
 - (void)tearDown {
+    [[MPIUserDefaults standardUserDefaults] setSharedGroupIdentifier:nil];
+
     [[MPIUserDefaults standardUserDefaults] resetDefaults];
 
     [super tearDown];
@@ -82,6 +84,46 @@
     XCTAssert(![array containsObject:[NSNumber numberWithLongLong:INT64_MIN]]);
     
     XCTAssert([[NSUserDefaults standardUserDefaults] objectForKey:@"userKey"]);
+}
+
+- (void)testMigrate {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    [userDefaults setObject:@"test" forKeyedSubscript:@"mparticleKey"];
+    
+    [userDefaults synchronize];
+    
+    [userDefaults setSharedGroupIdentifier:@"groupID"];
+        
+    NSUserDefaults *groupDefaults = [[NSUserDefaults alloc] initWithSuiteName: @"groupID"];
+    XCTAssertEqualObjects(([groupDefaults objectForKey:@"mParticle::mparticleKey"]), @"test");
+}
+
+- (void)testMigrateGroupDoesNotMigrateClientDefaults {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    [[NSUserDefaults standardUserDefaults] setObject:@"clientSetting" forKey:@"clientKey"];
+    
+    [userDefaults setSharedGroupIdentifier:@"groupID"];
+
+    XCTAssert([[NSUserDefaults standardUserDefaults] objectForKey:@"clientKey"]);
+    XCTAssert(![[[NSUserDefaults alloc] initWithSuiteName: @"groupID"] objectForKey:@"clientKey"]);
+}
+
+- (void)testMigrateGroupWithMultipleUsers {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:@1];
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MAX]];
+    [userDefaults setMPObject:[NSDate date] forKey:@"lud" userId:[NSNumber numberWithLongLong:INT64_MIN]];
+    
+    [userDefaults setSharedGroupIdentifier:@"groupID"];
+
+    NSArray<NSNumber *> *array = [userDefaults userIDsInUserDefaults];
+    
+    XCTAssert([array containsObject:@1]);
+    XCTAssert([array containsObject:[NSNumber numberWithLongLong:INT64_MAX]]);
+    XCTAssert([array containsObject:[NSNumber numberWithLongLong:INT64_MIN]]);
 }
 
 - (void)testValidConfiguration {

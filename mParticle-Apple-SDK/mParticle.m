@@ -563,14 +563,7 @@ NSString *const kMPStateKey = @"state";
     
     MPConsentState *consentState = self.options.consentState;
     
-    id currentIdentifier = userDefaults[kMPUserIdentitySharedGroupIdentifier];
-    if (options.sharedGroupID == currentIdentifier) {
-        // Do nothing, we only want to update NSUserDefaults on a change
-    } else if (options.sharedGroupID && ![options.sharedGroupID isEqualToString:@""]) {
-        [userDefaults migrateToSharedGroupIdentifier:options.sharedGroupID];
-    } else {
-        [userDefaults migrateFromSharedGroupIdentifier];
-    }
+    [userDefaults setSharedGroupIdentifier:self.options.sharedGroupID];
 
     if (environment == MPEnvironmentDevelopment) {
         MPILogWarning(@"SDK has been initialized in Development mode.");

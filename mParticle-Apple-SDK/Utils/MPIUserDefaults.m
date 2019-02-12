@@ -13,6 +13,7 @@
 @end
 
 static MPIUserDefaults *standardUserDefaults = nil;
+static NSString * sharedGroupID = nil;
 
 NSString *const kitFileExtension = @"eks";
 
@@ -94,7 +95,6 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 - (NSUserDefaults *)customUserDefaults {
-    NSString *sharedGroupID = [[NSUserDefaults standardUserDefaults] objectForKey:kMPUserIdentitySharedGroupIdentifier];
     if (sharedGroupID) {
         // Create and share access to an NSUserDefaults object
         return [[NSUserDefaults alloc] initWithSuiteName: sharedGroupID];
@@ -129,7 +129,6 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 - (void)setMPObject:(id)value forKey:(NSString *)key userId:(nonnull NSNumber *)userId {
-    NSString *sharedGroupID = [[NSUserDefaults standardUserDefaults] objectForKey:kMPUserIdentitySharedGroupIdentifier];
     NSString *prefixedKey = [self prefixedKey:key userId:userId];
     
     [[NSUserDefaults standardUserDefaults] setObject:value forKey:prefixedKey];
@@ -139,7 +138,6 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 - (void)removeMPObjectForKey:(NSString *)key userId:(nonnull NSNumber *)userId {
-    NSString *sharedGroupID = [[NSUserDefaults standardUserDefaults] objectForKey:kMPUserIdentitySharedGroupIdentifier];
     NSString *prefixedKey = [self prefixedKey:key userId:userId];
     
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:prefixedKey];
@@ -153,8 +151,6 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 - (void)synchronize {
-    NSString *sharedGroupID = [[NSUserDefaults standardUserDefaults] objectForKey:kMPUserIdentitySharedGroupIdentifier];
-    
     [[NSUserDefaults standardUserDefaults] synchronize];
     if (sharedGroupID) {
         [[[NSUserDefaults alloc] initWithSuiteName: sharedGroupID] synchronize];
@@ -175,14 +171,32 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     [userDefaults synchronize];
 }
 
+-(void)setSharedGroupIdentifier:(NSString *)groupIdentifier {
+    NSString *storedGroupID = [self mpObjectForKey:kMPUserIdentitySharedGroupIdentifier userId:[MPPersistenceController mpId]];
+    sharedGroupID = groupIdentifier;
+    
+    if ([sharedGroupID isEqualToString: storedGroupID] || (!storedGroupID && !sharedGroupID)) {
+        // Do nothing, we only want to update NSUserDefaults on a change
+    } else if (sharedGroupID != nil && ![sharedGroupID isEqualToString:@""]) {
+        [self migrateToSharedGroupIdentifier:sharedGroupID];
+    } else {
+        [self migrateFromSharedGroupIdentifier];
+    }
+}
+
 - (void)migrateToSharedGroupIdentifier:(NSString *)groupIdentifier {
     //Set up our identities to be shared between the main app and its extensions
     NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
     NSUserDefaults *groupUserDefaults = [[NSUserDefaults alloc] initWithSuiteName: groupIdentifier];
     
-    [standardUserDefaults setValue:groupIdentifier forKey:kMPUserIdentitySharedGroupIdentifier];
+    NSString *prefixedKey = [self prefixedKey:kMPUserIdentitySharedGroupIdentifier userId:[MPPersistenceController mpId]];
+    [standardUserDefaults setObject:groupIdentifier forKey:prefixedKey];
+    [groupUserDefaults setObject:groupIdentifier forKey:prefixedKey];
     
-    for (NSString *key in [[standardUserDefaults dictionaryRepresentation] allKeys]) {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS %@", NSUserDefaultsPrefix];
+    NSArray *mParticleKeys = [[[standardUserDefaults dictionaryRepresentation] allKeys] filteredArrayUsingPredicate:predicate];
+    
+    for (NSString *key in mParticleKeys) {
         if (![self.extensionExcludedKeys containsObject:key]) {
             [groupUserDefaults setObject:[standardUserDefaults objectForKey:key] forKey:key];
         }
@@ -192,13 +206,18 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 - (void)migrateFromSharedGroupIdentifier {
     //Revert to the original way of storing our user identity info
     NSUserDefaults *standardUserDefaults = [NSUserDefaults standardUserDefaults];
-    NSUserDefaults *groupUserDefaults = [[NSUserDefaults alloc] initWithSuiteName: [standardUserDefaults objectForKey:kMPUserIdentitySharedGroupIdentifier]];
+    NSUserDefaults *groupUserDefaults = [[NSUserDefaults alloc] initWithSuiteName: self[kMPUserIdentitySharedGroupIdentifier]];
     
-    for (NSString *key in [[groupUserDefaults dictionaryRepresentation] allKeys]) {
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS %@", NSUserDefaultsPrefix];
+    NSArray *mParticleGroupKeys = [[[groupUserDefaults dictionaryRepresentation] allKeys] filteredArrayUsingPredicate:predicate];
+    
+    for (NSString *key in mParticleGroupKeys) {
         [groupUserDefaults removeObjectForKey:key];
     }
     
-    [standardUserDefaults removeObjectForKey:kMPUserIdentitySharedGroupIdentifier];
+    NSString *prefixedKey = [self prefixedKey:kMPUserIdentitySharedGroupIdentifier userId:[MPPersistenceController mpId]];
+    [groupUserDefaults removeObjectForKey:prefixedKey];
+    [standardUserDefaults removeObjectForKey:prefixedKey];
 }
 
 - (NSDictionary *)getConfiguration {
@@ -307,9 +326,14 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF CONTAINS %@", NSUserDefaultsPrefix];
     NSArray *mParticleKeys = [dict.allKeys filteredArrayUsingPredicate:predicate];
     
+    if (sharedGroupID) {
+        [self setSharedGroupIdentifier:nil];
+    }
+    
     for (id key in mParticleKeys) {
         [defs removeObjectForKey:key];
     }
+    
     [defs synchronize];
 }
 
