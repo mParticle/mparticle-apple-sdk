@@ -2065,6 +2065,30 @@
     
 }
 
+- (void)testInitializeKitsWhenNilSupportedKits {
+    MPKitContainer *kitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer *mockKitContainer = OCMPartialMock(kitContainer);
+    [[[(id)mockKitContainer stub] andReturn:nil] supportedKits];
+    [mockKitContainer initializeKits];
+    XCTAssertTrue(mockKitContainer.kitsInitialized);
+}
+
+- (void)testInitializeKitsWhenEmptySupportedKits {
+    MPKitContainer *kitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer *mockKitContainer = OCMPartialMock(kitContainer);
+    [[[(id)mockKitContainer stub] andReturn: @[] ] supportedKits];
+    [mockKitContainer initializeKits];
+    XCTAssertTrue(mockKitContainer.kitsInitialized);
+}
+
+- (void)testInitializeKitsWhenNonemptySupportedKits {
+    MPKitContainer *kitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer *mockKitContainer = OCMPartialMock(kitContainer);
+    [[[(id)mockKitContainer stub] andReturn: @[@123] ] supportedKits];
+    [mockKitContainer initializeKits];
+    XCTAssertFalse(mockKitContainer.kitsInitialized);
+}
+
 #if TARGET_OS_IOS == 1
 - (void)testAttemptToLogEventToKit {
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];

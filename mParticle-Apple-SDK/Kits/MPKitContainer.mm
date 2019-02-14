@@ -238,6 +238,15 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     if (self.kitsInitialized) {
         return;
     }
+    
+    NSArray<NSNumber *> *supportedKits = [self supportedKits];
+    BOOL anyKitsIncluded = supportedKits != nil && supportedKits.count > 0;
+    
+    if (!anyKitsIncluded) {
+        self.kitsInitialized = YES;
+        return;
+    }
+    
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
     NSArray *directoryContents = [userDefaults getKitConfigurations];
@@ -250,9 +259,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         self.kitsInitialized = YES;
     }
     if ([MParticle sharedInstance].stateMachine.logLevel >= MPILogLevelDebug) {
-        NSArray<NSNumber *> *supportedKits = [self supportedKits];
-        
-        if (supportedKits.count > 0) {
+        if (anyKitsIncluded) {
             NSMutableString *listOfKits = [[NSMutableString alloc] initWithString:@"Included kits: {"];
             for (NSNumber *supportedKit in supportedKits) {
                 [listOfKits appendFormat:@"%@, ", [self nameForKitCode:supportedKit]];
