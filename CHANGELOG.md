@@ -1,5 +1,16 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.8.6
+
+## Core
+
+- Add new webview bridge support
+- Fix kit queue log messages when no kits included
+
+## Kits
+
+- Optimizely - Update data file interval key
+
 ## 7.8.5
 
 ## Core
