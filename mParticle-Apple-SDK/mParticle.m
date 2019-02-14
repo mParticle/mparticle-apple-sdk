@@ -53,7 +53,11 @@ NSString *const kMPStateKey = @"state";
 - (BOOL)kitsInitialized;
 @end
 
-@interface MParticle() <MPBackendControllerDelegate> {
+@interface MParticle() <MPBackendControllerDelegate
+#if TARGET_OS_IOS == 1
+, WKScriptMessageHandler
+#endif
+> {
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     MPExceptionHandler *exceptionHandler;
 #endif
@@ -1371,18 +1375,74 @@ NSString *const kMPStateKey = @"state";
 #endif
 
 #pragma mark Web Views
+- (BOOL)isValidBridgeName:(NSString *)bridgeName {
+    if (bridgeName == nil || ![bridgeName isKindOfClass:[NSString class]] || bridgeName.length == 0) {
+        return NO;
+    }
+    
+    NSCharacterSet *alphanumericSet = [NSCharacterSet characterSetWithCharactersInString:@"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"];
+    NSString *result = [bridgeName stringByTrimmingCharactersInSet:alphanumericSet];
+    if (![result isEqualToString:@""]) {
+        return NO;
+    }
+    
+    return YES;
+}
+
+- (NSString *)webviewBridgeValueWithCustomerBridgeName:(NSString *)customerBridgeName {
+    if ([self isValidBridgeName:customerBridgeName]) {
+        return customerBridgeName;
+    }
+    
+    NSString *kWorkspaceTokenKey = @"wst";
+    NSString *serverProvidedValue = [[MPIUserDefaults standardUserDefaults] getConfiguration][kWorkspaceTokenKey];
+    if ([self isValidBridgeName:serverProvidedValue]) {
+        return serverProvidedValue;
+    }
+    
+    return nil;
+}
+
+- (NSString *)bridgeVersion {
+    NSString *kBridgeVersion = @"2";
+    return kBridgeVersion;
+}
+
 #if TARGET_OS_IOS == 1
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 // Updates isIOS flag in JS API to true via webview.
+- (void)initializeWebView:(UIWebView *)webView bridgeName:(NSString *)bridgeName {
+    NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
+    if (bridgeValue == nil) {
+        MPILogError(@"Unable to initialize webview due to missing or invalid bridgeName");
+        return;
+    }
+    NSString *bridgeVersion = [self bridgeVersion];
+    NSString *script = [NSString stringWithFormat:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true; window.mParticle.uiwebviewBridgeName = 'mParticle_%@_v%@';", bridgeValue, bridgeVersion];
+    [webView stringByEvaluatingJavaScriptFromString:script];
+}
+
 - (void)initializeWebView:(UIWebView *)webView {
-    [webView stringByEvaluatingJavaScriptFromString:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true;"];
+    [self initializeWebView:webView bridgeName:nil];
 }
 #pragma clang diagnostic pop
 
+- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName {
+    NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
+    if (bridgeValue == nil) {
+        MPILogError(@"Unable to initialize webview due to missing or invalid bridgeName");
+        return;
+    }
+    NSString *bridgeVersion = [self bridgeVersion];
+    NSString *handlerName = [NSString stringWithFormat:@"mParticle_%@_v%@", bridgeValue, bridgeVersion];
+    WKUserContentController *contentController = webView.configuration.userContentController;
+    [contentController addScriptMessageHandler:self name:handlerName];
+}
+
 // Updates isIOS flag in JS API to true via webview.
 - (void)initializeWKWebView:(WKWebView *)webView {
-    [webView evaluateJavaScript:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true;" completionHandler:nil];
+    [self initializeWKWebView:webView bridgeName:nil];
 }
 
 // A url is mParticle sdk url when it has prefix mp-sdk://
@@ -1390,7 +1450,49 @@ NSString *const kMPStateKey = @"state";
     return [[requestUrl scheme] isEqualToString:kMParticleWebViewSdkScheme];
 }
 
-// Process web log event that is raised in iOS hybrid apps that are using UIWebView or WKWebView
+// Process web log event that is raised in iOS hybrid apps that are using WKWebView
+- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message {
+    NSString *body = message.body;
+    if (body == nil || ![body isKindOfClass:[NSString class]]) {
+        MPILogError(@"Unexpected non-string body received from webview bridge");
+        return;
+    }
+    
+    @try {
+        NSData *bodyData = [body dataUsingEncoding:NSUTF8StringEncoding];
+        if (bodyData == nil) {
+            MPILogError(@"Unable to create data from webview bridge body string");
+            return;
+        }
+        
+        NSError *error = nil;
+        NSDictionary *bodyDictionary = [NSJSONSerialization JSONObjectWithData:bodyData options:kNilOptions error:&error];
+        if (error != nil || bodyDictionary == nil || ![bodyDictionary isKindOfClass:[NSDictionary class]]) {
+            MPILogError(@"Unable to create dictionary from webview data. error=%@", error);
+            return;
+        }
+        
+        NSString *kPathKey = @"path";
+        NSString *path = bodyDictionary[kPathKey];
+        if (path == nil || ![path isKindOfClass:[NSString class]]) {
+            MPILogError(@"Unable to retrieve path from webview dictionary");
+            return;
+        }
+        
+        NSString *kValueKey = @"value";
+        NSDictionary *value = bodyDictionary[kValueKey];
+        if (value == nil || ![value isKindOfClass:[NSDictionary class]]) {
+            MPILogError(@"Unable to retrieve value from webview dictionary");
+            return;
+        }
+        
+        [self handleWebviewCommand:path dictionary:value];
+    } @catch (NSException *e) {
+        MPILogError(@"Exception processing WKWebView event: %@", e.reason);
+    }
+}
+
+// Process web log event that is raised in iOS hybrid apps that are using UIWebView
 - (void)processWebViewLogEvent:(NSURL *)requestUrl {
     if (![self isMParticleWebViewSdkUrl:requestUrl]) {
         return;
@@ -1403,97 +1505,102 @@ NSString *const kMPStateKey = @"state";
         NSData *eventDataStr = [paramStr dataUsingEncoding:NSUTF8StringEncoding];
         NSDictionary *eventDictionary = [NSJSONSerialization JSONObjectWithData:eventDataStr options:kNilOptions error:&error];
         
-        if ([hostPath hasPrefix:kMParticleWebViewPathLogEvent]) {
-            MPJavascriptMessageType messageType = (MPJavascriptMessageType)[eventDictionary[@"EventDataType"] integerValue];
-            switch (messageType) {
-                case MPJavascriptMessageTypePageEvent: {
-                    MPEvent *event = [[MPEvent alloc] initWithName:eventDictionary[@"EventName"] type:(MPEventType)[eventDictionary[@"EventCategory"] integerValue]];
-                    event.info = eventDictionary[@"EventAttributes"];
-                    [self logEvent:event];
-                }
-                    break;
-                    
-                case MPJavascriptMessageTypePageView: {
-                    MPEvent *event = [[MPEvent alloc] initWithName:eventDictionary[@"EventName"] type:MPEventTypeNavigation];
-                    event.info = eventDictionary[@"EventAttributes"];
-                    [self logScreenEvent:event];
-                }
-                    break;
-
-                case MPJavascriptMessageTypeCommerce: {
-                    MPCommerceEvent *event = [MPConvertJS MPCommerceEvent:eventDictionary];
-                    [self logCommerceEvent:event];
-                }
-                    break;
-
-                case MPJavascriptMessageTypeOptOut:
-                    [self setOptOut:[eventDictionary[@"OptOut"] boolValue]];
-                    break;
-                    
-                case MPJavascriptMessageTypeSessionStart:
-                case MPJavascriptMessageTypeSessionEnd:
-                default:
-                    break;
-            }
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathIdentify]) {
-            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
-            
-            if (!request) {
-                MPILogError(@"Unable to create identify request from webview JS dictionary: %@", eventDictionary);
-                return;
-            }
-            
-            [[MParticle sharedInstance].identity identify:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                
-            }];
-            
-            
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathLogin]) {
-            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
-            
-            if (!request) {
-                MPILogError(@"Unable to create login request from webview JS dictionary: %@", eventDictionary);
-                return;
-            }
-            
-            [[MParticle sharedInstance].identity login:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                
-            }];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathLogout]) {
-            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
-            
-            if (!request) {
-                MPILogError(@"Unable to create logout request from webview JS dictionary: %@", eventDictionary);
-                return;
-            }
-            
-            [[MParticle sharedInstance].identity logout:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                
-            }];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathModify]) {
-            MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:eventDictionary];
-            
-            if (!request) {
-                MPILogError(@"Unable to create modify request from webview JS dictionary: %@", eventDictionary);
-                return;
-            }
-            
-            [[MParticle sharedInstance].identity modify:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                
-            }];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserTag]) {
-            [self.identity.currentUser setUserTag:eventDictionary[@"key"]];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
-            [self.identity.currentUser removeUserAttribute:eventDictionary[@"key"]];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
-            [self.identity.currentUser setUserAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
-            [self.identity.currentUser removeUserAttribute:eventDictionary[@"key"]];
-        } else if ([hostPath hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
-            [self setSessionAttribute:eventDictionary[@"key"] value:eventDictionary[@"value"]];
-        }
+        [self handleWebviewCommand:hostPath dictionary:eventDictionary];
     } @catch (NSException *e) {
-        MPILogError(@"Exception processing WebView event: %@", e.reason)
+        MPILogError(@"Exception processing UIWebView event: %@", e.reason);
+    }
+}
+
+// Handle web log event that is raised in iOS hybrid apps that are using UIWebView or WKWebView
+- (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary {
+    if ([command hasPrefix:kMParticleWebViewPathLogEvent]) {
+        MPJavascriptMessageType messageType = (MPJavascriptMessageType)[dictionary[@"EventDataType"] integerValue];
+        switch (messageType) {
+            case MPJavascriptMessageTypePageEvent: {
+                MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:(MPEventType)[dictionary[@"EventCategory"] integerValue]];
+                event.info = dictionary[@"EventAttributes"];
+                [self logEvent:event];
+            }
+                break;
+                
+            case MPJavascriptMessageTypePageView: {
+                MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:MPEventTypeNavigation];
+                event.info = dictionary[@"EventAttributes"];
+                [self logScreenEvent:event];
+            }
+                break;
+                
+            case MPJavascriptMessageTypeCommerce: {
+                MPCommerceEvent *event = [MPConvertJS MPCommerceEvent:dictionary];
+                [self logCommerceEvent:event];
+            }
+                break;
+                
+            case MPJavascriptMessageTypeOptOut:
+                [self setOptOut:[dictionary[@"OptOut"] boolValue]];
+                break;
+                
+            case MPJavascriptMessageTypeSessionStart:
+            case MPJavascriptMessageTypeSessionEnd:
+            default:
+                break;
+        }
+    } else if ([command hasPrefix:kMParticleWebViewPathIdentify]) {
+        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        
+        if (!request) {
+            MPILogError(@"Unable to create identify request from webview JS dictionary: %@", dictionary);
+            return;
+        }
+        
+        [[MParticle sharedInstance].identity identify:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+            
+        }];
+        
+        
+    } else if ([command hasPrefix:kMParticleWebViewPathLogin]) {
+        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        
+        if (!request) {
+            MPILogError(@"Unable to create login request from webview JS dictionary: %@", dictionary);
+            return;
+        }
+        
+        [[MParticle sharedInstance].identity login:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+            
+        }];
+    } else if ([command hasPrefix:kMParticleWebViewPathLogout]) {
+        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        
+        if (!request) {
+            MPILogError(@"Unable to create logout request from webview JS dictionary: %@", dictionary);
+            return;
+        }
+        
+        [[MParticle sharedInstance].identity logout:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+            
+        }];
+    } else if ([command hasPrefix:kMParticleWebViewPathModify]) {
+        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        
+        if (!request) {
+            MPILogError(@"Unable to create modify request from webview JS dictionary: %@", dictionary);
+            return;
+        }
+        
+        [[MParticle sharedInstance].identity modify:request completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+            
+        }];
+    } else if ([command hasPrefix:kMParticleWebViewPathSetUserTag]) {
+        [self.identity.currentUser setUserTag:dictionary[@"key"]];
+    } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
+        [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+    } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
+        [self.identity.currentUser setUserAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+    } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
+        [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+    } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
+        [self setSessionAttribute:dictionary[@"key"] value:dictionary[@"value"]];
     }
 }
 

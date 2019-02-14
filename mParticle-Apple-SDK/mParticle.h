@@ -882,29 +882,53 @@ NS_ASSUME_NONNULL_BEGIN
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 /**
- Updates isIOS flag to true in JS API via given webview.
+ Create a bridge between the mParticle web SDK and iOS SDK.
+ 
+ This API for the deprecated `UIWebView` will invoke Javascript to set the `window.mParticle.isIOS` object to true, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that if the `UIWebview` loads a new page, this value will disappear and need to be set again. Due to this limitation and the deprecation of `UIWebView`, using `WKWebView` and the respective mParticle initialization method is preferable.
  @param webView The web view to be initialized
+ @see initializeWKWebView:
  */
-- (void)initializeWebView:(UIWebView *)webView;
+- (void)initializeWebView:(UIWebView *)webView __attribute__((deprecated("use WKWebView")));
+
+/**
+ Create a bridge between the mParticle web SDK and iOS SDK.
+ 
+ This API for the deprecated `UIWebView` will invoke Javascript to set the `window.mParticle.isIOS` object to true, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that if the `UIWebview` loads a new page, this value will disappear and need to be set again. Due to this limitation and the deprecation of `UIWebView`, using `WKWebView` and the respective mParticle initialization method is preferable.
+ @param webView The web view to be initialized
+ @param bridgeName The name of the webview bridge
+ @see initializeWKWebView:bridgeName:
+ */
+- (void)initializeWebView:(UIWebView *)webView bridgeName:(nullable NSString *)bridgeName __attribute__((deprecated("use WKWebView")));
 #pragma clang diagnostic pop
 
 /**
- Updates isIOS flag to true in JS API via given webview.
+ Create a bridge between the mParticle web SDK and iOS SDK.
+ 
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads.
  @param webView The web view to be initialized
  */
 - (void)initializeWKWebView:(WKWebView *)webView;
 
 /**
+ Create a bridge between the mParticle web SDK and iOS SDK.
+ 
+ This API will add a persistent [WKScriptMessageHandler](https://developer.apple.com/documentation/webkit/wkscriptmessagehandler) to the given `WKWebView`, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that this handler will persist across page loads.
+ @param webView The web view to be initialized
+ @param bridgeName The name of the webview bridge
+ */
+- (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName;
+
+/**
  Verifies if the url is mParticle sdk url i.e mp-sdk://
  @param requestUrl The request URL
  */
-- (BOOL)isMParticleWebViewSdkUrl:(NSURL *)requestUrl;
+- (BOOL)isMParticleWebViewSdkUrl:(NSURL *)requestUrl __attribute__((deprecated("This API is only needed if using the deprecated UIWebView. If you have initialized the mParticle-bridge in a WKWebView, URL requests are no longer used.")));
 
 /**
- Process log event from hybrid apps that are using iOS UIWebView or WKWebView control.
+ Process log event from hybrid apps that are using iOS `UIWebView` control.
  @param requestUrl The request URL
  */
-- (void)processWebViewLogEvent:(NSURL *)requestUrl;
+- (void)processWebViewLogEvent:(NSURL *)requestUrl __attribute__((deprecated("This API is only needed if using the deprecated UIWebView. If you have initialized the mParticle-bridge in a WKWebView, URL requests are no longer used.")));
 
 #pragma mark - Manual Notification logging
 /**

@@ -352,7 +352,10 @@
     }]
                                                    completionHandler:[OCMArg any]];
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [[MParticle sharedInstance] processWebViewLogEvent: oddURL];
+#pragma clang diagnostic pop
 
     [mockBackendController verifyWithDelay:2];
     

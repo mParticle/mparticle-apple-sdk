@@ -11,6 +11,8 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPBackendController *backendController;
+- (BOOL)isValidBridgeName:(NSString *)bridgeName;
+- (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 
 @end
 
@@ -106,7 +108,47 @@
     lastNotification = notification;
 }
 
+- (void)testIsValidBridgeName {
+    BOOL valid = [[MParticle sharedInstance] isValidBridgeName:@"abc_123"];
+    XCTAssertFalse(valid);
+    valid = [[MParticle sharedInstance] isValidBridgeName:@"abc123"];
+    XCTAssertTrue(valid);
+    valid = [[MParticle sharedInstance] isValidBridgeName:@"àbc123"];
+    XCTAssertFalse(valid);
+    valid = [[MParticle sharedInstance] isValidBridgeName:@""];
+    XCTAssertFalse(valid);
+}
+
 #if TARGET_OS_IOS == 1
+- (void)testWebviewLogEvent {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo webview event 1" type:MPEventTypeNavigation];
+    testEvent.info = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
+    
+    [[[mockBackend expect] ignoringNonObjectArgs] logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
+        MPEvent *returnedEvent = ((MPEvent *)value);
+        XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
+        XCTAssertEqual(returnedEvent.type, testEvent.type);
+        XCTAssertEqualObjects(returnedEvent.info, testEvent.info);
+        
+        return YES;
+    }] completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    NSString *command = @"logEvent";
+    NSDictionary *dictionary = @{@"EventDataType":@(MPJavascriptMessageTypePageEvent), @"EventName":@"foo webview event 1", @"EventCategory":@(MPEventTypeNavigation), @"EventAttributes":@{@"foo webview event attribute 1":@"foo webview event attribute value 1"}};
+    [instance handleWebviewCommand:command dictionary:dictionary];
+    
+    [mockBackend verifyWithDelay:2];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
 - (void)testTrackNotificationsDefault {
     id mockBackend = OCMClassMock([MPBackendController class]);
     
@@ -226,8 +268,12 @@
     }]];
     
     NSURL *url = [NSURL URLWithString:@"mp-sdk://logEvent/%7B%22EventName%22%3A%22foo%20content%20view%22%2C%22EventCategory%22%3A1%2C%22UserAttributes%22%3A%7B%7D%2C%22UserIdentities%22%3A%7B%7D%2C%22Store%22%3A%7B%7D%2C%22EventAttributes%22%3A%7B%22foo%20document%20id%22%3A12345%2C%22referrer_source%22%3A%22http%3A%2F%2Fexample.com%2Ffoo%3Fbar%3D1%22%7D%2C%22SDKVersion%22%3A%221.2.3.4%22%2C%22SessionId%22%3Anull%2C%22EventDataType%22%3A4%2C%22Debug%22%3Afalse%2C%22Location%22%3Anull%2C%22OptOut%22%3Anull%2C%22ExpandedEventCount%22%3A0%2C%22AppVersion%22%3Anull%2C%22ClientGeneratedId%22%3Anull%2C%22DeviceId%22%3Anull%2C%22MPID%22%3Anull%2C%22ConsentState%22%3Anull%2C%22Timestamp%22%3A12345%7D"];
-                  
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     [mockInstance processWebViewLogEvent:url];
+#pragma clang diagnostic pop
+    
 
     [mockInstance verifyWithDelay:1.0];
     [mockInstance stopMocking];
