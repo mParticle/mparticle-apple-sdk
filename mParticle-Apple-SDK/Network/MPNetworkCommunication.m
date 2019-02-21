@@ -496,12 +496,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPILogVerbose(@"Source Batch Id: %@", upload.uuid);
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    NSData *zipUploadData = nil;
-    std::tuple<unsigned char *, unsigned int> zipData = mParticle::Zip::compress((const unsigned char *)[upload.uploadData bytes], (unsigned int)[upload.uploadData length]);
-    if (get<0>(zipData) != nullptr) {
-        zipUploadData = [[NSData alloc] initWithBytes:get<0>(zipData) length:get<1>(zipData)];
-        delete [] get<0>(zipData);
-    } else {
+    NSData *zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
+    if (zipUploadData == nil || zipUploadData.length <= 0) {
         [self processNetworkResponseAction:MPNetworkResponseActionDeleteBatch batchObject:upload];
         completionHandler(NO, upload, nil, YES);
         return;
