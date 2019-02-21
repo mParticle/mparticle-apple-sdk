@@ -6,6 +6,7 @@
 
 - Add new webview bridge support
 - Fix kit queue log messages when no kits included
+- Fix potential crash when uploading a large backlog of messages
 
 ## Kits
 
