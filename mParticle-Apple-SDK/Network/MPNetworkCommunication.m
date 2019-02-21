@@ -19,11 +19,11 @@
 #import "MPDateFormatter.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
-#import "MPPersistenceController.h"
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
 #import "NSString+MPPercentEscape.h"
+#import "MPResponseEvents.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Version, path
@@ -200,61 +200,39 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 #pragma mark Private methods
-- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPUpload *)batchObject {
-    [self processNetworkResponseAction:responseAction batchObject:batchObject httpResponse:nil];
-}
-
-- (void)processNetworkResponseAction:(MPNetworkResponseAction)responseAction batchObject:(MPUpload *)batchObject httpResponse:(NSHTTPURLResponse *)httpResponse {
-    switch (responseAction) {
-        case MPNetworkResponseActionDeleteBatch:
-            if (!batchObject) {
-                return;
-            }
-            
-            [[MParticle sharedInstance].persistenceController deleteUpload:batchObject];
-            
-            break;
-            
-        case MPNetworkResponseActionThrottle: {
-            NSDate *now = [NSDate date];
-            NSDictionary *httpHeaders = [httpResponse allHeaderFields];
-            NSTimeInterval retryAfter = 7200; // Default of 2 hours
-            NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
-            id suggestedRetryAfter = httpHeaders[@"Retry-After"];
-            
-            if (!MPIsNull(suggestedRetryAfter)) {
-                if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
-                    if ([suggestedRetryAfter containsString:@":"]) { // Date
-                        NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
-                        if (retryAfterDate) {
-                            retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
-                            retryAfter = retryAfter > 0 ? retryAfter : 7200;
-                        } else {
-                            MPILogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
-                        }
-                    } else { // Number of seconds
-                        @try {
-                            retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
-                        } @catch (NSException *exception) {
-                            retryAfter = 7200;
-                            MPILogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
-                        }
-                    }
-                } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
-                    retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
+- (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse {
+    NSDate *now = [NSDate date];
+    NSDictionary *httpHeaders = [httpResponse allHeaderFields];
+    NSTimeInterval retryAfter = 7200; // Default of 2 hours
+    NSTimeInterval maxRetryAfter = 86400; // Maximum of 24 hours
+    id suggestedRetryAfter = httpHeaders[@"Retry-After"];
+    
+    if (!MPIsNull(suggestedRetryAfter)) {
+        if ([suggestedRetryAfter isKindOfClass:[NSString class]]) {
+            if ([suggestedRetryAfter containsString:@":"]) { // Date
+                NSDate *retryAfterDate = [MPDateFormatter dateFromStringRFC1123:(NSString *)suggestedRetryAfter];
+                if (retryAfterDate) {
+                    retryAfter = MIN(([retryAfterDate timeIntervalSince1970] - [now timeIntervalSince1970]), maxRetryAfter);
+                    retryAfter = retryAfter > 0 ? retryAfter : 7200;
+                } else {
+                    MPILogError(@"Invalid 'Retry-After' date: %@", suggestedRetryAfter);
+                }
+            } else { // Number of seconds
+                @try {
+                    retryAfter = MIN([(NSString *)suggestedRetryAfter doubleValue], maxRetryAfter);
+                } @catch (NSException *exception) {
+                    retryAfter = 7200;
+                    MPILogError(@"Invalid 'Retry-After' value: %@", suggestedRetryAfter);
                 }
             }
-            
-            if ([[MParticle sharedInstance].stateMachine.minUploadDate compare:now] == NSOrderedAscending) {
-                [MParticle sharedInstance].stateMachine.minUploadDate = [now dateByAddingTimeInterval:retryAfter];
-                MPILogDebug(@"Throttling network for %.0f seconds", retryAfter);
-            }
+        } else if ([suggestedRetryAfter isKindOfClass:[NSNumber class]]) {
+            retryAfter = MIN([(NSNumber *)suggestedRetryAfter doubleValue], maxRetryAfter);
         }
-            break;
-            
-        default:
-            [MParticle sharedInstance].stateMachine.minUploadDate = [NSDate distantPast];
-            break;
+    }
+    
+    if ([[MParticle sharedInstance].stateMachine.minUploadDate compare:now] == NSOrderedAscending) {
+        [MParticle sharedInstance].stateMachine.minUploadDate = [now dateByAddingTimeInterval:retryAfter];
+        MPILogDebug(@"Throttling uploads for %.0f seconds", retryAfter);
     }
 }
 
@@ -301,10 +279,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     
     MPConnector *connector = [[MPConnector alloc] init];
-    
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
-    
-    
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -330,7 +305,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return;
     }
     
-    MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
     BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
     
     if (!data && success) {
@@ -339,16 +313,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         return;
     }
     
-    NSDictionary *headersDictionary = [httpResponse allHeaderFields];
-    NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
-    NSDictionary *configurationDictionary = nil;
     success = success && [data length] > 0;
-    
-    if (!MPIsNull(eTag) && success) {
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        userDefaults[kMPHTTPETagHeaderKey] = eTag;
-    }
-    
+    NSDictionary *configurationDictionary = nil;
     if (success) {
         @try {
             NSError *serializationError = nil;
@@ -358,17 +324,20 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             success = NO;
             responseCode = HTTPStatusCodeNoContent;
         }
-    } else {
-        if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-            responseAction = MPNetworkResponseActionThrottle;
-        }
     }
-    
-    [strongSelf processNetworkResponseAction:responseAction batchObject:nil httpResponse:httpResponse];
-    
     if (success && configurationDictionary) {
+        
+        NSDictionary *headersDictionary = [httpResponse allHeaderFields];
+        NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
+        if (!MPIsNull(eTag)) {
+            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+            userDefaults[kMPHTTPETagHeaderKey] = eTag;
+        }
+        
         completionHandler(success, configurationDictionary, eTag);
         [self configRequestDidSucceed];
+    } else {
+        completionHandler(NO, nil, nil);
     }
 }
 
@@ -475,9 +444,11 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
 }
 
-- (void)upload:(NSArray<MPUpload *> *)uploads index:(NSUInteger)index completionHandler:(MPUploadsCompletionHandler)completionHandler {
-    __weak MPNetworkCommunication *weakSelf = self;
-    
+- (void)upload:(NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler {
+    if ([[MParticle sharedInstance].stateMachine.minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
+        completionHandler();
+        return;
+    }
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     if (![MPStateMachine isAppExtension]) {
@@ -489,84 +460,64 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }];
     }
     
-    MPUpload *upload = uploads[index];
-    NSString *uploadString = [upload serializedString];
-    MPConnector *connector = [[MPConnector alloc] init];
-    
-    MPILogVerbose(@"Source Batch Id: %@", upload.uuid);
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
-    NSData *zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
-    if (zipUploadData == nil || zipUploadData.length <= 0) {
-        [self processNetworkResponseAction:MPNetworkResponseActionDeleteBatch batchObject:upload];
-        completionHandler(NO, upload, nil, YES);
-        return;
+    for (int index = 0; index < uploads.count; index++) {
+        @autoreleasepool {
+            MPUpload *upload = uploads[index];
+            NSString *uploadString = [upload serializedString];
+            MPConnector *connector = [[MPConnector alloc] init];
+            
+            MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
+            
+            
+            NSData *zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
+            if (zipUploadData == nil || zipUploadData.length <= 0) {
+                [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+                continue;
+            }
+            NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+            MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
+                                                                            message:uploadString
+                                                                   serializedParams:zipUploadData];
+            NSData *data = response.data;
+            NSHTTPURLResponse *httpResponse = response.httpResponse;
+            
+            NSInteger responseCode = [httpResponse statusCode];
+            BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+            MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
+            success = success && data && [data length] > 0;
+            if (success) {
+                @try {
+                    NSError *serializationError = nil;
+                    NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+                    if (responseDictionary &&
+                        serializationError == nil &&
+                        [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader]) {
+                        [MPResponseEvents parseConfiguration:responseDictionary];
+                    }
+                    MPILogVerbose(@"Upload complete: %@\n", uploadString);
+                    
+                } @catch (NSException *exception) {
+                    MPILogError(@"Upload error: %@", [exception reason]);
+                }
+            } else {
+                if (responseCode == HTTPStatusCodeBadRequest) {
+                    [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+                } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
+                    [self throttleWithHTTPResponse:httpResponse];
+                    break;
+                }
+            }
+            [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+            MPILogVerbose(@"Upload execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+        }
     }
-    
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
-                                                                    message:uploadString
-                                                           serializedParams:zipUploadData];
-    NSData *data = response.data;
-    NSHTTPURLResponse *httpResponse = response.httpResponse;
-    
-    __strong MPNetworkCommunication *strongSelf = weakSelf;
-    
-    if (!strongSelf) {
-        completionHandler(NO, upload, nil, YES);
-        return;
-    }
-    
     if (![MPStateMachine isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
             [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }
-    
-    NSDictionary *responseDictionary = nil;
-    MPNetworkResponseAction responseAction = MPNetworkResponseActionNone;
-    BOOL finished = index == uploads.count - 1;
-    NSInteger responseCode = [httpResponse statusCode];
-    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-    
-    if (!data && success) {
-        completionHandler(NO, upload, nil, finished);
-        return;
-    }
-    
-    success = success && [data length] > 0;
-    if (success) {
-        NSError *serializationError = nil;
-        
-        @try {
-            responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-            success = serializationError == nil && [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader];
-            MPILogVerbose(@"Uploaded Message: %@\n", uploadString);
-            MPILogVerbose(@"Upload Response Code: %ld", (long)responseCode);
-        } @catch (NSException *exception) {
-            responseDictionary = nil;
-            success = NO;
-            MPILogError(@"Uploads Error: %@", [exception reason]);
-        }
-    } else {
-        if (responseCode == HTTPStatusCodeBadRequest) {
-            responseAction = MPNetworkResponseActionDeleteBatch;
-        } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-            responseAction = MPNetworkResponseActionThrottle;
-        }
-        
-        MPILogWarning(@"Uploads Error - Response Code: %ld", (long)responseCode);
-    }
-    
-    MPILogVerbose(@"Upload Execution Time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-    
-    [strongSelf processNetworkResponseAction:responseAction batchObject:upload httpResponse:httpResponse];
-    
-    completionHandler(success, upload, responseDictionary, finished);
-    
-    if (!finished) {
-        [strongSelf upload:uploads index:(index + 1) completionHandler:completionHandler];
-    }
+    completionHandler();
 }
 
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion {

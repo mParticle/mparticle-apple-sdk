@@ -3,6 +3,8 @@
 #import "MPNetworkCommunication+Tests.h"
 #import "MPApplication.h"
 #import "OCMock.h"
+#import "MPUpload.h"
+#import "MPZip.h"
 
 @interface MPNetworkCommunicationTests : XCTestCase
 
@@ -49,6 +51,29 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self deswizzle];
     
     XCTAssert([configURL.absoluteString rangeOfString:@"/config?av=1.2.3.4.5678%20(bd12345ff)"].location != NSNotFound);
+}
+
+- (void)testEmptyUploadsArray {
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSArray *uploads = @[];
+    __block BOOL handlerCalled = NO;
+    [networkCommunication upload:uploads completionHandler:^{
+        handlerCalled = YES;
+    }];
+    XCTAssertTrue(handlerCalled, @"Callbacks are expected in the case where uploads array is empty");
+}
+
+- (void)testUploadsArrayZipFail {
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    NSArray *uploads = @[upload];
+    id mockZip = OCMClassMock([MPZip class]);
+    OCMStub([mockZip compressedDataFromData:OCMOCK_ANY]).andReturn(nil);
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    [networkCommunication upload:uploads completionHandler:^{
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 @end

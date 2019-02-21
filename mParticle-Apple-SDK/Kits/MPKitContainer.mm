@@ -2111,7 +2111,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 MPILogError(@"Kit handler threw an exception: %@", e);
             }
             
-            if (!execStatus.success) {
+            if (execStatus.success) {
                 MPILogDebug(@"Successfully Forwarded to Kit");
             } else {
                 MPILogError(@"Failed to Forward to Kit");

@@ -68,7 +68,6 @@ static BOOL appBackgrounded = NO;
 @interface MPBackendController() {
     MPAppDelegateProxy *appDelegateProxy;
     NSMutableSet<NSString *> *deletedUserAttributes;
-    __weak MPSession *sessionBeingUploaded;
     NSNotification *didFinishLaunchingNotification;
     NSTimeInterval nextCleanUpTime;
     NSTimeInterval timeAppWentToBackground;
@@ -114,7 +113,6 @@ static BOOL appBackgrounded = NO;
         backgroundStartTime = 0;
         longSession = NO;
         resignedActive = NO;
-        sessionBeingUploaded = nil;
         backgroundSource = nil;
         uploadSource = nil;
         originalAppDelegateProxied = NO;
@@ -454,7 +452,7 @@ static BOOL appBackgrounded = NO;
     MPILogVerbose(@"Application Did Finish Launching");
 }
 
-- (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(void (^)(BOOL success))completionHandler {
+- (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(void (^)(void))completionHandler {
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
@@ -512,37 +510,6 @@ static BOOL appBackgrounded = NO;
     }];
 }
 
-- (void)processPendingUploads {
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    __weak MPBackendController *weakSelf = self;
-    
-    NSArray<MPUpload *> *uploads = [persistence fetchUploads];
-    
-    if (!uploads || uploads.count == 0) {
-        return;
-    }
-    
-    if ([MParticle sharedInstance].stateMachine.dataRamped) {
-        for (MPUpload *upload in uploads) {
-            [persistence deleteUpload:upload];
-        }
-        
-        return;
-    }
-    
-    __strong MPBackendController *strongSelf = weakSelf;
-    [strongSelf.networkCommunication upload:uploads
-                                      index:0
-                          completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
-                              if (!success) {
-                                  return;
-                              }
-                              
-                              [persistence deleteUpload:upload];
-                              
-                          }];
-}
-
 - (void)proxyOriginalAppDelegate {
     if (originalAppDelegateProxied) {
         return;
@@ -555,27 +522,16 @@ static BOOL appBackgrounded = NO;
     application.delegate = appDelegateProxy;
 }
 
-- (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
+- (void)requestConfig:(void(^ _Nullable)(BOOL success))completionHandler {
     [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary, NSString * _Nullable eTag) {
         if (success) {
             if (eTag && configurationDictionary) {
                 MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
                 [MPResponseConfig save:responseConfig eTag: eTag];
             }
-            
-            if ([[MParticle sharedInstance].stateMachine.minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-                MPILogDebug(@"Throttling batches");
-                
-                if (completionHandler) {
-                    completionHandler(NO);
-                }
-            } else if (completionHandler) {
-                completionHandler(YES);
-            }
-        } else {
-            if (completionHandler) {
-                completionHandler(NO);
-            }
+        }
+        if (completionHandler) {
+            completionHandler(success);
         }
     }];
 }
@@ -721,7 +677,6 @@ static BOOL appBackgrounded = NO;
                 MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
                 
                 if (!uploadBuilder || !strongSelf) {
-                    self->sessionBeingUploaded = nil;
                     completionHandlerCopy(YES);
                     return;
                 }
@@ -748,7 +703,6 @@ static BOOL appBackgrounded = NO;
     NSArray<MPUpload *> *uploads = [persistence fetchUploads];
     
     if (!uploads || uploads.count == 0) {
-        sessionBeingUploaded = nil;
         completionHandlerCopy(YES);
         return;
     }
@@ -764,41 +718,26 @@ static BOOL appBackgrounded = NO;
     
     //Send all Uploads to the backend (7)
     __strong MPBackendController *strongSelf = weakSelf;
-    [strongSelf.networkCommunication upload:uploads index:0 completionHandler:^(BOOL success, MPUpload *upload, NSDictionary *responseDictionary, BOOL finished) {
-        if (!success) {
-            completionHandlerCopy(success);
-            return;
-        }
-        
-        [MPResponseEvents parseConfiguration:responseDictionary];
-        
-        //Delete the Upload from the local database on success (8)
-        [persistence deleteUpload:upload];
-        
-        if (!finished) {
-            return;
-        }
-        
-        self->sessionBeingUploaded = nil;
-        completionHandlerCopy(success);
+    [strongSelf.networkCommunication upload:uploads completionHandler:^{
+        completionHandlerCopy(YES);
     }];
 }
 
-- (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(BOOL success))completionHandler {
+- (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(void))completionHandler {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
-    void (^invokeCompletionHandler)(BOOL) = ^(BOOL success) {
+    void (^invokeCompletionHandler)(void) = ^(void) {
         if ([NSThread isMainThread]) {
-            completionHandler(success);
+            completionHandler();
         } else {
             dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler(success);
+                completionHandler();
             });
         }
     };
     
     if (!openSessions || openSessions.count == 0) {
-        invokeCompletionHandler(YES);
+        invokeCompletionHandler();
         return;
     }
     
@@ -824,27 +763,11 @@ static BOOL appBackgrounded = NO;
         [self saveMessage:message updateSession:NO];
         MPILogVerbose(@"Session Ended: %@", session.uuid);
     }
-    
-    __weak MPBackendController *weakSelf = self;
-    
-    dispatch_async(messageQueue, ^{
-        [self requestConfig:^(BOOL uploadBatch) {
-            if (!uploadBatch) {
-                invokeCompletionHandler(NO);
-                return;
-            }
-            
-            __strong MPBackendController *strongSelf = weakSelf;
-            
-            [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
-                session = nil;
-                
-                invokeCompletionHandler(success);
-            }];
-            
-        }];
-    });
-    
+        
+    [self waitForKitsAndUploadWithCompletionHandler:^{
+        session = nil;
+        invokeCompletionHandler();
+    }];
 }
 
 #pragma mark Notification handlers
@@ -891,7 +814,7 @@ static BOOL appBackgrounded = NO;
         [self saveMessage:message updateSession:MParticle.sharedInstance.automaticSessionTracking];
         
         if (![MPStateMachine isAppExtension]) {
-                [self uploadDatabaseWithCompletionHandler:^{
+                [self waitForKitsAndUploadWithCompletionHandler:^{
                     dispatch_async(dispatch_get_main_queue(), ^{
                         if (!MParticle.sharedInstance.automaticSessionTracking) {
                             [self endBackgroundTask];
@@ -1010,7 +933,7 @@ static BOOL appBackgrounded = NO;
                                                   [[MParticle sharedInstance].persistenceController updateSession:strongSelf.session];
                                                   
                                                   [strongSelf processOpenSessionsEndingCurrent:YES
-                                                                             completionHandler:^(BOOL success) {
+                                                                             completionHandler:^(void) {
                                                                                  dispatch_async(dispatch_get_main_queue(), ^{
                                                                                      [MPStateMachine setRunningInBackground:NO];
                                                                                      
@@ -1060,7 +983,7 @@ static BOOL appBackgrounded = NO;
                                                             if (!strongSelf) {
                                                                 return;
                                                             }
-                                                            [strongSelf uploadDatabaseWithCompletionHandler:nil];
+                                                            [strongSelf waitForKitsAndUploadWithCompletionHandler:nil];
                                                         });
                                                         
                                                     } cancelHandler:^{
@@ -1768,8 +1691,8 @@ static BOOL appBackgrounded = NO;
         
         __strong MPBackendController *strongSelf = weakSelf;
         
-        [strongSelf processPendingUploads];
-        [strongSelf processOpenSessionsEndingCurrent:NO completionHandler:^(BOOL success) {}];
+        [strongSelf waitForKitsAndUploadWithCompletionHandler:nil];
+        [strongSelf processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
         
         [strongSelf beginUploadTimer];
         
@@ -1786,7 +1709,7 @@ static BOOL appBackgrounded = NO;
             static dispatch_once_t onceToken;
             dispatch_once(&onceToken, ^{
                 [strongSelf processDidFinishLaunching:strongSelf->didFinishLaunchingNotification];
-                [strongSelf uploadDatabaseWithCompletionHandler:nil];
+                [strongSelf waitForKitsAndUploadWithCompletionHandler:nil];
             });
         };
         
@@ -1853,18 +1776,18 @@ static BOOL appBackgrounded = NO;
     
     if (shouldUpload) {
         dispatch_async(self->messageQueue, ^{
-            [self uploadDatabaseWithCompletionHandler:nil];
+            [self waitForKitsAndUploadWithCompletionHandler:nil];
         });
     }
 }
 
-- (MPExecStatus)uploadDatabaseWithCompletionHandler:(void (^ _Nullable)())completionHandler {
+- (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
     __weak MPBackendController *weakSelf = self;
 
             [self requestConfig:^(BOOL uploadBatch) {
                 __strong MPBackendController *strongSelf = weakSelf;
-                
-                BOOL shouldDelayUpload = [[MParticle sharedInstance].kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+                MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
+                BOOL shouldDelayUpload = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
                 if (!uploadBatch || shouldDelayUpload) {
                     if (completionHandler) {
                         completionHandler();

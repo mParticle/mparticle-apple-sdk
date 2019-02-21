@@ -812,6 +812,9 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)deleteUpload:(MPUpload *)upload {
+    if (!upload) {
+        return;
+    }
     [self deleteUploadId:upload.uploadId];
 }
 
@@ -1330,7 +1333,7 @@ const int MaxBreadcrumbs = 50;
     sqlite3_stmt *preparedStatement;
     string sqlStatement;
     
-    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads";
+    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads ORDER BY timestamp, _id LIMIT 100";
     
     vector<MPUpload *> uploadsVector;
     
