@@ -29,6 +29,7 @@
 - (instancetype)initWithIdentities:(NSDictionary *)identities;
 
 + (NSString *)stringForIdentityType:(MPUserIdentity)identityType;
++ (NSNumber *)identityTypeForString:(NSString *)identityString;
 
 @end
 
@@ -92,12 +93,9 @@ static NSString *kMPIdentityRequestKeyIsEphemeral = @"is_ephemeral";
 static NSString *kMPIdentityRequestKeyIsLoggedIn = @"is_logged_in";
 static NSString *kMPIdentityRequestKeyCode = @"code";
 static NSString *kMPIdentityRequestKeyMessage = @"message";
+static NSString *kMPIdentityRequestKeyChangeResults = @"change_results";
 
 @interface MPIdentityHTTPBaseSuccessResponse : NSObject
-
-@end
-
-@interface MPIdentityHTTPModifySuccessResponse : MPIdentityHTTPBaseSuccessResponse
 
 @end
 
@@ -109,5 +107,13 @@ static NSString *kMPIdentityRequestKeyMessage = @"message";
 @property (nonatomic) NSNumber *mpid;
 @property (nonatomic) BOOL isEphemeral;
 @property (nonatomic) BOOL isLoggedIn;
+
+@end
+
+@interface MPIdentityHTTPModifySuccessResponse : MPIdentityHTTPSuccessResponse
+
+- (instancetype)initWithJsonObject:(NSDictionary *)dictionary;
+
+@property (nonatomic) NSArray<NSDictionary<NSString *, NSString *>*> *changeResults;
 
 @end

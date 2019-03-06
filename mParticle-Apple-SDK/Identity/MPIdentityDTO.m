@@ -342,6 +342,36 @@
     }
 }
 
++ (NSNumber *)identityTypeForString:(NSString *)identityString {
+    if ([identityString isEqualToString:@"customerid"]){
+        return @(MPUserIdentityCustomerId);
+    } else if ([identityString isEqualToString:@"email"]){
+        return @(MPUserIdentityEmail);
+    } else if ([identityString isEqualToString:@"facebook"]){
+        return @(MPUserIdentityFacebook);
+    } else if ([identityString isEqualToString:@"facebookcustomaudienceid"]){
+        return @(MPUserIdentityFacebookCustomAudienceId);
+    } else if ([identityString isEqualToString:@"google"]){
+        return @(MPUserIdentityGoogle);
+    } else if ([identityString isEqualToString:@"microsoft"]){
+        return @(MPUserIdentityMicrosoft);
+    } else if ([identityString isEqualToString:@"other"]){
+        return @(MPUserIdentityOther);
+    } else if ([identityString isEqualToString:@"twitter"]){
+        return @(MPUserIdentityTwitter);
+    } else if ([identityString isEqualToString:@"yahoo"]){
+        return @(MPUserIdentityYahoo);
+    } else if ([identityString isEqualToString:@"other2"]){
+        return @(MPUserIdentityOther2);
+    } else if ([identityString isEqualToString:@"other3"]){
+        return @(MPUserIdentityOther3);
+    } else if ([identityString isEqualToString:@"other4"]){
+        return @(MPUserIdentityOther4);
+    } else {
+        return nil;
+    }
+}
+
 @end
 
 @implementation MPIdentityHTTPIdentityChange
@@ -388,8 +418,8 @@
         if (mpidString) {
             _mpid = [NSNumber numberWithLongLong:(long long)[mpidString longLongValue]];
         }
-        _isEphemeral = [[dictionary valueForKey:kMPIdentityRequestKeyIsEphemeral] boolValue];
-        _isLoggedIn =  [[dictionary valueForKey:kMPIdentityRequestKeyIsLoggedIn] boolValue];
+        _isEphemeral = [[dictionary objectForKey:kMPIdentityRequestKeyIsEphemeral] boolValue];
+        _isLoggedIn =  [[dictionary objectForKey:kMPIdentityRequestKeyIsLoggedIn] boolValue];
 
     }
     return self;
@@ -404,7 +434,10 @@
 @implementation MPIdentityHTTPModifySuccessResponse
 
 - (instancetype)initWithJsonObject:(NSDictionary *)dictionary {
-    self = [super init];
+    self = [super initWithJsonObject:dictionary];
+    if (self) {
+        _changeResults = [dictionary objectForKey:kMPIdentityRequestKeyChangeResults];
+    }
     return self;
 }
 

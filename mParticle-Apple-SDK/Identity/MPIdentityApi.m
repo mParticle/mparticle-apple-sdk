@@ -76,7 +76,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     return self;
 }
 
-- (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error {
+- (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPModifyApiResultCallback)completion error: (NSError *) error {
     if (error) {
         if (completion) {
             completion(nil, error);
@@ -108,8 +108,31 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [self forwardCallToKits:request identityRequestType:MPIdentityRequestModify user:self.currentUser];
     
     if (completion) {
-        MPIdentityApiResult *apiResult = [[MPIdentityApiResult alloc] init];
+        MPModifyApiResult *apiResult = [[MPModifyApiResult alloc] init];
         apiResult.user = self.currentUser;
+        NSMutableArray<MPIdentityChange *> *changes = [[NSMutableArray alloc] init];
+
+        for (NSDictionary *userChange in httpResponse.changeResults) {
+            if (userChange[@"modified_mpid"] != nil && userChange[@"identity_type"] != nil) {
+                MPIdentityChange *change = [[MPIdentityChange alloc] init];
+                
+                MParticleUser *changedUser = [[MParticleUser alloc] init];
+                changedUser.userId = userChange[@"modified_mpid"];
+                change.changedUser = changedUser;
+                
+                NSString *identityString = userChange[@"identity_type"];
+                NSNumber *identityNumber = [MPIdentityHTTPIdentities identityTypeForString:identityString];
+                if (identityNumber != nil) {
+                    change.changedIdentity = (MPUserIdentity)identityNumber.intValue;
+                    
+                    [changes addObject:change];
+                } else {
+                    MPILogError(@"Invalid identity type recieved: %@", identityString);
+                }
+            }
+        }
+        apiResult.identityChanges = changes;
+
         completion(apiResult, nil);
     }
 }
@@ -366,8 +389,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [self logout:(id _Nonnull)nil completion:completion];
 }
 
-- (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPIdentityApiResultCallback)completion {
-    MPIdentityApiResultCallback wrappedCompletion = ^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+- (void)modify:(MPIdentityApiRequest *)modifyRequest completion:(nullable MPModifyApiResultCallback)completion {
+    MPModifyApiResultCallback wrappedCompletion = ^(MPModifyApiResult *_Nullable apiResult, NSError *_Nullable error) {
         if (completion) {
             dispatch_async(dispatch_get_main_queue(), ^{
                 completion(apiResult, error);
@@ -383,7 +406,15 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
+@implementation MPIdentityChange
+
+@end
+
 @implementation MPIdentityApiResult
+
+@end
+
+@implementation MPModifyApiResult
 
 @end
 

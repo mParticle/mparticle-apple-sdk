@@ -37,7 +37,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
 
 - (void)onIdentityRequestComplete:(MPIdentityApiRequest *)request identityRequestType:(MPIdentityRequestType)identityRequestType httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error;
-- (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error;
+- (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPModifyApiResultCallback)completion error: (NSError *) error;
 @end
     
 @interface MPNetworkCommunication ()
@@ -103,6 +103,68 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         XCTAssertNotNil(httpResponse);
         XCTAssert([httpResponse isKindOfClass:[MPIdentityHTTPModifySuccessResponse class]]);
     }];
+}
+
+- (void)testModifyChangeResultsResponse {
+    NSDictionary *responseDictionary = @{
+                                   @"client_sdk":@{
+                                           @"platform":@"ios", @"sdk_version":@"7.8.6", @"sdk_vendor":@"mparticle"
+                                           },
+                                   @"environment":@"development",
+                                   @"request_timestamp_ms":@1551205524000,
+                                   @"request_id":@"04B0B49E-B2F1-48B5-81E6-A9F9FDB529F5",
+                                   @"identity_changes":@[@{@"new_value":@"bar-id",@"old_value":@0,@"identity_type":@"other"},@{@"new_value":@"foo@example.com",@"old_value":@"user@thisappisawesomewhyhaventithoughtaboutbuildingit.com",@"identity_type":@"email"},@{@"new_value":@"123456",@"old_value":@0,@"identity_type":@"customerid"}],
+                               @"change_results":@[@{@"identity_type":@"email",@"modified_mpid":@"123"},@{@"identity_type":@"customerid",@"modified_mpid":@"456"}]
+                                   };
+    NSArray *changeArray = @[
+  @{@"identity_type":@"email",@"modified_mpid":@"123"},
+  @{@"identity_type":@"customerid",@"modified_mpid":@"456"}
+  ];
+    
+    MPIdentityHTTPModifySuccessResponse *successResponse = [[MPIdentityHTTPModifySuccessResponse alloc] initWithJsonObject:responseDictionary];
+    
+    XCTAssertEqualObjects(successResponse.changeResults, changeArray);
+}
+
+- (void)testModifyChange {
+    NSDictionary *responseDictionary = @{
+                                         @"client_sdk":@{
+                                                 @"platform":@"ios", @"sdk_version":@"7.8.6", @"sdk_vendor":@"mparticle"
+                                                 },
+                                         @"environment":@"development",
+                                         @"request_timestamp_ms":@1551205524000,
+                                         @"request_id":@"04B0B49E-B2F1-48B5-81E6-A9F9FDB529F5",
+                                         @"identity_changes":@[@{@"new_value":@"bar-id",@"old_value":@0,@"identity_type":@"other"},@{@"new_value":@"foo@example.com",@"old_value":@"user@thisappisawesomewhyhaventithoughtaboutbuildingit.com",@"identity_type":@"email"},@{@"new_value":@"123456",@"old_value":@0,@"identity_type":@"customerid"}],
+                                         @"change_results":@[@{@"identity_type":@"email",@"modified_mpid":@"123"},@{@"identity_type":@"customerid",@"modified_mpid":@"456"}]
+                                         };
+    MPIdentityChange *change1 = [[MPIdentityChange alloc] init];
+    MParticleUser *changedUser1 = [[MParticleUser alloc] init];
+    changedUser1.userId = @123;
+    change1.changedUser = changedUser1;
+    change1.changedIdentity = MPUserIdentityEmail;
+    
+    MPIdentityChange *change2 = [[MPIdentityChange alloc] init];
+    MParticleUser *changedUser2 = [[MParticleUser alloc] init];
+    changedUser2.userId = @456;
+    change2.changedUser = changedUser2;
+    change2.changedIdentity = MPUserIdentityCustomerId;
+    
+    NSArray<MPIdentityChange *> *changeArray = @[change1, change2];
+    
+    MPIdentityHTTPModifySuccessResponse *successResponse = [[MPIdentityHTTPModifySuccessResponse alloc] initWithJsonObject:responseDictionary];
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
+    NSError *error;
+    
+    MPModifyApiResultCallback completion = ^(MPModifyApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        for (int x = 0; x<apiResult.identityChanges.count; x++) {
+            XCTAssertEqual(apiResult.identityChanges[x].changedUser.userId.integerValue, changeArray[x].changedUser.userId.integerValue);
+            XCTAssertEqual(apiResult.identityChanges[x].changedIdentity, changeArray[x].changedIdentity);
+        }
+    };
+    
+    [identity onModifyRequestComplete:request httpResponse:successResponse completion:completion error:error];
 }
 
 - (void)testIdentityRequestComplete {

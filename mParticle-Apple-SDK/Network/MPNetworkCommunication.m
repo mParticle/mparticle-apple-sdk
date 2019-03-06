@@ -628,8 +628,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
         BOOL isModify = [identityRequest isMemberOfClass:[MPIdentityHTTPModifyRequest class]];
         if (isModify) {
+            MPIdentityHTTPModifySuccessResponse *successResponse = [[MPIdentityHTTPModifySuccessResponse alloc] initWithJsonObject:responseDictionary];
             if (completion) {
-                completion([[MPIdentityHTTPModifySuccessResponse alloc] init], nil);
+                completion(successResponse, nil);
             }
         } else {
             MPIdentityHTTPSuccessResponse *response = [[MPIdentityHTTPSuccessResponse alloc] initWithJsonObject:responseDictionary];
