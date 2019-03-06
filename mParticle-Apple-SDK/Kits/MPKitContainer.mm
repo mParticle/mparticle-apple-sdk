@@ -454,9 +454,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     NSDictionary * configuration = kitConfiguration.configuration;
-    configuration = [self validateAndTransformToSafeConfiguration:configuration];
-    
-    if (configuration) {
+    if (configuration.count > 0) {
         kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
         
         MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
@@ -467,28 +465,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
             [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
         }
-    }
-}
-
-- (NSDictionary *)validateAndTransformToSafeConfiguration:(NSDictionary *)configuration {
-    if (configuration.count == 0) {
-        return nil;
-    }
-    
-    __block NSMutableDictionary *safeConfiguration = [[NSMutableDictionary alloc] initWithCapacity:configuration.count];
-    __block BOOL configurationModified = NO;
-    [configuration enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        if ((NSNull *)obj != [NSNull null]) {
-            safeConfiguration[key] = obj;
-        } else {
-            configurationModified = YES;
-        }
-    }];
-    
-    if (configurationModified) {
-        return safeConfiguration.count > 0 ? [safeConfiguration copy] : nil;
-    } else {
-        return configuration;
     }
 }
 
@@ -1873,10 +1849,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
         
         BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
-        BOOL disabledByexcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
+        BOOL disabledByExcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
         BOOL disabledByRamping =  !(bracket == nullptr || (bracket != nullptr && bracket->shouldForward()));
         
-        if (active && !disabledByRamping && !disabledByConsent && !disabledByexcludingAnonymousUsers) {
+        if (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers) {
             [activeKitsRegistry addObject:kitRegister];
         }
     }
@@ -1940,8 +1916,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 } else {
                     [self updateBracketsWithConfiguration:kitConfiguration.bracketConfiguration integrationId:integrationId];
                     
+                    NSDictionary *configuration = kitConfiguration.configuration;
                     if ([kitInstance respondsToSelector:@selector(setConfiguration:)]) {
-                        [kitInstance setConfiguration:kitConfiguration.configuration];
+                        [kitInstance setConfiguration:configuration];
                     }
                 }
                 

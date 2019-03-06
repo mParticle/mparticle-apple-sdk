@@ -218,4 +218,23 @@
     XCTAssertEqualObjects(kitConfiguration, persistedKitConfiguration);
 }
 
+- (void)testStripNullsInConfig {
+    NSDictionary *configuration = @{
+                      @"id":@80,
+                      @"avf":[NSNull null],
+                      @"as":@{
+                              @"foo":@"bar",
+                              @"appId":[NSNull null]
+                              },
+                      @"bk":[NSNull null],
+                      @"hs":[NSNull null]
+                      };
+    MPKitConfiguration *kitConfig = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    NSDictionary *config = kitConfig.configuration;
+    XCTAssertNotNil(config);
+    XCTAssertEqualObjects(config[@"foo"], @"bar");
+    NSString *value = config[@"appId"];
+    XCTAssertNil(value);
+}
+
 @end

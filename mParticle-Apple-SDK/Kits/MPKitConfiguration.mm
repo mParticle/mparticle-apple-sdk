@@ -62,6 +62,13 @@
             configDictionary[@"eas"] = _singleItemEventAttributeList;
         }
         
+        for (NSString *key in configDictionary.allKeys) {
+            id value = configDictionary[key];
+            if ((NSNull *)value == [NSNull null]) {
+                [configDictionary removeObjectForKey:key];
+            }
+        }
+        
         _configuration = [configDictionary copy];
     }
     

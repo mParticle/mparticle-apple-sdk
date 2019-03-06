@@ -51,7 +51,6 @@
 - (BOOL)isDisabledByBracketConfiguration:(NSDictionary *)bracketConfiguration;
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter;
 - (void)replayQueuedItems;
-- (NSDictionary *)validateAndTransformToSafeConfiguration:(NSDictionary *)configuration;
 - (id)transformValue:(NSString *)originalValue dataType:(MPDataType)dataType;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
@@ -294,31 +293,6 @@
     
     bracketConfig = @{@"hi":@(100),@"lo":@(0)};
     XCTAssertFalse([kitContainer isDisabledByBracketConfiguration:bracketConfig]);    
-}
-
-- (void)testConfigurationValidation {
-    NSDictionary *configuration = @{@"appKey":@"3141592"};
-    
-    NSDictionary *validatedConfiguration = [kitContainer validateAndTransformToSafeConfiguration:configuration];
-    XCTAssertEqual(configuration, validatedConfiguration, @"Should have been equal.");
-    
-    configuration = @{@"appKey":@"3141592",
-                      @"NullKey":[NSNull null]};
-    validatedConfiguration = [kitContainer validateAndTransformToSafeConfiguration:configuration];
-    XCTAssertNil(validatedConfiguration[@"NullKey"], @"Should have been nil.");
-    XCTAssertEqual(validatedConfiguration.count, 1, @"Incorrect count.");
-    
-    configuration = @{@"NullKey":[NSNull null]};
-    validatedConfiguration = [kitContainer validateAndTransformToSafeConfiguration:configuration];
-    XCTAssertNil(validatedConfiguration, @"Should have been nil.");
-    
-    configuration = @{};
-    validatedConfiguration = [kitContainer validateAndTransformToSafeConfiguration:configuration];
-    XCTAssertNil(validatedConfiguration, @"Should have been nil.");
-    
-    configuration = nil;
-    validatedConfiguration = [kitContainer validateAndTransformToSafeConfiguration:configuration];
-    XCTAssertNil(validatedConfiguration, @"Should have been nil.");
 }
 
 - (void)testValueTransformation {
