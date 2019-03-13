@@ -108,9 +108,6 @@
     MParticle *mParticle = [MParticle sharedInstance];
     mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     self.backendController = [MParticle sharedInstance].backendController;
-    self.session = self.backendController.session;
-    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
-    
     [self notificationController];
 }
 
@@ -126,7 +123,6 @@
     sessions = [persistence fetchSessions];
     XCTAssertEqual(sessions.count, 0, @"Sessions have not been deleted.");
     [persistence closeDatabase];
-    [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
     [super tearDown];
 }
 
@@ -183,33 +179,7 @@
     
     return remoteNotificationDictionary;
 }
-#endif
 
-- (NSDictionary *)nonmParticleRemoteNotificationDictionary {
-    NSDictionary *remoteNotificationDictionary = @{@"aps":@{
-                                                           @"alert":@{
-                                                                   @"body":@"Your regular transportation has arrived.",
-                                                                   @"show-view":@NO
-                                                                   },
-                                                           @"badge":@0,
-                                                           @"sound":@"engine_sound.aiff"
-                                                           }
-                                                   };
-    
-    return remoteNotificationDictionary;
-}
-
-- (MPSession *)session {
-    if (_session) {
-        return _session;
-    }
-    
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970]  userId:[MPPersistenceController mpId]];
-    [[MParticle sharedInstance].persistenceController saveSession:_session];
-    return _session;
-}
-
-#if TARGET_OS_IOS == 1
 - (MPNotificationController *)notificationController {
     if (_notificationController) {
         return _notificationController;
@@ -232,6 +202,8 @@
 - (void)testBeginSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin session test"];
     dispatch_sync(messageQueue, ^{
+        [self.backendController beginSession];
+        self.session = self.backendController.session;
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
         NSMutableArray *sessions = [persistence fetchSessions];
@@ -257,6 +229,8 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"End session test"];
     dispatch_sync(messageQueue, ^{
+        [self.backendController beginSession];
+        self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
         MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
@@ -426,6 +400,10 @@
 }
 
 - (void)testBatchCycle {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
     event.info = @{@"key":@"value"};
     
@@ -545,6 +523,10 @@
 
 - (void)testDidBecomeActiveWithAppLink {
 #if TARGET_OS_IOS == 1
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
@@ -639,6 +621,10 @@
 
 - (void)testDidBecomeActive {
 #if TARGET_OS_IOS == 1
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
@@ -811,6 +797,10 @@
 }
 
 - (void)testUserAttributeChanged {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     [persistence saveSession:self.backendController.session];
     
@@ -848,6 +838,11 @@
 }
 
 - (void)testUserIdentityChanged {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
     __weak MPBackendControllerTests *weakSelf = self;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -877,10 +872,15 @@
     XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
     
     [persistence deleteSession:self.session];
-    messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
-    XCTAssertNil(messages);
-    
     weakSelf.backendController.session = nil;
+    
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+        self.session = self.backendController.session;
+        messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
+        XCTAssertEqual(messages.count, 1);
+    });
+    
     [weakSelf.backendController setUserIdentity:nil identityType:MPUserIdentityCustomerId timestamp:[NSDate date] completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
         userIdentity = [[[weakSelf.backendController userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
         XCTAssertNil(userIdentity);
@@ -902,6 +902,7 @@
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
 }
 
 - (void)testIncrementUserAttribute {

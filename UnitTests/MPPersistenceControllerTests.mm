@@ -46,20 +46,6 @@
     [super tearDown];
 }
 
-- (NSDictionary *)nonmParticleRemoteNotificationDictionary {
-    NSDictionary *remoteNotificationDictionary = @{@"aps":@{
-                                                           @"alert":@{
-                                                                   @"body":@"Your regular transportation has arrived.",
-                                                                   @"show-view":@NO
-                                                                   },
-                                                           @"badge":@1,
-                                                           @"sound":@"engine_sound.aiff"
-                                                           }
-                                                   };
-    
-    return remoteNotificationDictionary;
-}
-
 - (void)testMultiThreadedAccess {
     NSDate *startDate = [NSDate date];
     NSDate *endDate = [startDate dateByAddingTimeInterval:0.1];

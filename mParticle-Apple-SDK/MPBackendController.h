@@ -66,8 +66,10 @@ extern const NSInteger kInvalidKey;
 @property (nonatomic, unsafe_unretained) NSTimeInterval uploadInterval;
 
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPBackendControllerDelegate>)delegate;
-- (void)beginSession:(void (^ _Nullable)(MPSession * _Nullable session, MPSession * _Nullable previousSession, MPExecStatus execStatus))completionHandler;
+- (void)beginSession;
 - (void)endSession;
+- (void)beginSessionWithIsManual:(BOOL)isManual date:(nonnull NSDate *)date;
+- (void)endSessionWithIsManual:(BOOL)isManual;
 - (void)beginTimedEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 + (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;

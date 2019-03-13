@@ -12,6 +12,7 @@
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"
+#import "MPBackendController.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -23,6 +24,7 @@
 
 @interface MParticle ()
 
+@property (nonatomic, strong, readonly) MPBackendController *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
@@ -133,6 +135,10 @@
         return;
     }
     
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
+    }
+    
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -152,6 +158,10 @@
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo {
     if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
+    }
+    
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
     }
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:withResponseInfo:);
@@ -174,6 +184,11 @@
 - (void) didReceiveRemoteNotification:(NSDictionary *)userInfo {
     if ([MParticle sharedInstance].stateMachine.optOut || !userInfo) {
         return;
+    }
+    
+    // Content-available pushes should not result in a session being started since they do not reflect user interaction
+    if (![self hasContentAvail:userInfo] && MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
     }
     
     if ([MParticle sharedInstance].trackNotifications) {
@@ -212,6 +227,10 @@
         return;
     }
     
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
+    }
+    
     SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -230,12 +249,14 @@
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center willPresentNotification:(nonnull UNNotification *)notification {
-    if (!notification.request.content.userInfo) {
+    if ([MParticle sharedInstance].stateMachine.optOut || !notification.request.content.userInfo) {
         return;
     }
-    if ([MParticle sharedInstance].stateMachine.optOut) {
-        return;
+    
+    if (![self hasContentAvail:notification.request.content.userInfo] && MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
     }
+    
     if ([MParticle sharedInstance].trackNotifications && ![self hasContentAvail:notification.request.content.userInfo]) {
         [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:notification.request.content.userInfo];
     }
@@ -253,10 +274,15 @@
 }
 
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response {
-    if (!response.notification.request.content.userInfo) {
+    if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
     }
-    if ([MParticle sharedInstance].stateMachine.optOut) {
+    
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
+    }
+    
+    if (!response.notification.request.content.userInfo) {
         return;
     }
     
@@ -295,6 +321,10 @@
         return NO;
     }
     
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
+    }
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
     
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
@@ -330,6 +360,10 @@
         return;
     }
     
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
+    }
+    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
     
     SEL openURLOptionsSelector = @selector(openURL:options:);
@@ -352,6 +386,10 @@
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
+    }
+    
+    if (MParticle.sharedInstance.automaticSessionTracking) {
+        [[MParticle sharedInstance].backendController beginSession];
     }
     
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url

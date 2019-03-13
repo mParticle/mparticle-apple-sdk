@@ -845,6 +845,16 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)setSessionAttribute:(NSString *)key value:(id)value;
 
 /**
+ Manually begins a new session. Calling this method is a no-op if a session already exists.
+ */
+- (void)beginSession;
+
+/**
+ Manually ends the current session. Calling this method is a no-op if no session exists.
+ */
+- (void)endSession;
+
+/**
  Force uploads queued messages to mParticle.
  */
 - (void)upload;

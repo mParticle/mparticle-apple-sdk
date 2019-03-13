@@ -82,6 +82,89 @@
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
+- (void)testNoAutoTrackingHasNoSession {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = NO;
+    [instance startWithOptions:options];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNil(session, "No auto tracking but non-nil current session");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testNoAutoTrackingManualSession {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = NO;
+    [instance startWithOptions:options];
+    [instance beginSession];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNotNil(session, "No auto tracking called begin but nil current session");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testNoAutoTrackingManualEndSession {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = NO;
+    [instance startWithOptions:options];
+    [instance beginSession];
+    [instance endSession];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNil(session, "No auto tracking called begin/end but non-nil current session");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+#if TARGET_OS_IOS == 1
+- (void)testAutoTrackingContentAvail {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = YES;
+    options.proxyAppDelegate = NO;
+    [instance startWithOptions:options];
+    [instance endSession];
+    
+    [instance didReceiveRemoteNotification:@{@"aps":@{@"content-available":@"1"}, @"foo-notif-content": @"foo-notif-content-value"}];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNil(session, "Auto tracking but non-nil current session after content-available push");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testAutoTrackingNonContentAvail {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = YES;
+    options.proxyAppDelegate = NO;
+    [instance startWithOptions:options];
+    [instance endSession];
+    
+    [instance didReceiveRemoteNotification:@{@"aps":@{@"alert":@"Testing.. (0)",@"badge":@1,@"sound":@"default"}, @"foo-notif-content": @"foo-notif-content-value"}];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNotNil(session, "Auto tracking but nil current session after non-content-available push");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+#endif
+
 - (void)testNormalSessionContents {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];

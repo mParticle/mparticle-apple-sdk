@@ -35,6 +35,8 @@
 #endif
 
 static dispatch_queue_t messageQueue = nil;
+static void *messageQueueKey = "mparticle message queue key";
+static void *messageQueueToken = "mparticle message queue token";
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
 static dispatch_once_t predicate;
@@ -212,6 +214,20 @@ NSString *const kMPStateKey = @"state";
     return messageQueue;
 }
 
++ (BOOL)isMessageQueue {
+    void *token = dispatch_get_specific(messageQueueKey);
+    BOOL isMessage = token == messageQueueToken;
+    return isMessage;
+}
+
++ (void)executeOnMessage:(void(^)(void))block {
+    if ([MParticle isMessageQueue]) {
+        block();
+    } else {
+        dispatch_async([MParticle messageQueue], block);
+    }
+}
+
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -219,6 +235,7 @@ NSString *const kMPStateKey = @"state";
     }
 
     messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
+    dispatch_queue_set_specific(messageQueue, messageQueueKey, messageQueueToken, nil);
     sdkInitialized = NO;
     isLoggingUncaughtExceptions = NO;
     _initialized = NO;
@@ -230,18 +247,6 @@ NSString *const kMPStateKey = @"state";
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine alloc] init];
-    
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    // OS Notifications
-    [notificationCenter addObserver:self
-                           selector:@selector(handleApplicationDidBecomeActive:)
-                               name:UIApplicationDidBecomeActiveNotification
-                             object:nil];
-    
-    [notificationCenter addObserver:self
-                           selector:@selector(handleMemoryWarningNotification:)
-                               name:UIApplicationDidReceiveMemoryWarningNotification
-                             object:nil];
     
     return self;
 }
@@ -291,15 +296,6 @@ NSString *const kMPStateKey = @"state";
     }
 }
 #endif
-
-#pragma mark Notification handlers
-- (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
-    
-}
-
-- (void)handleMemoryWarningNotification:(NSNotification *)notification {
-    self.configSettings = nil;
-}
 
 #pragma mark MPBackendControllerDelegate methods
 - (void)sessionDidBegin:(MPSession *)session {
@@ -659,6 +655,7 @@ NSString *const kMPStateKey = @"state";
                            }
                            
                            strongSelf.initialized = YES;
+                           strongSelf.configSettings = nil;
                            
                            dispatch_async(dispatch_get_main_queue(), ^{
                                [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
@@ -1300,6 +1297,25 @@ NSString *const kMPStateKey = @"state";
         } else {
             MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
         }
+    });
+}
+
+- (void)beginSession {
+    NSDate *date = [NSDate date];
+    dispatch_async(messageQueue, ^{
+        if (self.backendController.session != nil) {
+            return;
+        }
+        [self.backendController beginSessionWithIsManual:YES date:date];
+    });
+}
+
+- (void)endSession {
+    dispatch_async(messageQueue, ^{
+        if (self.backendController.session == nil) {
+            return;
+        }
+        [self.backendController endSessionWithIsManual:YES];
     });
 }
 

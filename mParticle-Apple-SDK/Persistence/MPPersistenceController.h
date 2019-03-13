@@ -64,7 +64,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;
 - (void)purgeMemory;
 - (BOOL)openDatabase;
-- (void)saveBreadcrumb:(nonnull MPMessage *)message session:(nonnull MPSession *)session;
+- (void)saveBreadcrumb:(nonnull MPMessage *)message;
 - (void)saveConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)saveForwardRecord:(nonnull MPForwardRecord *)forwardRecord;
 - (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;

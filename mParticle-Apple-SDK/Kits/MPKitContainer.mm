@@ -2156,8 +2156,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     __block NSNumber *lastKit = nil;
     
     dispatch_async(dispatch_get_main_queue(), ^{
+        if (kitFilter.forwardEvent.name != nil) {
+            MPILogDebug(@"Forwarding %@ call to kit: %@", kitFilter.forwardEvent.name, kitRegister.name);
+        } else if (NSStringFromSelector(selector) != nil) {
+            MPILogDebug(@"Forwarding %@ call to kit: %@", NSStringFromSelector(selector), kitRegister.name);
+        }
         
-        MPILogDebug(@"Forwarding %@ call to kit: %@", kitFilter.forwardEvent.name, kitRegister.name);
         MPKitExecStatus *execStatus;
         
         @try {

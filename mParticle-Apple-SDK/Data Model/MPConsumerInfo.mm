@@ -150,12 +150,6 @@ NSString *const kMPCKExpiration = @"e";
 @end
 
 #pragma mark - MPConsumerInfo
-@interface MPConsumerInfo () {
-    dispatch_semaphore_t semaphore;
-}
-
-@end
-
 @implementation MPConsumerInfo
 
 @synthesize cookies = _cookies;
@@ -165,7 +159,6 @@ NSString *const kMPCKExpiration = @"e";
     self = [super init];
     if (self) {
         _consumerInfoId = 0;
-        semaphore = dispatch_semaphore_create(1);
     }
     
     return self;
