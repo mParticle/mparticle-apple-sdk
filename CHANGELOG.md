@@ -1,5 +1,24 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.9.1
+
+## Core
+
+- None
+
+## Kits
+
+### Pilgrim kit
+
+We've released an integration with Foursquare Pilgrim! Docs will be published soon--in the meantime you can check out the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-pilgrim).
+
+### OneTrust kit
+
+We have also released an integration with OneTrust! Check out the [docs here](https://docs.mparticle.com/integrations/onetrust/event/) and the [source code here](https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust).
+
+- Leanplum - Add device id setting
+- Optimizely - Update Optimizely SDK to 3.0
+
 ## 7.9.0
 
 ## Core
