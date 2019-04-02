@@ -35,6 +35,7 @@
 #import "mParticle.h"
 #import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
+#import <objc/message.h>
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -2185,7 +2186,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     [kitRegister.wrapperInstance shouldDelayMParticleUpload];
                     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeSuccess];
                 } else if (parameters.count == 3) {
-                    execStatus = [kitRegister.wrapperInstance handleActionWithIdentifier:parameters[0] forRemoteNotification:parameters[1] withResponseInfo:parameters[2]];
+                    typedef MPKitExecStatus *(*send_type)(id, SEL, id, id, id);
+                    send_type func = (send_type)objc_msgSend;
+                    execStatus = func(kitRegister.wrapperInstance, selector, parameters[0], parameters[1], parameters[2]);
                 } else if (parameters.count == 2) {
                     execStatus = [kitRegister.wrapperInstance performSelector:selector withObject:parameters[0] withObject:parameters[1]];
                 } else if (parameters.count == 1) {
