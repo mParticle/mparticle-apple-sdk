@@ -42,8 +42,6 @@ typedef NS_ENUM(NSUInteger, MPExecStatus) {
     MPExecStatusNoConnectivity
 };
 
-@interface MPBackendController : NSObject
-
 extern const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold;
 extern const NSInteger kNilAttributeValue;
 extern const NSInteger kEmptyAttributeValue;
@@ -53,6 +51,10 @@ extern const NSInteger kExceededAttributeKeyMaximumLength;
 extern const NSInteger kInvalidDataType;
 extern const NSTimeInterval kMPMaximumKitWaitTimeSeconds;
 extern const NSInteger kInvalidKey;
+
+@interface MPBackendController : NSObject
+
+
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, nonnull) MPNotificationController *notificationController;

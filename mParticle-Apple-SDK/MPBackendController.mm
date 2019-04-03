@@ -209,10 +209,7 @@ static BOOL appBackgrounded = NO;
         for (NSString *key in [userAttributes allKeys]) {
             if ([userAttributes[key] isKindOfClass:NSStringClass]) {
                 userAttributes[key] = ![userAttributes[key] isEqualToString:kMPNullUserAttributeString] ? userAttributes[key] : [NSNull null];
-            } else {
-                userAttributes[key] = userAttributes[key];
             }
-
         }
         return userAttributes;
     } else {
