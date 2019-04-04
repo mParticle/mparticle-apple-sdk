@@ -1,5 +1,16 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.9.2
+
+## Core
+
+- Fix legacy openURL method forwarding to kits
+- Fix static code analytics warnings
+
+## Kits
+
+- None
+
 ## 7.9.1
 
 ## Core
