@@ -142,6 +142,10 @@ static BOOL runningInBackground = NO;
     [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
+    
+    if (_reachability != nil) {
+        [_reachability stopNotifier];
+    }
 }
 
 #pragma mark Private accessors
@@ -280,13 +284,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)handleReachabilityChanged:(NSNotification *)notification {
-    MParticleReachability *currentReachability = [notification object];
-    
-    if ([currentReachability isKindOfClass:[MParticleReachability class]]) {
-        [self willChangeValueForKey:@"networkStatus"];
-        self.networkStatus = [currentReachability currentReachabilityStatus];
-        [self didChangeValueForKey:@"networkStatus"];
-    }
+    self.networkStatus = [self.reachability currentReachabilityStatus];
 }
 
 #pragma mark Class methods
