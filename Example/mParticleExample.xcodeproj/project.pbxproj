@@ -429,7 +429,7 @@
 			inputFileListPaths = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/mParticle-Apple-SDK/mParticle_Apple_SDK.framework",
 				"${BUILT_PRODUCTS_DIR}/mParticle-Apple-SDK-AppExtension/mParticle_Apple_SDK.framework",
 			);
@@ -441,7 +441,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		59AB470869BEED8D33EBFF61 /* [CP] Check Pods Manifest.lock */ = {

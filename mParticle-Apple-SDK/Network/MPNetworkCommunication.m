@@ -278,6 +278,8 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }];
     }
     
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.absoluteString body:@[]];
+    
     MPConnector *connector = [[MPConnector alloc] init];
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
@@ -325,8 +327,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             responseCode = HTTPStatusCodeNoContent;
         }
     }
+    
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:configurationDictionary responseCode:responseCode];
     if (success && configurationDictionary) {
-        
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
         if (!MPIsNull(eTag)) {
@@ -475,6 +478,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
                 continue;
             }
             NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+            
+            [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.absoluteString body:@[uploadString, zipUploadData]];
+
             MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
                                                                             message:uploadString
                                                                    serializedParams:zipUploadData];
@@ -485,6 +491,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
             MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
             success = success && data && [data length] > 0;
+            [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:self.eventURL.absoluteString body:response.data responseCode:responseCode];
             if (success) {
                 @try {
                     NSError *serializationError = nil;
@@ -568,6 +575,17 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
+    MPEndpoint endpointType = MPEndpointIdentityModify;
+    if ([self.identifyURL.absoluteString isEqualToString:url.absoluteString]) {
+        endpointType = MPEndpointIdentityIdentify;
+    } else if ([self.loginURL.absoluteString isEqualToString:url.absoluteString ]) {
+        endpointType = MPEndpointIdentityLogin;
+    } else if ([self.logoutURL.absoluteString isEqualToString:url.absoluteString]) {
+        endpointType = MPEndpointIdentityLogout;
+    }
+    [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
+
+    
     MPConnectorResponse *response = [connector responseFromPostRequestToURL:url
                                                                     message:nil
                                                            serializedParams:data];
@@ -622,6 +640,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     strongSelf.identifying = NO;
     
+    [MPListenerController.sharedInstance onNetworkRequestFinished:endpointType url:url.absoluteString body:responseDictionary responseCode:responseCode];
     if (success) {
         if (responseString) {
             MPILogVerbose(@"Identity response:\n%@", responseString);
@@ -687,7 +706,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         if ((NSNull *)value == [NSNull null]) {
             value = nil;
         }
-
+        
         if (!oldValue || ![value isEqualToString:oldValue]) {
             MPUserIdentity userIdentity = (MPUserIdentity)[identityType intValue];
             NSString *stringType = [MPIdentityHTTPIdentities stringForIdentityType:userIdentity];

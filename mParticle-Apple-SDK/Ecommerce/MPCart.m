@@ -7,6 +7,7 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 #import "MPArchivist.h"
+#import "MPListenerController.h"
 
 @interface MPCart()
 
@@ -155,6 +156,8 @@
 
 #pragma mark MPCart+Dictionary
 - (void)addProducts:(NSArray<MPProduct *> *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:products parameter2:@(logEvent) parameter3:@(updateProductList)];
+    
     if (logEvent) {
         for (MPProduct *product in products) {
             [product setTimeAddedToCart:[NSDate date]];
@@ -194,6 +197,8 @@
 }
 
 - (void)removeProducts:(NSArray<MPProduct *> *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:products parameter2:@(logEvent) parameter3:@(updateProductList)];
+    
     if (logEvent) {
         MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionRemoveFromCart];
         [commerceEvent removeProducts:products];
@@ -205,11 +210,15 @@
 }
 
 - (BOOL)validateProduct:(MPProduct *)product {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:product];
+    
     BOOL valid = !MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
     return valid;
 }
 
 - (BOOL)validateProducts:(NSArray<MPProduct *> *)products {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:products];
+    
     __block BOOL allValidProducts = YES;
     [products enumerateObjectsUsingBlock:^(MPProduct * _Nonnull product, NSUInteger idx, BOOL * _Nonnull stop) {
         BOOL thisProductValid = [self validateProduct:product];
@@ -223,6 +232,8 @@
 
 #pragma mark Public methods
 - (void)addProduct:(MPProduct *)product {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:product];
+
     BOOL validProduct = [self validateProduct:product];
     NSAssert(validProduct, @"The 'product' variable is not valid.");
     
@@ -232,6 +243,8 @@
 }
 
 - (void)addAllProducts:(NSArray<MPProduct *> *)products shouldLogEvents:(BOOL)shouldLogEvents {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:products];
+
     BOOL validProducts = [self validateProducts:products];
     NSAssert(validProducts, @"The 'products' array is not valid");
     
@@ -241,6 +254,8 @@
 }
 
 - (void)clear {
+    [MPListenerController.sharedInstance onAPICalled:_cmd];
+
     _productsList = nil;
     [self removePersistedCart];
 }
@@ -250,6 +265,8 @@
 }
 
 - (void)removeProduct:(MPProduct *)product {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:product];
+
     BOOL validProduct = !MPIsNull(product) && [product isKindOfClass:[MPProduct class]];
     NSAssert(validProduct, @"The 'product' variable is not valid.");
 

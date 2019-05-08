@@ -429,6 +429,12 @@
 		D3356CE7212F09BB00BC81ED /* MPArchivist.h in Headers */ = {isa = PBXBuildFile; fileRef = D3356CE4212F09BB00BC81ED /* MPArchivist.h */; };
 		D3356CE8212F09BB00BC81ED /* MPArchivist.m in Sources */ = {isa = PBXBuildFile; fileRef = D3356CE5212F09BB00BC81ED /* MPArchivist.m */; };
 		D3356CE9212F09BB00BC81ED /* MPArchivist.m in Sources */ = {isa = PBXBuildFile; fileRef = D3356CE5212F09BB00BC81ED /* MPArchivist.m */; };
+		D33E22AC22491658001E26C9 /* MPListenerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = D34FC6962245239300D26773 /* MPListenerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D33E22AF22492A05001E26C9 /* MPListenerController.h in Headers */ = {isa = PBXBuildFile; fileRef = D33E22AD22492A05001E26C9 /* MPListenerController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D33E22B022492A05001E26C9 /* MPListenerController.h in Headers */ = {isa = PBXBuildFile; fileRef = D33E22AD22492A05001E26C9 /* MPListenerController.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D33E22B122492A05001E26C9 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = D33E22AE22492A05001E26C9 /* MPListenerController.m */; };
+		D33E22B222492A05001E26C9 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = D33E22AE22492A05001E26C9 /* MPListenerController.m */; };
+		D34FC6982245239300D26773 /* MPListenerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = D34FC6962245239300D26773 /* MPListenerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D36997ED20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
 		D36997EE20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
 		D3832205209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */; };
@@ -766,6 +772,9 @@
 		D30FE278212C9290000A92E8 /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
 		D3356CE4212F09BB00BC81ED /* MPArchivist.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPArchivist.h; sourceTree = "<group>"; };
 		D3356CE5212F09BB00BC81ED /* MPArchivist.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPArchivist.m; sourceTree = "<group>"; };
+		D33E22AD22492A05001E26C9 /* MPListenerController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPListenerController.h; sourceTree = "<group>"; };
+		D33E22AE22492A05001E26C9 /* MPListenerController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPListenerController.m; sourceTree = "<group>"; };
+		D34FC6962245239300D26773 /* MPListenerProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPListenerProtocol.h; sourceTree = "<group>"; };
 		D36997EC20FF879E009613E5 /* MParticleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleTests.m; sourceTree = "<group>"; };
 		D37A016B20A0D2C000FF2B0F /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libOCMock.a; sourceTree = "<group>"; };
 		D37A017120A0E5B200FF2B0F /* OCMockObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMockObject.h; sourceTree = "<group>"; };
@@ -952,6 +961,7 @@
 				C9DD1D0A1D8A112B00D3ABBE /* Notifications */,
 				C9DD1D0D1D8A112B00D3ABBE /* Persistence */,
 				C9DD1D121D8A112B00D3ABBE /* Segments */,
+				D34FC6952245233100D26773 /* Listener */,
 				C9DD1D141D8A112B00D3ABBE /* Utils */,
 				C9DD1CEE1D8A112B00D3ABBE /* mParticle.h */,
 				C9DD1CEF1D8A112B00D3ABBE /* mParticle.m */,
@@ -1327,6 +1337,16 @@
 			path = UnitTests;
 			sourceTree = "<group>";
 		};
+		D34FC6952245233100D26773 /* Listener */ = {
+			isa = PBXGroup;
+			children = (
+				D34FC6962245239300D26773 /* MPListenerProtocol.h */,
+				D33E22AD22492A05001E26C9 /* MPListenerController.h */,
+				D33E22AE22492A05001E26C9 /* MPListenerController.m */,
+			);
+			path = Listener;
+			sourceTree = "<group>";
+		};
 		D37A017020A0E5B200FF2B0F /* OCMock */ = {
 			isa = PBXGroup;
 			children = (
@@ -1379,6 +1399,7 @@
 				C935A6C91D8A2DED00A1EE2F /* MPBreadcrumb.h in Headers */,
 				C935A70D1D8A2E0500A1EE2F /* MPKitConfiguration.h in Headers */,
 				04F643F81EFC0487000FADE3 /* MPIdentityApi.h in Headers */,
+				D33E22B022492A05001E26C9 /* MPListenerController.h in Headers */,
 				C935A6D41D8A2DED00A1EE2F /* MPMessage.h in Headers */,
 				C935A7361D8A2E2200A1EE2F /* MPNetworkPerformance.h in Headers */,
 				DB71C5952086696E00D1A3DD /* MPConsentState.h in Headers */,
@@ -1445,6 +1466,7 @@
 				C935A6C71D8A2DED00A1EE2F /* MParticleUserNotification.h in Headers */,
 				C935A70F1D8A2E0500A1EE2F /* MPKitContainer.h in Headers */,
 				C935A6FF1D8A2DFD00A1EE2F /* MessageTypeName.h in Headers */,
+				D33E22AC22491658001E26C9 /* MPListenerProtocol.h in Headers */,
 				C935A6BF1D8A2DDF00A1EE2F /* MPSurrogateAppDelegate.h in Headers */,
 				C935A7631D8A2E3800A1EE2F /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				C935A7001D8A2DFD00A1EE2F /* MPEvent+Internal.h in Headers */,
@@ -1585,6 +1607,8 @@
 				C9DD1F9E1D8A13CA00D3ABBE /* MPSurrogateAppDelegate.h in Headers */,
 				C9DD1FD11D8A13DC00D3ABBE /* MPProduct.h in Headers */,
 				C9DD201D1D8A140D00D3ABBE /* MPNotificationController.h in Headers */,
+				D34FC6982245239300D26773 /* MPListenerProtocol.h in Headers */,
+				D33E22AF22492A05001E26C9 /* MPListenerController.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1697,6 +1721,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = C9A7B3BE1D8A109500426CCF;
@@ -1828,6 +1853,7 @@
 				C935A7331D8A2E2200A1EE2F /* MPConnector.m in Sources */,
 				C935A6EE1D8A2DF400A1EE2F /* MPCommerceEvent.mm in Sources */,
 				C935A6CC1D8A2DED00A1EE2F /* MPConsumerInfo.mm in Sources */,
+				D33E22B222492A05001E26C9 /* MPListenerController.m in Sources */,
 				C935A6CE1D8A2DED00A1EE2F /* MPDataModelAbstract.m in Sources */,
 				C935A6FB1D8A2DF400A1EE2F /* MPTransactionAttributes.m in Sources */,
 				C935A74F1D8A2E3800A1EE2F /* MPHasher.cpp in Sources */,
@@ -1926,6 +1952,7 @@
 				C9DD20351D8A142000D3ABBE /* MPResponseConfig.m in Sources */,
 				DBA894671F17CBE6005B21FB /* MPIdentityDTO.m in Sources */,
 				04F644031EFC2A61000FADE3 /* MPIdentityApiRequest.m in Sources */,
+				D33E22B122492A05001E26C9 /* MPListenerController.m in Sources */,
 				DB7ABA171DA6E69900367A6D /* MPSearchAdsAttribution.m in Sources */,
 				C9DD202D1D8A142000D3ABBE /* MPDevice.m in Sources */,
 				C9DD20401D8A142000D3ABBE /* MPZip.m in Sources */,

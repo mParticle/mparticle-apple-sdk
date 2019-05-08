@@ -87,6 +87,8 @@
 
 -(void) setUserAttributes:(NSDictionary *)userAttributes
 {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:userAttributes];
+    
     NSDictionary<NSString *, id> *existingUserAttributes = self.userAttributes;
     [existingUserAttributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
         [self removeUserAttribute:key];
@@ -126,6 +128,8 @@
 }
 
 - (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:identityString parameter2:@(identityType) parameter3:timestamp];
+    
     __weak MParticleUser *weakSelf = self;
     [self.backendController setUserIdentity:identityString
                                identityType:identityType
@@ -158,6 +162,7 @@
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *)key byValue:(NSNumber *)value {
     dispatch_async([MParticle messageQueue], ^{
+        [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value];
         
         MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
         if (stateMachine.optOut) {
@@ -204,6 +209,8 @@
 }
 
 - (void)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value];
+    
     if ([value isKindOfClass:[NSString class]] && (((NSString *)value).length <= 0)) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         
@@ -246,6 +253,8 @@
 }
 
 - (void)setUserAttributeList:(nonnull NSString *)key values:(nonnull NSArray<NSString *> *)values {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:values];
+    
     if (values.count == 0) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         return;
@@ -294,6 +303,9 @@
 }
 
 - (void)setUserTag:(nonnull NSString *)tag {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:tag];
+
+    
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
@@ -326,6 +338,8 @@
 }
 
 - (void)removeUserAttribute:(nonnull NSString *)key {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key];
+    
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{

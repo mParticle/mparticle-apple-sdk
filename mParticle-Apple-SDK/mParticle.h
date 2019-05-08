@@ -22,6 +22,7 @@
 #import "MPKitAPI.h"
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
+#import "MPListenerController.h"
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1

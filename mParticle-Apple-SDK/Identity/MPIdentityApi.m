@@ -127,7 +127,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                     
                     [changes addObject:change];
                 } else {
-                    MPILogError(@"Invalid identity type recieved: %@", identityString);
+                    MPILogError(@"Invalid identity type received: %@", identityString);
                 }
             }
         }
