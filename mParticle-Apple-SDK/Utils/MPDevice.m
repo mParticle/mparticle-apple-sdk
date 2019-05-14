@@ -210,7 +210,11 @@ int main(int argc, char *argv[]);
     
     if (radioAccessTechnology) {
         NSRange range = [radioAccessTechnology rangeOfString:@"CTRadioAccessTechnology"];
-        radioAccessTechnology = [radioAccessTechnology substringFromIndex:NSMaxRange(range)];
+        if (range.location != NSNotFound) {
+            radioAccessTechnology = [radioAccessTechnology substringFromIndex:NSMaxRange(range)];
+        } else {
+            radioAccessTechnology = @"None";
+        }
     } else {
         radioAccessTechnology = @"None";
     }
