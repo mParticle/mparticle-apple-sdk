@@ -206,6 +206,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 
 /**
+ Session timeout.
+ 
+ Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
+ */
+@property (atomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
+
+/**
  Allows you to override the default HTTPS hosts and certificates used by the SDK, if required.
  
  (Provided to accomodate certain advanced use cases. Most integrations of the SDK will not require modifying this property.)
@@ -371,10 +378,9 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, unsafe_unretained, readonly) BOOL trackNotifications;
 
 /**
- Gets/Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or
- when more than 1000 events are logged.
+ Gets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
  */
-@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
+@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval sessionTimeout;
 
 /**
  Unique identifier for this app running on this device. This unique identifier is synchronized with the mParticle servers.

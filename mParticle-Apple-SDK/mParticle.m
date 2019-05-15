@@ -158,6 +158,7 @@ NSString *const kMPStateKey = @"state";
         _logLevel = MPILogLevelNone;
         _isLogLevelSet = NO;
         _isUploadIntervalSet = NO;
+        _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
     }
     return self;
 }
@@ -438,11 +439,6 @@ NSString *const kMPStateKey = @"state";
     return self.backendController.sessionTimeout;
 }
 
-- (void)setSessionTimeout:(NSTimeInterval)sessionTimeout {
-    self.backendController.sessionTimeout = sessionTimeout;
-    MPILogDebug(@"Set Session Timeout: %.0f", sessionTimeout);
-}
-
 - (NSString *)uniqueIdentifier {
     return [MParticle sharedInstance].stateMachine.consumerInfo.uniqueIdentifier;
 }
@@ -630,25 +626,24 @@ NSString *const kMPStateKey = @"state";
                                [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController mpId]];
                                [userDefaults synchronize];
                            }
-
+                           
                            strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
                            
                            if (strongSelf.configSettings) {
-                               
                                if (strongSelf.configSettings[kMPConfigSessionTimeout]) {
-                                   strongSelf.sessionTimeout = [strongSelf.configSettings[kMPConfigSessionTimeout] doubleValue];
+                                   strongSelf.backendController.sessionTimeout = [strongSelf.configSettings[kMPConfigSessionTimeout] doubleValue];
                                }
                                
                                if (strongSelf.configSettings[kMPConfigUploadInterval]) {
                                    strongSelf.uploadInterval = [strongSelf.configSettings[kMPConfigUploadInterval] doubleValue];
                                }
-
+                               
 #if TARGET_OS_IOS == 1
-    #if defined(MP_CRASH_REPORTER)
+#if defined(MP_CRASH_REPORTER)
                                if ([strongSelf.configSettings[kMPConfigEnableCrashReporting] boolValue]) {
                                    [strongSelf beginUncaughtExceptionLogging];
                                }
-    #endif
+#endif
                                
                                if ([strongSelf.configSettings[kMPConfigLocationTracking] boolValue]) {
                                    CLLocationAccuracy accuracy = [strongSelf.configSettings[kMPConfigLocationAccuracy] doubleValue];
@@ -656,6 +651,10 @@ NSString *const kMPStateKey = @"state";
                                    [strongSelf beginLocationTracking:accuracy minDistance:distanceFilter];
                                }
 #endif
+                           }
+                           
+                           if (options.sessionTimeout) {
+                               strongSelf.backendController.sessionTimeout = options.sessionTimeout;
                            }
                            
                            strongSelf.initialized = YES;
@@ -666,7 +665,6 @@ NSString *const kMPStateKey = @"state";
                                                                                    object:self
                                                                                  userInfo:nil];
                            });
-                           
                        }];
 }
 

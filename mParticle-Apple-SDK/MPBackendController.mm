@@ -1018,6 +1018,7 @@ static BOOL appBackgrounded = NO;
     }
     
     _sessionTimeout = MIN(MAX(sessionTimeout, MINIMUM_SESSION_TIMEOUT), MAXIMUM_SESSION_TIMEOUT);
+    MPILogDebug(@"Set Session Timeout: %.0f", _sessionTimeout);
 }
 
 - (NSTimeInterval)uploadInterval {

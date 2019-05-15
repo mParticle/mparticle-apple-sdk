@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
+#import "MPIConstants.h"
 
 @interface MParticleOptionsTests : MPBaseTestCase
 
@@ -81,6 +82,14 @@
     
     _options.collectSearchAdsAttribution = YES;
     XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
+}
+
+- (void)testSessionTimeout {
+    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertEqual(_options.sessionTimeout, DEFAULT_SESSION_TIMEOUT, @"Session Timeout Interval default correct");
+    
+    _options.sessionTimeout = 100.0;
+    XCTAssertEqual(_options.sessionTimeout, 100.0, @"Session Timeout Interval set correctly");
 }
 
 @end

@@ -7,6 +7,7 @@
 #import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
+#import "MPBackendController.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -18,6 +19,7 @@
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end
 
@@ -107,7 +109,7 @@
     // Session timeout
     NSNumber *auxNumber = _configuration[kMPRemoteConfigSessionTimeoutKey];
     if (auxNumber != nil) {
-        [MParticle sharedInstance].sessionTimeout = [auxNumber doubleValue];
+        [MParticle sharedInstance].backendController.sessionTimeout = [auxNumber doubleValue];
     }
     
 #if TARGET_OS_IOS == 1
