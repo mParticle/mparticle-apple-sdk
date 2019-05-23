@@ -1,5 +1,28 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.10.0
+
+This release introduces support for user alias requests.
+
+Aliasing allows you to copy data from one user to another, typically for the purpose of building audiences that include actions a user may have taken before they logged in.
+
+This release also adds properties to a user that indicate when this user was first or last seen by the SDK. Getting the list of all users known to the SDK now sorts by the last time each user was seen.
+
+## Core
+
+- Add support for sending user alias requests
+- Move sessionTimeout to MParticleOptions
+- Guard against unexpected radio technology values
+- Implement Inspector protocol
+- Reachability improvements
+
+## Kits
+
+- Apptentive - Add ability to delay Apptentive SDK initialization
+- Radar - Minor tracking updates
+
+Minor changes have been made across the kits to bring source indentation and license/readme/podspec files into consistency.
+
 ## 7.9.2
 
 ## Core
