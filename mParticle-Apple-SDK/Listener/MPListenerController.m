@@ -245,4 +245,14 @@ static dispatch_once_t predicate;
     }
 }
 
+- (void)onAliasRequestFinished:(nullable MPAliasResponse *)aliasResponse {
+    for (id<MPListenerProtocol>delegate in self.sdkListeners) {
+        if ([delegate respondsToSelector:@selector(onAliasRequestFinished:)]) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [delegate onAliasRequestFinished:aliasResponse];
+            });
+        }
+    }
+}
+
 @end

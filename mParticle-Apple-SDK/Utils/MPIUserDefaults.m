@@ -32,8 +32,10 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
                                               @"ck",                /* kMPRemoteConfigCookiesKey */
                                               @"ltv",               /* kMPLifeTimeValueKey */
                                               @"is_ephemeral",      /* kMPIsEphemeralKey */
-                                              @"last_date_used",     /* kMPLastIdentifiedDate  */
-                                              @"consent_state"     /* kMPConsentStateKey  */
+                                              @"last_date_used",    /* kMPLastIdentifiedDate  */
+                                              @"consent_state",     /* kMPConsentStateKey  */
+                                              @"fsu",               /* kMPFirstSeenUser */
+                                              @"lsu"                /* kMPLastSeenUser */
                                               ];
     return userSpecificKeys;
 }
@@ -169,6 +171,16 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         [userDefaults removeObjectForKey:globalKey];
     }];
     [userDefaults synchronize];
+}
+
+- (void)migrateFirstLastSeenUsers {
+    NSNumber *globalFirstSeenDateMs = [self mpObjectForKey:@"ict" /* kMPAppInitialLaunchTimeKey */ userId:[MPPersistenceController mpId]];
+    NSNumber *globalLastSeenDateMs = @([NSDate date].timeIntervalSince1970 * 1000);
+    NSArray<MParticleUser *> *users = [MParticle sharedInstance].identity.getAllUsers;
+    for (MParticleUser *user in users) {
+        [self setMPObject:globalFirstSeenDateMs forKey:kMPFirstSeenUser userId:user.userId];
+        [self setMPObject:globalLastSeenDateMs forKey:kMPLastSeenUser userId:user.userId];
+    }
 }
 
 -(void)setSharedGroupIdentifier:(NSString *)groupIdentifier {

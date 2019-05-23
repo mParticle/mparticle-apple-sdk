@@ -554,6 +554,11 @@ NSString *const kMPStateKey = @"state";
     __weak MParticle *weakSelf = self;
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController mpId]] == nil;
+    if (firstRun) {
+        NSDate *firstSeen = [NSDate date];
+        NSNumber *firstSeenMs = @([firstSeen timeIntervalSince1970] * 1000.0);
+        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController mpId]];
+    }
     _proxiedAppDelegate = proxyAppDelegate;
     _automaticSessionTracking = self.options.automaticSessionTracking;
     _customUserAgent = self.options.customUserAgent;

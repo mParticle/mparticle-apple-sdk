@@ -24,10 +24,12 @@
 #import "MPIConstants.h"
 #import "NSString+MPPercentEscape.h"
 #import "MPResponseEvents.h"
+#import "MPAliasResponse.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Version, path
 NSString *const modifyURLFormat = @"%@://%@%@/%@/%@"; // Scheme, URL Host, API Version, mpid, path
+NSString *const aliasURLFormat = @"%@://%@%@/%@/%@/%@"; // Scheme, URL Host, API Version, identity, API key, path
 NSString *const kMPConfigVersion = @"/v4";
 NSString *const kMPConfigURL = @"/config";
 NSString *const kMPEventsVersion = @"/v2";
@@ -72,6 +74,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 @property (nonatomic, strong, readonly) NSURL *loginURL;
 @property (nonatomic, strong, readonly) NSURL *logoutURL;
 @property (nonatomic, strong, readonly) NSURL *modifyURL;
+@property (nonatomic, strong, readonly) NSURL *aliasURL;
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic, assign) BOOL identifying;
@@ -85,6 +88,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 @synthesize identifyURL = _identifyURL;
 @synthesize loginURL = _loginURL;
 @synthesize logoutURL = _logoutURL;
+@synthesize aliasURL = _aliasURL;
 @synthesize identifying = _identifying;
 
 - (instancetype)init {
@@ -187,6 +191,21 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     return modifyURL;
 }
 
+- (NSURL *)aliasURL {
+    if (_aliasURL) {
+        return _aliasURL;
+    }
+    
+    NSString *pathComponent = @"alias";
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
+    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, @"identity", stateMachine.apiKey, pathComponent];
+    _aliasURL = [NSURL URLWithString:urlString];
+    
+    return _aliasURL;
+}
+
+
 - (BOOL)identifying {
     @synchronized(self) {
         return _identifying;
@@ -200,7 +219,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 }
 
 #pragma mark Private methods
-- (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse {
+- (void)throttleWithHTTPResponse:(NSHTTPURLResponse *)httpResponse uploadType:(MPUploadType)uploadType {
     NSDate *now = [NSDate date];
     NSDictionary *httpHeaders = [httpResponse allHeaderFields];
     NSTimeInterval retryAfter = 7200; // Default of 2 hours
@@ -230,9 +249,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
     }
     
-    if ([[MParticle sharedInstance].stateMachine.minUploadDate compare:now] == NSOrderedAscending) {
-        [MParticle sharedInstance].stateMachine.minUploadDate = [now dateByAddingTimeInterval:retryAfter];
-        MPILogDebug(@"Throttling uploads for %.0f seconds", retryAfter);
+    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:uploadType];
+    if ([minUploadDate compare:now] == NSOrderedAscending) {
+        [MParticle.sharedInstance.stateMachine setMinUploadDate:[now dateByAddingTimeInterval:retryAfter] uploadType:uploadType];
+        if (uploadType == MPUploadTypeMessage) {
+            MPILogDebug(@"Throttling uploads for %.0f seconds", retryAfter);
+        } else if (uploadType == MPUploadTypeAlias) {
+            MPILogDebug(@"Throttling alias requests for %.0f seconds", retryAfter);
+        }
     }
 }
 
@@ -447,11 +471,150 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
 }
 
-- (void)upload:(NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler {
-    if ([[MParticle sharedInstance].stateMachine.minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
-        completionHandler();
+- (void)performMessageUpload:(MPUpload *)upload {
+    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
+    if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return;
     }
+    
+    NSString *uploadString = [upload serializedString];
+    MPConnector *connector = [[MPConnector alloc] init];
+    
+    MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
+    
+    
+    NSData *zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
+    if (zipUploadData == nil || zipUploadData.length <= 0) {
+        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        return;
+    }
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.absoluteString body:@[uploadString, zipUploadData]];
+    
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
+                                                                    message:uploadString
+                                                           serializedParams:zipUploadData];
+    NSData *data = response.data;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    
+    NSInteger responseCode = [httpResponse statusCode];
+    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+    MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
+    success = success && data && [data length] > 0;
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:self.eventURL.absoluteString body:response.data responseCode:responseCode];
+    if (success) {
+        @try {
+            NSError *serializationError = nil;
+            NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+            if (responseDictionary &&
+                serializationError == nil &&
+                [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader]) {
+                [MPResponseEvents parseConfiguration:responseDictionary];
+            }
+            MPILogVerbose(@"Upload complete: %@\n", uploadString);
+            
+        } @catch (NSException *exception) {
+            MPILogError(@"Upload error: %@", [exception reason]);
+        }
+    } else {
+        if (responseCode == HTTPStatusCodeBadRequest) {
+            [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeServerError || responseCode == HTTPStatusCodeTooManyRequests) {
+            [self throttleWithHTTPResponse:httpResponse uploadType:MPUploadTypeMessage];
+            return;
+        }
+    }
+    
+    [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+    MPILogVerbose(@"Upload execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+}
+
+- (void)performAliasUpload:(MPUpload *)upload {
+    NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeAlias];
+    if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
+        return;
+    }
+    NSString *uploadString = [upload serializedString];
+    MPConnector *connector = [[MPConnector alloc] init];
+    
+    MPILogVerbose(@"Beginning alias request with upload ID: %@", upload.uuid);
+    
+    if (upload.uploadData == nil || upload.uploadData.length <= 0) {
+        [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        return;
+    }
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    NSURL *uploadURL = self.aliasURL;
+    MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", uploadURL, uploadString);
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:self.aliasURL.absoluteString body:@[uploadString, upload.uploadData]];
+    
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:uploadURL
+                                                                    message:uploadString
+                                                           serializedParams:upload.uploadData];
+    NSData *data = response.data;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    
+    NSInteger responseCode = [httpResponse statusCode];
+    BOOL success = responseCode >= 200 && responseCode < 300;
+    
+    MPILogVerbose(@"Alias response code: %ld", (long)responseCode);
+    
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointAlias url:self.aliasURL.absoluteString body:response.data responseCode:responseCode];
+    
+    NSString *responseString = [[NSString alloc] initWithData:response.data encoding:NSUTF8StringEncoding];
+    if (responseString != nil && responseString.length > 0) {
+        MPILogVerbose(@"Alias response:\n%@", responseString);
+    }
+    
+    MPAliasResponse *aliasResponse = [[MPAliasResponse alloc] init];
+    aliasResponse.responseCode = responseCode;
+    aliasResponse.willRetry = NO;
+    
+    NSDictionary *requestDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
+    NSNumber *sourceMPID = requestDictionary[@"source_mpid"];
+    NSNumber *destinationMPID = requestDictionary[@"destination_mpid"];
+    NSNumber *startTimeNumber = requestDictionary[@"start_unixtime_ms"];
+    NSNumber *endTimeNumber = requestDictionary[@"end_unixtime_ms"];
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:startTimeNumber.doubleValue/1000];
+    NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:endTimeNumber.doubleValue/1000];
+    aliasResponse.requestID = requestDictionary[@"request_id"];
+    aliasResponse.request = [MPAliasRequest requestWithSourceMPID:sourceMPID destinationMPID:destinationMPID startTime:startTime endTime:endTime];
+    
+    if (!success && data && data.length > 0) {
+        @try {
+            NSError *serializationError = nil;
+            NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+            if (responseDictionary != nil && serializationError == nil) {
+                NSString *message = responseDictionary[@"message"];
+                NSNumber *code = responseDictionary[@"code"];
+                MPILogError(@"Alias request failed- %@ %@", code, message);
+                
+                aliasResponse.errorResponse = message;
+            }
+        } @catch (NSException *exception) {
+            MPILogError(@"Alias error: %@", [exception reason]);
+        }
+    }
+    
+    if (!success) {
+        if (responseCode == HTTPStatusCodeBadRequest) {
+            [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeServerError || responseCode == HTTPStatusCodeTooManyRequests) {
+            aliasResponse.willRetry = YES;
+            [MPListenerController.sharedInstance onAliasRequestFinished:aliasResponse];
+            [self throttleWithHTTPResponse:httpResponse uploadType:upload.uploadType];
+            return;
+        }
+    }
+    
+    [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+    [MPListenerController.sharedInstance onAliasRequestFinished:aliasResponse];
+    MPILogVerbose(@"Alias execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
+}
+
+- (void)upload:(NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler {
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     if (![MPStateMachine isAppExtension]) {
@@ -466,58 +629,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     for (int index = 0; index < uploads.count; index++) {
         @autoreleasepool {
             MPUpload *upload = uploads[index];
-            NSString *uploadString = [upload serializedString];
-            MPConnector *connector = [[MPConnector alloc] init];
-            
-            MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
-            
-            
-            NSData *zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
-            if (zipUploadData == nil || zipUploadData.length <= 0) {
-                [[MParticle sharedInstance].persistenceController deleteUpload:upload];
-                continue;
+            if (upload.uploadType == MPUploadTypeMessage) {
+                [self performMessageUpload:upload];
+            } else if (upload.uploadType == MPUploadTypeAlias) {
+                [self performAliasUpload:upload];
             }
-            NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-            
-            [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.absoluteString body:@[uploadString, zipUploadData]];
-
-            MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
-                                                                            message:uploadString
-                                                                   serializedParams:zipUploadData];
-            NSData *data = response.data;
-            NSHTTPURLResponse *httpResponse = response.httpResponse;
-            
-            NSInteger responseCode = [httpResponse statusCode];
-            BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
-            MPILogVerbose(@"Upload response code: %ld", (long)responseCode);
-            success = success && data && [data length] > 0;
-            [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:self.eventURL.absoluteString body:response.data responseCode:responseCode];
-            if (success) {
-                @try {
-                    NSError *serializationError = nil;
-                    NSDictionary *responseDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-                    if (responseDictionary &&
-                        serializationError == nil &&
-                        [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader]) {
-                        [MPResponseEvents parseConfiguration:responseDictionary];
-                    }
-                    MPILogVerbose(@"Upload complete: %@\n", uploadString);
-                    
-                } @catch (NSException *exception) {
-                    MPILogError(@"Upload error: %@", [exception reason]);
-                }
-            } else {
-                if (responseCode == HTTPStatusCodeBadRequest) {
-                    [[MParticle sharedInstance].persistenceController deleteUpload:upload];
-                } else if (responseCode == HTTPStatusCodeServiceUnavailable || responseCode == HTTPStatusCodeTooManyRequests) {
-                    [self throttleWithHTTPResponse:httpResponse];
-                    break;
-                }
-            }
-            [[MParticle sharedInstance].persistenceController deleteUpload:upload];
-            MPILogVerbose(@"Upload execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
         }
     }
+    
     if (![MPStateMachine isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
             [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];

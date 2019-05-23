@@ -6,6 +6,7 @@
 @class MPTransactionAttributes;
 @class MPProduct;
 @class MPIdentityApiRequest;
+@class MPAliasRequest;
 
 @interface MPConvertJS : NSObject
 

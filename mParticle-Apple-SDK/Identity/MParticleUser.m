@@ -55,6 +55,21 @@
     return self;
 }
 
+- (NSDate *)firstSeen {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *firstSeenMs = [userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId];
+    return [NSDate dateWithTimeIntervalSince1970:firstSeenMs.doubleValue/1000.0];
+}
+
+- (NSDate *)lastSeen {
+    if ([MParticle.sharedInstance.identity.currentUser.userId isEqual:self.userId]) {
+        return [NSDate date];
+    }
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *lastSeenMs = [userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId];
+    return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
+}
+
 -(MPCart *)cart {
     if (_cart) {
         return _cart;

@@ -139,6 +139,9 @@
     if (oldVersionValue < 26) {
         [[MPIUserDefaults standardUserDefaults] migrateUserKeysWithUserId:[MPPersistenceController mpId]];
     }
+    if (oldVersionValue < 28) {
+        [[MPIUserDefaults standardUserDefaults] migrateFirstLastSeenUsers];
+    }
 }
 
 - (void)migrateCartWithVersion:(NSNumber *)oldVersion {
@@ -310,11 +313,13 @@
 
     if (oldVersionValue < 10) {
         selectStatement = "SELECT cfuuid, message_data, message_time, session_id FROM uploads ORDER BY _id";
-    } else {
+    } else if (oldVersionValue < 28) {
         selectStatement = "SELECT uuid, message_data, timestamp, session_id FROM uploads ORDER BY _id";
+    } else {
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type FROM uploads ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
+    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type) VALUES (?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -341,6 +346,12 @@
             else {
                 sqlite3_bind_null(insertStatementHandle, 4); // session_id
             }
+        }
+        
+        if (oldVersionValue < 28) {
+            sqlite3_bind_int64(insertStatementHandle, 5, MPUploadTypeMessage); // upload_type
+        } else {
+            sqlite3_bind_int64(insertStatementHandle, 5, sqlite3_column_int64(selectStatementHandle, 4)); // upload_type
         }
         
         sqlite3_step(insertStatementHandle);

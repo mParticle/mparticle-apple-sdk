@@ -94,6 +94,7 @@
     [stateMachine configureRampPercentage:_configuration[kMPRemoteConfigRampKey]];
     [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
     [stateMachine configureRestrictIDFA:_configuration[kMPRemoteConfigRestrictIDFA]];
+    [stateMachine configureAliasMaxWindow:_configuration[kMPRemoteConfigAliasMaxWindow]];
     stateMachine.allowASR = [_configuration[kMPRemoteConfigAllowASR] boolValue];
         
     // Exception handling

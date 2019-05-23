@@ -12,6 +12,7 @@
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPPersistenceController.h"
+#import "MPStateMachine.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -38,6 +39,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (void)onIdentityRequestComplete:(MPIdentityApiRequest *)request identityRequestType:(MPIdentityRequestType)identityRequestType httpResponse:(MPIdentityHTTPSuccessResponse *) httpResponse completion:(MPIdentityApiResultCallback)completion error: (NSError *) error;
 - (void)onModifyRequestComplete:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPModifySuccessResponse *) httpResponse completion:(MPModifyApiResultCallback)completion error: (NSError *) error;
+- (NSArray<MParticleUser *> *)sortedUserArrayByLastSeen:(NSMutableArray<MParticleUser *> *)userArray;
 @end
     
 @interface MPNetworkCommunication ()
@@ -550,6 +552,116 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock modify:request completion:nil];
     
     [mockManager verifyWithDelay:0.2];
+}
+
+- (void)testLastSeenSorting {
+    MParticleUser *user1 = [[MParticleUser alloc] init];
+    MParticleUser *user2 = [[MParticleUser alloc] init];
+    MParticleUser *user3 = [[MParticleUser alloc] init];
+    MParticleUser *userMock1 = OCMPartialMock(user1);
+    MParticleUser *userMock2 = OCMPartialMock(user2);
+    MParticleUser *userMock3 = OCMPartialMock(user3);
+    
+    OCMStub([userMock1 lastSeen]).andReturn([NSDate dateWithTimeIntervalSinceNow:-20]);
+    OCMStub([userMock2 lastSeen]).andReturn([NSDate dateWithTimeIntervalSinceNow:-30]);
+    OCMStub([userMock3 lastSeen]).andReturn([NSDate dateWithTimeIntervalSinceNow:-10]);
+    
+    MPIdentityApi *identity = [[MPIdentityApi alloc] init];
+    NSMutableArray<MParticleUser *> *userArray = @[userMock1, userMock2, userMock3].mutableCopy;
+    NSArray<MParticleUser *> *resultArray = [identity sortedUserArrayByLastSeen:userArray];
+    NSArray<MParticleUser *> *expectedResult = @[userMock3, userMock1, userMock2];
+    XCTAssertEqualObjects(resultArray, expectedResult);
+}
+
+- (void)testAliasNullUsers {
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceUser:(id _Nonnull)nil destinationUser:(id _Nonnull)nil];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+}
+
+- (void)testAliasOneNullUser {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceUser:user destinationUser:(id _Nonnull)nil];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+    
+    request = [MPAliasRequest requestWithSourceUser:(id _Nonnull)nil destinationUser:user];
+    result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+}
+
+- (void)testAliasZeroUserId {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    user.userId = @0;
+    MParticleUser *user2 = [[MParticleUser alloc] init];
+    user2.userId = @0;
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceUser:user destinationUser:user2];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+}
+
+- (void)testAliasAlternateBadUserIds {
+    NSNumber *mpid1 = nil;
+    NSNumber *mpid2 = nil;
+    NSDate *startTime = [NSDate dateWithTimeIntervalSinceNow:-30];
+    NSDate *endTime = [NSDate date];
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+    
+    mpid1 = @0;
+    mpid2 = @0;
+    request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+}
+
+- (void)testAliasNilDates {
+    NSNumber *mpid1 = @1;
+    NSNumber *mpid2 = @2;
+    NSDate *startTime = nil;
+    NSDate *endTime = nil;
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+}
+
+- (void)testAliasDatesReversed {
+    NSNumber *mpid1 = @1;
+    NSNumber *mpid2 = @2;
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:200];
+    NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:100];
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertFalse(result);
+}
+
+- (void)testAliasValidData {
+    NSNumber *mpid1 = @1;
+    NSNumber *mpid2 = @2;
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:100];
+    NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:200];
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    XCTAssertTrue(result);
+}
+
+- (void)testAliasHTTPRepresentation {
+    NSNumber *mpid1 = @1;
+    NSNumber *mpid2 = @2;
+    NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:100];
+    NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:200];
+    MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    MPIdentityHTTPAliasRequest *httpRequest = [[MPIdentityHTTPAliasRequest alloc] initWithIdentityApiAliasRequest:request];
+    NSDictionary *dictionary = httpRequest.dictionaryRepresentation;
+    XCTAssertNil(dictionary[@"client_sdk"]);
+    XCTAssertNil(dictionary[@"request_timestamp_ms"]);
+    XCTAssertEqualObjects(dictionary[@"request_type"], @"alias");
+    XCTAssertEqualObjects(dictionary[@"data"][@"source_mpid"], @1);
+    XCTAssertEqualObjects(dictionary[@"data"][@"destination_mpid"], @2);
+    XCTAssertEqualObjects(dictionary[@"data"][@"start_unixtime_ms"], @100000);
+    XCTAssertEqualObjects(dictionary[@"data"][@"end_unixtime_ms"], @200000);
+    XCTAssertNotNil(dictionary[@"request_id"]);
 }
 
 @end

@@ -11,9 +11,25 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ A single user as represented by the mParticle SDK
+ */
 @interface MParticleUser : NSObject
 
+/**
+ The mParticle id associated with this user (MPID)
+ */
 @property(readonly, strong, nonnull) NSNumber *userId;
+
+/**
+ The date when this user was first seen by the SDK
+ */
+@property(readonly, strong, nonnull) NSDate *firstSeen;
+
+/**
+ The date when this user was most recently seen by the SDK
+ */
+@property(readonly, strong, nonnull) NSDate *lastSeen;
 
 /**
  Returns whether this user is currently logged in

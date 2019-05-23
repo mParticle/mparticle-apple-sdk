@@ -1,6 +1,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class MParticleSession;
+@class MPAliasResponse;
 
 typedef NS_ENUM(NSInteger, MPEndpoint) {
     MPEndpointIdentityLogin = 0,
@@ -8,7 +9,8 @@ typedef NS_ENUM(NSInteger, MPEndpoint) {
     MPEndpointIdentityIdentify,
     MPEndpointIdentityModify,
     MPEndpointEvents,
-    MPEndpointConfig
+    MPEndpointConfig,
+    MPEndpointAlias
 };
 
 typedef NS_ENUM(NSInteger, MPDatabaseTable) {
@@ -106,9 +108,15 @@ typedef NS_ENUM(NSInteger, MPDatabaseTable) {
 
 /**
  * Indicates that state of a Session may have changed
- * @param session the current {@see InternalSession} instance
+ * @param session the current {@see MParticleSession} instance
  */
 - (void)onSessionUpdated:(nullable MParticleSession *)session;
+
+/**
+ * Indicates that an alias request has completed
+ * @param aliasResponse the alias response object
+ */
+- (void)onAliasRequestFinished:(nullable MPAliasResponse *)aliasResponse;
 
 @end
 

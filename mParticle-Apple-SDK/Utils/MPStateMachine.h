@@ -32,7 +32,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, nullable) CLLocation *location;
 #endif
 @property (nonatomic, strong, nullable) MPLocationManager *locationManager;
-@property (nonatomic, strong, nonnull) NSDate *minUploadDate;
 @property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;
 @property (nonatomic, strong, nullable) NSString *pushNotificationMode;
 @property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
@@ -52,6 +51,7 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
 @property (nonatomic, unsafe_unretained) BOOL alwaysTryToCollectIDFA;
+@property (nonatomic, strong, nonnull) NSNumber *aliasMaxWindow;
 @property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
 @property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
 @property (nonatomic, assign) BOOL automaticSessionTracking;
@@ -67,5 +67,8 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
 - (void)configureRestrictIDFA:(nullable NSNumber *)restrictIDFA;
+- (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow;
+- (void)setMinUploadDate:(nullable NSDate *)date uploadType:(MPUploadType)uploadType;
+- (nonnull NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType;
 
 @end

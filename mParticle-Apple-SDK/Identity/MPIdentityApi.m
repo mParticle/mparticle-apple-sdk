@@ -15,6 +15,8 @@
 #import "MPILogger.h"
 #import "MPKitContainer.h"
 #import "MPDevice.h"
+#import "MPUpload.h"
+#import "MPStateMachine.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -27,6 +29,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 
 @end
 
@@ -60,6 +63,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MPKitContainer ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
+
+@end
+
+@interface MPAliasRequest ()
+
+@property (nonatomic, strong, readwrite) NSDate *startTime;
+@property (nonatomic, strong, readwrite) NSDate *endTime;
 
 @end
 
@@ -152,6 +162,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     user.userId = httpResponse.mpid;
     user.isLoggedIn = httpResponse.isLoggedIn;
     apiResult.user = user;
+    apiResult.previousUser = previousUser;
     self.currentUser = user;
     MPSession *session = [MParticle sharedInstance].backendController.session;
     session.userId = httpResponse.mpid;
@@ -204,6 +215,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)onMPIDChange:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse previousUser:(MParticleUser *)previousUser newUser:(MParticleUser *)newUser {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     if (request.onUserAlias) {
         @try {
             request.onUserAlias(previousUser, newUser);
@@ -211,16 +224,31 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             MPILogError(@"Identity request - onUserAlias block threw an exception when invoked by the SDK: %@", exception);
         }
     }
+#pragma clang diagnostic pop
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
 
+    NSDate *date = [NSDate date];
+    NSNumber *dateMs = @([date timeIntervalSince1970] * 1000.0);
+    if (previousUser != nil) {
+        [userDefaults setMPObject:dateMs forKey:kMPLastSeenUser userId:previousUser.userId];
+    }
+    if ([userDefaults mpObjectForKey:kMPFirstSeenUser userId:newUser.userId] == nil) {
+        [userDefaults setMPObject:dateMs forKey:kMPFirstSeenUser userId:newUser.userId];
+    }
+    
     [userDefaults setMPObject:@(httpResponse.isEphemeral) forKey:kMPIsEphemeralKey userId:httpResponse.mpid];
     [userDefaults synchronize];
     
     [[MParticle sharedInstance].persistenceController moveContentFromMpidZeroToMpid:httpResponse.mpid];
     
     if (newUser) {
-        NSDictionary *userInfo = @{mParticleUserKey:newUser};
+        NSDictionary *userInfo = nil;
+        if (previousUser != nil) {
+            userInfo = @{mParticleUserKey:newUser, mParticlePreviousUserKey:previousUser};
+        } else {
+            userInfo = @{mParticleUserKey:newUser};
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleIdentityStateChangeListenerNotification object:nil userInfo:userInfo];
         });
@@ -304,6 +332,26 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     }
 }
 
+- (NSArray<MParticleUser *> *)sortedUserArrayByLastSeen:(NSMutableArray<MParticleUser *> *)userArray {
+    NSMutableArray<MParticleUser *> *sortedUserArray = [NSMutableArray arrayWithCapacity:userArray.count];
+    while (userArray.count > 0) {
+        NSDate *latestSeen = [NSDate distantPast];
+        int latestIndex = 0;
+        for (int i=0; i<userArray.count; i++) {
+            MParticleUser *user = userArray[i];
+            if ([user.lastSeen compare:latestSeen] == NSOrderedDescending) {
+                latestSeen = user.lastSeen;
+                latestIndex = i;
+            }
+        }
+        MParticleUser *latestUser = userArray[latestIndex];
+        [sortedUserArray addObject:latestUser];
+        [userArray removeObjectAtIndex:latestIndex];
+    }
+    
+    return sortedUserArray;
+}
+
 - (NSArray<MParticleUser *> *)getAllUsers {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSMutableArray<MParticleUser *> *userArray = [[NSMutableArray alloc] init];
@@ -315,7 +363,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         [userArray addObject:user];
     }
     
-    return userArray;
+    return [self sortedUserArrayByLastSeen:userArray];
 }
 
 - (NSString *)deviceApplicationStamp {
@@ -402,6 +450,56 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
             [self onModifyRequestComplete:modifyRequest httpResponse:httpResponse completion:wrappedCompletion error: error];
         }];
     });
+}
+
+- (BOOL)aliasUsers:(MPAliasRequest *)aliasRequest {
+    if (aliasRequest.sourceMPID == nil || aliasRequest.destinationMPID == nil || aliasRequest.sourceMPID.longLongValue == 0 || aliasRequest.destinationMPID.longLongValue == 0 || [aliasRequest.sourceMPID isEqual:aliasRequest.destinationMPID]) {
+        MPILogError(@"Invalid alias request - both users must exist and not be equal.");
+        return NO;
+    }
+    
+    if (aliasRequest.usedFirstLastSeen) {
+        double maxDaysAgo = MParticle.sharedInstance.stateMachine.aliasMaxWindow.doubleValue;
+        double secondsPerDay = 60*60*24;
+        NSDate *oldestAllowableDate = [NSDate dateWithTimeIntervalSinceNow:-1*secondsPerDay*maxDaysAgo];
+        if ([aliasRequest.startTime compare:oldestAllowableDate] == NSOrderedAscending) {
+            aliasRequest.startTime = oldestAllowableDate;
+        }
+    }
+    
+    if (aliasRequest.startTime == nil || aliasRequest.endTime == nil || [aliasRequest.startTime compare:aliasRequest.endTime] != NSOrderedAscending) {
+        if (!aliasRequest.usedFirstLastSeen) {
+            MPILogError(@"Invalid alias request - both start and end dates must exist and start date must occur before end date.");
+        } else {
+            MPILogError(@"Invalid alias request - Source User has not been seen in the last %@ days", MParticle.sharedInstance.stateMachine.aliasMaxWindow);
+        }
+        return NO;
+    }
+    
+    dispatch_async([MParticle messageQueue], ^{
+        
+        [MParticle.sharedInstance.backendController skipNextUpload];
+        [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:^{
+            MPIdentityHTTPAliasRequest *request = [[MPIdentityHTTPAliasRequest alloc] initWithIdentityApiAliasRequest:aliasRequest];
+            NSDictionary *aliasDictionary = request.dictionaryRepresentation;
+            NSData *uploadData = [NSJSONSerialization dataWithJSONObject:aliasDictionary options:0 error:nil];
+            
+            NSString *uuid = aliasDictionary[@"request_id"];
+            
+            MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil
+                                                          uploadId:0
+                                                              UUID:uuid
+                                                        uploadData:uploadData
+                                                         timestamp:[NSDate date].timeIntervalSince1970
+                                                        uploadType:MPUploadTypeAlias];
+            
+            [MParticle.sharedInstance.persistenceController saveUpload:upload];
+            [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:nil];
+        }];
+        
+    });
+    
+    return YES;
 }
 
 @end

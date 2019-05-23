@@ -5,6 +5,7 @@
 #import <Foundation/Foundation.h>
 #import "MPIConstants.h"
 #import "MPIdentityApiRequest.h"
+#import "MPAliasRequest.h"
 
 @interface MPIdentityHTTPIdentities : NSObject
 
@@ -45,13 +46,23 @@
 
 @end
 
-
 @interface MPIdentifyHTTPRequest : MPIdentityHTTPBaseRequest
 
 @property (nonatomic) NSString *previousMPID;
 @property (nonatomic) MPIdentityHTTPIdentities *knownIdentities;
 
 - (id)initWithIdentityApiRequest:(MPIdentityApiRequest *)request;
+
+@end
+
+@interface MPIdentityHTTPAliasRequest : MPIdentityHTTPBaseRequest
+
+@property (nonatomic) NSNumber *sourceMPID;
+@property (nonatomic) NSNumber *destinationMPID;
+@property (nonatomic) NSDate *startTime;
+@property (nonatomic) NSDate *endTime;
+
+- (id)initWithIdentityApiAliasRequest:(MPAliasRequest *)aliasRequest;
 
 @end
 

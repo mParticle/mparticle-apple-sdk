@@ -37,9 +37,9 @@
         dictionary[@"request_id"] = requestId;
     }
     
-    NSNumber *requestTimestamp = @(floor([[NSDate date] timeIntervalSince1970]));
+    NSNumber *requestTimestamp = @(floor([NSDate date].timeIntervalSince1970*1000));
     if (requestTimestamp != nil) {
-        dictionary[@"request_timestamp_ms"] = @([requestTimestamp longLongValue] * 1000);
+        dictionary[@"request_timestamp_ms"] = @(requestTimestamp.longLongValue);
     }
     
     return dictionary;
@@ -152,6 +152,63 @@
     if (identityChanges) {
         dictionary[@"identity_changes"] = identityChanges;
     }
+    
+    return dictionary;
+}
+
+@end
+
+@implementation MPIdentityHTTPAliasRequest
+
+- (id)initWithIdentityApiAliasRequest:(MPAliasRequest *)aliasRequest {
+    if (self = [super init]) {
+        _sourceMPID = aliasRequest.sourceMPID;
+        _destinationMPID = aliasRequest.destinationMPID;
+        _startTime = aliasRequest.startTime;
+        _endTime = aliasRequest.endTime;
+    }
+    return self;
+}
+
+- (NSDictionary *)dictionaryRepresentation {
+    NSMutableDictionary *dictionary = [[super dictionaryRepresentation] mutableCopy];
+    [dictionary removeObjectForKey:@"client_sdk"];
+    [dictionary removeObjectForKey:@"request_timestamp_ms"];
+    
+    dictionary[@"request_type"] = @"alias";
+    
+    dictionary[@"api_key"] = MParticle.sharedInstance.stateMachine.apiKey;
+    
+    NSMutableDictionary *dataDictionary = [NSMutableDictionary dictionary];
+    
+    if (_sourceMPID != nil) {
+        dataDictionary[@"source_mpid"] = _sourceMPID;
+    }
+    
+    if (_destinationMPID != nil) {
+        dataDictionary[@"destination_mpid"] = _destinationMPID;
+    }
+    
+    if (_startTime) {
+        NSNumber *requestTimestamp = @(floor(_startTime.timeIntervalSince1970*1000));
+        if (requestTimestamp != nil) {
+            dataDictionary[@"start_unixtime_ms"] = @(requestTimestamp.longLongValue);
+        }
+    }
+    
+    if (_endTime) {
+        NSNumber *requestTimestamp = @(floor(_endTime.timeIntervalSince1970*1000));
+        if (requestTimestamp != nil) {
+            dataDictionary[@"end_unixtime_ms"] = @(requestTimestamp.longLongValue);
+        }
+    }
+    
+    NSString *deviceApplicationStamp = [MParticle sharedInstance].stateMachine.consumerInfo.deviceApplicationStamp;
+    if (deviceApplicationStamp) {
+        dataDictionary[@"device_application_stamp"] = deviceApplicationStamp;
+    }
+    
+    dictionary[@"data"] = dataDictionary;
     
     return dictionary;
 }

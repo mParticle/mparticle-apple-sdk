@@ -209,6 +209,8 @@ extern NSString * _Nonnull const kMPDeviceApplicationStampStorageKey;
 extern NSString * _Nonnull const kMPLastConfigReceivedKey;
 extern NSString * _Nonnull const kMPUserAgentSystemVersionUserDefaultsKey;
 extern NSString * _Nonnull const kMPUserAgentValueUserDefaultsKey;
+extern NSString * _Nonnull const kMPFirstSeenUser;
+extern NSString * _Nonnull const kMPLastSeenUser;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;
@@ -249,6 +251,7 @@ extern NSString * _Nonnull const kMPRemoteConfigTriggerMessageTypesKey;
 extern NSString * _Nonnull const kMPRemoteConfigUniqueIdentifierKey;
 extern NSString * _Nonnull const kMPRemoteConfigBracketKey;
 extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
+extern NSString * _Nonnull const kMPRemoteConfigAliasMaxWindow;
 extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
 
@@ -313,6 +316,7 @@ extern NSString * _Nonnull const kMParticleWebViewPathIdentify;
 extern NSString * _Nonnull const kMParticleWebViewPathLogout;
 extern NSString * _Nonnull const kMParticleWebViewPathLogin;
 extern NSString * _Nonnull const kMParticleWebViewPathModify;
+extern NSString * _Nonnull const kMParticleWebViewPathAlias;
 
 // Message type strings
 extern NSString * _Nonnull const kMPMessageTypeStringUnknown;

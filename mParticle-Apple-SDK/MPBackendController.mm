@@ -646,6 +646,12 @@ static BOOL appBackgrounded = NO;
     return [batchMessageArrays copy];
 }
 
+static BOOL skipNextUpload = NO;
+
+- (void)skipNextUpload {
+    skipNextUpload = YES;
+}
+
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
     const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
     __weak MPBackendController *weakSelf = self;
@@ -653,45 +659,49 @@ static BOOL appBackgrounded = NO;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
-    if (!mpidMessages || mpidMessages.count == 0) {
-        completionHandlerCopy(YES);
-        return;
-    }
-    [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
-        [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
-            //In batches broken up by mpid and then sessionID create the Uploads (2)
-            __strong MPBackendController *strongSelf = weakSelf;
-            NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
-            
-            //Within a session, we also break up based on limits for messages per batch and (approximately) bytes per batch
-            NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
-            
-            for (int i = 0; i < batchMessageArrays.count; i += 1) {
-                NSArray *limitedMessages = batchMessageArrays[i];
-                MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
+    if (mpidMessages && mpidMessages.count != 0) {
+        [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
+            [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
+                //In batches broken up by mpid and then sessionID create the Uploads (2)
+                __strong MPBackendController *strongSelf = weakSelf;
+                NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
                 
-                if (!uploadBuilder || !strongSelf) {
-                    completionHandlerCopy(YES);
-                    return;
+                //Within a session, we also break up based on limits for messages per batch and (approximately) bytes per batch
+                NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
+                
+                for (int i = 0; i < batchMessageArrays.count; i += 1) {
+                    NSArray *limitedMessages = batchMessageArrays[i];
+                    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
+                    
+                    if (!uploadBuilder || !strongSelf) {
+                        completionHandlerCopy(YES);
+                        return;
+                    }
+                    
+                    [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
+                    [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
+                    [uploadBuilder build:^(MPUpload *upload) {
+                        //Save the Upload to the Database (3)
+                        [persistence saveUpload:upload];
+                    }];
                 }
                 
-                [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
-                [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
-                [uploadBuilder build:^(MPUpload *upload) {
-                    //Save the Upload to the Database (3)
-                    [persistence saveUpload:(MPUpload *)upload messageIds:uploadBuilder.preparedMessageIds operation:MPPersistenceOperationFlag];
-                }];
-            }
-            
-            //Delete all messages associated with the batches (4)
-            [persistence deleteMessages:messages];
-            
-            self->deletedUserAttributes = nil;
+                //Delete all messages associated with the batches (4)
+                [persistence deleteMessages:messages];
+                
+                self->deletedUserAttributes = nil;
+            }];
         }];
-    }];
+    }
     
     //Fetch all sessions and delete them if inactive (5)
     [persistence deleteAllSessionsExcept:[MParticle sharedInstance].stateMachine.currentSession];
+    
+    if (skipNextUpload) {
+        skipNextUpload = NO;
+        completionHandler(YES);
+        return;
+    }
     
     // Fetch all Uploads (6)
     NSArray<MPUpload *> *uploads = [persistence fetchUploads];
@@ -1809,6 +1819,21 @@ static BOOL appBackgrounded = NO;
 }
 
 - (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
+    [self checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
+        if (!didShortCircuit) {
+            if (completionHandler) {
+                completionHandler();
+            }
+        } else {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), [MParticle messageQueue], ^{
+                [self waitForKitsAndUploadWithCompletionHandler:completionHandler];
+            });
+        }
+    }];
+    return MPExecStatusSuccess;
+}
+
+- (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler {
     __weak MPBackendController *weakSelf = self;
 
             [self requestConfig:^(BOOL uploadBatch) {
@@ -1817,7 +1842,7 @@ static BOOL appBackgrounded = NO;
                 BOOL shouldDelayUpload = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
                 if (!uploadBatch || shouldDelayUpload) {
                     if (completionHandler) {
-                        completionHandler();
+                        completionHandler(YES);
                     }
                     
                     return;
@@ -1825,7 +1850,7 @@ static BOOL appBackgrounded = NO;
                 
                 [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
                     if (completionHandler) {
-                        completionHandler();
+                        completionHandler(NO);
                     }
                 }];
                 

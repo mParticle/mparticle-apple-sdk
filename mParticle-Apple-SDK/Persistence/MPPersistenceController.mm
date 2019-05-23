@@ -76,7 +76,7 @@ const int MaxBreadcrumbs = 50;
 @synthesize databasePath = _databasePath;
 
 + (void)initialize {
-    databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27];
+    databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27, @28];
 }
 
 - (instancetype)init {
@@ -372,7 +372,8 @@ const int MaxBreadcrumbs = 50;
             session_id INTEGER, \
             uuid TEXT NOT NULL, \
             message_data BLOB NOT NULL, \
-            timestamp REAL NOT NULL \
+            timestamp REAL NOT NULL, \
+            upload_type INTEGER NOT NULL \
         )",
         "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -1333,7 +1334,7 @@ const int MaxBreadcrumbs = 50;
     sqlite3_stmt *preparedStatement;
     string sqlStatement;
     
-    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id FROM uploads ORDER BY timestamp, _id LIMIT 100";
+    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type FROM uploads ORDER BY timestamp, _id LIMIT 100";
     
     vector<MPUpload *> uploadsVector;
     
@@ -1344,7 +1345,8 @@ const int MaxBreadcrumbs = 50;
                                                           uploadId:int64Value(preparedStatement, 0)
                                                               UUID:stringValue(preparedStatement, 1)
                                                         uploadData:dataValue(preparedStatement, 2)
-                                                         timestamp:doubleValue(preparedStatement, 3)];
+                                                         timestamp:doubleValue(preparedStatement, 3)
+                                                        uploadType:(MPUploadType)int64Value(preparedStatement, 5)];
             
             uploadsVector.push_back(upload);
         }
@@ -1781,14 +1783,14 @@ const int MaxBreadcrumbs = 50;
     }
 }
 
-- (void)saveUpload:(MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation {
+- (void)saveUpload:(nonnull MPUpload *)upload {
     // Save upload
     if ([MParticle sharedInstance].stateMachine.optOut && !upload.containsOptOutMessage) {
         return;
     }
     
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id) VALUES (?, ?, ?, ?)";
+    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type) VALUES (?, ?, ?, ?, ?)";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         string auxString = string([upload.uuid UTF8String]);
@@ -1802,6 +1804,8 @@ const int MaxBreadcrumbs = 50;
         } else {
             sqlite3_bind_null(preparedStatement, 4);
         }
+        
+        sqlite3_bind_int64(preparedStatement, 5, upload.uploadType);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
@@ -1818,31 +1822,6 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_finalize(preparedStatement);
-    
-    if (messageIds.count > 0) {
-        NSString *messageIdsList = [messageIds componentsJoinedByString:@","];
-        NSString *sqlString;
-        
-        switch (operation) {
-            case MPPersistenceOperationDelete:
-                sqlString = [NSString stringWithFormat:@"DELETE FROM messages WHERE _id IN (%@)", messageIdsList];
-                sqlStatement = string([sqlString UTF8String]);
-                break;
-                
-            case MPPersistenceOperationFlag:
-                sqlString = [NSString stringWithFormat:@"UPDATE messages SET upload_status = %ld WHERE _id IN (%@)", (long)MPUploadStatusUploaded, messageIdsList];
-                sqlStatement = string([sqlString cStringUsingEncoding:NSUTF8StringEncoding]);
-                break;
-        }
-        
-        if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while post-processing upload: %s", sqlite3_errmsg(mParticleDB));
-            }
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    }
 }
 
 - (void)updateConsumerInfo:(MPConsumerInfo *)consumerInfo {

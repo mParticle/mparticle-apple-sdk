@@ -190,8 +190,7 @@
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
-    NSArray *nilArray = nil;
-    [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
+    [persistence saveUpload:upload];
     
     XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
     
@@ -229,12 +228,11 @@
     
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10];
     
-    [uploadBuilder build:^(MPUpload *upload) {        
+    [uploadBuilder build:^(MPUpload *upload) {
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
-        NSArray *nilArray = nil;
-        [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
-                
+        [persistence saveUpload:upload];
+        
         NSArray<MPUpload *> *uploads = [persistence fetchUploads];
         
         XCTAssertTrue(uploads.count == 0, @"Uploads are not being blocked by OptOut.");
@@ -252,7 +250,7 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
-
+    
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10];
@@ -260,8 +258,7 @@
     [uploadBuilder build:^(MPUpload *upload) {
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
-        NSArray *nilArray = nil;
-        [persistence saveUpload:upload messageIds:nilArray operation:MPPersistenceOperationFlag];
+        [persistence saveUpload:upload];
         
         XCTAssertTrue(upload.uploadId > 0, @"Upload id not greater than zero: %lld", upload.uploadId);
         
@@ -328,20 +325,20 @@
 - (void)testFetchIntegrationAttributesForKit {
     NSNumber *integrationId = nil;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-
+    
     XCTAssertNil([persistence fetchIntegrationAttributesForId:integrationId]);
     XCTAssertNil([persistence fetchIntegrationAttributesForId:@1000]);
-
+    
     MPIntegrationAttributes *integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:@1000
-                                                                                                  attributes:@{@"foo key 1":@"bar value 1",
-                                                                                                               @"foo key 2":@"bar value 2"
-                                                                                                               }];
+                                                                                                 attributes:@{@"foo key 1":@"bar value 1",
+                                                                                                              @"foo key 2":@"bar value 2"
+                                                                                                              }];
     [persistence saveIntegrationAttributes:integrationAttributes];
     
     integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:@2000
-                                                                                                 attributes:@{@"foo key 3":@"bar value 3",
-                                                                                                              @"foo key 4":@"bar value 4"
-                                                                                                              }];
+                                                                        attributes:@{@"foo key 3":@"bar value 3",
+                                                                                     @"foo key 4":@"bar value 4"
+                                                                                     }];
     [persistence saveIntegrationAttributes:integrationAttributes];
     
     NSDictionary *storedAttributes = [persistence fetchIntegrationAttributesForId:@1000];
@@ -441,7 +438,7 @@
     [persistence saveConsumerInfo:consumerInfo];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Consumer Info"];
-
+    
     dispatch_sync([MParticle messageQueue], ^{
         MPConsumerInfo *fetchedConsumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
         XCTAssertNotNil(fetchedConsumerInfo);

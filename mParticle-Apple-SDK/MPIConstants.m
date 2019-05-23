@@ -162,6 +162,8 @@ NSString *const kMPDeviceApplicationStampStorageKey = @"dast";
 NSString *const kMPLastConfigReceivedKey = @"LastConfigReceived";
 NSString *const kMPUserAgentSystemVersionUserDefaultsKey = @"UserAgentSystemVersion";
 NSString *const kMPUserAgentValueUserDefaultsKey = @"UserAgentValue";
+NSString *const kMPFirstSeenUser = @"fsu";
+NSString *const kMPLastSeenUser = @"lsu";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
@@ -202,6 +204,7 @@ NSString *const kMPRemoteConfigTriggerMessageTypesKey = @"dts";
 NSString *const kMPRemoteConfigUniqueIdentifierKey = @"das";
 NSString *const kMPRemoteConfigBracketKey = @"bk";
 NSString *const kMPRemoteConfigRestrictIDFA = @"rdlat";
+NSString *const kMPRemoteConfigAliasMaxWindow = @"alias_max_window";
 NSString *const kMPRemoteConfigAllowASR = @"iasr";
 NSString *const kMPRemoteConfigExcludeAnonymousUsersKey = @"eau";
 
@@ -266,6 +269,7 @@ NSString *const kMParticleWebViewPathIdentify = @"identify";
 NSString *const kMParticleWebViewPathLogout = @"logout";
 NSString *const kMParticleWebViewPathLogin = @"login";
 NSString *const kMParticleWebViewPathModify = @"modify";
+NSString *const kMParticleWebViewPathAlias = @"alias";
 
 // Message type strings
 NSString *const kMPMessageTypeStringUnknown = @"unknown";

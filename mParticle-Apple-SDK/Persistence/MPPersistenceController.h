@@ -16,11 +16,6 @@
     @class MParticleUserNotification;
 #endif
 
-typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
-    MPPersistenceOperationDelete = 0,
-    MPPersistenceOperationFlag
-};
-
 @interface MPPersistenceController : NSObject
 
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
@@ -71,7 +66,7 @@ typedef NS_ENUM(NSUInteger, MPPersistenceOperation) {
 - (void)saveMessage:(nonnull MPMessage *)message;
 - (void)saveSegment:(nonnull MPSegment *)segment;
 - (void)saveSession:(nonnull MPSession *)session;
-- (void)saveUpload:(nonnull MPUpload *)upload messageIds:(nonnull NSArray<NSNumber *> *)messageIds operation:(MPPersistenceOperation)operation;
+- (void)saveUpload:(nonnull MPUpload *)upload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
 

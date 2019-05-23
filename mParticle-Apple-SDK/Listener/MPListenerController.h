@@ -107,6 +107,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 - (void)onSessionUpdated:(nullable MParticleSession *)session;
 
+/**
+ * Indicates that an alias request has completed.
+ * @param aliasResponse the alias response object
+ */
+- (void)onAliasRequestFinished:(nullable MPAliasResponse *)aliasResponse;
+
 
 @end
 

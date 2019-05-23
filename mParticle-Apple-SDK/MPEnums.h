@@ -261,6 +261,14 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeUserIdentityChange = 18
 };
 
+/// Upload Types
+typedef NS_ENUM(NSUInteger, MPUploadType) {
+    /** Upload type for messages */
+    MPUploadTypeMessage = 0,
+    /** Upload type for alias requests */
+    MPUploadTypeAlias = 1
+};
+
 typedef NS_ENUM(NSUInteger, MPConnectivityErrorCode) {
     /** Client side error: Unknown error. */
     MPConnectivityErrorCodeUnknown = 0,
@@ -280,9 +288,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     /** Client side error: Device has no network connection. Request should be retried when device connectivity has been reestablished. */
     MPIdentityErrorResponseCodeClientNoConnection = 3,
     /** Client side error: SSL connection failed to be established due to invalid server certificate. mParticle performs SSL pinning - you cannot use a proxy to read traffic. */
-    MPIdentityErrorResponseCodeSSLError = 3,
+    MPIdentityErrorResponseCodeSSLError = 4,
     /** Client side error: User has enabled OptOut. */
-    MPIdentityErrorResponseCodeOptOut = 4,
+    MPIdentityErrorResponseCodeOptOut = 5,
     /** HTTP Error 401: Unauthorized. Ensure that you've initialized the mParticle SDK with a valid workspace key and secret. */
     MPIdentityErrorResponseCodeUnauthorized = 401,
     /** HTTP Error 504: Identity request should be retried */
@@ -388,7 +396,15 @@ extern NSString * _Nonnull const mParticleEmbeddedSDKInstanceKey;
 /** Posted immediately after the user's MPID changes (or in other terms when a different user becomes active).
  */
 extern NSString * _Nonnull const mParticleIdentityStateChangeListenerNotification;
+
+/** Key to retrieve now-active user from identity state change notification's userInfo dictionary
+ */
 extern NSString * _Nonnull const mParticleUserKey;
+
+/** Key to retrieve previously-active user (if applicable) from identity state change notification's userInfo dictionary
+ */
+extern NSString * _Nonnull const mParticlePreviousUserKey;
+
 extern NSString * _Nonnull const mParticleIdentityErrorDomain;
 extern NSString * _Nonnull const mParticleIdentityErrorKey;
 
