@@ -113,6 +113,7 @@ Kit | CocoaPods | Carthage
 [Apteligent](https://github.com/mparticle-integrations/mparticle-apple-integration-apteligent)        |  ✓ |  
 [Branch Metrics](https://github.com/mparticle-integrations/mparticle-apple-integration-branchmetrics) |  ✓ | ✓
 [Button](https://github.com/mparticle-integrations/mparticle-apple-integration-button)                |  ✓ | ✓
+[CleverTap](https://github.com/mparticle-integrations/mparticle-apple-integration-clevertap)          |  ✓ | ✓
 [comScore](https://github.com/mparticle-integrations/mparticle-apple-integration-comscore)            |  ✓ |  
 [Flurry](https://github.com/mparticle-integrations/mparticle-apple-integration-flurry)                |  ✓ |  
 [Google Analytics for Firebase](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase) |  ✓ |  
@@ -122,10 +123,12 @@ Kit | CocoaPods | Carthage
 [Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)              |  ✓ |  
 [Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)            |  ✓ | ✓
 [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)        |  ✓ | ✓
-[Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)         |  ✓ | ✓
+[Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)        |  ✓ | ✓
+[OneTrust](https://github.com/mparticle-integrations/mparticle-apple-integration-onetrust)            |  ✓ | ✓
+[Pilgrim](https://github.com/mparticle-integrations/mparticle-apple-integration-pilgrim)              |  ✓ | ✓
 [Primer](https://github.com/mparticle-integrations/mparticle-apple-integration-primer)                |  ✓ | ✓
 [Radar](https://github.com/mparticle-integrations/mparticle-apple-integration-radar)                  |  ✓ | ✓
-[Responsys](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys)                |   |
+[Responsys](https://github.com/mparticle-integrations/mparticle-apple-integration-responsys)          |    |
 [Reveal Mobile](https://github.com/mparticle-integrations/mparticle-apple-integration-revealmobile)   |  ✓ |  
 [Singular](https://github.com/mparticle-integrations/mparticle-apple-integration-singular)            |  ✓ |  
 [Skyhook](https://github.com/mparticle-integrations/mparticle-apple-integration-skyhook)              |  ✓ |  
