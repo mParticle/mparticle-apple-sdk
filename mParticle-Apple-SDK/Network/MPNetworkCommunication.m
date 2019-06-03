@@ -328,6 +328,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     if (responseCode == HTTPStatusCodeNotModified) {
         completionHandler(YES, nil, nil);
         [self configRequestDidSucceed];
+        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:[NSDictionary dictionary] responseCode:responseCode];
         return;
     }
     
@@ -336,6 +337,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     if (!data && success) {
         completionHandler(NO, nil, nil);
         MPILogWarning(@"Failed config request");
+        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:[NSDictionary dictionary] responseCode:HTTPStatusCodeNoContent];
         return;
     }
     
