@@ -1653,7 +1653,7 @@ const int MaxBreadcrumbs = 50;
         
         sqlite3_bind_double(preparedStatement, 4, message.timestamp);
         sqlite3_bind_blob(preparedStatement, 5, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
-        sqlite3_bind_int(preparedStatement, 6, message.uploadStatus);
+        sqlite3_bind_int(preparedStatement, 6, (int)message.uploadStatus);
         sqlite3_bind_int64(preparedStatement, 7, [message.userId longLongValue]);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -1683,7 +1683,7 @@ const int MaxBreadcrumbs = 50;
         if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             sqlite3_bind_int64(preparedStatement, 1, segmentMembership.segmentId);
             sqlite3_bind_double(preparedStatement, 2, segmentMembership.timestamp);
-            sqlite3_bind_int(preparedStatement, 3, segmentMembership.action);
+            sqlite3_bind_int(preparedStatement, 3, (int)segmentMembership.action);
             sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
