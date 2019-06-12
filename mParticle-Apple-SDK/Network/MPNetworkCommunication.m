@@ -25,6 +25,7 @@
 #import "NSString+MPPercentEscape.h"
 #import "MPResponseEvents.h"
 #import "MPAliasResponse.h"
+#import "MPResponseConfig.h"
 
 NSString *const urlFormat = @"%@://%@%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const identityURLFormat = @"%@://%@%@/%@"; // Scheme, URL Host, API Version, path
@@ -260,29 +261,29 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
 }
 
-#pragma mark Public accessors
-- (void)configRequestDidSucceed {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    userDefaults[kMPLastConfigReceivedKey] = @([NSDate timeIntervalSinceReferenceDate]);
-    [userDefaults synchronize];
+- (NSNumber *)maxAgeForCache:(nonnull NSString *)cache {
+    NSNumber *maxAge;
+    cache = cache.lowercaseString;
+    
+    if ([cache containsString: @"max-age="]) {
+        NSArray *maxAgeComponents = [cache componentsSeparatedByString:@"max-age="];
+        NSString *beginningOfMaxAgeString = [maxAgeComponents objectAtIndex:1];
+        NSArray *components = [beginningOfMaxAgeString componentsSeparatedByString:@","];
+        NSString *maxAgeValue = [components objectAtIndex:0];
+        
+        maxAge = [NSNumber numberWithDouble:MIN([maxAgeValue doubleValue], CONFIG_REQUESTS_MAX_EXPIRATION_AGE)];
+    }
+    
+    return maxAge;
 }
 
 #pragma mark Public methods
-- (void)requestConfig:(void(^)(BOOL success, NSDictionary *configurationDictionary, NSString *eTag))completionHandler {
-    BOOL shouldSendRequest = YES;
-    
+- (void)requestConfig:(nullable MPConnector *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSNumber *lastReceivedNumber = userDefaults[kMPLastConfigReceivedKey];
-    if (lastReceivedNumber != nil) {
-        NSTimeInterval lastConfigReceivedInterval = [lastReceivedNumber doubleValue];
-        NSTimeInterval interval = [NSDate timeIntervalSinceReferenceDate];
-        NSTimeInterval delta = interval - lastConfigReceivedInterval;
-        NSTimeInterval quietInterval = [MPStateMachine environment] == MPEnvironmentDevelopment ? DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL : CONFIG_REQUESTS_QUIET_INTERVAL;
-        shouldSendRequest = delta > quietInterval;
-    }
+    BOOL shouldSendRequest = [userDefaults isConfigurationExpired] || [userDefaults isConfigurationParametersOutdated];
     
     if (!shouldSendRequest) {
-        completionHandler(YES, nil, nil);
+        completionHandler(YES);
         return;
     }
     
@@ -304,14 +305,19 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.absoluteString body:@[]];
     
-    MPConnector *connector = [[MPConnector alloc] init];
+    connector = connector ? connector : [[MPConnector alloc] init];
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
+    NSString *cacheControl = httpResponse.allHeaderFields[kMPHTTPCacheControlHeaderKey];
+    NSString *ageString = httpResponse.allHeaderFields[kMPHTTPAgeHeaderKey];
+
+    NSNumber *maxAge = [self maxAgeForCache:cacheControl];
+        
     __strong MPNetworkCommunication *strongSelf = weakSelf;
     if (!strongSelf) {
-        completionHandler(NO, nil, nil);
+        completionHandler(NO);
         return;
     }
     
@@ -326,8 +332,10 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
     
     if (responseCode == HTTPStatusCodeNotModified) {
-        completionHandler(YES, nil, nil);
-        [self configRequestDidSucceed];
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];
+        
+        completionHandler(YES);
         [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:[NSDictionary dictionary] responseCode:responseCode];
         return;
     }
@@ -335,13 +343,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
     
     if (!data && success) {
-        completionHandler(NO, nil, nil);
+        completionHandler(NO);
         MPILogWarning(@"Failed config request");
         [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:[NSDictionary dictionary] responseCode:HTTPStatusCodeNoContent];
         return;
     }
     
     success = success && [data length] > 0;
+
     NSDictionary *configurationDictionary = nil;
     if (success) {
         @try {
@@ -359,14 +368,16 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
         if (!MPIsNull(eTag)) {
+            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES];
+            MPILogDebug(@"MPResponseConfig init: %@", responseConfig.description);
+
             MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-            userDefaults[kMPHTTPETagHeaderKey] = eTag;
+            [userDefaults setConfiguration:configurationDictionary eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];
         }
         
-        completionHandler(success, configurationDictionary, eTag);
-        [self configRequestDidSucceed];
+        completionHandler(success);
     } else {
-        completionHandler(NO, nil, nil);
+        completionHandler(NO);
     }
 }
 
@@ -382,11 +393,10 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }];
     }
     
-    MPConnector *connector = [[MPConnector alloc] init];
-    
     __weak MPNetworkCommunication *weakSelf = self;
     NSDate *fetchSegmentsStartTime = [NSDate date];
-    
+    MPConnector *connector = [[MPConnector alloc] init];
+
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
@@ -685,8 +695,6 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }];
     }
     
-    MPConnector *connector = [[MPConnector alloc] init];
-    
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
     NSDictionary *dictionary = [identityRequest dictionaryRepresentation];
@@ -706,7 +714,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     }
     [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
 
-    
+    MPConnector *connector = [[MPConnector alloc] init];
     MPConnectorResponse *response = [connector responseFromPostRequestToURL:url
                                                                     message:nil
                                                            serializedParams:data];
@@ -855,7 +863,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
         }
         return;
     }
-    
+
     NSString *mpid = [MPPersistenceController mpId].stringValue;
     MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
     

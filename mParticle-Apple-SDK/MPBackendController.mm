@@ -514,14 +514,8 @@ static BOOL appBackgrounded = NO;
     application.delegate = appDelegateProxy;
 }
 
-- (void)requestConfig:(void(^ _Nullable)(BOOL success))completionHandler {
-    [self.networkCommunication requestConfig:^(BOOL success, NSDictionary * _Nullable configurationDictionary, NSString * _Nullable eTag) {
-        if (success) {
-            if (eTag && configurationDictionary) {
-                MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary];
-                [MPResponseConfig save:responseConfig eTag: eTag];
-            }
-        }
+- (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler {
+    [self.networkCommunication requestConfig:nil withCompletionHandler:^(BOOL success) {
         if (completionHandler) {
             completionHandler(success);
         }

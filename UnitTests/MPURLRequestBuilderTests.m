@@ -257,7 +257,8 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration andETag:eTag];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
 
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];

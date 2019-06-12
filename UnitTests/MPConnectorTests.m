@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPConnector.h"
+#import "MPBaseTestCase.h"
 #if TARGET_OS_IOS == 1
 #import "OCMock.h"
 
@@ -12,7 +13,7 @@
 
 @end
 
-@interface MPConnectorTests : XCTestCase
+@interface MPConnectorTests  : MPBaseTestCase
 
 @end
 

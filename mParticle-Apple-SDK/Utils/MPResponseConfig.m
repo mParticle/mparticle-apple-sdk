@@ -149,12 +149,6 @@
 #pragma mark Private methods
 
 #pragma mark Public class methods
-+ (void)save:(nonnull MPResponseConfig *)responseConfig eTag:(nonnull NSString *)eTag {
-    if (responseConfig && responseConfig.configuration) {
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfig.configuration andETag:eTag];
-    }
-}
-
 + (nullable MPResponseConfig *)restore {
     NSDictionary *configuration = [[MPIUserDefaults standardUserDefaults] getConfiguration];
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO];

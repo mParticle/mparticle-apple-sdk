@@ -196,6 +196,8 @@ extern NSString * _Nonnull const kMPDeviceTokenTypeKey;
 extern NSString * _Nonnull const kMPDeviceTokenTypeDevelopment;
 extern NSString * _Nonnull const kMPDeviceTokenTypeProduction;
 extern NSString * _Nonnull const kMPHTTPETagHeaderKey;
+extern NSString * _Nonnull const kMPHTTPCacheControlHeaderKey;
+extern NSString * _Nonnull const kMPHTTPAgeHeaderKey;
 extern NSString * _Nonnull const kMResponseConfigurationKey;
 extern NSString * _Nonnull const kMResponseConfigurationMigrationKey;
 extern NSString * _Nonnull const kMPAppSearchAdsAttributionKey;
@@ -206,7 +208,9 @@ extern NSString * _Nonnull const kMPIsEphemeralKey;
 extern NSString * _Nonnull const kMPLastIdentifiedDate;
 extern NSString * _Nonnull const kMPDeviceApplicationStampKey;
 extern NSString * _Nonnull const kMPDeviceApplicationStampStorageKey;
-extern NSString * _Nonnull const kMPLastConfigReceivedKey;
+extern NSString * _Nonnull const kMPConfigProvisionedTimestampKey;
+extern NSString * _Nonnull const kMPConfigMaxAgeKey;
+extern NSString * _Nonnull const kMPConfigParameters;
 extern NSString * _Nonnull const kMPUserAgentSystemVersionUserDefaultsKey;
 extern NSString * _Nonnull const kMPUserAgentValueUserDefaultsKey;
 extern NSString * _Nonnull const kMPFirstSeenUser;
@@ -382,8 +386,8 @@ extern const NSTimeInterval DEFAULT_UPLOAD_INTERVAL;
 extern const NSTimeInterval INITIAL_UPLOAD_TIME;
 
 // How long to block config requests after a successful response.
-extern const NSTimeInterval DEBUG_CONFIG_REQUESTS_QUIET_INTERVAL;
-extern const NSTimeInterval CONFIG_REQUESTS_QUIET_INTERVAL;
+extern const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE;
+extern const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE;
 
 // Search Ads timeout/retry
 extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS;

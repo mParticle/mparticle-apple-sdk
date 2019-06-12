@@ -5,10 +5,15 @@
 #import "MParticle.h"
 #import "MPKitConfiguration.h"
 #import "MPArchivist.h"
+#import "MPStateMachine.h"
+#import "MPKitContainer.h"
+#import "MPIHasher.h"
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 
 @end
 
@@ -117,7 +122,6 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 }
 
 #pragma mark Public methods
-
 - (id)mpObjectForKey:(NSString *)key userId:(NSNumber *)userId {
     NSString *prefixedKey = [self prefixedKey:key userId:userId];
     
@@ -268,11 +272,11 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     return configuration;
 }
 
-- (void)setConfiguration:(NSDictionary *)responseConfiguration andETag:(NSString *)eTag {
+- (void)setConfiguration:(nonnull NSDictionary *)responseConfiguration eTag:(nonnull NSString *)eTag requestTimestamp:(NSTimeInterval)requestTimestamp currentAge:(nonnull NSString *)currentAge maxAge:(nullable NSNumber *)maxAge {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     
-    if (!responseConfiguration || !eTag) {
-        MPILogDebug(@"Set Configuration Failed /neTag: %@ /nConfiguration: %@", eTag, responseConfiguration);
+    if (!responseConfiguration) {
+        MPILogDebug(@"Set Configuration Failed \nConfiguration: %@", responseConfiguration);
         
         return;
     }
@@ -292,6 +296,9 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     
     [userDefaults setMPObject:eTag forKey:kMPHTTPETagHeaderKey userId:userID];
     [userDefaults setMPObject:configuration forKey:kMResponseConfigurationKey userId:userID];
+    userDefaults[kMPConfigProvisionedTimestampKey] = @(requestTimestamp - [currentAge integerValue]);
+    userDefaults[kMPConfigMaxAgeKey] = maxAge;
+    userDefaults[kMPConfigParameters] = [self currentConfigurationParameters];
 }
 
 - (void)migrateConfiguration {
@@ -306,20 +313,15 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     NSDictionary *configuration = [userDefaults mpObjectForKey:kMResponseConfigurationKey userId:userID];
     
     if ([fileManager fileExistsAtPath:configurationPath]) {
-        if (eTag) {
-            NSDictionary *directoryContents = [MPArchivist unarchiveObjectOfClass:[NSDictionary class] withFile:configurationPath error:nil];
-
-            [userDefaults setConfiguration:directoryContents andETag:eTag];
-        } else {
-            [fileManager removeItemAtPath:configurationPath error:nil];
-            [self deleteConfiguration];
-        }
+        [fileManager removeItemAtPath:configurationPath error:nil];
+        [self deleteConfiguration];
+        MPILogDebug(@"Configuration Migration Complete");
     } else if ((eTag && !configuration) || (!eTag && configuration)) {
         [self deleteConfiguration];
+        MPILogDebug(@"Configuration Migration Complete");
     }
     
     [[NSUserDefaults standardUserDefaults] setObject:@1 forKey:kMResponseConfigurationMigrationKey];
-    MPILogDebug(@"Configuration Migration Complete");
 }
 
 - (void)deleteConfiguration {
@@ -327,6 +329,10 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     
     [userDefaults removeMPObjectForKey:kMResponseConfigurationKey];
     [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
+    
+    userDefaults[kMPConfigProvisionedTimestampKey] = nil;
+    userDefaults[kMPConfigMaxAgeKey] = nil;
+    userDefaults[kMPConfigParameters] = nil;
     
     MPILogDebug(@"Configuration Deleted");
 }
@@ -356,6 +362,68 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     
     return false;
+}
+
+- (BOOL)isConfigurationExpired {
+    BOOL isConfigurationExpired = YES;
+
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
+    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeKey];
+    
+    if (configProvisioned != nil) {
+        NSTimeInterval intervalConfigProvisioned = [configProvisioned doubleValue];
+        NSTimeInterval intervalNow = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval delta = intervalNow - intervalConfigProvisioned;
+        NSTimeInterval expirationAge = (maxAge != nil) ? MIN([maxAge doubleValue], CONFIG_REQUESTS_MAX_EXPIRATION_AGE) : CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE;
+        isConfigurationExpired = delta > expirationAge;
+    }
+    
+    return isConfigurationExpired;
+}
+
+- (BOOL)isConfigurationParametersOutdated {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSString *oldParameters = userDefaults[kMPConfigParameters];
+    NSString *currentParameters = [self currentConfigurationParameters];
+
+    if (currentParameters != nil && oldParameters != nil) {
+        if ([currentParameters isEqualToString:oldParameters]) {
+            return NO;
+        }
+    }
+    
+    return YES;
+}
+
+- (NSString *)currentConfigurationParameters {
+    NSMutableString *configString = [NSMutableString string];
+    
+    if (MParticle.sharedInstance.version != nil) {
+        [configString appendFormat:@"SDK Version: %@\n", MParticle.sharedInstance.version];
+    }
+    
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    if (stateMachine.apiKey != nil) {
+        [configString appendFormat:@"API Key: %@\n", stateMachine.apiKey];
+    }
+    
+    NSMutableString *supportedKitsString = [NSMutableString string];
+    NSSortDescriptor* sortOrder = [NSSortDescriptor sortDescriptorWithKey: @"self"
+                                                                ascending: YES];
+    NSArray<NSNumber *> *supportedKits = [[[MParticle sharedInstance].kitContainer supportedKits] sortedArrayUsingDescriptors: [NSArray arrayWithObject: sortOrder]];
+    if (supportedKits != nil) {
+        for (NSNumber *kitID in supportedKits) {
+            [supportedKitsString appendFormat:@"%@\n", kitID];
+        }
+    }
+    [configString appendFormat:@"Supported Kits: \n%@\n", supportedKitsString];
+    
+    NSNumber *environment = [NSNumber numberWithInt:(int)[MPStateMachine environment]];
+    [configString appendFormat:@"Environment: %@\n", environment];
+    
+    return [MPIHasher hashString:configString];
 }
 
 #pragma mark Objective-C Literals

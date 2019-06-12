@@ -18,6 +18,7 @@
 #import "MPResponseConfig.h"
 #import "MPExceptionHandler.h"
 #import "MPBaseTestCase.h"
+#import "MPIUserDefaults.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -761,9 +762,8 @@
                                         kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
+        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     }
     
     [self.backendController setUserAttribute:@"foo attribute 3" value:@"foo value 3" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, id  _Nullable value, MPExecStatus execStatus) {}];

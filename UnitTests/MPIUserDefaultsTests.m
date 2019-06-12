@@ -4,9 +4,20 @@
 #import "mParticle.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
+#import "MPKitContainer.h"
+#import "MPStateMachine.h"
 
-@interface MPIUserDefaultsTests : MPBaseTestCase
-@property (nonatomic, strong) NSDictionary *initialResponseConfiguration;
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPKitContainer *kitContainer;
+
+@end
+
+@interface MPIUserDefaultsTests : MPBaseTestCase {
+    MPKitContainer *kitContainer;
+}
 
 @end
 
@@ -15,35 +26,21 @@
 - (void)setUp {
     [super setUp];
     
-    [MPPersistenceController setMpid:@12];
-
-    NSDictionary *configuration1 = @{
-                                     @"id":@42,
-                                     @"as":@{
-                                             @"appId":@"cool app key"
-                                             }
-                                     };
+    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.apiKey = @"unit_test_app_key";
+    stateMachine.secret = @"unit_test_secret";
     
-    NSDictionary *configuration2 = @{
-                                     @"id":@312,
-                                     @"as":@{
-                                             @"appId":@"cool app key 2"
-                                             }
-                                     };
-    
-    NSArray *kitConfigs = @[configuration1, configuration2];
-    
-    NSString *eTag = @"1.618-2.718-3.141-42";
-    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
-                                            kMPRemoteConfigRampKey:@100,
-                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                            kMPRemoteConfigSessionTimeoutKey:@112};
-    _initialResponseConfiguration = responseConfiguration;
-    
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration andETag:eTag];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer;
 }
 
 - (void)tearDown {
+    for (MPKitRegister *kitRegister in [MPKitContainer registeredKits]) {
+        kitRegister.wrapperInstance = nil;
+    }
+    kitContainer = nil;
+
     [[MPIUserDefaults standardUserDefaults] setSharedGroupIdentifier:nil];
 
     [[MPIUserDefaults standardUserDefaults] resetDefaults];
@@ -127,25 +124,68 @@
 }
 
 - (void)testValidConfiguration {
-    XCTAssertEqualObjects(self.initialResponseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    [MPPersistenceController setMpid:@12];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+    
+    XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
 }
 
 - (void)testInvalidConfigurations {
-    NSString *eTag = nil;
+    [MPPersistenceController setMpid:@12];
     
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:self.initialResponseConfiguration andETag:eTag];
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
     
-    NSNumber *userID = [[[MParticle sharedInstance] identity] currentUser].userId;
-    NSString *currentEtag = [[MPIUserDefaults standardUserDefaults] mpObjectForKey:kMPHTTPETagHeaderKey userId:userID];
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
     
-    XCTAssertNotNil(currentEtag);
+    NSArray *kitConfigs = @[configuration1, configuration2];
     
-    eTag = @"1.618-2.718-3.141-42";
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     NSDictionary *responseDictionary = nil;
     
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseDictionary andETag:eTag];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseDictionary eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     
-    XCTAssertEqualObjects(self.initialResponseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
 }
 
 - (void)testUpdateConfigurations {
@@ -164,9 +204,10 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration andETag:eTag];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     
-    XCTAssertNotEqualObjects(self.initialResponseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    XCTAssertNotEqualObjects(nil, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
     XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
 
     NSDictionary *configuration2 = @{
@@ -182,10 +223,136 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration2 andETag:eTag];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration2 eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     
     XCTAssertNotEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
     XCTAssertEqualObjects(responseConfiguration2, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+}
+
+- (void)testValidExpandedConfiguration {
+    [MPPersistenceController setMpid:@12];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    MPIUserDefaults *standardDefaults = [MPIUserDefaults standardUserDefaults];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"4000" maxAge:@90000];
+    
+    XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp - 4000));
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], @90000);
+}
+
+- (void)testValidExpandedConfigurationWithNilCurrentAge {
+    [MPPersistenceController setMpid:@12];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    MPIUserDefaults *standardDefaults = [MPIUserDefaults standardUserDefaults];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    NSString *currentAge;
+    [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:currentAge maxAge:@90000];
+    
+    XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp));
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], @90000);
+}
+
+- (void)testValidExpandedConfigurationNoMaxAge {
+    [MPPersistenceController setMpid:@12];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    MPIUserDefaults *standardDefaults = [MPIUserDefaults standardUserDefaults];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"4000" maxAge:@90000];
+    
+    XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp - 4000));
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], @90000);
+    
+    [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"4000" maxAge:nil];
+    XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp - 4000));
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], nil);
+}
+
+- (void)testInvalidExpandedConfiguration {
+    [MPPersistenceController setMpid:@12];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration;
+    
+    MPIUserDefaults *standardDefaults = [MPIUserDefaults standardUserDefaults];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnonnull"
+    [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:@90000];
+#pragma clang diagnostic pop
+    
+    XCTAssertEqualObjects(nil, [standardDefaults getConfiguration]);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], nil);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey],  nil);
 }
 
 - (void)testDeleteConfiguration {
@@ -225,9 +392,96 @@
                                              @"foo": [NSNull null]
                                              }
                                      };
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration1 andETag:@"bar"];
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration1 eTag:@"bar" requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     
     XCTAssertEqualObjects(configuration1, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+}
+
+- (void)testSetConfigurationWhenNil {
+    XCTAssertEqualObjects(nil, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    
+    [MPPersistenceController setMpid:@12];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+    
+    XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+}
+
+- (void)testConfigParameters {
+    XCTAssertEqualObjects(nil, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    XCTAssert([[MPIUserDefaults standardUserDefaults] isConfigurationParametersOutdated]);
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSString *initialParameters = userDefaults[kMPConfigParameters];
+    XCTAssertEqualObjects(nil, initialParameters);
+    
+    [MPPersistenceController setMpid:@12];
+    
+    NSDictionary *configuration1 = @{
+                                     @"id":@42,
+                                     @"as":@{
+                                             @"appId":@"cool app key"
+                                             }
+                                     };
+    
+    NSDictionary *configuration2 = @{
+                                     @"id":@312,
+                                     @"as":@{
+                                             @"appId":@"cool app key 2"
+                                             }
+                                     };
+    
+    NSArray *kitConfigs = @[configuration1, configuration2];
+    
+    NSString *eTag = @"1.618-2.718-3.141-42";
+    NSDictionary *responseConfiguration = @{kMPRemoteConfigKitsKey:kitConfigs,
+                                            kMPRemoteConfigRampKey:@100,
+                                            kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                            kMPRemoteConfigSessionTimeoutKey:@112};
+    
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+    
+    XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    XCTAssertFalse([[MPIUserDefaults standardUserDefaults] isConfigurationParametersOutdated]);
+    
+    NSString *firstParameters = userDefaults[kMPConfigParameters];
+    XCTAssertNotNil(firstParameters);
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
+    [MPKitContainer registerKit:kitRegister];
+    
+    XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    XCTAssertTrue([[MPIUserDefaults standardUserDefaults] isConfigurationParametersOutdated]);
+    
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+    
+    XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
+    XCTAssertFalse([[MPIUserDefaults standardUserDefaults] isConfigurationParametersOutdated]);
 }
 
 @end

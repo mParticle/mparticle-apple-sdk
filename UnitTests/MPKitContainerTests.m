@@ -187,8 +187,11 @@
     
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
     
-    [MPResponseConfig save:responseConfig eTag:eTag];
-        
+    NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+    [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+    
+    XCTAssertEqualObjects(responseConfig.configuration, [MPResponseConfig restore].configuration);
+    
     NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
@@ -235,7 +238,10 @@
         
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
-        [MPResponseConfig save:responseConfig eTag:eTag];
+        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        
+        XCTAssertEqualObjects(responseConfig.configuration, [MPResponseConfig restore].configuration);
         
         dispatch_sync(dispatch_get_main_queue(), ^{ });
         XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
@@ -264,7 +270,10 @@
         
         responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
         
-        [MPResponseConfig save:responseConfig eTag:eTag];
+        requestTimestamp = [[NSDate date] timeIntervalSince1970];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        
+        XCTAssertEqualObjects(responseConfig.configuration, [MPResponseConfig restore].configuration);
         
         XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         

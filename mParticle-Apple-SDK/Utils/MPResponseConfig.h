@@ -8,7 +8,6 @@
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration;
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration dataReceivedFromServer:(BOOL)dataReceivedFromServer;
 
-+ (void)save:(nonnull MPResponseConfig *)responseConfig eTag:(nonnull NSString *)eTag;
 + (nullable MPResponseConfig *)restore;
 
 #if TARGET_OS_IOS == 1

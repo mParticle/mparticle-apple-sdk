@@ -93,10 +93,8 @@
                                         kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
-        
-        [MPResponseConfig save:responseConfig eTag:eTag];
+        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
 
         configuration = @{kMPRemoteConfigRampKey:@100,
                           kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
