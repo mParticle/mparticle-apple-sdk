@@ -1,5 +1,16 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.10.1
+
+## Core
+
+- Update for Xcode 11
+- Respect max age expiration for configuration requests
+
+## Kits
+
+- Update Urban Airship import statements
+
 ## 7.10.0
 
 This release introduces support for user alias requests.
