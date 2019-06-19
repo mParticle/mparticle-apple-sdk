@@ -363,4 +363,37 @@
 }
 #endif
 
+- (void)testLogNilEvent {
+    MParticle *instance = [MParticle sharedInstance];
+    NSException *e = nil;
+    @try {
+        [instance logEvent:(id _Nonnull)nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+}
+
+- (void)testLogNilScreenEvent {
+    MParticle *instance = [MParticle sharedInstance];
+    NSException *e = nil;
+    @try {
+        [instance logScreenEvent:(id _Nonnull)nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+}
+
+- (void)testLogNilCommerceEvent {
+    MParticle *instance = [MParticle sharedInstance];
+    NSException *e = nil;
+    @try {
+        [instance logCommerceEvent:(id _Nonnull)nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+}
+
 @end

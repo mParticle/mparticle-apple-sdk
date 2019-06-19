@@ -859,6 +859,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)logEvent:(MPEvent *)event {
+    if (event == nil) {
+        MPILogError(@"Cannot log nil event!");
+        return;
+    }
     [event endTiming];
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
@@ -894,6 +898,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
+    if (event == nil) {
+        MPILogError(@"Cannot log nil screen event!");
+        return;
+    }
     if (!event.timestamp) {
         event.timestamp = [NSDate date];
     }
@@ -1074,6 +1082,10 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark eCommerce transactions
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
+    if (commerceEvent == nil) {
+        MPILogError(@"Cannot log nil commerce event!");
+        return;
+    }
     if (!commerceEvent.timestamp) {
         commerceEvent.timestamp = [NSDate date];
     }

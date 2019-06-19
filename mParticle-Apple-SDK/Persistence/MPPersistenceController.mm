@@ -1629,8 +1629,8 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveMessage:(MPMessage *)message {
-    if (message.messageData.length > MAX_BYTES_PER_EVENT) {
-        MPILogError(@"Unable to save message exceeding max message size!");
+    if (message == nil || message.messageData.length > MAX_BYTES_PER_EVENT) {
+        MPILogError(@"Unable to save message that is nil or exceeds max message size!");
         return;
     }
     

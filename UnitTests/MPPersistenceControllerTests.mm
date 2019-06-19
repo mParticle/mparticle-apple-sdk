@@ -518,4 +518,15 @@
     XCTAssertEqual(messages.count, 0);
 }
 
+- (void)testSaveNilMessage {
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSException *e = nil;
+    @try {
+        [persistence saveMessage:(id _Nonnull)nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+}
+
 @end
