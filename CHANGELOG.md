@@ -1,5 +1,20 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.10.2
+
+## Core
+
+Note: To ensure proper validation, this release updates the userIdentities property of MPIdentityApiRequest to be an immutable dictionary.
+
+If you happened to be modifying this dictionary directly, you will need to update your code to call setUserIdentity:identityType: instead.
+
+- Don't allow direct mutation of request identities
+- Guard against nil events
+
+## Kits
+
+- Button - Update kit to use Button Merchant Library
+
 ## 7.10.1
 
 ## Core
