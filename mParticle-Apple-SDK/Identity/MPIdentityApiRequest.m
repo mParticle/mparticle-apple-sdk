@@ -8,23 +8,27 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 
+@interface MPIdentityApiRequest ()
+@property (nonatomic) NSMutableDictionary *mutableUserIdentities;
+@end
+
 @implementation MPIdentityApiRequest
 
 - (instancetype)init
 {
     self = [super init];
     if (self) {
-        _userIdentities = [NSMutableDictionary dictionary];
+        _mutableUserIdentities = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
 - (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
     if (MPIsNull(identityString)) {
-        [_userIdentities setObject:(NSString *)[NSNull null]
+        [_mutableUserIdentities setObject:(NSString *)[NSNull null]
                             forKey:@(identityType)];
     } else if ([identityString length] > 0) {
-        [_userIdentities setObject:identityString
+        [_mutableUserIdentities setObject:identityString
                             forKey:@(identityType)];
     }
 }
@@ -46,7 +50,7 @@
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     NSMutableDictionary *knownIdentities = [NSMutableDictionary dictionary];
     
-    [_userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+    [_mutableUserIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
         
         MPUserIdentity identityType = [key intValue];
         switch (identityType) {
@@ -127,7 +131,7 @@
 }
 
 - (NSString *)email {
-    return _userIdentities[@(MPUserIdentityEmail)];
+    return _mutableUserIdentities[@(MPUserIdentityEmail)];
 }
 
 - (void)setEmail:(NSString *)email {
@@ -135,11 +139,15 @@
 }
 
 - (NSString *)customerId {
-    return _userIdentities[@(MPUserIdentityCustomerId)];
+    return _mutableUserIdentities[@(MPUserIdentityCustomerId)];
 }
 
 - (void)setCustomerId:(NSString *)customerId {
     [self setUserIdentity:customerId identityType:MPUserIdentityCustomerId];
+}
+
+- (NSDictionary *)userIdentities {
+    return [_mutableUserIdentities copy];
 }
 
 @end
