@@ -1,21 +1,6 @@
 language: objective-c
-osx_image: xcode8.3
-matrix:
-  include:
-  - env: IOS_DEVICE="iPhone 7 Plus (10.3.1)", UDID="F60B87EC-8969-41A7-90ED-D0826ECC32DB", IS_XCODE8="true"
-    osx_image: xcode8.3
-    script:
-    - (xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" clean analyze | grep -B3 "warning generated." || exit 0 && exit 1)
-    - set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" build-for-testing | xcpretty
-    - set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test-without-building | xcpretty
-  - env: IOS_DEVICE="iPhone 5s (8.1)", UDID="8DC0EE03-9484-4184-A7AF-444BDC4EDDC8"
-    osx_image: xcode7.3
-    script:
-    - ./Scripts/modify_for_older_xcode.rb
-    - xctool -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle_iOS_SDKTests" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,id=$UDID" test -only mParticle_iOS_SDKTests
-env:
-  global:
-  - FRAMEWORK_NAME=mParticle_Apple_SDK
-  - secure: "rKzMktHX0tQF9XjIZ0SiRKoNHINvFvb9VAlkPXCPyuu1L9UmKql4lsCH6VSafUK+Dm7EOyjle9P3jUGlO9RKY5T20ynNK5hBLKuSY7emWo2zEAhTfVCSAkZlixorkMIKEXD13jY/IZYvATsf4cTYo7DKsu97AWVL9AuQN4xPrETBYgrKXXYuLYnb0lDr2jJSaAUTvt0QqOEvIBLE59CRUIvcxnPqZefiQV5TMRjzNDoNY6SYlds/GEk1hXcYK6pIcKYV6QSjh0ZcAIYMnNaoWFXEmIdy1SNyGrwXSw43xPeVKCGrpbzMyjiEGPGm89fdy9y6c0TVsVXt8/BzY9a88H7TiJhjC/3BLpCKYtselNmYhGkhkGdPE/9NUfbSH4T1KQNjUVtFbsRBXmx0vhFf7Be+0mame187HxpP/t8oybAzqbLBda01V9HNTPyrzaG/y9gL6/g6eiPq8FkEAnOI4DnUpj9JOzQFDBErNfDniaTkqXRKbDaSvCA5rp/SBXjmHV5vv96egg6XOxJ0VR9XIVVpsCRxjehop7lEgLW+Syvft1Y70AooX8+CIj8FmBaCgSL6wHf7xJEygFpfLfYsVQNh+eUbXa1BsRh0iIIwrj5TtMt9WA9dfLAT7sZuVLLxTDx0uBzs7sdxYleBi43aVQXc+KwwHdhSZTQspQXkG34="
-before_install:
-  - open -a "simulator" --args -CurrentDeviceUDID $UDID
+osx_image: xcode10.2
+script:
+- pod lib lint && pod lib lint --use-libraries
+- carthage build --no-skip-current && carthage archive && ls mParticle_Apple_SDK.framework.zip &>/dev/null
+- (xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone XS" clean analyze | grep -B3 "warning generated." || exit 0 && exit 1)
