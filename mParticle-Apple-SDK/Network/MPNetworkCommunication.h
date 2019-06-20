@@ -27,6 +27,7 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
 @interface MPNetworkCommunication : NSObject
 
+- (MPConnector *_Nonnull)makeConnector;
 - (void)requestConfig:(nullable MPConnector *)connector withCompletionHandler:(MPConfigCompletionHandler)completionHandler;
 - (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler;

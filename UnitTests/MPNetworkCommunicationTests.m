@@ -9,10 +9,20 @@
 #import "MPConnector.h"
 #import "MPIUserDefaults.h"
 #import "MPBaseTestCase.h"
+#import "mParticle.h"
+#import "MPPersistenceController.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPPersistenceController *persistenceController;
+
+@end
 
 @interface MPNetworkCommunication ()
 
 - (NSNumber *)maxAgeForCache:(nonnull NSString *)cache;
+- (BOOL)performMessageUpload:(MPUpload *)upload;
+- (BOOL)performAliasUpload:(MPUpload *)upload;
 
 @end
 
@@ -82,6 +92,195 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testShouldStopEvents {
+    [self shouldStopEvents:0 shouldStop:YES];
+    [self shouldStopEvents:999 shouldStop:YES];
+    [self shouldStopEvents:-999 shouldStop:YES];
+    [self shouldStopEvents:-1 shouldStop:YES];
+    [self shouldStopEvents:200 shouldStop:NO];
+    [self shouldStopEvents:201 shouldStop:NO];
+    [self shouldStopEvents:202 shouldStop:NO];
+    [self shouldStopEvents:400 shouldStop:NO];
+    [self shouldStopEvents:401 shouldStop:NO];
+    [self shouldStopEvents:429 shouldStop:YES];
+    [self shouldStopEvents:500 shouldStop:YES];
+    [self shouldStopEvents:503 shouldStop:YES];
+}
+
+- (void)shouldStopEvents:(int)returnCode shouldStop:(BOOL)shouldStop {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(returnCode)] statusCode];
+    
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+    
+    MPUpload *messageUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    
+    BOOL actualShouldStop = [networkCommunication performMessageUpload:messageUpload];
+    XCTAssertEqual(shouldStop, actualShouldStop, @"Return code assertion: %d", returnCode);
+    [urlResponseMock stopMocking];
+    [mockConnector stopMocking];
+    [mockNetworkCommunication stopMocking];
+}
+
+- (void)testShouldStopAlias {
+    [self shouldStopAlias:0 shouldStop:YES];
+    [self shouldStopAlias:999 shouldStop:YES];
+    [self shouldStopAlias:-999 shouldStop:YES];
+    [self shouldStopAlias:-1 shouldStop:YES];
+    [self shouldStopAlias:200 shouldStop:NO];
+    [self shouldStopAlias:201 shouldStop:NO];
+    [self shouldStopAlias:202 shouldStop:NO];
+    [self shouldStopAlias:400 shouldStop:NO];
+    [self shouldStopAlias:401 shouldStop:NO];
+    [self shouldStopAlias:429 shouldStop:YES];
+    [self shouldStopAlias:500 shouldStop:YES];
+    [self shouldStopAlias:503 shouldStop:YES];
+}
+    
+- (void)shouldStopAlias:(int)returnCode shouldStop:(BOOL)shouldStop {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(returnCode)] statusCode];
+    
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+    
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    aliasUpload.uploadType = MPUploadTypeAlias;
+    
+    BOOL actualShouldStop = [networkCommunication performAliasUpload:aliasUpload];
+    XCTAssertEqual(shouldStop, actualShouldStop, @"Return code assertion: %d", returnCode);
+    [urlResponseMock stopMocking];
+    [mockConnector stopMocking];
+    [mockNetworkCommunication stopMocking];
+}
+
+- (void)testOfflineUpload {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(0)] statusCode];
+    
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+    
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    [[mockPersistenceController reject] deleteUpload:OCMOCK_ANY];
+    
+    MParticle *instance = [MParticle sharedInstance];
+    instance.persistenceController = mockPersistenceController;
+    
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    aliasUpload.uploadType = MPUploadTypeAlias;
+    
+    NSArray *uploads = @[eventUpload, aliasUpload];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    [networkCommunication upload:uploads completionHandler:^{
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [urlResponseMock stopMocking];
+    [mockConnector stopMocking];
+    [mockNetworkCommunication stopMocking];
+    [mockPersistenceController stopMocking];
+}
+
+- (void)testUploadSuccessDeletion {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(202)] statusCode];
+    
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+    
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    aliasUpload.uploadType = MPUploadTypeAlias;
+    
+    [[mockPersistenceController expect] deleteUpload:eventUpload];
+    [[mockPersistenceController expect] deleteUpload:aliasUpload];
+    
+    MParticle *instance = [MParticle sharedInstance];
+    instance.persistenceController = mockPersistenceController;
+    
+    NSArray *uploads = @[eventUpload, aliasUpload];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    [networkCommunication upload:uploads completionHandler:^{
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [urlResponseMock stopMocking];
+    [mockConnector stopMocking];
+    [mockNetworkCommunication stopMocking];
+    [mockPersistenceController stopMocking];
+}
+
+- (void)testUploadInvalidDeletion {
+    id urlResponseMock = OCMClassMock([NSHTTPURLResponse class]);
+    [[[urlResponseMock stub] andReturnValue:OCMOCK_VALUE(400)] statusCode];
+    
+    MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
+    response.httpResponse = urlResponseMock;
+    
+    id mockConnector = OCMClassMock([MPConnector class]);
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    id mockNetworkCommunication = OCMPartialMock(networkCommunication);
+    [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
+    
+    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    aliasUpload.uploadType = MPUploadTypeAlias;
+    
+    [[mockPersistenceController expect] deleteUpload:eventUpload];
+    [[mockPersistenceController expect] deleteUpload:aliasUpload];
+    
+    MParticle *instance = [MParticle sharedInstance];
+    instance.persistenceController = mockPersistenceController;
+    
+    NSArray *uploads = @[eventUpload, aliasUpload];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    [networkCommunication upload:uploads completionHandler:^{
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [urlResponseMock stopMocking];
+    [mockConnector stopMocking];
+    [mockNetworkCommunication stopMocking];
+    [mockPersistenceController stopMocking];
 }
 
 - (void)testRequestConfigWithDefaultMaxAge {
