@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.10.3
+
+## Core
+
+This release fixes a critical bug in SDK versions 7.8.6 and later where uploads could be prematurely deleted if the network request failed due to the device being offline.
+
+- Bugfix for upload response processing
+
+## Kits
+
+- Appboy - Update endpoint override logic
+
 ## 7.10.2
 
 ## Core
