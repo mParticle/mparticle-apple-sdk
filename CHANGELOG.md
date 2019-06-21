@@ -1,12 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
-## 7.10.3
+## 7.10.4
 
-## Core
+## Critical Bug Fixes
 
 This release fixes a critical bug in SDK versions 7.8.6 and later where uploads could be prematurely deleted if the network request failed due to the device being offline.
 
+This release also fixes a crash while migrating the SDK's internal database. The crash occurs for apps that had opted into manual-session tracking in a previous version of the SDK, and then upgraded to the latest version of the SDK.
+
+## Core
+
 - Bugfix for upload response processing
+- Fix session id migration for messages and uploads
 
 ## Kits
 
