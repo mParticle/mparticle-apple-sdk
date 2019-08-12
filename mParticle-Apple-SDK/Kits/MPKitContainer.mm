@@ -775,7 +775,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     __block BOOL shouldFilter = NO;
     
     // Attribute value filtering
-    shouldFilter = ![self shouldIncludeEventWithAttributes:event.info afterAttributeValueFilteringWithConfiguration:kitConfiguration];
+    shouldFilter = ![self shouldIncludeEventWithAttributes:event.attributes afterAttributeValueFilteringWithConfiguration:kitConfiguration];
     if (shouldFilter) {
         kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
         return kitFilter;
@@ -838,10 +838,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     MPEvent *forwardEvent = [event copy];
     
-    if (event.info) {
-        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.info.count];
+    if (event.attributes) {
+        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.attributes.count];
         
-        [forwardEvent.info enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+        [forwardEvent.attributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
             auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key];
             hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
                                            encoding:NSUTF8StringEncoding];
@@ -854,7 +854,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         }];
         
-        forwardEvent.info = filteredAttributes.count > 0 ? filteredAttributes : nil;
+        forwardEvent.attributes = filteredAttributes.count > 0 ? filteredAttributes : nil;
     }
     
     [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
@@ -1486,7 +1486,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             projectedCommerceEvents.push_back(projectedCommerceEvent);
                         } else {
                             MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                            projectedEvent.info = projectedDictionary;
+                            projectedEvent.attributes = projectedDictionary;
                             projectedEvents.push_back(projectedEvent);
                         }
                         
@@ -1546,7 +1546,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     // Attribute projection lambda function
     NSDictionary * (^projectAttributes)(MPEvent *const, MPEventProjection *const) = ^(MPEvent *const event, MPEventProjection *const eventProjection) {
-        NSDictionary *eventInfo = event.info;
+        NSDictionary *eventInfo = event.attributes;
         if (!eventInfo) {
             return (NSDictionary *)nil;
         }
@@ -1714,7 +1714,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     MPEvent *projectedEvent;
     MPEventProjection *defaultProjection = nil;
     NSDictionary *projectedAttributes;
-    NSDictionary<NSString *, NSString *> *eventInfo = [event.info transformValuesToString];
+    NSDictionary<NSString *, NSString *> *eventInfo = [event.attributes transformValuesToString];
     
     if (projections.count > 0) {
         int eventNameHash = 0;
@@ -1777,7 +1777,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 projectedAttributes = projectAttributes(projectedEvent, eventProjection);
                 
                 if ((NSNull *)projectedAttributes != [NSNull null]) {
-                    projectedEvent.info = projectedAttributes;
+                    projectedEvent.attributes = projectedAttributes;
                     
                     if (eventProjection.projectedName) {
                         if (eventProjection.projectionMatches) {
@@ -1813,7 +1813,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             projectedAttributes = projectAttributes(projectedEvent, defaultProjection);
             
             if ((NSNull *)projectedAttributes != [NSNull null]) {
-                projectedEvent.info = projectedAttributes;
+                projectedEvent.attributes = projectedAttributes;
                 
                 if (defaultProjection.projectedName && defaultProjection.projectionType == MPProjectionTypeEvent) {
                     projectedEvent.name = defaultProjection.projectedName;

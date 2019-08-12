@@ -3,7 +3,6 @@
 #import "MPBackendController.h"
 #import "MPConsumerInfo.h"
 #import "MPDevice.h"
-#import "MPEvent+MessageType.h"
 #import "MPForwardQueueParameters.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
@@ -22,7 +21,6 @@
 #import "MPIUserDefaults.h"
 #import "MPConvertJS.h"
 #import "MPIdentityApi.h"
-#import "MPEvent+Internal.h"
 #import "MPIHasher.h"
 #import "MPApplication.h"
 #import "MParticleWebView.h"
@@ -857,7 +855,7 @@ NSString *const kMPStateKey = @"state";
         event = [[MPEvent alloc] initWithName:eventName type:eventType];
     }
     
-    event.info = eventInfo;
+    event.attributes = eventInfo;
     [self logEvent:event];
 }
 
@@ -901,7 +899,7 @@ NSString *const kMPStateKey = @"state";
         event = [[MPEvent alloc] initWithName:screenName type:MPEventTypeNavigation];
     }
     
-    event.info = eventInfo;
+    event.attributes = eventInfo;
     
     [self logScreenEvent:event];
 }
@@ -959,7 +957,7 @@ NSString *const kMPStateKey = @"state";
         event = [[MPEvent alloc] initWithName:breadcrumbName type:MPEventTypeOther];
     }
     
-    event.info = eventInfo;
+    event.attributes = eventInfo;
     
     if (!event.timestamp) {
         event.timestamp = [NSDate date];
@@ -1088,7 +1086,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     MPEvent *event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
-    event.info = eventDictionary;
+    event.attributes = eventDictionary;
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(increaseAmount) parameter2:eventName parameter3:eventInfo];
     
@@ -1535,14 +1533,14 @@ NSString *const kMPStateKey = @"state";
         switch (messageType) {
             case MPJavascriptMessageTypePageEvent: {
                 MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:(MPEventType)[dictionary[@"EventCategory"] integerValue]];
-                event.info = dictionary[@"EventAttributes"];
+                event.attributes = dictionary[@"EventAttributes"];
                 [self logEvent:event];
             }
                 break;
                 
             case MPJavascriptMessageTypePageView: {
                 MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:MPEventTypeNavigation];
-                event.info = dictionary[@"EventAttributes"];
+                event.attributes = dictionary[@"EventAttributes"];
                 [self logScreenEvent:event];
             }
                 break;

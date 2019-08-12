@@ -31,7 +31,6 @@ NSString *const kMPCEAction = @"an";
 NSString *const kMPCECheckoutStep = @"cs";
 NSString *const kMPCEScreenName = @"sn";
 NSString *const kMPCENonInteractive = @"ni";
-NSString *const kMPEventCustomFlags = @"flags";
 NSString *const kMPCEPromotions = @"pm";
 NSString *const kMPCEImpressions = @"pi";
 NSString *const kMPCEImpressionList = @"pil";
@@ -644,7 +643,7 @@ static NSArray *actionNames;
                     }
 
                     if (eventInfo.count > 0) {
-                        event.info = eventInfo;
+                        event.attributes = eventInfo;
                     }
 
                     commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:instruction event:event product:product];
@@ -687,7 +686,7 @@ static NSArray *actionNames;
                 }
 
                 if (eventInfo.count > 0) {
-                    event.info = eventInfo;
+                    event.attributes = eventInfo;
                 }
 
                 commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
@@ -711,7 +710,7 @@ static NSArray *actionNames;
             }
 
             if (eventInfo.count > 0) {
-                event.info = eventInfo;
+                event.attributes = eventInfo;
             }
 
             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
@@ -740,7 +739,7 @@ static NSArray *actionNames;
                             }
 
                             if (eventInfo.count > 0) {
-                                event.info = eventInfo;
+                                event.attributes = eventInfo;
                             }
 
                             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];

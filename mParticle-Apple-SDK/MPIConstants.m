@@ -56,6 +56,7 @@ NSString *const kMPIsFirstTimeUserIdentityHasBeenSet = @"f";
 NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
 NSString *const kMPForwardStatsRecord = @"fsr";
+NSString *const kMPEventCustomFlags = @"flags";
 
 // Consent
 NSString *const kMPConsentState = @"con";
@@ -320,6 +321,7 @@ NSString *const kMPEventTypeStringPromotionClick = @"PromotionClick";
 NSString *const kMPEventTypeStringProductAddToWishlist = @"ProductAddToWishlist";
 NSString *const kMPEventTypeStringProductRemoveFromWishlist = @"ProductRemoveFromWishlist";
 NSString *const kMPEventTypeStringProductImpression = @"ProductImpression";
+NSString *const kMPEventTypeStringMedia = @"Media";
 
 //
 // Primitive data type constants

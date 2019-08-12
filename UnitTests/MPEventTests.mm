@@ -1,7 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "OCMock.h"
 #import "MPEvent.h"
-#import "MPEvent+Internal.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
@@ -50,7 +49,7 @@
     NSDictionary *eventInfo = @{@"speed":@25,
                                 @"modality":@"sprinting"};
     
-    event.info = eventInfo;
+    event.attributes = eventInfo;
     event.category = @"Olympic Games";
     
     MPEvent *copyEvent = [event copy];
@@ -64,10 +63,10 @@
     XCTAssertNotEqualObjects(copyEvent, event, @"Copied event object should have been different.");
     
     copyEvent.name = event.name;
-    copyEvent.info = nil;
+    copyEvent.attributes = nil;
     XCTAssertNotEqualObjects(copyEvent, event, @"Copied event object should have been different.");
     
-    copyEvent.info = event.info;
+    copyEvent.attributes = event.attributes;
     copyEvent.duration = @1;
     XCTAssertNotEqualObjects(copyEvent, event, @"Copied event object should have been different.");
     
@@ -82,10 +81,10 @@
     
     XCTAssertNil(event.category, @"Should have been nil.");
     
-    XCTAssertNotNil(event.info, @"Should not have been nil.");
+    XCTAssertNotNil(event.attributes, @"Should not have been nil.");
     NSDictionary *copyEventInfo = [eventInfo copy];
-    event.info = copyEventInfo;
-    XCTAssertEqualObjects(event.info, eventInfo, @"Should have been equal.");
+    event.attributes = copyEventInfo;
+    XCTAssertEqualObjects(event.attributes, eventInfo, @"Should have been equal.");
     
     event = [[MPEvent alloc] init];
     XCTAssertNotNil(event, @"Should not have been nil.");
@@ -154,7 +153,7 @@
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
     event.duration = eventDuration;
-    event.info = @{@"speed":@25,
+    event.attributes = @{@"speed":@25,
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
@@ -179,7 +178,7 @@
 
 - (void)testBreadcrumbDictionaryRepresentation {
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
-    event.info = @{@"speed":@25,
+    event.attributes = @{@"speed":@25,
                    @"modality":@"sprinting"};
     
     NSDictionary *dictionaryRepresentation = [event breadcrumbDictionaryRepresentation];
@@ -189,25 +188,25 @@
     XCTAssertNil(dictionaryRepresentation[kMPEventTypeKey], @"Type should have been nil for screen events.");
     XCTAssertNil(dictionaryRepresentation[kMPEventLength], @"Length should have been nil.");
     XCTAssertNil(dictionaryRepresentation[kMPEventCounterKey], @"Counter should have been nil for screen events.");
-    XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], event.info, @"Attributes are not being set correctly.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], event.attributes, @"Attributes are not being set correctly.");
 }
 
 - (void)testSetEventAttributes {
     MPEvent *event = [[MPEvent alloc] initWithName:@"foo" type:MPEventTypeNavigation];
-    XCTAssertNil(event.info);
+    XCTAssertNil(event.attributes);
     id mockLongValue = [OCMockObject mockForClass:[NSString class]];
     OCMStub([mockLongValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH); //just short enough
-    event.info = @{@"foo-attribute-key":mockLongValue};
-    XCTAssertNotNil(event.info);
+    event.attributes = @{@"foo-attribute-key":mockLongValue};
+    XCTAssertNotNil(event.attributes);
 }
 
 - (void)testSetLongEventAttributes {
     MPEvent *event = [[MPEvent alloc] initWithName:@"foo" type:MPEventTypeNavigation];
-    XCTAssertNil(event.info);
+    XCTAssertNil(event.attributes);
     id mockLongValue = [OCMockObject mockForClass:[NSString class]];
     OCMStub([mockLongValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH+1); //just a bit too long
-    event.info = @{@"foo-attribute-key":mockLongValue};
-    XCTAssertNil(event.info);
+    event.attributes = @{@"foo-attribute-key":mockLongValue};
+    XCTAssertNil(event.attributes);
 }
 
 - (void)testScreenDictionaryRepresentation {
@@ -228,6 +227,8 @@
     NSArray *customFlags = nil;
     NSString *customFlagKey = @"Era";
     NSString *customFlagValue = @"Mesozoic";
+    NSString *customFlagValue2 = @"Paleozoic";
+    NSString *customFlagValue3 = @"Cenozoic";
 
     [event addCustomFlags:customFlags withKey:customFlagKey];
     XCTAssertNil(event.customFlags, @"Should have been nil.");
@@ -248,7 +249,21 @@
     customFlags = @[customFlagValue];
     [event addCustomFlags:customFlags withKey:customFlagKey];
     XCTAssertNotNil(event.customFlags, @"Should not have been nil.");
+    XCTAssertEqual(event.customFlags[customFlagKey].count, 1);
+
+    customFlagKey = @"Era";
+    customFlags = @[customFlagValue2];
+    [event addCustomFlags:customFlags withKey:customFlagKey];
+    XCTAssertNotNil(event.customFlags, @"Should not have been nil.");
+    XCTAssertEqual(event.customFlags[customFlagKey].count, 2);
+
+    customFlagKey = @"Era";
+    customFlags = @[customFlagValue3];
+    [event addCustomFlags:customFlags withKey:customFlagKey];
+    XCTAssertNotNil(event.customFlags, @"Should not have been nil.");
+    XCTAssertEqual(event.customFlags[customFlagKey].count, 3);
     
+    customFlags = @[customFlagValue, customFlagValue2, customFlagValue3];
     NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
     NSMutableDictionary *expectedDictionary = [@{customFlagKey:customFlags} mutableCopy];
     XCTAssertEqualObjects(dictionaryRepresentation[@"flags"], expectedDictionary, @"Should have been equal.");
@@ -275,20 +290,22 @@
     [event addCustomFlag:customFlagValue withKey:customFlagKey];
     XCTAssertNotNil(event.customFlags, @"Should not have been nil.");
     
+    customFlags = @[customFlagValue];
+    expectedDictionary = [@{customFlagKey:customFlags} mutableCopy];
     dictionaryRepresentation = [event dictionaryRepresentation];
     XCTAssertEqualObjects(dictionaryRepresentation[@"flags"], expectedDictionary, @"Should have been equal.");
 }
 
 - (void)testEquality {
     MPEvent *event1 = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
-    event1.info = @{@"Shoes":@"Sneakers"};
+    event1.attributes = @{@"Shoes":@"Sneakers"};
     
     MPEvent *event2 = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
     XCTAssertNotEqualObjects(event1, event2, @"Should not have been equal.");
     XCTAssertNotEqualObjects(event2, event1, @"Should not have been equal.");
     
     event1.duration = @1;
-    event2.info = @{@"Shoes":@"Sneakers"};
+    event2.attributes = @{@"Shoes":@"Sneakers"};
     XCTAssertNotEqualObjects(event1, event2, @"Should not have been equal.");
     XCTAssertNotEqualObjects(event2, event1, @"Should not have been equal.");
     
@@ -320,9 +337,8 @@
                                         };
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Jump In Time" type:MPEventTypeNavigation];
-    event.info = (NSDictionary *)product;
-    XCTAssertNotNil(event.info, @"Should not have been nil.");
-    XCTAssertEqualObjects(event.info, expectedEventInfo, @"Should have been equal.");
+    event.attributes = product.dictionaryRepresentation;
+    XCTAssertNotNil(event.attributes, @"Should not have been nil.");
+    XCTAssertEqualObjects(event.attributes, expectedEventInfo, @"Should have been equal.");
 }
-
 @end

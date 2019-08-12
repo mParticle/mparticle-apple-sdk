@@ -26,7 +26,8 @@ namespace mParticle {
         string(kMPEventTypeStringPromotionClick.UTF8String),
         string(kMPEventTypeStringProductAddToWishlist.UTF8String),
         string(kMPEventTypeStringProductRemoveFromWishlist.UTF8String),
-        string(kMPEventTypeStringProductImpression.UTF8String)
+        string(kMPEventTypeStringProductImpression.UTF8String),
+        string(kMPEventTypeStringMedia.UTF8String)
     };
     
     const size_t EventTypeName::count = EventTypeName::names.size();

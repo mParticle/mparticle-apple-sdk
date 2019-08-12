@@ -14,7 +14,7 @@ typedef NS_ENUM(NSUInteger, MPEnvironment) {
 };
 
 /// Event Types
-typedef NS_ENUM(NSUInteger, MPEventType) {
+typedef enum {
     /** Use for navigation related events */
     MPEventTypeNavigation = 1,
     /** Use for location related events */
@@ -57,8 +57,39 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     /** Internal. Used when a product is removed from the wishlist */
     MPEventTypeRemoveFromWishlist = 21,
     /** Internal. Used when a product is displayed in a promotion */
-    MPEventTypeImpression = 22
-};
+    MPEventTypeImpression = 22,
+    /** Internal. Used when a media event is provided to the SDK */
+    MPEventTypeMediaBasic = 23
+} MPEventType;
+
+#define NSStringFromEventType( value ) \
+( \
+@{ \
+@( MPEventTypeNavigation )          : kMPEventTypeStringNavigation, \
+@( MPEventTypeLocation )            : kMPEventTypeStringLocation, \
+@( MPEventTypeSearch )              : kMPEventTypeStringSearch, \
+@( MPEventTypeTransaction )         : kMPEventTypeStringTransaction, \
+@( MPEventTypeUserContent )         : kMPEventTypeStringUserContent, \
+@( MPEventTypeUserPreference )      : kMPEventTypeStringUserPreference, \
+@( MPEventTypeSocial )              : kMPEventTypeStringSocial, \
+@( MPEventTypeOther )               : kMPEventTypeStringOther, \
+@( MPEventTypeAddToCart )           : kMPEventTypeStringProductAddToCart, \
+@( MPEventTypeRemoveFromCart )      : kMPEventTypeStringProductRemoveFromCart, \
+@( MPEventTypeCheckout )            : kMPEventTypeStringProductCheckout, \
+@( MPEventTypeCheckoutOption )      : kMPEventTypeStringProductCheckoutOption, \
+@( MPEventTypeClick )               : kMPEventTypeStringProductClick, \
+@( MPEventTypeViewDetail )          : kMPEventTypeStringProductViewDetail, \
+@( MPEventTypePurchase )            : kMPEventTypeStringProductPurchase, \
+@( MPEventTypeRefund )              : kMPEventTypeStringProductRefund, \
+@( MPEventTypePromotionView )       : kMPEventTypeStringPromotionView, \
+@( MPEventTypePromotionClick )      : kMPEventTypeStringPromotionClick, \
+@( MPEventTypeAddToWishlist )       : kMPEventTypeStringProductAddToWishlist, \
+@( MPEventTypeRemoveFromWishlist )  : kMPEventTypeStringProductRemoveFromWishlist, \
+@( MPEventTypeImpression )          : kMPEventTypeStringProductImpression, \
+@( MPEventTypeMediaBasic )          : kMPEventTypeStringMedia, \
+} \
+[ @( value ) ] \
+)
 
 /// Installation Types
 typedef NS_ENUM(NSInteger, MPInstallationType) {
