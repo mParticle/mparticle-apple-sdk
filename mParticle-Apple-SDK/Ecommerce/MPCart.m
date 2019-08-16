@@ -167,7 +167,9 @@
         [commerceEvent addProducts:products];
         
         [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
-    } else if (updateProductList) {
+    }
+    
+    if (updateProductList) {
         [self.productsList addObjectsFromArray:products];
         [self persistCart];
     }
@@ -203,7 +205,9 @@
         MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionRemoveFromCart];
         [commerceEvent removeProducts:products];
         [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
-    } else if (updateProductList) {
+    }
+    
+    if (updateProductList) {
         [self.productsList removeObjectsInArray:products];
         [self persistCart];
     }
@@ -238,7 +242,7 @@
     NSAssert(validProduct, @"The 'product' variable is not valid.");
     
     if (validProduct) {
-        [self addProducts:@[product] logEvent:YES updateProductList:NO];
+        [self addProducts:@[product] logEvent:YES updateProductList:YES];
     }
 }
 
@@ -249,7 +253,7 @@
     NSAssert(validProducts, @"The 'products' array is not valid");
     
     if (validProducts) {
-        [self addProducts:products logEvent:shouldLogEvents updateProductList:NO];
+        [self addProducts:products logEvent:shouldLogEvents updateProductList:YES];
     }
 }
 
@@ -261,7 +265,7 @@
 }
 
 - (NSArray<MPProduct *> *)products {
-    return _productsList.count > 0 ? (NSArray *)_productsList : nil;
+    return self.productsList.count > 0 ? (NSArray *)_productsList : nil;
 }
 
 - (void)removeProduct:(MPProduct *)product {
@@ -271,7 +275,7 @@
     NSAssert(validProduct, @"The 'product' variable is not valid.");
 
     if (validProduct) {
-        [self removeProducts:@[product] logEvent:YES updateProductList:NO];
+        [self removeProducts:@[product] logEvent:YES updateProductList:YES];
     }
 }
 
