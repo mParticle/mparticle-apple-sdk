@@ -21,11 +21,15 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
 @synthesize messageType = _messageType;
 
 - (instancetype)init {
-    return [self initWithName:@"<<Event With No Name>>" type:MPEventTypeOther];
+    return [self initWithEventType:MPEventTypeOther];
+}
+
+- (instancetype)initWithEventType:(MPEventType)type {
+    return [self initWithName:@"<<Event With No Name>>" type:type];
 }
 
 - (instancetype)initWithName:(NSString *)name type:(MPEventType)type {
-    self = [super init];
+    self = [super initWithEventType:type];
     if (!self) {
         return nil;
     }
@@ -44,7 +48,6 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     _name = name;
     _startTime = nil;
     _duration = @0;
-    self.type = type;
 
     return self;
 }
@@ -53,8 +56,8 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     NSString *nameAndType = [[NSString alloc] initWithFormat:@"Event:{\n  Name: %@\n  Type: %@\n", self.name, self.typeName];
     NSMutableString *description = [[NSMutableString alloc] initWithString:nameAndType];
     
-    if (self.attributes) {
-        [description appendFormat:@"  Attributes: %@\n", self.attributes];
+    if (self.customAttributes) {
+        [description appendFormat:@"  Attributes: %@\n", self.customAttributes];
     }
     
     if (self.duration != nil) {
@@ -118,7 +121,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
                                                               kMPEventCounterKey:@([MParticle sharedInstance].stateMachine.currentSession.eventCounter)}
                                                             mutableCopy];
     
-    NSDictionary *info = self.attributes;
+    NSDictionary *info = self.customAttributes;
     NSString *category = self.category;
     NSInteger numberOfItems = (info ? info.count : 0) + (category ? 1 : 0);
     
@@ -166,11 +169,11 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
 }
 
 - (NSDictionary *)Info {
-    return [self.attributes copy];
+    return [self.customAttributes copy];
 }
 
 - (void)setInfo:(NSDictionary *)info {
-    self.attributes = info;
+    self.customAttributes = info;
 }
 
 - (void)setName:(NSString *)name {
@@ -204,8 +207,8 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
                                               kMPEventStartTimestamp:MPCurrentEpochInMilliseconds}
                                             mutableCopy];
     
-    if (self.attributes) {
-        eventDictionary[kMPAttributesKey] = self.attributes;
+    if (self.customAttributes) {
+        eventDictionary[kMPAttributesKey] = self.customAttributes;
     }
     
     return eventDictionary;
@@ -240,11 +243,11 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     
     NSMutableDictionary *attributes = [[NSMutableDictionary alloc] initWithCapacity:1];
     
-    if (self.attributes) {
-        [attributes addEntriesFromDictionary:self.attributes];
+    if (self.customAttributes) {
+        [attributes addEntriesFromDictionary:self.customAttributes];
     }
     
-    if (self.duration && self.attributes[kMPAttrsEventLengthKey] == nil) { // Does not override "EventLength" if it already exists
+    if (self.duration && self.customAttributes[kMPAttrsEventLengthKey] == nil) { // Does not override "EventLength" if it already exists
         attributes[kMPAttrsEventLengthKey] = self.duration;
     }
     

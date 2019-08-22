@@ -83,7 +83,7 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Event Name" type:MPEventTypeTransaction];
     
     // Add attributes to an event
-    event.info = @{@"A_String_Key":@"A String Value",
+    event.customAttributes = @{@"A_String_Key":@"A String Value",
                    @"A Number Key":@(42),
                    @"A Date Key":[NSDate date]};
     
@@ -112,7 +112,7 @@
     commerceEvent.checkoutOptions = @"Credit Card";
     commerceEvent.screenName = @"Timeless Books";
     commerceEvent.checkoutStep = 4;
-    commerceEvent[@"an_extra_key"] = @"an_extra_value"; // A commerce event may contain custom key/value pairs
+    commerceEvent.customAttributes = @{@"an_extra_key": @"an_extra_value"}; // A commerce event may contain custom key/value pairs
     
     // Creates a transaction attribute object
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];

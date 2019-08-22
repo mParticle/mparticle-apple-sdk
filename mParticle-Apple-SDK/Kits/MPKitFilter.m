@@ -31,7 +31,7 @@
 }
 
 - (instancetype)initWithEvent:(MPEvent *)event shouldFilter:(BOOL)shouldFilter appliedProjections:(NSArray<MPEventProjection *> *)appliedProjections {
-    self = [self initWithFilter:shouldFilter filteredAttributes:event.attributes];
+    self = [self initWithFilter:shouldFilter filteredAttributes:event.customAttributes];
     if (!self) {
         return nil;
     }

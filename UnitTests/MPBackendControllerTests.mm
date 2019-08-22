@@ -406,7 +406,7 @@
     });
     self.session = self.backendController.session;
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
-    event.attributes = @{@"key":@"value"};
+    event.customAttributes = @{@"key":@"value"};
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     

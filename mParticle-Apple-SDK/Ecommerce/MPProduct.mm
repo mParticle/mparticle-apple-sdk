@@ -248,7 +248,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     NSMutableDictionary<NSString *, id> *commerceDictionary = [[NSMutableDictionary alloc] init];
     
     if (_userDefinedAttributes) {
-        commerceDictionary[@"attrs"] = [_userDefinedAttributes transformValuesToString];
+        commerceDictionary[kMPAttributesKey] = [_userDefinedAttributes transformValuesToString];
     }
     
     if (_objectDictionary) {

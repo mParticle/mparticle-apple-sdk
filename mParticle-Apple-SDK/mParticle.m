@@ -855,7 +855,7 @@ NSString *const kMPStateKey = @"state";
         event = [[MPEvent alloc] initWithName:eventName type:eventType];
     }
     
-    event.attributes = eventInfo;
+    event.customAttributes = eventInfo;
     [self logEvent:event];
 }
 
@@ -899,7 +899,7 @@ NSString *const kMPStateKey = @"state";
         event = [[MPEvent alloc] initWithName:screenName type:MPEventTypeNavigation];
     }
     
-    event.attributes = eventInfo;
+    event.customAttributes = eventInfo;
     
     [self logScreenEvent:event];
 }
@@ -957,7 +957,7 @@ NSString *const kMPStateKey = @"state";
         event = [[MPEvent alloc] initWithName:breadcrumbName type:MPEventTypeOther];
     }
     
-    event.attributes = eventInfo;
+    event.customAttributes = eventInfo;
     
     if (!event.timestamp) {
         event.timestamp = [NSDate date];
@@ -1086,7 +1086,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     MPEvent *event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
-    event.attributes = eventDictionary;
+    event.customAttributes = eventDictionary;
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(increaseAmount) parameter2:eventName parameter3:eventInfo];
     
@@ -1533,14 +1533,14 @@ NSString *const kMPStateKey = @"state";
         switch (messageType) {
             case MPJavascriptMessageTypePageEvent: {
                 MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:(MPEventType)[dictionary[@"EventCategory"] integerValue]];
-                event.attributes = dictionary[@"EventAttributes"];
+                event.customAttributes = dictionary[@"EventAttributes"];
                 [self logEvent:event];
             }
                 break;
                 
             case MPJavascriptMessageTypePageView: {
                 MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:MPEventTypeNavigation];
-                event.attributes = dictionary[@"EventAttributes"];
+                event.customAttributes = dictionary[@"EventAttributes"];
                 [self logScreenEvent:event];
             }
                 break;

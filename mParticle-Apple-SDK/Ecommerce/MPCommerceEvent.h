@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import "MPBaseEvent.h"
 
 @class MPProduct;
 @class MPPromotionContainer;
@@ -43,10 +44,7 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  
  @see mParticle
  */
-@interface MPCommerceEvent : NSObject <NSCopying, NSSecureCoding> {
-@protected
-    NSDate *_timestamp;
-}
+@interface MPCommerceEvent : MPBaseEvent <NSSecureCoding>
 
 /**
  Checkout option string describing what the options are.
@@ -100,11 +98,6 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  @see MPTransactionAttributes
  */
 @property (nonatomic, strong, nullable) MPTransactionAttributes *transactionAttributes;
-
-/**
-Custom flags are a collection of attributes used to trigger functionality in specific integrations. By default, most integrations will ignore custom flags. Reference the documentation for your integrations to see if they make use of custom flags.
- */
-@property (nonatomic, strong, readonly, nonnull) NSDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
 
 /**
  A value from the <b>MPCommerceEventAction</b> enum describing the commerce event action.
@@ -171,56 +164,13 @@ Custom flags are a collection of attributes used to trigger functionality in spe
 - (void)removeProduct:(nonnull MPProduct *)product;
 
 /**
- Associates a custom dictionary of key/value pairs to the commerce event.
- 
- Alternatively you can set custom attributes using the regular notation for setting key/value pairs in an NSMutableDictionary.
- 
- <b>For example:</b>
- 
- <b>Swift</b>
- <pre><code>
- let commerceEvent = MPCommerceEvent(action: MPCommerceEventAction.AddToCart, product: product1)
- 
- commerceEvent.setCustomAttributes(dictionaryOfKeyValuePairs)
- 
- commerceEvent["Custom Key"] = "Custom Value"
- </code></pre>
- 
- <b>Objective-C</b>
- <pre><code>
- MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product1];
- 
- [commerceEvent setCustomAttributes:dictionaryOfKeyValuePairs];
- 
- commerceEvent[&#64;"Custom Key"] = &#64;"Custom Value";
- </code></pre>
-
- @param customAttributes A dictionary containing the custom key/value pairs.
- */
-- (void)setCustomAttributes:(nullable NSDictionary<NSString *, NSString *> *)customAttributes;
-
-/**
  Returns an array with all keys in the custom attributes dictionary
  @returns An array with all keys in the custom attributes dictionary
  */
-- (nullable NSArray *)allKeys;
+- (nullable NSArray *)allKeys DEPRECATED_ATTRIBUTE;
 
-- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key;
-- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key;
-
-/**
- Adds a custom flag associated with a key to the event.
- @param customFlag A string attribute
- @param key The key associated with the custom flag.
- */
-- (void)addCustomFlag:(nonnull NSString *)customFlag withKey:(nonnull NSString *)key;
-
-/**
- Adds an array of custom flags associated with a key to the event.
- @param customFlags An array of string attributes
- @param key The key associated with the custom flags.
- */
-- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key;
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key DEPRECATED_ATTRIBUTE;
+- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key DEPRECATED_ATTRIBUTE;
 
 @end
 

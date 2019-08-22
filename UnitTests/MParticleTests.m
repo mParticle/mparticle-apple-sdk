@@ -208,13 +208,13 @@
     id mockBackend = OCMClassMock([MPBackendController class]);
     
     MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo webview event 1" type:MPEventTypeNavigation];
-    testEvent.attributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
+    testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
     
     [[[mockBackend expect] ignoringNonObjectArgs] logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
         MPEvent *returnedEvent = ((MPEvent *)value);
         XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
         XCTAssertEqual(returnedEvent.type, testEvent.type);
-        XCTAssertEqualObjects(returnedEvent.attributes, testEvent.attributes);
+        XCTAssertEqualObjects(returnedEvent.customAttributes, testEvent.customAttributes);
         
         return YES;
     }] completionHandler:[OCMArg any]];

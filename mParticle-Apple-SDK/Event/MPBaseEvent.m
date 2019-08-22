@@ -14,10 +14,10 @@
 @implementation MPBaseEvent
 
 - (instancetype)init {
-    return [self initWithType:MPEventTypeOther];
+    return [self initWithEventType:MPEventTypeOther];
 }
 
-- (instancetype)initWithType:(MPEventType)type {
+- (instancetype)initWithEventType:(MPEventType)type {
     self = [super init];
     if (!self) {
         return nil;
@@ -25,15 +25,15 @@
     
     _timestamp = [NSDate date];
     _messageType = MPMessageTypeUnknown;
-    _attributes = nil;
+    _customAttributes = nil;
     _customFlags = nil;
-    _type = type;
+    self.type = type;
     
     return self;
 }
 
-- (void)setAttributes:(NSDictionary<NSString *,id> *)attributes {
-    if (_attributes && attributes && [_attributes isEqualToDictionary:attributes]) {
+- (void)setCustomAttributes:(NSDictionary<NSString *,id> *)attributes {
+    if (_customAttributes && attributes && [_customAttributes isEqualToDictionary:attributes]) {
         return;
     }
     
@@ -62,10 +62,10 @@
         }];
         
         if (respectsConstraints) {
-            _attributes = attributes;
+            _customAttributes = attributes;
         }
     } else {
-        _attributes = nil;
+        _customAttributes = nil;
     }
 }
 
@@ -74,7 +74,7 @@
         return;
     }
     
-    if (type < MPEventTypeNavigation || type > MPEventTypeOther) {
+    if (type < MPEventTypeNavigation || type > MPEventTypeMediaBasic) {
         MPILogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
         _type = MPEventTypeOther;
     } else {
@@ -91,8 +91,8 @@
                                                               kMPEventCounterKey:@([MParticle sharedInstance].stateMachine.currentSession.eventCounter)}
                                                             mutableCopy];
     
-    if (self.attributes.count > 0) {
-        eventDictionary[kMPAttributesKey] = self.attributes;
+    if (self.customAttributes.count > 0) {
+        eventDictionary[kMPAttributesKey] = self.customAttributes;
     }
     
     eventDictionary[kMPEventLength] = @0;
@@ -157,7 +157,7 @@
 
 #pragma mark NSObject
 - (BOOL)isEqual:(MPEvent *)object {
-    return (self.type == object.type) && [self.attributes isEqualToDictionary:object.attributes];
+    return (self.type == object.type) && [self.customAttributes isEqualToDictionary:object.customAttributes];
 }
 
 #pragma mark NSCopying
@@ -166,7 +166,7 @@
     
     if (copyObject) {
         copyObject.type = _type;
-        copyObject.attributes = [_attributes copy];
+        copyObject.customAttributes = [_customAttributes copy];
         copyObject.messageType = _messageType;
         copyObject.timestamp = [_timestamp copy];
         

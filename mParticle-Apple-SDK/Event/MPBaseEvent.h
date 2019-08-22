@@ -25,12 +25,12 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, unsafe_unretained) MPMessageType messageType;
 
-/** MPEvent: info kMPAttributesKey + MPCommerceEvent: userDefinedAttributes kMPCEUserDefinedAttributes
+/**
  A dictionary containing further information about the event. The number of entries is
  limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values
  can be strings (up to 4096 characters), numbers, booleans, or dates
  */
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *attributes;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *customAttributes;
 
 /**
  Custom flags are a collection of attributes used to trigger functionality in specific integrations. By default, most integrations will ignore custom flags. Reference the documentation for your integrations to see if they make use of custom flags.
@@ -47,7 +47,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param type An enum value that indicates the type of event to be logged.
  @returns An instance of MPBaseEvent or nil, if it could not be initialized.
  */
-- (nullable instancetype)initWithType:(MPEventType)type;
+- (nullable instancetype)initWithEventType:(MPEventType)type __attribute__((objc_designated_initializer));
 
 /**
  Adds a custom flag associated with a key to the event.

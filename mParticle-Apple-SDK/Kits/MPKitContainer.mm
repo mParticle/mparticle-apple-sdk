@@ -598,7 +598,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     __block MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:NO];
     
     // Attribute value filtering
-    if (![self shouldIncludeEventWithAttributes:commerceEvent.userDefinedAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
+    if (![self shouldIncludeEventWithAttributes:commerceEvent.customAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration]) {
         kitFilter = [[MPKitFilter alloc] initWithCommerceEvent:commerceEvent shouldFilter:YES];
         return kitFilter;
     }
@@ -701,7 +701,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             // Commerce event attribute filter (user defined attributes)
             filteredAttributes = [[NSMutableDictionary alloc] init];
             
-            [[forwardCommerceEvent userDefinedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+            [[forwardCommerceEvent customAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
                 auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
                 hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
                 
@@ -713,7 +713,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 }
             }];
             
-            [forwardCommerceEvent setUserDefinedAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
+            [forwardCommerceEvent setCustomAttributes:(filteredAttributes.count > 0 ? filteredAttributes : nil)];
             
             // Transaction attributes
             __block MPTransactionAttributes *filteredTransactionAttributes = [[MPTransactionAttributes alloc] init];
@@ -775,7 +775,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     __block BOOL shouldFilter = NO;
     
     // Attribute value filtering
-    shouldFilter = ![self shouldIncludeEventWithAttributes:event.attributes afterAttributeValueFilteringWithConfiguration:kitConfiguration];
+    shouldFilter = ![self shouldIncludeEventWithAttributes:event.customAttributes afterAttributeValueFilteringWithConfiguration:kitConfiguration];
     if (shouldFilter) {
         kitFilter = [[MPKitFilter alloc] initWithFilter:shouldFilter];
         return kitFilter;
@@ -838,10 +838,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     MPEvent *forwardEvent = [event copy];
     
-    if (event.attributes) {
-        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.attributes.count];
+    if (event.customAttributes) {
+        __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.customAttributes.count];
         
-        [forwardEvent.attributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
+        [forwardEvent.customAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
             auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, event.name, key];
             hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
                                            encoding:NSUTF8StringEncoding];
@@ -854,7 +854,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         }];
         
-        forwardEvent.attributes = filteredAttributes.count > 0 ? filteredAttributes : nil;
+        forwardEvent.customAttributes = filteredAttributes.count > 0 ? filteredAttributes : nil;
     }
     
     [self project:kitRegister event:forwardEvent messageType:messageTypeCode completionHandler:^(vector<MPEvent *> projectedEvents, vector<MPEventProjection *> appliedProjections) {
@@ -1093,7 +1093,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                             break;
                             
                         case MPProjectionPropertyKindEventAttribute:
-                            if (isApplicableEventProjection(eventProjection, [[commerceEvent userDefinedAttributes] transformValuesToString])) {
+                            if (isApplicableEventProjection(eventProjection, [[commerceEvent customAttributes] transformValuesToString])) {
                                 applicableEventProjections.push_back(eventProjection);
                             }
                             break;
@@ -1257,7 +1257,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 if (propertyKind == MPProjectionPropertyKindEventField) {
                     sourceDictionary = [[commerceEvent beautifiedAttributes] transformValuesToString];
                 } else if (propertyKind == MPProjectionPropertyKindEventAttribute) {
-                    sourceDictionary = [[commerceEvent userDefinedAttributes] transformValuesToString];
+                    sourceDictionary = [[commerceEvent customAttributes] transformValuesToString];
                 } else {
                     continue;
                 }
@@ -1330,7 +1330,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     // Block to apply maximum custom attributes to the projected dictionary
     void (^applyMaxCustomAttributes)(MPCommerceEvent *, MPEventProjection *, NSMutableDictionary *) = ^(MPCommerceEvent *commerceEvent, MPEventProjection *eventProjection, NSMutableDictionary *projectedDictionary) {
         NSUInteger maxCustomParams = eventProjection.maxCustomParameters;
-        NSDictionary *userDictionary = [[commerceEvent userDefinedAttributes] transformValuesToString];
+        NSDictionary *userDictionary = [[commerceEvent customAttributes] transformValuesToString];
         
         if (eventProjection.appendAsIs && maxCustomParams > 0) {
             if (userDictionary.count > maxCustomParams) {
@@ -1482,11 +1482,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     for (auto &projectedDictionary : projectedDictionaries) {
                         if (eventProjection.outboundMessageType == MPMessageTypeCommerceEvent) {
                             MPCommerceEvent *projectedCommerceEvent = [commerceEvent copy];
-                            [projectedCommerceEvent setUserDefinedAttributes:projectedDictionary];
+                            [projectedCommerceEvent setCustomAttributes:projectedDictionary];
                             projectedCommerceEvents.push_back(projectedCommerceEvent);
                         } else {
                             MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
-                            projectedEvent.attributes = projectedDictionary;
+                            projectedEvent.customAttributes = projectedDictionary;
                             projectedEvents.push_back(projectedEvent);
                         }
                         
@@ -1546,7 +1546,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     // Attribute projection lambda function
     NSDictionary * (^projectAttributes)(MPEvent *const, MPEventProjection *const) = ^(MPEvent *const event, MPEventProjection *const eventProjection) {
-        NSDictionary *eventInfo = event.attributes;
+        NSDictionary *eventInfo = event.customAttributes;
         if (!eventInfo) {
             return (NSDictionary *)nil;
         }
@@ -1714,7 +1714,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     MPEvent *projectedEvent;
     MPEventProjection *defaultProjection = nil;
     NSDictionary *projectedAttributes;
-    NSDictionary<NSString *, NSString *> *eventInfo = [event.attributes transformValuesToString];
+    NSDictionary<NSString *, NSString *> *eventInfo = [event.customAttributes transformValuesToString];
     
     if (projections.count > 0) {
         int eventNameHash = 0;
@@ -1777,7 +1777,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                 projectedAttributes = projectAttributes(projectedEvent, eventProjection);
                 
                 if ((NSNull *)projectedAttributes != [NSNull null]) {
-                    projectedEvent.attributes = projectedAttributes;
+                    projectedEvent.customAttributes = projectedAttributes;
                     
                     if (eventProjection.projectedName) {
                         if (eventProjection.projectionMatches) {
@@ -1813,7 +1813,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             projectedAttributes = projectAttributes(projectedEvent, defaultProjection);
             
             if ((NSNull *)projectedAttributes != [NSNull null]) {
-                projectedEvent.attributes = projectedAttributes;
+                projectedEvent.customAttributes = projectedAttributes;
                 
                 if (defaultProjection.projectedName && defaultProjection.projectionType == MPProjectionTypeEvent) {
                     projectedEvent.name = defaultProjection.projectedName;

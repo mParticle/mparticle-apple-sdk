@@ -35,7 +35,6 @@ NSString *const kMPCEPromotions = @"pm";
 NSString *const kMPCEImpressions = @"pi";
 NSString *const kMPCEImpressionList = @"pil";
 NSString *const kMPCEProductAction = @"pd";
-NSString *const kMPCEUserDefinedAttributes = @"attrs";
 NSString *const kMPCEShoppingCartState = @"sc";
 NSString *const kMPCEInstructionsKey = @"instructions";
 NSString *const kMPExpCECheckoutOptions = @"Checkout Options";
@@ -52,25 +51,21 @@ static NSArray *actionNames;
 
 @interface MPCommerceEvent() {
     MPCommerceEventKind commerceEventKind;
-    MPEventType type;
 }
 
-@property (nonatomic, strong) NSMutableDictionary *attributes;
+@property (nonatomic, strong) NSMutableDictionary *productActionAttributes;
 @property (nonatomic, strong) NSMutableDictionary *beautifiedAttributes;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *latestAddedProducts;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *latestRemovedProducts;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *productImpressions;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *productsList;
-@property (nonatomic, strong) NSMutableDictionary *userDefinedAttributes;
 @property (nonatomic, strong) NSDictionary *shoppingCartState;
-@property (nonatomic, strong, nonnull) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlagsDictionary;
 @end
 
 @implementation MPCommerceEvent
 
 @synthesize transactionAttributes = _transactionAttributes;
 @synthesize beautifiedAttributes = _beautifiedAttributes;
-@synthesize userDefinedAttributes = _userDefinedAttributes;
 @synthesize currency = _currency;
 @synthesize screenName = _screenName;
 @synthesize nonInteractive = _nonInteractive;
@@ -80,7 +75,7 @@ static NSArray *actionNames;
 }
 
 - (id)init {
-    self = [super init];
+    self = [super initWithEventType:MPEventTypeOther];
     if (!self) {
         return nil;
     }
@@ -146,20 +141,20 @@ static NSArray *actionNames;
 - (NSString *)description {
     __block NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ {\n", [[self class] description]];
     
-    if (_attributes.count > 0) {
-        [description appendString:@"  Attributes:{\n"];
+    if (_productActionAttributes.count > 0) {
+        [description appendString:@" Action Attributes:{\n"];
         
-        [_attributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        [_productActionAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
             [description appendFormat:@"    %@:%@\n", key, obj];
         }];
         
         [description appendString:@"  }\n"];
     }
     
-    if (_userDefinedAttributes.count > 0) {
+    if (self.customAttributes.count > 0) {
         [description appendString:@"  User Defined Attributes:{\n"];
         
-        [_userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        [self.customAttributes enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
             [description appendFormat:@"    %@:%@\n", key, obj];
         }];
         
@@ -192,13 +187,13 @@ static NSArray *actionNames;
 }
 
 #pragma mark Private accessors
-- (NSMutableDictionary *)attributes {
-    if (_attributes) {
-        return _attributes;
+- (NSMutableDictionary *)productActionAttributes {
+    if (_productActionAttributes) {
+        return _productActionAttributes;
     }
     
-    _attributes = [[NSMutableDictionary alloc] initWithCapacity:3];
-    return _attributes;
+    _productActionAttributes = [[NSMutableDictionary alloc] initWithCapacity:3];
+    return _productActionAttributes;
 }
 
 - (NSMutableDictionary *)beautifiedAttributes {
@@ -214,7 +209,7 @@ static NSArray *actionNames;
                                            };
     
     [attributeNameMapping enumerateKeysAndObjectsUsingBlock:^(id  _Nonnull shortKey, id  _Nonnull longKey, BOOL * _Nonnull stop) {
-        id value = self.attributes[shortKey];
+        id value = self.productActionAttributes[shortKey];
         if (value) {
             beautifiedAttributes[longKey] = value;
         }
@@ -266,15 +261,6 @@ static NSArray *actionNames;
     return _productsList;
 }
 
-- (NSMutableDictionary *)userDefinedAttributes {
-    if (_userDefinedAttributes) {
-        return _userDefinedAttributes;
-    }
-    
-    _userDefinedAttributes = [[NSMutableDictionary alloc] initWithCapacity:1];
-    return _userDefinedAttributes;
-}
-
 #pragma mark Private methods
 - (void)setEventType {
     static const vector<EventType> productActionEventType {AddToCart, RemoveFromCart, AddToWishlist, RemoveFromWishlist, Checkout, CheckoutOption, Click, ViewDetail, Purchase, Refund};
@@ -282,19 +268,19 @@ static NSArray *actionNames;
     
     switch (commerceEventKind) {
         case MPCommerceEventKindProduct:
-            type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
+            self.type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
             break;
             
         case MPCommerceEventKindPromotion:
-            type = _promotionContainer ? static_cast<MPEventType>(promotionActionEventType[(NSUInteger)self.promotionContainer.action]) : MPEventTypeOther;
+            self.type = _promotionContainer ? static_cast<MPEventType>(promotionActionEventType[(NSUInteger)self.promotionContainer.action]) : MPEventTypeOther;
             break;
             
         case MPCommerceEventKindImpression:
-            type = static_cast<MPEventType>(Impression);
+            self.type = static_cast<MPEventType>(Impression);
             break;
 
         default:
-            type = static_cast<MPEventType>(Other);
+            self.type = static_cast<MPEventType>(Other);
             break;
     }
 }
@@ -303,42 +289,59 @@ static NSArray *actionNames;
 - (id)objectForKeyedSubscript:(NSString *const)key {
     NSAssert(key != nil, @"'key' cannot be nil.");
     
-    id object = [self.userDefinedAttributes objectForKey:key];
+    id object = [self.customAttributes objectForKey:key];
     return object;
 }
 
 - (void)setObject:(id)obj forKeyedSubscript:(NSString *)key {
     NSAssert(key != nil, @"'key' cannot be nil.");
     NSAssert(obj != nil, @"'obj' cannot be nil.");
-    NSAssert([obj isKindOfClass:[NSString class]], @"'obj' for custom attributes must be a NSString");
     
     if (obj == nil) {
         return;
     }
     
-    [self.userDefinedAttributes setObject:obj forKey:key];
+    NSMutableDictionary *mutatingAttributes = [[NSMutableDictionary alloc] init];
+
+    if (self.customAttributes != nil && self.customAttributes.count > 0) {
+        mutatingAttributes = [self.customAttributes mutableCopy];
+    }
+    
+    mutatingAttributes[key] = obj;
+    self.customAttributes = [mutatingAttributes copy];
 }
 
 - (NSArray *)allKeys {
-    return [self.userDefinedAttributes allKeys];
+    return [self.customAttributes allKeys];
+}
+#pragma mark NSObject
+- (BOOL)isEqual:(MPCommerceEvent *)object {
+    BOOL isEqual = [super isEqual:object] &&
+    [_productActionAttributes isEqualToDictionary:object.productActionAttributes] &&
+    [_beautifiedAttributes isEqualToDictionary:object.beautifiedAttributes] &&
+    [_productsList isEqualToArray:object.productsList] &&
+    [_productImpressions isEqualToDictionary:object.productImpressions] &&
+    [self.promotionContainer isEqual:object.promotionContainer] &&
+    [self.transactionAttributes isEqual:object.transactionAttributes] &&
+    commerceEventKind == object->commerceEventKind &&
+    [_shoppingCartState isEqualToDictionary:object.shoppingCartState] &&
+    [_currency isEqualToString:object.currency];
+    
+    return isEqual;
 }
 
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
-    MPCommerceEvent *copyObject = [[[self class] alloc] init];
+    MPCommerceEvent *copyObject = [super copyWithZone:zone];
 
     if (copyObject) {
-        copyObject->_attributes = _attributes ? [[NSMutableDictionary alloc] initWithDictionary:[_attributes copy]] : nil;
+        copyObject->_productActionAttributes = _productActionAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_productActionAttributes copy]] : nil;
         copyObject->_beautifiedAttributes = _beautifiedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_beautifiedAttributes copy]] : nil;
         copyObject->_productsList = _productsList ? [[NSMutableArray alloc] initWithArray:[_productsList copy]] : nil;
         copyObject->_productImpressions = _productImpressions ? [[NSMutableDictionary alloc] initWithDictionary:[_productImpressions copy]] : nil;
         copyObject.promotionContainer = [_promotionContainer copy];
         copyObject.transactionAttributes = [_transactionAttributes copy];
-        copyObject->_userDefinedAttributes = _userDefinedAttributes ? [[NSMutableDictionary alloc] initWithDictionary:[_userDefinedAttributes copy]] : nil;
-        copyObject->_customFlagsDictionary = [_customFlagsDictionary mutableCopy];
-        copyObject->type = type;
         copyObject->commerceEventKind = commerceEventKind;
-        copyObject->_timestamp = [_timestamp copy];
         copyObject->_shoppingCartState = _shoppingCartState ? [[NSMutableDictionary alloc] initWithDictionary:[_shoppingCartState copy]] : nil;
         copyObject->_currency = [_currency copy];
     }
@@ -348,11 +351,11 @@ static NSArray *actionNames;
 
 #pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
-    [coder encodeInteger:type forKey:@"type"];
+    [coder encodeInteger:self.type forKey:@"type"];
     [coder encodeInteger:commerceEventKind forKey:@"commerceEventKind"];
     
-    if (_attributes) {
-        [coder encodeObject:_attributes forKey:@"attributes"];
+    if (_productActionAttributes) {
+        [coder encodeObject:_productActionAttributes forKey:@"productActionAttributes"];
     }
     
     if (_beautifiedAttributes) {
@@ -375,12 +378,12 @@ static NSArray *actionNames;
         [coder encodeObject:_transactionAttributes forKey:@"transactionAttributes"];
     }
     
-    if (_userDefinedAttributes) {
-        [coder encodeObject:_userDefinedAttributes forKey:@"userDefinedAttributes"];
+    if (self.customAttributes) {
+        [coder encodeObject:self.customAttributes forKey:@"attributes"];
     }
     
-    if (_timestamp) {
-        [coder encodeObject:_timestamp forKey:@"timestamp"];
+    if (self.timestamp) {
+        [coder encodeObject:self.timestamp forKey:@"timestamp"];
     }
     
     if (_currency) {
@@ -406,9 +409,9 @@ static NSArray *actionNames;
         return nil;
     }
     
-    NSDictionary *dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"attributes"];
+    NSDictionary *dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"productActionAttributes"];
     if (dictionary.count > 0) {
-        self->_attributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+        self->_productActionAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
     }
     
     dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"beautifiedAttributes"];
@@ -422,7 +425,7 @@ static NSArray *actionNames;
     }
     
     @try {
-        dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"userDefinedAttributes"];
+        dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"attributes"];
     }
     
     @catch ( NSException *e) {
@@ -432,7 +435,7 @@ static NSArray *actionNames;
     
     @finally {
         if (dictionary.count > 0) {
-            self->_userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
+            self.customAttributes = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
         }
     }
     
@@ -441,14 +444,14 @@ static NSArray *actionNames;
         self->_productsList = [[NSMutableArray alloc] initWithArray:array];
     }
     
-    self->_timestamp = [coder decodeObjectOfClass:[NSDate class] forKey:@"timestamp"];
+    self.timestamp = [coder decodeObjectOfClass:[NSDate class] forKey:@"timestamp"];
     self->_currency = [coder decodeObjectOfClass:[NSString class] forKey:@"currency"];
     self->_screenName = [coder decodeObjectOfClass:[NSString class] forKey:@"screenName"];
     self->_nonInteractive = [coder decodeBoolForKey:@"nonInteractive"];
     
     self.promotionContainer = [coder decodeObjectOfClass:[MPPromotionContainer class] forKey:@"promotionContainer"];
     self.transactionAttributes = [coder decodeObjectOfClass:[MPTransactionAttributes class] forKey:@"transactionAttributes"];
-    type = (MPEventType)[coder decodeIntegerForKey:@"type"];
+    self.type = (MPEventType)[coder decodeIntegerForKey:@"type"];
     commerceEventKind = (MPCommerceEventKind)[coder decodeIntegerForKey:@"commerceEventKind"];
     
     dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"shoppingCartState"];
@@ -485,8 +488,8 @@ static NSArray *actionNames;
 - (NSDictionary *)dictionaryRepresentation {
     NSMutableDictionary *dictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
     
-    if (_userDefinedAttributes.count > 0) {
-        dictionary[kMPCEUserDefinedAttributes] = [_userDefinedAttributes transformValuesToString];
+    if (self.customAttributes.count > 0) {
+        dictionary[kMPAttributesKey] = [self.customAttributes transformValuesToString];
     }
 
     if (_shoppingCartState) {
@@ -516,8 +519,8 @@ static NSArray *actionNames;
             // Product Action
             NSMutableDictionary *productAction = [[NSMutableDictionary alloc] initWithCapacity:12];
             
-            if (_attributes.count > 0) {
-                [productAction addEntriesFromDictionary:[_attributes transformValuesToString]];
+            if (_productActionAttributes.count > 0) {
+                [productAction addEntriesFromDictionary:[_productActionAttributes transformValuesToString]];
             }
 
             // Products
@@ -638,12 +641,12 @@ static NSArray *actionNames;
                         eventInfo[kMPExpTATransactionId] = self.transactionAttributes.transactionId;
                     }
 
-                    if (_userDefinedAttributes.count > 0) {
-                        [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                    if (self.customAttributes.count > 0) {
+                        [eventInfo addEntriesFromDictionary:self.customAttributes];
                     }
 
                     if (eventInfo.count > 0) {
-                        event.attributes = eventInfo;
+                        event.customAttributes = eventInfo;
                     }
 
                     commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:instruction event:event product:product];
@@ -681,12 +684,12 @@ static NSArray *actionNames;
                     eventInfo[kMPExpCECheckoutStep] = [@(self.checkoutStep) stringValue];
                 }
                 
-                if (_userDefinedAttributes.count > 0) {
-                    [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+                if (self.customAttributes.count > 0) {
+                    [eventInfo addEntriesFromDictionary:self.customAttributes];
                 }
 
                 if (eventInfo.count > 0) {
-                    event.attributes = eventInfo;
+                    event.customAttributes = eventInfo;
                 }
 
                 commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
@@ -705,12 +708,12 @@ static NSArray *actionNames;
                 [eventInfo addEntriesFromDictionary:promotionDictionary];
             }
 
-            if (_userDefinedAttributes.count > 0) {
-                [eventInfo addEntriesFromDictionary:_userDefinedAttributes];
+            if (self.customAttributes.count > 0) {
+                [eventInfo addEntriesFromDictionary:self.customAttributes];
             }
 
             if (eventInfo.count > 0) {
-                event.attributes = eventInfo;
+                event.customAttributes = eventInfo;
             }
 
             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
@@ -734,12 +737,12 @@ static NSArray *actionNames;
                                 [eventInfo addEntriesFromDictionary:productDictionary];
                             }
                             
-                            if (self->_userDefinedAttributes.count > 0) {
-                                [eventInfo addEntriesFromDictionary:self->_userDefinedAttributes];
+                            if (self.customAttributes.count > 0) {
+                                [eventInfo addEntriesFromDictionary:self.customAttributes];
                             }
 
                             if (eventInfo.count > 0) {
-                                event.attributes = eventInfo;
+                                event.customAttributes = eventInfo;
                             }
 
                             commerceEventInstruction = [[MPCommerceEventInstruction alloc] initWithInstruction:MPCommerceInstructionEvent event:event];
@@ -783,10 +786,6 @@ static NSArray *actionNames;
     _latestRemovedProducts = nil;
 }
 
-- (MPEventType)type {
-    return type;
-}
-
 - (void)setImpressions:(NSDictionary *)impressions {
     self.productImpressions = impressions ? [[NSMutableDictionary alloc] initWithDictionary:impressions] : nil;
 }
@@ -815,38 +814,15 @@ static NSArray *actionNames;
     return copyProductImpressions;
 }
 
-- (NSDate *)timestamp {
-    return _timestamp;
-}
-
-- (void)setTimestamp:(NSDate *)timestamp {
-    _timestamp = timestamp;
-}
-
-#pragma mark Private accessors
-- (NSMutableDictionary *)customFlagsDictionary {
-    if (_customFlagsDictionary) {
-        return _customFlagsDictionary;
-    }
-    
-    _customFlagsDictionary = [[NSMutableDictionary alloc] initWithCapacity:1];
-    return _customFlagsDictionary;
-}
-
-#pragma mark Public accessors
-- (NSDictionary *)customFlags {
-    return (NSDictionary *)_customFlagsDictionary;
-}
-
 - (NSString *)checkoutOptions {
-    return self.attributes[kMPCECheckoutOptions];
+    return self.productActionAttributes[kMPCECheckoutOptions];
 }
 
 - (void)setCheckoutOptions:(NSString *)checkoutOptions {
     if (checkoutOptions) {
-        self.attributes[kMPCECheckoutOptions] = checkoutOptions;
+        self.productActionAttributes[kMPCECheckoutOptions] = checkoutOptions;
     } else {
-        [self.attributes removeObjectForKey:kMPCECheckoutOptions];
+        [self.productActionAttributes removeObjectForKey:kMPCECheckoutOptions];
     }
 }
 
@@ -867,26 +843,26 @@ static NSArray *actionNames;
 }
 
 - (NSString *)productListName {
-    return self.attributes[kMPCEProductListName];
+    return self.productActionAttributes[kMPCEProductListName];
 }
 
 - (void)setProductListName:(NSString *)productListName {
     if (productListName) {
-        self.attributes[kMPCEProductListName] = productListName;
+        self.productActionAttributes[kMPCEProductListName] = productListName;
     } else {
-        [self.attributes removeObjectForKey:kMPCEProductListName];
+        [self.productActionAttributes removeObjectForKey:kMPCEProductListName];
     }
 }
 
 - (NSString *)productListSource {
-    return self.attributes[kMPCEProductListSource];
+    return self.productActionAttributes[kMPCEProductListSource];
 }
 
 - (void)setProductListSource:(NSString *)productListSource {
     if (productListSource) {
-        self.attributes[kMPCEProductListSource] = productListSource;
+        self.productActionAttributes[kMPCEProductListSource] = productListSource;
     } else {
-        [self.attributes removeObjectForKey:kMPCEProductListSource];
+        [self.productActionAttributes removeObjectForKey:kMPCEProductListSource];
     }
 }
 
@@ -901,21 +877,21 @@ static NSArray *actionNames;
 }
 
 - (MPCommerceEventAction)action {
-    return [self actionWithName:self.attributes[kMPCEAction]];
+    return [self actionWithName:self.productActionAttributes[kMPCEAction]];
 }
 
 - (void)setAction:(MPCommerceEventAction)action {
-    self.attributes[kMPCEAction] = [self actionNameForAction:action];
+    self.productActionAttributes[kMPCEAction] = [self actionNameForAction:action];
 }
 
 - (NSInteger)checkoutStep {
-    NSInteger checkoutStep = self.attributes[kMPCECheckoutStep] ? [self.attributes[kMPCECheckoutStep] integerValue] : NSNotFound;
+    NSInteger checkoutStep = self.productActionAttributes[kMPCECheckoutStep] ? [self.productActionAttributes[kMPCECheckoutStep] integerValue] : NSNotFound;
     return checkoutStep;
 }
 
 - (void)setCheckoutStep:(NSInteger)checkoutStep {
     NSNumber *checkoutStepNumber = @(checkoutStep);
-    self.attributes[kMPCECheckoutStep] = checkoutStepNumber;
+    self.productActionAttributes[kMPCECheckoutStep] = checkoutStepNumber;
 }
 
 #pragma mark Public methods
@@ -987,64 +963,6 @@ static NSArray *actionNames;
         [self.latestRemovedProducts addObject:_productsList[productIndex]];
         [_productsList removeObjectAtIndex:productIndex];
     }
-}
-
-- (void)setCustomAttributes:(NSDictionary<NSString *, NSString *> *)customAttributes {
-    if (customAttributes) {
-        _userDefinedAttributes = [[NSMutableDictionary alloc] initWithDictionary:customAttributes copyItems:YES];
-    } else {
-        _userDefinedAttributes = nil;
-    }
-}
-
-- (void)addCustomFlag:(NSString *)customFlag withKey:(NSString *)key {
-    if (MPIsNull(customFlag)) {
-        MPILogError(@"'customFlag' cannot be nil or null.");
-        return;
-    }
-    
-    if (MPIsNull(key)) {
-        MPILogError(@"'key' cannot be nil or null.");
-        return;
-    }
-    
-    [self addCustomFlags:@[customFlag] withKey:key];
-}
-
-- (void)addCustomFlags:(nonnull NSArray<NSString *> *)customFlags withKey:(nonnull NSString *)key {
-    if (MPIsNull(customFlags)) {
-        MPILogError(@"'customFlags' cannot be nil or null.");
-        return;
-    }
-    
-    if (MPIsNull(key)) {
-        MPILogError(@"'key' cannot be nil or null.");
-        return;
-    }
-    
-    BOOL validDataType = [customFlags isKindOfClass:[NSArray class]];
-    NSAssert(validDataType, @"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
-    if (!validDataType) {
-        MPILogError(@"'customFlags' must be of type NSArray or an instance of a class inheriting from NSArray.");
-        return;
-    }
-    
-    for (id item in customFlags) {
-        validDataType = [item isKindOfClass:[NSString class]];
-        NSAssert(validDataType, @"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
-        if (!validDataType) {
-            MPILogError(@"'customFlags' array items must be of type NSString or an instance of a class inheriting from NSString.");
-            return;
-        }
-    }
-    
-    NSMutableArray<NSString *> *flags = self.customFlagsDictionary[key];
-    if (!flags) {
-        flags = [[NSMutableArray alloc] initWithCapacity:1];
-    }
-    
-    [flags addObjectsFromArray:customFlags];
-    self.customFlagsDictionary[key] = flags;
 }
 
 @end
