@@ -135,12 +135,17 @@ NSString *const kMPStateKey = @"state";
 
 @end
 
-@interface MParticleOptions () {
-    MPILogLevel _logLevel;
-    NSTimeInterval _uploadInterval;
-}
-@property (nonatomic, assign, readwrite) BOOL isLogLevelSet;
+@interface MParticleOptions ()
+
+@property (nonatomic, assign, readwrite) BOOL isProxyAppDelegateSet;
+@property (nonatomic, assign, readwrite) BOOL isCollectUserAgentSet;
+@property (nonatomic, assign, readwrite) BOOL isCollectSearchAdsAttributionSet;
+@property (nonatomic, assign, readwrite) BOOL isTrackNotificationsSet;
+@property (nonatomic, assign, readwrite) BOOL isAutomaticSessionTrackingSet;
+@property (nonatomic, assign, readwrite) BOOL isStartKitsAsyncSet;
 @property (nonatomic, assign, readwrite) BOOL isUploadIntervalSet;
+@property (nonatomic, assign, readwrite) BOOL isSessionTimeoutSet;
+
 @end
 
 @implementation MParticleOptions
@@ -156,8 +161,7 @@ NSString *const kMPStateKey = @"state";
         _automaticSessionTracking = YES;
         _startKitsAsync = NO;
         _logLevel = MPILogLevelNone;
-        _isLogLevelSet = NO;
-        _isUploadIntervalSet = NO;
+        _uploadInterval = 0.0;
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
     }
     return self;
@@ -170,13 +174,34 @@ NSString *const kMPStateKey = @"state";
     return options;
 }
 
-- (void)setLogLevel:(MPILogLevel)logLevel {
-    _logLevel = logLevel;
-    _isLogLevelSet = YES;
+- (void)setProxyAppDelegate:(BOOL)proxyAppDelegate {
+    _proxyAppDelegate = proxyAppDelegate;
+    _isProxyAppDelegateSet = YES;
 }
 
-- (MPILogLevel)logLevel {
-    return _logLevel;
+- (void)setCollectUserAgent:(BOOL)collectUserAgent {
+    _collectUserAgent = collectUserAgent;
+    _isCollectUserAgentSet = YES;
+}
+
+- (void)setCollectSearchAdsAttribution:(BOOL)collectSearchAdsAttribution {
+    _collectSearchAdsAttribution = collectSearchAdsAttribution;
+    _isCollectSearchAdsAttributionSet = YES;
+}
+
+- (void)setTrackNotifications:(BOOL)trackNotifications {
+    _trackNotifications = trackNotifications;
+    _isTrackNotificationsSet = YES;
+}
+
+- (void)setAutomaticSessionTracking:(BOOL)automaticSessionTracking {
+    _automaticSessionTracking = automaticSessionTracking;
+    _isAutomaticSessionTrackingSet = YES;
+}
+
+- (void)setStartKitsAsync:(BOOL)startKitsAsync {
+    _startKitsAsync = startKitsAsync;
+    _isStartKitsAsyncSet = YES;
 }
 
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval {
@@ -184,8 +209,9 @@ NSString *const kMPStateKey = @"state";
     _isUploadIntervalSet = YES;
 }
 
-- (NSTimeInterval)uploadInterval {
-    return _uploadInterval;
+- (void)setSessionTimeout:(NSTimeInterval)sessionTimeout {
+    _sessionTimeout = sessionTimeout;
+    _isSessionTimeoutSet = YES;
 }
 
 @end
@@ -363,36 +389,6 @@ NSString *const kMPStateKey = @"state";
     return _commerce;
 }
 
-- (void)setDebugMode:(BOOL)debugMode {
-    dispatch_async([MParticle messageQueue], ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:_cmd
-                                                          event:nil
-                                                     parameters:nil
-                                                    messageType:MPMessageTypeUnknown
-                                                       userInfo:@{kMPStateKey:@(debugMode)}
-         ];
-    });
-}
-
-- (BOOL)consoleLogging {
-    return [MParticle sharedInstance].stateMachine.consoleLogging == MPConsoleLoggingDisplay;
-}
-
-- (void)setConsoleLogging:(BOOL)consoleLogging {
-    if ([MPStateMachine environment] == MPEnvironmentDevelopment) {
-        [MParticle sharedInstance].stateMachine.consoleLogging = consoleLogging ? MPConsoleLoggingDisplay : MPConsoleLoggingSuppress;
-    }
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setDebugMode:)
-                                                          event:nil
-                                                     parameters:nil
-                                                    messageType:MPMessageTypeUnknown
-                                                       userInfo:@{kMPStateKey:@(consoleLogging)}
-         ];
-    });
-}
-
 - (MPEnvironment)environment {
     return [MPStateMachine environment];
 }
@@ -402,7 +398,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
-    [MParticle sharedInstance].stateMachine.logLevel = logLevel;
+    self.stateMachine.logLevel = logLevel;
 }
 
 - (BOOL)optOut {
@@ -447,14 +443,6 @@ NSString *const kMPStateKey = @"state";
     return self.backendController.uploadInterval;
 }
 
-- (void)setUploadInterval:(NSTimeInterval)uploadInterval {
-    self.backendController.uploadInterval = uploadInterval;
-    
-#if TARGET_OS_IOS == 1
-    MPILogDebug(@"Set Upload Interval: %0.0f", uploadInterval);
-#endif
-}
-
 - (NSDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId {
     NSDictionary *userAttributes = [[self.backendController userAttributesForUserId:userId] copy];
     return userAttributes;
@@ -480,41 +468,11 @@ NSString *const kMPStateKey = @"state";
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:instance];
 }
 
-- (void)start {
-    NSString *apiKey = nil;
-    NSString *secret = nil;
-
-    if (!self.configSettings) {
-        NSAssert(NO, @"mParticle SDK requires a valid MParticleConfig.plist with an apiKey and secret in order to use the no-args start method.");
-        return;
-    }
-
-    apiKey = self.configSettings[kMPConfigApiKey];
-    secret = self.configSettings[kMPConfigSecret];
-
-    if (!apiKey || !secret) {
-        NSAssert(NO, @"mParticle SDK requires a valid MParticleConfig.plist with an apiKey and secret in order to use the no-args start method.");
-        return;
-    }
-
-    MParticleOptions *options = [[MParticleOptions alloc] init];
-    options.apiKey = apiKey;
-    options.apiSecret = secret;
-    options.automaticSessionTracking = [self.configSettings[kMPConfigSharedGroupID] boolValue];
-    options.customUserAgent = self.configSettings[kMPConfigCustomUserAgent];
-    options.collectUserAgent = (self.configSettings[kMPConfigCollectUserAgent] != nil && self.configSettings[kMPConfigCollectUserAgent] != [NSNull null]) ? [self.configSettings[kMPConfigCollectUserAgent] boolValue] : YES;
-    options.trackNotifications = (self.configSettings[kMPConfigTrackNotifications] != nil && self.configSettings[kMPConfigTrackNotifications] != [NSNull null]) ? [self.configSettings[kMPConfigTrackNotifications] boolValue] : YES;
-    options.installType = MPInstallationTypeAutodetect;
-    options.environment = MPEnvironmentAutoDetect;
-    options.proxyAppDelegate = YES;
-    [self startWithOptions:options];
-}
-
 - (void)startWithOptions:(MParticleOptions *)options {
     if (sdkInitialized) {
         return;
     }
-    sdkInitialized=YES;
+    sdkInitialized = YES;
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:options];
     
@@ -523,14 +481,6 @@ NSString *const kMPStateKey = @"state";
 #if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
     [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
 #endif
-    
-    if (options.isLogLevelSet) {
-        self.logLevel = options.logLevel;
-    }
-    
-    if (options.isUploadIntervalSet) {
-        self.uploadInterval = options.uploadInterval;
-    }
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
@@ -559,12 +509,16 @@ NSString *const kMPStateKey = @"state";
         NSNumber *firstSeenMs = @([firstSeen timeIntervalSince1970] * 1000.0);
         [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController mpId]];
     }
+    
     _proxiedAppDelegate = proxyAppDelegate;
     _automaticSessionTracking = self.options.automaticSessionTracking;
     _customUserAgent = self.options.customUserAgent;
     _collectUserAgent = self.options.collectUserAgent;
     _collectSearchAdsAttribution = self.options.collectSearchAdsAttribution;
     _trackNotifications = self.options.trackNotifications;
+    self.backendController.uploadInterval = options.uploadInterval;
+    self.backendController.sessionTimeout = options.sessionTimeout;
+    self.logLevel = options.logLevel;
     
     MPConsentState *consentState = self.options.consentState;
     
@@ -635,14 +589,25 @@ NSString *const kMPStateKey = @"state";
                            strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
                            
                            if (strongSelf.configSettings) {
-                               if (strongSelf.configSettings[kMPConfigSessionTimeout]) {
+                               if (strongSelf.configSettings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
                                    strongSelf.backendController.sessionTimeout = [strongSelf.configSettings[kMPConfigSessionTimeout] doubleValue];
                                }
                                
-                               if (strongSelf.configSettings[kMPConfigUploadInterval]) {
-                                   strongSelf.uploadInterval = [strongSelf.configSettings[kMPConfigUploadInterval] doubleValue];
+                               if (strongSelf.configSettings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
+                                   strongSelf.backendController.uploadInterval = [strongSelf.configSettings[kMPConfigUploadInterval] doubleValue];
                                }
                                
+                               if (strongSelf.configSettings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
+                                   self->_customUserAgent = strongSelf.configSettings[kMPConfigCustomUserAgent];
+                               }
+                               
+                               if (strongSelf.configSettings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
+                                   self->_collectUserAgent = [strongSelf.configSettings[kMPConfigCollectUserAgent] boolValue];
+                               }
+                               
+                               if (strongSelf.configSettings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
+                                   self->_trackNotifications = [strongSelf.configSettings[kMPConfigTrackNotifications] boolValue];
+                               }
 #if TARGET_OS_IOS == 1
 #if defined(MP_CRASH_REPORTER)
                                if ([strongSelf.configSettings[kMPConfigEnableCrashReporting] boolValue]) {
@@ -656,10 +621,6 @@ NSString *const kMPStateKey = @"state";
                                    [strongSelf beginLocationTracking:accuracy minDistance:distanceFilter];
                                }
 #endif
-                           }
-                           
-                           if (options.sessionTimeout) {
-                               strongSelf.backendController.sessionTimeout = options.sessionTimeout;
                            }
                            
                            strongSelf.initialized = YES;

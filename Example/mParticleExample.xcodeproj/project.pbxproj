@@ -427,17 +427,11 @@
 			files = (
 			);
 			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/mParticle-Apple-SDK/mParticle_Apple_SDK.framework",
-				"${BUILT_PRODUCTS_DIR}/mParticle-Apple-SDK-AppExtension/mParticle_Apple_SDK.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
-			);
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/mParticle_Apple_SDK.framework",
+				"${PODS_ROOT}/Target Support Files/Pods-mParticleExample/Pods-mParticleExample-frameworks-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

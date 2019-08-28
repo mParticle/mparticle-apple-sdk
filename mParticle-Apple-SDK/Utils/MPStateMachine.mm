@@ -25,6 +25,7 @@
 NSString *const kCookieDateKey = @"e";
 NSString *const kMinUploadDateKey = @"MinUploadDate";
 NSString *const kMinAliasDateKey = @"MinAliasDate";
+NSString *const kMPStateKey = @"state";
 
 static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
@@ -52,7 +53,6 @@ static BOOL runningInBackground = NO;
 
 @implementation MPStateMachine
 
-@synthesize consoleLogging = _consoleLogging;
 @synthesize consumerInfo = _consumerInfo;
 @synthesize deviceTokenType = _deviceTokenType;
 @synthesize firstSeenInstallation = _firstSeenInstallation;
@@ -83,7 +83,6 @@ static BOOL runningInBackground = NO;
         _uploadStatus = MPUploadStatusBatch;
         _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];
         _backgrounded = NO;
-        _consoleLogging = MPConsoleLoggingAutoDetect;
         _dataRamped = NO;
         _installationType = MPInstallationTypeAutodetect;
         _launchDate = [NSDate date];
@@ -348,29 +347,6 @@ static BOOL runningInBackground = NO;
 }
 
 #pragma mark Public accessors
-- (MPConsoleLogging)consoleLogging {
-    if (_consoleLogging != MPConsoleLoggingAutoDetect) {
-        return _consoleLogging;
-    }
-    
-    _consoleLogging = [MPStateMachine environment] == MPEnvironmentProduction ? MPConsoleLoggingSuppress : MPConsoleLoggingDisplay;
-    if (_consoleLogging == MPConsoleLoggingSuppress) {
-        _logLevel = MPILogLevelNone;
-    }
-    
-    return _consoleLogging;
-}
-
-- (void)setConsoleLogging:(MPConsoleLogging)consoleLogging {
-    if (consoleLogging == MPConsoleLoggingSuppress) {
-        _logLevel = MPILogLevelNone;
-    } else if ([MPStateMachine environment] == MPEnvironmentDevelopment && _consoleLogging != MPConsoleLoggingSuppress) {
-        _logLevel = MPILogLevelWarning;
-    }
-    
-    _consoleLogging = consoleLogging;
-}
-
 - (MPConsumerInfo *)consumerInfo {
     if (_consumerInfo) {
         return _consumerInfo;
@@ -387,20 +363,22 @@ static BOOL runningInBackground = NO;
     return _consumerInfo;
 }
 
-- (MPILogLevel)logLevel {
-    @synchronized(self) {
-        return _logLevel;
-    }
-}
-
 - (void)setLogLevel:(MPILogLevel)logLevel {
     @synchronized(self) {
         _logLevel = logLevel;
-        
-        if (logLevel == MPILogLevelNone) {
-            _consoleLogging = MPConsoleLoggingSuppress;
-        }
     }
+    
+}
+
+- (void)setDebugMode:(BOOL)debugMode {
+    dispatch_async([MParticle messageQueue], ^{
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:_cmd
+                                                          event:nil
+                                                     parameters:nil
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:@{kMPStateKey:@(debugMode)}
+         ];
+    });
 }
 
 - (NSString *)deviceTokenType {

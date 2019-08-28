@@ -165,27 +165,27 @@ NS_ASSUME_NONNULL_BEGIN
  a webview to collect this, and wish to avoid the performance cost of duplicate work, (or if you need to customize
  the value) you can pass this into the SDK as a string.
  */
-@property (atomic, strong, nullable) NSString *customUserAgent;
+@property (nonatomic, strong, nullable) NSString *customUserAgent;
 
 /*
  Whether browser user agent should be collected by the SDK. This value is ignored (always NO) if you specify a non-nil custom user agent.
  */
-@property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+@property (nonatomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
 
 /*
  Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;
+@property (nonatomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;
 
 /**
  Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readwrite) BOOL trackNotifications;
+@property (nonatomic, unsafe_unretained, readwrite) BOOL trackNotifications;
 
 /*
  This value is not currently read by the SDK and should not be used at this time.
  */
-@property (atomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
+@property (nonatomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
 
 /*
  Log level. (Defaults to 'None'.)
@@ -195,7 +195,7 @@ NS_ASSUME_NONNULL_BEGIN
  By default the SDK will produce no output. If you modify this for your development builds, please consider using
  a preprocessor directive or similar mechanism to ensure your change is not accidentally applied in production.
  */
-@property (atomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
+@property (nonatomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
 
 /**
  Upload interval.
@@ -203,14 +203,14 @@ NS_ASSUME_NONNULL_BEGIN
  Batches of data are sent periodically to the mParticle servers at the rate defined by this property. Batches are also uploaded
  when the application is sent to the background.
  */
-@property (atomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
+@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
 
 /**
  Session timeout.
  
  Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
  */
-@property (atomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
+@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
 
 /**
  Allows you to override the default HTTPS hosts and certificates used by the SDK, if required.
@@ -224,7 +224,7 @@ NS_ASSUME_NONNULL_BEGIN
  
  Allows you to record one or more consent purposes and whether or not the user agreed to each one.
  */
-@property (atomic, strong, nullable) MPConsentState *consentState;
+@property (nonatomic, strong, nullable) MPConsentState *consentState;
 
 /**
  Identify callback.
@@ -282,18 +282,18 @@ NS_ASSUME_NONNULL_BEGIN
  Forwards setting/resetting the debug mode for third party kits.
  This is a write only property.
  */
-@property (nonatomic, unsafe_unretained) BOOL debugMode;
-- (BOOL)debugMode UNAVAILABLE_ATTRIBUTE;
+@property (nonatomic, unsafe_unretained) BOOL debugMode DEPRECATED_ATTRIBUTE;
+- (BOOL)debugMode UNAVAILABLE_ATTRIBUTE DEPRECATED_ATTRIBUTE;
 
 /**
- Enables or disables log outputs to the console. If set to YES development logs will be output to the
+ If set to YES development logs will be output to the
  console, if set to NO the development logs will be suppressed. This property works in conjunction with
  the environment property. If the environment is Production, consoleLogging will always be NO,
  regardless of the value you assign to it.
  @see environment
  @see logLevel
  */
-@property (nonatomic, unsafe_unretained) BOOL consoleLogging;
+@property (nonatomic, unsafe_unretained, readonly) BOOL consoleLogging DEPRECATED_ATTRIBUTE;
 
 /**
  The environment property returns the running SDK environment: Development or Production.
@@ -310,8 +310,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
- If consoleLogging is set to false, the log level will be set to none automatically. When the environment is
- Production, the log level will always be none, regardless of the value you assign to it.
+ When the environment is Production, the log level will always be none, regardless of the value you assign to it.
  @see environment
  */
 @property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
@@ -344,7 +343,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Gets/Sets the user agent to a custom value.
  */
-@property (atomic, strong, nullable) NSString *customUserAgent;
+@property (atomic, strong, nullable, readonly) NSString *customUserAgent;
 
 /**
  Determines whether the mParticle Apple SDK will instantiate a UIWebView in order to collect the browser user agent.
@@ -352,12 +351,12 @@ NS_ASSUME_NONNULL_BEGIN
  If you disable this flag, consider populating the user agent via the customUserAgent property above if you are using
  an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+@property (atomic, unsafe_unretained, readonly) BOOL collectUserAgent;
 
 /*
  Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;
+@property (atomic, unsafe_unretained, readonly) BOOL collectSearchAdsAttribution;
 
 /**
  Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.
@@ -394,7 +393,7 @@ NS_ASSUME_NONNULL_BEGIN
  Batches of data are sent periodically to the mParticle servers at the rate defined by the uploadInterval. Batches are also uploaded
  when the application is sent to the background or before they are terminated.
  */
-@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
+@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval uploadInterval;
 
 
 
@@ -410,11 +409,6 @@ NS_ASSUME_NONNULL_BEGIN
  @returns the Singleton instance of the MParticle class.
  */
 + (instancetype)sharedInstance;
-
-/**
- *
- */
-- (void)start;
 
 /**
  Starts the SDK with your API key and secret and installation type.

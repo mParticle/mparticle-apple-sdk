@@ -18,10 +18,9 @@
     
     // See "Sharing Data with Your Containing App" here https://developer.apple.com/library/content/documentation/General/Conceptual/ExtensibilityPG/ExtensionScenarios.html
     options.sharedGroupID = @"Set this to share user data between app and extension";
+    options.logLevel = MPILogLevelVerbose;
     
     [MParticle.sharedInstance startWithOptions:options];
-
-    [MParticle sharedInstance].logLevel = MPILogLevelVerbose;
 }
 - (IBAction)pressButton1:(id)sender {
     MPEvent *event = [[MPEvent alloc] initWithName:@"extension button 1" type:MPEventTypeOther];

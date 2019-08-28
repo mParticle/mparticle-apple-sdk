@@ -62,7 +62,7 @@
         }
     };
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async([MParticle messageQueue], ^{
         workBlock();
         [expectation fulfill];
     });

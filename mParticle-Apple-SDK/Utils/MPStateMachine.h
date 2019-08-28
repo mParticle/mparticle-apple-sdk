@@ -13,12 +13,6 @@
     @class CLLocation;
 #endif
 
-typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
-    MPConsoleLoggingAutoDetect = 0,
-    MPConsoleLoggingDisplay,
-    MPConsoleLoggingSuppress
-};
-
 @interface MPStateMachine : NSObject
 
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
@@ -42,7 +36,6 @@ typedef NS_ENUM(NSUInteger, MPConsoleLogging) {
 @property (nonatomic, strong, readonly, nullable) NSDate *launchDate;
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerEventTypes;
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerMessageTypes;
-@property (nonatomic, unsafe_unretained) MPConsoleLogging consoleLogging;
 @property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
 @property (nonatomic, unsafe_unretained) MPInstallationType installationType;
 @property (nonatomic, unsafe_unretained, readonly) MParticleNetworkStatus networkStatus;

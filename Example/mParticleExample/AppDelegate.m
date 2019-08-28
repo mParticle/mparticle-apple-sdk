@@ -24,8 +24,10 @@
             //handle failure - see https://docs.mparticle.com/developers/sdk/ios/idsync/#error-handling
         }
     };
+    options.logLevel = MPILogLevelDebug;
+
     [[MParticle sharedInstance] startWithOptions:options];
-    [MParticle sharedInstance].logLevel = MPILogLevelDebug;
+
     return YES;
 }
 

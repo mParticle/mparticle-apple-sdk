@@ -16,6 +16,7 @@
 
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 
@@ -51,36 +52,36 @@
     [super setUp];
     
     [MPPersistenceController setMpid:@12];
-    
+
     [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = @"unit_test_app_key";
     stateMachine.secret = @"unit_test_secret";
-    
+
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
     kitContainer = [MParticle sharedInstance].kitContainer;
-    
+
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
         [MPKitContainer registerKit:kitRegister];
-        
+
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
         [MPKitContainer registerKit:kitRegister];
-        
+
         kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
         [MPKitContainer registerKit:kitRegister];
-        
+
         NSDictionary *configuration = @{
                                         @"id":@42,
                                         @"as":@{
                                                 @"appId":@"MyAppId"
                                                 }
                                         };
-        
+
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
         [kitContainer startKit:@42 configuration:kitConfiguration];
-    }    
+    }
 }
 
 - (void)tearDown {
@@ -99,7 +100,7 @@
                                                                             message:[message serializedString]
                                                                          httpMethod:@"POST"];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async([MParticle messageQueue], ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
 
         XCTAssertNotNil(userAgent, @"Should not have been nil.");
@@ -111,7 +112,9 @@
 }
 
 - (void)testCustomUserAgent {
-    [MParticle sharedInstance].customUserAgent = @"Test User Agent";
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"testKey" secret:@"testSecret"];
+    options.customUserAgent = @"Test User Agent";
+    [[MParticle sharedInstance] startWithOptions:options];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
     
@@ -124,19 +127,21 @@
                                                                          httpMethod:@"POST"];
     [urlRequestBuilder setUserAgent:nil];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async([MParticle messageQueue], ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
         XCTAssertNotNil(userAgent, @"Should not have been nil.");
         XCTAssertTrue([userAgent isEqualToString:@"Test User Agent"], @"User Agent has an invalid value: %@", userAgent);
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:3 handler:nil];
 }
 
 - (void)testDisableCollectUserAgent {
-    [MParticle sharedInstance].customUserAgent = nil;
-    [MParticle sharedInstance].collectUserAgent = NO;
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"testKey" secret:@"testSecret"];
+    options.customUserAgent = nil;
+    options.collectUserAgent = NO;
+    [[MParticle sharedInstance] startWithOptions:options];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
     
@@ -149,7 +154,7 @@
                                                                          httpMethod:@"POST"];
     [urlRequestBuilder setUserAgent:nil];
     
-    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+    dispatch_async([MParticle messageQueue], ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
         XCTAssertNotNil(userAgent, @"Should not have been nil.");
         
@@ -191,8 +196,6 @@
 
 - (void)testURLRequestComposition {
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MParticle.sharedInstance.collectUserAgent = YES;
-    MParticle.sharedInstance.customUserAgent = nil;
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
     
@@ -389,9 +392,6 @@
     NSArray *kitConfigs = @[configuration1];
     [[MParticle sharedInstance].kitContainer configureKits:nil];
     [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
-    
-    MParticle.sharedInstance.collectUserAgent = YES;
-    MParticle.sharedInstance.customUserAgent = nil;
     
     XCTAssertEqual([MPURLRequestBuilder requestTimeout], 30, @"Should have been equal.");
     
