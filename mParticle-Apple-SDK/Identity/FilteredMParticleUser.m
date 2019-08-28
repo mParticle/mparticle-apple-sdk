@@ -1,11 +1,8 @@
-//
-//  FilteredMParticleUser.m
-//
-
 #import "FilteredMParticleUser.h"
 #import "mParticle.h"
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"
+#import "MPIHasher.h"
 
 @interface FilteredMParticleUser ()
 
@@ -62,10 +59,11 @@
     
     for (NSString* key in unfilteredUserAttributes) {
         id value = [unfilteredUserAttributes objectForKey:key];
+        NSString *hashKey = [MPIHasher hashString:[key lowercaseString]];
         BOOL shouldFilter = NO;
         
         if (self.kitConfiguration) {
-            shouldFilter = self.kitConfiguration.userAttributeFilters[key] && [self.kitConfiguration.userAttributeFilters[key] isEqualToNumber:@0];
+            shouldFilter = self.kitConfiguration.userAttributeFilters[hashKey] && [self.kitConfiguration.userAttributeFilters[hashKey] isEqualToNumber:@0];
         }
         
         if (!shouldFilter) {
