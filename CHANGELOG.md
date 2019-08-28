@@ -1,5 +1,18 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.10.5
+
+## Core
+
+- Ensure user attributes are filtered on FilteredMParticleUser
+- Simplify APIs and options used to start the SDK
+
+## Kits
+
+- Braze - Update API usage for endpoint and location
+- Firebase - Standardize custom attribute keys and values
+- Adobe - Fix linker error if modules are disabled
+
 ## 7.10.4
 
 ## Critical Bug Fixes
