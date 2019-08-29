@@ -78,6 +78,7 @@
 }
 
 - (void)tearDown {
+    [MParticle sharedInstance].backendController = nil;
     [[MPIUserDefaults standardUserDefaults] resetDefaults];
 
     [super tearDown];
@@ -155,7 +156,8 @@
     XCTAssertEqualObjects(customerId, @"12345", @"Kit api is filtering user identities when it shouldn't");
 }
 
-- (void)testUserAttribute {
+- (void)testUserAttributeFromCache {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
     mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
@@ -167,6 +169,49 @@
                                 };
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
+    
+    NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
+    NSString *badHashedKey = [MPIHasher hashString:@"bad data"];
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"testConfigKey":@"testConfigValue"
+                                            },
+                                    @"hs":@{
+                                            @"ua":@{goodHashedKey:@1,
+                                                    badHashedKey:@0}
+                                            }
+                                    }
+                                ];
+    
+    [_kitContainer configureKits:nil];
+    [_kitContainer configureKits:configurations];
+    
+    dispatch_sync([MParticle messageQueue], ^{
+        MPKitAPI *kitAPI = [[MPKitAPI alloc] initWithKitCode:@42];
+        FilteredMParticleUser *kitUser = [kitAPI getCurrentUserWithKit:self];
+        NSDictionary *attributes = kitUser.userAttributes;
+        
+        XCTAssertNil(attributes[@"bad data"], @"Kit api is not filtering user attributes");
+        XCTAssertEqualObjects(attributes[@"good data"], @"67890", @"Kit api is filtering user attributes when it shouldn't");
+        XCTAssertEqualObjects(attributes[@"better data"], @"ABC", @"Kit api is filtering user attributes when it shouldn't");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testUserAttributeManuallySet {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
+    MParticle *mParticle = [MParticle sharedInstance];
+    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
+    
+    NSDictionary *userAttributes = @{
+                                     @"good data":@"67890",
+                                     @"better data":@"ABC",
+                                     @"bad data":@"12345"
+                                     };
     [currentUser setUserAttributes:userAttributes];
     
     NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
@@ -187,13 +232,17 @@
     [_kitContainer configureKits:nil];
     [_kitContainer configureKits:configurations];
     
-    MPKitAPI *kitAPI = [[MPKitAPI alloc] initWithKitCode:@42];
-    FilteredMParticleUser *kitUser = [kitAPI getCurrentUserWithKit:self];
-    NSDictionary *attributes = kitUser.userAttributes;
-    
-    XCTAssertNil(attributes[@"bad data"], @"Kit api is not filtering user attributes");
-    XCTAssertEqualObjects(attributes[@"good data"], @"67890", @"Kit api is filtering user attributes when it shouldn't");
-    XCTAssertEqualObjects(attributes[@"better data"], @"ABC", @"Kit api is filtering user attributes when it shouldn't");
+    dispatch_sync([MParticle messageQueue], ^{
+        MPKitAPI *kitAPI = [[MPKitAPI alloc] initWithKitCode:@42];
+        FilteredMParticleUser *kitUser = [kitAPI getCurrentUserWithKit:self];
+        NSDictionary *attributes = kitUser.userAttributes;
+        
+        XCTAssertNil(attributes[@"bad data"], @"Kit api is not filtering user attributes");
+        XCTAssertEqualObjects(attributes[@"good data"], @"67890", @"Kit api is filtering user attributes when it shouldn't");
+        XCTAssertEqualObjects(attributes[@"better data"], @"ABC", @"Kit api is filtering user attributes when it shouldn't");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 @synthesize started;
