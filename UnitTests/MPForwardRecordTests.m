@@ -195,7 +195,7 @@
     MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushRegistration
                                                                        execStatus:execStatus
                                                                         stateFlag:YES];
-
+    
     NSData *dataRepresentation = [forwardRecord dataRepresentation];
     XCTAssertNotNil(dataRepresentation, @"Should not have been nil.");
     

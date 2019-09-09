@@ -26,7 +26,7 @@
     return self;
 }
 
-- (instancetype)initWithEvent:(MPEvent *)event shouldFilter:(BOOL)shouldFilter {
+- (instancetype)initWithEvent:(MPBaseEvent *)event shouldFilter:(BOOL)shouldFilter {
     return [self initWithEvent:event shouldFilter:shouldFilter appliedProjections:nil];
 }
 

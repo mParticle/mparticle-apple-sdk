@@ -21,7 +21,7 @@
     return self;
 }
 
-- (nullable instancetype)initWithSelector:(nonnull SEL)selector event:(nonnull MPEvent *)event messageType:(MPMessageType)messageType {
+- (nullable instancetype)initWithSelector:(nonnull SEL)selector event:(nonnull MPBaseEvent *)event messageType:(MPMessageType)messageType {
     self = [super init];
     if (!self || !selector || !event) {
         return nil;

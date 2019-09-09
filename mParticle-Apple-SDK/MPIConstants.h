@@ -343,6 +343,7 @@ extern NSString * _Nonnull const kMPMessageTypeStringPushNotificationInteraction
 extern NSString * _Nonnull const kMPMessageTypeStringCommerceEvent;
 extern NSString * _Nonnull const kMPMessageTypeStringUserAttributeChange;
 extern NSString * _Nonnull const kMPMessageTypeStringUserIdentityChange;
+extern NSString * _Nonnull const kMPMessageTypeStringMedia;
 
 // Event type strings
 extern NSString * _Nonnull const kMPEventTypeStringUnknown;

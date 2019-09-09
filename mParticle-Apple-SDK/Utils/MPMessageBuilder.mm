@@ -121,6 +121,10 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
         case MPMessageTypeUserIdentityChange:
             string = kMPMessageTypeStringUserIdentityChange;
             break;
+            
+        case MPMessageTypeMedia:
+            string = kMPMessageTypeStringMedia;
+            break;
         
         default:
             string = kMPMessageTypeStringUnknown;
@@ -172,6 +176,8 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
         type = MPMessageTypeUserAttributeChange;
     } else if ([string isEqual:kMPMessageTypeStringUserIdentityChange]) {
         type = MPMessageTypeUserIdentityChange;
+    } else if ([string isEqual:kMPMessageTypeStringMedia]) {
+        type = MPMessageTypeMedia;
     } else {
         MPILogError(@"Unknown message type string: %@", string);
     }
@@ -244,23 +250,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
-    self = [self initWithMessageType:messageType session:session];
-    if (self) {
-        NSDictionary *commerceEventDictionary = [commerceEvent dictionaryRepresentation];
-        if (commerceEventDictionary) {
-            [messageDictionary addEntriesFromDictionary:commerceEventDictionary];
-            
-            NSDictionary *messageAttributes = messageDictionary[kMPAttributesKey];
-            if (messageAttributes) {
-                messageDictionary[kMPAttributesKey] = [messageAttributes transformValuesToString];
-            }
-        }
-    }
-    
-    return self;
-}
-
 - (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     self = [self initWithMessageType:messageType session:session];
     if (self) {
@@ -313,12 +302,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 
 #pragma mark Public class methods
-+ (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session commerceEvent:(MPCommerceEvent *)commerceEvent {
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session commerceEvent:commerceEvent];
-    [messageBuilder withCurrentState];
-    return messageBuilder;
-}
-
 + (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session];
     [messageBuilder withUserIdentityChange:userIdentityChange];

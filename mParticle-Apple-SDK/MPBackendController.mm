@@ -1428,49 +1428,6 @@ static BOOL skipNextUpload = NO;
     completionHandler(event, execStatus);
 }
 
-- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent completionHandler:(void (^)(MPCommerceEvent *commerceEvent, MPExecStatus execStatus))completionHandler {
-    [MPListenerController.sharedInstance onAPICalled:_cmd  parameter1:commerceEvent];
-
-    MPExecStatus execStatus = MPExecStatusFail;
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent session:self.session commerceEvent:commerceEvent];
-    if (commerceEvent.timestamp) {
-        [messageBuilder withTimestamp:[commerceEvent.timestamp timeIntervalSince1970]];
-    }
-#if TARGET_OS_IOS == 1
-    messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
-#endif
-    MPMessage *message = [messageBuilder build];
-    
-    [self saveMessage:message updateSession:YES];
-    [self.session incrementCounter];
-    
-    // Update cart
-    NSArray *products = nil;
-    if (commerceEvent.action == MPCommerceEventActionAddToCart) {
-        products = [commerceEvent addedProducts];
-        
-        if (products) {
-            [[MParticle sharedInstance].identity.currentUser.cart addProducts:products logEvent:NO updateProductList:YES];
-            [commerceEvent resetLatestProducts];
-        } else {
-            MPILogWarning(@"Commerce event products were not added to the cart.");
-        }
-    } else if (commerceEvent.action == MPCommerceEventActionRemoveFromCart) {
-        products = [commerceEvent removedProducts];
-        
-        if (products) {
-            [[MParticle sharedInstance].identity.currentUser.cart removeProducts:products logEvent:NO updateProductList:YES];
-            [commerceEvent resetLatestProducts];
-        } else {
-            MPILogWarning(@"Commerce event products were not removed from the cart.");
-        }
-    }
-    
-    execStatus = MPExecStatusSuccess;
-    
-    completionHandler(commerceEvent, execStatus);
-}
-
 - (void)logError:(NSString *)message exception:(NSException *)exception topmostContext:(id)topmostContext eventInfo:(NSDictionary *)eventInfo completionHandler:(void (^)(NSString *message, MPExecStatus execStatus))completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:message parameter2:exception parameter3:topmostContext parameter4:eventInfo];
     
@@ -1538,10 +1495,18 @@ static BOOL skipNextUpload = NO;
     completionHandler(execMessage, execStatus);
 }
 
-- (void)logEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
+- (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
     
-    event.messageType = MPMessageTypeEvent;
+    // Forwarding calls to kits
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logBaseEvent:)
+                                                          event:event
+                                                     parameters:nil
+                                                    messageType:event.messageType
+                                                       userInfo:nil
+         ];
+    });
     
     MPExecStatus execStatus = MPExecStatusFail;
     
@@ -1558,15 +1523,60 @@ static BOOL skipNextUpload = NO;
     
     [self saveMessage:message updateSession:YES];
     
-    if ([self.eventSet containsObject:event]) {
-        [_eventSet removeObject:event];
-    }
-    
     [self.session incrementCounter];
     
     execStatus = MPExecStatusSuccess;
+    MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
     
     completionHandler(event, execStatus);
+}
+
+- (void)logEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
+    
+     event.messageType = MPMessageTypeEvent;
+
+    [self logBaseEvent:event
+     completionHandler:^(MPBaseEvent *baseEvent, MPExecStatus execStatus) {
+         if ([self.eventSet containsObject:(MPEvent *)baseEvent]) {
+             [self->_eventSet removeObject:(MPEvent *)baseEvent];
+         }
+
+         completionHandler((MPEvent *)baseEvent, execStatus);
+     }];
+}
+
+- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent completionHandler:(void (^)(MPCommerceEvent *commerceEvent, MPExecStatus execStatus))completionHandler {
+    [MPListenerController.sharedInstance onAPICalled:_cmd  parameter1:commerceEvent];
+    
+    commerceEvent.messageType = MPMessageTypeCommerceEvent;
+    
+    [self logBaseEvent:commerceEvent
+     completionHandler:^(MPBaseEvent *baseEvent, MPExecStatus execStatus) {
+         // Update cart
+         NSArray *products = nil;
+         if (((MPCommerceEvent *)baseEvent).action == MPCommerceEventActionAddToCart) {
+             products = [((MPCommerceEvent *)baseEvent) addedProducts];
+             
+             if (products) {
+                 [[MParticle sharedInstance].identity.currentUser.cart addProducts:products logEvent:NO updateProductList:YES];
+                 [((MPCommerceEvent *)baseEvent) resetLatestProducts];
+             } else {
+                 MPILogWarning(@"Commerce event products were not added to the cart.");
+             }
+         } else if (((MPCommerceEvent *)baseEvent).action == MPCommerceEventActionRemoveFromCart) {
+             products = [((MPCommerceEvent *)baseEvent) removedProducts];
+             
+             if (products) {
+                 [[MParticle sharedInstance].identity.currentUser.cart removeProducts:products logEvent:NO updateProductList:YES];
+                 [((MPCommerceEvent *)baseEvent) resetLatestProducts];
+             } else {
+                 MPILogWarning(@"Commerce event products were not removed from the cart.");
+             }
+         }  
+         
+         completionHandler((MPCommerceEvent *)baseEvent, execStatus);
+     }];
 }
 
 - (void)logNetworkPerformanceMeasurement:(MPNetworkPerformance *)networkPerformance completionHandler:(void (^)(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus))completionHandler {

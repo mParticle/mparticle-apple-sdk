@@ -69,6 +69,7 @@ static NSArray *actionNames;
 @synthesize currency = _currency;
 @synthesize screenName = _screenName;
 @synthesize nonInteractive = _nonInteractive;
+@synthesize messageType = _messageType;
 
 + (void)initialize {
     actionNames = @[@"add_to_cart", @"remove_from_cart", @"add_to_wishlist", @"remove_from_wishlist", @"checkout", @"checkout_option", @"click", @"view_detail", @"purchase", @"refund"];
@@ -81,6 +82,7 @@ static NSArray *actionNames;
     }
     
     commerceEventKind = MPCommerceEventKindUnknown;
+    _messageType = MPMessageTypeCommerceEvent;
     
     return self;
 }
@@ -96,6 +98,8 @@ static NSArray *actionNames;
     }
     _shoppingCartState = [[MParticle sharedInstance].identity.currentUser.cart dictionaryRepresentation];
     commerceEventKind = MPCommerceEventKindProduct;
+    _messageType = MPMessageTypeCommerceEvent;
+
     self.action = action;
     [self setEventType];
 
@@ -129,6 +133,7 @@ static NSArray *actionNames;
     }
     
     commerceEventKind = MPCommerceEventKindPromotion;
+    self.messageType = MPMessageTypeCommerceEvent;
 
     if (!MPIsNull(promotionContainer)) {
         _promotionContainer = promotionContainer;
@@ -283,6 +288,14 @@ static NSArray *actionNames;
             self.type = static_cast<MPEventType>(Other);
             break;
     }
+}
+
+- (NSMutableDictionary *)userDefinedAttributes {
+    return [self.customAttributes copy];
+}
+
+- (void)setUserDefinedAttributes:(NSMutableDictionary *)userDefinedAttributes {
+    self.customAttributes = userDefinedAttributes;
 }
 
 #pragma mark Subscripting

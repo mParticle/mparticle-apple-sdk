@@ -23,7 +23,8 @@ namespace mParticle {
         string(kMPMessageTypeStringPushNotificationInteraction.UTF8String),
         string(kMPMessageTypeStringCommerceEvent.UTF8String),
         string(kMPMessageTypeStringUserAttributeChange.UTF8String),
-        string(kMPMessageTypeStringUserIdentityChange.UTF8String)
+        string(kMPMessageTypeStringUserIdentityChange.UTF8String),
+        string(kMPMessageTypeStringMedia.UTF8String)
     };
     
     const size_t MessageTypeName::_size = MessageTypeName::names.size();

@@ -39,11 +39,13 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  A Dictionary representation of this instance for uploading the event
+ Must be overridden by a subclass
  */
 @property (nonatomic, readonly) NSDictionary<NSString *, id> *dictionaryRepresentation;
 
 /**
  Initializes an instance of MPBaseEvent
+ MPBaseEvent is an abstract parent class so you should always instantiate one of its children rather than the parent.
  @param type An enum value that indicates the type of event to be logged.
  @returns An instance of MPBaseEvent or nil, if it could not be initialized.
  */

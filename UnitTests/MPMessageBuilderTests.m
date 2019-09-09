@@ -291,7 +291,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent
                                                                            session:self.session
-                                                                     commerceEvent:commerceEvent];
+                                                                     messageInfo:commerceEvent.customAttributes];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");
@@ -317,7 +317,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCommerceEvent
                                                                            session:self.session
-                                                                     commerceEvent:commerceEvent];
+                                                                     messageInfo:commerceEvent.customAttributes];
     
     XCTAssertNotNil(messageBuilder, @"Message builder should not have been nil.");
     XCTAssertEqualObjects(messageBuilder.messageType, @"cm", @"Incorrect message type.");

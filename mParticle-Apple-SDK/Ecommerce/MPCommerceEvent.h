@@ -169,6 +169,8 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
  */
 - (nullable NSArray *)allKeys DEPRECATED_ATTRIBUTE;
 
+- (NSMutableDictionary * _Nullable)userDefinedAttributes DEPRECATED_ATTRIBUTE;
+- (void)setUserDefinedAttributes:(NSMutableDictionary *_Nullable)userDefinedAttributes DEPRECATED_ATTRIBUTE;
 - (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key DEPRECATED_ATTRIBUTE;
 - (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key DEPRECATED_ATTRIBUTE;
 

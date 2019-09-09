@@ -211,6 +211,7 @@
     testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
     
     [[[mockBackend expect] ignoringNonObjectArgs] logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
+        XCTAssert([value isKindOfClass:[MPEvent class]]);
         MPEvent *returnedEvent = ((MPEvent *)value);
         XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
         XCTAssertEqual(returnedEvent.type, testEvent.type);

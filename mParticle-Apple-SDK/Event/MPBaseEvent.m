@@ -87,23 +87,9 @@
 }
 
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
-    NSMutableDictionary<NSString *, id> *eventDictionary = [@{kMPEventTypeKey:self.typeName,
-                                                              kMPEventCounterKey:@([MParticle sharedInstance].stateMachine.currentSession.eventCounter)}
-                                                            mutableCopy];
+    MPILogError(@"You must override %@ in a subclass", NSStringFromSelector(_cmd));
     
-    if (self.customAttributes.count > 0) {
-        eventDictionary[kMPAttributesKey] = self.customAttributes;
-    }
-    
-    eventDictionary[kMPEventLength] = @0;
-    
-    eventDictionary[kMPEventStartTimestamp] = MPCurrentEpochInMilliseconds;
-    
-    if (self.customFlags) {
-        eventDictionary[kMPEventCustomFlags] = self.customFlags;
-    }
-    
-    return eventDictionary;
+    return @{};
 }
 
 - (void)addCustomFlag:(NSString *)customFlag withKey:(NSString *)key {

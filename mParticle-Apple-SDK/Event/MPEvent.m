@@ -48,6 +48,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     _name = name;
     _startTime = nil;
     _duration = @0;
+    _messageType = MPMessageTypeEvent;
 
     return self;
 }

@@ -6,7 +6,7 @@
 @class MPKitFilter;
 @class MPKitExecStatus;
 @class MPCommerceEvent;
-@class MPEvent;
+@class MPBaseEvent;
 @class MPForwardQueueParameters;
 @class MPKitConfiguration;
 
@@ -24,7 +24,7 @@
 - (nullable NSArray<NSNumber *> *)supportedKits;
 - (void)initializeKits;
 - (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent;
-- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPEvent *)event parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo;
+- (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPBaseEvent *)event parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo;
 - (void)forwardSDKCall:(nonnull SEL)selector userAttributeKey:(nonnull NSString *)key value:(nullable id)value kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nullable forwardAttributes, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;

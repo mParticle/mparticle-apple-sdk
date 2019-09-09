@@ -296,6 +296,7 @@ NSString *const kMPMessageTypeStringPushNotificationInteraction = @"pre";
 NSString *const kMPMessageTypeStringCommerceEvent = @"cm";
 NSString *const kMPMessageTypeStringUserAttributeChange = @"uac";
 NSString *const kMPMessageTypeStringUserIdentityChange = @"uic";
+NSString *const kMPMessageTypeStringMedia = @"media";
 
 // Event type strings
 NSString *const kMPEventTypeStringUnknown = @"Unknown";

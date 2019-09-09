@@ -289,7 +289,9 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     /** Message type code for a user attribute change */
     MPMessageTypeUserAttributeChange = 17,
     /** Message type code for a user identity change */
-    MPMessageTypeUserIdentityChange = 18
+    MPMessageTypeUserIdentityChange = 18,
+    /** Message type code for a media event */
+    MPMessageTypeMedia = 20
 };
 
 /// Upload Types

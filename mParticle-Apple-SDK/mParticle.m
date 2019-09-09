@@ -820,19 +820,40 @@ NSString *const kMPStateKey = @"state";
     return [self.backendController eventWithName:eventName];
 }
 
+- (void)logBaseEvent:(MPBaseEvent *)event {
+    if (event == nil) {
+        MPILogError(@"Cannot log nil event!");
+    } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
+        [self logCommerceEvent:(MPCommerceEvent *)event];
+    } else {
+        dispatch_async(messageQueue, ^{
+            [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
+            
+            [self.backendController logBaseEvent:event
+                               completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {
+                                   if (execStatus == MPExecStatusSuccess) {
+                                       MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
+                                   }
+                               }];
+        });
+    }
+}
+
 - (void)logEvent:(MPEvent *)event {
     if (event == nil) {
         MPILogError(@"Cannot log nil event!");
         return;
     }
+    
     [event endTiming];
+    
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
 
         [self.backendController logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                            if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged event: %@", event);
+                               MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
                            }
                        }];
         // Forwarding calls to kits
