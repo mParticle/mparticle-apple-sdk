@@ -1,5 +1,14 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.11.0
+
+## iOS 13 Official Support
+### Push Registration
+If you are collecting push registration tokens and using them for server-side integrations, this is a *critical update*. If you are only registering for push via kits (such as Braze), you can use iOS Braze kit 7.10.7 or later with iOS 13.
+
+### UIWebView and User Agent Collection
+Support for UIWebView has been removed. User agent collection has been disabled in this release. You may manually supply the user agent to the MParticleOptions object on SDK initialization if required.
+
 ## 7.10.5
 
 ## Core
