@@ -20,7 +20,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 

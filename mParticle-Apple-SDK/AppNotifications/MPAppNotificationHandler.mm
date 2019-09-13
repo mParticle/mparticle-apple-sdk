@@ -315,7 +315,7 @@
 }
 #endif
 
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return NO;

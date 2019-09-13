@@ -740,7 +740,7 @@ NSString *const kMPStateKey = @"state";
     [[MParticle sharedInstance].appNotificationHandler openURL:url options:options];
 }
 
-- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler {
+- (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
     if (self.proxiedAppDelegate) {
         return NO;
     }
