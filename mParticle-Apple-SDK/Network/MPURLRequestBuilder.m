@@ -8,6 +8,7 @@
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
 #import "MPApplication.h"
+#import "MParticleWebView.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
@@ -77,60 +78,7 @@ static NSString *mpUserAgent = nil;
 
 - (NSString *)userAgent {
     NSString *defaultUserAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
-    
-    if (!mpUserAgent) {
-        if (MParticle.sharedInstance.customUserAgent != nil) {
-            mpUserAgent = MParticle.sharedInstance.customUserAgent;
-#if TARGET_OS_IOS == 1
-        } else if (MParticle.sharedInstance.collectUserAgent) {
-            NSString *currentSystemVersion = [UIDevice currentDevice].systemVersion;
-            NSString *savedSystemVersion = [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey];
-            if ([currentSystemVersion isEqualToString:savedSystemVersion]) {
-                NSString *savedUserAgent = [MPIUserDefaults standardUserDefaults][kMPUserAgentValueUserDefaultsKey];
-                if (savedUserAgent) {
-                    mpUserAgent = savedUserAgent;
-                    return mpUserAgent;
-                }
-            }
-            
-            dispatch_block_t getUserAgent = ^{
-                if (![MPStateMachine isAppExtension]) {
-                    if ([MPApplication sharedUIApplication].applicationState == UIApplicationStateBackground) {
-                        mpUserAgent = defaultUserAgent;
-                        return;
-                    }
-                }
-
-                @try {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                    UIWebView *webView = [[UIWebView alloc] initWithFrame:CGRectZero];
-#pragma clang diagnostic pop
-                    mpUserAgent = [webView stringByEvaluatingJavaScriptFromString:@"navigator.userAgent"];
-                    NSString *systemVersion = [UIDevice currentDevice].systemVersion;
-                    if (mpUserAgent && systemVersion) {
-                        [MPIUserDefaults standardUserDefaults][kMPUserAgentValueUserDefaultsKey] = mpUserAgent;
-                        [MPIUserDefaults standardUserDefaults][kMPUserAgentSystemVersionUserDefaultsKey] = systemVersion;
-                        [[MPIUserDefaults standardUserDefaults] synchronize];
-                    }
-                } @catch (NSException *exception) {
-                    mpUserAgent = nil;
-                    MPILogError(@"Exception obtaining the user agent: %@", exception.reason);
-                }
-            };
-            
-            if ([NSThread isMainThread]) {
-                getUserAgent();
-            } else {
-                dispatch_sync(dispatch_get_main_queue(), getUserAgent);
-            }
-#endif
-        } else {
-            return defaultUserAgent;
-        }
-    }
-    
-    return mpUserAgent;
+    return MParticle.sharedInstance.customUserAgent ?: defaultUserAgent;
 }
 
 - (void)setUserAgent:(NSString *)userAgent {

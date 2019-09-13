@@ -346,7 +346,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (atomic, strong, nullable, readonly) NSString *customUserAgent;
 
 /**
- Determines whether the mParticle Apple SDK will instantiate a UIWebView in order to collect the browser user agent.
+ Determines whether the mParticle Apple SDK will instantiate a webview in order to collect the browser user agent.
  This value is required by attribution providers for fingerprint identification, when device IDs are not available.
  If you disable this flag, consider populating the user agent via the customUserAgent property above if you are using
  an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
@@ -890,28 +890,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 #pragma mark - Web Views
 #if TARGET_OS_IOS == 1
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-/**
- Create a bridge between the mParticle web SDK and iOS SDK.
- 
- This API for the deprecated `UIWebView` will invoke Javascript to set the `window.mParticle.isIOS` object to true, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that if the `UIWebview` loads a new page, this value will disappear and need to be set again. Due to this limitation and the deprecation of `UIWebView`, using `WKWebView` and the respective mParticle initialization method is preferable.
- @param webView The web view to be initialized
- @see initializeWKWebView:
- */
-- (void)initializeWebView:(UIWebView *)webView __attribute__((deprecated("use WKWebView")));
-
-/**
- Create a bridge between the mParticle web SDK and iOS SDK.
- 
- This API for the deprecated `UIWebView` will invoke Javascript to set the `window.mParticle.isIOS` object to true, signaling to the mParticle web SDK that it should delegate all API calls out to the native iOS SDK, rather than sending API calls directly. Note that if the `UIWebview` loads a new page, this value will disappear and need to be set again. Due to this limitation and the deprecation of `UIWebView`, using `WKWebView` and the respective mParticle initialization method is preferable.
- @param webView The web view to be initialized
- @param bridgeName The name of the webview bridge
- @see initializeWKWebView:bridgeName:
- */
-- (void)initializeWebView:(UIWebView *)webView bridgeName:(nullable NSString *)bridgeName __attribute__((deprecated("use WKWebView")));
-#pragma clang diagnostic pop
-
 /**
  Create a bridge between the mParticle web SDK and iOS SDK.
  
@@ -928,18 +906,6 @@ NS_ASSUME_NONNULL_BEGIN
  @param bridgeName The name of the webview bridge
  */
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(nullable NSString *)bridgeName;
-
-/**
- Verifies if the url is mParticle sdk url i.e mp-sdk://
- @param requestUrl The request URL
- */
-- (BOOL)isMParticleWebViewSdkUrl:(NSURL *)requestUrl __attribute__((deprecated("This API is only needed if using the deprecated UIWebView. If you have initialized the mParticle-bridge in a WKWebView, URL requests are no longer used.")));
-
-/**
- Process log event from hybrid apps that are using iOS `UIWebView` control.
- @param requestUrl The request URL
- */
-- (void)processWebViewLogEvent:(NSURL *)requestUrl __attribute__((deprecated("This API is only needed if using the deprecated UIWebView. If you have initialized the mParticle-bridge in a WKWebView, URL requests are no longer used.")));
 
 #pragma mark - Manual Notification logging
 /**

@@ -25,6 +25,7 @@
 #import "MPEvent+Internal.h"
 #import "MPIHasher.h"
 #import "MPApplication.h"
+#import "MParticleWebView.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -473,6 +474,8 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     sdkInitialized = YES;
+    
+    [MParticleWebView setCustomUserAgent:options.customUserAgent];
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:options];
     
@@ -1460,27 +1463,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 #if TARGET_OS_IOS == 1
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-// Updates isIOS flag in JS API to true via webview.
-- (void)initializeWebView:(UIWebView *)webView bridgeName:(NSString *)bridgeName {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:webView parameter2:bridgeName];
-    
-    NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
-    if (bridgeValue == nil) {
-        MPILogError(@"Unable to initialize webview due to missing or invalid bridgeName");
-        return;
-    }
-    NSString *bridgeVersion = [self bridgeVersion];
-    NSString *script = [NSString stringWithFormat:@"window.mParticle = window.mParticle || {}; window.mParticle.isIOS = true; window.mParticle.uiwebviewBridgeName = 'mParticle_%@_v%@';", bridgeValue, bridgeVersion];
-    [webView stringByEvaluatingJavaScriptFromString:script];
-}
-
-- (void)initializeWebView:(UIWebView *)webView {
-    [self initializeWebView:webView bridgeName:nil];
-}
-#pragma clang diagnostic pop
-
 - (void)initializeWKWebView:(WKWebView *)webView bridgeName:(NSString *)bridgeName {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:webView parameter2:bridgeName];
 
@@ -1498,13 +1480,6 @@ NSString *const kMPStateKey = @"state";
 // Updates isIOS flag in JS API to true via webview.
 - (void)initializeWKWebView:(WKWebView *)webView {
     [self initializeWKWebView:webView bridgeName:nil];
-}
-
-// A url is mParticle sdk url when it has prefix mp-sdk://
-- (BOOL)isMParticleWebViewSdkUrl:(NSURL *)requestUrl {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:requestUrl];
-
-    return [[requestUrl scheme] isEqualToString:kMParticleWebViewSdkScheme];
 }
 
 // Process web log event that is raised in iOS hybrid apps that are using WKWebView
@@ -1551,28 +1526,7 @@ NSString *const kMPStateKey = @"state";
     }
 }
 
-// Process web log event that is raised in iOS hybrid apps that are using UIWebView
-- (void)processWebViewLogEvent:(NSURL *)requestUrl {
-    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:requestUrl];
-    
-    if (![self isMParticleWebViewSdkUrl:requestUrl]) {
-        return;
-    }
-    
-    @try {
-        NSError *error = nil;
-        NSString *hostPath = [requestUrl host];
-        NSString *paramStr = [[requestUrl path] substringFromIndex:1];
-        NSData *eventDataStr = [paramStr dataUsingEncoding:NSUTF8StringEncoding];
-        NSDictionary *eventDictionary = [NSJSONSerialization JSONObjectWithData:eventDataStr options:kNilOptions error:&error];
-        
-        [self handleWebviewCommand:hostPath dictionary:eventDictionary];
-    } @catch (NSException *e) {
-        MPILogError(@"Exception processing UIWebView event: %@", e.reason);
-    }
-}
-
-// Handle web log event that is raised in iOS hybrid apps that are using UIWebView or WKWebView
+// Handle web log event that is raised in iOS hybrid apps
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:command parameter2:dictionary];
     

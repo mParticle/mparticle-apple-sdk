@@ -325,42 +325,4 @@
     XCTAssertEqualObjects(event.info, expectedEventInfo, @"Should have been equal.");
 }
 
-#if TARGET_OS_IOS == 1
-- (void)testWebEvent {
-    NSURL *oddURL = [[NSURL alloc] initWithString:@"mp-sdk://logEvent/%7B%22EventName%22:%22selected%20my%20response%22,%22EventCategory%22:1,%22UserAttributes%22:%7B%7D,%22UserIdentities%22:%7B%7D,%22Store%22:%7B%7D,%22EventAttributes%22:%7B%22question%20id%22:4644,%22question%20text%22:%22Do%20you%20want%20to%20build%20a%20snowman%3F%22,%22user%20response%22:%22no%22,%22debug_platform%22:%22ios%22%7D,%22SDKVersion%22:%222.3.3%22,%22SessionId%22:%22305b36bb-0eff-4fc1-a20a-7296264da842%22,%22EventDataType%22:4,%22Debug%22:false,%22Location%22:null,%22OptOut%22:null,%22ExpandedEventCount%22:0,%22ClientGeneratedId%22:%221e9c5dec-5171-4780-aa20-16bd6d16aac8%22,%22DeviceId%22:%22a571153f-aad2-4956-be9e-3d7b83051fc3%22,%22MPID%22:0,%22Timestamp%22:1524610824707%7D"];
-    
-    id mockBackendController = OCMClassMock([MPBackendController class]);
-    [MParticle sharedInstance].backendController = mockBackendController;
-    
-    MPEvent *testEvent = [[MPEvent alloc] init];
-    testEvent.name = @"selected my response";
-    testEvent.type = MPEventTypeNavigation;
-    testEvent.info = @{
-                       @"debug_platform": @"ios",
-                       @"question id": @4644,
-                       @"question text": @"Do you want to build a snowman?",
-                       @"user response": @"no"
-                       };
-    
-    [[[mockBackendController expect] ignoringNonObjectArgs] logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
-        MPEvent *returnedEvent = ((MPEvent *)value);
-        XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
-        XCTAssertEqual(returnedEvent.type, testEvent.type);
-        XCTAssertEqualObjects(returnedEvent.info, testEvent.info);
-        
-        return YES;
-    }]
-                                                   completionHandler:[OCMArg any]];
-    
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[MParticle sharedInstance] processWebViewLogEvent: oddURL];
-#pragma clang diagnostic pop
-
-    [mockBackendController verifyWithDelay:2];
-    
-    [mockBackendController stopMocking];
-}
-#endif
-
 @end

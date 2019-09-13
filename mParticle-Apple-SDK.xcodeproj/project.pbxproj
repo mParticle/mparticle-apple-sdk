@@ -478,6 +478,9 @@
 		DB58FB021E9FD06800AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
 		DB58FB031E9FD07900AB5402 /* MPConvertJS.h in Headers */ = {isa = PBXBuildFile; fileRef = DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */; };
 		DB58FB041E9FD07E00AB5402 /* MPConvertJS.m in Sources */ = {isa = PBXBuildFile; fileRef = DB58FB001E9FD06800AB5402 /* MPConvertJS.m */; };
+		DB590483232C2AA6006C12DE /* MParticleWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = DB590481232C2AA6006C12DE /* MParticleWebView.h */; };
+		DB590484232C2AA6006C12DE /* MParticleWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = DB590482232C2AA6006C12DE /* MParticleWebView.m */; };
+		DB60A814232C3FA600FEFAC7 /* MParticleWebView.h in Headers */ = {isa = PBXBuildFile; fileRef = DB590481232C2AA6006C12DE /* MParticleWebView.h */; };
 		DB615E321F1FB6EE006D79BE /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
 		DB678C351F180E0A0015587D /* MPUserIdentityChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB678C331F180E0A0015587D /* MPUserIdentityChange.h */; };
 		DB678C361F180E0A0015587D /* MPUserIdentityChange.m in Sources */ = {isa = PBXBuildFile; fileRef = DB678C341F180E0A0015587D /* MPUserIdentityChange.m */; };
@@ -536,6 +539,7 @@
 		DBC8889A2243FBA200067000 /* MPAliasRequest.h in Headers */ = {isa = PBXBuildFile; fileRef = DBC888972243FBA200067000 /* MPAliasRequest.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DBC8889B2243FBA200067000 /* MPAliasRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC888982243FBA200067000 /* MPAliasRequest.m */; };
 		DBC8889C2243FBA200067000 /* MPAliasRequest.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC888982243FBA200067000 /* MPAliasRequest.m */; };
+		DBD5D591232C41B80044518B /* MParticleWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = DB590482232C2AA6006C12DE /* MParticleWebView.m */; };
 		DBF4CB8C208F91C500CE831F /* MPNetworkOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBF4CB8A208F919A00CE831F /* MPNetworkOptionsTests.m */; };
 		DBF4CB8D208F91C600CE831F /* MPNetworkOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBF4CB8A208F919A00CE831F /* MPNetworkOptionsTests.m */; };
 		DBF57B2E1F3A4D9D00A809CC /* MPKitAPI.h in Headers */ = {isa = PBXBuildFile; fileRef = DBF57B2C1F3A4D9D00A809CC /* MPKitAPI.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -827,6 +831,8 @@
 		DB575011208A7C250033B699 /* MPConsentKitFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentKitFilter.m; sourceTree = "<group>"; };
 		DB58FAFF1E9FD06800AB5402 /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
 		DB58FB001E9FD06800AB5402 /* MPConvertJS.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConvertJS.m; sourceTree = "<group>"; };
+		DB590481232C2AA6006C12DE /* MParticleWebView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MParticleWebView.h; sourceTree = "<group>"; };
+		DB590482232C2AA6006C12DE /* MParticleWebView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleWebView.m; sourceTree = "<group>"; };
 		DB678C331F180E0A0015587D /* MPUserIdentityChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUserIdentityChange.h; sourceTree = "<group>"; };
 		DB678C341F180E0A0015587D /* MPUserIdentityChange.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChange.m; sourceTree = "<group>"; };
 		DB678C391F1817B90015587D /* MPUserIdentityChangeTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserIdentityChangeTests.m; sourceTree = "<group>"; };
@@ -1265,6 +1271,8 @@
 				DBB491601DA4192E002F46BD /* NSArray+MPCaseInsensitive.m */,
 				DB7ABA141DA6E69900367A6D /* MPSearchAdsAttribution.h */,
 				DB7ABA151DA6E69900367A6D /* MPSearchAdsAttribution.m */,
+				DB590481232C2AA6006C12DE /* MParticleWebView.h */,
+				DB590482232C2AA6006C12DE /* MParticleWebView.m */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1477,6 +1485,7 @@
 				C935A6CF1D8A2DED00A1EE2F /* MPDataModelProtocol.h in Headers */,
 				C935A74D1D8A2E3800A1EE2F /* MPDevice.h in Headers */,
 				C935A76B1D8A2E4000A1EE2F /* mParticle.h in Headers */,
+				DB60A814232C3FA600FEFAC7 /* MParticleWebView.h in Headers */,
 				C935A6E81D8A2DF400A1EE2F /* MPCart.h in Headers */,
 				C935A7741D8A2E4000A1EE2F /* MPIConstants.h in Headers */,
 				C935A7421D8A2E2D00A1EE2F /* MPPersistenceController.h in Headers */,
@@ -1608,6 +1617,7 @@
 				C9DD202F1D8A142000D3ABBE /* MPHasher.h in Headers */,
 				C9DD20131D8A140800D3ABBE /* MPNetworkCommunication.h in Headers */,
 				C9DD1FF91D8A13F100D3ABBE /* MParticleReachability.h in Headers */,
+				DB590483232C2AA6006C12DE /* MParticleWebView.h in Headers */,
 				DBF57B2E1F3A4D9D00A809CC /* MPKitAPI.h in Headers */,
 				C9DD1FE11D8A13E200D3ABBE /* MPEvent+MessageType.h in Headers */,
 				C9DD1F9A1D8A13CA00D3ABBE /* MPAppDelegateProxy.h in Headers */,
@@ -1864,6 +1874,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DBD5D591232C41B80044518B /* MParticleWebView.m in Sources */,
 				DB8398412087E8780031AB1D /* MPConsentSerialization.m in Sources */,
 				C935A75A1D8A2E3800A1EE2F /* MPStateMachine.mm in Sources */,
 				C935A6C81D8A2DED00A1EE2F /* MParticleUserNotification.m in Sources */,
@@ -2003,6 +2014,7 @@
 				DBC8889B2243FBA200067000 /* MPAliasRequest.m in Sources */,
 				C9DD1FF81D8A13EA00D3ABBE /* MPKitRegister.mm in Sources */,
 				C9DD20181D8A140800D3ABBE /* MPURLConnectionAssociate.m in Sources */,
+				DB590484232C2AA6006C12DE /* MParticleWebView.m in Sources */,
 				C9DD1FFA1D8A13F100D3ABBE /* MParticleReachability.m in Sources */,
 				C9DD1FA31D8A13D000D3ABBE /* MPCustomModule.m in Sources */,
 				DB6F8F41228347DC004E5486 /* MPAliasResponse.m in Sources */,

@@ -89,28 +89,6 @@
     [super tearDown];
 }
 
-- (void)testUserAgent {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
-    
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    
-    MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
-                                                                            message:[message serializedString]
-                                                                         httpMethod:@"POST"];
-    
-    dispatch_async([MParticle messageQueue], ^{
-        NSString *userAgent = [urlRequestBuilder userAgent];
-
-        XCTAssertNotNil(userAgent, @"Should not have been nil.");
-
-        [expectation fulfill];
-    });
-    
-    [self waitForExpectationsWithTimeout:1 handler:nil];
-}
-
 - (void)testCustomUserAgent {
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"testKey" secret:@"testSecret"];
     options.customUserAgent = @"Test User Agent";
