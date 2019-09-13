@@ -29,11 +29,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote"];
     
     return _cellTitles;
 }
@@ -72,6 +72,7 @@
 
 #pragma mark Examples
 - (void)logSimpleEvent {
+    
     [[MParticle sharedInstance] logEvent:@"Simple Event Name"
                                eventType:MPEventTypeOther
                                eventInfo:@{@"SimpleKey":@"SimpleValue"}];
@@ -198,6 +199,10 @@
 - (void)incrementSessionAttribute {
     // Increments a numeric session attribute
     [[MParticle sharedInstance] incrementSessionAttribute:@"Song Count" byValue:@1];
+}
+
+- (void)registerRemote {
+    [[UIApplication sharedApplication] registerForRemoteNotifications];
 }
 
 @end

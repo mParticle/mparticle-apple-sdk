@@ -484,4 +484,16 @@
     XCTAssertFalse([[MPIUserDefaults standardUserDefaults] isConfigurationParametersOutdated]);
 }
 
+- (void)testStringFromDeviceToken {
+    NSData *data = [[NSData alloc] init];
+    NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:data];
+    
+    XCTAssertNil(tokenString);
+    
+    data = [NSData dataWithBytes:(unsigned char[]){0x0F} length:1];
+    tokenString = [MPIUserDefaults stringFromDeviceToken:data];
+
+    XCTAssertEqualObjects(tokenString, @"0f");
+}
+
 @end

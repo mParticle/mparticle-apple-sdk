@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -75,6 +75,7 @@
 		B373312D5497AC0E32ACE1BD /* Pods-mParticleExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-mParticleExample/Pods-mParticleExample.debug.xcconfig"; sourceTree = "<group>"; };
 		B58368FCE09AF9716F29B8CB /* Pods_mParticleExample_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExample_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C471257D9B6443C66D22D46A /* Pods_mParticleExampleUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExampleUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3D685CC232BE18900112FCC /* mParticleExample.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = mParticleExample.entitlements; sourceTree = "<group>"; };
 		DBD54A0D224941630053BD20 /* mParticleExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = mParticleExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBD54A10224941630053BD20 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		DBD54A11224941630053BD20 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -193,6 +194,7 @@
 		DBD54A0F224941630053BD20 /* mParticleExample */ = {
 			isa = PBXGroup;
 			children = (
+				D3D685CC232BE18900112FCC /* mParticleExample.entitlements */,
 				DBD54A10224941630053BD20 /* AppDelegate.h */,
 				DBD54A11224941630053BD20 /* AppDelegate.m */,
 				DBD54A13224941630053BD20 /* ViewController.h */,
@@ -706,6 +708,8 @@
 			baseConfigurationReference = B373312D5497AC0E32ACE1BD /* Pods-mParticleExample.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = mParticleExample/mParticleExample.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				INFOPLIST_FILE = mParticleExample/Info.plist;
@@ -713,8 +717,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mparticle.mParticleExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mparticle.mParticleExample.push;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -724,6 +729,8 @@
 			baseConfigurationReference = 2965EB834AF92F890FCDAA44 /* Pods-mParticleExample.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = mParticleExample/mParticleExample.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				INFOPLIST_FILE = mParticleExample/Info.plist;
@@ -731,8 +738,9 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.mparticle.mParticleExample;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mparticle.mParticleExample.push;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -832,7 +840,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticleExample.mParticleExample-Extension";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticleExample.push.mParticleExample-Extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -856,7 +864,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticleExample.mParticleExample-Extension";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticleExample.push.mParticleExample-Extension";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";

@@ -64,7 +64,7 @@ static NSData *deviceToken = nil;
         NSString *oldTokenString = nil;
         if (newDeviceToken) {
             deviceTokenDictionary[kMPRemoteNotificationDeviceTokenKey] = newDeviceToken;
-            newTokenString = [[NSString alloc] initWithData:newDeviceToken encoding:NSUTF8StringEncoding];
+            newTokenString = [MPIUserDefaults stringFromDeviceToken:newDeviceToken];
         }
         
         if (oldDeviceToken) {

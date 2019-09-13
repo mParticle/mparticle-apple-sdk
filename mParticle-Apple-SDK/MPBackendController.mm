@@ -2087,7 +2087,7 @@ static BOOL skipNextUpload = NO;
             status = @"false";
         }
         
-        NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", logDeviceToken],
+        NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[MPIUserDefaults stringFromDeviceToken:logDeviceToken],
                                               kMPPushStatusKey:status}
                                             mutableCopy];
         

@@ -28,6 +28,18 @@
 
     [[MParticle sharedInstance] startWithOptions:options];
 
+    UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
+    [center requestAuthorizationWithOptions:
+             (UNAuthorizationOptionAlert +
+              UNAuthorizationOptionSound + UNAuthorizationOptionBadge)
+       completionHandler:^(BOOL granted, NSError * _Nullable error) {
+        if (error != nil) {
+            NSLog(@"Fail to Register: %@", error.localizedDescription);
+        } else {
+            NSLog(@"Notification Request Successful");
+        }
+    }];
+    
     return YES;
 }
 

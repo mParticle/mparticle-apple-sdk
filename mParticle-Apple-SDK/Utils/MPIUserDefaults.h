@@ -28,4 +28,6 @@
 - (BOOL)isConfigurationExpired;
 - (BOOL)isConfigurationParametersOutdated;
 
++ (NSString *_Nullable)stringFromDeviceToken:(NSData *_Nonnull)deviceToken;
+
 @end
