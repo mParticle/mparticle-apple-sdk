@@ -234,29 +234,50 @@ static BOOL appBackgrounded = NO;
     
     if (backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
         backendBackgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            MPILogDebug(@"SDK has ended background activity together with the app.");
-
-            [MPStateMachine setRunningInBackground:NO];
-            [[MParticle sharedInstance].persistenceController purgeMemory];
-            
-            __strong MPBackendController *strongSelf = weakSelf;
-            
-            if (strongSelf) {
-                [strongSelf endBackgroundTimer];
-                
-                
-                if (strongSelf->_session) {
-                    [strongSelf broadcastSessionDidEnd:strongSelf->_session];
-                    strongSelf->_session = nil;
-                    
-                    if (strongSelf.eventSet.count == 0) {
-                        strongSelf->_eventSet = nil;
-                    }
-                }
-                
-                [strongSelf endBackgroundTask];
-            }
+            [weakSelf backgroundTaskBlock];
         }];
+        
+        if (MParticle.sharedInstance.automaticSessionTracking) {
+            [self beginBackgroundTimer];
+        }
+    }
+}
+
+- (void)backgroundTaskBlock {
+    MPILogDebug(@"SDK has ended background activity together with the app.");
+    
+    __strong MPBackendController *strongSelf = self;
+    
+    if (strongSelf) {
+        [strongSelf endBackgroundTimer];
+        [strongSelf endBackgroundTask];
+    }
+    
+    [MPStateMachine setRunningInBackground:NO];
+    [[MParticle sharedInstance].persistenceController purgeMemory];
+}
+
+- (void)confirmEndSessionMessage:(MPSession *)session {
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
+    MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
+    if (!message) {
+        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(session.foregroundTime), kMPSessionTotalLengthKey:MPMilliseconds(session.length), kMPEventCounterKey:@(session.eventCounter)}
+                                            mutableCopy];
+        
+        NSDictionary *sessionAttributesDictionary = [session.attributesDictionary transformValuesToString];
+        if (sessionAttributesDictionary) {
+            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
+        }
+        
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
+#if TARGET_OS_IOS == 1
+        messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
+        message = [[messageBuilder withTimestamp:session.endTime] build];
+        
+        [self saveMessage:message updateSession:NO];
+        MPILogVerbose(@"Session Ended: %@", session.uuid);
     }
 }
 
@@ -449,7 +470,9 @@ static BOOL appBackgrounded = NO;
     
     NSMutableArray<MPSession *> *sessions = [persistence fetchSessions];
     if (endCurrentSession) {
-        self->_session = nil;
+        MPILogVerbose(@"Session Ending: %@", _session.uuid);
+        _session = nil;
+        [MParticle sharedInstance].stateMachine.currentSession = nil;
         if (self.eventSet.count == 0) {
             self.eventSet = nil;
         }
@@ -720,7 +743,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(void))completionHandler {
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     void (^invokeCompletionHandler)(void) = ^(void) {
         if ([NSThread isMainThread]) {
@@ -737,31 +759,12 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    __block MPSession *session = [openSessions[0] copy];
-    [openSessions removeObjectAtIndex:0];
-    NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(session.foregroundTime),
-                                          kMPSessionTotalLengthKey:MPMilliseconds(session.length)}
-                                        mutableCopy];
-    
-    NSDictionary *sessionAttributesDictionary = [session.attributesDictionary transformValuesToString];
-    if (sessionAttributesDictionary) {
-        messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
+    for (MPSession *originalSession in openSessions) {
+        __block MPSession *session = [originalSession copy];
+        [self confirmEndSessionMessage:session];
     }
     
-    MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
-    if (!message && MParticle.sharedInstance.automaticSessionTracking) {
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-        messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
-#endif
-        message = [[messageBuilder withTimestamp:session.endTime] build];
-        
-        [self saveMessage:message updateSession:NO];
-        MPILogVerbose(@"Session Ended: %@", session.uuid);
-    }
-        
     [self waitForKitsAndUploadWithCompletionHandler:^{
-        session = nil;
         invokeCompletionHandler();
     }];
 }
@@ -781,10 +784,6 @@ static BOOL skipNextUpload = NO;
     
     if (![MPStateMachine isAppExtension]) {
         [self beginBackgroundTask];
-        
-        if (MParticle.sharedInstance.automaticSessionTracking) {
-            [self beginBackgroundTimer];
-        }
     }
     
     [self endUploadTimer];
@@ -821,6 +820,14 @@ static BOOL skipNextUpload = NO;
     });
 }
 
+- (BOOL)shouldEndSession {
+    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    NSTimeInterval backgroundTime = self->timeAppWentToBackground;
+    NSTimeInterval timeInBackground = currentTime - backgroundTime;
+    
+    return timeInBackground >= self.sessionTimeout;
+}
+
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
     [self endBackgroundTimer];
     
@@ -833,7 +840,20 @@ static BOOL skipNextUpload = NO;
     }
     
     if (MParticle.sharedInstance.automaticSessionTracking) {
-        [self beginSession];
+        if (self.session != nil && [self shouldEndSession]) {
+            self.session.endTime = self->timeAppWentToBackground;
+            [[MParticle sharedInstance].persistenceController updateSession:self.session];
+            
+            dispatch_async(messageQueue, ^{
+                [self processOpenSessionsEndingCurrent:YES
+                                     completionHandler:^(void) {
+                    MPILogDebug(@"SDK has ended background activity.");
+                    [self beginSession];
+                }];
+            });
+        } else {
+            [self beginSession];
+        }
     }
     
 #if TARGET_OS_IOS == 1
@@ -909,49 +929,38 @@ static BOOL skipNextUpload = NO;
 - (void)beginBackgroundTimer {
     __weak MPBackendController *weakSelf = self;
     
-    backgroundSource = [self createSourceTimer:(MINIMUM_SESSION_TIMEOUT + 0.1)
+    backgroundSource = [self createSourceTimer:(self.sessionTimeout)
                                   eventHandler:^{
-                                      
-                                      NSTimeInterval timerFireTime = [[NSDate date] timeIntervalSince1970];
-                                      NSTimeInterval backgroundTime = self->timeAppWentToBackground;
-                                      
-                                      dispatch_async([MParticle messageQueue], ^{
-                                          __strong MPBackendController *strongSelf = weakSelf;
-                                          if (!strongSelf) {
-                                              return;
-                                          }
-                                          
-                                          MPSession *session = strongSelf.session;
-                                          NSTimeInterval timeInBackground = timerFireTime - backgroundTime;
-                                          BOOL shouldEndSession = timeInBackground >= strongSelf.sessionTimeout;
-                                          
-                                          if (shouldEndSession) {
-                                              [strongSelf endBackgroundTimer];
-                                              
-                                              session.endTime = backgroundTime;
-                                              [[MParticle sharedInstance].persistenceController updateSession:session];
-                                              
-                                              [strongSelf processOpenSessionsEndingCurrent:YES
-                                                                         completionHandler:^(void) {
-                                                                             dispatch_async(dispatch_get_main_queue(), ^{
-                                                                                 [MPStateMachine setRunningInBackground:NO];
-                                                                                 
-                                                                                 MPILogDebug(@"SDK has ended background activity.");
-                                                                                 [strongSelf endBackgroundTask];
-                                                                             });
-                                                                             
-                                                                         }];
-                                              
-                                          }
-                                      });
-                                  } cancelHandler:^{
-                                      dispatch_async([MParticle messageQueue], ^{
-                                          __strong MPBackendController *strongSelf = weakSelf;
-                                          if (strongSelf) {
-                                              strongSelf->backgroundSource = nil;
-                                          }
-                                      });
-                                  }];
+        dispatch_async([MParticle messageQueue], ^{
+            __strong MPBackendController *strongSelf = weakSelf;
+            if (!strongSelf) {
+                return;
+            }
+            
+            [strongSelf endBackgroundTimer];
+            
+            strongSelf.session.endTime = self->timeAppWentToBackground;
+            [[MParticle sharedInstance].persistenceController updateSession:strongSelf.session];
+            
+            [strongSelf processOpenSessionsEndingCurrent:YES
+                                       completionHandler:^(void) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [MPStateMachine setRunningInBackground:NO];
+                    
+                    MPILogDebug(@"SDK has ended background activity.");
+                    [strongSelf endBackgroundTask];
+                });
+                
+            }];
+        });
+    } cancelHandler:^{
+        dispatch_async([MParticle messageQueue], ^{
+            __strong MPBackendController *strongSelf = weakSelf;
+            if (strongSelf) {
+                strongSelf->backgroundSource = nil;
+            }
+        });
+    }];
 }
 
 - (void)beginUploadTimer {
@@ -1114,37 +1123,14 @@ static BOOL skipNextUpload = NO;
     }
     
     @synchronized (self) {
-        
-        
         if (_session == nil || [MParticle sharedInstance].stateMachine.optOut) {
             return;
         }
         
         MPSession *sessionToEnd = [_session copy];
-        NSMutableDictionary *messageInfo = [@{kMPSessionLengthKey:MPMilliseconds(sessionToEnd.foregroundTime),
-                                              kMPSessionTotalLengthKey:MPMilliseconds(sessionToEnd.length),
-                                              kMPEventCounterKey:@(sessionToEnd.eventCounter)}
-                                            mutableCopy];
+        [self confirmEndSessionMessage:sessionToEnd];
         
-        NSDictionary *sessionAttributesDictionary = [sessionToEnd.attributesDictionary transformValuesToString];
-        if (sessionAttributesDictionary) {
-            messageInfo[kMPAttributesKey] = sessionAttributesDictionary;
-        }
-        
-        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-        MPMessage *message = [persistence fetchSessionEndMessageInSession:sessionToEnd];
-        
-        if (!message) {
-            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:sessionToEnd messageInfo:messageInfo];
-#if TARGET_OS_IOS == 1
-            messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
-#endif
-            message = [[messageBuilder withTimestamp:sessionToEnd.endTime] build];
-            
-            [self saveMessage:message updateSession:NO];
-        }
-        
-        [persistence archiveSession:sessionToEnd];
+        [[MParticle sharedInstance].persistenceController archiveSession:sessionToEnd];
         [self broadcastSessionDidEnd:sessionToEnd];
         _session = nil;
         [MParticle sharedInstance].stateMachine.currentSession = nil;
