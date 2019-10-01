@@ -418,9 +418,15 @@
     NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
+    BOOL eventFound = NO;
     for (MPMessage *message in messages) {
         XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringEvent]) {
+            eventFound = YES;
+        }
     }
+    XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
+
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
@@ -444,6 +450,30 @@
         uploads = [persistence fetchUploads];
         XCTAssertNil(uploads, @"Uploads are not being deleted.");
     }];
+}
+
+- (void)testloggingBaseEvent {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPBaseEvent *event = [[MPBaseEvent alloc] initWithEventType:MPEventTypeOther];
+    event.customAttributes = @{@"key":@"value"};
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
+    [self.backendController logBaseEvent:event
+                   completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        XCTAssertTrue(![message.messageType isEqualToString:kMPMessageTypeStringUnknown], @"MPBaseEvent messages are being logged to server.");
+    }
 }
 
 - (void)testRampUpload {

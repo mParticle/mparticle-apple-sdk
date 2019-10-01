@@ -300,8 +300,7 @@
                 
                 if (execStatus.success) {
                     
-                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification
-                                                                                       execStatus:execStatus];
+                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification execStatus:execStatus];
                     
                     dispatch_async([MParticle messageQueue], ^{
                         [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];

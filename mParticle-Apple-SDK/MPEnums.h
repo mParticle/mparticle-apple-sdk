@@ -59,7 +59,7 @@ typedef enum {
     /** Internal. Used when a product is displayed in a promotion */
     MPEventTypeImpression = 22,
     /** Internal. Used when a media event is provided to the SDK */
-    MPEventTypeMediaBasic = 23
+    MPEventTypeMedia = 23
 } MPEventType;
 
 #define NSStringFromEventType( value ) \
@@ -86,7 +86,7 @@ typedef enum {
 @( MPEventTypeAddToWishlist )       : kMPEventTypeStringProductAddToWishlist, \
 @( MPEventTypeRemoveFromWishlist )  : kMPEventTypeStringProductRemoveFromWishlist, \
 @( MPEventTypeImpression )          : kMPEventTypeStringProductImpression, \
-@( MPEventTypeMediaBasic )          : kMPEventTypeStringMedia, \
+@( MPEventTypeMedia )               : kMPEventTypeStringMedia, \
 } \
 [ @( value ) ] \
 )

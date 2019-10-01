@@ -74,7 +74,7 @@
         return;
     }
     
-    if (type < MPEventTypeNavigation || type > MPEventTypeMediaBasic) {
+    if (type < MPEventTypeNavigation || type > MPEventTypeMedia) {
         MPILogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
         _type = MPEventTypeOther;
     } else {
@@ -87,7 +87,7 @@
 }
 
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
-    MPILogError(@"You must override %@ in a subclass", NSStringFromSelector(_cmd));
+    MPILogError(@"You must override dictionaryRepresentation in this subclass %@", NSStringFromClass([self class]));
     
     return @{};
 }

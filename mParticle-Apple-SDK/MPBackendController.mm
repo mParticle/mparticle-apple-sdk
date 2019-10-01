@@ -1508,27 +1508,27 @@ static BOOL skipNextUpload = NO;
          ];
     });
     
-    MPExecStatus execStatus = MPExecStatusFail;
     
-    NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
-    if (event.timestamp) {
-        [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
+    if (event.type != MPEventTypeMedia) {
+        NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
+            
+            MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];
+            if (event.timestamp) {
+                [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
+            }
+        #if TARGET_OS_IOS == 1
+            messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+        #endif
+            MPMessage *message = [messageBuilder build];
+            
+            [self saveMessage:message updateSession:YES];
+            
+            [self.session incrementCounter];
+            
+            MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
     }
-#if TARGET_OS_IOS == 1
-    messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
-#endif
-    MPMessage *message = [messageBuilder build];
     
-    [self saveMessage:message updateSession:YES];
-    
-    [self.session incrementCounter];
-    
-    execStatus = MPExecStatusSuccess;
-    MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
-    
-    completionHandler(event, execStatus);
+    completionHandler(event, MPExecStatusSuccess);
 }
 
 - (void)logEvent:(MPEvent *)event completionHandler:(void (^)(MPEvent *event, MPExecStatus execStatus))completionHandler {

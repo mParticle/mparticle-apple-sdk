@@ -60,8 +60,12 @@ NSString *const kMPFROptOutState = @"s";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(id)originalEvent {
+- (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(MPBaseEvent *)originalEvent {
     self = [super init];
+    
+    if (originalEvent.type == MPEventTypeMedia) {
+        return nil;
+    }
     
     BOOL validMessageType = messageType > MPMessageTypeUnknown && messageType <= MPMessageTypeCommerceEvent;
     NSAssert(validMessageType, @"The 'messageType' variable is not valid.");
@@ -72,7 +76,7 @@ NSString *const kMPFROptOutState = @"s";
     BOOL validKitFilter = MPIsNull(kitFilter) || [kitFilter isKindOfClass:[MPKitFilter class]];
     NSAssert(validKitFilter, @"The 'kitFilter' variable is not valid.");
     
-    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]];
+    BOOL validOriginalEvent = MPIsNull(originalEvent) || [originalEvent isKindOfClass:[MPEvent class]] || [originalEvent isKindOfClass:[MPCommerceEvent class]] || [originalEvent isKindOfClass:[MPBaseEvent class]];
     NSAssert(validOriginalEvent, @"The 'originalEvent' variable is not valid.");
     
     if (!self || !validMessageType || !validExecStatus || !validKitFilter || !validOriginalEvent) {

@@ -2230,7 +2230,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
         
         NSNumber *currentKit = kitRegister.code;
-        if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && messageType != MPMessageTypeUnknown) {
+        if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && messageType != MPMessageTypeUnknown && messageType != MPMessageTypeMedia) {
             lastKit = currentKit;
             
             MPForwardRecord *forwardRecord = nil;
@@ -2245,9 +2245,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                                                                    kitFilter:kitFilter
                                                                originalEvent:kitFilter.originalEvent];
             }
-            dispatch_async([MParticle messageQueue], ^{
-                [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
-            });
+            
+            if (forwardRecord != nil) {
+                dispatch_async([MParticle messageQueue], ^{
+                    [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+                });
+            }
         }
     });
 }
