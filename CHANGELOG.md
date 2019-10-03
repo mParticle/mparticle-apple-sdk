@@ -1,5 +1,21 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.12.0
+
+## mParticle Media SDK
+
+This release introduces support for the [mParticle Apple Media SDK](https://github.com/mParticle/mparticle-apple-media-sdk)!
+
+Media tracking capabilities have been added by creating a separate module that you can add to your project in addition to the core SDK.
+
+For more details, see the Media SDK repository: https://github.com/mParticle/mparticle-apple-media-sdk
+
+### Other items
+
+- You may notice that our main `MParticle#logEvent:` API has been changed to take a different type of parameter. This should not affect your code, except you can now pass commerce events to that method in addition to `MPEvent` objects.
+
+- This release also includes a change to improve session management in cases where the background timer was not allowed to run by the OS.
+
 ## 7.11.0
 
 ## iOS 13 Official Support
