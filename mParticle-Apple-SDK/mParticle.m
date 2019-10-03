@@ -820,9 +820,11 @@ NSString *const kMPStateKey = @"state";
     return [self.backendController eventWithName:eventName];
 }
 
-- (void)logBaseEvent:(MPBaseEvent *)event {
+- (void)logEvent:(MPBaseEvent *)event {
     if (event == nil) {
         MPILogError(@"Cannot log nil event!");
+    } else if ([event isKindOfClass:[MPEvent class]]) {
+        [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
         [self logCommerceEvent:(MPCommerceEvent *)event];
     } else {
@@ -839,7 +841,7 @@ NSString *const kMPStateKey = @"state";
     }
 }
 
-- (void)logEvent:(MPEvent *)event {
+- (void)logCustomEvent:(MPEvent *)event {
     if (event == nil) {
         MPILogError(@"Cannot log nil event!");
         return;

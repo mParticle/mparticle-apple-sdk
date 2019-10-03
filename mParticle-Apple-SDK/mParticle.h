@@ -537,21 +537,14 @@ NS_ASSUME_NONNULL_BEGIN
 - (nullable MPEvent *)eventWithName:(NSString *)eventName;
 
 /**
- Logs any event that inherits from MPBaseEvent. First created to support mParticle Media SDK
- MPBaseEvent is an abstract parent class so you should always instantiate one of its children rather than the parent.
- @param event An instance of one of the children of MPBaseEvent
- @see MPBaseEvent
- */
-- (void)logBaseEvent:(MPBaseEvent *)event;
-
-/**
- Logs a standard event. This is one of the most fundamental methods of the SDK. You can define all the characteristics
- of an event (name, type, attributes, etc) in an instance of MPEvent and pass that instance to this method to
- log its data to the mParticle SDK.
- @param event An instance of MPEvent
+ Logs an event. This is one of the most fundamental methods of the SDK. You can define all the characteristics
+ of an event in an instance of MPEvent (or any other subclass of MPBaseEvent) and pass that instance to this
+ method to log its data to the mParticle SDK.
+ @param event An instance of a subclass of MPBaseEvent (e.g MPEvent, MPCommerceEvent)
  @see MPEvent
+ @see MPCommerceEvent
  */
-- (void)logEvent:(MPEvent *)event;
+- (void)logEvent:(MPBaseEvent *)event;
 
 /**
  Logs an event. This is a convenience method for logging simple events; internally it creates an instance of MPEvent

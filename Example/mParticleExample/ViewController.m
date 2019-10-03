@@ -94,22 +94,6 @@
     [[MParticle sharedInstance] logEvent:event];
 }
 
-- (void)logBaseEvent {
-    // Creates a base event object
-    MPBaseEvent *event = [[MPBaseEvent alloc] initWithEventType:MPEventTypeMediaBasic];
-    
-    // Add attributes to an event
-    event.customAttributes = @{@"A_String_Key":@"Log Base Event",
-                   @"A Number Key":@(42),
-                   @"A Date Key":[NSDate date]};
-    
-    // Custom flags are attributes sent to mParticle, but not forwarded to other providers
-    [event addCustomFlag:@"Top Secret" withKey:@"Not_forwarded_to_providers"];
-    
-    // Logs an event
-    [[MParticle sharedInstance] logBaseEvent:event];
-}
-
 - (void)logScreen {
     [[MParticle sharedInstance] logScreen:@"Home Screen" eventInfo:nil];
 }
