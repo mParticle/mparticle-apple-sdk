@@ -794,7 +794,6 @@ NSString *const kMPStateKey = @"state";
         [self.backendController logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                            if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Ended and logged timed event: %@", event);
                                dispatch_async(dispatch_get_main_queue(), ^{
                                    // Forwarding calls to kits
                                    [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(endTimedEvent:)
@@ -833,9 +832,6 @@ NSString *const kMPStateKey = @"state";
             
             [self.backendController logBaseEvent:event
                                completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {
-                                   if (execStatus == MPExecStatusSuccess) {
-                                       MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
-                                   }
                                }];
         });
     }
@@ -854,9 +850,6 @@ NSString *const kMPStateKey = @"state";
 
         [self.backendController logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged event: %@", event.dictionaryRepresentation);
-                           }
                        }];
         // Forwarding calls to kits
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1080,7 +1073,6 @@ NSString *const kMPStateKey = @"state";
         [self.backendController logCommerceEvent:commerceEvent
                                completionHandler:^(MPCommerceEvent *commerceEvent, MPExecStatus execStatus) {
                                    if (execStatus == MPExecStatusSuccess) {
-                                       MPILogDebug(@"Logged commerce event: %@", commerceEvent);
                                    } else {
                                        MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
                                    }
@@ -1116,7 +1108,6 @@ NSString *const kMPStateKey = @"state";
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                        if (execStatus == MPExecStatusSuccess) {
-                           MPILogDebug(@"Logged LTV Increase: %@", event);
                            dispatch_async(dispatch_get_main_queue(), ^{
                                // Forwarding calls to kits
                                [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logLTVIncrease:event:)
