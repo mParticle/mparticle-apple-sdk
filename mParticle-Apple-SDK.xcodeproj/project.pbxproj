@@ -424,6 +424,8 @@
 		D33E22B022492A05001E26C9 /* MPListenerController.h in Headers */ = {isa = PBXBuildFile; fileRef = D33E22AD22492A05001E26C9 /* MPListenerController.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33E22B122492A05001E26C9 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = D33E22AE22492A05001E26C9 /* MPListenerController.m */; };
 		D33E22B222492A05001E26C9 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = D33E22AE22492A05001E26C9 /* MPListenerController.m */; };
+		D34EF32A234CEB0D00D5ACBD /* MPSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34EF329234CEB0D00D5ACBD /* MPSwiftTests.swift */; };
+		D34EF32B234CEB0D00D5ACBD /* MPSwiftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34EF329234CEB0D00D5ACBD /* MPSwiftTests.swift */; };
 		D34FC6982245239300D26773 /* MPListenerProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = D34FC6962245239300D26773 /* MPListenerProtocol.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D36997ED20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
 		D36997EE20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
@@ -785,6 +787,9 @@
 		D3356CE5212F09BB00BC81ED /* MPArchivist.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPArchivist.m; sourceTree = "<group>"; };
 		D33E22AD22492A05001E26C9 /* MPListenerController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPListenerController.h; sourceTree = "<group>"; };
 		D33E22AE22492A05001E26C9 /* MPListenerController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPListenerController.m; sourceTree = "<group>"; };
+		D34EF327234CEB0C00D5ACBD /* mParticle_iOS_SDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mParticle_iOS_SDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		D34EF328234CEB0C00D5ACBD /* mParticle_tvOS_SDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mParticle_tvOS_SDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		D34EF329234CEB0D00D5ACBD /* MPSwiftTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSwiftTests.swift; sourceTree = "<group>"; };
 		D34FC6962245239300D26773 /* MPListenerProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPListenerProtocol.h; sourceTree = "<group>"; };
 		D36997EC20FF879E009613E5 /* MParticleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleTests.m; sourceTree = "<group>"; };
 		D37A016B20A0D2C000FF2B0F /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libOCMock.a; sourceTree = "<group>"; };
@@ -1365,6 +1370,9 @@
 				DB0247B0228B10810007E21B /* MPDeviceTests.m */,
 				DB89B692228C9DDD007A5565 /* MPAliasRequestTests.m */,
 				DB89B695228CA0BE007A5565 /* MPAliasResponseTests.m */,
+				D34EF329234CEB0D00D5ACBD /* MPSwiftTests.swift */,
+				D34EF327234CEB0C00D5ACBD /* mParticle_iOS_SDKTests-Bridging-Header.h */,
+				D34EF328234CEB0C00D5ACBD /* mParticle_tvOS_SDKTests-Bridging-Header.h */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1734,6 +1742,7 @@
 				TargetAttributes = {
 					C911FD7B1D8A3524002A3516 = {
 						CreatedOnToolsVersion = 8.0;
+						LastSwiftMigration = 1100;
 						ProvisioningStyle = Manual;
 					};
 					C935A6B21D8A2B6B00A1EE2F = {
@@ -1748,6 +1757,7 @@
 					};
 					C9DD20841D8A18F500D3ABBE = {
 						CreatedOnToolsVersion = 8.0;
+						LastSwiftMigration = 1100;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -1842,6 +1852,7 @@
 				C911FDA11D8A365A002A3516 /* MPResponseConfigTests.m in Sources */,
 				C911FD881D8A365A002A3516 /* HasherTests.mm in Sources */,
 				C911FD991D8A365A002A3516 /* MPKitRegisterTests.m in Sources */,
+				D34EF32B234CEB0D00D5ACBD /* MPSwiftTests.swift in Sources */,
 				C911FDA71D8A365A002A3516 /* MPZipTests.m in Sources */,
 				DB00F6391F4E11380070A74B /* MPKitAPITests.m in Sources */,
 				C911FD901D8A365A002A3516 /* MPDataModelTests.m in Sources */,
@@ -2108,6 +2119,7 @@
 				C9DD20E61D8A195500D3ABBE /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				C9DD20EC1D8A1FA100D3ABBE /* MPDateFormatterTests.m in Sources */,
 				C9DD20F51D8A1FFE00D3ABBE /* MPKitSecondTestClass.m in Sources */,
+				D34EF32A234CEB0D00D5ACBD /* MPSwiftTests.swift in Sources */,
 				DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				D3FB08DA20F5087F008FD7D8 /* MPBaseTestCase.m in Sources */,
 				C9DD20E81D8A1F9200D3ABBE /* MPCommerceEventTests.m in Sources */,
@@ -2150,6 +2162,7 @@
 		C911FD851D8A3524002A3516 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
@@ -2167,6 +2180,9 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "UnitTests/mParticle_tvOS_SDKTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -2175,6 +2191,7 @@
 		C911FD861D8A3524002A3516 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
@@ -2192,6 +2209,8 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SDKROOT = appletvos;
+				SWIFT_OBJC_BRIDGING_HEADER = "UnitTests/mParticle_tvOS_SDKTests-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -2414,6 +2433,7 @@
 		C9DD208E1D8A18F600D3ABBE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
@@ -2429,12 +2449,16 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDKTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "UnitTests/mParticle_iOS_SDKTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
 		C9DD208F1D8A18F600D3ABBE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = "";
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
@@ -2449,6 +2473,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-iOS-SDKTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "UnitTests/mParticle_iOS_SDKTests-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};

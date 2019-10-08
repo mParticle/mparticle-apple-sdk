@@ -14,7 +14,7 @@ typedef NS_ENUM(NSUInteger, MPEnvironment) {
 };
 
 /// Event Types
-typedef enum {
+typedef NS_ENUM(NSUInteger, MPEventType) {
     /** Use for navigation related events */
     MPEventTypeNavigation = 1,
     /** Use for location related events */
@@ -60,7 +60,7 @@ typedef enum {
     MPEventTypeImpression = 22,
     /** Internal. Used when a media event is provided to the SDK */
     MPEventTypeMedia = 23
-} MPEventType;
+};
 
 #define NSStringFromEventType( value ) \
 ( \
