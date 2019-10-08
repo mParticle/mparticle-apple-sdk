@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.12.1
+
+### Core
+
+- This release rolls back a change to the `MPEventType` enum that caused problems with Swift compatibility and adds Swift unit tests to ensure this API remains stable going forward.
+
+- Guard against potential crash if null product array is received from JS webview integration
+
+### Kits
+
+- None
+
 ## 7.12.0
 
 ## mParticle Media SDK
