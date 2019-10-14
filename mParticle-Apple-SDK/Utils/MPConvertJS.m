@@ -7,19 +7,6 @@
 #import "mParticle.h"
 #import "MPILogger.h"
 
-typedef NS_ENUM(NSUInteger, MPJSCommerceEventAction) {
-    MPJSCommerceEventActionAddToCart = 0,
-    MPJSCommerceEventActionRemoveFromCart,
-    MPJSCommerceEventActionCheckout,
-    MPJSCommerceEventActionCheckoutOptions,
-    MPJSCommerceEventActionClick,
-    MPJSCommerceEventActionViewDetail,
-    MPJSCommerceEventActionPurchase,
-    MPJSCommerceEventActionRefund,
-    MPJSCommerceEventActionAddToWishList,
-    MPJSCommerceEventActionRemoveFromWishlist
-};
-
 typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     MPJSIdentityTypeOther = 0,
     MPJSIdentityTypeCustomerId,
