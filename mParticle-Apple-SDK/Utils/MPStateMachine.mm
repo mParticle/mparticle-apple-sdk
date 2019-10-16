@@ -370,17 +370,6 @@ static BOOL runningInBackground = NO;
     
 }
 
-- (void)setDebugMode:(BOOL)debugMode {
-    dispatch_async([MParticle messageQueue], ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:_cmd
-                                                          event:nil
-                                                     parameters:nil
-                                                    messageType:MPMessageTypeUnknown
-                                                       userInfo:@{kMPStateKey:@(debugMode)}
-         ];
-    });
-}
-
 - (NSString *)deviceTokenType {
     if (_deviceTokenType) {
         return _deviceTokenType;

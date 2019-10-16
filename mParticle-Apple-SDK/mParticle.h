@@ -279,13 +279,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) MPIdentityApi *identity;
 
 /**
- Forwards setting/resetting the debug mode for third party kits.
- This is a write only property.
- */
-@property (nonatomic, unsafe_unretained) BOOL debugMode DEPRECATED_ATTRIBUTE;
-- (BOOL)debugMode UNAVAILABLE_ATTRIBUTE DEPRECATED_ATTRIBUTE;
-
-/**
  If set to YES development logs will be output to the
  console, if set to NO the development logs will be suppressed. This property works in conjunction with
  the environment property. If the environment is Production, consoleLogging will always be NO,

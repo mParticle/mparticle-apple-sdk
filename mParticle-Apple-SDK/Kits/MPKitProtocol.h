@@ -125,7 +125,6 @@
 - (nonnull MPKitExecStatus *)logException:(nonnull NSException *)exception;
 
 #pragma mark Assorted
-- (nonnull MPKitExecStatus *)setDebugMode:(BOOL)debugMode;
 - (nonnull MPKitExecStatus *)setKitAttribute:(nonnull NSString *)key value:(nullable id)value;
 - (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
 - (nullable NSString *)surveyURLWithUserAttributes:(nonnull NSDictionary *)userAttributes;
