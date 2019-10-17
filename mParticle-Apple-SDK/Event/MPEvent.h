@@ -18,8 +18,9 @@
 A dictionary containing further information about the event. The number of entries is
 limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values
 can be strings (up to 4096 characters), numbers, booleans, or dates
+ @deprecated use customAttributes instead
 */
-@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *info DEPRECATED_ATTRIBUTE;
+@property (nonatomic, strong, nullable) NSDictionary<NSString *, id> *info DEPRECATED_MSG_ATTRIBUTE("use customAttributes instead");
 
 /**
  The name of the event to be logged (required not nil). The event name must not contain

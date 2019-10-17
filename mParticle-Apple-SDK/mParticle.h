@@ -286,7 +286,7 @@ NS_ASSUME_NONNULL_BEGIN
  @see environment
  @see logLevel
  */
-@property (nonatomic, unsafe_unretained, readonly) BOOL consoleLogging DEPRECATED_ATTRIBUTE;
+@property (nonatomic, unsafe_unretained, readonly) BOOL consoleLogging DEPRECATED_MSG_ATTRIBUTE("set logLevel on MParticleOptions instead");
 
 /**
  The environment property returns the running SDK environment: Development or Production.

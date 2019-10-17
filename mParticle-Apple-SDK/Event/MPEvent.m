@@ -169,7 +169,7 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     return eventDictionary;
 }
 
-- (NSDictionary *)Info {
+- (NSDictionary *)info {
     return [self.customAttributes copy];
 }
 

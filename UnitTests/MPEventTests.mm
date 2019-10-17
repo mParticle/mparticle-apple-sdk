@@ -81,11 +81,20 @@
     
     XCTAssertNil(event.category, @"Should have been nil.");
     
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     XCTAssertNotNil(event.customAttributes, @"Should not have been nil.");
+    XCTAssertNotNil(event.info, @"Should not have been nil.");
+
+    XCTAssertEqual(event.customAttributes.count, 2, @"Should have been two values in the customAttributes dictionary.");
+    XCTAssertEqual(event.info.count, 2, @"Should have been two values in the info dictionary.");
+
     NSDictionary *copyEventInfo = [eventInfo copy];
     event.customAttributes = copyEventInfo;
     XCTAssertEqualObjects(event.customAttributes, eventInfo, @"Should have been equal.");
-    
+    XCTAssertEqualObjects(event.info, eventInfo, @"Should have been equal.");
+#pragma clang diagnostic pop
+
     event = [[MPEvent alloc] init];
     XCTAssertNotNil(event, @"Should not have been nil.");
 }

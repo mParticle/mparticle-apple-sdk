@@ -166,13 +166,20 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 /**
  Returns an array with all keys in the custom attributes dictionary
  @returns An array with all keys in the custom attributes dictionary
+ @deprecated use customAttributes.allKeys instead
  */
-- (nullable NSArray *)allKeys DEPRECATED_ATTRIBUTE;
+- (nullable NSArray *)allKeys DEPRECATED_MSG_ATTRIBUTE("use customAttributes.allKeys instead");
 
-- (NSMutableDictionary * _Nullable)userDefinedAttributes DEPRECATED_ATTRIBUTE;
-- (void)setUserDefinedAttributes:(NSMutableDictionary *_Nullable)userDefinedAttributes DEPRECATED_ATTRIBUTE;
-- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key DEPRECATED_ATTRIBUTE;
-- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key DEPRECATED_ATTRIBUTE;
+/**
+ A dictionary containing further information about the commerce event. The number of entries is
+ limited to 100 key value pairs. Keys must be strings (up to 255 characters) and values
+ can be strings (up to 4096 characters), numbers, booleans, or dates
+ @deprecated use customAttributes instead
+ */
+- (NSMutableDictionary * _Nullable)userDefinedAttributes DEPRECATED_MSG_ATTRIBUTE("use customAttributes instead");
+- (void)setUserDefinedAttributes:(NSMutableDictionary *_Nullable)userDefinedAttributes DEPRECATED_MSG_ATTRIBUTE("set customAttributes instead");
+- (nullable id)objectForKeyedSubscript:(nonnull NSString *const)key DEPRECATED_MSG_ATTRIBUTE("use customAttributes[key] instead");
+- (void)setObject:(nonnull id)obj forKeyedSubscript:(nonnull NSString *)key DEPRECATED_MSG_ATTRIBUTE("use customAttributes[key] = obj instead");
 
 @end
 
