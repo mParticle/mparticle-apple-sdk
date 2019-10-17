@@ -1,5 +1,10 @@
 # mParticle Apple SDK CHANGELOG
 
+
+## 7.12.3
+
+- This release fixes a typo that caused `MPEvent` attributes to return nil if the deprecated `info` property was used. Due to our kits not yet having been updated to use the new property name, this was resulting in empty event attributes dictionaries being forwarded to kits.
+
 ## 7.12.2
 
 - This release fixes Commerce events collected over the WKWebView bridge. Previously, the mapping of Web SDK-defined product-actions to Apple SDK product-actions was incorrect.
