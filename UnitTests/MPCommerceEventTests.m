@@ -612,6 +612,8 @@
     XCTAssertEqualObjects([commerceEvent dictionaryRepresentation], [persistedCommerceEvent dictionaryRepresentation], @"Commerce Event should have been a match.");
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)testDocsUse {
     // Get the cart
     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
@@ -649,5 +651,6 @@
     cart = currentUser.cart;
     XCTAssertEqual(cart.products.count, 0, @"Cart should be empty.");
 }
+#pragma clang diagnostic pop
 
 @end

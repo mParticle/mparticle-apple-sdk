@@ -53,7 +53,7 @@ NS_ASSUME_NONNULL_BEGIN
  Gets the user's shopping cart
  @returns An MPCart object
  */
-@property (readonly, strong, nonnull) MPCart *cart;
+@property (readonly, strong, nonnull) MPCart *cart DEPRECATED_MSG_ATTRIBUTE("The SDK no longer supports tracking the contents of your Cart. Please implement your own cart functionality and send us CommerceEvents as it is updated.");
 
 /**
  Increments the value of a user attribute by the provided amount. If the key does not

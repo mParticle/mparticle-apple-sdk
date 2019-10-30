@@ -42,7 +42,7 @@
  
  @see MPCart
  */
-@property (nonatomic, strong, readonly, nonnull) MPCart *cart;
+@property (nonatomic, strong, readonly, nonnull) MPCart *cart DEPRECATED_MSG_ATTRIBUTE("The SDK no longer supports tracking the contents of your Cart. Please implement your own cart functionality and send us CommerceEvents as it is updated.");
 
 /**
  The currency used in the commerce event.
@@ -52,7 +52,7 @@
 /**
  Logs a checkout commerce event with the products contained in the shopping cart.
  */
-- (void)checkout;
+- (void)checkout DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionCheckout`, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Logs a checkout with options commerce event with the products contained in the shopping cart.
@@ -60,14 +60,14 @@
  @param options A string describing what the options are
  @param step The step number, within the chain of commerce event transactions, corresponding to the checkout
  */
-- (void)checkoutWithOptions:(nullable NSString *)options step:(NSInteger)step;
+- (void)checkoutWithOptions:(nullable NSString *)options step:(NSInteger)step DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionCheckoutOptions`, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Clears the contents of the shopping cart. 
  
  This method is equivalent to calling the MPCart's <i>clear</i> method.
  */
-- (void)clearCart;
+- (void)clearCart DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionRemoveFromCart`, add the products, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Logs a <i>purchase</i> commerce event with the products contained in the shopping cart.
@@ -77,7 +77,7 @@
  
  @see MPTransactionAttributes
  */
-- (void)purchaseWithTransactionAttributes:(nonnull MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart;
+- (void)purchaseWithTransactionAttributes:(nonnull MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionPurchase`, init/set transactionAttributes, fill in any other relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Logs a <i>refund</i> commerce event with the products contained in the shopping cart.
@@ -87,6 +87,6 @@
  
  @see MPTransactionAttributes
  */
-- (void)refundTransactionAttributes:(nonnull MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart;
+- (void)refundTransactionAttributes:(nonnull MPTransactionAttributes *)transactionAttributes clearCart:(BOOL)clearCart DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionRefund`, init/set transactionAttributes, fill in any other relevant data, and pass it to LogEvent on the MParticle API");
 
 @end

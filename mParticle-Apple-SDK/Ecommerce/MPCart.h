@@ -33,7 +33,7 @@
  @see MPCommerceEvent
  @see mParticle
  */
-- (void)addProduct:(nonnull MPProduct *)product;
+- (void)addProduct:(nonnull MPProduct *)product DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionAddToCart`, add the product, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Adds an array of products to the shopping cart.
@@ -55,7 +55,7 @@
  @see MPCommerceEvent
  @see mParticle
  */
-- (void)addAllProducts:(nonnull NSArray<MPProduct *> *)products shouldLogEvents:(BOOL)shouldLogEvents;
+- (void)addAllProducts:(nonnull NSArray<MPProduct *> *)products shouldLogEvents:(BOOL)shouldLogEvents DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionAddToCart`, add the products, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Empties the shopping cart. Removes all its contents and respective persisted data.
@@ -70,13 +70,13 @@
  [cart clear];
  </code></pre>
  */
-- (void)clear;
+- (void)clear DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionRemoveFromCart`, add the products, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 /**
  Returns the collection of products in the shopping cart.
  @returns An array with products in the shopping cart or nil if the cart is empty.
  */
-- (nullable NSArray<MPProduct *> *)products;
+- (nullable NSArray<MPProduct *> *)products DEPRECATED_MSG_ATTRIBUTE("The SDK no longer supports tracking the contents of your Cart. Please implement your own cart functionality and send us CommerceEvents as it is updated.");
 
 /**
  Removes a product from the shopping cart.
@@ -99,6 +99,6 @@
  @see MPCommerceEvent
  @see mParticle
  */
-- (void)removeProduct:(nonnull MPProduct *)product;
+- (void)removeProduct:(nonnull MPProduct *)product DEPRECATED_MSG_ATTRIBUTE("Create an MPCommerceEvent with the action `MPCommerceEventActionRemoveFromCart`, add the product, fill in any relevant data, and pass it to LogEvent on the MParticle API");
 
 @end

@@ -2079,6 +2079,8 @@
 }
 
 #if TARGET_OS_IOS == 1
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)testAttemptToLogEventToKit {
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
     
@@ -2099,6 +2101,7 @@
     [kitWrapperMock stopMocking];
     [kitRegisterMock stopMocking];
 }
+#pragma clang diagnostic pop
 
 - (void)testAttemptToLogBaseEventToKit {
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];

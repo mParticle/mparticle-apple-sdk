@@ -96,7 +96,10 @@ static NSArray *actionNames;
     if (!self) {
         return nil;
     }
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     _shoppingCartState = [[MParticle sharedInstance].identity.currentUser.cart dictionaryRepresentation];
+    #pragma clang diagnostic pop
     commerceEventKind = MPCommerceEventKindProduct;
     _messageType = MPMessageTypeCommerceEvent;
 

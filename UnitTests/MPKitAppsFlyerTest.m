@@ -81,7 +81,25 @@ NSString *const afDevKey = @"devKey";
     return execStatus;
 }
 
+- (MPKitExecStatus *)logBaseEvent:(MPBaseEvent *)event {
+    if ([event isKindOfClass:[MPEvent class]]) {
+        return [self routeEvent:(MPEvent *)event];
+    } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
+        return [self routeCommerceEvent:(MPCommerceEvent *)event];
+    } else {
+        return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeUnavailable];
+    }
+}
+
 - (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent {
+    return [self routeCommerceEvent:commerceEvent];
+}
+
+- (nonnull MPKitExecStatus *)logEvent:(nonnull MPEvent *)event {
+    return [self routeEvent:event];
+}
+
+- (nonnull MPKitExecStatus *)routeCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent {
     MPKitExecStatus *execStatus;
     MPCommerceEventAction action = commerceEvent.action;
     if (action == MPCommerceEventActionAddToCart ||
@@ -106,7 +124,7 @@ NSString *const afDevKey = @"devKey";
         execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess forwardCount:0];
         NSArray *expandedInstructions = [commerceEvent expandedInstructions];
         for (MPCommerceEventInstruction *commerceEventInstruction in expandedInstructions) {
-            [self logEvent:commerceEventInstruction.event];
+            [self routeEvent:commerceEventInstruction.event];
             [execStatus incrementForwardCount];
         }
     }
@@ -114,7 +132,7 @@ NSString *const afDevKey = @"devKey";
     return execStatus;
 }
 
-- (nonnull MPKitExecStatus *)logEvent:(nonnull MPEvent *)event {
+- (nonnull MPKitExecStatus *)routeEvent:(nonnull MPEvent *)event {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppsFlyer) returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }

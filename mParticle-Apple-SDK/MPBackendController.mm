@@ -1543,6 +1543,8 @@ static BOOL skipNextUpload = NO;
     [self logBaseEvent:commerceEvent
      completionHandler:^(MPBaseEvent *baseEvent, MPExecStatus execStatus) {
          // Update cart
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
          NSArray *products = nil;
          if (((MPCommerceEvent *)baseEvent).action == MPCommerceEventActionAddToCart) {
              products = [((MPCommerceEvent *)baseEvent) addedProducts];
@@ -1563,7 +1565,8 @@ static BOOL skipNextUpload = NO;
                  MPILogWarning(@"Commerce event products were not removed from the cart.");
              }
          }  
-         
+         #pragma clang diagnostic pop
+
          completionHandler((MPCommerceEvent *)baseEvent, execStatus);
      }];
 }

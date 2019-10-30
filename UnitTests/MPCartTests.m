@@ -27,6 +27,8 @@
     [super tearDown];
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)testAddProduct {
     MPCart *cart = [[MPCart alloc] initWithUserId:@123];
     XCTAssertEqual(cart.products.count, 0, @"There should have been no products in the cart.");
@@ -82,6 +84,7 @@
     [cart clear];
     XCTAssertEqual(cart.products.count, 0, @"There should have been no products in the cart.");
 }
+#pragma clang diagnostic pop
 
 - (void)testProductEncoding {
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];

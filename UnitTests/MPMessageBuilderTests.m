@@ -266,10 +266,11 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     commerceEvent.checkoutStep = 1;
     commerceEvent.customAttributes = @{@"key_string": @"val_string", @"key_number": @"3.14", @"key_date": @"01/01/2000"};
     
-    MPCart *cart = [MParticle sharedInstance].identity.currentUser.cart;
-    [cart clear];
-    [cart addProducts:@[product] logEvent:NO updateProductList:YES];
-    XCTAssertEqual(cart.products.count, 1, @"Incorrect product count.");
+    [commerceEvent removeProduct:product];
+    XCTAssertEqual(commerceEvent.products.count, 0, @"Incorrect product count.");
+    
+    [commerceEvent addProduct:product];
+    XCTAssertEqual(commerceEvent.products.count, 1, @"Incorrect product count.");
     
     product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
     product.brand = @"Gallifrey Tardis";
@@ -278,8 +279,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     product.variant = @"Police Box";
     
     [commerceEvent addProduct:product];
-    [cart addProducts:@[product] logEvent:NO updateProductList:YES];
-    XCTAssertEqual(cart.products.count, 2, @"Incorrect product count.");
+    XCTAssertEqual(commerceEvent.products.count, 2, @"Incorrect product count.");
     
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     transactionAttributes.affiliation = @"Doctor";
@@ -300,8 +300,6 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     XCTAssertNotNil(message, @"MPMessage is not being built.");
     XCTAssertTrue([message isKindOfClass:[MPMessage class]], @"Returning the wrong kind of class instance.");
     XCTAssertNotNil(message.messageData, @"MPMessage has no data.");
-    
-    [cart clear];
 }
 
 - (void)testBuildCommerceEventPromotion {
