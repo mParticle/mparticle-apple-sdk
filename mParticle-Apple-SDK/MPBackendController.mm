@@ -800,10 +800,11 @@ static BOOL skipNextUpload = NO;
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
         if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
             [[MParticle sharedInstance].stateMachine.locationManager.locationManager stopUpdatingLocation];
         }
-        
+#endif
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
 #endif
         MPMessage *message = [messageBuilder build];
@@ -860,9 +861,11 @@ static BOOL skipNextUpload = NO;
     }
     
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
         [[MParticle sharedInstance].stateMachine.locationManager.locationManager startUpdatingLocation];
     }
+#endif
 #endif
     
     dispatch_async(messageQueue, ^{

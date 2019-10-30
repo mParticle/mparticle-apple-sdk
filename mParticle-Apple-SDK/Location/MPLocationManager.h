@@ -9,7 +9,9 @@
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, nullable) CLLocation *location;
+#ifndef MPARTICLE_LOCATION_DISABLE
 @property (nonatomic, strong, nullable) CLLocationManager *locationManager;
+#endif
 @property (nonatomic, unsafe_unretained, readonly) MPLocationAuthorizationRequest authorizationRequest;
 @property (nonatomic, unsafe_unretained, readonly) CLLocationAccuracy requestedAccuracy;
 @property (nonatomic, unsafe_unretained, readonly) CLLocationDistance requestedDistanceFilter;

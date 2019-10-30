@@ -107,8 +107,9 @@ static BOOL trackingLocation = NO;
 - (void)endLocationTracking {
 #ifndef MPARTICLE_LOCATION_DISABLE
     [_locationManager stopUpdatingLocation];
-#endif
     _locationManager = nil;
+#endif
+    
     _location = nil;
     trackingLocation = NO;
 }
