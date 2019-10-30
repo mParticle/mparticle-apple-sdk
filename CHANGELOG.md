@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.12.4
+
+### Core
+
+#### User Agent Collection
+- This release restores support for automatic collection of browser user agent by the SDK.
+
+- This release also deprecates the Cart API. The Cart API was originally designed to maintain and hold on to product objects to be appended automatically to Commerce events. Over time we have found it to be better practice for the hosting app to maintain shopping cart state rather than the mParticle SDK. In place of the Cart API, please include all of the applicable product objects with each Commerce event.
+
+### Kits
+
+- Updates for iOS 13
 
 ## 7.12.3
 
