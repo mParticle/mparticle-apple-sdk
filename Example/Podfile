@@ -1,5 +1,5 @@
 # Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+# platform :ios, '10.0'
 
 target 'mParticleExample' do
   # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
@@ -7,6 +7,7 @@ target 'mParticleExample' do
 
   # Pods for mParticleExample
   pod 'mParticle-Apple-SDK', :path => '..'
+  pod 'mParticle-Apple-Media-SDK', '~> 1.0.0-beta.2'
 
   target 'mParticleExampleTests' do
     inherit! :search_paths

@@ -1,5 +1,6 @@
 #import "ViewController.h"
 #import "mParticle.h"
+#import <mParticle_Apple_Media_SDK-Swift.h>
 
 @interface ViewController () <UITableViewDataSource, UITableViewDelegate> {
     NSArray *selectorNames;
@@ -29,11 +30,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents"];
     
     return _cellTitles;
 }
@@ -125,6 +126,21 @@
     
     // Logs a commerce event
     [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
+}
+
+- (void)logCustomMediaEvents {
+    MPMediaSession *mediaSession = [[MPMediaSession alloc]
+                                    initWithCoreSDK:[MParticle sharedInstance]
+                                    mediaContentId:@"1234567"
+                                    title:@"Sample App Video"
+                                    duration:[NSNumber numberWithInt:120000]
+                                    contentType:MPMediaContentTypeVideo
+                                    streamType:MPMediaStreamTypeOnDemand];
+    
+    [mediaSession logMediaSessionStart];
+    [mediaSession logPlay];
+    [mediaSession logMediaContentEnd];
+    [mediaSession logMediaSessionEnd];
 }
 
 - (void)logTimedEvent {

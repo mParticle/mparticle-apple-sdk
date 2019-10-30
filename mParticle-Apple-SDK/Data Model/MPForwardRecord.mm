@@ -63,10 +63,6 @@ NSString *const kMPFROptOutState = @"s";
 - (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus kitFilter:(MPKitFilter *)kitFilter originalEvent:(MPBaseEvent *)originalEvent {
     self = [super init];
     
-    if (originalEvent.type == MPEventTypeMedia) {
-        return nil;
-    }
-    
     BOOL validMessageType = messageType > MPMessageTypeUnknown && messageType <= MPMessageTypeCommerceEvent;
     NSAssert(validMessageType, @"The 'messageType' variable is not valid.");
     

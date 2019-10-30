@@ -31,7 +31,8 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     MPEventTypeSocial = 7,
     /** Use for other types of events not contained in this enum */
     MPEventTypeOther = 8,
-    /** 9 used to be MPEventTypeMedia. It has been discontinued */
+    /** Internal. Used when an event is related to or sourced from the Media SDK */
+    MPEventTypeMedia = 9,
     /** Internal. Used when a product is added to the cart */
     MPEventTypeAddToCart = 10,
     /** Internal. Used when a product is removed from the cart */
@@ -57,9 +58,7 @@ typedef NS_ENUM(NSUInteger, MPEventType) {
     /** Internal. Used when a product is removed from the wishlist */
     MPEventTypeRemoveFromWishlist = 21,
     /** Internal. Used when a product is displayed in a promotion */
-    MPEventTypeImpression = 22,
-    /** Internal. Used when a media event is provided to the SDK */
-    MPEventTypeMedia = 23
+    MPEventTypeImpression = 22
 };
 
 #define NSStringFromEventType( value ) \

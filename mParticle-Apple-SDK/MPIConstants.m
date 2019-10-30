@@ -308,7 +308,7 @@ NSString *const kMPEventTypeStringUserContent = @"UserContent";
 NSString *const kMPEventTypeStringUserPreference = @"UserPreference";
 NSString *const kMPEventTypeStringSocial = @"Social";
 NSString *const kMPEventTypeStringOther = @"Other";
-NSString *const kMPEventTypeStringMediaDiscontinued = @"Media(discontinued)";
+NSString *const kMPEventTypeStringMedia = @"Media";
 NSString *const kMPEventTypeStringProductAddToCart = @"ProductAddToCart";
 NSString *const kMPEventTypeStringProductRemoveFromCart = @"ProductRemoveFromCart";
 NSString *const kMPEventTypeStringProductCheckout = @"ProductCheckout";
@@ -322,7 +322,6 @@ NSString *const kMPEventTypeStringPromotionClick = @"PromotionClick";
 NSString *const kMPEventTypeStringProductAddToWishlist = @"ProductAddToWishlist";
 NSString *const kMPEventTypeStringProductRemoveFromWishlist = @"ProductRemoveFromWishlist";
 NSString *const kMPEventTypeStringProductImpression = @"ProductImpression";
-NSString *const kMPEventTypeStringMedia = @"Media";
 
 //
 // Primitive data type constants

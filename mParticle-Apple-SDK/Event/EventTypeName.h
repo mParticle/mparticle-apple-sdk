@@ -25,7 +25,8 @@ namespace mParticle {
         Social = 7,
         /** Use for other types of events not contained in this enum */
         Other = 8,
-        /** 9 used to be Media. It has been discontinued */
+        /** Internal. Used when an event is related to or sourced from the Media SDK */
+        Media = 9,
         /** Internal. Used when a product is added to the cart */
         AddToCart = 10,
         /** Internal. Used when a product is removed from the cart */
@@ -51,9 +52,7 @@ namespace mParticle {
         /** Internal. Used when a product is removed from the wishlist */
         RemoveFromWishlist = 21,
         /** Internal. Used when a product is displayed in a promotion */
-        Impression = 22,
-        /** Internal. Used when a media event is provided to the SDK */
-        MPEventTypeMedia = 23
+        Impression = 22
     };
     
     class EventTypeName final {

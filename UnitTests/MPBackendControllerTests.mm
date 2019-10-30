@@ -533,6 +533,34 @@
     }];
 }
 
+- (void)testLoggingCommerceEvent {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionClick];
+    commerceEvent.customAttributes = @{@"key":@"value"};
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
+    [self.backendController logBaseEvent:commerceEvent
+                   completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    Boolean testCommerce = false;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringCommerceEvent]) {
+            testCommerce = true;
+        }
+    }
+    XCTAssertTrue(testCommerce, @"MPCommerceEvent messages are not being saved.");
+}
+
 - (void)testLoggingBaseEvent {
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];

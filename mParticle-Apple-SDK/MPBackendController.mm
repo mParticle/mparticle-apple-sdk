@@ -1498,7 +1498,7 @@ static BOOL skipNextUpload = NO;
     });
     
     
-    if (event.type != MPEventTypeMedia) {
+    if ([event isKindOfClass:[MPEvent class]] || [event isKindOfClass:[MPCommerceEvent class]]) {
         NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
             
             MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:event.messageType session:self.session messageInfo:messageInfo];

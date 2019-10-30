@@ -13,7 +13,7 @@ namespace mParticle {
         string(kMPEventTypeStringUserPreference.UTF8String),
         string(kMPEventTypeStringSocial.UTF8String),
         string(kMPEventTypeStringOther.UTF8String),
-        string(kMPEventTypeStringMediaDiscontinued.UTF8String),
+        string(kMPEventTypeStringMedia.UTF8String),
         string(kMPEventTypeStringProductAddToCart.UTF8String),
         string(kMPEventTypeStringProductRemoveFromCart.UTF8String),
         string(kMPEventTypeStringProductCheckout.UTF8String),
@@ -26,8 +26,7 @@ namespace mParticle {
         string(kMPEventTypeStringPromotionClick.UTF8String),
         string(kMPEventTypeStringProductAddToWishlist.UTF8String),
         string(kMPEventTypeStringProductRemoveFromWishlist.UTF8String),
-        string(kMPEventTypeStringProductImpression.UTF8String),
-        string(kMPEventTypeStringMedia.UTF8String)
+        string(kMPEventTypeStringProductImpression.UTF8String)
     };
     
     const size_t EventTypeName::count = EventTypeName::names.size();

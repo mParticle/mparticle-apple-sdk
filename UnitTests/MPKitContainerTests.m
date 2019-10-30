@@ -2124,6 +2124,27 @@
     [kitRegisterMock stopMocking];
 }
 
+- (void)testAttemptToLogBaseEventMediaTypeToKit {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeMedia];
+    event.customAttributes = @{@"plan":@"premium"};
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forEvent:event selector:@selector(logBaseEvent:)];
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] logBaseEvent:OCMOCK_ANY];
+    
+    [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logBaseEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+    [kitWrapperMock stopMocking];
+    [kitRegisterMock stopMocking];
+}
+
 - (void)testAttemptToLegacyOpenURLToKit {
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
     SEL selector = @selector(openURL:sourceApplication:annotation:);

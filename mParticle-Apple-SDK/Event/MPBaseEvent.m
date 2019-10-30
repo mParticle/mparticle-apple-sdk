@@ -74,7 +74,7 @@
         return;
     }
     
-    if (type < MPEventTypeNavigation || type > MPEventTypeMedia) {
+    if (type < MPEventTypeNavigation || type > MPEventTypeImpression) {
         MPILogWarning(@"An invalid event type was provided. Will default to 'MPEventTypeOther'");
         _type = MPEventTypeOther;
     } else {
