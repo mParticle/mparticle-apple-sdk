@@ -533,7 +533,7 @@
     }];
 }
 
-- (void)testloggingBaseEvent {
+- (void)testLoggingBaseEvent {
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });

@@ -78,6 +78,7 @@ NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite) MPNetworkOptions *networkOptions;
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
+@property (nonatomic, strong) MParticleWebView *webView;
 
 @end
 
@@ -273,6 +274,7 @@ NSString *const kMPStateKey = @"state";
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine alloc] init];
+    _webView = [[MParticleWebView alloc] init];
     
     return self;
 }
@@ -473,9 +475,9 @@ NSString *const kMPStateKey = @"state";
     }
     sdkInitialized = YES;
     
-    [MParticleWebView setCustomUserAgent:options.customUserAgent];
-    
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:options];
+    
+    [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultAgentOverride:options.defaultAgent];
     
     _backendController = [[MPBackendController alloc] initWithDelegate:self];
 

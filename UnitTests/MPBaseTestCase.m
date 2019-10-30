@@ -6,16 +6,37 @@
 #import "MPKitContainer.h"
 #import "MPAppNotificationHandler.h"
 #import "MPArchivist.h"
+#import "MPConnector.h"
+#import "MPNetworkCommunication.h"
+#import "OCMock.h"
+
+@interface MPTestConnectorFactory : NSObject <MPConnectorFactory>
+
+@property (nonatomic) NSMutableArray *mockConnectors;
+
+@end
+
+@implementation MPTestConnectorFactory
+
+- (MPConnector *)createConnector {
+    @synchronized ([self class]) {
+         return OCMClassMock([MPConnector class]);
+    }
+}
+
+@end
 
 @implementation MPBaseTestCase
 
 - (void)setUp {
     [super setUp];
     [[MParticle sharedInstance] reset];
+    MPNetworkCommunication.connectorFactory = [[MPTestConnectorFactory alloc] init];
 }
 
 - (void)tearDown {
     [[MParticle sharedInstance] reset];
+    MPNetworkCommunication.connectorFactory = nil;
     [super tearDown];
 }
 

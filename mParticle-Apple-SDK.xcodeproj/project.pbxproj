@@ -516,6 +516,8 @@
 		DB93D90C20AC86B700A974E7 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = DB93D90B20AC86B700A974E7 /* libsqlite3.tbd */; };
 		DB9AA1A21EFD806000340D02 /* MPIUserDefaults.h in Headers */ = {isa = PBXBuildFile; fileRef = DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */; };
 		DB9AA1A31EFD806000340D02 /* MPIUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */; };
+		DB9F9D8923674E3F0011E901 /* MParticleWebViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9F9D8823674E3F0011E901 /* MParticleWebViewTests.m */; };
+		DB9F9D8A23674E3F0011E901 /* MParticleWebViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB9F9D8823674E3F0011E901 /* MParticleWebViewTests.m */; };
 		DBA42900205ADEB7006AB971 /* MPConvertJSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */; };
 		DBA42901205ADEB7006AB971 /* MPConvertJSTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */; };
 		DBA894661F17CBE6005B21FB /* MPIdentityDTO.h in Headers */ = {isa = PBXBuildFile; fileRef = DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */; };
@@ -853,6 +855,7 @@
 		DB93D90B20AC86B700A974E7 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS11.3.sdk/usr/lib/libsqlite3.tbd; sourceTree = DEVELOPER_DIR; };
 		DB9AA19E1EFD806000340D02 /* MPIUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIUserDefaults.h; sourceTree = "<group>"; };
 		DB9AA19F1EFD806000340D02 /* MPIUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaults.m; sourceTree = "<group>"; };
+		DB9F9D8823674E3F0011E901 /* MParticleWebViewTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleWebViewTests.m; sourceTree = "<group>"; };
 		DBA428FF205ADEB7006AB971 /* MPConvertJSTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConvertJSTests.m; sourceTree = "<group>"; };
 		DBA894641F17CBE6005B21FB /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = MPIdentityDTO.h; path = Identity/MPIdentityDTO.h; sourceTree = "<group>"; };
 		DBA894651F17CBE6005B21FB /* MPIdentityDTO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MPIdentityDTO.m; path = Identity/MPIdentityDTO.m; sourceTree = "<group>"; };
@@ -1373,6 +1376,7 @@
 				D34EF329234CEB0D00D5ACBD /* MPSwiftTests.swift */,
 				D34EF327234CEB0C00D5ACBD /* mParticle_iOS_SDKTests-Bridging-Header.h */,
 				D34EF328234CEB0C00D5ACBD /* mParticle_tvOS_SDKTests-Bridging-Header.h */,
+				DB9F9D8823674E3F0011E901 /* MParticleWebViewTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1838,6 +1842,7 @@
 				DB8C8A3A1FBCA63200DEC7C2 /* MParticleOptionsTests.m in Sources */,
 				D36997EE20FF879E009613E5 /* MParticleTests.m in Sources */,
 				DBA42901205ADEB7006AB971 /* MPConvertJSTests.m in Sources */,
+				DB9F9D8A23674E3F0011E901 /* MParticleWebViewTests.m in Sources */,
 				04610F5A215D8C8C001A36AB /* MParticleUserTests.m in Sources */,
 				C911FD9F1D8A365A002A3516 /* MPPersistenceControllerTests.mm in Sources */,
 				C911FD951D8A365A002A3516 /* MPIntegrationAttributesTest.m in Sources */,
@@ -2110,6 +2115,7 @@
 				C9DD20E11D8A193000D3ABBE /* BracketTests.mm in Sources */,
 				C9DD20FC1D8A202A00D3ABBE /* MPResponseConfigTests.m in Sources */,
 				C9DD20F11D8A1FB700D3ABBE /* MPKitAppsFlyerTest.m in Sources */,
+				DB9F9D8923674E3F0011E901 /* MParticleWebViewTests.m in Sources */,
 				D3832205209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */,
 				C9DD20E51D8A195100D3ABBE /* MPBackendControllerTests.mm in Sources */,
 				C9DD20FA1D8A202200D3ABBE /* MPPersistenceControllerTests.mm in Sources */,

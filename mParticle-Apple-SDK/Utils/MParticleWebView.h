@@ -5,9 +5,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MParticleWebView : NSObject
 
-- (instancetype)initWithFrame:(CGRect)frame;
-- (nullable NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)string;
-+ (void)setCustomUserAgent:(NSString *)userAgent;
+- (void)startWithCustomUserAgent:(nullable NSString *)customUserAgent shouldCollect:(BOOL)shouldCollect defaultAgentOverride:(nullable NSString *)defaultAgent;
+- (BOOL)shouldDelayUpload:(NSTimeInterval)maxWaitTime;
+- (nullable NSString *)userAgent;
+- (nullable NSString *)originalDefaultAgent;
 
 @end
 

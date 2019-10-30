@@ -9,7 +9,6 @@
 + (nonnull MPURLRequestBuilder *)newBuilderWithURL:(nonnull NSURL *)url;
 + (nonnull MPURLRequestBuilder *)newBuilderWithURL:(nonnull NSURL *)url message:(nullable NSString *)message httpMethod:(nullable NSString *)httpMethod;
 + (NSTimeInterval)requestTimeout;
-+ (void)tryToCaptureUserAgent;
 - (nonnull instancetype)initWithURL:(nonnull NSURL *)url;
 - (nonnull MPURLRequestBuilder *)withHeaderData:(nullable NSData *)headerData;
 - (nonnull MPURLRequestBuilder *)withHttpMethod:(nonnull NSString *)httpMethod;

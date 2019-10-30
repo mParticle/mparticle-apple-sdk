@@ -173,6 +173,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
 
 /*
+ Default user agent to be sent in case collecting the browser user agent fails repeatedly, times out or the APIs are unavailable.
+ (Ignored if `customUserAgent` is set.) By default, a value of the form "mParticle Apple SDK/<SDK Version>" will be used as a fallback.
+ */
+@property (nonatomic, unsafe_unretained, readwrite) NSString *defaultAgent;
+
+/*
  Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
 @property (nonatomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;

@@ -6,6 +6,7 @@
 #import "MPBackendController.h"
 #import "OCMock.h"
 #import "MPURLRequestBuilder.h"
+#import "MParticleWebView.h"
 
 @interface MParticle ()
 
@@ -14,11 +15,13 @@
 @property (nonatomic, strong) MPBackendController *backendController;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
+@property (nonatomic, strong) MParticleWebView *webView;
 
 @end
 
 @interface MParticleTests : MPBaseTestCase {
     NSNotification *lastNotification;
+    __weak dispatch_block_t testNotificationHandler;
 }
 
 @end
@@ -185,11 +188,13 @@
 - (void)handleTestSessionStart:(NSNotification *)notification {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:mParticleSessionDidBeginNotification object:nil];
     lastNotification = notification;
+    testNotificationHandler();
 }
 
 - (void)handleTestSessionEnd:(NSNotification *)notification {
     [[NSNotificationCenter defaultCenter] removeObserver:self name:mParticleSessionDidEndNotification object:nil];
     lastNotification = notification;
+    testNotificationHandler();
 }
 
 - (void)testIsValidBridgeName {
@@ -287,9 +292,7 @@
 - (void)testSessionStartNotification {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTestSessionStart:) name:mParticleSessionDidBeginNotification object:nil];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    MParticle *instance = [MParticle sharedInstance];
-    [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
-    dispatch_async([MParticle messageQueue], ^{
+    __strong dispatch_block_t block = ^{
         XCTAssertNotNil(self->lastNotification);
         NSDictionary *userInfo = self->lastNotification.userInfo;
         XCTAssertEqual(2, userInfo.count);
@@ -298,29 +301,35 @@
         NSString *sessionUUID = userInfo[mParticleSessionUUID];
         XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
         [expectation fulfill];
-    });
+    };
+    testNotificationHandler = block;
+    MParticle *instance = [MParticle sharedInstance];
+    [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
     [self waitForExpectationsWithTimeout:10 handler:nil];
+    testNotificationHandler = nil;
 }
 
 - (void)testSessionEndNotification {
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(handleTestSessionEnd:) name:mParticleSessionDidEndNotification object:nil];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    __strong dispatch_block_t block = ^{
+        XCTAssertNotNil(self->lastNotification);
+        NSDictionary *userInfo = self->lastNotification.userInfo;
+        XCTAssertEqual(2, userInfo.count);
+        NSNumber *sessionID = userInfo[mParticleSessionId];
+        XCTAssertEqualObjects(NSStringFromClass([sessionID class]), @"__NSCFNumber");
+        NSString *sessionUUID = userInfo[mParticleSessionUUID];
+        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
+        [expectation fulfill];
+    };
+    testNotificationHandler = block;
     MParticle *instance = [MParticle sharedInstance];
     [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
     dispatch_async([MParticle messageQueue], ^{
         [[MParticle sharedInstance].backendController endSession];
-        dispatch_async(dispatch_get_main_queue(), ^{
-            XCTAssertNotNil(self->lastNotification);
-            NSDictionary *userInfo = self->lastNotification.userInfo;
-            XCTAssertEqual(2, userInfo.count);
-            NSNumber *sessionID = userInfo[mParticleSessionId];
-            XCTAssertEqualObjects(NSStringFromClass([sessionID class]), @"__NSCFNumber");
-            NSString *sessionUUID = userInfo[mParticleSessionUUID];
-            XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
-            [expectation fulfill];
-        });
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
+    testNotificationHandler = nil;
 }
 
 - (void)testLogNotificationWithUserInfo {
@@ -378,38 +387,43 @@
 }
 
 - (void)testUserAgentDefault {
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    MParticle *instance = [MParticle sharedInstance];
-    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    [instance startWithOptions:options];
-    dispatch_async([MParticle messageQueue], ^{
-        NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
-        NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
-        NSDictionary *fields = urlRequest.allHTTPHeaderFields;
-        NSString *actualAgent = fields[@"User-Agent"];
-        NSString *expectedAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
-        XCTAssertEqualObjects(actualAgent, expectedAgent);
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    id mockWebView = OCMClassMock([MParticleWebView class]);
+#if TARGET_OS_IOS == 1
+    [[[mockWebView stub] andReturn:@"Example resolved agent"] userAgent];
+#else
+    [[[mockWebView stub] andReturn:[NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version]] userAgent];
+#endif
+    id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
+    [[[mockMParticle stub] andReturn:mockWebView] webView];
+    NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
+    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
+    NSDictionary *fields = urlRequest.allHTTPHeaderFields;
+    NSString *actualAgent = fields[@"User-Agent"];
+    NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+    #if TARGET_OS_IOS == 1
+    XCTAssertNotEqualObjects(actualAgent, defaultAgent);
+    #else
+    XCTAssertEqualObjects(actualAgent, defaultAgent);
+    #endif
+    [mockWebView stopMocking];
+    [mockMParticle stopMocking];
 }
 
 - (void)testUserAgentCustom {
     NSString *customAgent = @"Foo 1.2.3 Like Bar";
-    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-    MParticle *instance = [MParticle sharedInstance];
-    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-    options.customUserAgent = customAgent;
-    [instance startWithOptions:options];
-    dispatch_async([MParticle messageQueue], ^{
-        NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
-        NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
-        NSDictionary *fields = urlRequest.allHTTPHeaderFields;
-        NSString *actualAgent = fields[@"User-Agent"];
-        XCTAssertEqualObjects(actualAgent, customAgent);
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    id mockWebView = OCMClassMock([MParticleWebView class]);
+    [[[mockWebView stub] andReturn:customAgent] userAgent];
+    id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
+    [[[mockMParticle stub] andReturn:mockWebView] webView];
+    
+    NSURL *url = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
+    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
+    NSDictionary *fields = urlRequest.allHTTPHeaderFields;
+    NSString *actualAgent = fields[@"User-Agent"];
+    XCTAssertEqualObjects(actualAgent, customAgent);
+    
+    [mockMParticle stopMocking];
+    [mockWebView stopMocking];
 }
 
 @end

@@ -13,12 +13,16 @@
 #import "MPMessage.h"
 #import "MPBaseTestCase.h"
 #import "MPKitConfiguration.h"
+#import "OCMock.h"
+#import "MParticleWebView.h"
+#import "MPExtensionProtocol.h"
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MParticleWebView *webView;
 
 @end
 
@@ -103,7 +107,6 @@
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
                                                                             message:[message serializedString]
                                                                          httpMethod:@"POST"];
-    [urlRequestBuilder setUserAgent:nil];
     
     dispatch_async([MParticle messageQueue], ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
@@ -130,7 +133,6 @@
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
                                                                             message:[message serializedString]
                                                                          httpMethod:@"POST"];
-    [urlRequestBuilder setUserAgent:nil];
     
     dispatch_async([MParticle messageQueue], ^{
         NSString *userAgent = [urlRequestBuilder userAgent];
@@ -181,9 +183,6 @@
     NSArray *keys = [headersDictionary allKeys];
 
     NSMutableArray *headers = @[@"User-Agent", @"Accept-Encoding", @"Content-Encoding", @"locale", @"Content-Type", @"timezone", @"secondsFromGMT", @"Date", @"x-mp-signature", @"x-mp-env", @"x-mp-kits"].mutableCopy;
-#if TARGET_OS_IOS != 1
-    [headers removeObject:@"User-Agent"];
-#endif
     
     NSString *headerValue;
     
@@ -211,6 +210,9 @@
             
             kitRange = [headerValue rangeOfString:@"314"];
             XCTAssertTrue(kitRange.location != NSNotFound);
+        } else if ([header isEqualToString:@"User-Agent"]) {
+            NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
+            XCTAssertEqualObjects(headerValue, defaultAgent);
         }
     }
 }
@@ -360,6 +362,22 @@
 }
 
 - (void)testEventRequest {
+    MParticle *sharedInstance = [MParticle sharedInstance];
+    MParticleWebView *webview = sharedInstance.webView;
+    NSString *agent = @"Example resolved agent";
+    
+    id mockWebView = OCMPartialMock(webview);
+    [[[mockWebView stub] andReturn:agent] userAgent];
+    
+    id mockKitContainer = OCMClassMock([MPKitContainer class]);
+    id mockKit = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
+    [(id<MPExtensionKitProtocol>)[[mockKit stub] andReturn:@42] code];
+    [[[mockKitContainer stub] andReturn:@[mockKit]] activeKitsRegistry];
+    
+    id mockMParticle = OCMPartialMock(sharedInstance);
+    [[[mockMParticle stub] andReturn:mockWebView] webView];
+    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer];
+    
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{
@@ -407,6 +425,10 @@
             XCTAssertEqualObjects(headerValue, @"42");
         }
     }
+    [mockMParticle stopMocking];
+    [mockKitContainer stopMocking];
+    [mockKit stopMocking];
+    [mockWebView stopMocking];
 }
 
 @end

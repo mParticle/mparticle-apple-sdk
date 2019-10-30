@@ -12,12 +12,12 @@
 
 static NSDateFormatter *RFC1123DateFormatter;
 static NSTimeInterval requestTimeout = 30.0;
-static NSString *mpUserAgent = nil;
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MParticleWebView *webView;
 
 @end
     
@@ -77,12 +77,11 @@ static NSString *mpUserAgent = nil;
 }
 
 - (NSString *)userAgent {
-    NSString *defaultUserAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
-    return MParticle.sharedInstance.customUserAgent ?: defaultUserAgent;
-}
-
-- (void)setUserAgent:(NSString *)userAgent {
-    mpUserAgent = userAgent;
+    BOOL isConfig = [[_url relativePath] rangeOfString:@"/config"].location != NSNotFound;
+    if (isConfig) {
+        return MParticle.sharedInstance.webView.originalDefaultAgent;
+    }
+    return MParticle.sharedInstance.webView.userAgent;
 }
 
 #pragma mark Public class methods
@@ -110,10 +109,6 @@ static NSString *mpUserAgent = nil;
 
 + (NSTimeInterval)requestTimeout {
     return requestTimeout;
-}
-
-+ (void)tryToCaptureUserAgent {
-    [[[MPURLRequestBuilder alloc] init] userAgent];
 }
 
 #pragma mark Public instance methods

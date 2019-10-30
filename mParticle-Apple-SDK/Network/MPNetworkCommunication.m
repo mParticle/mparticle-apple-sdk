@@ -45,6 +45,8 @@ NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
+static NSObject<MPConnectorFactory> *factory = nil;
+
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
@@ -279,6 +281,9 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
 #pragma mark Public methods
 - (MPConnector *_Nonnull)makeConnector {
+    if (MPNetworkCommunication.connectorFactory) {
+        return [MPNetworkCommunication.connectorFactory createConnector];
+    }
     return [[MPConnector alloc] init];
 }
 
@@ -309,7 +314,7 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
     
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.absoluteString body:@[]];
     
-    connector = connector ? connector : [[MPConnector alloc] init];
+    connector = connector ? connector : [self makeConnector];
     MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
@@ -896,6 +901,14 @@ NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
             completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
         }
     }];
+}
+
++ (void)setConnectorFactory:(NSObject<MPConnectorFactory> *)connectorFactory {
+    factory = connectorFactory;
+}
+
++ (NSObject<MPConnectorFactory> *)connectorFactory {
+    return factory;
 }
 
 @end

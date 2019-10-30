@@ -35,6 +35,7 @@
 #import "MPURLRequestBuilder.h"
 #import "MPArchivist.h"
 #import "MPListenerController.h"
+#import "MParticleWebView.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -48,6 +49,7 @@ const NSInteger kExceededAttributeKeyMaximumLength = 105;
 const NSInteger kInvalidDataType = 106;
 const NSInteger kInvalidKey = 107;
 const NSTimeInterval kMPMaximumKitWaitTimeSeconds = 5;
+const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5;
 
 static NSArray *execStatusDescriptions;
 static BOOL appBackgrounded = NO;
@@ -58,6 +60,7 @@ static BOOL appBackgrounded = NO;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MParticleWebView *webView;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 - (NSNumber *)sessionIDFromUUID:(NSString *)uuid;
@@ -1702,7 +1705,6 @@ static BOOL skipNextUpload = NO;
     
     __weak MPBackendController *weakSelf = self;
     dispatch_async(messageQueue, ^{
-        [MPURLRequestBuilder tryToCaptureUserAgent];
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
 
         if (!isApplicationStateBackground && MParticle.sharedInstance.automaticSessionTracking) {
@@ -1827,7 +1829,8 @@ static BOOL skipNextUpload = NO;
             [self requestConfig:^(BOOL uploadBatch) {
                 __strong MPBackendController *strongSelf = weakSelf;
                 MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
-                BOOL shouldDelayUpload = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+                BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+                BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
                 if (!uploadBatch || shouldDelayUpload) {
                     if (completionHandler) {
                         completionHandler(YES);

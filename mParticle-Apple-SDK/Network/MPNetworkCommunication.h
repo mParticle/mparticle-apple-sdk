@@ -25,7 +25,14 @@ typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
+@protocol MPConnectorFactory
+- (MPConnector * _Nonnull)createConnector;
+@end
+
 @interface MPNetworkCommunication : NSObject
+
++ (void)setConnectorFactory:(NSObject<MPConnectorFactory> *_Nullable)connectorFactory;
++ (NSObject<MPConnectorFactory> *_Nullable)connectorFactory;
 
 - (MPConnector *_Nonnull)makeConnector;
 - (void)requestConfig:(nullable MPConnector *)connector withCompletionHandler:(MPConfigCompletionHandler)completionHandler;
