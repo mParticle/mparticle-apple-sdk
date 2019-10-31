@@ -1,5 +1,21 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.12.5
+
+### Core
+
+#### User Agent Collection
+
+This release resolves an issue where user agent collection may not work correctly for certain app configurations.
+
+This is due to a behavior change by Apple that appears to be isolated to Swift projects, where the application state within didFinishLaunching is set to background instead of inactive.
+
+Also included is a change to allow user agent collection in iOS extensions.
+
+### Kits
+
+- None
+
 ## 7.12.4
 
 ### Core
