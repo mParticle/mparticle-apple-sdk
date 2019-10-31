@@ -53,10 +53,7 @@
 #if TARGET_OS_IOS != 1
     return NO;
 #else
-    if (!self.shouldCollect || [MPStateMachine isAppExtension] || [MPApplication sharedUIApplication].applicationState == UIApplicationStateBackground) {
-        return NO;
-    }
-    return YES;
+    return self.shouldCollect;
 #endif
 }
 

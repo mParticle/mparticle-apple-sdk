@@ -31,6 +31,7 @@ NSString *const kMPAppBadgeNumberKey = @"bn";
 NSString *const kMPAppStoreReceiptKey = @"asr";
 
 static NSString *kMPAppStoreReceiptString = nil;
+static id mockUIApplication = nil;
 
 @interface MParticle ()
 
@@ -256,7 +257,12 @@ static NSString *kMPAppStoreReceiptString = nil;
     return bundleInfoDictionary[@"CFBundleShortVersionString"];
 }
 
++ (void)setMockApplication:(id)mockApplication {
+    mockUIApplication = mockApplication;
+}
+
 + (UIApplication *)sharedUIApplication {
+    if (mockUIApplication) return mockUIApplication;
     if ([[UIApplication class] respondsToSelector:@selector(sharedApplication)]) {
         return [[UIApplication class] performSelector:@selector(sharedApplication)];
     }

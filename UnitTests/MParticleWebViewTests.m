@@ -2,6 +2,12 @@
 #import "MParticleWebView.h"
 #import "MParticle.h"
 #import "OCMock.h"
+#import "MPApplication.h"
+#import <UIKit/UIKit.h>
+
+@interface MPApplication ()
++ (void)setMockApplication:(id)mockApplication;
+@end
 
 @interface MParticleWebView ()
 
@@ -106,6 +112,20 @@
 - (void)testOriginalDefaultAgent {
     NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
     XCTAssertEqualObjects(_webView.originalDefaultAgent, defaultAgent);
+}
+
+- (void)testBackgroundCollection {
+    id mockApplication = OCMClassMock([UIApplication class]);
+    OCMStub([mockApplication applicationState]).andReturn(UIApplicationStateBackground);
+    [MPApplication setMockApplication:mockApplication];
+    MParticleWebView *mockWebView = OCMPartialMock(_webView);
+#if TARGET_OS_IOS == 1
+    [[(id)mockWebView expect] evaluateAgent];
+#else
+    [[(id)mockWebView reject] evaluateAgent];
+#endif
+    [mockWebView startWithCustomUserAgent:nil shouldCollect:YES defaultAgentOverride:nil];
+    [(id)mockWebView verify];
 }
 
 @end

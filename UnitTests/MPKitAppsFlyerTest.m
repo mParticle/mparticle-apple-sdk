@@ -90,7 +90,8 @@ NSString *const afDevKey = @"devKey";
         return [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeUnavailable];
     }
 }
-
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-implementations"
 - (nonnull MPKitExecStatus *)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent {
     return [self routeCommerceEvent:commerceEvent];
 }
@@ -98,6 +99,7 @@ NSString *const afDevKey = @"devKey";
 - (nonnull MPKitExecStatus *)logEvent:(nonnull MPEvent *)event {
     return [self routeEvent:event];
 }
+#pragma clang diagnostic pop
 
 - (nonnull MPKitExecStatus *)routeCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent {
     MPKitExecStatus *execStatus;
