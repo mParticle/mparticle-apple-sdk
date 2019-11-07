@@ -375,6 +375,8 @@
     XCTAssertNil(e);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)testLogNilCommerceEvent {
     MParticle *instance = [MParticle sharedInstance];
     NSException *e = nil;
@@ -385,6 +387,7 @@
     }
     XCTAssertNil(e);
 }
+#pragma clang diagnostic pop
 
 - (void)testUserAgentDefault {
     id mockWebView = OCMClassMock([MParticleWebView class]);

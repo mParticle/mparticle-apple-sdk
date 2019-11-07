@@ -537,7 +537,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Logs an event. This is one of the most fundamental methods of the SDK. You can define all the characteristics
- of an event in an instance of MPEvent (or any other subclass of MPBaseEvent) and pass that instance to this
+ of an event in an instance of MPEvent, MPCommerceEvent, or any other subclass of MPBaseEvent and pass that instance to this
  method to log its data to the mParticle SDK.
  @param event An instance of a subclass of MPBaseEvent (e.g MPEvent, MPCommerceEvent)
  @see MPEvent
@@ -642,7 +642,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param commerceEvent An instance of MPCommerceEvent
  @see MPCommerceEvent
  */
-- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
+- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent DEPRECATED_MSG_ATTRIBUTE("Replace calls to `logCommerceEvent:` with `logEvent:`");
 
 /**
  Increases the LTV (LifeTime Value) amount of a user.

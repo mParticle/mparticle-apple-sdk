@@ -827,7 +827,10 @@ NSString *const kMPStateKey = @"state";
     } else if ([event isKindOfClass:[MPEvent class]]) {
         [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
         [self logCommerceEvent:(MPCommerceEvent *)event];
+#pragma clang diagnostic pop
     } else {
         dispatch_async(messageQueue, ^{
             [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
@@ -1563,7 +1566,7 @@ NSString *const kMPStateKey = @"state";
                 
             case MPJavascriptMessageTypeCommerce: {
                 MPCommerceEvent *event = [MPConvertJS MPCommerceEvent:dictionary];
-                [self logCommerceEvent:event];
+                [self logEvent:event];
             }
                 break;
                 

@@ -166,7 +166,7 @@
         MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart];
         [commerceEvent addProducts:products];
         
-        [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
+        [[MParticle sharedInstance] logEvent:commerceEvent];
     }
     
     if (updateProductList) {
@@ -204,7 +204,7 @@
     if (logEvent) {
         MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionRemoveFromCart];
         [commerceEvent removeProducts:products];
-        [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
+        [[MParticle sharedInstance] logEvent:commerceEvent];
     }
     
     if (updateProductList) {

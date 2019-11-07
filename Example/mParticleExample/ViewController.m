@@ -125,7 +125,7 @@
     commerceEvent.transactionAttributes = transactionAttributes;
     
     // Logs a commerce event
-    [[MParticle sharedInstance] logCommerceEvent:commerceEvent];
+    [[MParticle sharedInstance] logEvent:commerceEvent];
 }
 
 - (void)logCustomMediaEvents {
