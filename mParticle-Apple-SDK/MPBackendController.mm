@@ -1833,11 +1833,18 @@ static BOOL skipNextUpload = NO;
     __weak MPBackendController *weakSelf = self;
 
             [self requestConfig:^(BOOL uploadBatch) {
+                if (!uploadBatch) {
+                    if (completionHandler) {
+                        completionHandler(NO);
+                    }
+                    
+                    return;
+                }
                 __strong MPBackendController *strongSelf = weakSelf;
                 MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
                 BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
                 BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
-                if (!uploadBatch || shouldDelayUpload) {
+                if (shouldDelayUpload) {
                     if (completionHandler) {
                         completionHandler(YES);
                     }

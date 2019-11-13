@@ -78,6 +78,9 @@
 - (NSArray *)batchMessageArraysFromMessageArray:(NSArray *)messages maxBatchMessages:(NSInteger)maxBatchMessages maxBatchBytes:(NSInteger)maxBatchBytes maxMessageBytes:(NSInteger)maxMessageBytes;
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(void))completionHandler;
 - (void)backgroundTaskBlock;
+- (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler;
+- (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler;
+- (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler;
 
 @end
 
@@ -1232,6 +1235,25 @@
         XCTAssertEqual(((NSArray *)batchArrays[i]).count, 1);
     }
     
+}
+
+
+- (void)testNoUploadOrRetryIfConfigFails {
+    id mockBackendController = OCMPartialMock(self.backendController);
+    [[mockBackendController reject] uploadBatchesWithCompletionHandler:[OCMArg any]];
+    
+    [OCMStub([mockBackendController requestConfig:[OCMArg any]]) andDo:^(NSInvocation *invocation) {
+        void (^handler)(BOOL uploadBatch);
+        [invocation getArgument:&handler atIndex:2];
+        handler(NO);
+    }];
+    
+    [mockBackendController checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
+        XCTAssertFalse(didShortCircuit);
+    }];
+    
+    [mockBackendController verifyWithDelay:2.0];
+    [mockBackendController stopMocking];
 }
 
 @end
