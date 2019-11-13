@@ -15,6 +15,7 @@
 
 @interface MParticle ()
 
++ (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
 @end
@@ -57,8 +58,8 @@ static NSData *deviceToken = nil;
     NSData *oldDeviceToken = [deviceToken copy];
     
     deviceToken = devToken;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
+
+    dispatch_async([MParticle messageQueue], ^{
         NSMutableDictionary *deviceTokenDictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
         NSString *newTokenString = nil;
         NSString *oldTokenString = nil;
