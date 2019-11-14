@@ -1,5 +1,20 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.12.6
+
+### Core
+
+This release includes a number of targeted bug fixes to the SDK.
+
+- Set device token on message queue
+- Add handling for webview commerce attributes
+- Exclude config endpoint from upload retry logic
+- Deprecate `logCommerceEvent:` method--please call `logEvent:` instead.
+
+### Kits
+
+- Adobe - Update for Media SDK beta 3
+
 ## 7.12.5
 
 ### Core
