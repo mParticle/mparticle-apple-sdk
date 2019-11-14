@@ -79,6 +79,14 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 }
 
 + (MPCommerceEvent *)MPCommerceEvent:(NSDictionary *)json {
+    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected commerce event data received from webview");
+        return nil;
+    }
+    if (json[@"ProductAction"] != nil && ![json[@"ProductAction"] isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected commerce product action data received from webview");
+        return nil;
+    }
     BOOL isProductAction = json[@"ProductAction"][@"ProductActionType"] != nil;
     BOOL isPromotion = json[@"PromotionAction"] != nil;
     BOOL isImpression = json[@"ProductImpressions"] != nil;
@@ -92,6 +100,10 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 
     if (isProductAction) {
         id productActionJson = json[@"ProductAction"][@"ProductActionType"];
+        if (!productActionJson || ![productActionJson isKindOfClass:[NSNumber class]]) {
+            MPILogError(@"Unexpected product action type received from webview");
+            return nil;
+        }
         MPCommerceEventAction action = [MPConvertJS MPCommerceEventAction:productActionJson];
         commerceEvent = [[MPCommerceEvent alloc] initWithAction:action];
     }
@@ -103,6 +115,7 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
         commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
     }
 
+    commerceEvent.customAttributes = json[@"EventAttributes"];
     commerceEvent.checkoutOptions = json[@"CheckoutOptions"];
     commerceEvent.productListName = json[@"productActionListName"];
     commerceEvent.productListSource = json[@"productActionListSource"];
@@ -138,10 +151,28 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 }
 
 + (MPPromotionContainer *)MPPromotionContainer:(NSDictionary *)json {
-    int promotionActionInt = [json[@"PromotionAction"][@"PromotionActionType"] intValue];
+    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected promotion container data received from webview");
+        return nil;
+    }
+    NSDictionary *promotionActionDictionary = json[@"PromotionAction"];
+    if (!promotionActionDictionary || ![promotionActionDictionary isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected promotion container action data received from webview");
+        return nil;
+    }
+    NSNumber *promotionActionTypeNumber = json[@"PromotionAction"][@"PromotionActionType"];
+    if (promotionActionTypeNumber == nil || ![promotionActionTypeNumber isKindOfClass:[NSNumber class]]) {
+        MPILogError(@"Unexpected promotion container action type data received from webview");
+        return nil;
+    }
+    int promotionActionInt = [promotionActionTypeNumber intValue];
     MPPromotionAction promotionAction = promotionActionInt == 1 ? MPPromotionActionView : MPPromotionActionClick;
     MPPromotionContainer *promotionContainer = [[MPPromotionContainer alloc] initWithAction:promotionAction promotion:nil];
     NSArray *jsonPromotions = json[@"PromotionAction"][@"PromotionList"];
+    if (!jsonPromotions || ![jsonPromotions isKindOfClass:[NSArray class]]) {
+        MPILogError(@"Unexpected promotion container list data received from webview");
+        return nil;
+    }
     [jsonPromotions enumerateObjectsUsingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         MPPromotion *promotion = [MPConvertJS MPPromotion:obj];
         [promotionContainer addPromotion:promotion];
@@ -151,6 +182,10 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 }
 
 + (MPPromotion *)MPPromotion:(NSDictionary *)json {
+    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected promotion data received from webview");
+        return nil;
+    }
     MPPromotion *promotion = [[MPPromotion alloc] init];
     promotion.creative = json[@"Creative"];
     promotion.name = json[@"Name"];
@@ -160,6 +195,10 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 }
 
 + (MPTransactionAttributes *)MPTransactionAttributes:(NSDictionary *)json {
+    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected transaction attributes data received from webview");
+        return nil;
+    }
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
     transactionAttributes.affiliation = json[@"Affiliation"];
     transactionAttributes.couponCode = json[@"CouponCode"];
@@ -171,16 +210,26 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 }
 
 + (MPProduct *)MPProduct:(NSDictionary *)json {
+    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected product data received from webview");
+        return nil;
+    }
     MPProduct *product = [[MPProduct alloc] init];
     product.brand = json[@"Brand"];
     product.category = json[@"Category"];
     product.couponCode = json[@"CouponCode"];
     product.name = json[@"Name"];
-    product.price = json[@"Price"];
+    
+    if (!json[@"Price"] || [json[@"Price"] isKindOfClass:[NSNumber class]]) {
+        product.price = json[@"Price"];
+    }
+    
     product.sku = json[@"Sku"];
     product.variant = json[@"Variant"];
     product.position = [json[@"Position"] intValue];
-    product.quantity = json[@"Quantity"];
+    if (!json[@"Quantity"] || [json[@"Quantity"] isKindOfClass:[NSNumber class]]) {
+        product.quantity = json[@"Quantity"];
+    }
 
     NSDictionary *jsonAttributes = json[@"Attributes"];
     if ((NSNull *)jsonAttributes != [NSNull null]) {
@@ -195,7 +244,7 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 + (BOOL)MPUserIdentity:(NSNumber *)json identity:(MPUserIdentity *)identity {
     MPUserIdentity localIdentity;
     
-    if (json == nil) {
+    if (json == nil || ![json isKindOfClass:[NSNumber class]]) {
         return NO;
     }
     
@@ -264,8 +313,15 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
 
 + (MPIdentityApiRequest *)MPIdentityApiRequest:(NSDictionary *)json {
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithEmptyUser];
-    
+    if (!json || ![json isKindOfClass:[NSDictionary class]]) {
+        MPILogError(@"Unexpected identity api request data received from webview");
+        return nil;
+    }
     NSArray *userIdentities = json[@"UserIdentities"];
+    if (!userIdentities || ![userIdentities isKindOfClass:[NSArray class]]) {
+        MPILogError(@"Unexpected user identity data received from webview");
+        return nil;
+    }
     
     if (userIdentities.count) {
         

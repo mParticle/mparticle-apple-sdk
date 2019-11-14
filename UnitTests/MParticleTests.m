@@ -239,6 +239,126 @@
     [mockBackend stopMocking];
 }
 
+- (void)testWebviewLogCommerceAttributes {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    MPProduct *testProduct = [[MPProduct alloc] initWithName:@"foo product 1" sku:@"12345" quantity:@1 price:@19.95];
+    MPCommerceEvent *testEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:testProduct];
+    testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
+    
+    [[[mockBackend expect] ignoringNonObjectArgs] logCommerceEvent:[OCMArg checkWithBlock:^BOOL(id value) {
+        XCTAssert([value isKindOfClass:[MPCommerceEvent class]]);
+        MPCommerceEvent *returnedEvent = ((MPCommerceEvent *)value);
+        XCTAssertEqualObjects(returnedEvent.products[0].name, testProduct.name);
+        XCTAssertEqualObjects(returnedEvent.products[0].sku, testProduct.sku);
+        XCTAssertEqualObjects(returnedEvent.products[0].quantity, testProduct.quantity);
+        XCTAssertEqualObjects(returnedEvent.products[0].price, testProduct.price);
+        XCTAssertEqualObjects(returnedEvent.customAttributes, testEvent.customAttributes);
+        
+        return YES;
+    }] completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    NSString *command = @"logEvent";
+    NSDictionary *dictionary = @{
+        @"EventDataType":@(MPJavascriptMessageTypeCommerce),
+        @"ProductAction":@{
+                @"ProductActionType":@0,
+                @"ProductList":@[
+                        @{
+                            @"Name":@"foo product 1",
+                            @"Sku":@"12345",
+                            @"Quantity":@1,
+                            @"Price": @19.95
+                        }
+                ]
+        },
+        @"EventAttributes":@{
+                @"foo webview event attribute 1":@"foo webview event attribute value 1"
+        }
+    };
+    [instance handleWebviewCommand:command dictionary:dictionary];
+    
+    [mockBackend verifyWithDelay:2];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testWebviewLogCommerceInvalidArray {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    [[mockBackend reject] logCommerceEvent:[OCMArg any] completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    NSString *command = @"logEvent";
+    NSDictionary *dictionary = (NSDictionary *)@[
+        @{
+            @"EventDataType":@(MPJavascriptMessageTypeCommerce),
+            @"ProductAction":@{
+                    @"ProductActionType":@0,
+                    @"ProductList":@[
+                            @{
+                                @"Name":@"foo product 1",
+                                @"Sku":@"12345",
+                                @"Quantity":@1,
+                                @"Price": @19.95
+                            }
+                    ]
+            },
+            @"EventAttributes":@{
+                    @"foo webview event attribute 1":@"foo webview event attribute value 1"
+            }
+        }];
+    [instance handleWebviewCommand:command dictionary:dictionary];
+    
+    [mockBackend verifyWithDelay:2];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testWebviewLogCommerceInvalidArrayValues {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    [[mockBackend reject] logCommerceEvent:[OCMArg any] completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    NSString *command = @"logEvent";
+    NSDictionary *dictionary = @{
+            @"EventDataType":@(MPJavascriptMessageTypeCommerce),
+            @"ProductAction":@{
+                    @"ProductActionType":@[],
+                    @"ProductList":@[
+                            @{
+                                @"Name":@[],
+                                @"Sku":@[],
+                                @"Quantity":@[],
+                                @"Price": @[]
+                            }
+                    ]
+            },
+            @"EventAttributes":@{
+                    @"foo webview event attribute 1":@[]
+            }
+        };
+    [instance handleWebviewCommand:command dictionary:dictionary];
+    
+    [mockBackend verifyWithDelay:2];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
 - (void)testTrackNotificationsDefault {
     id mockBackend = OCMClassMock([MPBackendController class]);
     

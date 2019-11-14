@@ -842,7 +842,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param key The attribute key
  @param value The attribute value
  */
-- (void)setSessionAttribute:(NSString *)key value:(id)value;
+- (void)setSessionAttribute:(NSString *)key value:(nullable id)value;
 
 /**
  Manually begins a new session. Calling this method is a no-op if a session already exists.

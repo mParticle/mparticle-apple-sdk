@@ -1547,8 +1547,18 @@ NSString *const kMPStateKey = @"state";
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:command parameter2:dictionary];
     
+    if (!command || ![command isKindOfClass:[NSString class]] || (dictionary && ![dictionary isKindOfClass:[NSDictionary class]])) {
+        MPILogError(@"Unexpected data received from embedded webview");
+        return;
+    }
+    
     if ([command hasPrefix:kMParticleWebViewPathLogEvent]) {
-        MPJavascriptMessageType messageType = (MPJavascriptMessageType)[dictionary[@"EventDataType"] integerValue];
+        NSNumber *eventDataType = dictionary[@"EventDataType"];
+        if (eventDataType == nil || ![eventDataType isKindOfClass:[NSNumber class]]) {
+            MPILogError(@"Unexpected event data type received from embedded webview");
+            return;
+        }
+        MPJavascriptMessageType messageType = (MPJavascriptMessageType)[eventDataType integerValue];
         switch (messageType) {
             case MPJavascriptMessageTypePageEvent: {
                 MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:(MPEventType)[dictionary[@"EventCategory"] integerValue]];
@@ -1630,10 +1640,22 @@ NSString *const kMPStateKey = @"state";
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
         [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
-        [self.identity.currentUser setUserAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+        if (!dictionary[@"key"]) {
+            MPILogError(@"Unexpected user attribute data received from webview");
+            return;
+        }
+        if (!dictionary[@"value"]) {
+            [self.identity.currentUser setUserTag:dictionary[@"key"]];
+        } else {
+            [self.identity.currentUser setUserAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+        }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
         [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
     } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
+        if (!dictionary[@"key"]) {
+            MPILogError(@"Unexpected session attribute data received from webview");
+            return;
+        }
         [self setSessionAttribute:dictionary[@"key"] value:dictionary[@"value"]];
     }
 }
