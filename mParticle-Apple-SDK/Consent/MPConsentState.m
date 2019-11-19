@@ -1,11 +1,13 @@
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
+#import "MPCCPAConsent.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MParticle.h"
 
 @interface MPConsentState () {
     NSMutableDictionary<NSString *, MPGDPRConsent *> *_gdprConsentState;
+    MPCCPAConsent *_ccpaConsentState;
 }
 
 @end
@@ -17,6 +19,7 @@
     self = [super init];
     if (self) {
         _gdprConsentState = [NSMutableDictionary dictionary];
+        _ccpaConsentState = nil;
     }
     return self;
 }
@@ -88,6 +91,23 @@
         MPGDPRConsent *consent = consentStateCopy[purpose];
         [self addGDPRConsentState:consent purpose:purpose];
     }
+}
+
+- (nullable MPCCPAConsent *)ccpaConsentState {
+    return [_ccpaConsentState copy];
+}
+
+- (void)setCCPAConsentState:(MPCCPAConsent *)consent {
+    if ((NSNull *)consent == [NSNull null]) {
+        MPILogError(@"Cannot set CCPA Consent with NSNull.")
+        return;
+    }
+    
+    _ccpaConsentState = [consent copy];
+}
+
+- (void)removeCCPAConsentState {
+    _ccpaConsentState = nil;
 }
 
 @end

@@ -1,11 +1,13 @@
 #import <XCTest/XCTest.h>
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
+#import "MPCCPAConsent.h"
 #import "MPBaseTestCase.h"
 
 @interface MPConsentStateTests : MPBaseTestCase {
     MPConsentState *_globalState;
     MPGDPRConsent *_state;
+    MPCCPAConsent *_ccpaState;
 }
 
 @end
@@ -17,6 +19,7 @@
     // Put setup code here. This method is called before the invocation of each test method in the class.
     _globalState = [[MPConsentState alloc] init];
     _state = [[MPGDPRConsent alloc] init];
+    _ccpaState = [[MPCCPAConsent alloc] init];
 }
 
 - (void)tearDown {
@@ -27,6 +30,7 @@
 - (void)testInit {
     XCTAssertNotNil(_globalState);
     XCTAssertNotNil(_state);
+    XCTAssertNotNil(_ccpaState);
 }
 
 - (void)testDefaultState {
@@ -104,6 +108,19 @@
     XCTAssertEqual(stateDictionary.count, 1);
     MPGDPRConsent *state = stateDictionary[@"test purpose"];
     XCTAssertNotNil(state);
+}
+
+- (void)testGetSetCCPAState {
+    XCTAssertNil([_globalState ccpaConsentState]);
+    [_globalState setCCPAConsentState:_ccpaState];
+    XCTAssertNotNil([_globalState ccpaConsentState]);
+}
+
+- (void)testRemoveCCPAState {
+    [_globalState setCCPAConsentState:_ccpaState];
+    XCTAssertNotNil([_globalState ccpaConsentState]);
+    [_globalState removeCCPAConsentState];
+    XCTAssertNil([_globalState ccpaConsentState]);
 }
 
 @end

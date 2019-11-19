@@ -3,6 +3,7 @@
 #import "MPILogger.h"
 #import "MPIConstants.h"
 #import "MPGDPRConsent.h"
+#import "MPCCPAConsent.h"
 #import "MPConsentKitFilter.h"
 #import "MParticle.h"
 
@@ -13,7 +14,8 @@
 + (nullable NSDictionary *)serverDictionaryFromConsentState:(MPConsentState *)state {
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
     NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
-    if (!gdprStateDictionary || gdprStateDictionary.count == 0) {
+    MPCCPAConsent *ccpaState = [state ccpaConsentState];
+    if ((!gdprStateDictionary || gdprStateDictionary.count == 0) && ccpaState == nil) {
         return dictionary;
     }
     
@@ -23,25 +25,25 @@
         NSMutableDictionary *gdprConsentDictionary = [NSMutableDictionary dictionary];
         
         if (gdprConsent.consented) {
-            gdprConsentDictionary[kMPConsentStateGDPRConsented] = @YES;
+            gdprConsentDictionary[kMPConsentStateConsented] = @YES;
         } else {
-            gdprConsentDictionary[kMPConsentStateGDPRConsented] = @NO;
+            gdprConsentDictionary[kMPConsentStateConsented] = @NO;
         }
         
         if (gdprConsent.document) {
-            gdprConsentDictionary[kMPConsentStateGDPRDocument] = gdprConsent.document;
+            gdprConsentDictionary[kMPConsentStateDocument] = gdprConsent.document;
         }
         
         if (gdprConsent.timestamp) {
-            gdprConsentDictionary[kMPConsentStateGDPRTimestamp] = @(gdprConsent.timestamp.timeIntervalSince1970 * 1000);
+            gdprConsentDictionary[kMPConsentStateTimestamp] = @(gdprConsent.timestamp.timeIntervalSince1970 * 1000);
         }
         
         if (gdprConsent.location) {
-            gdprConsentDictionary[kMPConsentStateGDPRLocation] = gdprConsent.location;
+            gdprConsentDictionary[kMPConsentStateLocation] = gdprConsent.location;
         }
         
         if (gdprConsent.hardwareId) {
-            gdprConsentDictionary[kMPConsentStateGDPRHardwareId] = gdprConsent.hardwareId;
+            gdprConsentDictionary[kMPConsentStateHardwareId] = gdprConsent.hardwareId;
         }
         
         gdprDictionary[purpose] = [gdprConsentDictionary copy];
@@ -50,6 +52,40 @@
     if (gdprDictionary.count) {
         dictionary[kMPConsentStateGDPR] = gdprDictionary;
     }
+    
+    NSMutableDictionary *ccpaDictionary = [NSMutableDictionary dictionary];
+    NSMutableDictionary *ccpaConsentDictionary = [NSMutableDictionary dictionary];
+    if (ccpaState) {
+        if (ccpaState.consented) {
+            ccpaConsentDictionary[kMPConsentStateConsented] = @YES;
+        } else {
+            ccpaConsentDictionary[kMPConsentStateConsented] = @NO;
+        }
+        
+        if (ccpaState.document) {
+            ccpaConsentDictionary[kMPConsentStateDocument] = ccpaState.document;
+        }
+        
+        if (ccpaState.timestamp) {
+            ccpaConsentDictionary[kMPConsentStateTimestamp] = @(ccpaState.timestamp.timeIntervalSince1970 * 1000);
+        }
+        
+        if (ccpaState.location) {
+            ccpaConsentDictionary[kMPConsentStateLocation] = ccpaState.location;
+        }
+        
+        if (ccpaState.hardwareId) {
+            ccpaConsentDictionary[kMPConsentStateHardwareId] = ccpaState.hardwareId;
+        }
+    }
+    if (ccpaConsentDictionary.count) {
+        ccpaDictionary[kMPConsentStateCCPAPurpose] = ccpaConsentDictionary;
+    }
+    
+    if (ccpaDictionary.count) {
+        dictionary[kMPConsentStateCCPA] = ccpaDictionary;
+    }
+    
     return dictionary;
 }
 
@@ -59,9 +95,10 @@
     }
     
     NSMutableDictionary *dictionary = [NSMutableDictionary dictionary];
+    MPCCPAConsent *ccpaState = [state ccpaConsentState];
     
     NSDictionary<NSString *, MPGDPRConsent *> *gdprStateDictionary = [state gdprConsentState];
-    if (!gdprStateDictionary || gdprStateDictionary.count == 0) {
+    if ((!gdprStateDictionary || gdprStateDictionary.count == 0) && ccpaState == nil) {
         return nil;
     }
     
@@ -71,25 +108,25 @@
         NSMutableDictionary *gdprConsentDictionary = [NSMutableDictionary dictionary];
         
         if (gdprConsent.consented) {
-            gdprConsentDictionary[kMPConsentStateGDPRConsentedKey] = @YES;
+            gdprConsentDictionary[kMPConsentStateConsentedKey] = @YES;
         } else {
-            gdprConsentDictionary[kMPConsentStateGDPRConsentedKey] = @NO;
+            gdprConsentDictionary[kMPConsentStateConsentedKey] = @NO;
         }
         
         if (gdprConsent.document) {
-            gdprConsentDictionary[kMPConsentStateGDPRDocumentKey] = gdprConsent.document;
+            gdprConsentDictionary[kMPConsentStateDocumentKey] = gdprConsent.document;
         }
         
         if (gdprConsent.timestamp) {
-            gdprConsentDictionary[kMPConsentStateGDPRTimestampKey] = @(gdprConsent.timestamp.timeIntervalSince1970 * 1000);
+            gdprConsentDictionary[kMPConsentStateTimestampKey] = @(gdprConsent.timestamp.timeIntervalSince1970 * 1000);
         }
         
         if (gdprConsent.location) {
-            gdprConsentDictionary[kMPConsentStateGDPRLocationKey] = gdprConsent.location;
+            gdprConsentDictionary[kMPConsentStateLocationKey] = gdprConsent.location;
         }
         
         if (gdprConsent.hardwareId) {
-            gdprConsentDictionary[kMPConsentStateGDPRHardwareIdKey] = gdprConsent.hardwareId;
+            gdprConsentDictionary[kMPConsentStateHardwareIdKey] = gdprConsent.hardwareId;
         }
         
         gdprDictionary[purpose] = [gdprConsentDictionary copy];
@@ -97,6 +134,39 @@
     
     if (gdprDictionary.count) {
         dictionary[kMPConsentStateGDPRKey] = gdprDictionary;
+    }
+    
+    NSMutableDictionary *ccpaDictionary = [NSMutableDictionary dictionary];
+    NSMutableDictionary *ccpaConsentDictionary = [NSMutableDictionary dictionary];
+    if (ccpaState) {
+        if (ccpaState.consented) {
+            ccpaConsentDictionary[kMPConsentStateConsentedKey] = @YES;
+        } else {
+            ccpaConsentDictionary[kMPConsentStateConsentedKey] = @NO;
+        }
+        
+        if (ccpaState.document) {
+            ccpaConsentDictionary[kMPConsentStateDocumentKey] = ccpaState.document;
+        }
+        
+        if (ccpaState.timestamp) {
+            ccpaConsentDictionary[kMPConsentStateTimestampKey] = @(ccpaState.timestamp.timeIntervalSince1970 * 1000);
+        }
+        
+        if (ccpaState.location) {
+            ccpaConsentDictionary[kMPConsentStateLocationKey] = ccpaState.location;
+        }
+        
+        if (ccpaState.hardwareId) {
+            ccpaConsentDictionary[kMPConsentStateHardwareIdKey] = ccpaState.hardwareId;
+        }
+    }
+    if (ccpaConsentDictionary.count) {
+        ccpaDictionary[kMPConsentStateCCPAPurpose] = ccpaConsentDictionary;
+    }
+    
+    if (ccpaDictionary.count) {
+        dictionary[kMPConsentStateCCPA] = ccpaDictionary;
     }
     
     if (dictionary.count == 0) {
@@ -120,40 +190,73 @@
     }
     
     NSDictionary *gdprDictionary = dictionary[kMPConsentStateGDPRKey];
-    if (!gdprDictionary) {
+    NSDictionary *ccpaDictionary = dictionary[kMPConsentStateCCPA];
+    if (!gdprDictionary && !ccpaDictionary) {
         return nil;
     }
     
     state = [[MPConsentState alloc] init];
     
-    for (NSString *purpose in gdprDictionary) {
-        NSDictionary *gdprConsentDictionary = gdprDictionary[purpose];
-        MPGDPRConsent *gdprState = [[MPGDPRConsent alloc] init];
+    if (gdprDictionary) {
+        for (NSString *purpose in gdprDictionary) {
+            NSDictionary *gdprConsentDictionary = gdprDictionary[purpose];
+            MPGDPRConsent *gdprState = [[MPGDPRConsent alloc] init];
+            
+            if ([gdprConsentDictionary[kMPConsentStateConsentedKey] isEqual:@YES]) {
+                gdprState.consented = YES;
+            } else {
+                gdprState.consented = NO;
+            }
+            
+            if (gdprConsentDictionary[kMPConsentStateDocumentKey]) {
+                gdprState.document = gdprConsentDictionary[kMPConsentStateDocumentKey];
+            }
+            
+            if (gdprConsentDictionary[kMPConsentStateTimestampKey]) {
+                NSNumber *timestamp = gdprConsentDictionary[kMPConsentStateTimestampKey];
+                gdprState.timestamp = [NSDate dateWithTimeIntervalSince1970:(timestamp.doubleValue/1000)];
+            }
+            
+            if (gdprConsentDictionary[kMPConsentStateLocationKey]) {
+                gdprState.location = gdprConsentDictionary[kMPConsentStateLocationKey];
+            }
+            
+            if (gdprConsentDictionary[kMPConsentStateHardwareIdKey]) {
+                gdprState.hardwareId = gdprConsentDictionary[kMPConsentStateHardwareIdKey];
+            }
+            
+            [state addGDPRConsentState:gdprState purpose:purpose];
+        }
+    }
+    
+    if (ccpaDictionary && ccpaDictionary[kMPConsentStateCCPAPurpose]) {
+        NSDictionary *ccpaConsentDictionary = ccpaDictionary[kMPConsentStateCCPAPurpose];
+        MPCCPAConsent *ccpaState = [[MPCCPAConsent alloc] init];
         
-        if ([gdprConsentDictionary[kMPConsentStateGDPRConsentedKey] isEqual:@YES]) {
-            gdprState.consented = YES;
+        if ([ccpaConsentDictionary[kMPConsentStateConsentedKey] isEqual:@YES]) {
+            ccpaState.consented = YES;
         } else {
-            gdprState.consented = NO;
+            ccpaState.consented = NO;
         }
         
-        if (gdprConsentDictionary[kMPConsentStateGDPRDocumentKey]) {
-            gdprState.document = gdprConsentDictionary[kMPConsentStateGDPRDocumentKey];
+        if (ccpaConsentDictionary[kMPConsentStateDocumentKey]) {
+            ccpaState.document = ccpaConsentDictionary[kMPConsentStateDocumentKey];
         }
         
-        if (gdprConsentDictionary[kMPConsentStateGDPRTimestampKey]) {
-            NSNumber *timestamp = gdprConsentDictionary[kMPConsentStateGDPRTimestampKey];
-            gdprState.timestamp = [NSDate dateWithTimeIntervalSince1970:(timestamp.doubleValue/1000)];
+        if (ccpaConsentDictionary[kMPConsentStateTimestampKey]) {
+            NSNumber *timestamp = ccpaConsentDictionary[kMPConsentStateTimestampKey];
+            ccpaState.timestamp = [NSDate dateWithTimeIntervalSince1970:(timestamp.doubleValue/1000)];
         }
         
-        if (gdprConsentDictionary[kMPConsentStateGDPRLocationKey]) {
-            gdprState.location = gdprConsentDictionary[kMPConsentStateGDPRLocationKey];
+        if (ccpaConsentDictionary[kMPConsentStateLocationKey]) {
+            ccpaState.location = ccpaConsentDictionary[kMPConsentStateLocationKey];
         }
         
-        if (gdprConsentDictionary[kMPConsentStateGDPRHardwareIdKey]) {
-            gdprState.hardwareId = gdprConsentDictionary[kMPConsentStateGDPRHardwareIdKey];
+        if (ccpaConsentDictionary[kMPConsentStateHardwareIdKey]) {
+            ccpaState.hardwareId = ccpaConsentDictionary[kMPConsentStateHardwareIdKey];
         }
         
-        [state addGDPRConsentState:gdprState purpose:purpose];
+        [state setCCPAConsentState:ccpaState];
     }
     
     return state;

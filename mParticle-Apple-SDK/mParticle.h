@@ -22,6 +22,7 @@
 #import "MPKitAPI.h"
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
+#import "MPCCPAConsent.h"
 #import "MPListenerController.h"
 #import <UIKit/UIKit.h>
 

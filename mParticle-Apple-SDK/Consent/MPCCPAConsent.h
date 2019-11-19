@@ -3,12 +3,14 @@
 NS_ASSUME_NONNULL_BEGIN
 
 /**
- * Record of consent under the GDPR.
+ * Record of consent under the CCPA.
  */
-@interface MPGDPRConsent : NSObject <NSCopying>
+@interface MPCCPAConsent : NSObject <NSCopying>
 
 /**
 * Whether the user consented to data collection
+ 
+ This should be set to false if the user has opted out of data sharing under the CCPA.
 */
 @property (nonatomic, assign) BOOL consented;
 /**

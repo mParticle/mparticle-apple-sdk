@@ -68,20 +68,24 @@ NSString *const kMPConsentState = @"con";
 // GDPR Consent
 NSString *const kMPConsentStateGDPR = @"gdpr";
 
-NSString *const kMPConsentStateGDPRConsented = @"c";
-NSString *const kMPConsentStateGDPRDocument = @"d";
-NSString *const kMPConsentStateGDPRTimestamp = @"ts";
-NSString *const kMPConsentStateGDPRLocation = @"l";
-NSString *const kMPConsentStateGDPRHardwareId = @"h";
+// CCPA Consent
+NSString *const kMPConsentStateCCPA = @"ccpa";
+NSString *const kMPConsentStateCCPAPurpose = @"data-sale-opt-out";
+
+NSString *const kMPConsentStateConsented = @"c";
+NSString *const kMPConsentStateDocument = @"d";
+NSString *const kMPConsentStateTimestamp = @"ts";
+NSString *const kMPConsentStateLocation = @"l";
+NSString *const kMPConsentStateHardwareId = @"h";
 
 // Consent serialization
 NSString *const kMPConsentStateKey = @"consent_state";
 NSString *const kMPConsentStateGDPRKey = @"gdpr";
-NSString *const kMPConsentStateGDPRConsentedKey = @"consented";
-NSString *const kMPConsentStateGDPRDocumentKey = @"document";
-NSString *const kMPConsentStateGDPRTimestampKey = @"timestamp";
-NSString *const kMPConsentStateGDPRLocationKey = @"location";
-NSString *const kMPConsentStateGDPRHardwareIdKey = @"hardware_id";
+NSString *const kMPConsentStateConsentedKey = @"consented";
+NSString *const kMPConsentStateDocumentKey = @"document";
+NSString *const kMPConsentStateTimestampKey = @"timestamp";
+NSString *const kMPConsentStateLocationKey = @"location";
+NSString *const kMPConsentStateHardwareIdKey = @"hardware_id";
 
 // Consent filtering
 NSString *const kMPConsentKitFilter = @"crvf";
@@ -384,6 +388,7 @@ const NSInteger MAX_USER_ATTR_LIST_ENTRY_LENGTH = 512;
 
 // Consent limits
 const NSInteger MAX_GDPR_CONSENT_PURPOSES = 100;
+const NSInteger MAX_CCPA_CONSENT_PURPOSES = 100;
 
 // Size limits
 const NSInteger MAX_BYTES_PER_EVENT = 100*1024;
