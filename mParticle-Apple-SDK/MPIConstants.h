@@ -397,6 +397,9 @@ extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS;
 extern const NSTimeInterval SEARCH_ADS_ATTRIBUTION_DELAY_BEFORE_RETRY;
 extern const NSInteger SEARCH_ADS_ATTRIBUTION_MAX_RETRIES;
 
+// Network request timeout
+extern const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS;
+
 // Attributes limits
 extern const NSInteger LIMIT_ATTR_COUNT;
 extern const NSInteger LIMIT_ATTR_KEY_LENGTH;

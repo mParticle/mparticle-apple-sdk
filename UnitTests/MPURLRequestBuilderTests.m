@@ -389,7 +389,7 @@
     [[MParticle sharedInstance].kitContainer configureKits:nil];
     [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
     
-    XCTAssertEqual([MPURLRequestBuilder requestTimeout], 30, @"Should have been equal.");
+    XCTAssertEqual([MPURLRequestBuilder requestTimeout], 10, @"Should have been equal.");
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     

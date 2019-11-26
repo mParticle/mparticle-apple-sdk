@@ -11,7 +11,6 @@
 #import "MParticleWebView.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
-static NSTimeInterval requestTimeout = 30.0;
 
 @interface MParticle ()
 
@@ -108,7 +107,7 @@ static NSTimeInterval requestTimeout = 30.0;
 }
 
 + (NSTimeInterval)requestTimeout {
-    return requestTimeout;
+    return NETWORK_REQUEST_MAX_WAIT_SECONDS;
 }
 
 #pragma mark Public instance methods
@@ -137,7 +136,7 @@ static NSTimeInterval requestTimeout = 30.0;
 - (NSMutableURLRequest *)build {
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:_url];
     [urlRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
-    [urlRequest setTimeoutInterval:requestTimeout];
+    [urlRequest setTimeoutInterval:[MPURLRequestBuilder requestTimeout]];
     [urlRequest setHTTPMethod:_httpMethod];
 
     BOOL isIdentityRequest = [urlRequest.URL.host rangeOfString:@"identity"].location != NSNotFound || [urlRequest.URL.host isEqualToString:[MParticle sharedInstance].networkOptions.identityHost] || [urlRequest.URL.path rangeOfString:@"/identity/"].location != NSNotFound;

@@ -69,7 +69,7 @@ static NSArray *mpStoredCertificates = nil;
     sessionConfiguration.timeoutIntervalForResource = 30;
     _urlSession = [NSURLSession sessionWithConfiguration:sessionConfiguration
                                                 delegate:self
-                                           delegateQueue:[NSOperationQueue mainQueue]];
+                                           delegateQueue:nil];
     
     _urlSession.sessionDescription = [[NSUUID UUID] UUIDString];
     
@@ -219,11 +219,17 @@ static NSArray *mpStoredCertificates = nil;
         
         self.dataTask = [self.urlSession dataTaskWithRequest:urlRequest];
         [_dataTask resume];
-        dispatch_semaphore_wait(requestSemaphore, DISPATCH_TIME_FOREVER);
-        response.data = completionData;
-        response.error = completionError;
-        response.downloadTime = completionDownloadTime;
-        response.httpResponse = completionHttpResponse;
+        long exitCode = dispatch_semaphore_wait(requestSemaphore, dispatch_time(DISPATCH_TIME_NOW, (NETWORK_REQUEST_MAX_WAIT_SECONDS + 1) * NSEC_PER_SEC));
+        if (exitCode == 0) {
+            response.data = completionData;
+            response.error = completionError;
+            response.downloadTime = completionDownloadTime;
+            response.httpResponse = completionHttpResponse;
+        } else {
+            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            [_urlSession invalidateAndCancel];
+        }
+        
     } else {
         response.error = [NSError errorWithDomain:@"MPConnector" code:1 userInfo:nil];
     }
@@ -254,11 +260,16 @@ static NSArray *mpStoredCertificates = nil;
         };
         self.dataTask = [self.urlSession uploadTaskWithRequest:urlRequest fromData:serializedParams];
         [_dataTask resume];
-        dispatch_semaphore_wait(requestSemaphore, DISPATCH_TIME_FOREVER);
-        response.data = completionData;
-        response.error = completionError;
-        response.downloadTime = completionDownloadTime;
-        response.httpResponse = completionHttpResponse;
+        long exitCode = dispatch_semaphore_wait(requestSemaphore, dispatch_time(DISPATCH_TIME_NOW, (NETWORK_REQUEST_MAX_WAIT_SECONDS + 1) * NSEC_PER_SEC));
+        if (exitCode == 0) {
+            response.data = completionData;
+            response.error = completionError;
+            response.downloadTime = completionDownloadTime;
+            response.httpResponse = completionHttpResponse;
+        } else {
+            response.error = [NSError errorWithDomain:@"com.mparticle" code:0 userInfo:@{@"mParticle Error":@"Semaphore wait timed out"}];
+            [_urlSession invalidateAndCancel];
+        }
     } else {
         response.error = [NSError errorWithDomain:@"MPConnector" code:1 userInfo:nil];
     }
