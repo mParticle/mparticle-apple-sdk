@@ -1490,17 +1490,6 @@ static BOOL skipNextUpload = NO;
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
     
-    // Forwarding calls to kits
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logBaseEvent:)
-                                                          event:event
-                                                     parameters:nil
-                                                    messageType:event.messageType
-                                                       userInfo:nil
-         ];
-    });
-    
-    
     if ([event isKindOfClass:[MPEvent class]] || [event isKindOfClass:[MPCommerceEvent class]]) {
         NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
             

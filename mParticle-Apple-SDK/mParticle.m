@@ -838,6 +838,15 @@ NSString *const kMPStateKey = @"state";
             [self.backendController logBaseEvent:event
                                completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {
                                }];
+            // Forwarding calls to kits
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logBaseEvent:)
+                                                                  event:event
+                                                             parameters:nil
+                                                            messageType:event.messageType
+                                                               userInfo:nil
+                 ];
+            });
         });
     }
 }

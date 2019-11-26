@@ -2093,7 +2093,10 @@
     OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
     MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forEvent:event selector:@selector(logEvent:)];
     
-    [(id <MPKitProtocol>)[kitWrapperMock expect] logEvent:OCMOCK_ANY];
+    [(id <MPKitProtocol>)[kitWrapperMock expect] logBaseEvent:OCMOCK_ANY];
+    // MPKitAppsFlyerTest supports logBaseEvent: so only it should be called on the kit
+    [(id <MPKitProtocol>)[kitWrapperMock reject] logEvent:OCMOCK_ANY];
+
 
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
     

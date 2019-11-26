@@ -2066,6 +2066,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             MPKitExecStatus *execStatus = nil;
             
             id<MPKitProtocol> kit = kitRegister.wrapperInstance;
+            SEL logBaseEventSelector = @selector(logBaseEvent:);
             SEL logCommerceEventSelector = @selector(logCommerceEvent:);
             SEL logEventSelector = @selector(logEvent:);
             
@@ -2073,7 +2074,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
             @try {
                 if (kitFilter.forwardCommerceEvent) {
-                    if ([kit respondsToSelector:logCommerceEventSelector]) {
+                    if ([kit respondsToSelector:logBaseEventSelector]) {
+                        execStatus = [kit logBaseEvent:kitFilter.forwardCommerceEvent];
+                    } else if ([kit respondsToSelector:logCommerceEventSelector]) {
                         execStatus = [kit logCommerceEvent:kitFilter.forwardCommerceEvent];
                     } else if ([kit respondsToSelector:logEventSelector]) {
                         NSArray *expandedInstructions = [kitFilter.forwardCommerceEvent expandedInstructions];
@@ -2146,13 +2149,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
-        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
-            if (event) {
-                [self filter:kitRegister forEvent:event selector:selector];
-            } else {
-                MPKitFilter *kitFilter = [self filter:kitRegister forSelector:selector];
-                [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:parameters messageType:messageType userInfo:userInfo];
-            }
+        if (event && [event isMemberOfClass:[MPEvent class]]) {
+            [self filter:kitRegister forEvent:event selector:selector];
+        } else {
+            MPKitFilter *kitFilter = [self filter:kitRegister forSelector:selector];
+            [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:parameters messageType:messageType userInfo:userInfo];
         }
     }
 }
@@ -2178,17 +2179,17 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+            if ([kitRegister.wrapperInstance respondsToSelector:@selector(logBaseEvent:)] && ((selector == @selector(logEvent:)) || (selector == @selector(logBaseEvent:)))) {
+                if (!kitFilter.forwardEvent) {
+                    return;
+                }
+                execStatus = [kitRegister.wrapperInstance logBaseEvent:kitFilter.forwardEvent];
+            } else if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
                 if (selector == @selector(logEvent:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
                         return;
                     }
                     execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
-                } else if (selector == @selector(logBaseEvent:)) {
-                    if (!kitFilter.forwardEvent) {
-                        return;
-                    }
-                    execStatus = [kitRegister.wrapperInstance logBaseEvent:kitFilter.forwardEvent];
                 } else if (selector == @selector(logScreen:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
                         return;
