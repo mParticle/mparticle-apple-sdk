@@ -1,5 +1,19 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.12.7
+
+### Core
+
+This release addresses an issue where the SDK might crash when logging commerce events, if certain recently-updated kits that support commerce are included.
+
+In addition, a change has been included that should improve SDK responsiveness and prevent the SDK
+from inadvertently showing up in unrelated stack traces due to unnecessarily waiting to run on
+the main queue when processing network responses.
+
+### Kits
+
+- Adobe - Update to prevent multiple defined symbol linker error
+
 ## 7.12.6
 
 ### Core
