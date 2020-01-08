@@ -36,6 +36,8 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
 
@@ -226,6 +228,9 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
         }
     }
     
+    _dataPlanId = [MParticle sharedInstance].dataPlanId;
+    _dataPlanVersion = [MParticle sharedInstance].dataPlanVersion;
+    
     NSString *presentedViewControllerDescription = nil;
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
@@ -384,7 +389,9 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
                                     uploadStatus:MPUploadStatusBatch
                                             UUID:messageDictionary[kMPMessageIdKey]
                                        timestamp:_timestamp
-                                          userId:userId];
+                                          userId:userId
+                                      dataPlanId:_dataPlanId
+                                 dataPlanVersion:_dataPlanVersion];
     
     return message;
 }

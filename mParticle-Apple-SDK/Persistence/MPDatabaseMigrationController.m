@@ -205,11 +205,13 @@
         selectStatement = "SELECT message_type, session_id, cfuuid, message_time, message_data, upload_status FROM messages ORDER BY _id";
     } else if (oldVersionValue < 26) {
         selectStatement = "SELECT message_type, session_id, uuid, timestamp, message_data, upload_status FROM messages ORDER BY _id";
-    } else {
+    } else if (oldVersionValue < 29) {
         selectStatement = "SELECT message_type, session_id, uuid, timestamp, message_data, upload_status, mpid FROM messages ORDER BY _id";
+    } else {
+        selectStatement = "SELECT message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid FROM messages ORDER BY _id";
     }
 
-    insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, mpid) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO messages (message_type, session_id, uuid, timestamp, message_data, upload_status, data_plan_id, data_plan_version, mpid) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -246,7 +248,25 @@
         
         sqlite3_bind_int(insertStatementHandle, 6, sqlite3_column_int(selectStatementHandle, 5)); // upload_status
         
-        sqlite3_bind_int64(insertStatementHandle, 7, [mpId longLongValue]); // mpid
+        if (oldVersionValue < 29) {
+            sqlite3_bind_null(insertStatementHandle, 7); // data_plan_id
+            sqlite3_bind_null(insertStatementHandle, 8);  // data_plan_version
+        } else {
+            const char *dataPlanId = (const char *)sqlite3_column_text(selectStatementHandle, 7);
+            if (dataPlanId != nil && (dataPlanId[0] != '\0')) {
+                sqlite3_bind_text(insertStatementHandle, 7, dataPlanId, -1, SQLITE_TRANSIENT); // data_plan_id
+            } else {
+                sqlite3_bind_null(insertStatementHandle, 7); // data_plan_id
+            }
+            int64_t dataPlanVersion = sqlite3_column_int64(selectStatementHandle, 8);
+            if (dataPlanVersion != 0) {
+                sqlite3_bind_int64(insertStatementHandle, 8, dataPlanVersion); // data_plan_version
+            } else {
+                sqlite3_bind_null(insertStatementHandle, 8); // data_plan_version
+            }
+        }
+        
+        sqlite3_bind_int64(insertStatementHandle, 9, [mpId longLongValue]); // mpid
         
         sqlite3_step(insertStatementHandle);
         sqlite3_reset(insertStatementHandle);
@@ -267,11 +287,13 @@
         selectStatement = "SELECT cfuuid, message_data, message_time, session_id FROM uploads ORDER BY _id";
     } else if (oldVersionValue < 28) {
         selectStatement = "SELECT uuid, message_data, timestamp, session_id FROM uploads ORDER BY _id";
-    } else {
+    } else if (oldVersionValue < 29) {
         selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type FROM uploads ORDER BY _id";
-    }
+    } else {
+           selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
+       }
     
-    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type) VALUES (?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -302,6 +324,24 @@
             sqlite3_bind_int64(insertStatementHandle, 5, MPUploadTypeMessage); // upload_type
         } else {
             sqlite3_bind_int64(insertStatementHandle, 5, sqlite3_column_int64(selectStatementHandle, 4)); // upload_type
+        }
+        
+        if (oldVersionValue < 29) {
+            sqlite3_bind_null(insertStatementHandle, 6); // data_plan_id
+            sqlite3_bind_null(insertStatementHandle, 7);  // data_plan_version
+        } else {
+            const char *dataPlanId = (const char *)sqlite3_column_text(selectStatementHandle, 6);
+            if (dataPlanId != nil && (dataPlanId[0] != '\0')) {
+                sqlite3_bind_text(insertStatementHandle, 6, dataPlanId, -1, SQLITE_TRANSIENT); // data_plan_id
+            } else {
+                sqlite3_bind_null(insertStatementHandle, 6); // data_plan_id
+            }
+            int64_t dataPlanVersion = sqlite3_column_int64(selectStatementHandle, 7);
+            if (dataPlanVersion != 0) {
+                sqlite3_bind_int64(insertStatementHandle, 7, dataPlanVersion); // data_plan_version
+            } else {
+                sqlite3_bind_null(insertStatementHandle, 7); // data_plan_version
+            }
         }
         
         sqlite3_step(insertStatementHandle);

@@ -13,7 +13,7 @@
 
 @implementation MPMessage
 
-- (instancetype)initWithSessionId:(NSNumber *)sessionId messageId:(int64_t)messageId UUID:(NSString *)uuid messageType:(NSString *)messageType messageData:(NSData *)messageData timestamp:(NSTimeInterval)timestamp uploadStatus:(MPUploadStatus)uploadStatus userId:(NSNumber *)userId {
+- (instancetype)initWithSessionId:(NSNumber *)sessionId messageId:(int64_t)messageId UUID:(NSString *)uuid messageType:(NSString *)messageType messageData:(NSData *)messageData timestamp:(NSTimeInterval)timestamp uploadStatus:(MPUploadStatus)uploadStatus userId:(NSNumber *)userId dataPlanId:(NSString *)dataPlanId dataPlanVersion:(NSNumber *)dataPlanVersion {
     self = [super init];
     if (self) {
         _sessionId = sessionId;
@@ -24,12 +24,14 @@
         _timestamp = timestamp;
         _uploadStatus = uploadStatus;
         _userId = userId;
+        _dataPlanId = dataPlanId;
+        _dataPlanVersion = dataPlanVersion;
     }
     
     return self;
 }
 
-- (instancetype)initWithSession:(MPSession *)session messageType:(NSString *)messageType messageInfo:(NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(NSNumber *)userId {
+- (instancetype)initWithSession:(MPSession *)session messageType:(NSString *)messageType messageInfo:(NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(NSNumber *)userId  dataPlanId:(NSString *)dataPlanId dataPlanVersion:(NSNumber *)dataPlanVersion {
     NSNumber *sessionId = nil;
     
     if (session) {
@@ -43,13 +45,15 @@
                        messageData:[NSJSONSerialization dataWithJSONObject:messageInfo options:0 error:nil]
                          timestamp:timestamp
                       uploadStatus:uploadStatus
-                            userId:userId];
+                            userId:userId
+                        dataPlanId:dataPlanId
+                   dataPlanVersion:dataPlanVersion];
 }
 
 - (NSString *)description {
     NSString *serializedString = [self serializedString];
     
-    return [NSString stringWithFormat:@"Message\n Id: %lld\n UUID: %@\n Session: %@\n Type: %@\n timestamp: %.0f\n Content: %@\n", self.messageId, self.uuid, self.sessionId, self.messageType, self.timestamp, serializedString];
+    return [NSString stringWithFormat:@"Message\n Id: %lld\n UUID: %@\n Session: %@\n Type: %@\n timestamp: %.0f\n Data Plan: %@ %@\n Content: %@\n", self.messageId, self.uuid, self.sessionId, self.messageType, self.timestamp, self.dataPlanId, self.dataPlanVersion, serializedString];
 }
 
 - (BOOL)isEqual:(MPMessage *)object {
@@ -58,11 +62,16 @@
     }
     
     BOOL sessionIdsEqual = (_sessionId == nil && object.sessionId == nil) || [_sessionId isEqual:object.sessionId];
+    BOOL dataPlanIdEqual = (_dataPlanId == nil && object.dataPlanId == nil) || [_dataPlanId isEqual:object.dataPlanId];
+    BOOL dataPlanVersionEqual = (_dataPlanVersion == nil && object.dataPlanVersion == nil) || [_dataPlanVersion isEqual:object.dataPlanVersion];
+    
     BOOL isEqual = sessionIdsEqual &&
-                   _messageId == object.messageId &&
-                   _timestamp == object.timestamp &&
-                   [_messageType isEqualToString:object.messageType] &&
-                   [_messageData isEqualToData:object.messageData];
+    _messageId == object.messageId &&
+    _timestamp == object.timestamp &&
+    [_messageType isEqualToString:object.messageType] &&
+    [_messageData isEqualToData:object.messageData] &&
+    dataPlanIdEqual &&
+    dataPlanVersionEqual;
     
     return isEqual;
 }
@@ -76,7 +85,9 @@
                                                      messageData:[_messageData copy]
                                                        timestamp:_timestamp
                                                     uploadStatus:_uploadStatus
-                                                          userId:_userId];
+                                                          userId:_userId
+                                                      dataPlanId:[_dataPlanId copy]
+                                                 dataPlanVersion:[_dataPlanVersion copy]];
     
     return copyObject;
 }
@@ -91,6 +102,8 @@
     [coder encodeDouble:self.timestamp forKey:@"timestamp"];
     [coder encodeInteger:self.uploadStatus forKey:@"uploadStatus"];
     [coder encodeInt64:_userId.longLongValue forKey:@"mpid"];
+    [coder encodeObject:self.dataPlanId forKey:@"dataPlanId"];
+    [coder encodeObject:self.dataPlanVersion forKey:@"dataPlanVersion"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -101,7 +114,9 @@
                        messageData:[coder decodeObjectOfClass:[NSData class] forKey:@"messageData"]
                          timestamp:[coder decodeDoubleForKey:@"timestamp"]
                       uploadStatus:[coder decodeIntegerForKey:@"uploadStatus"]
-                            userId:@([coder decodeInt64ForKey:@"mpid"])];
+                            userId:@([coder decodeInt64ForKey:@"mpid"])
+                        dataPlanId:[coder decodeObjectOfClass:[NSString class] forKey:@"dataPlanId"]
+                   dataPlanVersion:[coder decodeObjectOfClass:[NSNumber class] forKey:@"dataPlanVersion"]];
     
     return self;
 }

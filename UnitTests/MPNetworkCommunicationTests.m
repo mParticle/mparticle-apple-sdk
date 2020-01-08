@@ -83,7 +83,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 - (void)testUploadsArrayZipFail {
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZip class]);
     OCMStub([mockZip compressedDataFromData:OCMOCK_ANY]).andReturn(nil);
@@ -123,7 +123,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
     
-    MPUpload *messageUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *messageUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     
     BOOL actualShouldStop = [networkCommunication performMessageUpload:messageUpload];
     XCTAssertEqual(shouldStop, actualShouldStop, @"Return code assertion: %d", returnCode);
@@ -161,7 +161,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
     
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     BOOL actualShouldStop = [networkCommunication performAliasUpload:aliasUpload];
@@ -191,8 +191,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MParticle *instance = [MParticle sharedInstance];
     instance.persistenceController = mockPersistenceController;
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     NSArray *uploads = @[eventUpload, aliasUpload];
@@ -223,8 +223,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     [[mockPersistenceController expect] deleteUpload:eventUpload];
@@ -261,8 +261,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{}];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     [[mockPersistenceController expect] deleteUpload:eventUpload];

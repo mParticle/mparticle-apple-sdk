@@ -44,6 +44,8 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
 
@@ -491,7 +493,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                                                               UUID:uuid
                                                         uploadData:uploadData
                                                          timestamp:[NSDate date].timeIntervalSince1970
-                                                        uploadType:MPUploadTypeAlias];
+                                                        uploadType:MPUploadTypeAlias
+                                                        dataPlanId:[MParticle sharedInstance].dataPlanId
+                                                   dataPlanVersion:[MParticle sharedInstance].dataPlanVersion];
             
             [MParticle.sharedInstance.persistenceController saveUpload:upload];
             [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:nil];

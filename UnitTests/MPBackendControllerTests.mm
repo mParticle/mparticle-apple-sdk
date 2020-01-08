@@ -42,6 +42,8 @@
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
 
@@ -219,7 +221,9 @@
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
         MPMessage *message = [messages lastObject];
         
         XCTAssertEqualObjects(message.messageType, @"ss", @"Message type is not session start.");
@@ -244,7 +248,9 @@
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
         BOOL containsSessionStart = NO;
         
         for (MPMessage *message in messages) {
@@ -265,7 +271,9 @@
         
         messagesDictionary = [persistence fetchMessagesForUploading];
         sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
         NSUInteger endSessionCount = 0;
         for (MPMessage *message in messages) {
             if ([message.messageType isEqualToString:@"se"]) {
@@ -303,7 +311,10 @@
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        
         BOOL containsSessionStart = NO;
         
         for (MPMessage *message in messages) {
@@ -337,7 +348,9 @@
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
         BOOL containsSessionStart = NO;
         
         for (MPMessage *message in messages) {
@@ -485,6 +498,9 @@
 }
 
 - (void)testBatchCycle {
+    [MParticle sharedInstance].dataPlanId = @"test";
+    [MParticle sharedInstance].dataPlanVersion = @(1);
+
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
@@ -499,7 +515,9 @@
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
     BOOL eventFound = NO;
@@ -512,7 +530,7 @@
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
 
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
@@ -520,9 +538,13 @@
     [uploadBuilder build:^(MPUpload *upload) {
         [persistence saveUpload:upload];
         
-        NSArray *messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
+        NSArray *messageArray =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
         
-        XCTAssertNotNil(messages, @"There are no messages in session.");
+        XCTAssertNotNil(messageArray, @"There are no messages in session.");
         
         NSArray *uploads = [persistence fetchUploads];
         XCTAssertGreaterThan(uploads.count, 0, @"Messages are not being transfered to the Uploads table.");
@@ -551,7 +573,9 @@
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
     Boolean testCommerce = false;
@@ -579,7 +603,9 @@
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
     for (MPMessage *message in messages) {
@@ -589,6 +615,9 @@
 }
 
 - (void)testRampUpload {
+    [MParticle sharedInstance].dataPlanId = @"test";
+    [MParticle sharedInstance].dataPlanVersion = @(1);
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Ramp upload test"];
     dispatch_async(messageQueue, ^{
         MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
@@ -604,8 +633,10 @@
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
         NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-        NSArray *persistedMessages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
-        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
+        NSArray *persistedMessages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
+        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
         XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
         
         if (!uploadBuilder) {
@@ -663,7 +694,9 @@
     
     NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
     XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
     
     for (MPMessage *message in messages) {
@@ -759,8 +792,10 @@
     
     NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-    XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
     
     for (MPMessage *message in messages) {
         if ([message.messageType isEqualToString:@"ast"]) {
@@ -927,7 +962,12 @@
     NSDictionary *userAttributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
     XCTAssertEqualObjects(userAttributes[@"TardisModel"], @"Police Call Box");
     
-    NSArray *messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
     XCTAssertNotNil(messages);
     XCTAssertEqual(messages.count, 1);
     
@@ -941,11 +981,23 @@
     XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
     
     [persistence deleteSession:self.backendController.session];
-    messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
+    
+    messagesDictionary = [persistence fetchMessagesForUploading];
+    sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
     XCTAssertNil(messages);
     
     [self.backendController removeUserAttribute:@"TardisModel" timestamp:[NSDate date] completionHandler:nil];
-    messages = [persistence fetchMessagesInSession:self.backendController.session userId:[MPPersistenceController mpId]];
+    
+    messagesDictionary = [persistence fetchMessagesForUploading];
+    sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
     message = [messages firstObject];
     messageDictionary = [message dictionaryRepresentation];
     XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
@@ -975,7 +1027,12 @@
     XCTAssertEqualObjects(userIdentity[@"i"], @"The Most Interesting Man in the World");
     XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
     
-    __block NSArray *messages = [persistence fetchMessagesInSession:self.session userId:self.session.userId];
+    __block NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    __block NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    __block NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    __block NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    __block NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
     XCTAssertNotNil(messages);
     XCTAssertEqual(messages.count, 1);
     
@@ -995,7 +1052,13 @@
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
         self.session = self.backendController.session;
-        messages = [persistence fetchMessagesInSession:self.session userId:[MPPersistenceController mpId]];
+        
+        messagesDictionary = [persistence fetchMessagesForUploading];
+        sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        
         XCTAssertEqual(messages.count, 1);
     });
     
@@ -1003,7 +1066,12 @@
         userIdentity = [[[weakSelf.backendController userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
         XCTAssertNil(userIdentity);
         
-        messages = [persistence fetchMessagesInSession:weakSelf.session userId:[MPPersistenceController mpId]];
+        messagesDictionary = [persistence fetchMessagesForUploading];
+        sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        
         XCTAssertNotNil(messages);
         XCTAssertEqual(messages.count, 2);
         
@@ -1062,7 +1130,9 @@
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSArray *messages =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:_session.sessionId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
     XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
     
     MPMessage *message = messages.lastObject;

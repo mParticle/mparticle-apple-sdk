@@ -132,7 +132,10 @@
                                                                     sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                                 dataPlanId:@"test"
+                                                            dataPlanVersion:@(1)
+                                      ];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -195,7 +198,12 @@
     messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] messages:@[message] uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL];
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId]
+                                                                messages:@[message]
+                                                          uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                              dataPlanId:@"test"
+                                                         dataPlanVersion:@(1)
+                                      ];
     
     XCTAssertNotNil(uploadBuilder);
     

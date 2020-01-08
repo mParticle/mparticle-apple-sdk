@@ -22,14 +22,25 @@
 @property (nonatomic, strong, readonly, nullable) MPSession *session;
 @property (nonatomic, strong, readonly, nonnull) NSDictionary *messageInfo;
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval timestamp;
+@property (nonatomic, strong, readonly, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, readonly, nullable) NSNumber *dataPlanVersion;
 
 + (NSString *_Nullable)stringForMessageType:(MPMessageType)type;
 + (MPMessageType)messageTypeForString:(NSString *_Nonnull)string;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(nonnull MPSession *)session userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
-- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session;
-- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType session:(nullable MPSession *)session messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType
+                                                session:(nullable MPSession *)session
+                                            messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType
+                                                session:(nonnull MPSession *)session
+                                    userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
++ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType
+                                                session:(nonnull MPSession *)session
+                                     userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType
+                                    session:(nullable MPSession *)session;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType
+                                    session:(nullable MPSession *)session
+                                messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 - (nonnull MPMessageBuilder *)withLaunchInfo:(nonnull NSDictionary *)launchInfo;
 - (nonnull MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;
 - (nonnull MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;

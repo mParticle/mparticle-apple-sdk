@@ -105,6 +105,11 @@ extern NSString * _Nonnull const kMPRemoteNotificationContentIdHistoryKey;
 extern NSString * _Nonnull const kMPRemoteNotificationTimestampHistoryKey;
 extern NSString * _Nonnull const kMPForwardStatsRecord;
 extern NSString * _Nonnull const kMPEventCustomFlags;
+extern NSString * _Nonnull const kMPContextKey;
+extern NSString * _Nonnull const kMPDataPlanKey;
+extern NSString * _Nonnull const kMPDataPlanIdKey;
+extern NSString * _Nonnull const kMPDataPlanVersionKey;
+
 
 // Consent
 extern NSString * _Nonnull const kMPConsentState;

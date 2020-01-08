@@ -233,6 +233,20 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, nullable) MPConsentState *consentState;
 
 /**
+ Data Plan ID.
+ 
+ If set, this informs the SDK of which data plan each event is supposed to conform to.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSString *dataPlanId;
+
+/**
+ Data Plan Version.
+ 
+ If set, this informs the SDK of which version of the data plan each event is supposed to conform to.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSNumber *dataPlanVersion;
+
+/**
  Identify callback.
  
  This will be called when an identify request completes.

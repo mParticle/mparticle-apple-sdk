@@ -79,6 +79,8 @@ NSString *const kMPStateKey = @"state";
 @property (nonatomic, readwrite) MPNetworkOptions *networkOptions;
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong) MParticleWebView *webView;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
 
@@ -498,6 +500,11 @@ NSString *const kMPStateKey = @"state";
     NSAssert((NSNull *)apiKey != [NSNull null] && (NSNull *)secret != [NSNull null], @"mParticle SDK apiKey and secret cannot be null.");
     
     self.options = options;
+    
+    self.dataPlanId = options.dataPlanId;
+    if (self.dataPlanId != nil) {
+        self.dataPlanVersion = options.dataPlanVersion;
+    }
     
     MPInstallationType installationType = options.installType;
     MPEnvironment environment = options.environment;

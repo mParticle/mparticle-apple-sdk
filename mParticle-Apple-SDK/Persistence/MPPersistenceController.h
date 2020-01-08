@@ -53,7 +53,6 @@
 - (nullable NSArray<MPSegment *> *)fetchSegments;
 - (nullable MPMessage *)fetchSessionEndMessageInSession:(nonnull MPSession *)session;
 - (nullable NSMutableArray<MPSession *> *)fetchSessions;
-- (nullable NSArray<MPMessage *> *)fetchMessagesInSession:(nonnull MPSession *)session userId:(nonnull NSNumber *)userId;
 - (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSession:(nonnull MPSession *)session;
 - (nullable NSArray<MPUpload *> *)fetchUploads;
 - (void)moveContentFromMpidZeroToMpid:(nonnull NSNumber *)mpid;

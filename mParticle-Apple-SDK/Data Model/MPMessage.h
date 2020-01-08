@@ -12,6 +12,8 @@
 @property (nonatomic, unsafe_unretained) int64_t messageId;
 @property (nonatomic, strong, nullable) NSNumber *sessionId;
 @property (nonatomic, strong, nonnull) NSNumber *userId;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
 
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId
@@ -21,10 +23,20 @@
                               messageData:(nonnull NSData *)messageData
                                 timestamp:(NSTimeInterval)timestamp
                              uploadStatus:(MPUploadStatus)uploadStatus
-                                   userId:(nonnull NSNumber *)userId;
+                                   userId:(nonnull NSNumber *)userId
+                               dataPlanId:(nullable NSString *)dataPlanId
+                          dataPlanVersion:(nullable NSNumber *)dataPlanVersion;
 
 
 
-- (nonnull instancetype)initWithSession:(nullable MPSession *)session messageType:(nonnull NSString *)messageType messageInfo:(nonnull NSDictionary *)messageInfo uploadStatus:(MPUploadStatus)uploadStatus UUID:(nonnull NSString *)uuid timestamp:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
+- (nonnull instancetype)initWithSession:(nullable MPSession *)session
+                            messageType:(nonnull NSString *)messageType
+                            messageInfo:(nonnull NSDictionary *)messageInfo
+                           uploadStatus:(MPUploadStatus)uploadStatus
+                                   UUID:(nonnull NSString *)uuid
+                              timestamp:(NSTimeInterval)timestamp
+                                 userId:(nonnull NSNumber *)userId
+                             dataPlanId:(nullable NSString *)dataPlanId
+                        dataPlanVersion:(nullable NSNumber *)dataPlanVersion;
 
 @end

@@ -61,6 +61,8 @@ static BOOL appBackgrounded = NO;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MParticleWebView *webView;
+@property (nonatomic, strong, nullable) NSString *dataPlanId;
+@property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
 - (NSNumber *)sessionIDFromUUID:(NSString *)uuid;
@@ -243,6 +245,7 @@ static BOOL appBackgrounded = NO;
         if (MParticle.sharedInstance.automaticSessionTracking) {
             [self beginBackgroundTimer];
         }
+        
     }
 }
 
@@ -679,35 +682,39 @@ static BOOL skipNextUpload = NO;
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
     if (mpidMessages && mpidMessages.count != 0) {
         [mpidMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull mpid, NSMutableDictionary *  _Nonnull sessionMessages, BOOL * _Nonnull stop) {
-            [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
-                //In batches broken up by mpid and then sessionID create the Uploads (2)
-                __strong MPBackendController *strongSelf = weakSelf;
-                NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
-                
-                //Within a session, we also break up based on limits for messages per batch and (approximately) bytes per batch
-                NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
-                
-                for (int i = 0; i < batchMessageArrays.count; i += 1) {
-                    NSArray *limitedMessages = batchMessageArrays[i];
-                    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval];
-                    
-                    if (!uploadBuilder || !strongSelf) {
-                        completionHandlerCopy(YES);
-                        return;
-                    }
-                    
-                    [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
-                    [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
-                    [uploadBuilder build:^(MPUpload *upload) {
-                        //Save the Upload to the Database (3)
-                        [persistence saveUpload:upload];
+            [sessionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull sessionId, NSMutableDictionary *  _Nonnull dataPlanMessages, BOOL * _Nonnull stop) {
+                [dataPlanMessages enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull dataPlanId, NSMutableDictionary *  _Nonnull versionMessages, BOOL * _Nonnull stop) {
+                    [versionMessages enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull dataPlanVersion, NSArray *  _Nonnull messages, BOOL * _Nonnull stop) {
+                        //In batches broken up by mpid and then sessionID create the Uploads (2)
+                        __strong MPBackendController *strongSelf = weakSelf;
+                        NSNumber *nullableSessionID = (sessionId.integerValue == -1) ? nil : sessionId;
+                        
+                        //Within a session, within a data plan ID, within a version, we also break up based on limits for messages per batch and (approximately) bytes per batch
+                        NSArray *batchMessageArrays = [self batchMessageArraysFromMessageArray:messages maxBatchMessages:MAX_EVENTS_PER_BATCH maxBatchBytes:MAX_BYTES_PER_BATCH maxMessageBytes:MAX_BYTES_PER_EVENT];
+                        
+                        for (int i = 0; i < batchMessageArrays.count; i += 1) {
+                            NSArray *limitedMessages = batchMessageArrays[i];
+                            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:strongSelf.sessionTimeout uploadInterval:strongSelf.uploadInterval dataPlanId:dataPlanId dataPlanVersion:dataPlanVersion];
+                            
+                            if (!uploadBuilder || !strongSelf) {
+                                completionHandlerCopy(YES);
+                                return;
+                            }
+                            
+                            [uploadBuilder withUserAttributes:[strongSelf userAttributesForUserId:mpid] deletedUserAttributes:self->deletedUserAttributes];
+                            [uploadBuilder withUserIdentities:[strongSelf userIdentitiesForUserId:mpid]];
+                            [uploadBuilder build:^(MPUpload *upload) {
+                                //Save the Upload to the Database (3)
+                                [persistence saveUpload:upload];
+                            }];
+                        }
+                        
+                        //Delete all messages associated with the batches (4)
+                        [persistence deleteMessages:messages];
+                        
+                        self->deletedUserAttributes = nil;
                     }];
-                }
-                
-                //Delete all messages associated with the batches (4)
-                [persistence deleteMessages:messages];
-                
-                self->deletedUserAttributes = nil;
+                }];
             }];
         }];
     }

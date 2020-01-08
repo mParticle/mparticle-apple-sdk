@@ -4,7 +4,7 @@
 
 @implementation MPUpload
 
-- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary {    
+- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
     NSData *uploadData = [NSJSONSerialization dataWithJSONObject:uploadDictionary options:0 error:nil];
     
     return [self initWithSessionId:sessionId
@@ -12,10 +12,12 @@
                               UUID:uploadDictionary[kMPMessageIdKey]
                         uploadData:uploadData
                          timestamp:[uploadDictionary[kMPTimestampKey] doubleValue]
-                        uploadType:MPUploadTypeMessage];
+                        uploadType:MPUploadTypeMessage
+                        dataPlanId:dataPlanId
+                   dataPlanVersion:dataPlanVersion];
 }
 
-- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadId:(int64_t)uploadId UUID:(NSString *)uuid uploadData:(NSData *)uploadData timestamp:(NSTimeInterval)timestamp uploadType:(MPUploadType)uploadType {
+- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadId:(int64_t)uploadId UUID:(NSString *)uuid uploadData:(NSData *)uploadData timestamp:(NSTimeInterval)timestamp uploadType:(MPUploadType)uploadType dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
     self = [super init];
     if (self) {
         _sessionId = sessionId;
@@ -25,6 +27,8 @@
         _uploadData = uploadData;
         _uploadType = uploadType;
         _containsOptOutMessage = NO;
+        _dataPlanId = dataPlanId;
+        _dataPlanVersion = dataPlanVersion;
     }
     
     return self;
@@ -33,7 +37,7 @@
 - (NSString *)description {
     NSDictionary *dictionaryRepresentation = [self dictionaryRepresentation];
     
-    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp];
+    return [NSString stringWithFormat:@"Upload\n Id: %lld\n UUID: %@\n Content: %@\n timestamp: %.0f\n Data Plan: %@ %@\n", self.uploadId, self.uuid, dictionaryRepresentation, self.timestamp, self.dataPlanId, self.dataPlanVersion];
 }
 
 - (BOOL)isEqual:(MPUpload *)object {
@@ -41,10 +45,14 @@
         return NO;
     }
     BOOL sessionIdsEqual = (_sessionId == nil && object.sessionId == nil) || [_sessionId isEqual:object.sessionId];
+    BOOL dataPlanIdEqual = (_dataPlanId == nil && object.dataPlanId == nil) || [_dataPlanId isEqual:object.dataPlanId];
+    BOOL dataPlanVersionEqual = (_dataPlanVersion == nil && object.dataPlanVersion == nil) || [_dataPlanVersion isEqual:object.dataPlanVersion];
+
     BOOL isEqual = sessionIdsEqual &&
-                   _uploadId == object.uploadId &&
-                   _timestamp == object.timestamp &&
-                   [_uploadData isEqualToData:object.uploadData];
+    _uploadId == object.uploadId &&
+    _timestamp == object.timestamp &&
+    dataPlanIdEqual &&
+    dataPlanVersionEqual;
     
     return isEqual;
 }
@@ -56,7 +64,9 @@
                                                           UUID:[_uuid copy]
                                                     uploadData:[_uploadData copy]
                                                      timestamp:_timestamp
-                                                    uploadType:_uploadType];
+                                                    uploadType:_uploadType
+                                                    dataPlanId:[_dataPlanId copy]
+                                               dataPlanVersion:[_dataPlanVersion copy]];
     
     return copyObject;
 }

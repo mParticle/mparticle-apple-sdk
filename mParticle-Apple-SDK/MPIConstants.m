@@ -57,6 +57,10 @@ NSString *const kMPRemoteNotificationContentIdHistoryKey = @"cntid";
 NSString *const kMPRemoteNotificationTimestampHistoryKey = @"ts";
 NSString *const kMPForwardStatsRecord = @"fsr";
 NSString *const kMPEventCustomFlags = @"flags";
+NSString *const kMPContextKey = @"ctx";
+NSString *const kMPDataPlanKey = @"dpln";
+NSString *const kMPDataPlanIdKey = @"id";
+NSString *const kMPDataPlanVersionKey = @"v";
 
 // Consent
 NSString *const kMPConsentState = @"con";
