@@ -1,5 +1,21 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.13.0
+
+### Core
+
+This release introduces support for Data Planning!
+
+When initializing the SDK, you can now specify your data plan ID and version in MParticleOptions.
+
+For more details, please see the documentation: https://docs.mparticle.com/guides/data-master/#data-plans
+
+### Kits
+
+- Braze - Respect user identification type in kit config
+- AppsFlyer - Update to AppsFlyer to version 5.0.0
+- Branch - Update Branch to version 0.31.2
+
 ## 7.12.7
 
 ### Core
