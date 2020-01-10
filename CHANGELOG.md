@@ -1,5 +1,11 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.14.0
+
+This release fixes an issue where kit dependencies on the core SDK were not properly updated by the release automation.
+
+No code changes are included.
+
 ## 7.13.0
 
 ### Core
