@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.0
+
+### Core
+
+This release introduces support for compliance with the California Consumer Privacy Act (CCPA).
+
+### Kits
+
+- Appboy - Respect dob user attribute
+
 ## 7.14.0
 
 This release fixes an issue where kit dependencies on the core SDK were not properly updated by the release automation.
