@@ -144,7 +144,9 @@ extern NSString * _Nonnull const kMPConsentKitFilterItemConsented;
 extern NSString * _Nonnull const kMPConsentKitFilterItemHash;
 extern NSString * _Nonnull const kMPConsentRegulationFilters;
 extern NSString * _Nonnull const kMPConsentPurposeFilters;
-extern NSString * _Nonnull const kMPConsentHashStringForGDPR;
+extern NSString * _Nonnull const kMPConsentGDPRRegulationType;
+extern NSString * _Nonnull const kMPConsentCCPARegulationType;
+extern NSString * _Nonnull const kMPConsentCCPAPurposeName;
 
 // Push Notifications
 extern NSString * _Nonnull const kMPDeviceTokenKey;

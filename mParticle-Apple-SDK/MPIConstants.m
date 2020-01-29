@@ -70,7 +70,7 @@ NSString *const kMPConsentStateGDPR = @"gdpr";
 
 // CCPA Consent
 NSString *const kMPConsentStateCCPA = @"ccpa";
-NSString *const kMPConsentStateCCPAPurpose = @"data-sale-opt-out";
+NSString *const kMPConsentStateCCPAPurpose = @"data_sale_opt_out";
 
 NSString *const kMPConsentStateConsented = @"c";
 NSString *const kMPConsentStateDocument = @"d";
@@ -95,8 +95,9 @@ NSString *const kMPConsentKitFilterItemConsented = @"c";
 NSString *const kMPConsentKitFilterItemHash = @"h";
 NSString *const kMPConsentRegulationFilters = @"reg";
 NSString *const kMPConsentPurposeFilters = @"pur";
-NSString *const kMPConsentHashStringForGDPR = @"1";
-
+NSString *const kMPConsentGDPRRegulationType = @"1";
+NSString *const kMPConsentCCPARegulationType = @"2";
+NSString *const kMPConsentCCPAPurposeName = @"data_sale_opt_out";
 
 // Push Notifications
 NSString *const kMPDeviceTokenKey = @"to";

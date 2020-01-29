@@ -30,11 +30,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent"];
     
     return _cellTitles;
 }
@@ -219,6 +219,67 @@
 
 - (void)registerRemote {
     [[UIApplication sharedApplication] registerForRemoteNotifications];
+}
+
+- (void)toggleCCPAConsent {
+    MPCCPAConsent *consentState = [[MParticle sharedInstance].identity.currentUser.consentState.ccpaConsentState copy];
+    if (consentState.consented) {
+        MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+        ccpaConsent.consented = NO;
+        ccpaConsent.document = @"ccpa_consent_agreement_v3";
+        ccpaConsent.timestamp = [[NSDate alloc] init];
+        ccpaConsent.location = @"17 Cherry Tree Lane";
+        ccpaConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+        
+        MPConsentState *newConsentState = [[MPConsentState alloc] init];
+        [newConsentState setCCPAConsentState:ccpaConsent];
+        [newConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+        
+        [MParticle sharedInstance].identity.currentUser.consentState = newConsentState;
+    } else {
+        MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+        ccpaConsent.consented = YES;
+        ccpaConsent.document = @"ccpa_consent_agreement_v3";
+        ccpaConsent.timestamp = [[NSDate alloc] init];
+        ccpaConsent.location = @"17 Cherry Tree Lane";
+        ccpaConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+        
+        MPConsentState *newConsentState = [[MPConsentState alloc] init];
+        [newConsentState setCCPAConsentState:ccpaConsent];
+        [newConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+
+        [MParticle sharedInstance].identity.currentUser.consentState = newConsentState;
+    }
+}
+
+- (void)toggleGDPRConsent {
+    NSDictionary<NSString *, MPGDPRConsent *> *gdprState = [[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState copy];
+    if (gdprState != nil && gdprState[@"my gdpr purpose"].consented) {
+        
+        MPGDPRConsent *locationCollectionConsent = [[MPGDPRConsent alloc] init];
+        locationCollectionConsent.consented = NO;
+        locationCollectionConsent.document = @"location_collection_agreement_v4";
+        locationCollectionConsent.timestamp = [[NSDate alloc] init];
+        locationCollectionConsent.location = @"17 Cherry Tree Lane";
+        locationCollectionConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+        
+        MPConsentState *newConsentState = [[MPConsentState alloc] init];
+        [newConsentState addGDPRConsentState:locationCollectionConsent purpose:@"My GDPR Purpose"];
+        [newConsentState setCCPAConsentState:[MParticle sharedInstance].identity.currentUser.consentState.ccpaConsentState];
+        [MParticle sharedInstance].identity.currentUser.consentState = newConsentState;
+    } else {
+        MPGDPRConsent *locationCollectionConsent = [[MPGDPRConsent alloc] init];
+        locationCollectionConsent.consented = YES;
+        locationCollectionConsent.document = @"location_collection_agreement_v4";
+        locationCollectionConsent.timestamp = [[NSDate alloc] init];
+        locationCollectionConsent.location = @"17 Cherry Tree Lane";
+        locationCollectionConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+        
+        MPConsentState *newConsentState = [[MPConsentState alloc] init];
+        [newConsentState addGDPRConsentState:locationCollectionConsent purpose:@"My GDPR Purpose"];
+        [newConsentState setCCPAConsentState:[MParticle sharedInstance].identity.currentUser.consentState.ccpaConsentState];
+        [MParticle sharedInstance].identity.currentUser.consentState = newConsentState;
+    }
 }
 
 @end

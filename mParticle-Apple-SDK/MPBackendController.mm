@@ -1688,14 +1688,16 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    [MPPersistenceController setConsentState:consentState forMpid:[MPPersistenceController mpId]];
+    MPConsentState *storedConsentState = [MPPersistenceController consentStateForMpid:[MPPersistenceController mpId]];
+    if (consentState != nil && storedConsentState == nil) {
+        [MPPersistenceController setConsentState:consentState forMpid:[MPPersistenceController mpId]];
+    }
     
     if (![MParticle sharedInstance].stateMachine.optOut) {
         dispatch_async(dispatch_get_main_queue(), ^{
             [[MParticle sharedInstance].kitContainer initializeKits];
         });
     }
-    MParticle.sharedInstance.identity.currentUser.consentState = consentState;
 
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = apiKey;

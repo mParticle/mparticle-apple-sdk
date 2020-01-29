@@ -7,6 +7,7 @@
 #import "OCMock.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleWebView.h"
+#import "MPPersistenceController.h"
 
 @interface MParticle ()
 
@@ -180,6 +181,70 @@
         NSString *uuid = session.UUID;
         XCTAssertEqualObjects(@"76F1ABB9-7A9A-4D4E-AB4D-56C8FF79CAD1", uuid);
         XCTAssertEqual(-6881666186511944082, sessionID.integerValue);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testOptionsConsentStateInitialNil {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key"
+    secret:@"unit-test-secret"];
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = YES;
+    ccpaConsent.document = @"ccpa_consent_agreement_v3";
+    ccpaConsent.timestamp = [[NSDate alloc] init];
+    ccpaConsent.location = @"17 Cherry Tree Lane";
+    ccpaConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+    
+    MPConsentState *newConsentState = [[MPConsentState alloc] init];
+    [newConsentState setCCPAConsentState:ccpaConsent];
+    [newConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+
+    options.consentState = newConsentState;
+    [instance startWithOptions:options];
+    dispatch_async([MParticle messageQueue], ^{
+        MPConsentState *storedConsentState = [MPPersistenceController consentStateForMpid:[MPPersistenceController mpId]];
+        XCTAssert(storedConsentState.ccpaConsentState.consented);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testOptionsConsentStateInitialSet {
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    ccpaConsent.consented = NO;
+    ccpaConsent.document = @"ccpa_consent_agreement_v3";
+    ccpaConsent.timestamp = [[NSDate alloc] init];
+    ccpaConsent.location = @"17 Cherry Tree Lane";
+    ccpaConsent.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+    
+    MPConsentState *storedConsentState = [[MPConsentState alloc] init];
+    [storedConsentState setCCPAConsentState:ccpaConsent];
+    [storedConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+    [MPPersistenceController setConsentState:storedConsentState forMpid:[MPPersistenceController mpId]];
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key"
+    secret:@"unit-test-secret"];
+    MPCCPAConsent *newCCPAState = [[MPCCPAConsent alloc] init];
+    newCCPAState.consented = YES;
+    newCCPAState.document = @"ccpa_consent_agreement_v3";
+    newCCPAState.timestamp = [[NSDate alloc] init];
+    newCCPAState.location = @"17 Cherry Tree Lane";
+    newCCPAState.hardwareId = @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702";
+    
+    MPConsentState *newConsentState = [[MPConsentState alloc] init];
+    [newConsentState setCCPAConsentState:newCCPAState];
+    [newConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
+
+    options.consentState = newConsentState;
+    [instance startWithOptions:options];
+    dispatch_async([MParticle messageQueue], ^{
+        MPConsentState *storedConsentState = [MPPersistenceController consentStateForMpid:[MPPersistenceController mpId]];
+        XCTAssertFalse(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];

@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import "MPIConstants.h"
 #import "MPConsentSerialization.h"
 #import "MPConsentState.h"
 #import "MPGDPRConsent.h"
@@ -57,7 +58,7 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
-    NSDictionary *gdprDictionary = dictionary[@"gdpr"];
+    NSDictionary *gdprDictionary = dictionary[kMPConsentStateGDPR];
     XCTAssertNotNil(gdprDictionary);
     XCTAssertEqual(gdprDictionary.count, 1);
     
@@ -65,12 +66,12 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(gdprStateDictionary);
     XCTAssertEqual(gdprStateDictionary.count, 5);
     
-    XCTAssertEqualObjects(gdprStateDictionary[@"c"], @YES);
-    XCTAssertEqualObjects(gdprStateDictionary[@"d"], @"foo-document-1");
-    XCTAssertEqualObjects(gdprStateDictionary[@"l"], @"foo-location-1");
-    XCTAssertEqualObjects(gdprStateDictionary[@"h"], @"foo-hardware-id-1");
-    XCTAssertNotNil(gdprStateDictionary[@"ts"]);
-    double interval = ((NSNumber *)gdprStateDictionary[@"ts"]).doubleValue/1000;
+    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateConsented], @YES);
+    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateDocument], @"foo-document-1");
+    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateLocation], @"foo-location-1");
+    XCTAssertEqualObjects(gdprStateDictionary[kMPConsentStateHardwareId], @"foo-hardware-id-1");
+    XCTAssertNotNil(gdprStateDictionary[kMPConsentStateTimestamp]);
+    double interval = ((NSNumber *)gdprStateDictionary[kMPConsentStateTimestamp]).doubleValue/1000;
     XCTAssertLessThan([NSDate dateWithTimeIntervalSince1970:interval].timeIntervalSinceNow, epsilon);
 }
 
@@ -162,20 +163,20 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
-    NSDictionary *ccpaDictionary = dictionary[@"ccpa"];
+    NSDictionary *ccpaDictionary = dictionary[kMPConsentStateCCPA];
     XCTAssertNotNil(ccpaDictionary);
     XCTAssertEqual(ccpaDictionary.count, 1);
     
-    NSDictionary *ccpaStateDictionary = ccpaDictionary[@"data-sale-opt-out"];
+    NSDictionary *ccpaStateDictionary = ccpaDictionary[kMPConsentStateCCPAPurpose];
     XCTAssertNotNil(ccpaStateDictionary);
     XCTAssertEqual(ccpaStateDictionary.count, 5);
     
-    XCTAssertEqualObjects(ccpaStateDictionary[@"c"], @YES);
-    XCTAssertEqualObjects(ccpaStateDictionary[@"d"], @"foo-document-1");
-    XCTAssertEqualObjects(ccpaStateDictionary[@"l"], @"foo-location-1");
-    XCTAssertEqualObjects(ccpaStateDictionary[@"h"], @"foo-hardware-id-1");
-    XCTAssertNotNil(ccpaStateDictionary[@"ts"]);
-    double interval = ((NSNumber *)ccpaStateDictionary[@"ts"]).doubleValue/1000;
+    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateConsented], @YES);
+    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateDocument], @"foo-document-1");
+    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateLocation], @"foo-location-1");
+    XCTAssertEqualObjects(ccpaStateDictionary[kMPConsentStateHardwareId], @"foo-hardware-id-1");
+    XCTAssertNotNil(ccpaStateDictionary[kMPConsentStateTimestamp]);
+    double interval = ((NSNumber *)ccpaStateDictionary[kMPConsentStateTimestamp]).doubleValue/1000;
     XCTAssertLessThan([NSDate dateWithTimeIntervalSince1970:interval].timeIntervalSinceNow, epsilon);
 }
 
@@ -208,11 +209,11 @@ static NSTimeInterval epsilon = 0.05;
     XCTAssertNotNil(dictionary);
     XCTAssertEqual(dictionary.count, 1);
     
-    NSDictionary *ccpaDictionary = dictionary[@"ccpa"];
+    NSDictionary *ccpaDictionary = dictionary[kMPConsentStateCCPA];
     XCTAssertNotNil(ccpaDictionary);
     XCTAssertEqual(ccpaDictionary.count, 1);
     
-    NSDictionary *ccpaStateDictionary = ccpaDictionary[@"data-sale-opt-out"];
+    NSDictionary *ccpaStateDictionary = ccpaDictionary[kMPConsentStateCCPAPurpose];
     XCTAssertNotNil(ccpaStateDictionary);
     XCTAssertEqual(ccpaStateDictionary.count, 5);
     
@@ -227,7 +228,7 @@ static NSTimeInterval epsilon = 0.05;
 }
 
 - (void)testFromStringCCPA {
-    NSString *string = @"{\"ccpa\":{\"data-sale-opt-out\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
+    NSString *string = @"{\"ccpa\":{\"data_sale_opt_out\":{\"document\":\"foo-document-1\",\"consented\":true,\"timestamp\":1524176880.888195,\"hardware_id\":\"foo-hardware-id-1\",\"location\":\"foo-location-1\"}}}";
     MPConsentState *state = [MPConsentSerialization consentStateFromString:string];
     MPCCPAConsent *ccpaState = [state ccpaConsentState];
     XCTAssertNotNil(ccpaState);

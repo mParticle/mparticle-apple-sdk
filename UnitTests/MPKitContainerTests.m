@@ -2008,8 +2008,7 @@
     XCTAssertTrue([localKitContainer shouldDelayUpload:10000]);
 }
 
-- (void)testIsDisabledByConsentKitFilter {
-    
+- (void)testIsDisabledByConsentKitFilterGPDR {
     MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
     
     filter.shouldIncludeOnMatch = YES;
@@ -2051,7 +2050,46 @@
     filter.shouldIncludeOnMatch = NO;
     isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
+}
+
+- (void)testIsDisabledByConsentKitFilterCCPA {
+    MPConsentKitFilter *filter = [[MPConsentKitFilter alloc] init];
     
+    filter.shouldIncludeOnMatch = YES;
+    
+    MPConsentKitFilterItem *item = [[MPConsentKitFilterItem alloc] init];
+    item.consented = YES;
+    item.javascriptHash = -575335347;
+    
+    NSMutableArray<MPConsentKitFilterItem *> *filterItems = [NSMutableArray array];
+    [filterItems addObject:item];
+    
+    filter.filterItems = [filterItems copy];
+    
+    MPConsentState *state = [[MPConsentState alloc] init];
+        
+    MPCCPAConsent *ccpaConsent = [[MPCCPAConsent alloc] init];
+    
+    ccpaConsent.consented = YES;
+    ccpaConsent.document = @"foo-document-1";
+    
+    NSDate *date = [NSDate date];
+    ccpaConsent.timestamp = date;
+    
+    ccpaConsent.location = @"foo-location-1";
+    ccpaConsent.hardwareId = @"foo-hardware-id-1";
+        
+    [state setCCPAConsentState: [ccpaConsent copy]];
+    
+    [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
+    MParticle.sharedInstance.identity.currentUser.consentState = state;
+    
+    BOOL isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    XCTAssertFalse(isDisabled);
+    
+    filter.shouldIncludeOnMatch = NO;
+    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    XCTAssertTrue(isDisabled);
 }
 
 - (void)testInitializeKitsWhenNilSupportedKits {

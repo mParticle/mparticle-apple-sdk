@@ -403,7 +403,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
             BOOL userConsented = gdprConsent.consented;
             
-            string stringToHash = string(kMPConsentHashStringForGDPR.UTF8String);
+            string stringToHash = string(kMPConsentGDPRRegulationType.UTF8String);
             stringToHash += string([[purpose lowercaseString] UTF8String]);
             NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
             
@@ -413,6 +413,18 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
             }
         }
         
+        MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
+        
+        if (ccpaConsentState != nil) {
+            string stringToHash = string(kMPConsentCCPARegulationType.UTF8String);
+            stringToHash += string(kMPConsentCCPAPurposeName.UTF8String);
+            NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+            
+            if (consented == ccpaConsentState.consented && [purposeHash isEqual:hashString]) {
+                isMatch = YES;
+                break;
+            }
+        }
     }
     
     BOOL shouldInclude;
@@ -966,12 +978,32 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     if (kitConfiguration) {
         
+        MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
+
         NSDictionary<NSString *, MPGDPRConsent *> *gdprState = state.gdprConsentState;
         
         NSString *regulationString = nil;
         
+        if (ccpaConsentState != nil) {
+            regulationString = [[NSString alloc] initWithFormat:@"%@%@", kMPConsentCCPARegulationType, kMPConsentCCPAPurposeName];
+            
+            NSString *regulationHash = [NSString stringWithCString:mParticle::Hasher::hashString(string([[regulationString lowercaseString] UTF8String])).c_str()
+                                                          encoding:NSUTF8StringEncoding];
+            
+            if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
+                kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
+                return kitFilter;
+            } else {
+                MPConsentState *filteredState = [[MPConsentState alloc] init];
+                [filteredState setCCPAConsentState:ccpaConsentState];
+                
+                kitFilter = [[MPKitFilter alloc] initWithConsentState:filteredState shouldFilter:NO];
+                return kitFilter;
+            }
+        }
+        
         if (gdprState) {
-            regulationString = kMPConsentHashStringForGDPR;
+            regulationString = kMPConsentGDPRRegulationType;
             
             NSString *regulationHash = [NSString stringWithCString:mParticle::Hasher::hashString(string([[regulationString lowercaseString] UTF8String])).c_str()
                                                           encoding:NSUTF8StringEncoding];
