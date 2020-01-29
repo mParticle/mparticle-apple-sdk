@@ -93,7 +93,7 @@ static NSArray *mpStoredCertificates = nil;
     
     BOOL isMParticleHost = [host rangeOfString:@"mparticle.com"].location != NSNotFound;
     
-    BOOL isNetworkOptionsHost = [host isEqualToString:networkOptions.configHost] || [host isEqualToString:networkOptions.identityHost] || [host isEqualToString:networkOptions.eventsHost];
+    BOOL isNetworkOptionsHost = [host isEqualToString:networkOptions.configHost] || [host isEqualToString:networkOptions.identityHost] || [host isEqualToString:networkOptions.eventsHost] || [host isEqualToString:networkOptions.aliasHost];
     
     BOOL isPinningHost = isMParticleHost || isNetworkOptionsHost;
     
