@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.1
+
+### Core
+
+**This release fixes a critical issue in 7.15.0 where invalid modify requests could be created by the SDK.**
+
+### Kits
+
+- AppsFlyer - Fix custom attribute being set incorrectly in commerce event
+
 ## 7.15.0
 
 ### Core
