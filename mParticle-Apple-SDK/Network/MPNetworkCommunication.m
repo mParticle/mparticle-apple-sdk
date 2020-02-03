@@ -188,6 +188,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         _identifyURL = [NSURL URLWithString:urlString];
     }
     
+    _identifyURL.accessibilityHint = @"identity";
     return _identifyURL;
 }
 
@@ -206,6 +207,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         _loginURL = [NSURL URLWithString:urlString];
     }
     
+    _loginURL.accessibilityHint = @"identity";
     return _loginURL;
 }
 
@@ -224,6 +226,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         _logoutURL = [NSURL URLWithString:urlString];
     }
     
+    _logoutURL.accessibilityHint = @"identity";
     return _logoutURL;
 }
 
@@ -232,13 +235,14 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
     NSURL *modifyURL;
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
-        modifyURL = [NSURL URLWithString:urlString];
-    } else {
         NSString *urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController mpId], pathComponent];
         modifyURL = [NSURL URLWithString:urlString];
+    } else {
+        NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
+        modifyURL = [NSURL URLWithString:urlString];
     }
-    
+
+    modifyURL.accessibilityHint = @"identity";
     return modifyURL;
 }
 
@@ -264,8 +268,8 @@ static NSObject<MPConnectorFactory> *factory = nil;
         NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
         _aliasURL = [NSURL URLWithString:urlString];
     }
-    _aliasURL.accessibilityHint = @"identity";
     
+    _aliasURL.accessibilityHint = @"identity";
     return _aliasURL;
 }
 

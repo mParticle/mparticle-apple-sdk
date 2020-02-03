@@ -103,6 +103,34 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssert(![configURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
+- (void)testModifyURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *modifyURL = [networkCommunication modifyURL];
+    
+    [self deswizzle];
+    
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity.mparticle.com/v1/0/modify"].location != NSNotFound);
+    XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+- (void)testModifyURLWithOptions {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.identityHost = @"identity.mpproxy.example.com";
+    [MParticle sharedInstance].networkOptions = options;
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *modifyURL = [networkCommunication modifyURL];
+    
+    [self deswizzle];
+    
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity.mpproxy.example.com/v1/0/modify"].location != NSNotFound);
+    XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+
 - (void)testAliasURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     

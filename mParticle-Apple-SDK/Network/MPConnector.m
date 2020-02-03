@@ -91,11 +91,11 @@ static NSArray *mpStoredCertificates = nil;
     __block SecTrustRef serverTrust = [protectionSpace serverTrust];
     MPNetworkOptions *networkOptions = [[MParticle sharedInstance] networkOptions];
     
-    BOOL isMParticleHost = [host rangeOfString:@"mparticle.com"].location != NSNotFound;
-    
-    BOOL isNetworkOptionsHost = [host isEqualToString:networkOptions.configHost] || [host isEqualToString:networkOptions.identityHost] || [host isEqualToString:networkOptions.eventsHost] || [host isEqualToString:networkOptions.aliasHost];
-    
-    BOOL isPinningHost = isMParticleHost || isNetworkOptionsHost;
+    BOOL isPinningHost = [host rangeOfString:@"mparticle.com"].location != NSNotFound ||
+                            (networkOptions.configHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.configHost.pathComponents[0]]) ||
+                            (networkOptions.identityHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.identityHost.pathComponents[0]]) ||
+                            (networkOptions.eventsHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.eventsHost.pathComponents[0]]) ||
+                            (networkOptions.aliasHost.pathComponents.count > 0 && [host isEqualToString:networkOptions.aliasHost.pathComponents[0]]);
     
     if ([authenticationMethod isEqualToString:NSURLAuthenticationMethodServerTrust] &&
         isPinningHost &&

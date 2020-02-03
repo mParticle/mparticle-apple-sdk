@@ -139,7 +139,7 @@ static NSDateFormatter *RFC1123DateFormatter;
     [urlRequest setTimeoutInterval:[MPURLRequestBuilder requestTimeout]];
     [urlRequest setHTTPMethod:_httpMethod];
 
-    BOOL isIdentityRequest = [urlRequest.URL.host rangeOfString:@"identity"].location != NSNotFound || [urlRequest.URL.host isEqualToString:[MParticle sharedInstance].networkOptions.identityHost] || [urlRequest.URL.path rangeOfString:@"/identity/"].location != NSNotFound || [urlRequest.URL.accessibilityHint isEqualToString:@"identity"];
+    BOOL isIdentityRequest = [urlRequest.URL.accessibilityHint isEqualToString:@"identity"];
     
     if (SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
