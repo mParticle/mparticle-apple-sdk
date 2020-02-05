@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.2
+
+### Core
+
+- Use default URL path to generate x-mp-signature
+
+### Kits
+
+- Kochava - Add support for enhanced deeplinking
+
 ## 7.15.1
 
 ### Core
