@@ -133,6 +133,33 @@ static NSDateFormatter *RFC1123DateFormatter;
     return self;
 }
 
+- (NSString *)stringByStrippingPathComponent:(NSString *)path {
+    NSString *adjustedPath = path;
+    NSMutableArray *parts = [[path componentsSeparatedByString:@"/"] mutableCopy];
+    if (parts.count > 1) {
+        [parts removeObjectAtIndex:1];
+        adjustedPath = [parts componentsJoinedByString:@"/"];
+    }
+    return adjustedPath;
+}
+
+- (NSString *)signatureRelativePath:(NSString *)relativePath url:(NSURL *)url {
+    MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
+    if (
+        (networkOptions.overridesConfigSubdirectory && networkOptions.configHost &&
+         [url.absoluteString rangeOfString:networkOptions.configHost].location != NSNotFound) ||
+        (networkOptions.overridesEventsSubdirectory && networkOptions.eventsHost &&
+         [url.absoluteString rangeOfString:networkOptions.eventsHost].location != NSNotFound) ||
+        (networkOptions.overridesIdentitySubdirectory && networkOptions.identityHost &&
+         [url.absoluteString rangeOfString:networkOptions.identityHost].location != NSNotFound) ||
+        (networkOptions.overridesAliasSubdirectory && networkOptions.aliasHost &&
+         [url.absoluteString rangeOfString:networkOptions.aliasHost].location != NSNotFound)
+        ) {
+        return [self stringByStrippingPathComponent:relativePath];
+    }
+    return relativePath;
+}
+
 - (NSMutableURLRequest *)build {
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:_url];
     [urlRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
@@ -154,6 +181,8 @@ static NSDateFormatter *RFC1123DateFormatter;
         NSString *secondsFromGMT = [NSString stringWithFormat:@"%ld", (unsigned long)[timeZone secondsFromGMT]];
         NSRange range;
         BOOL containsMessage = _message != nil;
+        
+        relativePath = [self signatureRelativePath:relativePath url:_url];
         
         if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
             contentType = @"application/json";
