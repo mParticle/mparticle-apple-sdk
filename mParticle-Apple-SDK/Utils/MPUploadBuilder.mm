@@ -75,10 +75,16 @@ using namespace std;
     
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
-    NSMutableDictionary<NSString *, id> *dataPlanDictionary = [@{
+    uploadDictionary = [@{
+        kMPOptOutKey:@(stateMachine.optOut),
+        kMPUploadIntervalKey:@(uploadInterval),
+        kMPLifeTimeValueKey:ltv
     } mutableCopy];
     
     if (dataPlanId != nil) {
+        NSMutableDictionary<NSString *, id> *dataPlanDictionary = [@{
+        } mutableCopy];
+        
         dataPlanDictionary[kMPDataPlanIdKey] = dataPlanId;
         dPId = dataPlanId;
         
@@ -86,16 +92,9 @@ using namespace std;
             dataPlanDictionary[kMPDataPlanVersionKey] = dataPlanVersion;
             dPVersion = dataPlanVersion;
         }
+        
+        uploadDictionary[kMPContextKey] = @{kMPDataPlanKey:dataPlanDictionary};
     }
-    
-    uploadDictionary = [@{
-        kMPOptOutKey:@(stateMachine.optOut),
-        kMPUploadIntervalKey:@(uploadInterval),
-        kMPLifeTimeValueKey:ltv,
-        kMPContextKey:@{
-                kMPDataPlanKey:dataPlanDictionary
-        }
-    } mutableCopy];
 
     if (messageDictionaries.count > 0) {
         uploadDictionary[kMPMessagesKey] = messageDictionaries;
