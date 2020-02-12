@@ -129,6 +129,9 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
         case MParticleNetworkStatusNotReachable:
             dataConnectionStatus = kDataConnectionOffline;
             break;
+            
+        default:
+            break;
     }
 
     return dataConnectionStatus;

@@ -32,19 +32,19 @@ namespace mParticle {
     }
     
     vector<string> Hasher::hashedEventTypes(const vector<int> &eventTypes) {
-        vector<string> hashedEventTypes;
+        vector<string> hashedTypes;
 
         if (eventTypes.empty()) {
-            return hashedEventTypes;
+            return hashedTypes;
         }
         
         for (auto &eventType : eventTypes) {
             auto eventTypeString = to_string(eventType);
             auto hashedEventType = Hasher::hashString(eventTypeString);
-            hashedEventTypes.push_back(hashedEventType);
+            hashedTypes.push_back(hashedEventType);
         }
         
-        return hashedEventTypes;
+        return hashedTypes;
     }
     
     vector<string> Hasher::hashedAllEventTypes() {

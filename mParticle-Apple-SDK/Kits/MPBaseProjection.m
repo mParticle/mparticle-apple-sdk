@@ -75,7 +75,7 @@
             }
             break;
             
-        case MPProjectionTypeEvent:
+        case MPProjectionTypeEvent: {
             _projectionId = [configuration[@"id"] integerValue];
             NSArray *matches = !MPIsNull(configuration[@"matches"]) ? configuration[@"matches"] : nil;
             NSDictionary *matchDictionary = !MPIsNull(matches) && matches.count > 0 ? matches[0] : nil;
@@ -92,6 +92,10 @@
                 auxString = matchDictionary[@"property"];
                 _propertyKind = propertyKindForString(auxString);
             }
+        }
+            break;
+        
+        default:
             break;
     }
     
@@ -157,6 +161,8 @@
         case MPProjectionMatchTypeNotSpecified:
             matchType = @"Not Specified";
             break;
+        default:
+            break;
     }
     [description appendFormat:@" matchType: %@\n", matchType];
     
@@ -196,6 +202,9 @@
             
         case MPProjectionPropertyKindPromotionAttribute:
             propertyKind = @"Promotion Attribute";
+            break;
+            
+        default:
             break;
     }
     [description appendFormat:@" propertyKind: %@\n", propertyKind];

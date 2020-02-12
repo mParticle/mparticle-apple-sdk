@@ -60,6 +60,9 @@
                 case MPDataTypeFloat:
                     _defaultValue = @"0.0";
                     break;
+                    
+                default:
+                    break;
             }
         }
     }
@@ -271,6 +274,9 @@
                 
             case MPDataTypeFloat:
                 _value = @([self.defaultValue floatValue]);
+                break;
+                
+            default:
                 break;
         }
     }

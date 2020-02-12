@@ -1308,6 +1308,9 @@ static BOOL skipNextUpload = NO;
                                                             [persistence saveSegment:segment];
                                                         }
                                                         break;
+                                                        
+                                                    default:
+                                                        break;
                                                 }
                                             }
                                         }];

@@ -46,6 +46,7 @@
     @try {
         attributes = [NSJSONSerialization JSONObjectWithData:attributesData options:0 error:&error];
     } @catch (NSException *exception) {
+        MPILogError(@"Exception thrown trying to deserialize integration attributes: %@", exception);
     }
     
     if (!attributes && error != nil) {
@@ -70,6 +71,7 @@
     @try {
         dataRepresentation = [NSJSONSerialization dataWithJSONObject:dictionaryRepresentation options:0 error:&error];
     } @catch (NSException *exception) {
+        MPILogError(@"Exception thrown trying to serialize integration attributes: %@", exception);
     }
     
     if (dataRepresentation.length == 0 && error != nil) {

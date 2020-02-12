@@ -5,6 +5,7 @@
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import <objc/runtime.h>
+#import <objc/message.h>
 #import <mach-o/ldsyms.h>
 #import <dlfcn.h>
 #import <mach-o/arch.h>
@@ -127,7 +128,7 @@ int main(int argc, char *argv[]);
         id<NSObject> adIdentityManager = [MPIdentifierManager performSelector:selector];
         
         selector = NSSelectorFromString(@"isAdvertisingTrackingEnabled");
-        BOOL advertisingTrackingEnabled = (BOOL)[adIdentityManager performSelector:selector];
+        BOOL advertisingTrackingEnabled = ((BOOL (*)(id, SEL))objc_msgSend)(adIdentityManager, selector);
         isAdTrackingLimited = !advertisingTrackingEnabled;
         BOOL alwaysTryToCollectIDFA = [MParticle sharedInstance].stateMachine.alwaysTryToCollectIDFA;
         if (advertisingTrackingEnabled || alwaysTryToCollectIDFA) {
@@ -175,6 +176,9 @@ int main(int argc, char *argv[]);
                 
             case CPU_SUBTYPE_ARM_V7S:
                 [cpu appendString:@"v7s"];
+                break;
+                
+            default:
                 break;
         }
 #if !TARGET_IPHONE_SIMULATOR
@@ -296,9 +300,9 @@ int main(int argc, char *argv[]);
     return @"iOS";
 #elif TARGET_OS_TV == 1
     return @"tvOS";
-#endif
-    
+#else
     return @"unknown";
+#endif
 }
 
 - (NSString *)product {

@@ -106,7 +106,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param endpointId The endpoint id
  @param completionHandler A block to be called when the results are available. The user segments array is passed to this block
  */
-- (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler __attribute__((deprecated("")));
+- (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler __attribute__((deprecated("not available")));
 
 #pragma mark - Consent State
 /**

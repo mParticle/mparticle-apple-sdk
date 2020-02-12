@@ -50,6 +50,9 @@ NSString *const GoogleAnalyticsPlainURL = @"http://www.google-analytics.com/coll
             url = nil;
             _urlString = nil;
             break;
+            
+        default:
+            break;
     }
     
     _httpMethod = [urlRequest HTTPMethod];

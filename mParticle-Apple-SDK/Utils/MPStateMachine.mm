@@ -117,11 +117,6 @@ static BOOL runningInBackground = NO;
                                      object:nil];
             
             [notificationCenter addObserver:strongSelf
-                                   selector:@selector(handleMemoryWarningNotification:)
-                                       name:UIApplicationDidReceiveMemoryWarningNotification
-                                     object:nil];
-            
-            [notificationCenter addObserver:strongSelf
                                    selector:@selector(handleReachabilityChanged:)
                                        name:MParticleReachabilityChangedNotification
                                      object:nil];
@@ -139,7 +134,6 @@ static BOOL runningInBackground = NO;
     [notificationCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
     [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
     
     if (_reachability != nil) {
@@ -277,9 +271,6 @@ static BOOL runningInBackground = NO;
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
     [MPApplication updateLastUseDate:_launchDate];
-}
-
-- (void)handleMemoryWarningNotification:(NSNotification *)notification {
 }
 
 - (void)handleReachabilityChanged:(NSNotification *)notification {

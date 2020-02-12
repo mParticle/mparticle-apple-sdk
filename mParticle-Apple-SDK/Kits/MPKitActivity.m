@@ -105,11 +105,9 @@
 
 - (void)kitInstance:(nonnull NSNumber *)integrationId withHandler:(void (^ _Nonnull)(id _Nullable kitInstance))handler {
     __block id kitInstance = nil;
-    __block NSDictionary *kitConfiguration = nil;
     
     [self kitInstanceAndConfiguration:integrationId handler:^(id instance, NSDictionary *configuration) {
         kitInstance = instance;
-        kitConfiguration = configuration;
     }];
     
     if (kitInstance) {

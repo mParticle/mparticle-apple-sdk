@@ -670,7 +670,7 @@ static void flagReadingImageList(BinaryImageList *list, bool enable) {
 }
 
 /**
- Returns the next image record. This method is async-safe. If no additional images are available, will return NULL;
+ Returns the next image record. This method is async-safe. If no additional images are available, will return NULL.
  
  @param list The list to be iterated.
  @param current The current image record, or NULL to start iteration.

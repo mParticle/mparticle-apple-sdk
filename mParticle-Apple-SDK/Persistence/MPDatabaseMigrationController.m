@@ -353,8 +353,10 @@
 }
 
 - (void)migrateSegmentsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    const char *selectStatement;
+    const char *insertStatement;
+    sqlite3_stmt *selectStatementHandle;
+    sqlite3_stmt *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
     NSNumber *mpId;
     
@@ -395,8 +397,10 @@
 }
 
 - (void)migrateSegmentMembershipsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    const char *selectStatement;
+    const char *insertStatement;
+    sqlite3_stmt *selectStatementHandle;
+    sqlite3_stmt *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
     NSNumber *mpId;
     
@@ -438,8 +442,10 @@
 }
 
 - (void)migrateForwardingRecordsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    const char *selectStatement;
+    const char *insertStatement;
+    sqlite3_stmt *selectStatementHandle;
+    sqlite3_stmt *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
     NSNumber *mpId;
     
@@ -476,8 +482,10 @@
 }
 
 - (void)migrateConsumerInfoFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    const char *selectStatement;
+    const char *insertStatement;
+    sqlite3_stmt *selectStatementHandle;
+    sqlite3_stmt *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
     NSNumber *mpId;
     
@@ -545,8 +553,10 @@
 }
 
 - (void)migrateIntegrationAttributesFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    const char *selectStatement, *insertStatement;
-    sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
+    const char *selectStatement;
+    const char *insertStatement;
+    sqlite3_stmt *selectStatementHandle;
+    sqlite3_stmt *insertStatementHandle;
     NSInteger oldVersionValue = [oldVersion integerValue];
     
     if (oldVersionValue < 25) {
@@ -595,7 +605,8 @@
     NSString *databaseName = [NSString stringWithFormat:@"mParticle%@.db", currentDatabaseVersion];
     NSString *databasePath = [documentsDirectory stringByAppendingPathComponent:databaseName];
     NSFileManager *fileManager = [NSFileManager defaultManager];
-    sqlite3 *oldmParticleDB, *mParticleDB;
+    sqlite3 *oldmParticleDB;
+    sqlite3 *mParticleDB;
     NSString *dbPath;
     
     if (sqlite3_open_v2([databasePath UTF8String], &mParticleDB, SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE | SQLITE_OPEN_FILEPROTECTION_NONE | SQLITE_OPEN_FULLMUTEX, NULL) != SQLITE_OK) {
@@ -653,7 +664,8 @@
     NSString *documentsDirectory = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES)[0];
     NSFileManager *fileManager = [NSFileManager defaultManager];
     BOOL needsMigration = NO;
-    NSString *dbPath, *databaseName;
+    NSString *dbPath;
+    NSString *databaseName;
     NSNumber *databaseVersion = nil;
     NSInteger numberOfVersions = oldDatabaseVersions.count;
     for (NSInteger i = 0; i < numberOfVersions; ++i) {

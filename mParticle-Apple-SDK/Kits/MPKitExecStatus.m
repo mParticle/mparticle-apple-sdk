@@ -21,9 +21,8 @@
 
 - (instancetype)initWithSDKCode:(NSNumber *)integrationId returnCode:(MPKitReturnCode)returnCode forwardCount:(NSUInteger)forwardCount {
     BOOL validReturnCode = returnCode >= MPKitReturnCodeSuccess && returnCode <= MPKitReturnCodeRequirementsNotMet;
-    if (!validReturnCode) MPILogDebug(@"The 'returnCode': %lu variable is not valid.", (unsigned long)returnCode);
-
     if (!validReturnCode) {
+        MPILogDebug(@"The 'returnCode': %lu variable is not valid.", (unsigned long)returnCode);
         return nil;
     }
 

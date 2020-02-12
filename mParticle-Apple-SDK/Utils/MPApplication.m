@@ -135,8 +135,9 @@ static id mockUIApplication = nil;
     }
     
     return _buildUUID;
-#endif
+#else
     return @"00000000-0000-0000-0000-000000000000";
+#endif
 }
 
 - (NSString *)bundleIdentifier {

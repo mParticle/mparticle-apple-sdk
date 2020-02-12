@@ -304,7 +304,6 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
             
         default:
             return NO;
-            break;
     }
     
     *identity = localIdentity;
