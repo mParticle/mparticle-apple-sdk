@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.3
+
+### Core
+
+- Fix bug where data plan id and version would be sent as zero if not specified
+
+### Kits
+
+- None
+
 ## 7.15.2
 
 ### Core
