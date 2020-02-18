@@ -378,6 +378,12 @@
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
+- (void)testSessionStartTimestamp {
+    NSDate *date = [NSDate dateWithTimeIntervalSince1970:0];
+    [self.backendController beginSessionWithIsManual:NO date:date];
+    XCTAssertEqual(self.backendController.session.startTime, date.timeIntervalSince1970);
+}
+
 - (void)testCheckAttributeValueEmpty {
     NSError *error = nil;
     BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"

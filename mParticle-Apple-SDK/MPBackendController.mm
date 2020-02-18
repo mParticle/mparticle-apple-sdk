@@ -1102,7 +1102,8 @@ static BOOL skipNextUpload = NO;
         MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
-        self.session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        date = date ?: [NSDate date];
+        self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:[MPPersistenceController mpId]];
         [persistence saveSession:_session];
         
         MPSession *previousSession = [persistence fetchPreviousSession];
