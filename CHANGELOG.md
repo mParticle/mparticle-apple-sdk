@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.4
+
+### Core
+
+- Fix bug where session start timestamps included time spent waiting for message queue.
+
+### Kits
+
+- Appboy - Fix dob parsing Bug
+
 ## 7.15.3
 
 ### Core
