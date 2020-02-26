@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.5
+
+### Core
+
+- None
+
+### Kits
+
+- Appboy - Update transaction attributes
+- Apptentive - Guard against non-product-action commerce events
+- Optimizely - Update to Optimizely Swift SDK
+
 ## 7.15.4
 
 ### Core
