@@ -115,13 +115,27 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
         commerceEvent = [[MPCommerceEvent alloc] initWithImpressionName:nil product:nil];
     }
 
-    commerceEvent.customAttributes = json[@"EventAttributes"];
-    commerceEvent.checkoutOptions = json[@"CheckoutOptions"];
-    commerceEvent.productListName = json[@"productActionListName"];
-    commerceEvent.productListSource = json[@"productActionListSource"];
-    commerceEvent.currency = json[@"CurrencyCode"];
-    commerceEvent.transactionAttributes = [MPConvertJS MPTransactionAttributes:json[@"ProductAction"]];
-    commerceEvent.checkoutStep = [json[@"CheckoutStep"] intValue];
+    if ((NSNull *)json[@"EventAttributes"] != [NSNull null]) {
+        commerceEvent.customAttributes = json[@"EventAttributes"];
+    }
+    if ((NSNull *)json[@"CheckoutOptions"] != [NSNull null]) {
+        commerceEvent.checkoutOptions = json[@"CheckoutOptions"];
+    }
+    if ((NSNull *)json[@"productActionListName"] != [NSNull null]) {
+        commerceEvent.productListName = json[@"productActionListName"];
+    }
+    if ((NSNull *)json[@"productActionListSource"] != [NSNull null]) {
+        commerceEvent.productListSource = json[@"productActionListSource"];
+    }
+    if ((NSNull *)json[@"CurrencyCode"] != [NSNull null]) {
+        commerceEvent.currency = json[@"CurrencyCode"];
+    }
+    if ((NSNull *)json[@"ProductAction"] != [NSNull null]) {
+        commerceEvent.transactionAttributes = [MPConvertJS MPTransactionAttributes:json[@"ProductAction"]];
+    }
+    if ([json[@"CheckoutStep"] isKindOfClass:[NSNumber class]]) {
+        commerceEvent.checkoutStep = [json[@"CheckoutStep"] intValue];
+    }
 
     NSMutableArray *products = [NSMutableArray array];
     NSArray *jsonProducts = json[@"ProductAction"][@"ProductList"];
@@ -187,10 +201,23 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
         return nil;
     }
     MPPromotion *promotion = [[MPPromotion alloc] init];
-    promotion.creative = json[@"Creative"];
-    promotion.name = json[@"Name"];
-    promotion.position = json[@"Position"];
-    promotion.promotionId = json[@"Id"];
+    
+    if ((NSNull *)json[@"Creative"] != [NSNull null]) {
+        promotion.creative = json[@"Creative"];
+    }
+    
+    if ((NSNull *)json[@"Name"] != [NSNull null]) {
+        promotion.name = json[@"Name"];
+    }
+    
+    if ((NSNull *)json[@"Position"] != [NSNull null]) {
+        promotion.position = json[@"Position"];
+    }
+    
+    if ((NSNull *)json[@"Id"] != [NSNull null]) {
+        promotion.promotionId = json[@"Id"];
+    }
+    
     return promotion;
 }
 
@@ -200,12 +227,26 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
         return nil;
     }
     MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
-    transactionAttributes.affiliation = json[@"Affiliation"];
-    transactionAttributes.couponCode = json[@"CouponCode"];
-    transactionAttributes.shipping = json[@"ShippingAmount"];
-    transactionAttributes.tax = json[@"TaxAmount"];
-    transactionAttributes.revenue = json[@"TotalAmount"];
-    transactionAttributes.transactionId = json[@"TransactionId"];
+    
+    if ((NSNull *)json[@"Affiliation"] != [NSNull null]) {
+        transactionAttributes.affiliation = json[@"Affiliation"];
+    }
+    if ((NSNull *)json[@"CouponCode"] != [NSNull null]) {
+        transactionAttributes.couponCode = json[@"CouponCode"];
+    }
+    if ((NSNull *)json[@"ShippingAmount"] != [NSNull null]) {
+        transactionAttributes.shipping = json[@"ShippingAmount"];
+    }
+    if ((NSNull *)json[@"TaxAmount"] != [NSNull null]) {
+        transactionAttributes.tax = json[@"TaxAmount"];
+    }
+    if ((NSNull *)json[@"TotalAmount"] != [NSNull null]) {
+        transactionAttributes.revenue = json[@"TotalAmount"];
+    }
+    if ((NSNull *)json[@"TransactionId"] != [NSNull null]) {
+        transactionAttributes.transactionId = json[@"TransactionId"];
+    }
+    
     return transactionAttributes;
 }
 
@@ -215,18 +256,33 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
         return nil;
     }
     MPProduct *product = [[MPProduct alloc] init];
-    product.brand = json[@"Brand"];
-    product.category = json[@"Category"];
-    product.couponCode = json[@"CouponCode"];
-    product.name = json[@"Name"];
+    
+    if ((NSNull *)json[@"Brand"] != [NSNull null]) {
+        product.brand = json[@"Brand"];
+    }
+    if ((NSNull *)json[@"Category"] != [NSNull null]) {
+        product.category = json[@"Category"];
+    }
+    if ((NSNull *)json[@"CouponCode"] != [NSNull null]) {
+        product.couponCode = json[@"CouponCode"];
+    }
+    if ((NSNull *)json[@"Name"] != [NSNull null]) {
+        product.name = json[@"Name"];
+    }
     
     if (!json[@"Price"] || [json[@"Price"] isKindOfClass:[NSNumber class]]) {
         product.price = json[@"Price"];
     }
     
-    product.sku = json[@"Sku"];
-    product.variant = json[@"Variant"];
-    product.position = [json[@"Position"] intValue];
+    if ((NSNull *)json[@"Sku"] != [NSNull null]) {
+        product.sku = json[@"Sku"];
+    }
+    if ((NSNull *)json[@"Variant"] != [NSNull null]) {
+        product.variant = json[@"Variant"];
+    }
+    if ((NSNull *)json[@"Position"] != [NSNull null]) {
+        product.position = [json[@"Position"] intValue];
+    }
     if (!json[@"Quantity"] || [json[@"Quantity"] isKindOfClass:[NSNumber class]]) {
         product.quantity = json[@"Quantity"];
     }
@@ -235,7 +291,9 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     if ((NSNull *)jsonAttributes != [NSNull null]) {
         for (NSString *key in jsonAttributes) {
             NSString *value = jsonAttributes[key];
-            [product setObject:value forKeyedSubscript:key];
+            if ((NSNull *)value != [NSNull null]) {
+                [product setObject:value forKeyedSubscript:key];
+            }
         }
     }
     return product;

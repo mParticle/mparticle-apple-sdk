@@ -1589,27 +1589,39 @@ NSString *const kMPStateKey = @"state";
         MPJavascriptMessageType messageType = (MPJavascriptMessageType)[eventDataType integerValue];
         switch (messageType) {
             case MPJavascriptMessageTypePageEvent: {
-                MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:(MPEventType)[dictionary[@"EventCategory"] integerValue]];
-                event.customAttributes = dictionary[@"EventAttributes"];
-                [self logEvent:event];
+                if ((NSNull *)dictionary[@"EventName"] != [NSNull null] && [dictionary[@"EventCategory"] isKindOfClass:[NSNumber class]]) {
+                    MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:(MPEventType)[dictionary[@"EventCategory"] integerValue]];
+                    if ((NSNull *)dictionary[@"EventAttributes"] != [NSNull null]) {
+                        event.customAttributes = dictionary[@"EventAttributes"];
+                    }
+                    [self logEvent:event];
+                }
             }
                 break;
                 
             case MPJavascriptMessageTypePageView: {
-                MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:MPEventTypeNavigation];
-                event.customAttributes = dictionary[@"EventAttributes"];
-                [self logScreenEvent:event];
+                if ((NSNull *)dictionary[@"EventName"] != [NSNull null]) {
+                    MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:MPEventTypeNavigation];
+                    if ((NSNull *)dictionary[@"EventAttributes"] != [NSNull null]) {
+                        event.customAttributes = dictionary[@"EventAttributes"];
+                    }
+                    [self logScreenEvent:event];
+                }
             }
                 break;
                 
             case MPJavascriptMessageTypeCommerce: {
                 MPCommerceEvent *event = [MPConvertJS MPCommerceEvent:dictionary];
-                [self logEvent:event];
+                if (event != nil) {
+                    [self logEvent:event];
+                }
             }
                 break;
                 
             case MPJavascriptMessageTypeOptOut:
-                [self setOptOut:[dictionary[@"OptOut"] boolValue]];
+                if ([dictionary[@"OptOut"] isKindOfClass:[NSNumber class]]) {
+                    [self setOptOut:[dictionary[@"OptOut"] boolValue]];
+                }
                 break;
                 
             case MPJavascriptMessageTypeSessionStart:
@@ -1664,27 +1676,35 @@ NSString *const kMPStateKey = @"state";
             
         }];
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserTag]) {
-        [self.identity.currentUser setUserTag:dictionary[@"key"]];
+        if ((NSNull *)dictionary[@"key"] != [NSNull null]) {
+            [self.identity.currentUser setUserTag:dictionary[@"key"]];
+        }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
-        [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+        if ((NSNull *)dictionary[@"key"] != [NSNull null]) {
+            [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+        }
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
-        if (!dictionary[@"key"]) {
+        if (!dictionary[@"key"] || (NSNull *)dictionary[@"key"] == [NSNull null]) {
             MPILogError(@"Unexpected user attribute data received from webview");
             return;
         }
         if (!dictionary[@"value"]) {
             [self.identity.currentUser setUserTag:dictionary[@"key"]];
-        } else {
+        } else if ((NSNull *)dictionary[@"value"] != [NSNull null]) {
             [self.identity.currentUser setUserAttribute:dictionary[@"key"] value:dictionary[@"value"]];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
-        [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+        if ((NSNull *)dictionary[@"key"] != [NSNull null]) {
+            [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
+        }
     } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
         if (!dictionary[@"key"]) {
             MPILogError(@"Unexpected session attribute data received from webview");
             return;
         }
-        [self setSessionAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+        if ((NSNull *)dictionary[@"key"] != [NSNull null] && (NSNull *)dictionary[@"value"] != [NSNull null]) {
+            [self setSessionAttribute:dictionary[@"key"] value:dictionary[@"value"]];
+        }
     }
 }
 
