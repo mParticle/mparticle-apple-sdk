@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.6
+
+### Core
+
+- Guard against NSNull values in events from webview
+
+### Kits
+
+- Optimizely - Add support for other ids
+
 ## 7.15.5
 
 ### Core
