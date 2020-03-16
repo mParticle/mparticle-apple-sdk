@@ -17,7 +17,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 
 @implementation MParticleUserNotification
 
-- (instancetype)initWithDictionary:(NSDictionary *)notificationDictionary actionIdentifier:(NSString *)actionIdentifier state:(NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode {
+- (instancetype)initWithDictionary:(NSDictionary *)notificationDictionary state:(NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode {
     self = [super init];
     if (!self || !state) {
         return nil;
@@ -35,45 +35,9 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     _state = state;
     _redactedUserNotificationString = [self redactUserNotification:notificationDictionary];
     _uuid = [[NSUUID UUID] UUIDString];
-    
-    if (actionIdentifier) {
-        _actionIdentifier = [actionIdentifier copy];
-        _type = kMPPushMessageAction;
-        
-        if (_categoryIdentifier) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            __block UIUserNotificationSettings *userNotificationSettings = nil;
-            if ([NSThread isMainThread]) {
-                userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
-            } else {
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
-                });
-            }
-            
-            if (userNotificationSettings) {
-                for (UIUserNotificationCategory *category in userNotificationSettings.categories) {
-                    if ([category.identifier isEqualToString:_categoryIdentifier]) {
-                        for (UIUserNotificationAction *action in [category actionsForContext:UIUserNotificationActionContextDefault]) {
-                            if ([action.identifier isEqualToString:actionIdentifier]) {
-                                _actionTitle = action.title;
-                                break;
-                            }
-                        }
-                        
-                        break;
-                    }
-                }
-            }
-#pragma clang diagnostic pop
-        }
-    } else {
-        _actionIdentifier = nil;
-        _actionTitle = nil;
-        _type = kMPPushMessageReceived;
-        _receiptTime = [NSDate date];
-    }
+    _actionTitle = nil;
+    _type = kMPPushMessageReceived;
+    _receiptTime = [NSDate date];
     
     return self;
 }
@@ -87,10 +51,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     
     if (self.categoryIdentifier) {
         [description appendFormat:@" Category identifier: %@\n", self.categoryIdentifier];
-    }
-    
-    if (self.actionIdentifier) {
-        [description appendFormat:@" Action identifier: %@\n Action title: %@\n", self.actionIdentifier, self.actionTitle];
     }
     
     if (self.behavior > 0) {
@@ -231,10 +191,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         [coder encodeObject:_categoryIdentifier forKey:@"categoryIdentifier"];
     }
     
-    if (_actionIdentifier) {
-        [coder encodeObject:_actionIdentifier forKey:@"actionIdentifier"];
-    }
-    
     if (_actionTitle) {
         [coder encodeObject:_actionTitle forKey:@"actionTitle"];
     }
@@ -271,11 +227,6 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     object = [coder decodeObjectOfClass:[NSString class] forKey:@"redactedUserNotificationString"];
     if (object) {
         _redactedUserNotificationString = (NSString *)object;
-    }
-    
-    object = [coder decodeObjectForKey:@"actionIdentifier"];
-    if (object) {
-        _actionIdentifier = (NSString *)object;
     }
     
     object = [coder decodeObjectForKey:@"actionTitle"];

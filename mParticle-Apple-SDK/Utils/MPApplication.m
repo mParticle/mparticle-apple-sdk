@@ -287,37 +287,6 @@ static id mockUIApplication = nil;
     }
     return 0;
 }
-
-- (NSNumber *)remoteNotificationTypes {
-    NSNumber *notificationTypes;
-    
-    if (![MPStateMachine isAppExtension]) {
-        UIApplication *app = [[UIApplication class] performSelector:@selector(sharedApplication)];
-        
-        if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            __block UIUserNotificationSettings *userNotificationSettings = nil;
-            if ([NSThread isMainThread]) {
-                userNotificationSettings = [app currentUserNotificationSettings];
-            } else {
-                dispatch_sync(dispatch_get_main_queue(), ^{
-                    userNotificationSettings = [app currentUserNotificationSettings];
-                });
-            }
-            
-#pragma clang diagnostic pop
-            notificationTypes = @(userNotificationSettings.types);
-        } else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            notificationTypes = @([app enabledRemoteNotificationTypes]);
-#pragma clang diagnostic pop
-        }
-    }
-    
-    return notificationTypes;
-}
 #endif
 
 - (NSDictionary *)searchAdsAttribution {
@@ -474,11 +443,6 @@ static id mockUIApplication = nil;
     }
     
 #if TARGET_OS_IOS == 1
-    NSNumber *notificationTypes = self.remoteNotificationTypes;
-    if (notificationTypes != nil) {
-        applicationInfo[kMPDeviceSupportedPushNotificationTypesKey] = notificationTypes;
-    }
-    
     NSNumber *badgeNumber = self.badgeNumber;
     if (badgeNumber != nil) {
         applicationInfo[kMPAppBadgeNumberKey] = badgeNumber;

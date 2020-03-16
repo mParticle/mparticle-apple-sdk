@@ -26,7 +26,6 @@ extern NSString * _Nonnull const kMPApplicationInformationKey;
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, readonly, nullable) NSNumber *badgeNumber;
-@property (nonatomic, strong, readonly, nullable) NSNumber *remoteNotificationTypes;
 #endif
 
 + (nullable NSString *)appStoreReceipt;

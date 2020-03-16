@@ -1742,7 +1742,6 @@ NSString *const kMPStateKey = @"state";
     NSString *stateString = state == UIApplicationStateActive ? kMPPushNotificationStateForeground : kMPPushNotificationStateBackground;
     
     MParticleUserNotification *userNotification = [[MParticleUserNotification alloc] initWithDictionary:userInfo
-                                                                                       actionIdentifier:nil
                                                                                                   state:stateString
                                                                                                behavior:behavior
                                                                                                    mode:MPUserNotificationModeRemote];

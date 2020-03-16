@@ -22,7 +22,6 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 
 @interface MParticleUserNotification : MPDataModelAbstract <NSSecureCoding>
 
-@property (nonatomic, strong, nullable) NSString *actionIdentifier;
 @property (nonatomic, strong, nullable) NSString *actionTitle;
 @property (nonatomic, strong, nullable) NSDictionary *deferredPayload;
 @property (nonatomic, strong, nonnull) NSString *type;
@@ -36,7 +35,7 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 @property (nonatomic, unsafe_unretained, readonly) MPUserNotificationMode mode;
 @property (nonatomic, unsafe_unretained, readwrite) BOOL shouldPersist;
 
-- (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)notificationDictionary actionIdentifier:(nullable NSString *)actionIdentifier state:(nonnull NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode;
+- (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)notificationDictionary state:(nonnull NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode;
 
 @end
 

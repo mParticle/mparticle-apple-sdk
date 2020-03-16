@@ -2105,19 +2105,6 @@ static BOOL skipNextUpload = NO;
                                               kMPPushStatusKey:status}
                                             mutableCopy];
         
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        if (![MPStateMachine isAppExtension]) {
-            __block UIUserNotificationSettings *userNotificationSettings = nil;
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                userNotificationSettings = [[MPApplication sharedUIApplication] currentUserNotificationSettings];
-            });
-            
-            NSUInteger notificationTypes = userNotificationSettings.types;
-#pragma clang diagnostic pop
-            messageInfo[kMPDeviceSupportedPushNotificationTypesKey] = @(notificationTypes);
-        }
-        
         if ([MParticle sharedInstance].stateMachine.deviceTokenType.length > 0) {
             messageInfo[kMPDeviceTokenTypeKey] = [MParticle sharedInstance].stateMachine.deviceTokenType;
         }
@@ -2144,11 +2131,6 @@ static BOOL skipNextUpload = NO;
     
     if (userNotification.redactedUserNotificationString) {
         messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
-    }
-    
-    if (userNotification.actionIdentifier) {
-        messageInfo[kMPPushNotificationActionIdentifierKey] = userNotification.actionIdentifier;
-        messageInfo[kMPPushNotificationCategoryIdentifierKey] = userNotification.categoryIdentifier;
     }
     
     if (userNotification.actionTitle) {
