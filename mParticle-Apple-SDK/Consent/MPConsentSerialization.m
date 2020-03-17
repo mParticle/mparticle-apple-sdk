@@ -5,7 +5,7 @@
 #import "MPGDPRConsent.h"
 #import "MPCCPAConsent.h"
 #import "MPConsentKitFilter.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @implementation MPConsentSerialization
 

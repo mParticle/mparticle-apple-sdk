@@ -1,6 +1,6 @@
 #import "MPIntegrationAttributes.h"
 #import "MPILogger.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPStateMachine.h"
 
 @implementation MPIntegrationAttributes

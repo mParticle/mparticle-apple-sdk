@@ -3,7 +3,7 @@
 #import "MPNotificationController.h"
 #import "MPAppNotificationHandler.h"
 #import "MPStateMachine.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 

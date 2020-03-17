@@ -8,7 +8,7 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPBaseTestCase.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MPCommerceEventTests : MPBaseTestCase
 

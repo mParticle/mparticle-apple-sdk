@@ -5,7 +5,7 @@
 #import "MPILogger.h"
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MParticle()
 

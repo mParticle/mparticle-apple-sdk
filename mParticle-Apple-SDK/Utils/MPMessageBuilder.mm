@@ -16,7 +16,7 @@
 #import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";

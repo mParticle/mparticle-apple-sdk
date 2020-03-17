@@ -6,7 +6,7 @@
 #import "MPSession.h"
 #import "MPProduct.h"
 #import "MPPersistenceController.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPBaseTestCase.h"
 

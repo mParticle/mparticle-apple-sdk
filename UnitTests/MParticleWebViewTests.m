@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MParticleWebView.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "OCMock.h"
 #import "MPApplication.h"
 #import <UIKit/UIKit.h>

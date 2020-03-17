@@ -11,7 +11,7 @@
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
 #import "MPIConstants.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPILogger.h"
 

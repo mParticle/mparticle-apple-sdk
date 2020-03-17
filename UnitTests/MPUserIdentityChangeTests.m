@@ -2,7 +2,7 @@
 #import "MPUserIdentityChange.h"
 #import "MPIdentityApiRequest.h"
 #import "MParticleUser.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "MPBackendController.h"

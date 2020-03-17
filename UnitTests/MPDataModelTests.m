@@ -7,7 +7,7 @@
 #import "MPStateMachine.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 

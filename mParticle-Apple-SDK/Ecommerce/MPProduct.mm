@@ -4,7 +4,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSNumber+MPFormatter.h"
 #import "MPILogger.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 // Internal
 NSString *const kMPProductBrand = @"br";

@@ -1,5 +1,5 @@
 #import "MPArchivist.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPILogger.h"
 
 @implementation MPArchivist

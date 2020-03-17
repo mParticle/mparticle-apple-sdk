@@ -3,7 +3,7 @@
 //
 
 #import "MPAliasRequest.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MPAliasRequest ()
 

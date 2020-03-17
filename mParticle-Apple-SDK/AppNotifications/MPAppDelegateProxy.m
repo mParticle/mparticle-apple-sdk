@@ -2,7 +2,7 @@
 #import "MPIConstants.h"
 #import "MPSurrogateAppDelegate.h"
 #import "MPILogger.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import <objc/runtime.h>
 
 @interface MPAppDelegateProxy() {

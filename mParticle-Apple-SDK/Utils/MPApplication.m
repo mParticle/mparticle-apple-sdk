@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPSearchAdsAttribution.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
 NSString *const kMPApplicationNameKey = @"an";

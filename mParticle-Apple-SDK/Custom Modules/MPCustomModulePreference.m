@@ -4,7 +4,7 @@
 #import "MPILogger.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MPCustomModulePreference()
 

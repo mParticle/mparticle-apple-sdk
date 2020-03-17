@@ -1,7 +1,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPDateFormatter.h"
 #import "MPILogger.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @implementation NSDictionary(MPCaseInsensitive)
 

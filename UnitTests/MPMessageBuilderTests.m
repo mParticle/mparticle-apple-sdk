@@ -16,7 +16,7 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
 #import "MPPersistenceController.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "OCMock.h"

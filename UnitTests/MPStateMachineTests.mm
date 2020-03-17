@@ -4,7 +4,7 @@
 #import "MPConsumerInfo.h"
 #import "MPLaunchInfo.h"
 #import "MPBaseTestCase.h"
-#import "MParticle.h"
+#import "mParticle.h"
 #import "MPKitContainer.h"
 #import "OCMock.h"
 

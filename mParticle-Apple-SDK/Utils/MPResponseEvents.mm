@@ -5,7 +5,7 @@
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import "MPSession.h"
-#import "MParticle.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 
