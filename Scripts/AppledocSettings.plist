@@ -10,13 +10,7 @@
 	<string>4</string>
 	<key>--input</key>
 	<array>
-		<string>../mParticle-Apple-SDK/mParticle.h</string>
-		<string>../mParticle-Apple-SDK/Event</string>
-		<string>../mParticle-Apple-SDK/Ecommerce</string>
-		<string>../mParticle-Apple-SDK/Identity</string>
-		<string>../mParticle-Apple-SDK/Consent</string>
-		<string>../mParticle-Apple-SDK/MPEnums.h</string>
-		<string>../mParticle-Apple-SDK/Segments</string>
+		<string>../mParticle-Apple-SDK/Include/</string>
 	</array>
 	<key>--output</key>
 	<string>Docs</string>

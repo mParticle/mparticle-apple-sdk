@@ -1,3 +1,5 @@
+#import "MPPromotion.h"
+
 @interface MPPromotion(Dictionary)
 
 - (NSDictionary<NSString *, NSString *> *)dictionaryRepresentation;

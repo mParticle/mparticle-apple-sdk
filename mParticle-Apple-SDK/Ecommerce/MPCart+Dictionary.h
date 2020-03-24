@@ -1,3 +1,5 @@
+#import "MPCart.h"
+
 @interface MPCart(Dictionary)
 
 - (void)addProducts:(nonnull NSArray<MPProduct *> *)products logEvent:(BOOL)logEvent updateProductList:(BOOL)updateProductList;

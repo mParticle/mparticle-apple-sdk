@@ -39,6 +39,7 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
+    s.exclude_files = "mParticle-Apple-SDK/mParticle-Apple-SDK.modulemap"
     s.ios.deployment_target  = "8.0"
     s.tvos.deployment_target = "9.0"
 
