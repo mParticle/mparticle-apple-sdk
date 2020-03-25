@@ -1,5 +1,16 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.7
+
+### Core
+
+- Add support for Swift Package Manager
+- Cleanup deprecated UIApplication calls
+
+### Kits
+
+- Optimizely - Fix constant naming
+
 ## 7.15.6
 
 ### Core
