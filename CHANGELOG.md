@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.8
+
+### Core
+
+- Fix CocoaPods warning
+
+### Kits
+
+- None
+
 ## 7.15.7
 
 ### Core
