@@ -39,7 +39,6 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
-    s.exclude_files = "mParticle-Apple-SDK/mParticle-Apple-SDK.modulemap"
     s.ios.deployment_target  = "8.0"
     s.tvos.deployment_target = "9.0"
 
@@ -47,7 +46,7 @@ Pod::Spec.new do |s|
         ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*'
+        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
         ss.libraries            = 'c++', 'sqlite3', 'z'
 
         ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
@@ -60,7 +59,7 @@ Pod::Spec.new do |s|
         ext.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*'
+        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
         ext.libraries            = 'c++', 'sqlite3', 'z'
 
         ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
