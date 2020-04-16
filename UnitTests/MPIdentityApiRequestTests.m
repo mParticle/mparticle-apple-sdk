@@ -49,4 +49,12 @@
     XCTAssert(isImmutableKind && !isMutableKind);
 }
 
+- (void)testIdentitiesAreNotNull {
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    request.customerId = nil;
+    request.email = nil;
+    XCTAssertNotEqual((NSNull *)request.email, [NSNull null]);
+    XCTAssertNotEqual((NSNull *)request.customerId, [NSNull null]);
+}
+
 @end

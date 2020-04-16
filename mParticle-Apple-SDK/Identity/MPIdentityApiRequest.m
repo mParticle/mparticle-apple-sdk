@@ -131,7 +131,11 @@
 }
 
 - (NSString *)email {
-    return _mutableUserIdentities[@(MPUserIdentityEmail)];
+    NSString *result = _mutableUserIdentities[@(MPUserIdentityEmail)];
+    if ((NSNull *)result == [NSNull null]) {
+        result = nil;
+    }
+    return result;
 }
 
 - (void)setEmail:(NSString *)email {
@@ -139,7 +143,11 @@
 }
 
 - (NSString *)customerId {
-    return _mutableUserIdentities[@(MPUserIdentityCustomerId)];
+    NSString *result = _mutableUserIdentities[@(MPUserIdentityCustomerId)];
+    if ((NSNull *)result == [NSNull null]) {
+        result = nil;
+    }
+    return result;
 }
 
 - (void)setCustomerId:(NSString *)customerId {
