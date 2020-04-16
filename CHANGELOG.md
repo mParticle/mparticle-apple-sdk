@@ -1,5 +1,19 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.9
+
+### Core
+
+- Guard against NSNull properties in identity requests
+- Add MPUploadBuilder precautions
+
+### Kits
+
+- Adjust - Update Adjust SDK to 4.20.0
+- Appboy - Support ABKURLDelegate
+- Apptimize - Update Apptimize SDK to 3.0
+- Branch - Update docs link, Branch SDK to 0.33.0
+
 ## 7.15.8
 
 ### Core
