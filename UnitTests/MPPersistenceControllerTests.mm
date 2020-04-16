@@ -756,10 +756,12 @@
     XCTAssertEqualObjects(forwardRecord, fetchedForwardRecord);
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent session:session messageInfo:@{}];
+    MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
                                                                   sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[]
+                                                                   messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
                                                              uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
                                                                  dataPlanId:@"test"

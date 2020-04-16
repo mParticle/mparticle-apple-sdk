@@ -39,10 +39,8 @@ using namespace std;
 @implementation MPUploadBuilder
 
 - (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
-    NSAssert(messages, @"Messages cannot be nil.");
-    
     self = [super init];
-    if (!self || !messages) {
+    if (!self || !messages || messages.count == 0) {
         return nil;
     }
     
@@ -54,15 +52,17 @@ using namespace std;
     _preparedMessageIds = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
 
     [messages enumerateObjectsUsingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
-        if ([message.messageType isEqualToString:[NSString stringWithCString:mParticle::MessageTypeName::nameForMessageType(static_cast<mParticle::MessageType>(MPMessageTypeOptOut)).c_str() encoding:NSUTF8StringEncoding]]) {
-            self->containsOptOutMessage = YES;
-        }
-        
-        [self->_preparedMessageIds addObject:@(message.messageId)];
-        
-        NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
-        if (messageDictionaryRepresentation) {
-            [messageDictionaries addObject:messageDictionaryRepresentation];
+        if (message != nil && (NSNull *)message != [NSNull null]) {
+            if ([message.messageType isEqualToString:kMPMessageTypeStringOptOut]) {
+                self->containsOptOutMessage = YES;
+            }
+            
+            [self->_preparedMessageIds addObject:@(message.messageId)];
+            
+            NSDictionary *messageDictionaryRepresentation = [message dictionaryRepresentation];
+            if (messageDictionaryRepresentation) {
+                [messageDictionaries addObject:messageDictionaryRepresentation];
+            }
         }
     }];
     
