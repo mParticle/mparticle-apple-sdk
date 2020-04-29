@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.10
+
+### Core
+
+This release fixes a bug in the processing of consent filtering rules in cases when no consent state has been set.
+
+### Kits
+
+- Iterable - Integrate Iterable SDK 6.2
+- Appboy - Expose ABKURLDelegate
+- Radar - Update to Radar SDK 3.0
+
 ## 7.15.9
 
 ### Core
