@@ -377,53 +377,51 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (BOOL)isDisabledByConsentKitFilter:(MPConsentKitFilter *)kitFilter {
-    if (!kitFilter) {
-        return NO;
-    }
-    
     BOOL isMatch = NO;
-    
-    NSArray<MPConsentKitFilterItem *> *itemsArray = kitFilter.filterItems;
-    for (MPConsentKitFilterItem *item in itemsArray) {
-        int hash = item.javascriptHash;
-        
-        NSString *hashString = @(hash).stringValue;
-        BOOL consented = item.consented;
-        
-        MPConsentState *state = [MParticle sharedInstance].identity.currentUser.consentState;
-        
-        if (state == nil) {
-            return NO;
-        }
-        
-        NSDictionary<NSString *, MPGDPRConsent *> *gdprConsentState = [state.gdprConsentState copy];
-        
-        for (NSString *purpose in gdprConsentState) {
+
+    if (kitFilter) {
+        NSArray<MPConsentKitFilterItem *> *itemsArray = kitFilter.filterItems;
+        for (MPConsentKitFilterItem *item in itemsArray) {
+            int hash = item.javascriptHash;
             
-            MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
-            BOOL userConsented = gdprConsent.consented;
+            NSString *hashString = @(hash).stringValue;
+            BOOL consented = item.consented;
             
-            string stringToHash = string(kMPConsentGDPRRegulationType.UTF8String);
-            stringToHash += string([[purpose lowercaseString] UTF8String]);
-            NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+            MPConsentState *state = [MParticle sharedInstance].identity.currentUser.consentState;
             
-            if (consented == userConsented && [purposeHash isEqual:hashString]) {
-                isMatch = YES;
-                break;
+            if (state != nil) {
+                NSDictionary<NSString *, MPGDPRConsent *> *gdprConsentState = [state.gdprConsentState copy];
+                
+                for (NSString *purpose in gdprConsentState) {
+                    
+                    MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
+                    BOOL userConsented = gdprConsent.consented;
+                    
+                    string stringToHash = string(kMPConsentGDPRRegulationType.UTF8String);
+                    stringToHash += string([[purpose lowercaseString] UTF8String]);
+                    NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+                    
+                    if (consented == userConsented && [purposeHash isEqual:hashString]) {
+                        isMatch = YES;
+                        break;
+                    }
+                }
+                
+                MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
+                
+                if (ccpaConsentState != nil) {
+                    string stringToHash = string(kMPConsentCCPARegulationType.UTF8String);
+                    stringToHash += string(kMPConsentCCPAPurposeName.UTF8String);
+                    NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+                    
+                    if (consented == ccpaConsentState.consented && [purposeHash isEqual:hashString]) {
+                        isMatch = YES;
+                        break;
+                    }
+                }
             }
-        }
-        
-        MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
-        
-        if (ccpaConsentState != nil) {
-            string stringToHash = string(kMPConsentCCPARegulationType.UTF8String);
-            stringToHash += string(kMPConsentCCPAPurposeName.UTF8String);
-            NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
             
-            if (consented == ccpaConsentState.consented && [purposeHash isEqual:hashString]) {
-                isMatch = YES;
-                break;
-            }
+            
         }
     }
     

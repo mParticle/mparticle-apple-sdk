@@ -2022,6 +2022,15 @@
     
     filter.filterItems = [filterItems copy];
     
+    BOOL isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    XCTAssertTrue(isDisabled);
+    
+    filter.shouldIncludeOnMatch = NO;
+    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    XCTAssertFalse(isDisabled);
+    
+    filter.shouldIncludeOnMatch = YES;
+    
     MPConsentState *state = [[MPConsentState alloc] init];
     
     NSMutableDictionary<NSString *,MPGDPRConsent *> *gdprState = [NSMutableDictionary dictionary];
@@ -2044,7 +2053,7 @@
     [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
-    BOOL isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
     filter.shouldIncludeOnMatch = NO;
