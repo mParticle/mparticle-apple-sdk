@@ -1,7 +1,7 @@
 #import "MPIConstants.h"
 
 // mParticle SDK Version
-NSString *const kMParticleSDKVersion = @"7.15.9";
+NSString *const kMParticleSDKVersion = @"7.15.10";
 
 // Message Type (dt)
 NSString *const kMPMessageTypeKey = @"dt";
