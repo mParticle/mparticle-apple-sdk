@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.15.11
+
+### Core
+
+This release adds support for the new [Blueshift](https://blueshift.com/) kit!
+
+### Kits
+
+- AppsFlyer - Update Carthage binary manifest URL
+
 ## 7.15.10
 
 ### Core
