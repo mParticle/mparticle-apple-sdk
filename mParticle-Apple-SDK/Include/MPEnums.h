@@ -232,7 +232,9 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     /** Kit code for Pilgrim */
     MPKitInstancePilgrim = 211,
     /** Kit code for Google Analytics for Firebase */
-    MPKitInstanceGoogleAnalyticsFirebase = 136
+    MPKitInstanceGoogleAnalyticsFirebase = 136,
+    /** Kit code for Blueshift */
+    MPKitInstanceBlueshift = 1144
 };
 
 /// Log Levels
