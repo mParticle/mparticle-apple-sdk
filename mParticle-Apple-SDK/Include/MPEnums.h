@@ -156,7 +156,25 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
     /** User identity other 3 */
     MPUserIdentityOther3,
     /** User identity other 4 */
-    MPUserIdentityOther4
+    MPUserIdentityOther4,
+    /** User identity other 5 */
+    MPUserIdentityOther5,
+    /** User identity other 6 */
+    MPUserIdentityOther6,
+    /** User identity other 7 */
+    MPUserIdentityOther7,
+    /** User identity other 8 */
+    MPUserIdentityOther8,
+    /** User identity other 9 */
+    MPUserIdentityOther9,
+    /** User identity other 10 */
+    MPUserIdentityOther10,
+    /** User identity mobile number */
+    MPUserIdentityMobileNumber,
+    /** User identity phone number 2 */
+    MPUserIdentityPhoneNumber2,
+    /** User identity phone number 3 */
+    MPUserIdentityPhoneNumber3
 };
 
 /// Kit Instance Codes

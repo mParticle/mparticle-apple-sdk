@@ -273,6 +273,42 @@
                     self->_other4 = obj;
                     break;
                     
+                case MPUserIdentityOther5:
+                    self->_other5 = obj;
+                    break;
+                    
+                case MPUserIdentityOther6:
+                    self->_other6 = obj;
+                    break;
+                    
+                case MPUserIdentityOther7:
+                    self->_other7 = obj;
+                    break;
+                    
+                case MPUserIdentityOther8:
+                    self->_other8 = obj;
+                    break;
+                    
+                case MPUserIdentityOther9:
+                    self->_other9 = obj;
+                    break;
+                    
+                case MPUserIdentityOther10:
+                    self->_other10 = obj;
+                    break;
+                    
+                case MPUserIdentityMobileNumber:
+                    self->_mobileNumber = obj;
+                    break;
+                    
+                case MPUserIdentityPhoneNumber2:
+                    self->_phoneNumber2 = obj;
+                    break;
+                    
+                case MPUserIdentityPhoneNumber3:
+                    self->_phoneNumber3 = obj;
+                    break;
+                    
                 default:
                     break;
             }
@@ -394,6 +430,33 @@
         case MPUserIdentityOther4:
             return @"other4";
             
+        case MPUserIdentityOther5:
+            return @"other5";
+            
+        case MPUserIdentityOther6:
+            return @"other6";
+            
+        case MPUserIdentityOther7:
+            return @"other7";
+            
+        case MPUserIdentityOther8:
+            return @"other8";
+            
+        case MPUserIdentityOther9:
+            return @"other9";
+            
+        case MPUserIdentityOther10:
+            return @"other10";
+            
+        case MPUserIdentityMobileNumber:
+            return @"mobile_number";
+            
+        case MPUserIdentityPhoneNumber2:
+            return @"phone_number_2";
+            
+        case MPUserIdentityPhoneNumber3:
+            return @"phone_number_3";
+            
         default:
             return nil;
     }
@@ -424,6 +487,24 @@
         return @(MPUserIdentityOther3);
     } else if ([identityString isEqualToString:@"other4"]){
         return @(MPUserIdentityOther4);
+    } else if ([identityString isEqualToString:@"other5"]){
+        return @(MPUserIdentityOther5);
+    } else if ([identityString isEqualToString:@"other6"]){
+        return @(MPUserIdentityOther6);
+    } else if ([identityString isEqualToString:@"other7"]){
+        return @(MPUserIdentityOther7);
+    } else if ([identityString isEqualToString:@"other8"]){
+        return @(MPUserIdentityOther8);
+    } else if ([identityString isEqualToString:@"other9"]){
+        return @(MPUserIdentityOther9);
+    } else if ([identityString isEqualToString:@"other10"]){
+        return @(MPUserIdentityOther10);
+    } else if ([identityString isEqualToString:@"mobile_number"]){
+        return @(MPUserIdentityMobileNumber);
+    } else if ([identityString isEqualToString:@"phone_number_2"]){
+        return @(MPUserIdentityPhoneNumber2);
+    } else if ([identityString isEqualToString:@"phone_number_3"]){
+        return @(MPUserIdentityPhoneNumber3);
     } else {
         return nil;
     }

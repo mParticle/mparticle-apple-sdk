@@ -25,6 +25,15 @@
 @property (nonatomic) NSString *other2;
 @property (nonatomic) NSString *other3;
 @property (nonatomic) NSString *other4;
+@property (nonatomic) NSString *other5;
+@property (nonatomic) NSString *other6;
+@property (nonatomic) NSString *other7;
+@property (nonatomic) NSString *other8;
+@property (nonatomic) NSString *other9;
+@property (nonatomic) NSString *other10;
+@property (nonatomic) NSString *mobileNumber;
+@property (nonatomic) NSString *phoneNumber2;
+@property (nonatomic) NSString *phoneNumber3;
 
 - (NSDictionary *)dictionaryRepresentation;
 - (instancetype)initWithIdentities:(NSDictionary *)identities;

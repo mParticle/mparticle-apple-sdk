@@ -94,6 +94,42 @@
                 knownIdentities[@"other4"] = obj;
                 break;
                 
+            case MPUserIdentityOther5:
+                knownIdentities[@"other5"] = obj;
+                break;
+                
+            case MPUserIdentityOther6:
+                knownIdentities[@"other6"] = obj;
+                break;
+                
+            case MPUserIdentityOther7:
+                knownIdentities[@"other7"] = obj;
+                break;
+                
+            case MPUserIdentityOther8:
+                knownIdentities[@"other8"] = obj;
+                break;
+                
+            case MPUserIdentityOther9:
+                knownIdentities[@"other9"] = obj;
+                break;
+                
+            case MPUserIdentityOther10:
+                knownIdentities[@"other10"] = obj;
+                break;
+                
+            case MPUserIdentityMobileNumber:
+                knownIdentities[@"mobile_number"] = obj;
+                break;
+                
+            case MPUserIdentityPhoneNumber2:
+                knownIdentities[@"phone_number_2"] = obj;
+                break;
+                
+            case MPUserIdentityPhoneNumber3:
+                knownIdentities[@"phone_number_3"] = obj;
+                break;
+                
             case MPUserIdentityTwitter:
                 knownIdentities[@"twitter"] = obj;
                 break;

@@ -78,6 +78,15 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setUserIdentity:@"other id 2" identityType:MPUserIdentityOther2];
     [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
     [request setUserIdentity:@"other id 4" identityType:MPUserIdentityOther4];
+    [request setUserIdentity:@"other id 5" identityType:MPUserIdentityOther5];
+    [request setUserIdentity:@"other id 6" identityType:MPUserIdentityOther6];
+    [request setUserIdentity:@"other id 7" identityType:MPUserIdentityOther7];
+    [request setUserIdentity:@"other id 8" identityType:MPUserIdentityOther8];
+    [request setUserIdentity:@"other id 9" identityType:MPUserIdentityOther9];
+    [request setUserIdentity:@"other id 10" identityType:MPUserIdentityOther10];
+    [request setUserIdentity:@"mobile number" identityType:MPUserIdentityMobileNumber];
+    [request setUserIdentity:@"phone number 2" identityType:MPUserIdentityPhoneNumber2];
+    [request setUserIdentity:@"phone number 3" identityType:MPUserIdentityPhoneNumber3];
     
     MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.userIdentities];
     
@@ -85,6 +94,15 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
     XCTAssertEqual(@"other id 3", httpIdentities.other3);
     XCTAssertEqual(@"other id 4", httpIdentities.other4);
+    XCTAssertEqual(@"other id 5", httpIdentities.other5);
+    XCTAssertEqual(@"other id 6", httpIdentities.other6);
+    XCTAssertEqual(@"other id 7", httpIdentities.other7);
+    XCTAssertEqual(@"other id 8", httpIdentities.other8);
+    XCTAssertEqual(@"other id 9", httpIdentities.other9);
+    XCTAssertEqual(@"other id 10", httpIdentities.other10);
+    XCTAssertEqual(@"mobile number", httpIdentities.mobileNumber);
+    XCTAssertEqual(@"phone number 2", httpIdentities.phoneNumber2);
+    XCTAssertEqual(@"phone number 3", httpIdentities.phoneNumber3);
 }
 
 - (void)testNoEmptyModifyRequests {

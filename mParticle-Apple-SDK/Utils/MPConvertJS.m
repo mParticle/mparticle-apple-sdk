@@ -20,7 +20,16 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     MPJSIdentityTypeFacebookCustomAudienceId,
     MPJSIdentityTypeOther2,
     MPJSIdentityTypeOther3,
-    MPJSIdentityTypeOther4
+    MPJSIdentityTypeOther4,
+    MPJSIdentityTypeOther5,
+    MPJSIdentityTypeOther6,
+    MPJSIdentityTypeOther7,
+    MPJSIdentityTypeOther8,
+    MPJSIdentityTypeOther9,
+    MPJSIdentityTypeOther10,
+    MPJSIdentityTypeMobileNumber,
+    MPJSIdentityTypePhoneNumber2,
+    MPJSIdentityTypePhoneNumber3
 };
 
 @implementation MPConvertJS
@@ -358,6 +367,42 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
             
         case MPJSIdentityTypeOther4:
             localIdentity = MPUserIdentityOther4;
+            break;
+            
+        case MPJSIdentityTypeOther5:
+            localIdentity = MPUserIdentityOther5;
+            break;
+            
+        case MPJSIdentityTypeOther6:
+            localIdentity = MPUserIdentityOther6;
+            break;
+            
+        case MPJSIdentityTypeOther7:
+            localIdentity = MPUserIdentityOther7;
+            break;
+            
+        case MPJSIdentityTypeOther8:
+            localIdentity = MPUserIdentityOther8;
+            break;
+            
+        case MPJSIdentityTypeOther9:
+            localIdentity = MPUserIdentityOther9;
+            break;
+            
+        case MPJSIdentityTypeOther10:
+            localIdentity = MPUserIdentityOther10;
+            break;
+            
+        case MPJSIdentityTypeMobileNumber:
+            localIdentity = MPUserIdentityMobileNumber;
+            break;
+            
+        case MPJSIdentityTypePhoneNumber2:
+            localIdentity = MPUserIdentityPhoneNumber2;
+            break;
+            
+        case MPJSIdentityTypePhoneNumber3:
+            localIdentity = MPUserIdentityPhoneNumber3;
             break;
             
         default:
