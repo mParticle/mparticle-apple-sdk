@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.16.0
+
+### Core
+
+- Add other5-10 and phone number identity types
+
+### Kits
+
+- Appboy - Add type detection
+- Optimizely - Remove Carthage build phase
+- Branch - Include Custom Attributes for Commerce Events
+
 ## 7.15.11
 
 ### Core
