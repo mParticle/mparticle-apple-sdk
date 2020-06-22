@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.16.1
+
+### Core
+
+- None
+
+### Kits
+
+- AppsFlyer - Update to AppsFlyer SDK 5.4
+- Branch - Make CommerceEvent customAttributes Strings Values Only
+- Clevertap - Update to CleverTap SDK 3.8.0
+
 ## 7.16.0
 
 ### Core
