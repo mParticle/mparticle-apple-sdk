@@ -553,9 +553,12 @@ int main(int argc, char *argv[]);
     NSData *pushNotificationToken;
     if (![MPStateMachine isAppExtension]) {
         pushNotificationToken = [MPNotificationController deviceToken];
-    }
-    if (pushNotificationToken) {
-        deviceDictionary[kMPDeviceTokenKey] = [NSString stringWithFormat:@"%@", pushNotificationToken];
+        if (pushNotificationToken) {
+            NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:pushNotificationToken];
+            if (tokenString) {
+                deviceDictionary[kMPDeviceTokenKey] = tokenString;
+            }
+        }
     }
 #endif
     

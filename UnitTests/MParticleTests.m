@@ -8,6 +8,7 @@
 #import "MPURLRequestBuilder.h"
 #import "MParticleWebView.h"
 #import "MPPersistenceController.h"
+#import "MPIUserDefaults.h"
 
 @interface MParticle ()
 
@@ -134,6 +135,10 @@
 
 #if TARGET_OS_IOS == 1
 - (void)testAutoTrackingContentAvail {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
+    userDefaults[kMPDeviceTokenKey] = testDeviceToken;
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];

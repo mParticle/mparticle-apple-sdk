@@ -70,7 +70,7 @@ static NSData *deviceToken = nil;
         
         if (oldDeviceToken) {
             deviceTokenDictionary[kMPRemoteNotificationOldDeviceTokenKey] = oldDeviceToken;
-            oldTokenString = [[NSString alloc] initWithData:oldDeviceToken encoding:NSUTF8StringEncoding];
+            oldTokenString = [MPIUserDefaults stringFromDeviceToken:oldDeviceToken];
         }
 
         [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationDeviceTokenNotification

@@ -2100,10 +2100,13 @@ static BOOL skipNextUpload = NO;
             logDeviceToken = oldDeviceToken;
             status = @"false";
         }
+        NSMutableDictionary *messageInfo = [@{kMPPushStatusKey:status}
+        mutableCopy];
         
-        NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[MPIUserDefaults stringFromDeviceToken:logDeviceToken],
-                                              kMPPushStatusKey:status}
-                                            mutableCopy];
+        NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:logDeviceToken];
+        if (tokenString) {
+            messageInfo[kMPDeviceTokenKey] = tokenString;
+        }
         
         if ([MParticle sharedInstance].stateMachine.deviceTokenType.length > 0) {
             messageInfo[kMPDeviceTokenTypeKey] = [MParticle sharedInstance].stateMachine.deviceTokenType;
@@ -2115,20 +2118,24 @@ static BOOL skipNextUpload = NO;
         [self saveMessage:message updateSession:YES];
         
         if (deviceToken) {
-            MPILogDebug(@"Set Device Token: %@", deviceToken);
+            MPILogDebug(@"Set Device Token: %@", [MPIUserDefaults stringFromDeviceToken:deviceToken]);
         } else {
-            MPILogDebug(@"Reset Device Token: %@", oldDeviceToken);
+            MPILogDebug(@"Reset Device Token: %@", [MPIUserDefaults stringFromDeviceToken:oldDeviceToken]);
         }
     });
 }
 
 - (void)logUserNotification:(MParticleUserNotification *)userNotification {
-    NSMutableDictionary *messageInfo = [@{kMPDeviceTokenKey:[NSString stringWithFormat:@"%@", [MPNotificationController deviceToken]],
-                                          kMPPushNotificationStateKey:userNotification.state,
+    NSMutableDictionary *messageInfo = [@{kMPPushNotificationStateKey:userNotification.state,
                                           kMPPushMessageProviderKey:kMPPushMessageProviderValue,
                                           kMPPushMessageTypeKey:userNotification.type}
                                         mutableCopy];
     
+    NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController deviceToken]];
+    if (tokenString) {
+        messageInfo[kMPDeviceTokenKey] = tokenString;
+    }
+                             
     if (userNotification.redactedUserNotificationString) {
         messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
     }

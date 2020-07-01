@@ -9,6 +9,7 @@
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
+#import "MPIUserDefaults.h"
 
 @interface MParticle ()
 
@@ -78,9 +79,12 @@
         
 #if TARGET_OS_IOS == 1
         if (![MPStateMachine isAppExtension]) {
-            NSString *deviceToken = [[NSString alloc] initWithData:[MPNotificationController deviceToken] encoding:NSUTF8StringEncoding];
-            if (deviceToken) {
-                _knownIdentities.pushToken = deviceToken;
+            NSData *deviceTokenData = [MPNotificationController deviceToken];
+            if (deviceTokenData) {
+                NSString *deviceTokenString = [MPIUserDefaults stringFromDeviceToken:deviceTokenData];
+                if (deviceTokenString && [deviceTokenString length] > 0) {
+                    _knownIdentities.pushToken = deviceTokenString;
+                }
             }
         }
 #endif

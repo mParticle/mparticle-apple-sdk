@@ -448,7 +448,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
 + (NSString *)stringFromDeviceToken:(NSData *)deviceToken {
     NSUInteger length = deviceToken.length;
-    if (length == 0) {
+    if (deviceToken == nil || length == 0) {
         return nil;
     }
     const unsigned char *buffer = deviceToken.bytes;

@@ -1332,4 +1332,28 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     [mockBackendController stopMocking];
 }
 
+#if TARGET_OS_IOS == 1
+- (void)testHandleDeviceTokenNotification {
+    id mockBackendController = OCMPartialMock(self.backendController);
+    
+    NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
+    
+    [[mockBackendController expect] saveMessage:[OCMArg checkWithBlock:^BOOL(id value) {
+        XCTAssert([value isKindOfClass:[MPMessage class]]);
+        MPMessage *returnedMessage = ((MPMessage *)value);
+        NSDictionary *dic = [NSJSONSerialization JSONObjectWithData:returnedMessage.messageData options:0 error:nil];
+        XCTAssertEqualObjects(dic[@"to"], [MPIUserDefaults stringFromDeviceToken:testDeviceToken]);
+        
+        return YES;
+    }] updateSession:YES];
+    
+    NSNotification *testNotification = [[NSNotification alloc] initWithName:@"tester" object:self userInfo:@{@"foo-notif-key-1":@"foo-notif-value-1", kMPRemoteNotificationDeviceTokenKey:testDeviceToken}];
+    
+    [mockBackendController handleDeviceTokenNotification:testNotification];
+    
+    [mockBackendController verifyWithDelay:1.0];
+    [mockBackendController stopMocking];
+}
+#endif
+
 @end
