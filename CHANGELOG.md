@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.16.2
+
+### Core
+
+- Fix Device Token Format
+
+This resolves an issue on iOS 13 where an invalid device token could be sent.
+
+### Kits
+
+- Adobe - Update to Media SDK 1.3.0
+
 ## 7.16.1
 
 ### Core
