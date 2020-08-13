@@ -39,7 +39,7 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
-    s.ios.deployment_target  = "8.0"
+    s.ios.deployment_target  = "9.0"
     s.tvos.deployment_target = "9.0"
 
     s.subspec 'mParticle' do |ss|

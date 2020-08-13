@@ -25,8 +25,6 @@
 #import "MPResponseConfig.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPCart.h"
-#import "MPCart+Dictionary.h"
 #include "MessageTypeName.h"
 #import "MPKitContainer.h"
 #import "MPUserAttributeChange.h"
@@ -1547,31 +1545,6 @@ static BOOL skipNextUpload = NO;
     
     [self logBaseEvent:commerceEvent
      completionHandler:^(MPBaseEvent *baseEvent, MPExecStatus execStatus) {
-         // Update cart
-        #pragma clang diagnostic push
-        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-         NSArray *products = nil;
-         if (((MPCommerceEvent *)baseEvent).action == MPCommerceEventActionAddToCart) {
-             products = [((MPCommerceEvent *)baseEvent) addedProducts];
-             
-             if (products) {
-                 [[MParticle sharedInstance].identity.currentUser.cart addProducts:products logEvent:NO updateProductList:YES];
-                 [((MPCommerceEvent *)baseEvent) resetLatestProducts];
-             } else {
-                 MPILogWarning(@"Commerce event products were not added to the cart.");
-             }
-         } else if (((MPCommerceEvent *)baseEvent).action == MPCommerceEventActionRemoveFromCart) {
-             products = [((MPCommerceEvent *)baseEvent) removedProducts];
-             
-             if (products) {
-                 [[MParticle sharedInstance].identity.currentUser.cart removeProducts:products logEvent:NO updateProductList:YES];
-                 [((MPCommerceEvent *)baseEvent) resetLatestProducts];
-             } else {
-                 MPILogWarning(@"Commerce event products were not removed from the cart.");
-             }
-         }  
-         #pragma clang diagnostic pop
-
          completionHandler((MPCommerceEvent *)baseEvent, execStatus);
      }];
 }

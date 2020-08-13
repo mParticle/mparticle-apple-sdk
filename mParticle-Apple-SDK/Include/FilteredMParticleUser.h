@@ -3,7 +3,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MPCart.h"
 
 @class MParticleUser;
 @class MPKitConfiguration;

@@ -179,11 +179,7 @@
         UIApplication *app = [MPApplication sharedUIApplication];
         
         if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceTrue]) {
-            NSNumber *pushNotificationType = pushNotificationDictionary[kMPRemoteConfigPushNotificationTypeKey];
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-            [app registerForRemoteNotificationTypes:[pushNotificationType integerValue]];
-#pragma clang diagnostic pop
+            [app registerForRemoteNotifications];
         } else if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceFalse]) {
             [app unregisterForRemoteNotifications];
         }

@@ -7,8 +7,6 @@
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPIConstants.h"
-#import "MPCart.h"
-#import "MPCart+Dictionary.h"
 #import "MPEnums.h"
 #include <vector>
 #include "EventTypeName.h"
@@ -96,10 +94,6 @@ static NSArray *actionNames;
     if (!self) {
         return nil;
     }
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    _shoppingCartState = [[MParticle sharedInstance].identity.currentUser.cart dictionaryRepresentation];
-    #pragma clang diagnostic pop
     commerceEventKind = MPCommerceEventKindProduct;
     _messageType = MPMessageTypeCommerceEvent;
 

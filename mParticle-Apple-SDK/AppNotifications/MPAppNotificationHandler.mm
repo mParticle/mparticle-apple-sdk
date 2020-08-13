@@ -107,29 +107,6 @@
     });
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)didRegisterUserNotificationSettings:(UIUserNotificationSettings *)notificationSettings {
-#pragma clang diagnostic pop
-    if ([MParticle sharedInstance].stateMachine.optOut) {
-        return;
-    }
-    
-    SEL didRegisterUserNotificationSettingsSelector = @selector(didRegisterUserNotificationSettings:);
-    
-    MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-    [queueParameters addParameter:notificationSettings];
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:didRegisterUserNotificationSettingsSelector
-                                                          event:nil
-                                                     parameters:queueParameters
-                                                    messageType:MPMessageTypeUnknown
-                                                       userInfo:nil
-         ];
-    });
-}
-
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo {
     if ([MParticle sharedInstance].stateMachine.optOut) {
         return;

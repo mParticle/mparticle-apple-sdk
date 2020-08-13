@@ -67,15 +67,7 @@
         return _annotationKey;
     }
     
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
-#pragma clang diagnostic ignored "-Wunreachable-code"
-    if (@available(iOS 9.0, *)) {
-        _annotationKey = UIApplicationOpenURLOptionsAnnotationKey;
-    } else {
-        _annotationKey = @"UIApplicationOpenURLOptionsAnnotationKey";
-    }
-#pragma clang diagnostic pop
+    _annotationKey = UIApplicationOpenURLOptionsAnnotationKey;
     
     return _annotationKey;
 }
@@ -84,16 +76,9 @@
     if (_sourceAppKey) {
         return _sourceAppKey;
     }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
-#pragma clang diagnostic ignored "-Wunreachable-code"
-    if (@available(iOS 9.0, *)) {
-        _sourceAppKey = UIApplicationOpenURLOptionsSourceApplicationKey;
-    } else {
-        _sourceAppKey = @"UIApplicationOpenURLOptionsSourceApplicationKey";
-    }
-#pragma clang diagnostic pop
 
+    _sourceAppKey = UIApplicationOpenURLOptionsSourceApplicationKey;
+    
     return _sourceAppKey;
 }
 

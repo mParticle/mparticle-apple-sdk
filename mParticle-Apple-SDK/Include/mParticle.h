@@ -1,5 +1,3 @@
-#import "MPCart.h"
-#import "MPCommerce.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -321,13 +319,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @interface MParticle : NSObject
 
 #pragma mark Properties
-
-/**
- This property is an instance of MPCommerce. It is used to execute transactional operations on the shopping cart.
- @see MPCommerce
- @see MPCart
- */
-@property (nonatomic, strong, readonly) MPCommerce *commerce;
 
 /**
  This property is an instance of MPIdentityApi. It allows tracking login, logout, and identity changes.

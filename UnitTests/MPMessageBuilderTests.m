@@ -11,8 +11,6 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPCart.h"
-#import "MPCart+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
 #import "MPPersistenceController.h"

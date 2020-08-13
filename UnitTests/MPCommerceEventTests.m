@@ -612,45 +612,4 @@
     XCTAssertEqualObjects([commerceEvent dictionaryRepresentation], [persistedCommerceEvent dictionaryRepresentation], @"Commerce Event should have been a match.");
 }
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-- (void)testDocsUse {
-    // Get the cart
-    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
-    MPCart *cart = currentUser.cart;
-    
-    // Add products to the cart
-    MPProduct *doubleRoom = [[MPProduct alloc] initWithName:@"Double Room - Econ Rate"
-                                                        sku:@"econ-1"
-                                                   quantity:@4
-                                                      price:@100.00];
-    [cart addProduct:doubleRoom]; // Generates an Add to Cart event
-    
-    MPProduct *spaPackage = [[MPProduct alloc] initWithName:@"Spa Package"
-                                                        sku:@"Spa/Hya"
-                                                   quantity:@1
-                                                      price:@170.00];
-    [cart addProduct:spaPackage]; // Generates an Add to Cart event
-    
-    // Remove products from the cart
-    [cart removeProduct:spaPackage]; // Generates a Remove from Cart event
-    
-    // Summarize the transaction
-    MPTransactionAttributes *attributes = [[MPTransactionAttributes alloc] init];
-    attributes.transactionId = @"foo-transaction-id";
-    attributes.revenue = @430.00;
-    attributes.tax = @30.00;
-    
-    cart = currentUser.cart;
-    XCTAssertEqual(cart.products.count, 1, @"Cart should have 1 product.");
-
-    // Log a purchase with all items currently in the cart
-    MPCommerce *commerce = [[MParticle sharedInstance] commerce];
-    [commerce purchaseWithTransactionAttributes:attributes
-                                      clearCart:YES];
-    cart = currentUser.cart;
-    XCTAssertEqual(cart.products.count, 0, @"Cart should be empty.");
-}
-#pragma clang diagnostic pop
-
 @end

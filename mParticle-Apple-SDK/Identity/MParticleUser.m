@@ -29,12 +29,6 @@
 
 @end
 
-@interface MPCart ()
-
-- (nonnull instancetype)initWithUserId:(NSNumber *_Nonnull)userId;
-
-@end
-
 @interface MPKitContainer ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
@@ -42,8 +36,6 @@
 @end
 
 @implementation MParticleUser
-
-@synthesize cart = _cart;
 
 - (instancetype)init
 {
@@ -68,14 +60,6 @@
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *lastSeenMs = [userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId];
     return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
-}
-
--(MPCart *)cart {
-    if (_cart) {
-        return _cart;
-    }
-    _cart = [[MPCart alloc] initWithUserId:self.userId];
-    return _cart;
 }
 
 -(NSDictionary*) userIdentities {
@@ -123,7 +107,6 @@
 
 - (void)setUserId:(NSNumber *)userId {
     _userId = userId;
-    _cart = [[MPCart alloc] initWithUserId:userId];
 }
 
 - (void)setIsLoggedIn:(BOOL)isLoggedIn {

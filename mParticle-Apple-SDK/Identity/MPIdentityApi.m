@@ -217,16 +217,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)onMPIDChange:(MPIdentityApiRequest *)request httpResponse:(MPIdentityHTTPSuccessResponse *)httpResponse previousUser:(MParticleUser *)previousUser newUser:(MParticleUser *)newUser {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    if (request.onUserAlias) {
-        @try {
-            request.onUserAlias(previousUser, newUser);
-        } @catch (NSException *exception) {
-            MPILogError(@"Identity request - onUserAlias block threw an exception when invoked by the SDK: %@", exception);
-        }
-    }
-#pragma clang diagnostic pop
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
 

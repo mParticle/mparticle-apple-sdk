@@ -1,5 +1,5 @@
 #import "AppDelegate.h"
-#import "mParticle.h"
+#import <mParticle_Apple_SDK/mParticle.h>
 
 @interface AppDelegate ()
 

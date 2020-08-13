@@ -2232,16 +2232,14 @@
     [(id <MPKitProtocol>)[kitWrapperMock expect] openURL:OCMOCK_ANY options:OCMOCK_ANY];
     
     MPForwardQueueParameters *queueParameters = nil;
-    if (@available(iOS 9.0, *)) {
-        NSArray *parameters = @[
-                                [NSURL URLWithString:@"https://www.example.com"],
-                                @{
-                                    UIApplicationOpenURLOptionsSourceApplicationKey:@"test-source-application-1",
-                                    UIApplicationOpenURLOptionsAnnotationKey:@{@"test-annotation-key-1": @"test-annotation-value-1"}
-                                    }
-                                ];
-        queueParameters = [[MPForwardQueueParameters alloc] initWithParameters:parameters];
-    }
+    NSArray *parameters = @[
+                            [NSURL URLWithString:@"https://www.example.com"],
+                            @{
+                                UIApplicationOpenURLOptionsSourceApplicationKey:@"test-source-application-1",
+                                UIApplicationOpenURLOptionsAnnotationKey:@{@"test-annotation-key-1": @"test-annotation-value-1"}
+                                }
+                            ];
+    queueParameters = [[MPForwardQueueParameters alloc] initWithParameters:parameters];
     
     [localKitContainer attemptToLogEventToKit:kitRegisterMock kitFilter:kitFilter selector:selector parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
     [kitWrapperMock verifyWithDelay:5.0];

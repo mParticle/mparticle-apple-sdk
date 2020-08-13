@@ -1,5 +1,5 @@
 #import "MessagesViewController.h"
-#import "mParticle.h"
+#import <mParticle_Apple_SDK/mParticle.h>
 
 @interface MessagesViewController ()
 @property (weak, nonatomic) IBOutlet UIButton *button1;

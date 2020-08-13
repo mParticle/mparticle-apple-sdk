@@ -239,7 +239,6 @@ NSString *const kMPStateKey = @"state";
 #pragma mark - MParticle
 @implementation MParticle
 
-@synthesize commerce = _commerce;
 @synthesize identity = _identity;
 @synthesize optOut = _optOut;
 @synthesize persistenceController = _persistenceController;
@@ -393,15 +392,6 @@ NSString *const kMPStateKey = @"state";
     
     _identity = [[MPIdentityApi alloc] init];
     return _identity;
-}
-
-- (MPCommerce *)commerce {
-    if (_commerce) {
-        return _commerce;
-    }
-    
-    _commerce = [[MPCommerce alloc] init];
-    return _commerce;
 }
 
 - (MPEnvironment)environment {

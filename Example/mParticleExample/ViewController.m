@@ -1,5 +1,5 @@
 #import "ViewController.h"
-#import "mParticle.h"
+#import <mParticle_Apple_SDK/mParticle.h>
 #import <mParticle_Apple_Media_SDK-Swift.h>
 
 @interface ViewController () <UITableViewDataSource, UITableViewDelegate> {
