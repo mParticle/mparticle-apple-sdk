@@ -20,7 +20,7 @@
 
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
 
-+ (nullable NSNumber *)mpId;
++ (NSNumber *_Nonnull)mpId;
 + (void)setMpid:(nonnull NSNumber *)mpId;
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
 + (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;

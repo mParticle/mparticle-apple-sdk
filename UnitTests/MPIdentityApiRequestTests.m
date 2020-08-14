@@ -18,32 +18,32 @@
 
 - (void)testSetNilIdentity {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"foo" identityType:MPUserIdentityOther];
-    XCTAssertEqualObjects(@"foo", [request.userIdentities objectForKey:@(MPUserIdentityOther)]);
-    [request setUserIdentity:nil identityType:MPUserIdentityOther];
-    XCTAssertEqual([NSNull null], [request.userIdentities objectForKey:@(MPUserIdentityOther)]);
+    [request setIdentity:@"foo" identityType:MPIdentityOther];
+    XCTAssertEqualObjects(@"foo", [request.identities objectForKey:@(MPIdentityOther)]);
+    [request setIdentity:nil identityType:MPIdentityOther];
+    XCTAssertEqual([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
 }
 
 - (void)testSetNullIdentity {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"foo" identityType:MPUserIdentityOther];
-    XCTAssertEqualObjects(@"foo", [request.userIdentities objectForKey:@(MPUserIdentityOther)]);
-    [request setUserIdentity:(id)[NSNull null] identityType:MPUserIdentityOther];
-    XCTAssertEqual([NSNull null], [request.userIdentities objectForKey:@(MPUserIdentityOther)]);
+    [request setIdentity:@"foo" identityType:MPIdentityOther];
+    XCTAssertEqualObjects(@"foo", [request.identities objectForKey:@(MPIdentityOther)]);
+    [request setIdentity:(id)[NSNull null] identityType:MPIdentityOther];
+    XCTAssertEqual([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
 }
 
-- (void)testSetUserIdentity {
+- (void)testsetIdentity {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"foo" identityType:MPUserIdentityOther];
-    XCTAssertEqualObjects(@"foo", [request.userIdentities objectForKey:@(MPUserIdentityOther)]);
+    [request setIdentity:@"foo" identityType:MPIdentityOther];
+    XCTAssertEqualObjects(@"foo", [request.identities objectForKey:@(MPIdentityOther)]);
     
-    [request setUserIdentity:@"bar" identityType:MPUserIdentityOther];
-    XCTAssertEqualObjects(@"bar", [request.userIdentities objectForKey:@(MPUserIdentityOther)]);
+    [request setIdentity:@"bar" identityType:MPIdentityOther];
+    XCTAssertEqualObjects(@"bar", [request.identities objectForKey:@(MPIdentityOther)]);
 }
 
 - (void)testImmutableIdentitiesProperty {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    id identities = request.userIdentities;
+    id identities = request.identities;
     BOOL isImmutableKind = [identities isKindOfClass:[NSDictionary class]];
     BOOL isMutableKind = [identities isKindOfClass:[NSMutableDictionary class]];
     XCTAssert(isImmutableKind && !isMutableKind);

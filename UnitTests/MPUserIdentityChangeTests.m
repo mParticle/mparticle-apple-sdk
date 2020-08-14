@@ -35,13 +35,14 @@
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
 
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@example.com"}];
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPIdentityEmail], @"i" : @"test@example.com"}, @{@"n" : [NSNumber numberWithLong:MPIdentityIOSAdvertiserId], @"i" : @"exampleIDFA"}];
     
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    [userDefaults setMPObject:userIdentityArray forKey:kMPIdentityArrayKey userId:currentUser.userId];
     
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:currentUser];
     XCTAssertEqualObjects(request.customerId, @"test");
     XCTAssertEqualObjects(request.email, @"test@example.com");
+    XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityIOSAdvertiserId)], @"exampleIDFA");
 }
 
 - (void)testSelectedUserIdentityRequest {
@@ -62,7 +63,7 @@
     
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@example.com"}];
     
-    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:selectedUser.userId];
+    [userDefaults setMPObject:userIdentityArray forKey:kMPIdentityArrayKey userId:selectedUser.userId];
     
     MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:selectedUser];
     XCTAssertEqualObjects(request.customerId, @"test");

@@ -43,6 +43,7 @@ NSString *const kMPLocationKey = @"lc";
 NSString *const kMPUserAttributeKey = @"ua";
 NSString *const kMPUserAttributeDeletedKey = @"uad";
 NSString *const kMPEventTypePageView = @"pageview";
+NSString *const kMPIdentityArrayKey = @"ai";
 NSString *const kMPUserIdentityArrayKey = @"ui";
 NSString *const kMPUserIdentityIdKey = @"i";
 NSString *const kMPUserIdentityTypeKey = @"n";

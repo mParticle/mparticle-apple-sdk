@@ -38,7 +38,7 @@
 - (NSDictionary *)dictionaryRepresentation;
 - (instancetype)initWithIdentities:(NSDictionary *)identities;
 
-+ (NSString *)stringForIdentityType:(MPUserIdentity)identityType;
++ (NSString *)stringForIdentityType:(MPIdentity)identityType;
 + (NSNumber *)identityTypeForString:(NSString *)identityString;
 
 @end

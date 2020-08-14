@@ -1,6 +1,12 @@
 #import "ViewController.h"
 #import <mParticle_Apple_SDK/mParticle.h>
 #import <mParticle_Apple_Media_SDK-Swift.h>
+#import <AdSupport/AdSupport.h>
+#import "AdSupport/ASIdentifierManager.h"
+#if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
+    #import <AppTrackingTransparency/AppTrackingTransparency.h>
+#endif
+
 
 @interface ViewController () <UITableViewDataSource, UITableViewDelegate> {
     NSArray *selectorNames;
@@ -30,11 +36,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA"];
     
     return _cellTitles;
 }
@@ -281,5 +287,62 @@
         [MParticle sharedInstance].identity.currentUser.consentState = newConsentState;
     }
 }
+    
+- (void)logIDFA:(NSString *) advertiserID {
+    MParticleUser *currentUser = [[MParticle sharedInstance] identity].currentUser;
+    MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:currentUser];
+    [identityRequest setIdentity:advertiserID identityType:MPIdentityIOSAdvertiserId];
+    [[[MParticle sharedInstance] identity] modify:identityRequest completion:^(MPModifyApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        if (error) {
+            NSLog(@"Failed to update IDFA: %@", error);
+        } else {
+            NSLog(@"Update IDFA: %@", apiResult.identityChanges);
+        }
+    }];
+}
+
+- (void)requestIDFA {
+    
+    if (@available(iOS 14, *)) {
+        #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
+        [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler: ^(ATTrackingManagerAuthorizationStatus status){
+            switch (status) {
+                case ATTrackingManagerAuthorizationStatusAuthorized:
+                    // Tracking authorization dialog was shown
+                    // and we are authorized
+                    NSLog(@"Authorized");
+                    [self logIDFA:[[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString]];
+                    break;
+                    
+                case ATTrackingManagerAuthorizationStatusDenied:
+                    // Tracking authorization dialog was
+                    // shown and permission is denied
+                    NSLog(@"Denied");
+                    break;
+                    
+                case ATTrackingManagerAuthorizationStatusNotDetermined:
+                    // Tracking authorization dialog has not been shown
+                    NSLog(@"Not Determined");
+                    break;
+                    
+                case ATTrackingManagerAuthorizationStatusRestricted:
+                    // Tracking authorization dialog has not been shown
+                    NSLog(@"Restricted");
+                    break;
+                    
+                default:
+                    break;
+            }
+        }];
+        #endif
+    } else {
+        // Fallback on earlier versions
+        if ([[ASIdentifierManager sharedManager] isAdvertisingTrackingEnabled]) {
+            [self logIDFA:[[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString]];
+        }
+    }
+    
+}
+
 
 @end

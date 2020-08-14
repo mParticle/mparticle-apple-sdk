@@ -30,7 +30,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MParticleUser ()
 
-- (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType;
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType;
 - (void)setUserId:(NSNumber *)userId;
 @end
 
@@ -81,21 +81,25 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (void)testConstructIdentityApiRequest {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"other id" identityType:MPUserIdentityOther];
-    [request setUserIdentity:@"other id 2" identityType:MPUserIdentityOther2];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
-    [request setUserIdentity:@"other id 4" identityType:MPUserIdentityOther4];
-    [request setUserIdentity:@"other id 5" identityType:MPUserIdentityOther5];
-    [request setUserIdentity:@"other id 6" identityType:MPUserIdentityOther6];
-    [request setUserIdentity:@"other id 7" identityType:MPUserIdentityOther7];
-    [request setUserIdentity:@"other id 8" identityType:MPUserIdentityOther8];
-    [request setUserIdentity:@"other id 9" identityType:MPUserIdentityOther9];
-    [request setUserIdentity:@"other id 10" identityType:MPUserIdentityOther10];
-    [request setUserIdentity:@"mobile number" identityType:MPUserIdentityMobileNumber];
-    [request setUserIdentity:@"phone number 2" identityType:MPUserIdentityPhoneNumber2];
-    [request setUserIdentity:@"phone number 3" identityType:MPUserIdentityPhoneNumber3];
+    [request setIdentity:@"other id" identityType:MPIdentityOther];
+    [request setIdentity:@"other id 2" identityType:MPIdentityOther2];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
+    [request setIdentity:@"other id 4" identityType:MPIdentityOther4];
+    [request setIdentity:@"other id 5" identityType:MPIdentityOther5];
+    [request setIdentity:@"other id 6" identityType:MPIdentityOther6];
+    [request setIdentity:@"other id 7" identityType:MPIdentityOther7];
+    [request setIdentity:@"other id 8" identityType:MPIdentityOther8];
+    [request setIdentity:@"other id 9" identityType:MPIdentityOther9];
+    [request setIdentity:@"other id 10" identityType:MPIdentityOther10];
+    [request setIdentity:@"mobile number" identityType:MPIdentityMobileNumber];
+    [request setIdentity:@"phone number 2" identityType:MPIdentityPhoneNumber2];
+    [request setIdentity:@"phone number 3" identityType:MPIdentityPhoneNumber3];
+    [request setIdentity:@"advertiser" identityType:MPIdentityIOSAdvertiserId];
+    [request setIdentity:@"vendor" identityType:MPIdentityIOSVendorId];
+    [request setIdentity:@"push token" identityType:MPIdentityPushToken];
+    [request setIdentity:@"application stamp" identityType:MPIdentityDeviceApplicationStamp];
     
-    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.userIdentities];
+    MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
     
     XCTAssertEqual(@"other id", httpIdentities.other);
     XCTAssertEqual(@"other id 2", httpIdentities.other2);
@@ -110,6 +114,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertEqual(@"mobile number", httpIdentities.mobileNumber);
     XCTAssertEqual(@"phone number 2", httpIdentities.phoneNumber2);
     XCTAssertEqual(@"phone number 3", httpIdentities.phoneNumber3);
+    XCTAssertEqual(@"advertiser", httpIdentities.advertiserId);
+    XCTAssertEqual(@"vendor", httpIdentities.vendorId);
+    XCTAssertEqual(@"push token", httpIdentities.pushToken);
+    XCTAssertEqual(@"application stamp", httpIdentities.deviceApplicationStamp);
 }
 
 - (void)testNoEmptyModifyRequests {
@@ -168,13 +176,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MParticleUser *changedUser1 = [[MParticleUser alloc] init];
     changedUser1.userId = @123;
     change1.changedUser = changedUser1;
-    change1.changedIdentity = MPUserIdentityEmail;
+    change1.changedIdentity = MPIdentityEmail;
     
     MPIdentityChange *change2 = [[MPIdentityChange alloc] init];
     MParticleUser *changedUser2 = [[MParticleUser alloc] init];
     changedUser2.userId = @456;
     change2.changedUser = changedUser2;
-    change2.changedIdentity = MPUserIdentityCustomerId;
+    change2.changedIdentity = MPIdentityCustomerId;
     
     NSArray<MPIdentityChange *> *changeArray = @[change1, change2];
     
@@ -202,18 +210,18 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock currentUser]).andReturn(mockUser);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"1234" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
     
     [mockUser setExpectationOrderMatters:YES];
-    [[mockUser expect] setUserIdentitySync:@"1234" identityType:MPUserIdentityCustomerId];
-    [[mockUser expect] setUserIdentitySync:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [[mockUser expect] setUserIdentitySync:@"other id 3" identityType:MPUserIdentityOther3];
-    [[mockUser reject] setUserIdentitySync:@"other id 4" identityType:MPUserIdentityOther4];
+    [[mockUser expect] setIdentitySync:@"1234" identityType:MPIdentityCustomerId];
+    [[mockUser expect] setIdentitySync:@"me@gmail.com" identityType:MPIdentityEmail];
+    [[mockUser expect] setIdentitySync:@"other id 3" identityType:MPIdentityOther3];
+    [[mockUser reject] setIdentitySync:@"other id 4" identityType:MPIdentityOther4];
     
     [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
 
@@ -239,9 +247,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"1234" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
@@ -271,9 +279,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"1234" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
@@ -331,9 +339,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"1234" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
@@ -363,9 +371,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"1234" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
@@ -424,9 +432,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"1234" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"1234" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPSuccessResponse *httpResponse = [[MPIdentityHTTPSuccessResponse alloc] init];
@@ -453,18 +461,18 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock currentUser]).andReturn(mockUser);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPModifySuccessResponse *httpResponse = [[MPIdentityHTTPModifySuccessResponse alloc] init];
     
     [mockUser setExpectationOrderMatters:YES];
-    [[mockUser expect] setUserIdentitySync:@"5678" identityType:MPUserIdentityCustomerId];
-    [[mockUser expect] setUserIdentitySync:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [[mockUser expect] setUserIdentitySync:@"other id 3" identityType:MPUserIdentityOther3];
-    [[mockUser reject] setUserIdentitySync:@"other id 4" identityType:MPUserIdentityOther4];
+    [[mockUser expect] setIdentitySync:@"5678" identityType:MPIdentityCustomerId];
+    [[mockUser expect] setIdentitySync:@"me@gmail.com" identityType:MPIdentityEmail];
+    [[mockUser expect] setIdentitySync:@"other id 3" identityType:MPIdentityOther3];
+    [[mockUser reject] setIdentitySync:@"other id 4" identityType:MPIdentityOther4];
     
     [identityMock onModifyRequestComplete:request httpResponse:httpResponse completion:nil error:error];
     
@@ -486,9 +494,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock currentUser]).andReturn(mockUser);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     NSError *error;
     MPIdentityHTTPModifySuccessResponse *httpResponse = [[MPIdentityHTTPModifySuccessResponse alloc] init];
@@ -511,9 +519,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock apiManager]).andReturn(mockManager);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     [[mockManager expect] identify:request completion:OCMOCK_ANY];
     
@@ -530,9 +538,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock apiManager]).andReturn(mockManager);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     [[mockManager expect] loginRequest:request completion:OCMOCK_ANY];
     
@@ -549,9 +557,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock apiManager]).andReturn(mockManager);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     [[mockManager expect] logout:request completion:OCMOCK_ANY];
     
@@ -568,9 +576,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     OCMStub([identityMock apiManager]).andReturn(mockManager);
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"5678" identityType:MPUserIdentityCustomerId];
-    [request setUserIdentity:@"me@gmail.com" identityType:MPUserIdentityEmail];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
+    [request setIdentity:@"5678" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"me@gmail.com" identityType:MPIdentityEmail];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
     
     [[mockManager expect] modify:request completion:OCMOCK_ANY];
     
@@ -695,19 +703,19 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
     
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setUserIdentity:@"other id" identityType:MPUserIdentityOther];
-    [request setUserIdentity:@"other id 2" identityType:MPUserIdentityOther2];
-    [request setUserIdentity:@"other id 3" identityType:MPUserIdentityOther3];
-    [request setUserIdentity:@"other id 4" identityType:MPUserIdentityOther4];
-    [request setUserIdentity:@"other id 5" identityType:MPUserIdentityOther5];
-    [request setUserIdentity:@"other id 6" identityType:MPUserIdentityOther6];
-    [request setUserIdentity:@"other id 7" identityType:MPUserIdentityOther7];
-    [request setUserIdentity:@"other id 8" identityType:MPUserIdentityOther8];
-    [request setUserIdentity:@"other id 9" identityType:MPUserIdentityOther9];
-    [request setUserIdentity:@"other id 10" identityType:MPUserIdentityOther10];
-    [request setUserIdentity:@"mobile number" identityType:MPUserIdentityMobileNumber];
-    [request setUserIdentity:@"phone number 2" identityType:MPUserIdentityPhoneNumber2];
-    [request setUserIdentity:@"phone number 3" identityType:MPUserIdentityPhoneNumber3];
+    [request setIdentity:@"other id" identityType:MPIdentityOther];
+    [request setIdentity:@"other id 2" identityType:MPIdentityOther2];
+    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
+    [request setIdentity:@"other id 4" identityType:MPIdentityOther4];
+    [request setIdentity:@"other id 5" identityType:MPIdentityOther5];
+    [request setIdentity:@"other id 6" identityType:MPIdentityOther6];
+    [request setIdentity:@"other id 7" identityType:MPIdentityOther7];
+    [request setIdentity:@"other id 8" identityType:MPIdentityOther8];
+    [request setIdentity:@"other id 9" identityType:MPIdentityOther9];
+    [request setIdentity:@"other id 10" identityType:MPIdentityOther10];
+    [request setIdentity:@"mobile number" identityType:MPIdentityMobileNumber];
+    [request setIdentity:@"phone number 2" identityType:MPIdentityPhoneNumber2];
+    [request setIdentity:@"phone number 3" identityType:MPIdentityPhoneNumber3];
     
     NSDictionary *dictionary = request.dictionaryRepresentation;
 #if TARGET_OS_IOS == 1

@@ -15,10 +15,6 @@
 #import "MPBackendController.h"
 #import "MPILogger.h"
 
-#if !defined(MP_NO_IDFA)
-    #import "AdSupport/ASIdentifierManager.h"
-#endif
-
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
@@ -118,34 +114,8 @@ int main(int argc, char *argv[]);
 
 #pragma mark Accessors
 - (NSString *)advertiserId {
-    Class MPIdentifierManager = NSClassFromString(@"ASIdentifierManager");
-    if (MPIdentifierManager) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundeclared-selector"
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-        SEL selector = NSSelectorFromString(@"sharedManager");
-        id<NSObject> adIdentityManager = [MPIdentifierManager performSelector:selector];
-        
-        selector = NSSelectorFromString(@"isAdvertisingTrackingEnabled");
-        BOOL advertisingTrackingEnabled = ((BOOL (*)(id, SEL))objc_msgSend)(adIdentityManager, selector);
-        isAdTrackingLimited = !advertisingTrackingEnabled;
-        BOOL alwaysTryToCollectIDFA = [MParticle sharedInstance].stateMachine.alwaysTryToCollectIDFA;
-        if (advertisingTrackingEnabled || alwaysTryToCollectIDFA) {
-            selector = NSSelectorFromString(@"advertisingIdentifier");
-            _advertiserId = [[adIdentityManager performSelector:selector] UUIDString];
-            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-            NSString *previousIDFA = userDefaults[kMPDeviceAdvertiserIdKey];
-            userDefaults[kMPDeviceAdvertiserIdKey] = _advertiserId;
-            if (previousIDFA && ![previousIDFA isEqualToString:_advertiserId]) {
-                [[MParticle sharedInstance].backendController.networkCommunication modifyDeviceID:@"ios_idfa" value:_advertiserId oldValue:previousIDFA];
-            }
-        }
-#pragma clang diagnostic pop
-#pragma clang diagnostic pop
-    }
-
-    return _advertiserId;
+    NSDictionary *userIdentities = [[MParticle sharedInstance] identity].currentUser.identities;
+    return userIdentities[@"ios_idfa"];
 }
 
 - (NSString *)architecture {

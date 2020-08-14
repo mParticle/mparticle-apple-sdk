@@ -17,11 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 + (MPIdentityApiRequest *)requestWithEmptyUser;
 + (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user;
 
-- (void)setUserIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType;
+- (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 
 @property (nonatomic, strong, nullable) NSString *email;
 @property (nonatomic, strong, nullable) NSString *customerId;
-@property (nonatomic, strong, nullable, readonly) NSDictionary *userIdentities;
+@property (nonatomic, strong, nullable, readonly) NSDictionary *identities;
 
 @end
 

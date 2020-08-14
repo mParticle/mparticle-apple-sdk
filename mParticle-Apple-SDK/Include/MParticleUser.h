@@ -43,6 +43,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *userIdentities;
 
 /**
+ Gets current identities (readonly)
+ @returns A dictionary containing the collection of all identities including device identities
+ @see MPIdentity
+ */
+@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *identities;
+
+/**
  Gets/sets all user attributes.
  @returns A dictionary containing the collection of user attributes.
  */

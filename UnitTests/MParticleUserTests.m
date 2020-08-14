@@ -45,5 +45,12 @@
                                                       execStatus:MPExecStatusSuccess]);
 }
 
+- (void)testForwardLegacyIdentityToKitsWithUserIdentity {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    XCTAssertTrue([user forwardLegacyUserIdentityToKitContainer:@"foo"
+                                                   identityType:MPUserIdentityEmail
+                                                     execStatus:MPExecStatusSuccess]);
+}
+
 
 @end

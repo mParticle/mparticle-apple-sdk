@@ -130,6 +130,7 @@ typedef NS_ENUM(NSUInteger, MPSurveyProvider) {
 };
 
 /// User Identities
+/// The identities in this enum are limited to end-user forms of identity. A new enum, MPIdentity, has been provided to cover all valid forms of identity supported by the mParticle Identity API (user identities and device identities)
 typedef NS_ENUM(NSUInteger, MPUserIdentity) {
     /** User identity other */
     MPUserIdentityOther = 0,
@@ -175,6 +176,62 @@ typedef NS_ENUM(NSUInteger, MPUserIdentity) {
     MPUserIdentityPhoneNumber2,
     /** User identity phone number 3 */
     MPUserIdentityPhoneNumber3
+};
+
+/// MP Identities
+typedef NS_ENUM(NSUInteger, MPIdentity) {
+    /** User identity other */
+    MPIdentityOther = 0,
+    /** User identity customer id. This is an id issued by your own system */
+    MPIdentityCustomerId,
+    /** User identity Facebook */
+    MPIdentityFacebook,
+    /** User identity Twitter */
+    MPIdentityTwitter,
+    /** User identity Google */
+    MPIdentityGoogle,
+    /** User identity Microsoft */
+    MPIdentityMicrosoft,
+    /** User identity Yahoo! */
+    MPIdentityYahoo,
+    /** User identity Email */
+    MPIdentityEmail,
+    /** User identity Alias */
+    MPIdentityAlias,
+    /** User identity Facebook Custom Audience Third Party Id, or User App Id */
+    MPIdentityFacebookCustomAudienceId,
+    /** User identity other 2 */
+    MPIdentityOther2,
+    /** User identity other 3 */
+    MPIdentityOther3,
+    /** User identity other 4 */
+    MPIdentityOther4,
+    /** User identity other 5 */
+    MPIdentityOther5,
+    /** User identity other 6 */
+    MPIdentityOther6,
+    /** User identity other 7 */
+    MPIdentityOther7,
+    /** User identity other 8 */
+    MPIdentityOther8,
+    /** User identity other 9 */
+    MPIdentityOther9,
+    /** User identity other 10 */
+    MPIdentityOther10,
+    /** User identity mobile number */
+    MPIdentityMobileNumber,
+    /** User identity phone number 2 */
+    MPIdentityPhoneNumber2,
+    /** User identity phone number 3 */
+    MPIdentityPhoneNumber3,
+    /** Device identity advertiser  */
+    MPIdentityIOSAdvertiserId,
+    /** Device identity vendor  */
+    MPIdentityIOSVendorId,
+    /** Device identity Push Token  */
+    MPIdentityPushToken,
+    /** Device identity Application Stamp  */
+    MPIdentityDeviceApplicationStamp
 };
 
 /// Kit Instance Codes
@@ -472,5 +529,11 @@ extern NSString * _Nonnull const mParticleGenderNotAvailable;
  */
 extern NSString * _Nonnull const MPKitAPIErrorDomain;
 extern NSString * _Nonnull const MPKitAPIErrorKey;
+
+@interface MPEnum : NSObject
+
++ (BOOL)isUserIdentity:(MPIdentity)identity;
+
+@end
 
 #endif

@@ -8,9 +8,10 @@
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
+#import "MPIdentityDTO.h"
 
 @interface MPIdentityApiRequest ()
-@property (nonatomic) NSMutableDictionary *mutableUserIdentities;
+@property (nonatomic) NSMutableDictionary *mutableIdentities;
 @end
 
 @implementation MPIdentityApiRequest
@@ -19,17 +20,17 @@
 {
     self = [super init];
     if (self) {
-        _mutableUserIdentities = [NSMutableDictionary dictionary];
+        _mutableIdentities = [NSMutableDictionary dictionary];
     }
     return self;
 }
 
-- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+- (void)setIdentity:(NSString *)identityString identityType:(MPIdentity)identityType {
     if (MPIsNull(identityString)) {
-        [_mutableUserIdentities setObject:(NSString *)[NSNull null]
+        [_mutableIdentities setObject:(NSString *)[NSNull null]
                             forKey:@(identityType)];
     } else if ([identityString length] > 0) {
-        [_mutableUserIdentities setObject:identityString
+        [_mutableIdentities setObject:identityString
                             forKey:@(identityType)];
     }
 }
@@ -40,9 +41,9 @@
 
 + (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user {
     MPIdentityApiRequest *request = [[self alloc] init];
-    [user.userIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        MPUserIdentity identityType = [key intValue];
-        [request setUserIdentity:obj identityType:identityType];
+    [user.identities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+        MPIdentity identityType = [key intValue];
+        [request setIdentity:obj identityType:identityType];
     }];
 
     return request;
@@ -51,107 +52,16 @@
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     NSMutableDictionary *knownIdentities = [NSMutableDictionary dictionary];
     
-    [_mutableUserIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
+    [_mutableIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
         
-        MPUserIdentity identityType = [key intValue];
-        switch (identityType) {
-            case MPUserIdentityCustomerId:
-                knownIdentities[@"customerid"] = obj;
-                break;
-                
-            case MPUserIdentityEmail:
-                knownIdentities[@"email"] = obj;
-                break;
-                
-            case MPUserIdentityFacebook:
-                knownIdentities[@"facebook"] = obj;
-                break;
-                
-            case MPUserIdentityFacebookCustomAudienceId:
-                knownIdentities[@"facebookcustomaudienceid"] = obj;
-                break;
-                
-            case MPUserIdentityGoogle:
-                knownIdentities[@"google"] = obj;
-                break;
-                
-            case MPUserIdentityMicrosoft:
-                knownIdentities[@"microsoft"] = obj;
-                break;
-                
-            case MPUserIdentityOther:
-                knownIdentities[@"other"] = obj;
-                break;
-                
-            case MPUserIdentityOther2:
-                knownIdentities[@"other2"] = obj;
-                break;
-                
-            case MPUserIdentityOther3:
-                knownIdentities[@"other3"] = obj;
-                break;
-                
-            case MPUserIdentityOther4:
-                knownIdentities[@"other4"] = obj;
-                break;
-                
-            case MPUserIdentityOther5:
-                knownIdentities[@"other5"] = obj;
-                break;
-                
-            case MPUserIdentityOther6:
-                knownIdentities[@"other6"] = obj;
-                break;
-                
-            case MPUserIdentityOther7:
-                knownIdentities[@"other7"] = obj;
-                break;
-                
-            case MPUserIdentityOther8:
-                knownIdentities[@"other8"] = obj;
-                break;
-                
-            case MPUserIdentityOther9:
-                knownIdentities[@"other9"] = obj;
-                break;
-                
-            case MPUserIdentityOther10:
-                knownIdentities[@"other10"] = obj;
-                break;
-                
-            case MPUserIdentityMobileNumber:
-                knownIdentities[@"mobile_number"] = obj;
-                break;
-                
-            case MPUserIdentityPhoneNumber2:
-                knownIdentities[@"phone_number_2"] = obj;
-                break;
-                
-            case MPUserIdentityPhoneNumber3:
-                knownIdentities[@"phone_number_3"] = obj;
-                break;
-                
-            case MPUserIdentityTwitter:
-                knownIdentities[@"twitter"] = obj;
-                break;
-                
-            case MPUserIdentityYahoo:
-                knownIdentities[@"yahoo"] = obj;
-                break;
-            default:
-                break;
-        }
+        NSString *identityKey = [MPIdentityHTTPIdentities stringForIdentityType:[key intValue]];
+        knownIdentities[identityKey] = obj;
     }];
     
     MPDevice *device = [[MPDevice alloc] init];
     
-    NSString *advertiserId = device.advertiserId;
-    if (advertiserId) {
-        knownIdentities[@"ios_idfa"] = advertiserId;
-    }
-    
     NSString *vendorId = device.vendorId;
-    if (vendorId) {
+    if (vendorId && !knownIdentities[@"ios_idfv"]) {
         knownIdentities[@"ios_idfv"] = vendorId;
     }
     
@@ -171,7 +81,7 @@
 }
 
 - (NSString *)email {
-    NSString *result = _mutableUserIdentities[@(MPUserIdentityEmail)];
+    NSString *result = _mutableIdentities[@(MPIdentityEmail)];
     if ((NSNull *)result == [NSNull null]) {
         result = nil;
     }
@@ -179,11 +89,11 @@
 }
 
 - (void)setEmail:(NSString *)email {
-    [self setUserIdentity:email identityType:MPUserIdentityEmail];
+    [self setIdentity:email identityType:MPIdentityEmail];
 }
 
 - (NSString *)customerId {
-    NSString *result = _mutableUserIdentities[@(MPUserIdentityCustomerId)];
+    NSString *result = _mutableIdentities[@(MPIdentityCustomerId)];
     if ((NSNull *)result == [NSNull null]) {
         result = nil;
     }
@@ -191,11 +101,11 @@
 }
 
 - (void)setCustomerId:(NSString *)customerId {
-    [self setUserIdentity:customerId identityType:MPUserIdentityCustomerId];
+    [self setIdentity:customerId identityType:MPIdentityCustomerId];
 }
 
-- (NSDictionary *)userIdentities {
-    return [_mutableUserIdentities copy];
+- (NSDictionary *)identities {
+    return [_mutableIdentities copy];
 }
 
 @end

@@ -21,20 +21,6 @@
                ReferencedContainer = "container:mParticleExample.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "YES"
-            buildForProfiling = "YES"
-            buildForArchiving = "YES"
-            buildForAnalyzing = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "DBD54A0C224941630053BD20"
-               BuildableName = "mParticleExample.app"
-               BlueprintName = "mParticleExample"
-               ReferencedContainer = "container:mParticleExample.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -57,16 +43,17 @@
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
       launchAutomaticallySubstyle = "2">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <RemoteRunnable
+         runnableDebuggingMode = "1"
+         BundleIdentifier = "com.apple.MobileSMS">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DBD54A0C224941630053BD20"
-            BuildableName = "mParticleExample.app"
-            BlueprintName = "mParticleExample"
+            BlueprintIdentifier = "DBD54A45224947400053BD20"
+            BuildableName = "mParticleExample_Extension.appex"
+            BlueprintName = "mParticleExample_Extension"
             ReferencedContainer = "container:mParticleExample.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </RemoteRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -75,16 +62,15 @@
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES"
       launchAutomaticallySubstyle = "2">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "DBD54A0C224941630053BD20"
-            BuildableName = "mParticleExample.app"
-            BlueprintName = "mParticleExample"
+            BlueprintIdentifier = "DBD54A45224947400053BD20"
+            BuildableName = "mParticleExample_Extension.appex"
+            BlueprintName = "mParticleExample_Extension"
             ReferencedContainer = "container:mParticleExample.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

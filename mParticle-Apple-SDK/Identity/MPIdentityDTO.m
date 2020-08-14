@@ -53,7 +53,7 @@
 - (instancetype)initWithIdentityApiRequest:(MPIdentityApiRequest *)apiRequest {
     self = [super init];
     if (self) {
-        _knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:apiRequest.userIdentities];
+        _knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:apiRequest.identities];
         
         NSNumber *mpid = [MPPersistenceController mpId];
         if (mpid.longLongValue != 0) {
@@ -61,11 +61,6 @@
         }
         
         MPDevice *device = [[MPDevice alloc] init];
-        
-        NSString *advertiserId = device.advertiserId;
-        if (advertiserId) {
-            _knownIdentities.advertiserId = advertiserId;
-        }
         
         NSString *vendorId = device.vendorId;
         if (vendorId) {
@@ -226,93 +221,108 @@
     self = [super init];
     if (self) {
         [identities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-            MPUserIdentity identityType = (MPUserIdentity)key.intValue;
+            MPIdentity identityType = (MPIdentity)key.intValue;
             
             switch (identityType) {
-                case MPUserIdentityCustomerId:
+                case MPIdentityCustomerId:
                     self->_customerId = obj;
                     break;
                     
-                case MPUserIdentityEmail:
+                case MPIdentityEmail:
                     self->_email = obj;
                     break;
                     
-                case MPUserIdentityFacebook:
+                case MPIdentityFacebook:
                     self->_facebook = obj;
                     break;
                     
-                case MPUserIdentityFacebookCustomAudienceId:
+                case MPIdentityFacebookCustomAudienceId:
                     self->_facebookCustomAudienceId = obj;
                     break;
                     
-                case MPUserIdentityGoogle:
+                case MPIdentityGoogle:
                     self->_google = obj;
                     break;
                     
-                case MPUserIdentityMicrosoft:
+                case MPIdentityMicrosoft:
                     self->_microsoft = obj;
                     break;
                     
-                case MPUserIdentityOther:
+                case MPIdentityOther:
                     self->_other = obj;
                     break;
                     
-                case MPUserIdentityTwitter:
+                case MPIdentityTwitter:
                     self->_twitter = obj;
                     break;
                     
-                case MPUserIdentityYahoo:
+                case MPIdentityYahoo:
                     self->_yahoo = obj;
                     break;
                     
-                case MPUserIdentityOther2:
+                case MPIdentityOther2:
                     self->_other2 = obj;
                     break;
                     
-                case MPUserIdentityOther3:
+                case MPIdentityOther3:
                     self->_other3 = obj;
                     break;
                     
-                case MPUserIdentityOther4:
+                case MPIdentityOther4:
                     self->_other4 = obj;
                     break;
                     
-                case MPUserIdentityOther5:
+                case MPIdentityOther5:
                     self->_other5 = obj;
                     break;
                     
-                case MPUserIdentityOther6:
+                case MPIdentityOther6:
                     self->_other6 = obj;
                     break;
                     
-                case MPUserIdentityOther7:
+                case MPIdentityOther7:
                     self->_other7 = obj;
                     break;
                     
-                case MPUserIdentityOther8:
+                case MPIdentityOther8:
                     self->_other8 = obj;
                     break;
                     
-                case MPUserIdentityOther9:
+                case MPIdentityOther9:
                     self->_other9 = obj;
                     break;
                     
-                case MPUserIdentityOther10:
+                case MPIdentityOther10:
                     self->_other10 = obj;
                     break;
                     
-                case MPUserIdentityMobileNumber:
+                case MPIdentityMobileNumber:
                     self->_mobileNumber = obj;
                     break;
                     
-                case MPUserIdentityPhoneNumber2:
+                case MPIdentityPhoneNumber2:
                     self->_phoneNumber2 = obj;
                     break;
                     
-                case MPUserIdentityPhoneNumber3:
+                case MPIdentityPhoneNumber3:
                     self->_phoneNumber3 = obj;
                     break;
                     
+                case MPIdentityIOSAdvertiserId:
+                    self->_advertiserId = obj;
+                    break;
+                    
+                case MPIdentityIOSVendorId:
+                    self->_vendorId = obj;
+                    break;
+                    
+                case MPIdentityPushToken:
+                    self->_pushToken = obj;
+                    break;
+                    
+                case MPIdentityDeviceApplicationStamp:
+                    self->_deviceApplicationStamp = obj;
+                    break;
                 default:
                     break;
             }
@@ -396,70 +406,82 @@
     return dictionary;
 }
 
-+ (NSString *)stringForIdentityType:(MPUserIdentity)identityType {
++ (NSString *)stringForIdentityType:(MPIdentity)identityType {
     switch (identityType) {
-        case MPUserIdentityCustomerId:
+        case MPIdentityCustomerId:
             return @"customerid";
             
-        case MPUserIdentityEmail:
+        case MPIdentityEmail:
             return @"email";
             
-        case MPUserIdentityFacebook:
+        case MPIdentityFacebook:
             return @"facebook";
             
-        case MPUserIdentityFacebookCustomAudienceId:
+        case MPIdentityFacebookCustomAudienceId:
             return @"facebookcustomaudienceid";
             
-        case MPUserIdentityGoogle:
+        case MPIdentityGoogle:
             return @"google";
             
-        case MPUserIdentityMicrosoft:
+        case MPIdentityMicrosoft:
             return @"microsoft";
             
-        case MPUserIdentityOther:
+        case MPIdentityOther:
             return @"other";
             
-        case MPUserIdentityTwitter:
+        case MPIdentityTwitter:
             return @"twitter";
             
-        case MPUserIdentityYahoo:
+        case MPIdentityYahoo:
             return @"yahoo";
             
-        case MPUserIdentityOther2:
+        case MPIdentityOther2:
             return @"other2";
             
-        case MPUserIdentityOther3:
+        case MPIdentityOther3:
             return @"other3";
             
-        case MPUserIdentityOther4:
+        case MPIdentityOther4:
             return @"other4";
             
-        case MPUserIdentityOther5:
+        case MPIdentityOther5:
             return @"other5";
             
-        case MPUserIdentityOther6:
+        case MPIdentityOther6:
             return @"other6";
             
-        case MPUserIdentityOther7:
+        case MPIdentityOther7:
             return @"other7";
             
-        case MPUserIdentityOther8:
+        case MPIdentityOther8:
             return @"other8";
             
-        case MPUserIdentityOther9:
+        case MPIdentityOther9:
             return @"other9";
             
-        case MPUserIdentityOther10:
+        case MPIdentityOther10:
             return @"other10";
             
-        case MPUserIdentityMobileNumber:
+        case MPIdentityMobileNumber:
             return @"mobile_number";
             
-        case MPUserIdentityPhoneNumber2:
+        case MPIdentityPhoneNumber2:
             return @"phone_number_2";
             
-        case MPUserIdentityPhoneNumber3:
+        case MPIdentityPhoneNumber3:
             return @"phone_number_3";
+            
+        case MPIdentityIOSAdvertiserId:
+            return @"ios_idfa";
+            
+        case MPIdentityIOSVendorId:
+            return @"ios_idfv";
+            
+        case MPIdentityPushToken:
+            return @"push_token";
+            
+        case MPIdentityDeviceApplicationStamp:
+            return @"device_application_stamp";
             
         default:
             return nil;
@@ -468,47 +490,55 @@
 
 + (NSNumber *)identityTypeForString:(NSString *)identityString {
     if ([identityString isEqualToString:@"customerid"]){
-        return @(MPUserIdentityCustomerId);
+        return @(MPIdentityCustomerId);
     } else if ([identityString isEqualToString:@"email"]){
-        return @(MPUserIdentityEmail);
+        return @(MPIdentityEmail);
     } else if ([identityString isEqualToString:@"facebook"]){
-        return @(MPUserIdentityFacebook);
+        return @(MPIdentityFacebook);
     } else if ([identityString isEqualToString:@"facebookcustomaudienceid"]){
-        return @(MPUserIdentityFacebookCustomAudienceId);
+        return @(MPIdentityFacebookCustomAudienceId);
     } else if ([identityString isEqualToString:@"google"]){
-        return @(MPUserIdentityGoogle);
+        return @(MPIdentityGoogle);
     } else if ([identityString isEqualToString:@"microsoft"]){
-        return @(MPUserIdentityMicrosoft);
+        return @(MPIdentityMicrosoft);
     } else if ([identityString isEqualToString:@"other"]){
-        return @(MPUserIdentityOther);
+        return @(MPIdentityOther);
     } else if ([identityString isEqualToString:@"twitter"]){
-        return @(MPUserIdentityTwitter);
+        return @(MPIdentityTwitter);
     } else if ([identityString isEqualToString:@"yahoo"]){
-        return @(MPUserIdentityYahoo);
+        return @(MPIdentityYahoo);
     } else if ([identityString isEqualToString:@"other2"]){
-        return @(MPUserIdentityOther2);
+        return @(MPIdentityOther2);
     } else if ([identityString isEqualToString:@"other3"]){
-        return @(MPUserIdentityOther3);
+        return @(MPIdentityOther3);
     } else if ([identityString isEqualToString:@"other4"]){
-        return @(MPUserIdentityOther4);
+        return @(MPIdentityOther4);
     } else if ([identityString isEqualToString:@"other5"]){
-        return @(MPUserIdentityOther5);
+        return @(MPIdentityOther5);
     } else if ([identityString isEqualToString:@"other6"]){
-        return @(MPUserIdentityOther6);
+        return @(MPIdentityOther6);
     } else if ([identityString isEqualToString:@"other7"]){
-        return @(MPUserIdentityOther7);
+        return @(MPIdentityOther7);
     } else if ([identityString isEqualToString:@"other8"]){
-        return @(MPUserIdentityOther8);
+        return @(MPIdentityOther8);
     } else if ([identityString isEqualToString:@"other9"]){
-        return @(MPUserIdentityOther9);
+        return @(MPIdentityOther9);
     } else if ([identityString isEqualToString:@"other10"]){
-        return @(MPUserIdentityOther10);
+        return @(MPIdentityOther10);
     } else if ([identityString isEqualToString:@"mobile_number"]){
-        return @(MPUserIdentityMobileNumber);
+        return @(MPIdentityMobileNumber);
     } else if ([identityString isEqualToString:@"phone_number_2"]){
-        return @(MPUserIdentityPhoneNumber2);
+        return @(MPIdentityPhoneNumber2);
     } else if ([identityString isEqualToString:@"phone_number_3"]){
-        return @(MPUserIdentityPhoneNumber3);
+        return @(MPIdentityPhoneNumber3);
+    } else if ([identityString isEqualToString:@"ios_idfa"]){
+        return @(MPIdentityIOSAdvertiserId);
+    } else if ([identityString isEqualToString:@"ios_idfv"]){
+        return @(MPIdentityIOSVendorId);
+    } else if ([identityString isEqualToString:@"push_token"]){
+        return @(MPIdentityPushToken);
+    } else if ([identityString isEqualToString:@"device_application_stamp"]){
+        return @(MPIdentityDeviceApplicationStamp);
     } else {
         return nil;
     }

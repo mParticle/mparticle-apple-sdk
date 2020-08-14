@@ -29,7 +29,11 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     MPJSIdentityTypeOther10,
     MPJSIdentityTypeMobileNumber,
     MPJSIdentityTypePhoneNumber2,
-    MPJSIdentityTypePhoneNumber3
+    MPJSIdentityTypePhoneNumber3,
+    MPJSIdentityTypeIOSAdvertiserId,
+    MPJSIdentityTypeIOSVendorId,
+    MPJSIdentityTypePushToken,
+    MPJSIdentityTypeDeviceApplicationStamp
 };
 
 @implementation MPConvertJS
@@ -308,8 +312,8 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     return product;
 }
 
-+ (BOOL)MPUserIdentity:(NSNumber *)json identity:(MPUserIdentity *)identity {
-    MPUserIdentity localIdentity;
++ (BOOL)MPIdentity:(NSNumber *)json identity:(MPIdentity *)identity {
+    MPIdentity localIdentity;
     
     if (json == nil || ![json isKindOfClass:[NSNumber class]]) {
         return NO;
@@ -318,91 +322,107 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     int identityInt = [json intValue];
     switch (identityInt) {
         case MPJSIdentityTypeCustomerId:
-            localIdentity = MPUserIdentityCustomerId;
+            localIdentity = MPIdentityCustomerId;
             break;
             
         case MPJSIdentityTypeFacebook:
-            localIdentity = MPUserIdentityFacebook;
+            localIdentity = MPIdentityFacebook;
             break;
             
         case MPJSIdentityTypeTwitter:
-            localIdentity = MPUserIdentityTwitter;
+            localIdentity = MPIdentityTwitter;
             break;
             
         case MPJSIdentityTypeGoogle:
-            localIdentity = MPUserIdentityGoogle;
+            localIdentity = MPIdentityGoogle;
             break;
             
         case MPJSIdentityTypeMicrosoft:
-            localIdentity = MPUserIdentityMicrosoft;
+            localIdentity = MPIdentityMicrosoft;
             break;
             
         case MPJSIdentityTypeYahoo:
-            localIdentity = MPUserIdentityYahoo;
+            localIdentity = MPIdentityYahoo;
             break;
             
         case MPJSIdentityTypeEmail:
-            localIdentity = MPUserIdentityEmail;
+            localIdentity = MPIdentityEmail;
             break;
             
         case MPJSIdentityTypeAlias:
-            localIdentity = MPUserIdentityAlias;
+            localIdentity = MPIdentityAlias;
             break;
             
         case MPJSIdentityTypeFacebookCustomAudienceId:
-            localIdentity = MPUserIdentityFacebookCustomAudienceId;
+            localIdentity = MPIdentityFacebookCustomAudienceId;
             break;
             
         case MPJSIdentityTypeOther:
-            localIdentity = MPUserIdentityOther;
+            localIdentity = MPIdentityOther;
             break;
             
         case MPJSIdentityTypeOther2:
-            localIdentity = MPUserIdentityOther2;
+            localIdentity = MPIdentityOther2;
             break;
             
         case MPJSIdentityTypeOther3:
-            localIdentity = MPUserIdentityOther3;
+            localIdentity = MPIdentityOther3;
             break;
             
         case MPJSIdentityTypeOther4:
-            localIdentity = MPUserIdentityOther4;
+            localIdentity = MPIdentityOther4;
             break;
             
         case MPJSIdentityTypeOther5:
-            localIdentity = MPUserIdentityOther5;
+            localIdentity = MPIdentityOther5;
             break;
             
         case MPJSIdentityTypeOther6:
-            localIdentity = MPUserIdentityOther6;
+            localIdentity = MPIdentityOther6;
             break;
             
         case MPJSIdentityTypeOther7:
-            localIdentity = MPUserIdentityOther7;
+            localIdentity = MPIdentityOther7;
             break;
             
         case MPJSIdentityTypeOther8:
-            localIdentity = MPUserIdentityOther8;
+            localIdentity = MPIdentityOther8;
             break;
             
         case MPJSIdentityTypeOther9:
-            localIdentity = MPUserIdentityOther9;
+            localIdentity = MPIdentityOther9;
             break;
             
         case MPJSIdentityTypeOther10:
-            localIdentity = MPUserIdentityOther10;
+            localIdentity = MPIdentityOther10;
             break;
             
         case MPJSIdentityTypeMobileNumber:
-            localIdentity = MPUserIdentityMobileNumber;
+            localIdentity = MPIdentityMobileNumber;
             break;
             
         case MPJSIdentityTypePhoneNumber2:
-            localIdentity = MPUserIdentityPhoneNumber2;
+            localIdentity = MPIdentityPhoneNumber2;
             break;
             
         case MPJSIdentityTypePhoneNumber3:
-            localIdentity = MPUserIdentityPhoneNumber3;
+            localIdentity = MPIdentityPhoneNumber3;
+            break;
+            
+        case MPJSIdentityTypeIOSAdvertiserId:
+            localIdentity = MPIdentityIOSAdvertiserId;
+            break;
+            
+        case MPJSIdentityTypeIOSVendorId:
+            localIdentity = MPIdentityIOSVendorId;
+            break;
+            
+        case MPJSIdentityTypePushToken:
+            localIdentity = MPIdentityPushToken;
+            break;
+            
+        case MPJSIdentityTypeDeviceApplicationStamp:
+            localIdentity = MPIdentityDeviceApplicationStamp;
             break;
             
         default:
@@ -434,9 +454,9 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
             NSString *identity = identityDictionary[@"Identity"];
             
             NSNumber *identityTypeNumber = identityDictionary[@"Type"];
-            MPUserIdentity identityType;
+            MPIdentity identityType;
         
-            BOOL success = [MPConvertJS MPUserIdentity:identityTypeNumber identity:&identityType];
+            BOOL success = [MPConvertJS MPIdentity:identityTypeNumber identity:&identityType];
             
             if (!success) {
                 allSuccess = NO;
@@ -444,7 +464,7 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
                 return;
             }
             
-            [request setUserIdentity:identity identityType:identityType];
+            [request setIdentity:identity identityType:identityType];
         }];
         
         if (!allSuccess) {
@@ -454,12 +474,12 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     
     NSString *identity = json[@"Identity"];
     NSNumber *identityTypeNumber = json[@"Type"];
-    MPUserIdentity identityType;
+    MPIdentity identityType;
         
-    BOOL success = [MPConvertJS MPUserIdentity:identityTypeNumber identity:&identityType];
+    BOOL success = [MPConvertJS MPIdentity:identityTypeNumber identity:&identityType];
         
     if (success) {
-        [request setUserIdentity:identity identityType:identityType];
+        [request setIdentity:identity identityType:identityType];
     }
     
     return request;

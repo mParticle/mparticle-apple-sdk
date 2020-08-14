@@ -45,7 +45,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The type of the identity that changed. (e.g. email, customer id, etc)
  */
-@property(nonatomic) MPUserIdentity changedIdentity;
+@property(nonatomic) MPIdentity changedIdentity;
 
 @end
 

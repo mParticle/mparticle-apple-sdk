@@ -920,8 +920,8 @@ static NSObject<MPConnectorFactory> *factory = nil;
     
     NSMutableArray *identityChanges = [NSMutableArray array];
     
-    NSDictionary *identitiesDictionary = modifyRequest.userIdentities;
-    NSDictionary *existingIdentities = [MParticle sharedInstance].identity.currentUser.userIdentities;
+    NSDictionary *identitiesDictionary = modifyRequest.identities;
+    NSDictionary *existingIdentities = [MParticle sharedInstance].identity.currentUser.identities;
     
     [identitiesDictionary enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull identityType, NSString *value, BOOL * _Nonnull stop) {
         NSString *oldValue = existingIdentities[identityType];
@@ -931,7 +931,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         }
         
         if (!oldValue || ![value isEqualToString:oldValue]) {
-            MPUserIdentity userIdentity = (MPUserIdentity)[identityType intValue];
+            MPIdentity userIdentity = (MPIdentity)[identityType intValue];
             NSString *stringType = [MPIdentityHTTPIdentities stringForIdentityType:userIdentity];
             MPIdentityHTTPIdentityChange *identityChange = [[MPIdentityHTTPIdentityChange alloc] initWithOldValue:oldValue value:value identityType:stringType];
             [identityChanges addObject:identityChange];

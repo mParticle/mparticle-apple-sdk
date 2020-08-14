@@ -325,7 +325,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MPIdentityApi
  @see MParticleUser
  */
-@property (nonatomic, strong, readonly) MPIdentityApi *identity;
+@property (nonatomic, strong, readonly) MPIdentityApi * identity;
 
 /**
  If set to YES development logs will be output to the

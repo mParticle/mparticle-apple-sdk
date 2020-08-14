@@ -36,3 +36,14 @@ NSString *const mParticleGenderNotAvailable = @"NA";
 
 NSString * const MPKitAPIErrorDomain = @"com.mparticle.kitapi";
 NSString * const MPKitAPIErrorKey = @"mParticle Kit API Error";
+
+@implementation MPEnum
+
++ (BOOL)isUserIdentity:(MPIdentity)identity {
+    if (identity <= MPIdentityPhoneNumber3) {
+        return true;
+    }
+    return  false;
+}
+
+@end

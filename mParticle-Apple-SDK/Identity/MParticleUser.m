@@ -79,6 +79,23 @@
     return userIdentities;
 }
 
+-(NSDictionary*) identities {
+    NSMutableArray *userIdentitiesArray = [[NSMutableArray alloc] initWithCapacity:10];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPIdentityArrayKey userId:_userId];
+    if (userIdentityArray) {
+        [userIdentitiesArray addObjectsFromArray:userIdentityArray];
+    }
+    
+    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
+    [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        NSString *identity = obj[@"i"];
+        NSNumber *type = obj[@"n"];
+        [userIdentities setObject:identity forKey:type];
+    }];
+    return userIdentities;
+}
+
 -(NSDictionary*) userAttributes
 {
     return [[MParticle sharedInstance].backendController userAttributesForUserId:self.userId];
@@ -113,33 +130,79 @@
     _isLoggedIn = isLoggedIn;
 }
 
-- (void)setUserIdentity:(NSString *)identityString identityType:(MPUserIdentity)identityType {
+- (void)setIdentity:(NSString *)identityString identityType:(MPIdentity)identityType {
     
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
-        [self setUserIdentitySync:identityString identityType:identityType timestamp:timestamp];
+        [self setIdentitySync:identityString identityType:identityType timestamp:timestamp];
     });
 }
 
-- (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType {
-    [self setUserIdentitySync:identityString identityType:identityType timestamp:[NSDate date]];
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType {
+    [self setIdentitySync:identityString identityType:identityType timestamp:[NSDate date]];
 }
 
-- (void)setUserIdentitySync:(NSString *)identityString identityType:(MPUserIdentity)identityType timestamp:(NSDate *)timestamp {
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType timestamp:(NSDate *)timestamp {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:identityString parameter2:@(identityType) parameter3:timestamp];
+    if ([MPEnum isUserIdentity:identityType]) {
+        __weak MParticleUser *weakSelf = self;
+        [self.backendController setUserIdentity:identityString
+                                   identityType:(MPUserIdentity)identityType
+                                      timestamp:timestamp
+                              completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
+                                  __strong MParticleUser *strongSelf = weakSelf;
+                                  if (strongSelf) {
+                                      [strongSelf forwardLegacyUserIdentityToKitContainer:identityString
+                                                                             identityType:identityType
+                                                                               execStatus:execStatus];
+                                  }
+                              }];
+    }
     
-    __weak MParticleUser *weakSelf = self;
-    [self.backendController setUserIdentity:identityString
-                               identityType:identityType
-                                  timestamp:timestamp
-                          completionHandler:^(NSString *identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                              __strong MParticleUser *strongSelf = weakSelf;
-                              if (strongSelf) {
-                                  [strongSelf forwardLegacyUserIdentityToKitContainer:identityString
-                                                                         identityType:identityType
-                                                                           execStatus:execStatus];
-                              }
-                          }];
+    NSNumber *identityTypeNumber = @(identityType);
+    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
+        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
+        BOOL foundMatch = [currentIdentityType isEqualToNumber:identityTypeNumber];
+        
+        if (foundMatch) {
+            *stop = YES;
+        }
+        
+        return foundMatch;
+    };
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPIdentityArrayKey userId:[MPPersistenceController mpId]] mutableCopy];
+    NSUInteger existingEntryIndex;
+    
+    if (identityString == nil || (NSNull *)identityString == [NSNull null] || [identityString isEqualToString:@""]) {
+        existingEntryIndex = [identities indexOfObjectPassingTest:objectTester];
+        
+        if (existingEntryIndex != NSNotFound) {
+            [identities removeObjectAtIndex:existingEntryIndex];
+        }
+    } else {
+        existingEntryIndex = [identities indexOfObjectPassingTest:objectTester];
+        
+        if (existingEntryIndex == NSNotFound) {
+            NSMutableDictionary *newIdentityDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
+            
+            newIdentityDictionary[kMPUserIdentityTypeKey] = identityTypeNumber;
+            newIdentityDictionary[kMPUserIdentityIdKey] = identityString;
+                        
+            [identities addObject:newIdentityDictionary];
+        } else {
+            NSMutableDictionary *newIdentityDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
+            
+            newIdentityDictionary[kMPUserIdentityTypeKey] = identityTypeNumber;
+            newIdentityDictionary[kMPUserIdentityIdKey] = identityString;
+            
+            [identities replaceObjectAtIndex:existingEntryIndex withObject:newIdentityDictionary];
+        }
+    }
+        
+    [userDefaults setObject:identities forKeyedSubscript:kMPUserIdentityArrayKey];
+    [userDefaults synchronize];
 }
 
 - (BOOL)forwardLegacyUserIdentityToKitContainer:(NSString *)identityString identityType:(MPUserIdentity)identityType execStatus:(MPExecStatus) execStatus {
