@@ -1,5 +1,17 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.0.0-beta1
+
+This beta release updates the SDK for iOS 14.
+
+Important behavioral and API changes:
+
+- The SDK no longer queries for IDFA. You must provide the IDFA to the SDK if desired
+- Introduction of the MPIdentity enum, allowing for both device and user identities to be supplied to the identity API
+- Braze, Branch and AppsFlyer kits have been updated to use the latest iOS 14 betas of their respective SDKs
+
+To learn more, please reference the [migration guide](https://github.com/mParticle/mparticle-apple-sdk/blob/master/migration-guide-v8.md).
+
 ## 7.16.2
 
 ### Core
