@@ -33,7 +33,7 @@ To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guide
 # use_frameworks!
 
 target '<Your Target>' do
-    pod 'mParticle-Apple-SDK', '~> 7'
+    pod 'mParticle-Apple-SDK', '~> 8'
 end
 ```
 
@@ -48,9 +48,9 @@ If you'd like to add any kits, you can do so as follows:
 # use_frameworks!
 
 target '<Your Target>' do
-    pod 'mParticle-Appboy', '~> 7'
-    pod 'mParticle-BranchMetrics', '~> 7'
-    pod 'mParticle-Localytics', '~> 7'
+    pod 'mParticle-Appboy', '~> 8'
+    pod 'mParticle-BranchMetrics', '~> 8'
+    pod 'mParticle-Localytics', '~> 8'
 end
 ```
 
@@ -86,13 +86,13 @@ You can read detailed instructions for including the Crash Reporter at its repos
 To integrate the SDK using Carthage, specify it in your [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile):
 
 ```ogdl
-github "mparticle/mparticle-apple-sdk" ~> 7.0
+github "mparticle/mparticle-apple-sdk" ~> 8.0
 ```
 
 If you'd like to add any kits, you can do so as follows:
 
 ```ogdl
-github "mparticle-integrations/mparticle-apple-integration-branchmetrics" ~> 7.0
+github "mparticle-integrations/mparticle-apple-integration-branchmetrics" ~> 8.0
 ```
 
 In this case, only the _Branch Metrics_ kit would be integrated; all other kits would be left out.
