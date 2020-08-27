@@ -20,7 +20,7 @@
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
-#import "sqlite3.h"
+#import <sqlite3.h>
 #import "MPListenerProtocol.h"
 
 using namespace std;

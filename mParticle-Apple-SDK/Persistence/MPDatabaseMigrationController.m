@@ -1,5 +1,5 @@
 #import "MPDatabaseMigrationController.h"
-#import "sqlite3.h"
+#import <sqlite3.h>
 #import "MPSession.h"
 #import "MPIUserDefaults.h"
 #import "mParticle.h"
