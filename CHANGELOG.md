@@ -1,5 +1,15 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.16.3
+
+### Core
+
+- Use modular imports for sqlite3
+
+### Kits
+
+- None
+
 ## 7.16.2
 
 ### Core
