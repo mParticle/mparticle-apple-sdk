@@ -736,7 +736,7 @@
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
                                 
                             }];
-    NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.userIdentities;
+    NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
     [[self backendController] setUserIdentity:(id)[NSNull null] identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
@@ -744,7 +744,7 @@
                                 
                             }];
     
-    identities = [MParticle sharedInstance].identity.currentUser.userIdentities;
+    identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertNil([identities objectForKey:@(MPUserIdentityEmail)]);
 }
 

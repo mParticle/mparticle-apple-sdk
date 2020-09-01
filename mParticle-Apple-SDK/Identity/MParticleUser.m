@@ -62,27 +62,10 @@
     return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
 }
 
--(NSDictionary*) userIdentities {
-    NSMutableArray *userIdentitiesArray = [[NSMutableArray alloc] initWithCapacity:10];
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
-    if (userIdentityArray) {
-        [userIdentitiesArray addObjectsFromArray:userIdentityArray];
-    }
-    
-    NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-        NSString *identity = obj[@"i"];
-        NSNumber *type = obj[@"n"];
-        [userIdentities setObject:identity forKey:type];
-    }];
-    return userIdentities;
-}
-
 -(NSDictionary*) identities {
     NSMutableArray *userIdentitiesArray = [[NSMutableArray alloc] initWithCapacity:10];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPIdentityArrayKey userId:_userId];
+    NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
     if (userIdentityArray) {
         [userIdentitiesArray addObjectsFromArray:userIdentityArray];
     }
@@ -172,7 +155,7 @@
     };
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPIdentityArrayKey userId:[MPPersistenceController mpId]] mutableCopy];
+    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController mpId]] mutableCopy];
     NSUInteger existingEntryIndex;
     
     if (identityString == nil || (NSNull *)identityString == [NSNull null] || [identityString isEqualToString:@""]) {

@@ -34,7 +34,6 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
                                               @"lcu",               /* kMPAppLaunchCountSinceUpgradeKey */
                                               @"ua",                /* kMPUserAttributeKey */
                                               @"ui",                /* kMPUserIdentityArrayKey */
-                                              @"ai",                /* kMPIdentityArrayKey */
                                               @"ck",                /* kMPRemoteConfigCookiesKey */
                                               @"ltv",               /* kMPLifeTimeValueKey */
                                               @"is_ephemeral",      /* kMPIsEphemeralKey */

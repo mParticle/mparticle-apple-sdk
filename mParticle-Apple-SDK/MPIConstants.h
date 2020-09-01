@@ -90,7 +90,6 @@ extern NSString * _Nonnull const kMPLocationKey;
 extern NSString * _Nonnull const kMPUserAttributeKey;
 extern NSString * _Nonnull const kMPUserAttributeDeletedKey;
 extern NSString * _Nonnull const kMPEventTypePageView;
-extern NSString * _Nonnull const kMPIdentityArrayKey;
 extern NSString * _Nonnull const kMPUserIdentityArrayKey;
 extern NSString * _Nonnull const kMPUserIdentityIdKey;
 extern NSString * _Nonnull const kMPUserIdentityTypeKey;

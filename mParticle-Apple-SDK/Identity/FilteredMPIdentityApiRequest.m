@@ -28,7 +28,7 @@
     return self;
 }
 
-- (NSDictionary<NSNumber *,NSString *> *)userIdentities {
+- (NSDictionary<NSNumber *,NSString *> *)identities {
     NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.request.identities;
     NSMutableDictionary *filteredUserIdentities = [NSMutableDictionary dictionary];
     
@@ -50,11 +50,11 @@
 }
 
 - (NSString *)email {
-    return self.userIdentities[@(MPUserIdentityEmail)];
+    return self.identities[@(MPUserIdentityEmail)];
 }
 
 - (NSString *)customerId {
-    return self.userIdentities[@(MPUserIdentityCustomerId)];
+    return self.identities[@(MPUserIdentityCustomerId)];
 }
 
 @end

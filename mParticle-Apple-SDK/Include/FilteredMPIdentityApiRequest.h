@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, nullable, readonly) NSString *email;
 @property (nonatomic, strong, nullable, readonly) NSString *customerId;
-@property (nonatomic, strong, nullable, readonly) NSDictionary<NSNumber *, NSString *> *userIdentities;
+@property (nonatomic, strong, nullable, readonly) NSDictionary<NSNumber *, NSString *> *identities;
 
 - (instancetype)initWithIdentityRequest:(MPIdentityApiRequest *)request kitConfiguration:(MPKitConfiguration *)kitConfiguration;
 

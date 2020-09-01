@@ -32,8 +32,8 @@
     return self.user.isLoggedIn;
 }
 
--(NSDictionary<NSNumber *, NSString *> *) userIdentities {
-    NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.user.userIdentities;
+-(NSDictionary<NSNumber *, NSString *> *) identities {
+    NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.user.identities;
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
     
     for (NSNumber* key in unfilteredUserIdentities) {
