@@ -115,7 +115,7 @@ int main(int argc, char *argv[]);
 #pragma mark Accessors
 - (NSString *)advertiserId {
     NSDictionary *userIdentities = [[MParticle sharedInstance] identity].currentUser.identities;
-    return userIdentities[@"ios_idfa"];
+    return userIdentities[@(MPIdentityIOSAdvertiserId)];
 }
 
 - (NSString *)architecture {
@@ -544,6 +544,26 @@ int main(int argc, char *argv[]);
     } else {
         return (NSDictionary *)deviceDictionary;
     }
+}
+
+- (NSDictionary *)dictionaryRepresentationWithMpid:(NSNumber *)mpid {
+    NSMutableDictionary *deviceDictionary = [[self dictionaryRepresentation] mutableCopy];
+    
+    if (mpid) {
+        NSString *auxString;
+        NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
+        auxString = userIdentities[@(MPIdentityIOSAdvertiserId)];
+        if (auxString) {
+            deviceDictionary[kMPDeviceAdvertiserIdKey] = auxString;
+        }
+        
+        auxString = userIdentities[@(MPIdentityIOSVendorId)];
+        if (auxString) {
+            deviceDictionary[kMPDeviceAppVendorIdKey] = auxString;
+        }
+    }
+    
+    return deviceDictionary;
 }
 
 @end

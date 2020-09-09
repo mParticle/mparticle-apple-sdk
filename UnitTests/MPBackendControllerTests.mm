@@ -19,6 +19,7 @@
 #import "MPExceptionHandler.h"
 #import "MPBaseTestCase.h"
 #import "MPIUserDefaults.h"
+#import "MPDevice.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -31,6 +32,19 @@
 #if TARGET_OS_IOS == 1
 - (void)handleCrashReportOccurred:(NSNotification *)notification;
 #endif
+
+@end
+
+@interface MParticleUser ()
+
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType;
+- (void)setUserId:(NSNumber *)userId;
+
+@end
+
+@interface MPIdentityApi ()
+
+@property(nonatomic, strong, readwrite, nonnull) MParticleUser *currentUser;
 
 @end
 
@@ -561,6 +575,68 @@
         
         uploads = [persistence fetchUploads];
         XCTAssertNil(uploads, @"Uploads are not being deleted.");
+    }];
+}
+
+- (void)testUploadWithDifferentUser {
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    
+    //Set up Identity to exist
+    [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@1];
+    
+    [[MParticle sharedInstance].identity.currentUser setIdentitySync:@"bar-id" identityType:MPIdentityIOSAdvertiserId];
+
+    [MParticle sharedInstance].dataPlanId = @"test";
+    [MParticle sharedInstance].dataPlanVersion = @(1);
+
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
+    event.customAttributes = @{@"key":@"value"};
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
+    [self.backendController logEvent:event
+                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    BOOL eventFound = NO;
+    NSNumber *mpid;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringEvent]) {
+            eventFound = YES;
+            mpid = message.userId;
+        }
+    }
+    XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
+
+    [MPPersistenceController setMpid:@8];
+    [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@8];
+    MParticleUser *newUser = [[MParticleUser alloc] init];
+    newUser.userId = @8;
+    [MParticle sharedInstance].identity.currentUser = newUser;
+    XCTAssertEqualObjects([MParticle sharedInstance].identity.currentUser, newUser);
+    XCTAssertNil([MParticle sharedInstance].identity.currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+
+
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
+    XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+    
+    [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:mpid] deletedUserAttributes:nil];
+    [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:mpid]];
+    [uploadBuilder build:^(MPUpload *upload) {
+        [persistence saveUpload:upload];
+        NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
+        XCTAssertEqualObjects(uploadDictionary[kMPDeviceInformationKey][kMPDeviceAdvertiserIdKey], @"bar-id");
     }];
 }
 

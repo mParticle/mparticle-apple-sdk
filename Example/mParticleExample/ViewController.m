@@ -143,10 +143,10 @@
                                     contentType:MPMediaContentTypeVideo
                                     streamType:MPMediaStreamTypeOnDemand];
     
-    [mediaSession logMediaSessionStart];
-    [mediaSession logPlay];
-    [mediaSession logMediaContentEnd];
-    [mediaSession logMediaSessionEnd];
+    [mediaSession logMediaSessionStartWithOptions:nil];
+    [mediaSession logPlayWithOptions:nil];
+    [mediaSession logMediaContentEndWithOptions:nil];
+    [mediaSession logMediaSessionEndWithOptions:nil];
 }
 
 - (void)logTimedEvent {

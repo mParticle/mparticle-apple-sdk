@@ -156,7 +156,8 @@ using namespace std;
     uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
     
     MPDevice *device = [[MPDevice alloc] init];
-    uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentation];
+    NSNumber *mpid = uploadDictionary[kMPRemoteConfigMPIDKey];
+    uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
     
     MPConsumerInfo *consumerInfo = stateMachine.consumerInfo;
     

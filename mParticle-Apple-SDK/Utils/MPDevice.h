@@ -7,6 +7,7 @@
 #endif
 
 extern NSString * _Nonnull const kMPDeviceInformationKey;
+extern NSString * _Nonnull const kMPDeviceAdvertiserIdKey;
 
 
 @interface MPDevice : NSObject <NSCopying> 
@@ -39,5 +40,6 @@ extern NSString * _Nonnull const kMPDeviceInformationKey;
 
 + (nonnull NSDictionary *)jailbrokenInfo;
 - (nonnull NSDictionary *)dictionaryRepresentation;
+- (nonnull NSDictionary *)dictionaryRepresentationWithMpid:(NSNumber *_Nullable)mpid;
 
 @end

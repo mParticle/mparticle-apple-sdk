@@ -156,6 +156,9 @@
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController mpId]] mutableCopy];
+    if (!identities) {
+        identities = [[NSMutableArray alloc] init];
+    }
     NSUInteger existingEntryIndex;
     
     if (identityString == nil || (NSNull *)identityString == [NSNull null] || [identityString isEqualToString:@""]) {
