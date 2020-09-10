@@ -25,6 +25,8 @@ This guide enumerates some of the high-level changes introduced by Apple and how
 
 ### AppTrackingTransparency framework
 
+> The following change was set to originally occur with the release of iOS 14. On [September 3rd, 2020](https://developer.apple.com/news/?id=hx9s63c5) Apple announced that the change would instead occur later in the year to give developers time to make necessary changes. Our example code takes this fact into account by not including the request for IDFA permission to ATTrackingManager's `requestTrackingAuthorizationWithCompletionHandler:` API.
+
 One of the more impactful changes relates to the collection of user identifiers, and specifically the Advertising Identifier (IDFA). From [Apple's documentation](https://developer.apple.com/app-store/user-privacy-and-data-use/):
 
 > With iOS 14, iPadOS 14, and tvOS 14, you will need to receive the user’s permission through the AppTrackingTransparency framework to track them or access their device’s advertising identifier. Tracking refers to the act of linking user or device data collected from your app with user or device data collected from other companies’ apps, websites, or offline properties for targeted advertising or advertising measurement purposes. Tracking also refers to sharing user or device data with data brokers.
@@ -76,6 +78,7 @@ To account for this change, the SDK's `MPIdentityAPIRequest` object has been upd
 
 MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:currentUser];
 [identityRequest setUserIdentity:@"123456" identityType:MPUserIdentityCustomerId];
+[[[MParticle sharedInstance] identity] modify:identityRequest completion:identityCallback];
 ```
 
 #### Apple SDK 8
@@ -84,16 +87,21 @@ MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:cu
 
 MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:currentUser];
 [identityRequest setIdentity:@"123456" identityType:MPIdentityCustomerId];
+[[[MParticle sharedInstance] identity] modify:identityRequest completion:identityCallback];
 ```
 
 #### Supplying the IDFA in Apple SDK 8
 
-If you would like to collect the IDFA with Apple SDK 8, you must [follow Apple's guidelines](https://developer.apple.com/documentation/apptrackingtransparency) to implement the AppTrackingTransparancy framework. If the user consents to tracking, you can provide the ID to the identity API just as with any other ID:
+If you would like to collect the IDFA with Apple SDK 8, you must query ASIdentifierManager, and provide it with all identity requests. The SDK will not cache this value, so it must be provided whenever making a call to the Identity API.
+
+> In the future, to collect the IDFA with Apple SDK 8 you will need to [follow Apple's guidelines](https://developer.apple.com/documentation/apptrackingtransparency) to implement the AppTrackingTransparancy framework. If the user consents to tracking, providing the IDFA proceeds as already described. If they do not or the AppTrackingTransparancy framework is not implemented, ASIdentifierManager's `advertisingIdentifier` API will only return a string of zeros.
 
 ```objective-c
+
 MParticleUser *currentUser = [[MParticle sharedInstance] identity].currentUser;
 MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:currentUser];
-[identityRequest setIdentity:advertiserID identityType:MPIdentityIOSAdvertiserId];
+[identityRequest setIdentity: [[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString] identityType:MPIdentityIOSAdvertiserId];
+[[[MParticle sharedInstance] identity] modify:identityRequest completion:identityCallback];
 ```
 
 #### Common IDFA Use-cases
