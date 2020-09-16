@@ -1,5 +1,28 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.0.1
+
+This release updates the SDK for iOS 14.
+
+Important behavioral and API changes:
+
+- The SDK no longer queries for IDFA. You must provide the IDFA to the SDK if desired
+- Introduction of the MPIdentity enum, allowing for both device and user identities to be supplied to the identity API
+- Kits have been updated to use the latest iOS 14 betas of their respective SDKs:
+
+'Leanplum-iOS-SDK',      '~> 2.6’.    ->    'Leanplum-iOS-SDK',           '~> 3.0'
+'Branch',                '~> 0.34'    ->    'Branch',                     '~> 0.35'
+'Apptimize',             '~> 3.0'     ->    'Apptimize',                  '~> 3.2'
+'Primer',                '3.2.3'      ->    'Primer',                     '~> 3.6'
+'Localytics',            '~> 5.2'     ->    'Localytics',                 '~> 6.0'
+'CrittercismSDK',        '5.6.7'      ->    'CrittercismSDK',             '~> 5.0'
+'UrbanAirship-iOS-SDK',  '~> 12.0'    ->    'Airship',                    '~> 14.0'
+'AppsFlyerFramework',    '~> 5.0'     ->    'Beta-AppsFlyerFramework',    '~> 6.0'
+'Appboy-iOS-SDK',        '~> 3.20'    ->    'Appboy-iOS-SDK',             '~> 3.27-beta'
+'apptentive-ios',        '~> 5.2'     ->    'apptentive-ios',             '~> 5.3'
+
+To learn more, please reference the [migration guide](https://github.com/mParticle/mparticle-apple-sdk/blob/master/migration-guide-v8.md).
+
 ## 8.0.0-beta1
 
 This beta release updates the SDK for iOS 14.
