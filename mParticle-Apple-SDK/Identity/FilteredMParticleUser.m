@@ -32,7 +32,7 @@
     return self.user.isLoggedIn;
 }
 
--(NSDictionary<NSNumber *, NSString *> *) identities {
+-(NSDictionary<NSNumber *, NSString *> *) userIdentities {
     NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.user.identities;
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
     
@@ -43,6 +43,10 @@
         if (self.kitConfiguration) {
             NSString *identityTypeString = [key stringValue];
             shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
+        }
+        
+        if (key.integerValue >= MPIdentityIOSAdvertiserId) {
+            shouldFilter = YES;
         }
         
         if (!shouldFilter) {

@@ -28,7 +28,7 @@
     return self;
 }
 
-- (NSDictionary<NSNumber *,NSString *> *)identities {
+- (NSDictionary<NSNumber *,NSString *> *)userIdentities {
     NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.request.identities;
     NSMutableDictionary *filteredUserIdentities = [NSMutableDictionary dictionary];
     
@@ -41,6 +41,10 @@
             shouldFilter = self.kitConfiguration.userIdentityFilters[identityTypeString] && [self.kitConfiguration.userIdentityFilters[identityTypeString] isEqualToNumber:@0];
         }
         
+        if (key.integerValue >= MPIdentityIOSAdvertiserId) {
+            shouldFilter = YES;
+        }
+        
         if (!shouldFilter) {
             [filteredUserIdentities setObject:value forKey:key];
         }
@@ -50,11 +54,11 @@
 }
 
 - (NSString *)email {
-    return self.identities[@(MPUserIdentityEmail)];
+    return self.userIdentities[@(MPUserIdentityEmail)];
 }
 
 - (NSString *)customerId {
-    return self.identities[@(MPUserIdentityCustomerId)];
+    return self.userIdentities[@(MPUserIdentityCustomerId)];
 }
 
 @end

@@ -17,11 +17,11 @@
 @property(readonly) BOOL isLoggedIn;
 
 /**
- Gets current identities (readonly)
- @returns A dictionary containing the collection of all identities including device identities
- @see MPIdentity
+ Gets current user identities (readonly)
+ @returns A dictionary containing the collection of user identities
+ @see MPUserIdentity
  */
-@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *identities;
+@property (readonly, strong, nonnull) NSDictionary<NSNumber *, NSString *> *userIdentities;
 
 /**
  Gets all user attributes.

@@ -148,7 +148,7 @@
     
     MPKitAPI *kitAPI = [[MPKitAPI alloc] initWithKitCode:@42];
     FilteredMParticleUser *kitUser = [kitAPI getCurrentUserWithKit:self];
-    NSDictionary *identities = kitUser.identities;
+    NSDictionary *identities = kitUser.userIdentities;
     NSString *email = identities[@(MPUserIdentityEmail)];
     NSString *customerId = identities[@(MPUserIdentityCustomerId)];
     
