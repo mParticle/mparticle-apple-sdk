@@ -7,19 +7,24 @@ This release updates the SDK for iOS 14.
 Important behavioral and API changes:
 
 - The SDK no longer queries for IDFA. You must provide the IDFA to the SDK if desired
-- Introduction of the MPIdentity enum, allowing for both device and user identities to be supplied to the identity API
+- Introduction of the `MPIdentity` enum, allowing for both device and user identities to be supplied to the identity API
 - Kits have been updated to use the latest iOS 14 betas of their respective SDKs:
 
-'Leanplum-iOS-SDK',      '~> 2.6’.    ->    'Leanplum-iOS-SDK',           '~> 3.0'
-'Branch',                '~> 0.34'    ->    'Branch',                     '~> 0.35'
-'Apptimize',             '~> 3.0'     ->    'Apptimize',                  '~> 3.2'
-'Primer',                '3.2.3'      ->    'Primer',                     '~> 3.6'
-'Localytics',            '~> 5.2'     ->    'Localytics',                 '~> 6.0'
-'CrittercismSDK',        '5.6.7'      ->    'CrittercismSDK',             '~> 5.0'
-'UrbanAirship-iOS-SDK',  '~> 12.0'    ->    'Airship',                    '~> 14.0'
-'AppsFlyerFramework',    '~> 5.0'     ->    'Beta-AppsFlyerFramework',    '~> 6.0'
-'Appboy-iOS-SDK',        '~> 3.20'    ->    'Appboy-iOS-SDK',             '~> 3.27-beta'
-'apptentive-ios',        '~> 5.2'     ->    'apptentive-ios',             '~> 5.3'
+    | Partner SDK | Apple SDK v7 | Apple SDK v8 |
+    |-------------|--------------|--------------|
+    | Airship     | ~> 12.0      | ~> 14.0.0    |
+    | AppsFlyer   | ~> 5.0       | ~> 6.0       |
+    | Apptentive  | ~> 5.2       | ~> 5.3       |
+    | Apptimize   | ~> 3.0       | ~> 3.2       |
+    | Branch      | ~> 0.31.2    | ~> 0.35      |
+    | Braze       | ~> 3.20      | ~> 3.27      |
+    | Crittercism | '5.6.7'      | ~> 5.0       |
+    | Leanplum    | ~> 2.6       | ~> 3.0       |
+    | Localytics  | ~> 5.2       | ~> 6.0       |
+    | Primer      | '3.2.3'      | ~> 3.6       |
+
+- The above are using wildcard dependencies, see here for how to interpret these: https://guides.cocoapods.org/using/the-podfile.html#specifying-pod-versions
+- If you don't see a kit listed here, it was probably already using a wildcard dependency. It has been released as is, as version 8.0.1, and will automatically pull in the latest version of the partner's SDK.
 
 To learn more, please reference the [migration guide](https://github.com/mParticle/mparticle-apple-sdk/blob/master/migration-guide-v8.md).
 
