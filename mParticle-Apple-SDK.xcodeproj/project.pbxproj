@@ -441,14 +441,10 @@
 		DB47A1F024252A2C00869BD2 /* MPBackendController.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08124252A2B00869BD2 /* MPBackendController.mm */; };
 		DB47A1F124252A2C00869BD2 /* MPCustomModulePreference.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08324252A2B00869BD2 /* MPCustomModulePreference.h */; };
 		DB47A1F224252A2C00869BD2 /* MPCustomModulePreference.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08324252A2B00869BD2 /* MPCustomModulePreference.h */; };
-		DB47A1F324252A2C00869BD2 /* MPAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08424252A2B00869BD2 /* MPAppboy.m */; };
-		DB47A1F424252A2C00869BD2 /* MPAppboy.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08424252A2B00869BD2 /* MPAppboy.m */; };
 		DB47A1F524252A2C00869BD2 /* MPCustomModule.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08524252A2B00869BD2 /* MPCustomModule.h */; };
 		DB47A1F624252A2C00869BD2 /* MPCustomModule.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08524252A2B00869BD2 /* MPCustomModule.h */; };
 		DB47A1F724252A2C00869BD2 /* MPCustomModulePreference.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08624252A2B00869BD2 /* MPCustomModulePreference.m */; };
 		DB47A1F824252A2C00869BD2 /* MPCustomModulePreference.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08624252A2B00869BD2 /* MPCustomModulePreference.m */; };
-		DB47A1F924252A2C00869BD2 /* MPAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08724252A2B00869BD2 /* MPAppboy.h */; };
-		DB47A1FA24252A2C00869BD2 /* MPAppboy.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08724252A2B00869BD2 /* MPAppboy.h */; };
 		DB47A1FB24252A2C00869BD2 /* MPCustomModule.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08824252A2B00869BD2 /* MPCustomModule.m */; };
 		DB47A1FC24252A2C00869BD2 /* MPCustomModule.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A08824252A2B00869BD2 /* MPCustomModule.m */; };
 		DB47A1FD24252A2C00869BD2 /* MPEvent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A08A24252A2B00869BD2 /* MPEvent.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -809,10 +805,8 @@
 		DB47A08024252A2B00869BD2 /* MPURLConnectionAssociate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPURLConnectionAssociate.h; sourceTree = "<group>"; };
 		DB47A08124252A2B00869BD2 /* MPBackendController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPBackendController.mm; sourceTree = "<group>"; };
 		DB47A08324252A2B00869BD2 /* MPCustomModulePreference.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomModulePreference.h; sourceTree = "<group>"; };
-		DB47A08424252A2B00869BD2 /* MPAppboy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPAppboy.m; sourceTree = "<group>"; };
 		DB47A08524252A2B00869BD2 /* MPCustomModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCustomModule.h; sourceTree = "<group>"; };
 		DB47A08624252A2B00869BD2 /* MPCustomModulePreference.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomModulePreference.m; sourceTree = "<group>"; };
-		DB47A08724252A2B00869BD2 /* MPAppboy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPAppboy.h; sourceTree = "<group>"; };
 		DB47A08824252A2B00869BD2 /* MPCustomModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCustomModule.m; sourceTree = "<group>"; };
 		DB47A08A24252A2B00869BD2 /* MPEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPEvent.h; sourceTree = "<group>"; };
 		DB47A08B24252A2B00869BD2 /* MPBaseEvent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBaseEvent.h; sourceTree = "<group>"; };
@@ -1369,10 +1363,8 @@
 			isa = PBXGroup;
 			children = (
 				DB47A08324252A2B00869BD2 /* MPCustomModulePreference.h */,
-				DB47A08424252A2B00869BD2 /* MPAppboy.m */,
 				DB47A08524252A2B00869BD2 /* MPCustomModule.h */,
 				DB47A08624252A2B00869BD2 /* MPCustomModulePreference.m */,
-				DB47A08724252A2B00869BD2 /* MPAppboy.h */,
 				DB47A08824252A2B00869BD2 /* MPCustomModule.m */,
 			);
 			path = "Custom Modules";
@@ -1444,7 +1436,6 @@
 				DB47A11624252A2C00869BD2 /* MPLaunchInfo.h in Headers */,
 				DB47A0DA24252A2C00869BD2 /* EventTypeName.h in Headers */,
 				DB47A10A24252A2C00869BD2 /* MPSearchAdsAttribution.h in Headers */,
-				DB47A1FA24252A2C00869BD2 /* MPAppboy.h in Headers */,
 				DB47A10624252A2C00869BD2 /* MPHasher.h in Headers */,
 				DB47A1B224252A2C00869BD2 /* MPForwardQueueItem.h in Headers */,
 				DB47A18824252A2C00869BD2 /* MPSegment.h in Headers */,
@@ -1555,7 +1546,6 @@
 				DB47A11524252A2C00869BD2 /* MPLaunchInfo.h in Headers */,
 				DB47A0D924252A2C00869BD2 /* EventTypeName.h in Headers */,
 				DB47A10924252A2C00869BD2 /* MPSearchAdsAttribution.h in Headers */,
-				DB47A1F924252A2C00869BD2 /* MPAppboy.h in Headers */,
 				DB47A10524252A2C00869BD2 /* MPHasher.h in Headers */,
 				DB47A1B124252A2C00869BD2 /* MPForwardQueueItem.h in Headers */,
 				DB47A18724252A2C00869BD2 /* MPSegment.h in Headers */,
@@ -1940,7 +1930,6 @@
 				DB47A19E24252A2C00869BD2 /* MPEnums.m in Sources */,
 				DB47A17E24252A2C00869BD2 /* MPForwardRecord.mm in Sources */,
 				DB47A15024252A2C00869BD2 /* MPAliasRequest.m in Sources */,
-				DB47A1F424252A2C00869BD2 /* MPAppboy.m in Sources */,
 				DB47A15624252A2C00869BD2 /* FilteredMParticleUser.m in Sources */,
 				DB47A0DC24252A2C00869BD2 /* MPBaseEvent.m in Sources */,
 				DB47A0C824252A2C00869BD2 /* MPAppNotificationHandler.mm in Sources */,
@@ -2041,7 +2030,6 @@
 				DB47A19D24252A2C00869BD2 /* MPEnums.m in Sources */,
 				DB47A17D24252A2C00869BD2 /* MPForwardRecord.mm in Sources */,
 				DB47A14F24252A2C00869BD2 /* MPAliasRequest.m in Sources */,
-				DB47A1F324252A2C00869BD2 /* MPAppboy.m in Sources */,
 				DB47A15524252A2C00869BD2 /* FilteredMParticleUser.m in Sources */,
 				DB47A0DB24252A2C00869BD2 /* MPBaseEvent.m in Sources */,
 				DB47A0C724252A2C00869BD2 /* MPAppNotificationHandler.mm in Sources */,

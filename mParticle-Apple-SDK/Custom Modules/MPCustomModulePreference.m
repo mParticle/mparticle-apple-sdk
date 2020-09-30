@@ -1,6 +1,5 @@
 #import "MPCustomModulePreference.h"
 #import "MPIUserDefaults.h"
-#import "MPAppboy.h"
 #import "MPILogger.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
@@ -103,28 +102,6 @@
 }
 
 #pragma mark Private methods
-- (NSString *)appBoyJSONStringFromDictionary:(NSDictionary *)dictionary {
-    NSMutableDictionary *jsonDictionary = [[NSMutableDictionary alloc] initWithCapacity:2];
-    
-    if (dictionary[@"deviceIdentifier"]) {
-        jsonDictionary[@"deviceIdentifier"] = dictionary[@"deviceIdentifier"];
-    }
-    
-    if (dictionary[@"externalUserId"]) {
-        jsonDictionary[@"externalUserId"] = dictionary[@"externalUserId"];
-    }
-    
-    NSError *error = nil;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:jsonDictionary options:0 error:&error];
-    
-    NSString *jsonString = nil;
-    if (!error) {
-        jsonString  = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-    }
-    
-    return jsonString;
-}
-
 - (NSString *)defaultValueForMacroPlaceholder:(NSString *)macroPlaceholder __attribute__((no_sanitize("integer"))) {
     NSString *defaultValue = @"";
     
@@ -212,29 +189,9 @@
     NSArray *keys = [userDefaultsDictionary allKeys];
 
     if ([keys containsObject:self.readKey]) {
-        if ([_moduleId isEqual:@(MPCustomModuleIdAppBoy)]) {
-            NSData *appboyData = [[NSUserDefaults standardUserDefaults] objectForKey:_readKey];
-            if (appboyData) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-                id appboy = [NSKeyedUnarchiver unarchiveObjectWithData:appboyData];
-#pragma clang diagnostic pop
-
-                if ([appboy isKindOfClass:[NSDictionary class]]) {
-                    _value = [self appBoyJSONStringFromDictionary:appboy];
-                } else {
-                    @try {
-                        _value = [appboy jsonString];
-                    } @catch (NSException *exception) {
-                        MPILogError(@"Could not parse Appboy data with exception reason: %@", [exception reason]);
-                    }
-                }
-            }
-        } else {
-            id storedValue = [[NSUserDefaults standardUserDefaults] objectForKey:_readKey];
-            if (!MPIsNull(storedValue)) {
-                _value = [storedValue isKindOfClass:[NSDate class]] ? [MPDateFormatter stringFromDateRFC3339:storedValue] : storedValue;
-            }
+        id storedValue = [[NSUserDefaults standardUserDefaults] objectForKey:_readKey];
+        if (!MPIsNull(storedValue)) {
+            _value = [storedValue isKindOfClass:[NSDate class]] ? [MPDateFormatter stringFromDateRFC3339:storedValue] : storedValue;
         }
         
         if (!_value && _dataType != MPDataTypeString) {
