@@ -14,7 +14,7 @@
 #import "mParticle.h"
 #import "MPUploadBuilder.h"
 #import "MPDatabaseMigrationController.h"
-#import "sqlite3.h"
+#import <sqlite3.h>
 #import "MPIUserDefaults.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
