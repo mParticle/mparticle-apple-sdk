@@ -80,7 +80,7 @@
 - (BOOL)hasContentAvail:(NSDictionary *)dict {
     NSDictionary *aps = dict[@"aps"];
     NSString *contentAvail = aps[@"content-available"];
-    return [contentAvail isEqual:@"1"];
+    return [contentAvail isEqual:@1];
 }
 
 - (void)didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {

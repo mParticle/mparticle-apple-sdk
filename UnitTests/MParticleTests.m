@@ -147,7 +147,7 @@
     [instance startWithOptions:options];
     [instance endSession];
     
-    [instance didReceiveRemoteNotification:@{@"aps":@{@"content-available":@"1"}, @"foo-notif-content": @"foo-notif-content-value"}];
+    [instance didReceiveRemoteNotification:@{@"aps":@{@"content-available":@1}, @"foo-notif-content": @"foo-notif-content-value"}];
     dispatch_async([MParticle messageQueue], ^{
         MParticleSession *session = instance.currentSession;
         XCTAssertNil(session, "Auto tracking but non-nil current session after content-available push");
