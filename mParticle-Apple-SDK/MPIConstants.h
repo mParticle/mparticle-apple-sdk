@@ -382,6 +382,33 @@ extern NSString * _Nonnull const kMPEventTypeStringProductRemoveFromWishlist;
 extern NSString * _Nonnull const kMPEventTypeStringProductImpression;
 extern NSString * _Nonnull const kMPEventTypeStringMedia;
 
+extern NSString * _Nonnull const kMPUrlFormat;
+extern NSString * _Nonnull const kMPUrlFormatOverride;
+
+extern NSString * _Nonnull const kMPIdentityURLFormat;
+extern NSString * _Nonnull const kMPIdentityURLFormatOverride;
+
+extern NSString * _Nonnull const kMPModifyURLFormat;
+extern NSString * _Nonnull const kMPModifyURLFormatOverride;
+
+extern NSString * _Nonnull const kMPAliasURLFormat;
+extern NSString * _Nonnull const kMPAliasURLFormatOverride;
+
+extern NSString * _Nonnull const kMPConfigVersion;
+extern NSString * _Nonnull const kMPConfigURL;
+extern NSString * _Nonnull const kMPEventsVersion;
+extern NSString * _Nonnull const kMPEventsURL;
+extern NSString * _Nonnull const kMPSegmentVersion;
+extern NSString * _Nonnull const kMPSegmentURL;
+extern NSString * _Nonnull const kMPIdentityVersion;
+extern NSString * _Nonnull const kMPIdentityURL;
+extern NSString * _Nonnull const kMPIdentityKey;
+
+extern NSString * _Nonnull const kMPURLScheme;
+extern NSString * _Nonnull const kMPURLHost;
+extern NSString * _Nonnull const kMPURLHostConfig;
+extern NSString * _Nonnull const kMPURLHostIdentity;
+
 //
 // Primitive data type constants
 //

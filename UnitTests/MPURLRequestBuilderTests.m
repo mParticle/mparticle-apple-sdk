@@ -433,42 +433,4 @@
     [mockWebView stopMocking];
 }
 
-- (void)testStripPathComponent {
-    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"https://example.com"]];
-    NSString *result = [builder stringByStrippingPathComponent:@"/identity/v1/identify"];
-    XCTAssertEqualObjects(result, @"/v1/identify");
-}
-
-- (void)testSignatureRelativePath {
-    MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
-    MParticle *sharedInstance = [MParticle sharedInstance];
-    id mockMParticle = OCMPartialMock(sharedInstance);
-    [[[mockMParticle stub] andReturn:networkOptions] networkOptions];
-    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"https://example.com"]];
-    
-    networkOptions.identityHost = @"identity.mp.example.com";
-    networkOptions.overridesIdentitySubdirectory = NO;
-    
-    NSString *result = [builder signatureRelativePath:@"/v1/identify" url:[NSURL URLWithString:@"https://identity.mp.example.com/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
-    
-    networkOptions.identityHost = @"mp.example.com/identity/v1/identify";
-    networkOptions.overridesIdentitySubdirectory = YES;
-    
-    result = [builder signatureRelativePath:@"/identity/v1/identify" url:[NSURL URLWithString:@"https://mp.example.com/identity/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
-    
-    networkOptions.identityHost = (id _Nonnull)nil;
-    
-    result = [builder signatureRelativePath:@"/v1/identify" url:[NSURL URLWithString:@"https://identity.mparticle.com/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
-    
-    networkOptions = nil;
-    
-    result = [builder signatureRelativePath:@"/v1/identify" url:[NSURL URLWithString:@"https://identity.mparticle.com/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
-    
-    [mockMParticle stopMocking];
-}
-
 @end

@@ -9,6 +9,8 @@
 #import "MPILogger.h"
 #import "MPApplication.h"
 #import "MParticleWebView.h"
+#import "NSString+MPPercentEscape.h"
+#import "MPPersistenceController.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 
@@ -133,33 +135,6 @@ static NSDateFormatter *RFC1123DateFormatter;
     return self;
 }
 
-- (NSString *)stringByStrippingPathComponent:(NSString *)path {
-    NSString *adjustedPath = path;
-    NSMutableArray *parts = [[path componentsSeparatedByString:@"/"] mutableCopy];
-    if (parts.count > 1) {
-        [parts removeObjectAtIndex:1];
-        adjustedPath = [parts componentsJoinedByString:@"/"];
-    }
-    return adjustedPath;
-}
-
-- (NSString *)signatureRelativePath:(NSString *)relativePath url:(NSURL *)url {
-    MPNetworkOptions *networkOptions = [MParticle sharedInstance].networkOptions;
-    if (
-        (networkOptions.overridesConfigSubdirectory && networkOptions.configHost &&
-         [url.absoluteString rangeOfString:networkOptions.configHost].location != NSNotFound) ||
-        (networkOptions.overridesEventsSubdirectory && networkOptions.eventsHost &&
-         [url.absoluteString rangeOfString:networkOptions.eventsHost].location != NSNotFound) ||
-        (networkOptions.overridesIdentitySubdirectory && networkOptions.identityHost &&
-         [url.absoluteString rangeOfString:networkOptions.identityHost].location != NSNotFound) ||
-        (networkOptions.overridesAliasSubdirectory && networkOptions.aliasHost &&
-         [url.absoluteString rangeOfString:networkOptions.aliasHost].location != NSNotFound)
-        ) {
-        return [self stringByStrippingPathComponent:relativePath];
-    }
-    return relativePath;
-}
-
 - (NSMutableURLRequest *)build {
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:_url];
     [urlRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
@@ -182,13 +157,29 @@ static NSDateFormatter *RFC1123DateFormatter;
         NSRange range;
         BOOL containsMessage = _message != nil;
         
-        relativePath = [self signatureRelativePath:relativePath url:_url];
-        
         if (isIdentityRequest) { // /identify, /login, /logout, /<mpid>/modify
             contentType = @"application/json";
             [urlRequest setValue:[MParticle sharedInstance].stateMachine.apiKey forHTTPHeaderField:@"x-mp-key"];
             NSString *postDataString = [[NSString alloc] initWithData:_postData encoding:NSUTF8StringEncoding];
-            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, postDataString];
+            
+            NSString *pathComponent = nil;
+            range = [relativePath rangeOfString:@"/identify"];
+            if (range.location != NSNotFound) {
+                pathComponent = @"identify";
+            }
+            range = [relativePath rangeOfString:@"/login"];
+            if (range.location != NSNotFound) {
+                pathComponent = @"login";
+            }
+            range = [relativePath rangeOfString:@"/logout"];
+            if (range.location != NSNotFound) {
+                pathComponent = @"logout";
+            }
+            range = [relativePath rangeOfString:@"/modify"];
+            if (range.location != NSNotFound) {
+                pathComponent = @"modify";
+            }
+            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, [[self identityURLDefault:pathComponent] relativePath], postDataString];
         } else if (containsMessage) { // /events
             contentType = @"application/json";
             
@@ -214,12 +205,12 @@ static NSDateFormatter *RFC1123DateFormatter;
                 [urlRequest setValue:kMPMessageTypeNetworkPerformance forHTTPHeaderField:kMPMessageTypeNetworkPerformance];
             }
             
-            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, relativePath, _message];
+            signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@%@", _httpMethod, date, [[self eventURLDefault] relativePath], _message];
         } else { // /config and /audience
             contentType = @"application/x-www-form-urlencoded";
             
             range = [relativePath rangeOfString:@"/config"];
-            if (range.location != NSNotFound) {
+            if (range.location != NSNotFound) { // /config
                 if (supportedKits) {
                     kits = [supportedKits componentsJoinedByString:@","];
                 }
@@ -235,8 +226,8 @@ static NSDateFormatter *RFC1123DateFormatter;
                 }
                 
                 NSString *query = [_url query];
-                signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@?%@", _httpMethod, date, relativePath, query];
-            } else {
+                signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@?%@", _httpMethod, date, [[self configURLDefault] relativePath], query];
+            } else {  // /audience
                 signatureMessage = [NSString stringWithFormat:@"%@\n%@\n%@", _httpMethod, date, relativePath];
             }
         }
@@ -284,6 +275,36 @@ static NSDateFormatter *RFC1123DateFormatter;
     }
     
     return urlRequest;
+}
+
+#pragma mark Private accessors
+- (NSURL *)configURLDefault {
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPApplication *application = [[MPApplication alloc] init];
+    
+    NSString *configURLFormat = [kMPUrlFormat stringByAppendingString:@"?av=%@&sv=%@"];
+    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, kMPURLHostConfig, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
+    NSURL *configURLDefault = [NSURL URLWithString:urlString];
+    
+    return configURLDefault;
+}
+
+- (NSURL *)eventURLDefault {
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    NSString *urlString = [NSString stringWithFormat:kMPUrlFormat, kMPURLScheme, kMPURLHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+    NSURL *eventURLDefault = [NSURL URLWithString:urlString];
+    
+    return eventURLDefault;
+}
+
+- (NSURL *)identityURLDefault:(NSString *)pathComponent {
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
+    NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+    NSURL *identityURLDefault = [NSURL URLWithString:urlString];
+    
+    identityURLDefault.accessibilityHint = @"identity";
+    return identityURLDefault;
 }
 
 @end

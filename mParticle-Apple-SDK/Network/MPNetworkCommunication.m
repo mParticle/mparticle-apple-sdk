@@ -27,33 +27,6 @@
 #import "MPAliasResponse.h"
 #import "MPResponseConfig.h"
 
-NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
-NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
-
-NSString *const identityURLFormat = @"%@://%@/%@/%@"; // Scheme, URL Host, API Version, path
-NSString *const identityURLFormatOverride = @"%@://%@/%@"; // Scheme, URL Host, path
-
-NSString *const modifyURLFormat = @"%@://%@/%@/%@/%@"; // Scheme, URL Host, API Version, mpid, path
-NSString *const modifyURLFormatOverride = @"%@://%@/%@/%@"; // Scheme, URL Host, mpid, path
-
-NSString *const aliasURLFormat = @"%@://%@/%@/%@/%@/%@"; // Scheme, URL Host, API Version, identity, API key, path
-NSString *const aliasURLFormatOverride = @"%@://%@/%@/%@"; // Scheme, URL Host, API key, path
-
-NSString *const kMPConfigVersion = @"v4";
-NSString *const kMPConfigURL = @"/config";
-NSString *const kMPEventsVersion = @"v2";
-NSString *const kMPEventsURL = @"/events";
-NSString *const kMPSegmentVersion = @"v1";
-NSString *const kMPSegmentURL = @"/audience";
-NSString *const kMPIdentityVersion = @"v1";
-NSString *const kMPIdentityURL = @"";
-NSString *const kMPIdentityKey = @"identity";
-
-NSString *const kMPURLScheme = @"https";
-NSString *const kMPURLHost = @"nativesdks.mparticle.com";
-NSString *const kMPURLHostConfig = @"config2.mparticle.com";
-NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
-
 static NSObject<MPConnectorFactory> *factory = nil;
 
 @interface MParticle ()
@@ -125,11 +98,11 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
     
     if ([MParticle sharedInstance].networkOptions.overridesConfigSubdirectory) {
-        NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
+        NSString *configURLFormat = [kMPUrlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
         NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
         _configURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
+        NSString *configURLFormat = [kMPUrlFormat stringByAppendingString:@"?av=%@&sv=%@"];
         NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
         _configURL = [NSURL URLWithString:urlString];
     }
@@ -146,10 +119,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
     
     if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, kMPEventsURL];
+        NSString *urlString = [NSString stringWithFormat:kMPUrlFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, kMPEventsURL];
         _eventURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+        NSString *urlString = [NSString stringWithFormat:kMPUrlFormat, kMPURLScheme, eventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
         _eventURL = [NSURL URLWithString:urlString];
     }
     
@@ -162,10 +135,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
     NSString *urlString;
     if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        NSString *segmentURLFormat = [urlFormatOverride stringByAppendingString:@"?mpID=%@"];
+        NSString *segmentURLFormat = [kMPUrlFormatOverride stringByAppendingString:@"?mpID=%@"];
         urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
     } else {
-        NSString *segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
+        NSString *segmentURLFormat = [kMPUrlFormat stringByAppendingString:@"?mpID=%@"];
         urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
     }
     
@@ -181,10 +154,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *pathComponent = @"identify";
     NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
         _identifyURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
         _identifyURL = [NSURL URLWithString:urlString];
     }
     
@@ -200,10 +173,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *pathComponent = @"login";
     NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
         _loginURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
         _loginURL = [NSURL URLWithString:urlString];
     }
     
@@ -219,10 +192,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *pathComponent = @"logout";
     NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
         _logoutURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPIdentityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
         _logoutURL = [NSURL URLWithString:urlString];
     }
     
@@ -235,10 +208,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
     NSURL *modifyURL;
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController mpId], pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPModifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController mpId], pathComponent];
         modifyURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPModifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
         modifyURL = [NSURL URLWithString:urlString];
     }
 
@@ -262,10 +235,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     
     if (overrides) {
-        NSString *urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPAliasURLFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, pathComponent];
         _aliasURL = [NSURL URLWithString:urlString];
     } else {
-        NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
+        NSString *urlString = [NSString stringWithFormat:kMPAliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
         _aliasURL = [NSURL URLWithString:urlString];
     }
     

@@ -103,6 +103,39 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssert(![configURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
+- (void)testEventURLWithOptions {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.eventsHost = @"nativesdks.mparticle.com";
+    options.pinningDisabledInDevelopment = true;
+    
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *eventURL = [networkCommunication eventURL];
+    
+    [self deswizzle];
+    
+    XCTAssert([eventURL.absoluteString isEqualToString:@"https://nativesdks.mparticle.com/v2/(null)/events"]);
+    XCTAssert(![eventURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+- (void)testEventURLWithOptionsAndOverride {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.eventsHost = @"nativesdks.mparticle.com/v2";
+    options.overridesEventsSubdirectory = true;
+    options.pinningDisabledInDevelopment = true;
+    
+    [MParticle sharedInstance].networkOptions = options;
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *eventURL = [networkCommunication eventURL];
+    
+    [self deswizzle];
+    
+    XCTAssert([eventURL.absoluteString isEqualToString:@"https://nativesdks.mparticle.com/v2/(null)/events"]);
+    XCTAssert(![eventURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
 - (void)testModifyURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     

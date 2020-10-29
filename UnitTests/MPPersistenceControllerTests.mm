@@ -77,7 +77,7 @@
     XCTAssertEqual(safe, 2);
     const char *version = sqlite3_libversion();
     NSString *stringVersion = [NSString stringWithCString:version encoding:NSUTF8StringEncoding];
-    XCTAssert([stringVersion isEqual:@"3.19.3"] || [stringVersion isEqual:@"3.22.0"] || [stringVersion isEqual:@"3.14.0"] || [stringVersion isEqual:@"3.16.0"] || [stringVersion isEqualToString:@"3.24.0"] || [stringVersion isEqualToString:@"3.28.0"], @"%@", stringVersion);
+    XCTAssert([stringVersion isEqual:@"3.32.3"] || [stringVersion isEqual:@"3.19.3"] || [stringVersion isEqual:@"3.22.0"] || [stringVersion isEqual:@"3.14.0"] || [stringVersion isEqual:@"3.16.0"] || [stringVersion isEqualToString:@"3.24.0"] || [stringVersion isEqualToString:@"3.28.0"], @"%@", stringVersion);
 }
 
 - (void)testMigrateMessagesWithNullSessions {

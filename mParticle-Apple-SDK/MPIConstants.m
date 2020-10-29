@@ -332,6 +332,33 @@ NSString *const kMPEventTypeStringProductAddToWishlist = @"ProductAddToWishlist"
 NSString *const kMPEventTypeStringProductRemoveFromWishlist = @"ProductRemoveFromWishlist";
 NSString *const kMPEventTypeStringProductImpression = @"ProductImpression";
 
+NSString *const kMPUrlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
+NSString *const kMPUrlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
+
+NSString *const kMPIdentityURLFormat = @"%@://%@/%@/%@"; // Scheme, URL Host, API Version, path
+NSString *const kMPIdentityURLFormatOverride = @"%@://%@/%@"; // Scheme, URL Host, path
+
+NSString *const kMPModifyURLFormat = @"%@://%@/%@/%@/%@"; // Scheme, URL Host, API Version, mpid, path
+NSString *const kMPModifyURLFormatOverride = @"%@://%@/%@/%@"; // Scheme, URL Host, mpid, path
+
+NSString *const kMPAliasURLFormat = @"%@://%@/%@/%@/%@/%@"; // Scheme, URL Host, API Version, identity, API key, path
+NSString *const kMPAliasURLFormatOverride = @"%@://%@/%@/%@"; // Scheme, URL Host, API key, path
+
+NSString *const kMPConfigVersion = @"v4";
+NSString *const kMPConfigURL = @"/config";
+NSString *const kMPEventsVersion = @"v2";
+NSString *const kMPEventsURL = @"/events";
+NSString *const kMPSegmentVersion = @"v1";
+NSString *const kMPSegmentURL = @"/audience";
+NSString *const kMPIdentityVersion = @"v1";
+NSString *const kMPIdentityURL = @"";
+NSString *const kMPIdentityKey = @"identity";
+
+NSString *const kMPURLScheme = @"https";
+NSString *const kMPURLHost = @"nativesdks.mparticle.com";
+NSString *const kMPURLHostConfig = @"config2.mparticle.com";
+NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
+
 //
 // Primitive data type constants
 //
