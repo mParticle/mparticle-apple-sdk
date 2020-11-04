@@ -62,7 +62,7 @@
             NSNumber *numberAttribute = (NSNumber *)obj;
             
             if (numberAttribute == (void *)kCFBooleanFalse || numberAttribute == (void *)kCFBooleanTrue) {
-                transformedDictionary[key] = [numberAttribute boolValue] ? @"Y" : @"N";
+                transformedDictionary[key] = [numberAttribute boolValue] ? @"true" : @"false";
             } else {
                 transformedDictionary[key] = [numberAttribute stringValue];
             }

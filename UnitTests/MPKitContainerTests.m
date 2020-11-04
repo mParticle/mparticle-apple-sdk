@@ -1322,7 +1322,7 @@
                                                           \"event_match_type\":\"String\", \
                                                           \"event\":\"subscription_success\", \
                                                           \"attribute_key\":\"boolean\", \
-                                                          \"attribute_values\":[\"Y\"] \
+                                                          \"attribute_values\":[\"true\"] \
                                                       } \
                                                   ], \
                                                   \"behavior\":{ \
