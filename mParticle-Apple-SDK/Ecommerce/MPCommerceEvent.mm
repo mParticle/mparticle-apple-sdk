@@ -33,7 +33,6 @@ NSString *const kMPCEPromotions = @"pm";
 NSString *const kMPCEImpressions = @"pi";
 NSString *const kMPCEImpressionList = @"pil";
 NSString *const kMPCEProductAction = @"pd";
-NSString *const kMPCEShoppingCartState = @"sc";
 NSString *const kMPCEInstructionsKey = @"instructions";
 NSString *const kMPExpCECheckoutOptions = @"Checkout Options";
 NSString *const kMPExpCECurrency = @"Currency Code";
@@ -57,7 +56,6 @@ static NSArray *actionNames;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *latestRemovedProducts;
 @property (nonatomic, strong) NSMutableDictionary<NSString *, __kindof NSSet<MPProduct *> *> *productImpressions;
 @property (nonatomic, strong) NSMutableArray<MPProduct *> *productsList;
-@property (nonatomic, strong) NSDictionary *shoppingCartState;
 @end
 
 @implementation MPCommerceEvent
@@ -334,7 +332,6 @@ static NSArray *actionNames;
     [self.promotionContainer isEqual:object.promotionContainer] &&
     [self.transactionAttributes isEqual:object.transactionAttributes] &&
     commerceEventKind == object->commerceEventKind &&
-    [_shoppingCartState isEqualToDictionary:object.shoppingCartState] &&
     [_currency isEqualToString:object.currency];
     
     return isEqual;
@@ -352,7 +349,6 @@ static NSArray *actionNames;
         copyObject.promotionContainer = [_promotionContainer copy];
         copyObject.transactionAttributes = [_transactionAttributes copy];
         copyObject->commerceEventKind = commerceEventKind;
-        copyObject->_shoppingCartState = _shoppingCartState ? [[NSMutableDictionary alloc] initWithDictionary:[_shoppingCartState copy]] : nil;
         copyObject->_currency = [_currency copy];
     }
     
@@ -407,10 +403,6 @@ static NSArray *actionNames;
     if (_nonInteractive) {
         [coder encodeBool:_nonInteractive forKey:@"nonInteractive"];
     }
-    
-    if (_shoppingCartState) {
-        [coder encodeObject:_shoppingCartState forKey:@"shoppingCartState"];
-    }
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -464,11 +456,6 @@ static NSArray *actionNames;
     self.type = (MPEventType)[coder decodeIntegerForKey:@"type"];
     commerceEventKind = (MPCommerceEventKind)[coder decodeIntegerForKey:@"commerceEventKind"];
     
-    dictionary = [coder decodeObjectOfClass:[NSDictionary class] forKey:@"shoppingCartState"];
-    if (dictionary) {
-        self->_shoppingCartState = [[NSMutableDictionary alloc] initWithDictionary:dictionary];
-    }
-    
     return self;
 }
 
@@ -500,10 +487,6 @@ static NSArray *actionNames;
     
     if (self.customAttributes.count > 0) {
         dictionary[kMPAttributesKey] = [self.customAttributes transformValuesToString];
-    }
-
-    if (_shoppingCartState) {
-        dictionary[kMPCEShoppingCartState] = _shoppingCartState;
     }
     
     if (_currency) {
