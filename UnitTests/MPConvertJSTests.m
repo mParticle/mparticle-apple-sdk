@@ -213,4 +213,41 @@
     XCTAssertEqual(commerceEvent.impressions.count, 0);
 }
 
+- (void)testConvertMPCommerceEventImpressionActionPriceString {
+    NSDictionary *json = @{
+        @"CheckoutOptions":@"Test checkout option",
+        @"productActionListName":@"Test action list name",
+        @"productActionListSource":@"Test action list source",
+        @"CurrencyCode":@"Test currency code",
+        @"ProductImpressions":@[
+                @{
+                        @"ProductList": @[
+                        @{
+                            @"Name": @"test name",
+                            @"Brand": @"testing brand",
+                            @"Price": @"0",
+                            @"Sku": @"sku test",
+                            @"Quantity": @0
+                        }
+                        ],
+                        @"ProductImpressionList": @"Impression List Test"
+                }
+        ],
+        @"CheckoutStep": @2
+    };
+    
+    MPCommerceEvent *commerceEvent = nil;
+    commerceEvent = [MPConvertJS MPCommerceEvent:json];
+    XCTAssertNotNil(commerceEvent);
+    XCTAssertEqual(commerceEvent.type, MPEventTypeImpression);
+    XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
+    XCTAssertEqualObjects(commerceEvent.productListName, @"Test action list name");
+    XCTAssertEqualObjects(commerceEvent.productListSource, @"Test action list source");
+    XCTAssertEqualObjects(commerceEvent.currency, @"Test currency code");
+    XCTAssertEqual(commerceEvent.checkoutStep, 2);
+    XCTAssertEqual(commerceEvent.impressions.count, 1);
+    XCTAssertEqualObjects(commerceEvent.impressions[@"Impression List Test"].anyObject.name, @"test name");
+    XCTAssertEqualObjects(commerceEvent.impressions[@"Impression List Test"].anyObject.price, @0);
+}
+
 @end

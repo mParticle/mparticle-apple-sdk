@@ -285,6 +285,8 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     
     if (!json[@"Price"] || [json[@"Price"] isKindOfClass:[NSNumber class]]) {
         product.price = json[@"Price"];
+    } else if ([json[@"Price"] isKindOfClass:[NSString class]]) {
+        product.price = [NSNumber numberWithDouble:[(NSString *)json[@"Price"] doubleValue]];
     }
     
     if ((NSNull *)json[@"Sku"] != [NSNull null]) {
