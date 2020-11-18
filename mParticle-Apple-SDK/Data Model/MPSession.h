@@ -17,6 +17,7 @@
 @property (nonatomic, strong, readwrite, nonnull) NSString *sessionUserIds;
 
 - (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId;
+- (nonnull instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(nonnull NSNumber *)userId uuid:(nullable NSString *)uuid;
 
 - (nonnull instancetype)initWithSessionId:(int64_t)sessionId
                                      UUID:(nonnull NSString *)uuid

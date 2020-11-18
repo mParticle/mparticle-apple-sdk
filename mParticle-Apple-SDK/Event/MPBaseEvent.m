@@ -27,6 +27,7 @@
     _messageType = MPMessageTypeUnknown;
     _customAttributes = nil;
     _customFlags = nil;
+    _shouldBeginSession = YES;
     self.type = type;
     
     return self;

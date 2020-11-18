@@ -187,12 +187,30 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /*
  Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.
  
- If set to YES, the SDK will start a timer when the app enters the background and will end the session if a
+ If set to YES (the default), the SDK will start a timer when the app enters the background and will end the session if a
  user leaves the app for a configurable number of seconds without bringing it back to foreground.
  
  Note that the above behavior does not apply to apps with long-running background sessions.
+ 
+ Also note that the SDK will still start a session automatically when startWithOptions is called, even if automaticSessionTracking is disabled, unless `shouldBeginSession` is also set to NO.
+ @see shouldBeginSession
  */
 @property (nonatomic, unsafe_unretained, readwrite) BOOL automaticSessionTracking;
+
+/*
+ Whether the SDK should start a session on SDK init. (Defaults to YES.)
+ 
+ The behavior of this flag does not change depending on whether automatic session tracking is enabled.
+ 
+ If set to YES, the SDK will start session immediately when you call `startWithOptions:`
+ If set to NO, the SDK will not create a session as as result of `startWithOptions:` being called.
+ 
+ If your application can be launched into the background, you will want to set this to NO in that situation to avoid spurious sessions that do not correspond to user activity.
+ You can detect being launched into the background from within `didFinishLaunchingWithOptions:` based on whether `launchOptions[UIApplicationLaunchOptionsRemoteNotificationsKey]["content-available"]` exists and is set to the `NSNumber` value `@1`.
+ 
+ Note that even if this flag is set to NO, the SDK will still create sessions as a result of other application lifecycle events, unless `automaticSessionTracking` is also set to NO.
+ */
+@property (nonatomic, unsafe_unretained, readwrite) BOOL shouldBeginSession;
 
 /*
  The browser user agent.
@@ -374,8 +392,15 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  A flag indicating whether the mParticle Apple SDK is using
  automated Session tracking.
  @see MParticleOptions
+ @see shouldBeginSession
  */
 @property (nonatomic, unsafe_unretained, readonly) BOOL automaticSessionTracking;
+
+/**
+ A flag indicating whether the SDK should start a session on SDK init. (Defaults to YES.)
+ @see MParticleOptions
+ */
+@property (nonatomic, unsafe_unretained, readwrite) BOOL shouldBeginSession;
 
 /**
  The current session. You can access properties for Session ID and UUID.

@@ -1202,6 +1202,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     [MParticle sharedInstance].stateMachine.location = location;
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Unit Test Event" type:MPEventTypeOther];
+    event.shouldBeginSession = NO;
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Set location"];
     

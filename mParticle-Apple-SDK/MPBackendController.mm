@@ -51,6 +51,10 @@ const NSTimeInterval kMPMaximumAgentWaitTimeSeconds = 5;
 
 static NSArray *execStatusDescriptions;
 static BOOL appBackgrounded = NO;
+ 
+@interface MParticleSession ()
+- (instancetype)initWithUUID:(NSString *)uuid;
+@end
 
 @interface MParticle ()
 
@@ -63,7 +67,6 @@ static BOOL appBackgrounded = NO;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 + (dispatch_queue_t)messageQueue;
 + (void)executeOnMessage:(void(^)(void))block;
-- (NSNumber *)sessionIDFromUUID:(NSString *)uuid;
 
 @end
 
@@ -80,6 +83,7 @@ static BOOL appBackgrounded = NO;
     dispatch_queue_t messageQueue;
     BOOL originalAppDelegateProxied;
     BOOL resignedActive;
+    MParticleSession *tempSession;
 }
 
 @end
@@ -298,18 +302,17 @@ static BOOL appBackgrounded = NO;
     });
     
     __weak MPBackendController *weakSelf = self;
-    NSNumber *sessionId = [MParticle.sharedInstance sessionIDFromUUID:session.uuid];
-    NSString *sessionUUID = session.uuid;
+    MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
         if (strongSelf) {
             NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
-            if (sessionId != nil) {
-                mutableInfo[mParticleSessionId] = sessionId;
+            if (mparticleSession.sessionID != nil) {
+                mutableInfo[mParticleSessionId] = mparticleSession.sessionID;
             }
-            if (sessionUUID) {
-                mutableInfo[mParticleSessionUUID] = sessionUUID;
+            if (mparticleSession.UUID) {
+                mutableInfo[mParticleSessionUUID] = mparticleSession.UUID;
             }
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
                                                                 object:strongSelf.delegate
@@ -322,18 +325,17 @@ static BOOL appBackgrounded = NO;
     [self.delegate sessionDidEnd:session];
     
     __weak MPBackendController *weakSelf = self;
-    NSNumber *sessionId = [MParticle.sharedInstance sessionIDFromUUID:session.uuid];
-    NSString *sessionUUID = session.uuid;
+    MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPBackendController *strongSelf = weakSelf;
         
         if (strongSelf) {
             NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
-            if (sessionId != nil) {
-                mutableInfo[mParticleSessionId] = sessionId;
+            if (mparticleSession.sessionID != nil) {
+                mutableInfo[mParticleSessionId] = mparticleSession.sessionID;
             }
-            if (sessionUUID) {
-                mutableInfo[mParticleSessionUUID] = sessionUUID;
+            if (mparticleSession.UUID) {
+                mutableInfo[mParticleSessionUUID] = mparticleSession.UUID;
             }
             [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
                                                                 object:strongSelf.delegate
@@ -834,6 +836,9 @@ static BOOL skipNextUpload = NO;
 - (BOOL)shouldEndSession {
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     NSTimeInterval backgroundTime = self->timeAppWentToBackground;
+    if (backgroundTime == 0) {
+        return NO;
+    }
     NSTimeInterval timeInBackground = currentTime - backgroundTime;
     
     return timeInBackground >= self.sessionTimeout;
@@ -856,10 +861,12 @@ static BOOL skipNextUpload = NO;
             [[MParticle sharedInstance].persistenceController updateSession:self.session];
             
             dispatch_async(messageQueue, ^{
+                [self skipNextUpload];
                 [self processOpenSessionsEndingCurrent:YES
                                      completionHandler:^(void) {
                     MPILogDebug(@"SDK has ended background activity.");
                     [self beginSession];
+                    [self waitForKitsAndUploadWithCompletionHandler:nil];
                 }];
             });
         } else {
@@ -1073,6 +1080,21 @@ static BOOL skipNextUpload = NO;
     }
 }
 
+- (void)createTempSession {
+    tempSession = [[MParticleSession alloc] initWithUUID:[NSUUID UUID].UUIDString];
+    
+    MPSession *mpSession = [[MPSession alloc] init];
+    mpSession.uuid = tempSession.UUID;
+    
+    [self broadcastSessionDidBegin:mpSession];
+    
+    MPILogVerbose(@"New Session Has Begun: %@", tempSession.UUID);
+}
+
+- (MParticleSession *)tempSession {
+    return tempSession;
+}
+
 #pragma mark Public methods
 - (void)beginSession {
     NSDate *date = [NSDate date];
@@ -1101,7 +1123,12 @@ static BOOL skipNextUpload = NO;
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
         date = date ?: [NSDate date];
-        self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        if (tempSession) {
+            self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:[MPPersistenceController mpId] uuid:tempSession.UUID];
+        } else {
+            self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+        }
+        
         [persistence saveSession:_session];
         
         MPSession *previousSession = [persistence fetchPreviousSession];
@@ -1125,9 +1152,13 @@ static BOOL skipNextUpload = NO;
         
         stateMachine.currentSession = _session;
         
-        [self broadcastSessionDidBegin:self->_session];
-        
-        MPILogVerbose(@"New Session Has Begun: %@", _session.uuid);
+        if (tempSession) {
+            tempSession = nil;
+        } else {
+            [self broadcastSessionDidBegin:self->_session];
+            
+            MPILogVerbose(@"New Session Has Begun: %@", _session.uuid);
+        }
     }
 }
 
@@ -1137,7 +1168,13 @@ static BOOL skipNextUpload = NO;
     }
     
     @synchronized (self) {
-        if (_session == nil || [MParticle sharedInstance].stateMachine.optOut) {
+        if ((_session == nil && tempSession == nil) || [MParticle sharedInstance].stateMachine.optOut) {
+            return;
+        }
+        if (_session == nil && tempSession != nil) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), messageQueue, ^{
+                [self endSessionWithIsManual:isManual];
+            });
             return;
         }
         
@@ -1501,6 +1538,10 @@ static BOOL skipNextUpload = NO;
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
     
+    if (event.shouldBeginSession) {
+        NSDate *date = event.timestamp ?: [NSDate date];
+        [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
+    }
     if ([event isKindOfClass:[MPEvent class]] || [event isKindOfClass:[MPCommerceEvent class]]) {
         NSDictionary<NSString *, id> *messageInfo = [event dictionaryRepresentation];
             
@@ -1684,14 +1725,19 @@ static BOOL skipNextUpload = NO;
     stateMachine.installationType = installationType;
     [MPStateMachine setRunningInBackground:NO];
     
-    BOOL isApplicationStateBackground = [MPApplication sharedUIApplication].applicationState == UIApplicationStateBackground;
+    BOOL shouldBeginSession = !stateMachine.optOut && MParticle.sharedInstance.shouldBeginSession;
+    NSDate *date = nil;
+    if (shouldBeginSession) {
+        [self createTempSession];
+        date = [NSDate date];
+    }
     
     __weak MPBackendController *weakSelf = self;
     dispatch_async(messageQueue, ^{
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
 
-        if (!isApplicationStateBackground && MParticle.sharedInstance.automaticSessionTracking) {
-            [self beginSession];
+        if (shouldBeginSession) {
+            [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
         }
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];

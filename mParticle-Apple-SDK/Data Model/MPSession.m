@@ -12,7 +12,14 @@ NSString *const sessionUUIDKey = @"sessionId";
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId {
-    self = [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:userId sessionUserIds:[userId stringValue]];
+    self = [self initWithStartTime:timestamp userId:userId uuid:nil];
+    
+    return self;
+}
+
+- (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId uuid:(NSString *)uuid {
+    NSString *uuidString = uuid ?: [[NSUUID UUID] UUIDString];
+    self = [self initWithSessionId:0 UUID:uuidString backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:userId sessionUserIds:[userId stringValue]];
     
     return self;
 }

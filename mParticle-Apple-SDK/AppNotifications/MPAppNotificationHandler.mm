@@ -112,10 +112,6 @@
         return;
     }
     
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
-    }
-    
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:);
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -135,10 +131,6 @@
 - (void)handleActionWithIdentifier:(NSString *)identifier forRemoteNotification:(NSDictionary *)userInfo withResponseInfo:(NSDictionary *)responseInfo {
     if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
-    }
-    
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
     }
     
     SEL handleActionWithIdentifierSelector = @selector(handleActionWithIdentifier:forRemoteNotification:withResponseInfo:);
@@ -161,11 +153,6 @@
 - (void) didReceiveRemoteNotification:(NSDictionary *)userInfo {
     if ([MParticle sharedInstance].stateMachine.optOut || !userInfo) {
         return;
-    }
-    
-    // Content-available pushes should not result in a session being started since they do not reflect user interaction
-    if (![self hasContentAvail:userInfo] && MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
     }
     
     if ([MParticle sharedInstance].trackNotifications) {
@@ -204,10 +191,6 @@
         return;
     }
     
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
-    }
-    
     SEL didUpdateUserActivitySelector = @selector(didUpdateUserActivity:);
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -230,10 +213,6 @@
         return;
     }
     
-    if (![self hasContentAvail:notification.request.content.userInfo] && MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
-    }
-    
     if ([MParticle sharedInstance].trackNotifications && ![self hasContentAvail:notification.request.content.userInfo]) {
         [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:notification.request.content.userInfo];
     }
@@ -253,10 +232,6 @@
 - (void)userNotificationCenter:(nonnull UNUserNotificationCenter *)center didReceiveNotificationResponse:(nonnull UNNotificationResponse *)response {
     if ([MParticle sharedInstance].stateMachine.optOut) {
         return;
-    }
-    
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
     }
     
     if (!response.notification.request.content.userInfo) {
@@ -297,10 +272,6 @@
         return NO;
     }
     
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
-    }
-    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
     
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
@@ -336,10 +307,6 @@
         return;
     }
     
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
-    }
-    
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url options:options];
     
     SEL openURLOptionsSelector = @selector(openURL:options:);
@@ -362,10 +329,6 @@
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
-    }
-    
-    if (MParticle.sharedInstance.automaticSessionTracking) {
-        [[MParticle sharedInstance].backendController beginSession];
     }
     
     stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url

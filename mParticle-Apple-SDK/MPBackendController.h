@@ -16,6 +16,7 @@
 @class MPEvent;
 @class MPCommerceEvent;
 @class MPConsentState;
+@class MParticleSession;
 
 @protocol MPBackendControllerDelegate;
 
@@ -73,6 +74,8 @@ extern const NSInteger kInvalidKey;
 - (void)endSession;
 - (void)beginSessionWithIsManual:(BOOL)isManual date:(nonnull NSDate *)date;
 - (void)endSessionWithIsManual:(BOOL)isManual;
+- (void)createTempSession;
+- (nonnull MParticleSession *)tempSession;
 - (void)beginTimedEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 + (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;

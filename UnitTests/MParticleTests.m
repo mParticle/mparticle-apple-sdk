@@ -88,11 +88,38 @@
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
+- (void)testInitStartsSessionSync {
+    MParticle *instance = [MParticle sharedInstance];
+    [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
+    MParticleSession *session = instance.currentSession;
+    XCTAssertNotNil(session, "Nil current session immediately after SDK init");
+}
+
+- (void)testInitStartsSessionSyncDisable {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.shouldBeginSession = NO;
+    [instance startWithOptions:options];
+    MParticleSession *session = instance.currentSession;
+    XCTAssertNil(session, "No begin session flag, but non-nil current session immediately after SDK init");
+}
+
+- (void)testInitStartsSessionSyncDisableAll {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.shouldBeginSession = NO;
+    options.automaticSessionTracking = NO;
+    [instance startWithOptions:options];
+    MParticleSession *session = instance.currentSession;
+    XCTAssertNil(session, "No begin session (or auto tracking) flags, but non-nil current session immediately after SDK init");
+}
+
 - (void)testNoAutoTrackingHasNoSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
+    options.shouldBeginSession = NO;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
         MParticleSession *session = instance.currentSession;
@@ -107,6 +134,7 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
+    options.shouldBeginSession = NO;
     [instance startWithOptions:options];
     [instance beginSession];
     dispatch_async([MParticle messageQueue], ^{
@@ -122,8 +150,10 @@
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.automaticSessionTracking = NO;
+    options.shouldBeginSession = NO;
     [instance startWithOptions:options];
     [instance beginSession];
+    XCTAssertNotNil(instance.currentSession, "No auto tracking called begin but nil current session");
     [instance endSession];
     dispatch_async([MParticle messageQueue], ^{
         MParticleSession *session = instance.currentSession;
@@ -156,7 +186,7 @@
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
-- (void)testAutoTrackingNonContentAvail {
+- (void)testEventStartSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
@@ -165,14 +195,79 @@
     [instance startWithOptions:options];
     [instance endSession];
     
-    [instance didReceiveRemoteNotification:@{@"aps":@{@"alert":@"Testing.. (0)",@"badge":@1,@"sound":@"default"}, @"foo-notif-content": @"foo-notif-content-value"}];
+    MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
+    XCTAssertTrue(sessionEvent.shouldBeginSession);
+    [instance logEvent:sessionEvent];
     dispatch_async([MParticle messageQueue], ^{
         MParticleSession *session = instance.currentSession;
-        XCTAssertNotNil(session, "Auto tracking but nil current session after non-content-available push");
+        XCTAssertNotNil(session, "Auto tracking but nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
     [self waitForExpectationsWithTimeout:10 handler:nil];
 }
+
+- (void)testEventNoStartSession {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = YES;
+    options.proxyAppDelegate = NO;
+    [instance startWithOptions:options];
+    [instance endSession];
+    
+    MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
+    sessionEvent.shouldBeginSession = NO;
+    XCTAssertFalse(sessionEvent.shouldBeginSession);
+    [instance logEvent:sessionEvent];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNil(session, "Auto tracking but non-nil current session after an event logged with startSession = YES");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testEventStartSessionManual {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = NO;
+    options.proxyAppDelegate = NO;
+    [instance startWithOptions:options];
+    [instance endSession];
+    
+    MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
+    XCTAssertTrue(sessionEvent.shouldBeginSession);
+    [instance logEvent:sessionEvent];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNotNil(session, "No auto tracking but nil current session after an event logged with startSession = YES");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testEventNoStartSessionManual {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.automaticSessionTracking = NO;
+    options.proxyAppDelegate = NO;
+    [instance startWithOptions:options];
+    [instance endSession];
+    
+    MPBaseEvent *sessionEvent = [[MPEvent alloc] initWithName:@"foo-event" type:MPEventTypeOther];
+    sessionEvent.shouldBeginSession = NO;
+    XCTAssertFalse(sessionEvent.shouldBeginSession);
+    [instance logEvent:sessionEvent];
+    dispatch_async([MParticle messageQueue], ^{
+        MParticleSession *session = instance.currentSession;
+        XCTAssertNil(session, "No auto tracking but non-nil current session after an event logged with startSession = YES");
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
 #endif
 
 - (void)testNormalSessionContents {

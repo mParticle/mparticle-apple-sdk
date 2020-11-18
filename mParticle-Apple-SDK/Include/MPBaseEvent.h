@@ -38,6 +38,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly, nullable) NSMutableDictionary<NSString *, __kindof NSArray<NSString *> *> *customFlags;
 
 /**
+ Whether the SDK should automatically begin a session if one does not already exist (defaults to YES).
+ This should typically be set to NO if the app is launched from a background notification.
+ */
+@property (nonatomic) BOOL shouldBeginSession;
+
+/**
  A Dictionary representation of this instance for uploading the event
  Must be overridden by a subclass
  */

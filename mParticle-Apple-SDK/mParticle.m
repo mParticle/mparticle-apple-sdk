@@ -106,12 +106,27 @@ NSString *const kMPStateKey = @"state";
 
 @interface MParticleSession ()
 
+- (instancetype)initWithUUID:(NSString *)uuid;
 @property (nonatomic, readwrite) NSNumber *sessionID;
 @property (nonatomic, readwrite) NSString *UUID;
 
 @end
 
 @implementation MParticleSession
+
+- (instancetype)initWithUUID:(NSString *)uuid {
+    NSNumber *sessionID = [self sessionIDFromUUID:uuid];
+    self.sessionID = sessionID;
+    self.UUID = uuid;
+    return self;
+}
+
+- (NSNumber *)sessionIDFromUUID:(NSString *)uuid {
+    NSNumber *sessionID = nil;
+    sessionID = @([MPIHasher hashStringUTF16:uuid].integerValue);
+    return sessionID;
+}
+
 @end
 
 @implementation MPNetworkOptions
@@ -173,6 +188,7 @@ NSString *const kMPStateKey = @"state";
         _collectSearchAdsAttribution = YES;
         _trackNotifications = YES;
         _automaticSessionTracking = YES;
+        _shouldBeginSession = YES;
         _startKitsAsync = NO;
         _logLevel = MPILogLevelNone;
         _uploadInterval = 0.0;
@@ -524,6 +540,7 @@ NSString *const kMPStateKey = @"state";
     
     _proxiedAppDelegate = proxyAppDelegate;
     _automaticSessionTracking = self.options.automaticSessionTracking;
+    _shouldBeginSession = self.options.shouldBeginSession;
     _customUserAgent = self.options.customUserAgent;
     _collectUserAgent = self.options.collectUserAgent;
     _collectSearchAdsAttribution = self.options.collectSearchAdsAttribution;
@@ -646,24 +663,16 @@ NSString *const kMPStateKey = @"state";
                        }];
 }
 
-- (NSNumber *)sessionIDFromUUID:(NSString *)uuid {
-    NSNumber *sessionID = nil;
-    sessionID = @([MPIHasher hashStringUTF16:uuid].integerValue);
-    return sessionID;
-}
-
 - (MParticleSession *)currentSession {
-    MParticleSession *session = nil;
+    MParticleSession *session = self.backendController.tempSession;
+    if (session != nil) {
+        return session;
+    }
     
     MPSession *sessionInternal = MParticle.sharedInstance.stateMachine.currentSession;
     
     if (sessionInternal) {
-        NSNumber *sessionID = [self sessionIDFromUUID:sessionInternal.uuid];
-        NSString *uuid = sessionInternal.uuid;
-        
-        session = [[MParticleSession alloc] init];
-        session.sessionID = sessionID;
-        session.UUID = uuid;
+        session = [[MParticleSession alloc] initWithUUID:sessionInternal.uuid];
     }
     
     return session;
@@ -1368,11 +1377,12 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)beginSession {
+    if (self.backendController.tempSession != nil || self.backendController.session != nil) {
+        return;
+    }
+    [self.backendController createTempSession];
     NSDate *date = [NSDate date];
     dispatch_async(messageQueue, ^{
-        if (self.backendController.session != nil) {
-            return;
-        }
         [self.backendController beginSessionWithIsManual:YES date:date];
     });
 }
