@@ -164,7 +164,7 @@ extern NSString * _Nonnull const kMPPushNotificationStateBackground;
 extern NSString * _Nonnull const kMPPushNotificationStateForeground;
 extern NSString * _Nonnull const kMPPushNotificationActionIdentifierKey;
 extern NSString * _Nonnull const kMPPushNotificationBehaviorKey;
-extern NSString * _Nonnull const kMPPushNotificationActionTileKey;
+extern NSString * _Nonnull const kMPPushNotificationActionTitleKey;
 extern NSString * _Nonnull const kMPPushNotificationCategoryIdentifierKey;
 
 // Assorted Keys

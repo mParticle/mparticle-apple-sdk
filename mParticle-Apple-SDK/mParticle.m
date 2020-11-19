@@ -1716,25 +1716,25 @@ NSString *const kMPStateKey = @"state";
     if (userInfo == nil) {
         return;
     }
-    [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorReceived];
+    [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorReceived andActionIdentifier:nil];
 }
 
 /**
  Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
-- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo {
+- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo andActionIdentifier:(nullable NSString *)actionIdentifier {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:userInfo];
     
     if (userInfo == nil) {
         return;
     }
-    [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorRead | MPUserNotificationBehaviorDirectOpen];
+    [self logNotificationWithUserInfo:userInfo behavior:MPUserNotificationBehaviorRead | MPUserNotificationBehaviorDirectOpen andActionIdentifier:actionIdentifier];
 }
 
 /**
  Logs a Notification event. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only submit Notification events manually:
  */
-- (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior {
+- (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior andActionIdentifier:(nullable NSString *)actionIdentifier {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:userInfo parameter2:@(behavior)];
     
     UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
@@ -1745,6 +1745,7 @@ NSString *const kMPStateKey = @"state";
                                                                                                   state:stateString
                                                                                                behavior:behavior
                                                                                                    mode:MPUserNotificationModeRemote];
+    userNotification.actionIdentifier = actionIdentifier;
     
     [self.backendController logUserNotification:userNotification];
 }

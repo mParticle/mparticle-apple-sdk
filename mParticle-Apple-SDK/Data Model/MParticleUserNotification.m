@@ -36,6 +36,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     _redactedUserNotificationString = [self redactUserNotification:notificationDictionary];
     _uuid = [[NSUUID UUID] UUIDString];
     _actionTitle = nil;
+    _actionIdentifier = nil;
     _type = kMPPushMessageReceived;
     _receiptTime = [NSDate date];
     
@@ -195,6 +196,10 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
         [coder encodeObject:_actionTitle forKey:@"actionTitle"];
     }
     
+    if (_actionIdentifier) {
+        [coder encodeObject:_actionIdentifier forKey:@"actionIdentifier"];
+    }
+    
     if (_localAlertDate) {
         [coder encodeObject:_localAlertDate forKey:@"localAlertDate"];
     }
@@ -232,6 +237,11 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     object = [coder decodeObjectForKey:@"actionTitle"];
     if (object) {
         _actionTitle = (NSString *)object;
+    }
+    
+    object = [coder decodeObjectForKey:@"actionIdentifier"];
+    if (object) {
+        _actionIdentifier = (NSString *)object;
     }
     
     object = [coder decodeObjectForKey:@"localAlertDate"];

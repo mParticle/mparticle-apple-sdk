@@ -2160,7 +2160,11 @@ static BOOL skipNextUpload = NO;
     }
     
     if (userNotification.actionTitle) {
-        messageInfo[kMPPushNotificationActionTileKey] = userNotification.actionTitle;
+        messageInfo[kMPPushNotificationActionTitleKey] = userNotification.actionTitle;
+    }
+
+    if (userNotification.actionIdentifier) {
+        messageInfo[kMPPushNotificationActionIdentifierKey] = userNotification.actionIdentifier;
     }
     
     if (userNotification.behavior > 0) {

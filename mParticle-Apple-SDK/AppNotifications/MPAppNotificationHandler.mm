@@ -159,7 +159,7 @@
         if ([self is9]) {
             UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
             if (state != UIApplicationStateActive || ![self hasContentAvail:userInfo]) {
-                [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo];
+                [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:nil];
             }else {
                 [[MParticle sharedInstance] logNotificationReceivedWithUserInfo:userInfo];
             }
@@ -239,7 +239,7 @@
     }
     
     if ([MParticle sharedInstance].trackNotifications && ![response.actionIdentifier isEqual:UNNotificationDismissActionIdentifier]) {
-        [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:response.notification.request.content.userInfo];
+        [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:response.notification.request.content.userInfo andActionIdentifier:response.actionIdentifier];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{

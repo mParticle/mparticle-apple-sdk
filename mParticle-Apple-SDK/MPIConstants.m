@@ -115,7 +115,7 @@ NSString *const kMPPushNotificationStateBackground = @"background";
 NSString *const kMPPushNotificationStateForeground = @"foreground";
 NSString *const kMPPushNotificationActionIdentifierKey = @"aid";
 NSString *const kMPPushNotificationBehaviorKey = @"bhv";
-NSString *const kMPPushNotificationActionTileKey = @"an";
+NSString *const kMPPushNotificationActionTitleKey = @"an";
 NSString *const kMPPushNotificationCategoryIdentifierKey = @"acid";
 
 // Assorted Keys

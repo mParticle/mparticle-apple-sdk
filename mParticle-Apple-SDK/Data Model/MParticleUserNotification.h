@@ -23,6 +23,7 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 @interface MParticleUserNotification : MPDataModelAbstract <NSSecureCoding>
 
 @property (nonatomic, strong, nullable) NSString *actionTitle;
+@property (nonatomic, strong, nullable) NSString *actionIdentifier;
 @property (nonatomic, strong, nullable) NSDictionary *deferredPayload;
 @property (nonatomic, strong, nonnull) NSString *type;
 @property (nonatomic, strong, readonly, nullable) NSString *categoryIdentifier;

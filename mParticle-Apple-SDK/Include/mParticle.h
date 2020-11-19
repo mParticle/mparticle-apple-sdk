@@ -983,7 +983,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Logs a Notification event for a notification that has been reviewed and acted upon. This is a convenience method for manually logging Notification events; Set trackNotifications to false on MParticleOptions to disable automatic tracking of Notifications and only set Notification manually:
  */
-- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo;
+- (void)logNotificationOpenedWithUserInfo:(nonnull NSDictionary *)userInfo andActionIdentifier:(nullable NSString *)actionIdentifier;
 
 #endif
 

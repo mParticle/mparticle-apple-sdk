@@ -672,7 +672,7 @@
     
     [[mockBackendController expect] logUserNotification:OCMOCK_ANY];
     
-    [mockInstance logNotificationOpenedWithUserInfo:[testNotification userInfo]];
+    [mockInstance logNotificationOpenedWithUserInfo:[testNotification userInfo] andActionIdentifier:nil];
     
     [mockBackendController verifyWithDelay:1.0];
     [mockBackendController stopMocking];
