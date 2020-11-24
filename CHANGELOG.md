@@ -1,5 +1,42 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.1.0
+
+### Data Blocking
+
+This release adds support for Data Blocking to Kits!
+
+To enable blocking, ensure you are specifying your data plan ID (and optionally version) in MParticleOptions.
+
+This will enable the SDK to download your data plan and use it to block unplanned data from going to kits based on your blocking settings in the platform.
+
+You can also specify blocking settings locally during SDK init using a new property `MPDataPlanOptions` on your `MParticleOptions` object.
+
+If you specify local settings, these will override configuration sent by the server.
+
+Note: the current implementation of blocking does not include validation logic to handle e.g. `regex`, or `min`/`max` keywords.
+
+#### Session API updates
+
+This release includes changes to improve the timing with which MParticle.sharedInstance.currentSession becomes available after starting the SDK, as well as introducing new APIs for managing sessions.
+
+When starting the SDK, you now have the option `shouldBeginSession` which allows you to easily start a session on SDK init even if you are using manual session tracking otherwise.
+
+This release also introduces the same logic when you log an event. By default, sessions will be created when logging events, but you can set shouldBeginSession to false on the event to prevent this. In most cases, you will want to ensure shouldBeginSession is false if the SDK is launched into the background from e.g. a `content-available` push notification.
+
+#### Other items
+
+Several additional bugfixes are included in this release:
+
+- Add Action Identifier to Notifications
+- Add String Support For Product Price
+- Update JSON Format of User Attributes
+- Remove Deprecated Cart State from Commerce Event Data
+- Fix Content Available Notification Bug
+- Update MPCustomModulePreference
+
+Note: If you have filters that currently depend on the fact that the SDK was previously encoding boolean values as `Y` and `N`, you will need to update those to look for `true` and `false` before updating to this version of the SDK, otherwise your filters will not take effect.
+
 ## 8.0.1
 
 This release updates the SDK for iOS 14.
