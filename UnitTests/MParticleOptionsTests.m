@@ -92,4 +92,25 @@
     XCTAssertEqual(_options.sessionTimeout, 100.0, @"Session Timeout Interval set correctly");
 }
 
+- (void)testDataBlockOptions {
+    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertNil(_options.dataPlanOptions.dataPlan);
+    XCTAssertFalse(_options.dataPlanOptions.blockEvents);
+    XCTAssertFalse(_options.dataPlanOptions.blockEventAttributes);
+    XCTAssertFalse(_options.dataPlanOptions.blockUserAttributes);
+    XCTAssertFalse(_options.dataPlanOptions.blockUserIdentities);
+    
+    _options.dataPlanOptions = [[MPDataPlanOptions alloc] init];
+    _options.dataPlanOptions.dataPlan = @{};
+    _options.dataPlanOptions.blockEvents = YES;
+    _options.dataPlanOptions.blockEventAttributes = YES;
+    _options.dataPlanOptions.blockUserAttributes = YES;
+    _options.dataPlanOptions.blockUserIdentities = YES;
+    XCTAssertNotNil(_options.dataPlanOptions.dataPlan);
+    XCTAssertTrue(_options.dataPlanOptions.blockEvents);
+    XCTAssertTrue(_options.dataPlanOptions.blockEventAttributes);
+    XCTAssertTrue(_options.dataPlanOptions.blockUserAttributes);
+    XCTAssertTrue(_options.dataPlanOptions.blockUserIdentities);
+}
+
 @end

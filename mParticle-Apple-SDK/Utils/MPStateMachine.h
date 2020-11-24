@@ -9,6 +9,7 @@
 @class MPLocationManager;
 @class MPCustomModule;
 @class MPSearchAdsAttribution;
+@class MPDataPlanOptions;
 #if TARGET_OS_IOS == 1
     @class CLLocation;
 #endif
@@ -49,6 +50,7 @@
 @property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
 @property (nonatomic, assign) BOOL automaticSessionTracking;
 @property (nonatomic, assign) BOOL allowASR;
+@property (nonatomic, nullable) MPDataPlanOptions *dataPlanOptions;
 
 + (MPEnvironment)environment;
 + (void)setEnvironment:(MPEnvironment)environment;
@@ -61,6 +63,7 @@
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
 - (void)configureRestrictIDFA:(nullable NSNumber *)restrictIDFA;
 - (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow;
+- (void)configureDataBlocking:(nullable NSDictionary *)blockSettings;
 - (void)setMinUploadDate:(nullable NSDate *)date uploadType:(MPUploadType)uploadType;
 - (nonnull NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType;
 

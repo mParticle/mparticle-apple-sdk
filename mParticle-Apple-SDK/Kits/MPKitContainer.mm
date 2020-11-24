@@ -35,6 +35,7 @@
 #import "mParticle.h"
 #import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
+#import "MPDataPlanFilter.h"
 #import <objc/message.h>
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
@@ -49,6 +50,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
+@property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 - (void)executeKitsInitializedBlocks;
 
 @end
@@ -1992,18 +1994,20 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     NSString *key;
                     id value;
                     while ((key = [attributeEnumerator nextObject])) {
-                        value = userAttributes[key];
-                        
-                        FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
-                        if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
-                            [kitInstance onSetUserAttribute:filteredUser];
-                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
-                            [kitInstance setUserAttribute:key value:value];
-                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
-                            value = [value stringValue];
-                            [kitInstance setUserAttribute:key value:value];
-                        } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
-                            [kitInstance setUserAttribute:key values:value];
+                        if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
+                            value = userAttributes[key];
+                            
+                            FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
+                            if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
+                                [kitInstance onSetUserAttribute:filteredUser];
+                            } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
+                                [kitInstance setUserAttribute:key value:value];
+                            } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
+                                value = [value stringValue];
+                                [kitInstance setUserAttribute:key value:value];
+                            } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
+                                [kitInstance setUserAttribute:key values:value];
+                            }
                         }
                     }
                 }
@@ -2017,9 +2021,11 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     
                     for (NSDictionary *userIdentity in userIdentities) {
                         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
-                        NSString *identityString = userIdentity[kMPUserIdentityIdKey];
-                        
-                        [kitInstance setUserIdentity:identityString identityType:identityType];
+                        if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)identityType]) {
+                            NSString *identityString = userIdentity[kMPUserIdentityIdKey];
+                            
+                            [kitInstance setUserIdentity:identityString identityType:identityType];
+                        }
                     }
                 }
             }

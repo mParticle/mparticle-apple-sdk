@@ -124,16 +124,32 @@ static NSObject<MPConnectorFactory> *factory = nil;
     MPApplication *application = [[MPApplication alloc] init];
     NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
     
+    NSString *dataPlanConfigString;
+    NSString *dataPlanId = MParticle.sharedInstance.dataPlanId;
+    if (dataPlanId != nil) {
+        NSNumber *dataPlanVersion = MParticle.sharedInstance.dataPlanVersion;
+        if (dataPlanVersion != nil && ([dataPlanVersion intValue] > 1000 || [dataPlanVersion intValue] < 1)) {
+            MPILogWarning(@"Data plan version of %i is out of range and will not be used to fetch remote data plan. Version must be between 1 and 1000.", [dataPlanVersion intValue]);
+            dataPlanVersion = nil;
+        }
+        if (dataPlanVersion != nil) {
+            dataPlanConfigString = [NSString stringWithFormat:@"&plan_id=%@&plan_version=%@", dataPlanId, dataPlanVersion];
+        } else {
+            dataPlanConfigString = [NSString stringWithFormat:@"&plan_id=%@", dataPlanId];
+        }
+    }
+    NSString *urlString;
     if ([MParticle sharedInstance].networkOptions.overridesConfigSubdirectory) {
         NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
-        NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-        _configURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     } else {
         NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
-        NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-        _configURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     }
-    
+    if (dataPlanConfigString) {
+        urlString = [NSString stringWithFormat:@"%@%@", urlString, dataPlanConfigString];
+    }
+    _configURL = [NSURL URLWithString:urlString];
     return _configURL;
 }
 

@@ -124,6 +124,39 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @end
 
 /**
+ Planning settings for kit blocking
+ */
+@interface MPDataPlanOptions : NSObject
+/**
+ Data Plan.
+ 
+ Data plan value (JSON schema) for blocking data to kits.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSDictionary *dataPlan;
+
+/**
+ Whether to block unplanned events from being sent to kits, default false
+ */
+@property (nonatomic, assign, readwrite) BOOL blockEvents;
+
+/**
+ Whether to block unplanned event attributes from being sent to kits, default false
+ */
+@property (nonatomic, assign, readwrite) BOOL blockEventAttributes;
+
+/**
+ Whether to block unplanned user attributes from being sent to kits, default false
+ */
+@property (nonatomic, assign, readwrite) BOOL blockUserAttributes;
+
+/**
+ Whether to block unplanned user identities from being sent to kits, default false
+ */
+@property (nonatomic, assign, readwrite) BOOL blockUserIdentities;
+
+@end
+
+/**
  Main configuration object for initial SDK setup.
  */
 @interface MParticleOptions : NSObject
@@ -301,6 +334,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) NSNumber *dataPlanVersion;
 
 /**
+ Data Plan Options.
+ 
+ Settings for blocking data to kits
+ */
+@property (nonatomic, strong, readwrite, nullable) MPDataPlanOptions *dataPlanOptions;
+/**
  Identify callback.
  
  This will be called when an identify request completes.
@@ -468,6 +507,23 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  mParticle Apple SDK version
  */
 @property (nonatomic, strong, readonly) NSString *version;
+
+/**
+ Data plan id
+ */
+@property (nonatomic, strong, readonly) NSString *dataPlanId;
+
+/**
+ Data plan version
+ */
+@property (nonatomic, strong, readonly) NSNumber *dataPlanVersion;
+
+
+/**
+ Sets data plan options for kit blocking
+ @see MParticleOptions
+ */
+@property (nonatomic, readonly) MPDataPlanOptions *dataPlanOptions;
 
 #pragma mark - Initialization
 

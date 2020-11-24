@@ -17,6 +17,7 @@
 #import "MPSearchAdsAttribution.h"
 #import <UIKit/UIKit.h>
 #import "MPForwardQueueParameters.h"
+#import "MPDataPlanFilter.h"
 
 #if TARGET_OS_IOS == 1
     #import <CoreLocation/CoreLocation.h>
@@ -35,6 +36,8 @@ static BOOL runningInBackground = NO;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
+@property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
 
 @end
 
@@ -782,6 +785,30 @@ static BOOL runningInBackground = NO;
         aliasMaxWindow = @90;
     }
     self.aliasMaxWindow = aliasMaxWindow;
+}
+
+- (void)configureDataBlocking:(nullable NSDictionary *)blockSettings {
+    if (MPIsNull(blockSettings)) {
+        blockSettings = @{};
+    }
+    if (!MPIsNull(blockSettings[kMPRemoteConfigDataPlanning])) {
+        NSDictionary *dataPlanSettings = blockSettings[kMPRemoteConfigDataPlanning];
+        NSDictionary *dataBlockSettings = dataPlanSettings[kMPRemoteConfigDataPlanningBlock];
+        
+        self.dataPlanOptions = [[MPDataPlanOptions alloc] init];
+        self.dataPlanOptions.blockEvents = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEvents] boolValue];
+        self.dataPlanOptions.blockEventAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes] boolValue];
+        self.dataPlanOptions.blockUserAttributes = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedUserAttributes] boolValue];
+        self.dataPlanOptions.blockUserIdentities = [dataBlockSettings[kMPRemoteConfigDataPlanningBlockUnplannedIdentities] boolValue];
+        self.dataPlanOptions.dataPlan = dataPlanSettings[kMPRemoteConfigDataPlanningDataPlanVersionValue];
+        if (MParticle.sharedInstance.dataPlanOptions == nil) {
+            MParticle.sharedInstance.dataPlanFilter = [[MPDataPlanFilter alloc] initWithDataPlanOptions:self.dataPlanOptions];
+        }
+    } else {
+        if (MParticle.sharedInstance.dataPlanOptions == nil) {
+            MParticle.sharedInstance.dataPlanFilter = nil;
+        }
+    }
 }
 
 @end

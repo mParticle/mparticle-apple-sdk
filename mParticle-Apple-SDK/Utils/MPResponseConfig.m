@@ -95,6 +95,8 @@
     [stateMachine configureTriggers:_configuration[kMPRemoteConfigTriggerKey]];
     [stateMachine configureRestrictIDFA:_configuration[kMPRemoteConfigRestrictIDFA]];
     [stateMachine configureAliasMaxWindow:_configuration[kMPRemoteConfigAliasMaxWindow]];
+    [stateMachine configureDataBlocking:_configuration[kMPRemoteConfigDataPlanningResults]];
+    
     stateMachine.allowASR = [_configuration[kMPRemoteConfigAllowASR] boolValue];
         
     // Exception handling

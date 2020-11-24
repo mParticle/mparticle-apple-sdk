@@ -3,7 +3,9 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPBaseEvent : NSObject <NSCopying> 
+@interface MPBaseEvent : NSObject <NSCopying>
+
+- (NSString *) print;
 
 /**
  The timestamp when the event was created. Is non null but can be set by the client

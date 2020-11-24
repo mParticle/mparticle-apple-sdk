@@ -8,6 +8,14 @@
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"
 #import "MPIdentityApiRequest.h"
+#import "MPDataPlanFilter.h"
+#import "mParticle.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
+
+@end
 
 @interface FilteredMPIdentityApiRequest ()
 
@@ -46,7 +54,9 @@
         }
         
         if (!shouldFilter) {
-            [filteredUserIdentities setObject:value forKey:key];
+            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key]) {
+                [filteredUserIdentities setObject:value forKey:key];
+            }
         }
     }
     

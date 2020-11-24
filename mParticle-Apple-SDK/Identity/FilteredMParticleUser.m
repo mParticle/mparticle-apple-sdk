@@ -3,6 +3,13 @@
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"
 #import "MPIHasher.h"
+#import "MPDataPlanFilter.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
+
+@end
 
 @interface FilteredMParticleUser ()
 
@@ -50,7 +57,9 @@
         }
         
         if (!shouldFilter) {
-            [userIdentities setObject:value forKey:key];
+            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.intValue]) {
+                [userIdentities setObject:value forKey:key];
+            }
         }
     }
     
@@ -71,7 +80,9 @@
         }
         
         if (!shouldFilter) {
-            [userAttributes setObject:value forKey:key];
+            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
+                [userAttributes setObject:value forKey:key];
+            }
         }
     }
     

@@ -13,6 +13,11 @@
 
 @implementation MPBaseEvent
 
+- (NSString *) print {
+    NSDictionary *dictionary = [self dictionaryRepresentation];
+    return [NSString stringWithFormat:@"%@", dictionary];
+}
+
 - (instancetype)init {
     return [self initWithEventType:MPEventTypeOther];
 }

@@ -270,6 +270,57 @@ extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 extern NSString * _Nonnull const kMPRemoteConfigAliasMaxWindow;
 extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
+extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEvents;
+extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEventAttributes;
+extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedIdentities;
+extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedUserAttributes;
+
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningResults;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanning;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlock;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedEvents;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedEventAttributes;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedUserAttributes;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningBlockUnplannedIdentities;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanId;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersion;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanError;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValue;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueDoc;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueDataPoints;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueMatch;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueType;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueValidator;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueDefinition;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueSchemaEverything;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueSchemaNothing;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAdditionalProperties;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueUserAttributes;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCustomEvent;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCustomEventType;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueEventName;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueScreenView;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueScreenName;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueProductAction;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueUnknown;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAddToCart;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueRemoveFromCart;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCheckout;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCheckoutOption;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueClick;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueViewDetail;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValuePurchase;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueRefund;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAddToWishlist;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueRemoveFromWishlist;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValuePromotionAction;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueProductImpressions;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueCriteria;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueAction ;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionUnknown;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionView;
+extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionClick;
+
 
 
 // Notifications
