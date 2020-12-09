@@ -39,7 +39,6 @@
     NSDictionary *testDictionary = device.dictionaryRepresentation;
     XCTAssertEqualObjects(testDictionary[@"dll"], @"en");
     XCTAssertEqualObjects(testDictionary[@"dlc"], @"US");
-    XCTAssertEqualObjects(testDictionary[@"aid"], @"00000000-0000-0000-0000-000000000000");
     XCTAssertEqualObjects(testDictionary[@"dma"], @"Apple");
     XCTAssertEqualObjects(testDictionary[kMPDeviceTokenKey], @"3c3030303030303030303030303030303030303030303030303030303030303e");
 #endif
