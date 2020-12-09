@@ -1,5 +1,10 @@
 # mParticle Apple SDK CHANGELOG
 
+## 7.16.4
+
+- Fix Other6 Identity Login Issue
+This resolves an issue where identity login requests that included certain MPIdentities were always returning a 400 response.
+
 ## 7.16.3
 
 ### Core
