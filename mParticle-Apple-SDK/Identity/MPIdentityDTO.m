@@ -403,6 +403,43 @@
         dictionary[@"other4"] = _other4;
     }
     
+    if (_other5) {
+        dictionary[@"other5"] = _other5;
+    }
+    
+    if (_other6) {
+        dictionary[@"other6"] = _other6;
+    }
+    
+    if (_other7) {
+        dictionary[@"other7"] = _other7;
+    }
+    
+    if (_other8) {
+        dictionary[@"other8"] = _other8;
+    }
+    
+    if (_other9) {
+        dictionary[@"other9"] = _other9;
+    }
+    
+    if (_other10) {
+        dictionary[@"other10"] = _other10;
+    }
+    
+    if (_mobileNumber) {
+        dictionary[@"mobile_number"] = _mobileNumber;
+    }
+    
+    if (_phoneNumber2) {
+        dictionary[@"phone_number_2"] = _phoneNumber2;
+    }
+
+    if (_phoneNumber3) {
+        dictionary[@"phone_number_3"] = _phoneNumber3;
+    }
+    
+    
     return dictionary;
 }
 

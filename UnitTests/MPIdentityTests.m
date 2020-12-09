@@ -98,6 +98,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [request setIdentity:@"vendor" identityType:MPIdentityIOSVendorId];
     [request setIdentity:@"push token" identityType:MPIdentityPushToken];
     [request setIdentity:@"application stamp" identityType:MPIdentityDeviceApplicationStamp];
+    [request setIdentity:@"customer id" identityType:MPIdentityCustomerId];
+    [request setIdentity:@"email id" identityType:MPIdentityEmail];
+    [request setIdentity:@"facebook id" identityType:MPIdentityFacebook];
+    [request setIdentity:@"facebook audience id" identityType:MPIdentityFacebookCustomAudienceId];
+    [request setIdentity:@"google id" identityType:MPIdentityGoogle];
+    [request setIdentity:@"microsoft id" identityType:MPIdentityMicrosoft];
+    [request setIdentity:@"yahoo id" identityType:MPIdentityYahoo];
+    [request setIdentity:@"twitter id" identityType:MPIdentityTwitter];
     
     MPIdentityHTTPIdentities *httpIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:request.identities];
     
@@ -118,6 +126,44 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertEqual(@"vendor", httpIdentities.vendorId);
     XCTAssertEqual(@"push token", httpIdentities.pushToken);
     XCTAssertEqual(@"application stamp", httpIdentities.deviceApplicationStamp);
+    XCTAssertEqual(@"customer id", httpIdentities.customerId);
+    XCTAssertEqual(@"email id", httpIdentities.email);
+    XCTAssertEqual(@"facebook id", httpIdentities.facebook);
+    XCTAssertEqual(@"facebook audience id", httpIdentities.facebookCustomAudienceId);
+    XCTAssertEqual(@"google id", httpIdentities.google);
+    XCTAssertEqual(@"microsoft id", httpIdentities.microsoft);
+    XCTAssertEqual(@"yahoo id", httpIdentities.yahoo);
+    XCTAssertEqual(@"twitter id", httpIdentities.twitter);
+
+    
+    NSDictionary *identityDictionary = [httpIdentities dictionaryRepresentation];
+    XCTAssertEqual(@"other id", identityDictionary[@"other"]);
+    XCTAssertEqual(@"other id 2", identityDictionary[@"other2"]);
+    XCTAssertEqual(@"other id 3", identityDictionary[@"other3"]);
+    XCTAssertEqual(@"other id 4", identityDictionary[@"other4"]);
+    XCTAssertEqual(@"other id 5", identityDictionary[@"other5"]);
+    XCTAssertEqual(@"other id 6", identityDictionary[@"other6"]);
+    XCTAssertEqual(@"other id 7", identityDictionary[@"other7"]);
+    XCTAssertEqual(@"other id 8", identityDictionary[@"other8"]);
+    XCTAssertEqual(@"other id 9", identityDictionary[@"other9"]);
+    XCTAssertEqual(@"other id 10", identityDictionary[@"other10"]);
+    XCTAssertEqual(@"mobile number", identityDictionary[@"mobile_number"]);
+    XCTAssertEqual(@"phone number 2", identityDictionary[@"phone_number_2"]);
+    XCTAssertEqual(@"phone number 3", identityDictionary[@"phone_number_3"]);
+    XCTAssertEqual(@"advertiser", identityDictionary[@"ios_idfa"]);
+    XCTAssertEqual(@"vendor", identityDictionary[@"ios_idfv"]);
+#if TARGET_OS_IOS == 1
+    XCTAssertEqual(@"push token", identityDictionary[@"push_token"]);
+#endif
+    XCTAssertEqual(@"application stamp", identityDictionary[@"device_application_stamp"]);
+    XCTAssertEqual(@"customer id", identityDictionary[@"customerid"]);
+    XCTAssertEqual(@"email id", identityDictionary[@"email"]);
+    XCTAssertEqual(@"facebook id", identityDictionary[@"facebook"]);
+    XCTAssertEqual(@"facebook audience id", identityDictionary[@"facebookcustomaudienceid"]);
+    XCTAssertEqual(@"google id", identityDictionary[@"google"]);
+    XCTAssertEqual(@"microsoft id", identityDictionary[@"microsoft"]);
+    XCTAssertEqual(@"yahoo id", identityDictionary[@"yahoo"]);
+    XCTAssertEqual(@"twitter id", identityDictionary[@"twitter"]);
 }
 
 - (void)testNoEmptyModifyRequests {
