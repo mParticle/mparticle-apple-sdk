@@ -11,6 +11,7 @@
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
+#import "MPURL.h"
 
 @interface MParticle ()
 
@@ -65,7 +66,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     [self deswizzle];
     
@@ -79,7 +80,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.configHost = @"config.mpproxy.example.com";
     [MParticle sharedInstance].networkOptions = options;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     [self deswizzle];
     
@@ -94,7 +95,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     options.overridesConfigSubdirectory = true;
     [MParticle sharedInstance].networkOptions = options;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     [self deswizzle];
     
@@ -107,7 +108,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *modifyURL = [networkCommunication modifyURL];
+    NSURL *modifyURL = [networkCommunication modifyURL].url;
     
     [self deswizzle];
     
@@ -122,7 +123,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *modifyURL = [networkCommunication modifyURL];
+    NSURL *modifyURL = [networkCommunication modifyURL].url;
     
     [self deswizzle];
     
@@ -135,7 +136,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
     
     [self deswizzle];
     
@@ -150,7 +151,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
     
     [self deswizzle];
     
@@ -166,7 +167,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
     
     [self deswizzle];
     
@@ -184,7 +185,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
     
     [self deswizzle];
     
@@ -201,7 +202,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
     
     [self deswizzle];
     
@@ -219,7 +220,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
     
     [self deswizzle];
     
@@ -450,7 +451,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssertEqualObjects(maxAge, nil);
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     MPConnector *connector = [[MPConnector alloc] init];
     id mockConnector = OCMPartialMock(connector);
@@ -508,7 +509,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
 
     MPConnector *connector = [[MPConnector alloc] init];
     id mockConnector = OCMPartialMock(connector);
@@ -562,7 +563,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 - (void)testRequestConfigWithManualMaxAgeAndInitialAge {
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     MPConnector *connector = [[MPConnector alloc] init];
     id mockConnector = OCMPartialMock(connector);
@@ -627,7 +628,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     MPConnector *connector = [[MPConnector alloc] init];
     id mockConnector = OCMPartialMock(connector);
@@ -686,7 +687,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     userDefaults[kMPConfigProvisionedTimestampKey] = @5555;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *configURL = [networkCommunication configURL];
+    NSURL *configURL = [networkCommunication configURL].url;
     
     MPConnector *connector = [[MPConnector alloc] init];
     id mockConnector = OCMPartialMock(connector);

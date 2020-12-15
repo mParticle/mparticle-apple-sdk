@@ -16,6 +16,7 @@
 #import "OCMock.h"
 #import "MParticleWebView.h"
 #import "MPExtensionProtocol.h"
+#import "MPURL.h"
 
 @interface MParticle ()
 
@@ -149,7 +150,8 @@
 }
 
 - (void)testHMACSha256Encode {
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
+    NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
@@ -160,7 +162,8 @@
 }
 
 - (void)testInvalidHMACSha256Encode {
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"http://mparticle.com"]];
+    NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = nil;
@@ -285,8 +288,8 @@
 }
 
 - (void)testComposingWithHeaderData {
-    NSString *urlString = @"http://mparticle.com";
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:urlString]];
+    NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
     
     NSString *userAgent = [NSString stringWithFormat:@"UnitTests/1.0 (iPhone; CPU iPhone OS like Mac OS X) (KHTML, like Gecko) mParticle/%@", kMParticleSDKVersion];
     
@@ -322,8 +325,8 @@
 }
 
 - (void)testPOSTURLRequest {
-    NSString *urlString = @"http://mparticle.com";
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:urlString]];
+    NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
     
     [urlRequestBuilder withHttpMethod:@"POST"];
     
@@ -348,17 +351,17 @@
 }
 
 - (void)testInvalidURLs {
-    NSURL *url = nil;
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:url];
+    NSURL *baseURL = nil;
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
     
     XCTAssertNil(urlRequestBuilder, @"Retuning a request builder from an invalid URL.");
     
-    urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:@"GET"];
+    urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL] message:nil httpMethod:@"GET"];
     
     XCTAssertNil(urlRequestBuilder, @"Retuning a request builder from an invalid URL.");
     
-    NSString *urlString = @"http://mparticle.com";
-    urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:urlString] message:nil httpMethod:nil];
+    baseURL = [NSURL URLWithString:@"http://mparticle.com"];
+    urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
     
     XCTAssertEqualObjects(urlRequestBuilder.httpMethod, @"GET", @"HTTP method is assuming GET as default.");
 }
@@ -433,40 +436,50 @@
     [mockWebView stopMocking];
 }
 
-- (void)testStripPathComponent {
-    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"https://example.com"]];
-    NSString *result = [builder stringByStrippingPathComponent:@"/identity/v1/identify"];
-    XCTAssertEqualObjects(result, @"/v1/identify");
-}
-
 - (void)testSignatureRelativePath {
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
     MParticle *sharedInstance = [MParticle sharedInstance];
     id mockMParticle = OCMPartialMock(sharedInstance);
     [[[mockMParticle stub] andReturn:networkOptions] networkOptions];
-    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:[NSURL URLWithString:@"https://example.com"]];
     
     networkOptions.identityHost = @"identity.mp.example.com";
     networkOptions.overridesIdentitySubdirectory = NO;
+    MPURL *baseURL = [networkCommunication modifyURL];
+    MPURLRequestBuilder *builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
-    NSString *result = [builder signatureRelativePath:@"/v1/identify" url:[NSURL URLWithString:@"https://identity.mp.example.com/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
+    NSString *result = builder.url.defaultURL.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    result = builder.url.url.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mp.example.com/v1/12/modify");
     
-    networkOptions.identityHost = @"mp.example.com/identity/v1/identify";
+    networkOptions.identityHost = @"https://example.com";
     networkOptions.overridesIdentitySubdirectory = YES;
+    baseURL = [networkCommunication modifyURL];
+    builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
-    result = [builder signatureRelativePath:@"/identity/v1/identify" url:[NSURL URLWithString:@"https://mp.example.com/identity/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
+    result = builder.url.defaultURL.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    result = builder.url.url.absoluteString;
+    XCTAssertEqualObjects(result, @"https://https://example.com/12/modify");
     
     networkOptions.identityHost = (id _Nonnull)nil;
+    baseURL = [networkCommunication modifyURL];
+    builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
-    result = [builder signatureRelativePath:@"/v1/identify" url:[NSURL URLWithString:@"https://identity.mparticle.com/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
+    result = builder.url.defaultURL.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    result = builder.url.url.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
     
     networkOptions = nil;
+    baseURL = [networkCommunication modifyURL];
+    builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
     
-    result = [builder signatureRelativePath:@"/v1/identify" url:[NSURL URLWithString:@"https://identity.mparticle.com/v1/identify"]];
-    XCTAssertEqualObjects(result, @"/v1/identify");
+    result = builder.url.defaultURL.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
+    result = builder.url.url.absoluteString;
+    XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
     
     [mockMParticle stopMocking];
 }

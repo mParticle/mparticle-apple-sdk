@@ -26,6 +26,7 @@
 #import "MPResponseEvents.h"
 #import "MPAliasResponse.h"
 #import "MPResponseConfig.h"
+#import "MPURL.h"
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
@@ -79,14 +80,14 @@ static NSObject<MPConnectorFactory> *factory = nil;
 
 @interface MPNetworkCommunication()
 
-@property (nonatomic, strong, readonly) NSURL *segmentURL;
-@property (nonatomic, strong, readonly) NSURL *configURL;
-@property (nonatomic, strong, readonly) NSURL *eventURL;
-@property (nonatomic, strong, readonly) NSURL *identifyURL;
-@property (nonatomic, strong, readonly) NSURL *loginURL;
-@property (nonatomic, strong, readonly) NSURL *logoutURL;
-@property (nonatomic, strong, readonly) NSURL *modifyURL;
-@property (nonatomic, strong, readonly) NSURL *aliasURL;
+@property (nonatomic, strong, readonly) MPURL *segmentURL;
+@property (nonatomic, strong, readonly) MPURL *configURL;
+@property (nonatomic, strong, readonly) MPURL *eventURL;
+@property (nonatomic, strong, readonly) MPURL *identifyURL;
+@property (nonatomic, strong, readonly) MPURL *loginURL;
+@property (nonatomic, strong, readonly) MPURL *logoutURL;
+@property (nonatomic, strong, readonly) MPURL *modifyURL;
+@property (nonatomic, strong, readonly) MPURL *aliasURL;
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic, assign) BOOL identifying;
@@ -115,7 +116,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
 }
 
 #pragma mark Private accessors
-- (NSURL *)configURL {
+- (MPURL *)configURL {
     if (_configURL) {
         return _configURL;
     }
@@ -138,131 +139,154 @@ static NSObject<MPConnectorFactory> *factory = nil;
             dataPlanConfigString = [NSString stringWithFormat:@"&plan_id=%@", dataPlanId];
         }
     }
-    NSString *urlString;
+    NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
+    NSString *urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, kMPURLHostConfig, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+
+    urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
+    
     if ([MParticle sharedInstance].networkOptions.overridesConfigSubdirectory) {
         NSString *configURLFormat = [urlFormatOverride stringByAppendingString:@"?av=%@&sv=%@"];
         urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
-    } else {
-        NSString *configURLFormat = [urlFormat stringByAppendingString:@"?av=%@&sv=%@"];
-        urlString = [NSString stringWithFormat:configURLFormat, kMPURLScheme, configHost, kMPConfigVersion, stateMachine.apiKey, kMPConfigURL, [application.version percentEscape], kMParticleSDKVersion];
     }
     if (dataPlanConfigString) {
         urlString = [NSString stringWithFormat:@"%@%@", urlString, dataPlanConfigString];
     }
-    _configURL = [NSURL URLWithString:urlString];
+    
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    if (modifiedURL && defaultURL) {
+        _configURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
+
     return _configURL;
 }
 
-- (NSURL *)eventURL {
+- (MPURL *)eventURL {
     if (_eventURL) {
         return _eventURL;
     }
     
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
+    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, kMPURLHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
     
     if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, kMPEventsURL];
-        _eventURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, kMPEventsURL];
     } else {
-        NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
-        _eventURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
     }
     
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    if (modifiedURL && defaultURL) {
+        _eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
     return _eventURL;
 }
 
-- (NSURL *)segmentURL {
+- (MPURL *)segmentURL {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
-    NSString *urlString;
+    NSString *segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
+    NSString *urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, kMPURLHost, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+
     if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        NSString *segmentURLFormat = [urlFormatOverride stringByAppendingString:@"?mpID=%@"];
+        segmentURLFormat = [urlFormatOverride stringByAppendingString:@"?mpID=%@"];
         urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
     } else {
-        NSString *segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
+        segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
         urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
     }
     
-    NSURL *segmentURL = [NSURL URLWithString:urlString];
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    MPURL *segmentURL;
+    if (modifiedURL && defaultURL) {
+        segmentURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
     
     return segmentURL;
 }
 
-- (NSURL *)identifyURL {
+- (MPURL *)identifyURL {
     if (_identifyURL) {
         return _identifyURL;
     }
-    NSString *pathComponent = @"identify";
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
-        _identifyURL = [NSURL URLWithString:urlString];
-    } else {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
-        _identifyURL = [NSURL URLWithString:urlString];
-    }
     
-    _identifyURL.accessibilityHint = @"identity";
+    _identifyURL = [self identityURL:@"identify"];
+    
     return _identifyURL;
 }
 
-- (NSURL *)loginURL {
+- (MPURL *)loginURL {
     if (_loginURL) {
         return _loginURL;
     }
     
-    NSString *pathComponent = @"login";
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
-        _loginURL = [NSURL URLWithString:urlString];
-    } else {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
-        _loginURL = [NSURL URLWithString:urlString];
-    }
+    _loginURL = [self identityURL:@"login"];
     
-    _loginURL.accessibilityHint = @"identity";
     return _loginURL;
 }
 
-- (NSURL *)logoutURL {
+- (MPURL *)logoutURL {
     if (_logoutURL) {
         return _logoutURL;
     }
     
-    NSString *pathComponent = @"logout";
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
-    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
-        _logoutURL = [NSURL URLWithString:urlString];
-    } else {
-        NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
-        _logoutURL = [NSURL URLWithString:urlString];
-    }
+    _logoutURL = [self identityURL:@"logout"];
     
-    _logoutURL.accessibilityHint = @"identity";
     return _logoutURL;
 }
 
-- (NSURL *)modifyURL {
+- (MPURL *)identityURL:(NSString *)pathComponent {
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+    
+    if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
+        urlString = [NSString stringWithFormat:identityURLFormatOverride, kMPURLScheme, identityHost, pathComponent];
+    } else {
+        urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, pathComponent];
+    }
+    
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    defaultURL.accessibilityHint = @"identity";
+    modifiedURL.accessibilityHint = @"identity";
+    
+    MPURL *identityURL;
+    if (modifiedURL && defaultURL) {
+        identityURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
+    
+    return identityURL;
+}
+
+- (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
     NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
-    NSURL *modifyURL;
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, [MPPersistenceController mpId],  pathComponent];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        NSString *urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController mpId], pathComponent];
-        modifyURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController mpId], pathComponent];
     } else {
-        NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
-        modifyURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
     }
 
-    modifyURL.accessibilityHint = @"identity";
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    defaultURL.accessibilityHint = @"identity";
+    modifiedURL.accessibilityHint = @"identity";
+    
+    MPURL *modifyURL;
+    if (modifiedURL && defaultURL) {
+        modifyURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
+        
     return modifyURL;
 }
 
-- (NSURL *)aliasURL {
+- (MPURL *)aliasURL {
     if (_aliasURL) {
         return _aliasURL;
     }
@@ -271,21 +295,29 @@ static NSObject<MPConnectorFactory> *factory = nil;
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *eventHost = [MParticle sharedInstance].networkOptions.aliasHost ?: kMPURLHost;
-    BOOL overrides= [MParticle sharedInstance].networkOptions.overridesAliasSubdirectory;
+    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, kMPURLHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+    
+    BOOL overrides = [MParticle sharedInstance].networkOptions.overridesAliasSubdirectory;
     if (![MParticle sharedInstance].networkOptions.eventsOnly && ![MParticle sharedInstance].networkOptions.aliasHost) {
         eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
         overrides = [MParticle sharedInstance].networkOptions.overridesEventsSubdirectory;
     }
     
     if (overrides) {
-        NSString *urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, pathComponent];
-        _aliasURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, pathComponent];
     } else {
-        NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
-        _aliasURL = [NSURL URLWithString:urlString];
+        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
     }
     
-    _aliasURL.accessibilityHint = @"identity";
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    defaultURL.accessibilityHint = @"identity";
+    modifiedURL.accessibilityHint = @"identity";
+    
+    if (modifiedURL && defaultURL) {
+        _aliasURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
+    
     return _aliasURL;
 }
 
@@ -393,10 +425,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
         }];
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.absoluteString body:@[]];
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.url.absoluteString body:@[]];
     
     connector = connector ? connector : [self makeConnector];
-    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
+    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL.url];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -426,7 +458,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];
         
         completionHandler(YES);
-        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:[NSDictionary dictionary] responseCode:responseCode];
+        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:[NSDictionary dictionary] responseCode:responseCode];
         return;
     }
     
@@ -435,7 +467,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     if (!data && success) {
         completionHandler(NO);
         MPILogWarning(@"Failed config request");
-        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:[NSDictionary dictionary] responseCode:HTTPStatusCodeNoContent];
+        [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:[NSDictionary dictionary] responseCode:HTTPStatusCodeNoContent];
         return;
     }
     
@@ -453,7 +485,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         }
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.absoluteString body:configurationDictionary responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:configurationDictionary responseCode:responseCode];
     if (success && configurationDictionary) {
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
@@ -487,7 +519,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSDate *fetchSegmentsStartTime = [NSDate date];
     MPConnector *connector = [self makeConnector];
 
-    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL];
+    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL.url];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
@@ -591,9 +623,9 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.absoluteString body:@[uploadString, zipUploadData]];
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
     
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL.url
                                                                     message:uploadString
                                                            serializedParams:zipUploadData];
     NSData *data = response.data;
@@ -608,7 +640,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     
     BOOL success = isSuccessCode && data && [data length] > 0;
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:self.eventURL.absoluteString body:response.data responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:self.eventURL.url.absoluteString body:response.data responseCode:responseCode];
     if (success) {
         @try {
             NSError *serializationError = nil;
@@ -657,9 +689,9 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    NSURL *uploadURL = self.aliasURL;
+    NSURL *uploadURL = self.aliasURL.url;
     MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", uploadURL, uploadString);
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:self.aliasURL.absoluteString body:@[uploadString, upload.uploadData]];
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:self.aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
     
     MPConnectorResponse *response = [connector responseFromPostRequestToURL:uploadURL
                                                                     message:uploadString
@@ -676,7 +708,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointAlias url:self.aliasURL.absoluteString body:response.data responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointAlias url:self.aliasURL.url.absoluteString body:response.data responseCode:responseCode];
     
     NSString *responseString = [[NSString alloc] initWithData:response.data encoding:NSUTF8StringEncoding];
     if (responseString != nil && responseString.length > 0) {
@@ -815,11 +847,11 @@ static NSObject<MPConnectorFactory> *factory = nil;
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
     MPEndpoint endpointType = MPEndpointIdentityModify;
-    if ([self.identifyURL.absoluteString isEqualToString:url.absoluteString]) {
+    if ([self.identifyURL.url.absoluteString isEqualToString:url.absoluteString]) {
         endpointType = MPEndpointIdentityIdentify;
-    } else if ([self.loginURL.absoluteString isEqualToString:url.absoluteString ]) {
+    } else if ([self.loginURL.url.absoluteString isEqualToString:url.absoluteString ]) {
         endpointType = MPEndpointIdentityLogin;
-    } else if ([self.logoutURL.absoluteString isEqualToString:url.absoluteString]) {
+    } else if ([self.logoutURL.url.absoluteString isEqualToString:url.absoluteString]) {
         endpointType = MPEndpointIdentityLogout;
     }
     [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
@@ -918,18 +950,18 @@ static NSObject<MPConnectorFactory> *factory = nil;
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:identifyRequest];
-    [self identityApiRequestWithURL:self.identifyURL identityRequest:request blockOtherRequests: YES completion:completion];
+    [self identityApiRequestWithURL:self.identifyURL.url identityRequest:request blockOtherRequests: YES completion:completion];
 }
 
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:loginRequest];
-    [self identityApiRequestWithURL:self.loginURL identityRequest:request blockOtherRequests: YES completion:completion];
+    [self identityApiRequestWithURL:self.loginURL.url identityRequest:request blockOtherRequests: YES completion:completion];
 }
 
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable
                                                                           MPIdentityApiManagerCallback)completion {
     MPIdentifyHTTPRequest *request = [[MPIdentifyHTTPRequest alloc] initWithIdentityApiRequest:logoutRequest];
-    [self identityApiRequestWithURL:self.logoutURL identityRequest:request blockOtherRequests: YES completion:completion];
+    [self identityApiRequestWithURL:self.logoutURL.url identityRequest:request blockOtherRequests: YES completion:completion];
 }
 
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
@@ -977,7 +1009,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSString *mpid = [MPPersistenceController mpId].stringValue;
     MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
     
-    [self identityApiRequestWithURL:self.modifyURL identityRequest:request blockOtherRequests:blockOtherRequests completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
+    [self identityApiRequestWithURL:self.modifyURL.url identityRequest:request blockOtherRequests:blockOtherRequests completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
         if (completion) {
             completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);
         }

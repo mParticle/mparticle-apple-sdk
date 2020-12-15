@@ -5,6 +5,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+#import "MPURL.h"
 
 static NSArray *mpStoredCertificates = nil;
 
@@ -200,7 +201,8 @@ static NSArray *mpStoredCertificates = nil;
 - (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull NSURL *)url {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
     
-    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
+    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet] build];
     
     if (urlRequest) {
         requestStartTime = [NSDate date];
@@ -239,8 +241,9 @@ static NSArray *mpStoredCertificates = nil;
 
 - (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
-    
-    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost]
+    MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
+
+    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:mpURL message:message httpMethod:kMPHTTPMethodPost]
                                              withPostData:serializedParams]
                                             build];
     

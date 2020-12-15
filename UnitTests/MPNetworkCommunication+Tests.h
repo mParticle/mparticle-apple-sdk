@@ -1,10 +1,13 @@
 #import "MPNetworkCommunication.h"
 
+@class MPURL;
+
 @interface MPNetworkCommunication(Tests)
 
-- (NSURL *)configURL;
-- (NSURL *)eventURL;
-- (NSURL *)aliasURL;
-- (NSURL *)modifyURL;
+- (MPURL *)configURL;
+- (MPURL *)eventURL;
+- (MPURL *)aliasURL;
+- (MPURL *)modifyURL;
+- (MPURL *)identifyURL;
 
 @end
