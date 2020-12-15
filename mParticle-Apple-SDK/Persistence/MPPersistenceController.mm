@@ -1591,6 +1591,7 @@ const int MaxBreadcrumbs = 50;
         }
         
         if (!attributesData && error != nil) {
+            sqlite3_finalize(preparedStatement);
             return;
         }
         

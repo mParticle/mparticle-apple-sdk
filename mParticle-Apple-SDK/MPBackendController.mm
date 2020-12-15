@@ -858,9 +858,9 @@ static BOOL skipNextUpload = NO;
     if (MParticle.sharedInstance.automaticSessionTracking) {
         if (self.session != nil && [self shouldEndSession]) {
             self.session.endTime = self->timeAppWentToBackground;
-            [[MParticle sharedInstance].persistenceController updateSession:self.session];
             
             dispatch_async(messageQueue, ^{
+                [[MParticle sharedInstance].persistenceController updateSession:self.session];
                 [self skipNextUpload];
                 [self processOpenSessionsEndingCurrent:YES
                                      completionHandler:^(void) {
