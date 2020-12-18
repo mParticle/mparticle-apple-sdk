@@ -1550,7 +1550,7 @@ const int MaxBreadcrumbs = 50;
             return;
         }
         
-        if (forwardRecord.mpid) {
+        if (forwardRecord.mpid != nil) {
             sqlite3_bind_int64(preparedStatement, 2, forwardRecord.mpid.longLongValue);
         }
         else {

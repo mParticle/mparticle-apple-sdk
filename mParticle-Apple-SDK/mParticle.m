@@ -118,9 +118,12 @@ NSString *const kMPStateKey = @"state";
 @implementation MParticleSession
 
 - (instancetype)initWithUUID:(NSString *)uuid {
-    NSNumber *sessionID = [self sessionIDFromUUID:uuid];
-    self.sessionID = sessionID;
-    self.UUID = uuid;
+    self = [super init];
+    if (self) {
+        NSNumber *sessionID = [self sessionIDFromUUID:uuid];
+        self.sessionID = sessionID;
+        self.UUID = uuid;
+    }
     return self;
 }
 

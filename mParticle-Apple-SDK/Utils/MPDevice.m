@@ -549,7 +549,7 @@ int main(int argc, char *argv[]);
 - (NSDictionary *)dictionaryRepresentationWithMpid:(NSNumber *)mpid {
     NSMutableDictionary *deviceDictionary = [[self dictionaryRepresentation] mutableCopy];
     
-    if (mpid) {
+    if (mpid != nil) {
         NSString *auxString;
         NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
         auxString = userIdentities[@(MPIdentityIOSAdvertiserId)];

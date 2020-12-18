@@ -54,7 +54,7 @@
         }
         
         if (!shouldFilter) {
-            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key]) {
+            if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)key.integerValue]) {
                 [filteredUserIdentities setObject:value forKey:key];
             }
         }
