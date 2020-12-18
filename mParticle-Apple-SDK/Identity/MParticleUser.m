@@ -373,40 +373,38 @@
 
 - (void)setUserTag:(nonnull NSString *)tag {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:tag];
-
     
     __weak MParticleUser *weakSelf = self;
     NSDate *timestamp = [NSDate date];
     dispatch_async([MParticle messageQueue], ^{
-        [self.backendController setUserAttribute:tag
-                                           value:nil
-                                       timestamp:timestamp
-                               completionHandler:^(NSString *key, id value, MPExecStatus execStatus) {
-                                   __strong MParticleUser *strongSelf = weakSelf;
-                                   
-                                   if (execStatus == MPExecStatusSuccess) {
-                                       MPILogDebug(@"Set user tag - %@", tag);
-                                       
-                                       if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:tag]) {
-                                           // Forwarding calls to kits
-                                           dispatch_async(dispatch_get_main_queue(), ^{
-                                               [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setUserTag:)
-                                                                                      userAttributeKey:tag
-                                                                                                 value:nil
-                                                                                            kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
-                                                   FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
-                                                   
-                                                   [kit setUserTag:tag];
-                                                   if ([kit respondsToSelector:@selector(onSetUserTag:)] && filteredUser != nil) {
-                                                       [kit onSetUserTag:filteredUser];
-                                                   }
-                                               }];
-                                           });
-                                       } else {
-                                           MPILogDebug(@"Blocked user tag from kits: %@", tag);
-                                       }
-                                   }
-                               }];
+        [self.backendController setUserTag:tag
+                                 timestamp:timestamp
+                         completionHandler:^(NSString *key, id value, MPExecStatus execStatus) {
+            __strong MParticleUser *strongSelf = weakSelf;
+            
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Set user tag - %@", tag);
+                
+                if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:tag]) {
+                    // Forwarding calls to kits
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setUserTag:)
+                                                               userAttributeKey:tag
+                                                                          value:nil
+                                                                     kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
+                            FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:strongSelf kitConfiguration:kitConfig];
+                            
+                            [kit setUserTag:tag];
+                            if ([kit respondsToSelector:@selector(onSetUserTag:)] && filteredUser != nil) {
+                                [kit onSetUserTag:filteredUser];
+                            }
+                        }];
+                    });
+                } else {
+                    MPILogDebug(@"Blocked user tag from kits: %@", tag);
+                }
+            }
+        }];
     });
 }
 

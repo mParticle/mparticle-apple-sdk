@@ -401,18 +401,17 @@
 - (void)testCheckAttributeValueEmpty {
     NSError *error = nil;
     BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
-                                                 value:@"  "
+                                                 value:[NSNull null]
                                                  error:&error];
-    XCTAssertFalse(success);
-    XCTAssertNotNil(error);
-    XCTAssertEqual(kEmptyAttributeValue, error.code);
+    XCTAssertTrue(success);
+    XCTAssertNil(error);
     
     error = nil;
     [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
                                   value:@""
                                   error:&error];
-    XCTAssertNotNil(error);
-    XCTAssertEqual(kEmptyAttributeValue, error.code);
+    XCTAssertTrue(success);
+    XCTAssertNil(error);
 }
 
 - (void)testCheckAttributeStringAttribute {
@@ -982,12 +981,32 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     XCTAssertEqualObjects(attributes, @{});
 }
 
-- (void)testSetUserTag {
-    [self.backendController setUserAttribute:@"foo tag 1" value:@"  " timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
+- (void)testSetUserTagFromBackendController {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"completion handler"];
+
+    [self.backendController setUserTag:@"foo tag 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {
+        XCTAssertEqual(execStatus, MPExecStatusSuccess);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:10 handler:nil];
     NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
     XCTAssertEqual(attributes.count, 1);
     NSString *value = attributes[@"foo tag 1"];
     XCTAssertEqualObjects(value, [NSNull null]);
+}
+
+- (void)testSetUserTagFromUser {
+    [[MParticle sharedInstance].identity.currentUser setUserTag:@"foo tag 1"];
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+
+    dispatch_async([MParticle messageQueue], ^{
+        NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
+        XCTAssertEqual(attributes.count, 1);
+        NSString *value = attributes[@"foo tag 1"];
+        XCTAssertEqualObjects(value, [NSNull null]);
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:10 handler:nil];
 }
 
 - (void)testSetUserAttributeKits {

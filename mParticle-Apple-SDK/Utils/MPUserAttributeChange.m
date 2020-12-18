@@ -31,10 +31,13 @@
             _isArray = [existingValue isKindOfClass:NSArrayClass] || isValueAnArray;
 
             BOOL isExistingValueNull = (NSNull *)existingValue == [NSNull null];
-            if (value) {
+            BOOL isNewValueNull = (NSNull *)value == [NSNull null];
+            if (isNewValueNull) {
+                _changed = !isExistingValueNull;
+            } else if (value) {
                 _changed = isExistingValueNull || ![existingValue isEqual:value];
             } else {
-                _changed = !isExistingValueNull;
+                _changed = YES;
             }
         } else {
             _isArray = isValueAnArray;

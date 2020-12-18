@@ -40,7 +40,6 @@
 #endif
 
 const NSInteger kNilAttributeValue = 101;
-const NSInteger kEmptyAttributeValue = 102;
 const NSInteger kExceededAttributeCountLimit = 103;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
 const NSInteger kExceededAttributeKeyMaximumLength = 105;
@@ -581,13 +580,7 @@ static BOOL appBackgrounded = NO;
         userAttributeValue = userAttributeChange.value;
         userAttributeChange.deleted = error.code == kNilAttributeValue && userAttributes[localKey];
     } else {
-        //this is a special case to handle a tag
-        if (error && error.code == kEmptyAttributeValue) {
-            userAttributeValue = [NSNull null];
-            error = nil;
-        } else {
-            userAttributeValue = userAttributeChange.value;
-        }
+        userAttributeValue = userAttributeChange.value;
         
         userAttributeChange.deleted = error.code == kNilAttributeValue && userAttributes[localKey];
     }
@@ -1232,8 +1225,9 @@ static BOOL skipNextUpload = NO;
     BOOL isStringValue = [value isKindOfClass:[NSString class]];
     BOOL isArrayValue = [value isKindOfClass:[NSArray class]];
     BOOL isNumberValue = [value isKindOfClass:[NSNumber class]];
+    BOOL isNSNullValue = [value isKindOfClass:[NSNull class]];
     
-    if (!isStringValue && !isArrayValue && !isNumberValue) {
+    if (!isStringValue && !isArrayValue && !isNumberValue && !isNSNullValue) {
         if (error) {
             *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidDataType userInfo:nil];
         }
@@ -1242,15 +1236,6 @@ static BOOL skipNextUpload = NO;
     }
     
     if (isStringValue) {
-        NSCharacterSet *set = [NSCharacterSet whitespaceCharacterSet];
-        if ([[value stringByTrimmingCharactersInSet: set] length] == 0) {
-            //don't log an error here, as this may just be treated as a tag.
-            if (error) {
-                *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kEmptyAttributeValue userInfo:nil];
-            }
-            return NO;
-        }
-        
         if (((NSString *)value).length > LIMIT_ATTR_VALUE_LENGTH) {
             if (error) {
                 *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeValueMaximumLength userInfo:nil];
@@ -1886,6 +1871,23 @@ static BOOL skipNextUpload = NO;
     return MPExecStatusSuccess;
 }
 
+- (void)setUserTag:(NSString *)key timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
+    [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:timestamp];
+    
+    NSString *keyCopy = [key mutableCopy];
+    BOOL validKey = !MPIsNull(keyCopy) && [keyCopy isKindOfClass:[NSString class]];
+    if (!validKey) {
+        if (completionHandler) {
+            completionHandler(keyCopy, nil, MPExecStatusMissingParam);
+        }
+        
+        return;
+    }
+    
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController mpId]] copy] key:keyCopy value:[NSNull null]];
+    userAttributeChange.timestamp = timestamp;
+    [self setUserAttributeChange:userAttributeChange completionHandler:completionHandler];
+}
 
 - (void)setUserAttribute:(NSString *)key value:(id)value timestamp:(NSDate *)timestamp completionHandler:(void (^)(NSString *key, id value, MPExecStatus execStatus))completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value parameter3:timestamp];
