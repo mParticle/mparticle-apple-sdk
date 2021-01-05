@@ -1418,11 +1418,14 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-
+    MPUserAttributeChange *userAttributeChange = [[MPUserAttributeChange alloc] initWithUserAttributes:[[self userAttributesForUserId:[MPPersistenceController mpId]] copy] key:key value:newValue];
+    userAttributeChange.timestamp = timestamp;
+    [self setUserAttributeChange:userAttributeChange completionHandler:nil];
+ 
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPUserAttributeKey] = userAttributesCopy;
     [userDefaults synchronize];
- 
+    
     return (NSNumber *)newValue;
 }
 

@@ -1108,6 +1108,70 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     XCTAssertEqualObjects(@YES, messageDictionary[@"d"]);
 }
 
+- (void)testUserAttributeChangedFromIncrement {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    [persistence saveSession:self.backendController.session];
+    
+    NSString *userAttributeKey = @"Number of time travels";
+    NSNumber *userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
+    XCTAssertNil(userAttributeValue);
+    
+    userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@1];
+    XCTAssertNotNil(userAttributeValue);
+    XCTAssertEqualObjects(userAttributeValue, @1);
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
+    XCTAssertNotNil(messages);
+    XCTAssertEqual(messages.count, 1);
+    
+    MPMessage *message = [messages firstObject];
+    XCTAssertNotNil(message);
+    
+    NSDictionary *messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects([NSNull null], messageDictionary[@"ov"]);
+    XCTAssertEqualObjects(@1, messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"Number of time travels", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+    
+    [persistence deleteSession:self.backendController.session];
+    
+    messagesDictionary = [persistence fetchMessagesForUploading];
+    sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
+    XCTAssertNil(messages);
+    
+    userAttributeValue = [self.backendController incrementUserAttribute:userAttributeKey byValue:@2];
+    XCTAssertNotNil(userAttributeValue);
+    XCTAssertEqualObjects(userAttributeValue, @3);
+    
+    messagesDictionary = [persistence fetchMessagesForUploading];
+    sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
+    message = [messages firstObject];
+    messageDictionary = [message dictionaryRepresentation];
+    XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
+    XCTAssertEqualObjects(@1, messageDictionary[@"ov"]);
+    XCTAssertEqualObjects(@3, messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"Number of time travels", messageDictionary[@"n"]);
+    XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
+}
+
 - (void)testUserIdentityChanged {
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
