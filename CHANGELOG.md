@@ -1,5 +1,14 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.1.2
+
+This release includes a number of bugfixes:
+
+- Fix incrementUserAttribute UAC Message
+- Refactor UserAttributes
+- Fix potential DB access on main, add finalize
+- Add MPURL to support custom endpoints and overriding subdirectories
+
 ## 8.1.1
 
 - Fix Other6 Identity Login Issue
