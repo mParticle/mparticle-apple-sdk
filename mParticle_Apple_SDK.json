@@ -46,5 +46,6 @@
    "8.0.0-beta1": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/8.0.0-beta1/mParticle_Apple_SDK.framework.zip",
    "8.0.1": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/8.0.1/mParticle_Apple_SDK.framework.zip",
    "8.1.0": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/8.1.0/mParticle_Apple_SDK.framework.zip",
-   "8.1.1": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/8.1.1/mParticle_Apple_SDK.framework.zip"
+   "8.1.1": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/8.1.1/mParticle_Apple_SDK.framework.zip",
+   "8.1.2": "https://github.com/mParticle/mparticle-apple-sdk/releases/download/8.1.2/mParticle_Apple_SDK.framework.zip"
 }
