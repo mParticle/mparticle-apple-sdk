@@ -615,7 +615,11 @@ static BOOL appBackgrounded = NO;
     }
     
     if (userAttributeChange.changed) {
-        userAttributeChange.valueToLog = userAttributeValue;
+        if ([userAttributeValue isKindOfClass:[NSNumber class]]) {
+            userAttributeChange.valueToLog = [(NSNumber *)userAttributeValue stringValue];
+        } else {
+            userAttributeChange.valueToLog = userAttributeValue;
+        }
         [self logUserAttributeChange:userAttributeChange];
     }
     

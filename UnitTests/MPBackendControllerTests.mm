@@ -1139,7 +1139,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     NSDictionary *messageDictionary = [message dictionaryRepresentation];
     XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
     XCTAssertEqualObjects([NSNull null], messageDictionary[@"ov"]);
-    XCTAssertEqualObjects(@1, messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"1", messageDictionary[@"nv"]);
     XCTAssertEqualObjects(@"Number of time travels", messageDictionary[@"n"]);
     XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
     
@@ -1167,7 +1167,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     messageDictionary = [message dictionaryRepresentation];
     XCTAssertEqualObjects(@"uac", messageDictionary[@"dt"]);
     XCTAssertEqualObjects(@1, messageDictionary[@"ov"]);
-    XCTAssertEqualObjects(@3, messageDictionary[@"nv"]);
+    XCTAssertEqualObjects(@"3", messageDictionary[@"nv"]);
     XCTAssertEqualObjects(@"Number of time travels", messageDictionary[@"n"]);
     XCTAssertEqualObjects(@NO, messageDictionary[@"d"]);
 }
