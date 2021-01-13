@@ -1,0 +1,84 @@
+name: iOS SDK Build
+
+on: [push, pull_request]
+
+jobs:
+  pod-lint:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Update xcodeproj gem
+        run: sudo gem install xcodeproj
+
+      - name: Prevent social URL warnings if twitter is unreachable
+        run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
+
+      - name: Lint with CocoaPods
+        run: pod lib lint
+
+      - name: Undo twitter change to podspec
+        run: git checkout *.podspec
+
+
+  carthage-build:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build with Carthage
+        run: carthage build --no-skip-current || true
+
+      - name: Carthage archive
+        run: carthage archive
+
+      - name: Verify carthage product
+        run: ls 2>&1 | grep .framework.zip
+
+  ios-unit-tests:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run iOS unit tests repeatedly
+        run: for VARIABLE in `seq 1 4`; do xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_iOS_SDKTests -destination "platform=iOS Simulator,name=iPhone 8" test; done
+
+
+  tvos-unit-tests:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run tvOS unit tests repeatedly
+        run: for VARIABLE in `seq 1 4`; do xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV 4K" test; done
+
+  compile-extension:
+    runs-on: macOS-latest
+    defaults:
+      run:
+        working-directory: ./Example
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Update CocoaPods repo
+        run: pod repo update
+
+      - name: Install CocoaPods dependencies
+        run: pod install
+
+      - name: Build iOS extension scheme
+        run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 8'
+
+  run-analyzer:
+    runs-on: macOS-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run static analyzer
+        run: bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 11" clean analyze | grep -B3 "warning")'
