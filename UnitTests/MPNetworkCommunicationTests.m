@@ -489,7 +489,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
                                                     options:NSJSONWritingPrettyPrinted
                                                       error:&error];
     
-    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:[networkCommunication configURL]];
 
     [networkCommunication requestConfig:mockConnector withCompletionHandler:^(BOOL success) {
         XCTAssert(success);
@@ -548,7 +548,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
                                                     options:NSJSONWritingPrettyPrinted
                                                       error:&error];
     
-    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:[networkCommunication configURL]];
 
     [networkCommunication requestConfig:mockConnector withCompletionHandler:^(BOOL success) {
         XCTAssert(success);
@@ -605,7 +605,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
                                                       error:&error];
 
     
-    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:[networkCommunication configURL]];
     
     [networkCommunication requestConfig:mockConnector withCompletionHandler:^(BOOL success) {
         XCTAssert(success);
@@ -668,7 +668,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
                                                     options:NSJSONWritingPrettyPrinted
                                                       error:&error];
     
-    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:[networkCommunication configURL]];
     
     [networkCommunication requestConfig:mockConnector withCompletionHandler:^(BOOL success) {
         XCTAssert(success);
@@ -727,7 +727,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
                                                     options:NSJSONWritingPrettyPrinted
                                                       error:&error];
     
-    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromGetRequestToURL:[networkCommunication configURL]];
     
     [networkCommunication requestConfig:mockConnector withCompletionHandler:^(BOOL success) {
         XCTAssert(success);

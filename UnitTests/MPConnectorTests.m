@@ -4,6 +4,8 @@
 #if TARGET_OS_IOS == 1
 #import "OCMock.h"
 #import "MPIConstants.h"
+#import "MPURL.h"
+#import "MPURLRequestBuilder.h"
 
 @interface MPConnector ()
 
@@ -73,6 +75,34 @@
     NSURLSession *resultSession = connector.urlSession;
     XCTAssertNotNil(resultSession);
     OCMVerifyAll((id)mockSession);
+}
+
+- (void)testResponseFromGetRequestToURL {
+    MPConnector *connector = [[MPConnector alloc] init];
+    NSURL *customURL = [NSURL URLWithString:@"https://192.168.1"];
+    NSURL *defaultURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
+
+    MPURLRequestBuilder *mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
+    OCMVerify([[mockRequestBuilder class] newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
+    
+    MPConnectorResponse *connectorResponse = [connector responseFromGetRequestToURL:mpURL];
+    XCTAssertNotNil(connectorResponse);
+    OCMVerifyAll((id)mockRequestBuilder);
+}
+
+- (void)testResponseFromPostRequestToURL {
+    MPConnector *connector = [[MPConnector alloc] init];
+    NSURL *customURL = [NSURL URLWithString:@"https://192.168.1"];
+    NSURL *defaultURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
+    MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
+
+    MPURLRequestBuilder *mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
+    OCMVerify([[mockRequestBuilder class] newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
+    
+    MPConnectorResponse *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil];
+    XCTAssertNotNil(connectorResponse);
+    OCMVerifyAll((id)mockRequestBuilder);
 }
 
 @end

@@ -1,5 +1,7 @@
 #import <Foundation/Foundation.h>
 
+@class MPURL;
+
 typedef NS_ENUM(NSInteger, HTTPStatusCode) {
     HTTPStatusCodeSuccess = 200,
     HTTPStatusCodeCreated = 201,
@@ -30,7 +32,7 @@ typedef NS_ENUM(NSInteger, HTTPStatusCode) {
 
 @interface MPConnector : NSObject
 
-- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull NSURL *)url;
-- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams;
+- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull MPURL *)url;
+- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams;
 
 @end

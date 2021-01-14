@@ -428,7 +428,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.url.absoluteString body:@[]];
     
     connector = connector ? connector : [self makeConnector];
-    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL.url];
+    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -519,7 +519,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     NSDate *fetchSegmentsStartTime = [NSDate date];
     MPConnector *connector = [self makeConnector];
 
-    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL.url];
+    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
@@ -625,7 +625,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
     
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL.url
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
                                                                     message:uploadString
                                                            serializedParams:zipUploadData];
     NSData *data = response.data;
@@ -689,11 +689,10 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    NSURL *uploadURL = self.aliasURL.url;
-    MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", uploadURL, uploadString);
+    MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", _aliasURL.url, uploadString);
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:self.aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
     
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:uploadURL
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.aliasURL
                                                                     message:uploadString
                                                            serializedParams:upload.uploadData];
     NSData *data = response.data;
@@ -857,7 +856,8 @@ static NSObject<MPConnectorFactory> *factory = nil;
     [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
 
     MPConnector *connector = [self makeConnector];
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:url
+    MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
+    MPConnectorResponse *response = [connector responseFromPostRequestToURL:mpURL
                                                                     message:nil
                                                            serializedParams:data];
     NSData *responseData = response.data;

@@ -198,11 +198,10 @@ static NSArray *mpStoredCertificates = nil;
 }
 
 #pragma mark Public methods
-- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull NSURL *)url {
+- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull MPURL *)url {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
     
-    MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
-    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet] build];
+    NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
     
     if (urlRequest) {
         requestStartTime = [NSDate date];
@@ -239,11 +238,10 @@ static NSArray *mpStoredCertificates = nil;
     return response;
 }
 
-- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull NSURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
+- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
-    MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
 
-    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:mpURL message:message httpMethod:kMPHTTPMethodPost]
+    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost]
                                              withPostData:serializedParams]
                                             build];
     
