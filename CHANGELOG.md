@@ -1,5 +1,12 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.1.3
+
+- Fix MPConnector for MPURL
+- Improve UA for Number Values
+
+This resolves an issue where signature headers could be computed improperly with certain network configuration settings.
+
 ## 8.1.2
 
 This release includes a number of bugfixes:
