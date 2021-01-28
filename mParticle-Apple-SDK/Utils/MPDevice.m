@@ -250,9 +250,11 @@ int main(int argc, char *argv[]);
     size_t size;
     sysctlbyname("hw.machine", NULL, &size, NULL, 0);
     char *name = malloc(size);
-    sysctlbyname("hw.machine", name, &size, NULL, 0);
-    _model = [NSString stringWithUTF8String:name];
-    free(name);
+    if (name) {
+        sysctlbyname("hw.machine", name, &size, NULL, 0);
+        _model = [NSString stringWithUTF8String:name];
+        free(name);
+    }
     
     if (!_model) {
         _model = @"Not available.";
@@ -319,9 +321,11 @@ int main(int argc, char *argv[]);
     size_t size;
     sysctlbyname("kern.osversion", NULL, &size, NULL, 0);
     char *buffer = malloc(size);
-    sysctlbyname("kern.osversion", buffer, &size, NULL, 0);
-    _buildId = [NSString stringWithUTF8String:buffer];
-    free(buffer);
+    if (buffer) {
+        sysctlbyname("kern.osversion", buffer, &size, NULL, 0);
+        _buildId = [NSString stringWithUTF8String:buffer];
+        free(buffer);
+    }
 
     return _buildId;
 }

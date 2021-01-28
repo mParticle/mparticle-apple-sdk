@@ -578,6 +578,9 @@ void handleException(NSException *exception) {
 static bool debuggerRunning() {
     int numberOfBytes = 4;
     int *name = malloc(numberOfBytes * sizeof(int));
+    if (!name) {
+        return false;
+    }
     name[0] = CTL_KERN;
     name[1] = KERN_PROC;
     name[2] = KERN_PROC_PID;
@@ -615,6 +618,9 @@ static bool debuggerRunning() {
 static void appendImageList(BinaryImageList *list, uintptr_t header, const char *name) {
     // Initialize the new entry.
     BinaryImage *new = calloc(1, sizeof(BinaryImage));
+    if (!new) {
+        return;
+    }
     new->header = header;
     new->name = strdup(name);
     
