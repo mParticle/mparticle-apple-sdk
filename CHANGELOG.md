@@ -1,5 +1,11 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.1.4
+
+- Fix unused return values
+- Use ARCHS
+- Change imports to modular for sqlite
+
 ## 8.1.3
 
 - Fix MPConnector for MPURL
