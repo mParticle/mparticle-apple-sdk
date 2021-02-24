@@ -46,6 +46,6 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSUserTrackingUsageDescription</key>
-	<string>App would like to access IDFA for tracking purposes</string>
+	<string>This string informs the user why the app is requesting permission to use data for tracking the user or the device</string>
 </dict>
 </plist>

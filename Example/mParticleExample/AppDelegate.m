@@ -1,5 +1,7 @@
 #import "AppDelegate.h"
 #import <mParticle_Apple_SDK/mParticle.h>
+#import <AdSupport/AdSupport.h>
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @interface AppDelegate ()
 
@@ -27,7 +29,38 @@
     options.logLevel = MPILogLevelDebug;
 
     [[MParticle sharedInstance] startWithOptions:options];
-
+    
+    // An example on how to request IDFA tracking. This does not need to be be done in the App Delegate.
+    // Remember to set your NSUserTrackingUsageDescription per https://developer.apple.com/documentation/apptrackingtransparency
+    if (@available(iOS 14, *)) {
+        [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler:^(ATTrackingManagerAuthorizationStatus status) {
+            switch (status) {
+                case ATTrackingManagerAuthorizationStatusAuthorized:
+                    // Tracking authorization dialog was shown
+                    // and we are authorized
+                    NSLog(@"Authorized");
+                            
+                    // Now that we are authorized we can get the IDFA
+                    NSLog(@"%@", [ASIdentifierManager sharedManager].advertisingIdentifier);
+                    break;
+                case ATTrackingManagerAuthorizationStatusDenied:
+                    // shown and permission is denied
+                    NSLog(@"Denied");
+                    break;
+                case ATTrackingManagerAuthorizationStatusNotDetermined:
+                    // Tracking authorization dialog has not been shown
+                    NSLog(@"Not Determined");
+                    break;
+                case ATTrackingManagerAuthorizationStatusRestricted:
+                    NSLog(@"Restricted");
+                    break;
+                default:
+                    NSLog(@"Unknown");
+                    break;
+            }
+        }];
+    }
+    
     UNUserNotificationCenter* center = [UNUserNotificationCenter currentNotificationCenter];
     [center requestAuthorizationWithOptions:
              (UNAuthorizationOptionAlert +

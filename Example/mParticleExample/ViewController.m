@@ -14,6 +14,8 @@
 
 @property (nonatomic, strong) NSArray *cellTitles;
 @property (nonatomic, strong) UITableView *tableView;
+@property (nonatomic, strong) UITextField *emailField;
+@property (nonatomic, strong) UITextField *customerIDField;
 
 @end
 
@@ -22,10 +24,29 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
-    _tableView = [[UITableView alloc] initWithFrame:self.view.frame];
+    CGRect screenFrame = self.view.frame;
+    screenFrame.origin.y = screenFrame.origin.y + 100;
+    screenFrame.size.height = screenFrame.size.height - 100;
+    _tableView = [[UITableView alloc] initWithFrame:screenFrame];
     _tableView.delegate = self;
     _tableView.dataSource = self;
     [self.view addSubview:_tableView];
+    
+    CGRect emailFrame = self.view.frame;
+    emailFrame.origin.y = emailFrame.origin.y + 20;
+    emailFrame.size.height = 40;
+    _emailField = [[UITextField alloc] initWithFrame:emailFrame];
+    _emailField.placeholder = @"Email";
+    _emailField.backgroundColor = [UIColor lightGrayColor];
+    [self.view addSubview:_emailField];
+
+    CGRect customerIDFrame = self.view.frame;
+    customerIDFrame.origin.y = customerIDFrame.origin.y + 60;
+    customerIDFrame.size.height = 40;
+    _customerIDField = [[UITextField alloc] initWithFrame:customerIDFrame];
+    _customerIDField.placeholder = @"Customer ID";
+    _customerIDField.backgroundColor = [UIColor lightGrayColor];
+    [self.view addSubview:_customerIDField];
 }
 
 #pragma mark Private accessors
@@ -36,11 +57,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login"];
     
     return _cellTitles;
 }
@@ -342,6 +363,37 @@
         }
     }
     
+}
+
+
+- (void)logout {
+    MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithEmptyUser];
+    
+    [[[MParticle sharedInstance] identity] logout:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        if (error) {
+            NSLog(@"Failed to logout: %@", error);
+        } else {
+            NSLog(@"Logout Successful");
+        }
+    }];
+}
+
+- (void)login {
+    MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithEmptyUser];
+    if (_emailField.text.length > 0) {
+        identityRequest.email = _emailField.text;
+    }
+    if (_customerIDField.text.length > 0) {
+        identityRequest.customerId = _customerIDField.text;
+    }
+    
+    [[[MParticle sharedInstance] identity] login:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+        if (error) {
+            NSLog(@"Failed to login: %@", error);
+        } else {
+            NSLog(@"Login Successful");
+        }
+    }];
 }
 
 
