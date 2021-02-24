@@ -332,22 +332,26 @@
                     // Tracking authorization dialog was shown
                     // and we are authorized
                     NSLog(@"Authorized");
+                    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
                     [self logIDFA:[[[ASIdentifierManager sharedManager] advertisingIdentifier] UUIDString]];
                     break;
                     
                 case ATTrackingManagerAuthorizationStatusDenied:
                     // Tracking authorization dialog was
                     // shown and permission is denied
+                    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
                     NSLog(@"Denied");
                     break;
                     
                 case ATTrackingManagerAuthorizationStatusNotDetermined:
                     // Tracking authorization dialog has not been shown
+                    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusNotDetermined withATTStatusTimestampMillis:nil];
                     NSLog(@"Not Determined");
                     break;
                     
                 case ATTrackingManagerAuthorizationStatusRestricted:
                     // Tracking authorization dialog has not been shown
+                    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusRestricted withATTStatusTimestampMillis:nil];
                     NSLog(@"Restricted");
                     break;
                     

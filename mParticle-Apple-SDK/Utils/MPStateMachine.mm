@@ -43,7 +43,6 @@ static BOOL runningInBackground = NO;
 
 @interface MPStateMachine() {
     BOOL optOutSet;
-    BOOL alwaysTryToCollectIDFASet;
     dispatch_queue_t messageQueue;
 }
 
@@ -63,7 +62,8 @@ static BOOL runningInBackground = NO;
 @synthesize locationTrackingMode = _locationTrackingMode;
 @synthesize logLevel = _logLevel;
 @synthesize optOut = _optOut;
-@synthesize alwaysTryToCollectIDFA = _alwaysTryToCollectIDFA;
+@synthesize attAuthorizationStatus = _attAuthorizationStatus;
+@synthesize attAuthorizationTimestamp = _attAuthorizationTimestamp;
 @synthesize pushNotificationMode = _pushNotificationMode;
 @synthesize storedSDKVersion = _storedSDKVersion;
 @synthesize triggerEventTypes = _triggerEventTypes;
@@ -408,7 +408,6 @@ static BOOL runningInBackground = NO;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
-            [userDefaults synchronize];
         });
     }
     
@@ -429,7 +428,6 @@ static BOOL runningInBackground = NO;
         
         dispatch_async(dispatch_get_main_queue(), ^{
             userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
-            [userDefaults synchronize];
         });
     }
 }
@@ -519,9 +517,6 @@ static BOOL runningInBackground = NO;
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [userDefaults synchronize];
-    });
 }
 
 - (NSString *)minDefaultsKeyForUploadType:(MPUploadType)uploadType {
@@ -571,9 +566,6 @@ static BOOL runningInBackground = NO;
     } else {
         _optOut = NO;
         userDefaults[kMPOptOutStatus] = @(_optOut);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [userDefaults synchronize];
-        });
     }
     optOutSet = YES;
         
@@ -586,48 +578,54 @@ static BOOL runningInBackground = NO;
 
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPOptOutStatus] = @(_optOut);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [userDefaults synchronize];
-    });
 }
 
-- (BOOL)alwaysTryToCollectIDFA {
-    if (alwaysTryToCollectIDFASet) {
-        return _alwaysTryToCollectIDFA;
+- (NSNumber *)attAuthorizationStatus {
+    if (_attAuthorizationStatus  != nil) {
+        return _attAuthorizationStatus;
     }
-    
-    [self willChangeValueForKey:@"alwaysTryToCollectIDFA"];
-    
-    alwaysTryToCollectIDFASet = YES;
-    
+
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSNumber *alwaysTryToCollectIDFANumber = userDefaults[kMPAlwaysTryToCollectIDFA];
+    NSNumber *authorizationState = userDefaults[kMPATT];
     
-    if (alwaysTryToCollectIDFANumber != nil) {
-        _alwaysTryToCollectIDFA = [alwaysTryToCollectIDFANumber boolValue];
+    if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3) {
+        _attAuthorizationStatus = authorizationState;
     }
-    else {
-        _alwaysTryToCollectIDFA = NO;
-        userDefaults[kMPAlwaysTryToCollectIDFA] = @(_alwaysTryToCollectIDFA);
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [userDefaults synchronize];
-        });
-    }
-    
-    [self didChangeValueForKey:@"alwaysTryToCollectIDFA"];
-    
-    return _alwaysTryToCollectIDFA;
+        
+    return _attAuthorizationStatus;
 }
 
-- (void)setAlwaysTryToCollectIDFA:(BOOL)alwaysTryToCollectIDFA {
-    _alwaysTryToCollectIDFA = alwaysTryToCollectIDFA;
-    alwaysTryToCollectIDFASet = YES;
-    
+- (NSNumber *)attAuthorizationTimestamp {
+    if (_attAuthorizationTimestamp != nil) {
+        return _attAuthorizationTimestamp;
+    }
+
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    userDefaults[kMPAlwaysTryToCollectIDFA] = @(alwaysTryToCollectIDFA);
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [userDefaults synchronize];
-    });
+    NSNumber *authorizationStateTimestamp = userDefaults[kMPATTTimestamp];
+    
+    _attAuthorizationTimestamp = authorizationStateTimestamp;
+        
+    return _attAuthorizationTimestamp;
+}
+
+- (void)setAttAuthorizationStatus:(NSNumber *)authorizationState {
+    if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3 && authorizationState.integerValue != _attAuthorizationStatus.integerValue) {
+        _attAuthorizationStatus = authorizationState;
+        _attAuthorizationTimestamp = MPCurrentEpochInMilliseconds;
+        
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        userDefaults[kMPATT] = _attAuthorizationStatus;
+        userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
+    }
+}
+
+- (void)setAttAuthorizationTimestamp:(NSNumber *)timestamp {
+    if (timestamp.doubleValue != _attAuthorizationTimestamp.doubleValue) {
+        _attAuthorizationTimestamp = timestamp;
+        
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
+    }
 }
 
 - (NSString *)pushNotificationMode {
@@ -661,9 +659,6 @@ static BOOL runningInBackground = NO;
     
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [userDefaults synchronize];
-    });
 }
 
 - (NSDate *)startTime {
@@ -771,13 +766,6 @@ static BOOL runningInBackground = NO;
     [self willChangeValueForKey:@"triggerMessageTypes"];
     _triggerMessageTypes = (NSArray *)messageTypes;
     [self didChangeValueForKey:@"triggerMessageTypes"];
-}
-
-- (void)configureRestrictIDFA:(NSNumber *)restrictIDFA {
-    if (MPIsNull(restrictIDFA)) {
-        restrictIDFA = @YES;
-    }
-    self.alwaysTryToCollectIDFA = [restrictIDFA isEqual:@NO];
 }
 
 - (void)configureAliasMaxWindow:(NSNumber *)aliasMaxWindow {

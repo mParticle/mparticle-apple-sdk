@@ -44,7 +44,8 @@
 @property (nonatomic, unsafe_unretained, readonly) BOOL backgrounded;
 @property (nonatomic, unsafe_unretained, readonly) BOOL dataRamped;
 @property (nonatomic, unsafe_unretained) BOOL optOut;
-@property (nonatomic, unsafe_unretained) BOOL alwaysTryToCollectIDFA;
+@property (nonatomic, unsafe_unretained) NSNumber * _Nullable attAuthorizationStatus;
+@property (nonatomic, unsafe_unretained) NSNumber * _Nullable attAuthorizationTimestamp;
 @property (nonatomic, strong, nonnull) NSNumber *aliasMaxWindow;
 @property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
 @property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
@@ -61,7 +62,6 @@
 - (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings;
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
-- (void)configureRestrictIDFA:(nullable NSNumber *)restrictIDFA;
 - (void)configureAliasMaxWindow:(nullable NSNumber *)aliasMaxWindow;
 - (void)configureDataBlocking:(nullable NSDictionary *)blockSettings;
 - (void)setMinUploadDate:(nullable NSDate *)date uploadType:(MPUploadType)uploadType;

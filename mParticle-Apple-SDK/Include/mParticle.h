@@ -339,6 +339,19 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Settings for blocking data to kits
  */
 @property (nonatomic, strong, readwrite, nullable) MPDataPlanOptions *dataPlanOptions;
+
+/**
+ Set the App Tracking Transparency Authorization Status upon starting the SDK.
+ Only sets a new state if it has changed.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatus;
+
+/**
+ Set the App Tracking Transparency Authorization Status timestamp upon starting the SDK.
+ Requires @attStatus to be set and is only set if the authorization state is different from the stored state.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSNumber *attStatusTimestampMillis;
+
 /**
  Identify callback.
  
@@ -501,8 +514,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, unsafe_unretained, readonly) NSTimeInterval uploadInterval;
 
-
-
 /**
  mParticle Apple SDK version
  */
@@ -517,7 +528,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Data plan version
  */
 @property (nonatomic, strong, readonly) NSNumber *dataPlanVersion;
-
 
 /**
  Sets data plan options for kit blocking
@@ -698,6 +708,15 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see logScreenEvent:
  */
 - (void)logScreen:(NSString *)screenName eventInfo:(nullable NSDictionary<NSString *, id> *)eventInfo;
+
+/**
+ Sets the ATT Authorization state with the supplied timestamp, or uses the current time if none is supplied.
+ @param status The authorization state of ATT, determines whether the user has approved access to app-related data that can be used for tracking the user or the device.
+ @param attStatusTimestampMillis The time at which the authorization status change. If not supplied, current time will be used.
+ @see MPCurrentEpochInMilliseconds - Please provide the timestamp in milliseconds
+ @see MPIdentityIOSAdvertiserId
+ */
+- (void)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(nullable NSNumber *)attStatusTimestampMillis API_AVAILABLE(ios(14));
 
 #pragma mark - Attribution
 /**

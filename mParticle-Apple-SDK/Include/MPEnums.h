@@ -224,7 +224,10 @@ typedef NS_ENUM(NSUInteger, MPIdentity) {
     MPIdentityPhoneNumber2,
     /** User identity phone number 3 */
     MPIdentityPhoneNumber3,
-    /** Device identity advertiser  */
+    /** Device identity advertiser ID (IDFA)
+     When setting this, you must also provide the App Tracking Transparency status of the device
+     @see setATTStatus:withTimestamp:
+     */
     MPIdentityIOSAdvertiserId,
     /** Device identity vendor  */
     MPIdentityIOSVendorId,
@@ -407,6 +410,16 @@ typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     /** HTTP Error 429: Identity request should be retried */
     MPIdentityErrorResponseCodeRetry = 429
 };
+
+/**
+ @see https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanager/authorizationstatus
+ */
+typedef NS_ENUM(NSUInteger, MPATTAuthorizationStatus) {
+    MPATTAuthorizationStatusNotDetermined = 0,
+    MPATTAuthorizationStatusRestricted,
+    MPATTAuthorizationStatusDenied,
+    MPATTAuthorizationStatusAuthorized
+} API_AVAILABLE(ios(14), macosx(11.0), tvos(14));
 
 /** Posted immediately after a new session has begun.
  

@@ -10,6 +10,8 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPURL.h"
+#import "MPDevice.h"
+#import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @interface MParticle ()
 
@@ -681,6 +683,36 @@
 }
 #endif
 
+- (void)testATTAuthorizationStatus {
+    if (@available(tvOS 14, iOS 14, *)) {
+        MParticle *instance = [MParticle sharedInstance];
+        MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+        options.attStatus = @(ATTrackingManagerAuthorizationStatusAuthorized);
+        [instance startWithOptions:options];
+        MPStateMachine *stateMachine = instance.stateMachine;
+        XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, ATTrackingManagerAuthorizationStatusAuthorized);
+        XCTAssert(stateMachine.attAuthorizationTimestamp);
+    } else {
+        XCTAssert(YES);
+    }
+}
+
+- (void)testattAuthorizationStatusWithTimestamp {
+    if (@available(tvOS 14, iOS 14, *)) {
+        MParticle *instance = [MParticle sharedInstance];
+        NSNumber *testTimestamp = @([[NSDate date] timeIntervalSince1970] - 400);
+        MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+        options.attStatus = @(ATTrackingManagerAuthorizationStatusRestricted);
+        options.attStatusTimestampMillis = testTimestamp;
+        [instance startWithOptions:options];
+        MPStateMachine *stateMachine = instance.stateMachine;
+        XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, ATTrackingManagerAuthorizationStatusRestricted);
+        XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
+    } else {
+        XCTAssert(YES);
+    }
+}
+
 - (void)testLogNilEvent {
     MParticle *instance = [MParticle sharedInstance];
     NSException *e = nil;
@@ -716,6 +748,55 @@
     XCTAssertNil(e);
 }
 #pragma clang diagnostic pop
+
+- (void)testSetATTState {
+    if (@available(iOS 14, tvOS 14, *)) {
+        MParticle *instance = [MParticle sharedInstance];
+        NSException *e = nil;
+        @try {
+            [instance setATTStatus:(MPATTAuthorizationStatus)ATTrackingManagerAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
+        } @catch (NSException *ex) {
+            e = ex;
+        }
+        XCTAssertNil(e);
+        
+        XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, ATTrackingManagerAuthorizationStatusAuthorized);
+        XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
+        
+        MPDevice *device = [[MPDevice alloc] init];
+        NSDictionary *deviceDict = [device dictionaryRepresentation];
+        
+        XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
+        XCTAssert(deviceDict[kMPATTTimestamp]);
+    } else {
+        XCTAssert(YES);
+    }
+}
+
+- (void)testSetATTStateWithTimestamp {
+    if (@available(iOS 14, tvOS 14, *)) {
+        MParticle *instance = [MParticle sharedInstance];
+        NSNumber *testTimestamp = @([[NSDate date] timeIntervalSince1970] - 400);
+        NSException *e = nil;
+        @try {
+            [instance setATTStatus:(MPATTAuthorizationStatus)ATTrackingManagerAuthorizationStatusAuthorized withATTStatusTimestampMillis:testTimestamp];
+        } @catch (NSException *ex) {
+            e = ex;
+        }
+        XCTAssertNil(e);
+        
+        XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, ATTrackingManagerAuthorizationStatusAuthorized);
+        XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
+        
+        MPDevice *device = [[MPDevice alloc] init];
+        NSDictionary *deviceDict = [device dictionaryRepresentation];
+        
+        XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
+        XCTAssertEqual(((NSNumber *)deviceDict[kMPATTTimestamp]).doubleValue, testTimestamp.doubleValue);
+    } else {
+        XCTAssert(YES);
+    }
+}
 
 - (void)testUserAgentDefault {
     id mockWebView = OCMClassMock([MParticleWebView class]);

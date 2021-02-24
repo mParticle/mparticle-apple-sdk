@@ -107,6 +107,7 @@
 - (nonnull MPKitExecStatus *)logout;
 - (nonnull MPKitExecStatus *)logScreen:(nonnull MPEvent *)event;
 - (nonnull MPKitExecStatus *)logUpdate;
+- (nonnull MPKitExecStatus *)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(nullable NSNumber *)attStatusTimestampMillis API_AVAILABLE(ios(14));
 
 #pragma mark Timed events
 - (nonnull MPKitExecStatus *)beginTimedEvent:(nonnull MPEvent *)event;

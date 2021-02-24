@@ -540,6 +540,31 @@ int main(int argc, char *argv[]);
         deviceDictionary[kMPDeviceTokenTypeKey] = [MParticle sharedInstance].stateMachine.deviceTokenType;
     }
     
+    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    if (authStatus != nil) {
+        switch (authStatus.integerValue) {
+            case MPATTAuthorizationStatusNotDetermined:
+                deviceDictionary[kMPATT] = @"not_determined";
+                break;
+            case MPATTAuthorizationStatusRestricted:
+                deviceDictionary[kMPATT] = @"restricted";
+                break;
+            case MPATTAuthorizationStatusDenied:
+                deviceDictionary[kMPATT] = @"denied";
+                break;
+            case MPATTAuthorizationStatusAuthorized:
+                deviceDictionary[kMPATT] = @"authorized";
+                break;
+            default:
+                break;
+        }
+    }
+    
+    NSNumber *authTimestamp = [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp;
+    if (authTimestamp != nil) {
+        deviceDictionary[kMPATTTimestamp] = authTimestamp;
+    }
+    
     BOOL cacheDeviceInfo = (auxString != nil) && (limitAdTracking != nil);
     if (cacheDeviceInfo) {
         deviceInfo = (NSDictionary *)deviceDictionary;

@@ -575,6 +575,11 @@ NSString *const kMPStateKey = @"state";
     
     [MPStateMachine setEnvironment:environment];
     [MParticle sharedInstance].stateMachine.automaticSessionTracking = options.automaticSessionTracking;
+    if (options.attStatus != nil) {
+        if (@available(tvOS 14, iOS 14, *)) {
+            [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
+        }
+    }
     
     _kitContainer = [[MPKitContainer alloc] init];
 
@@ -990,6 +995,15 @@ NSString *const kMPStateKey = @"state";
     event.customAttributes = eventInfo;
     
     [self logScreenEvent:event];
+}
+
+- (void)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(NSNumber *)attStatusTimestampMillis  API_AVAILABLE(ios(14)){
+    if ([MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue != status) {
+        [MParticle sharedInstance].stateMachine.attAuthorizationStatus = @(status);
+        if (attStatusTimestampMillis != nil) {
+            [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp = attStatusTimestampMillis;
+        }
+    }
 }
 
 #pragma mark Attribution
