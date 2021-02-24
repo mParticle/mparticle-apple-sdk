@@ -399,7 +399,7 @@
     NSDictionary *dictionary = @{@"EventDataType":@(MPJavascriptMessageTypePageEvent), @"EventName":@"foo webview event 1", @"EventCategory":@(MPEventTypeNavigation), @"EventAttributes":@{@"foo webview event attribute 1":@"foo webview event attribute value 1"}};
     [instance handleWebviewCommand:command dictionary:dictionary];
     
-    [mockBackend verifyWithDelay:2];
+    [mockBackend verifyWithDelay:5];
     
     [mockInstance stopMocking];
     [mockBackend stopMocking];
@@ -448,7 +448,7 @@
     };
     [instance handleWebviewCommand:command dictionary:dictionary];
     
-    [mockBackend verifyWithDelay:2];
+    [mockBackend verifyWithDelay:5];
     
     [mockInstance stopMocking];
     [mockBackend stopMocking];
@@ -484,7 +484,7 @@
         }];
     [instance handleWebviewCommand:command dictionary:dictionary];
     
-    [mockBackend verifyWithDelay:2];
+    [mockBackend verifyWithDelay:5];
     
     [mockInstance stopMocking];
     [mockBackend stopMocking];
@@ -519,7 +519,7 @@
         };
     [instance handleWebviewCommand:command dictionary:dictionary];
     
-    [mockBackend verifyWithDelay:2];
+    [mockBackend verifyWithDelay:5];
     
     [mockInstance stopMocking];
     [mockBackend stopMocking];
@@ -562,7 +562,7 @@
     
     [instance handleWebviewCommand:command dictionary:dictionary];
     
-    [mockBackend verifyWithDelay:2];
+    [mockBackend verifyWithDelay:5];
     
     [mockInstance stopMocking];
     [mockBackend stopMocking];
@@ -675,7 +675,7 @@
     
     [mockInstance logNotificationOpenedWithUserInfo:[testNotification userInfo] andActionIdentifier:nil];
     
-    [mockBackendController verifyWithDelay:1.0];
+    [mockBackendController verifyWithDelay:5.0];
     [mockBackendController stopMocking];
     [mockInstance stopMocking];
 }

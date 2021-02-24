@@ -9,7 +9,7 @@
 #import "MPForwardQueueParameters.h"
 #import "MPBaseTestCase.h"
 
-#define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 1
+#define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 10
 
 #pragma mark
 @interface MPKitMockTest : NSObject <MPKitProtocol>

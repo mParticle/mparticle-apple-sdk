@@ -1488,7 +1488,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
         XCTAssertFalse(didShortCircuit);
     }];
     
-    [mockBackendController verifyWithDelay:2.0];
+    [mockBackendController verifyWithDelay:5.0];
     [mockBackendController stopMocking];
 }
 
@@ -1511,7 +1511,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     
     [mockBackendController handleDeviceTokenNotification:testNotification];
     
-    [mockBackendController verifyWithDelay:1.0];
+    [mockBackendController verifyWithDelay:5.0];
     [mockBackendController stopMocking];
 }
 #endif
