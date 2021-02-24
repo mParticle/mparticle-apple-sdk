@@ -1,5 +1,14 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.2.0
+
+This release adds support for collecting a device’s App Tracking Transparency authorization status for improved iOS 14 compatibility.
+
+You can call `setATTStatus:withTimestampMillis:` on the MParticle sharedInstance to specify the result of prompting the user. If you pass nil for the timestamp, the SDK will use the current date and time.
+
+- Support for Xcode 12.5 beta
+- Update the sample app to set ATT status, as well as login and logout support
+
 ## 8.1.4
 
 - Fix unused return values
