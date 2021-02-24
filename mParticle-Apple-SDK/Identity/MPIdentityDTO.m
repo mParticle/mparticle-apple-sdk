@@ -112,7 +112,7 @@
     
 
     NSString *platform = @"ios";
-    #if TARGET_OS_TVOS == 1
+    #if TARGET_OS_TV == 1
     platform = @"tvos";
     #endif
     
