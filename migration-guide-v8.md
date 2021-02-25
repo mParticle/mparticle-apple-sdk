@@ -1,21 +1,90 @@
 # Apple SDK 8 Migration Guide
 
-This guide contains an overview of the changes Apple is introducing with iOS 14 and includes an API migration guide so that you can easily upgrade to the latest mParticle SDK.
+Apple’s new App Tracking Transparency (ATT) framework and the respective App Store review guidelines introduce industry-shifting, privacy-focused changes. Under the latest guidelines, device data must only be used for "cross-application tracking" after the device has opted-in via the new ATT framework. mParticle acts an extension of your data infrastructure, and it's your responsibility to adhere to Apple's guidelines and respect user privacy by auditing the integrations you use and where end-user data is sent.
+
+The mParticle platform has been adapting to these changes and we've made several critical API and SDK updates to ensure the best development experience and allow for conditional data-flows based on an end user's ATT authorization. This guide contains a quick overview of the changes Apple is introducing with iOS 14 and includes an SDK migration guide so that you can easily upgrade to the latest mParticle SDK.
 
 ## What's Changing?
 
-- Apple's iOS 14, tvOS 14, iPadOS 14, and Xcode 12 were released September 16th, 2020
-- mParticle has released Apple SDK 8.0.1 with critical changes for Xcode 12 and iOS 14
-- mParticle is removing the query of IDFA from the Apple SDK. See the migration guide below for API changes and other details.
-- mParticle is continually working to release updates for any kits to their respective SDK versions for iOS 14
+- Apple's iOS 14, tvOS 14, iPadOS 14, and Xcode 12 were released September 16th, 2020. This introduced the new ATT framework, but did not include the enforcement of its usage.
+- mParticle released Apple SDK 8.0.1 in September 2020, removing the automatic-query of the IDFA from the SDK and other changes detailed below
+- mParticle released Apple SDK 8.2.0 in February 2021, in anticipation of the iOS 14.5 release. Version 8.2.0 exposes a new API to collect the device's App Tracking Transparency authorization status
+- mParticle is continually releasing updates for both server-side integrations and client-side kit integrations, as the respective partner APIs and SDKs adapt
 
 ## Preparing for iOS 14 
 
-The iOS 14, iPadOS 14, and tvOS 14 betas originally introduced several critical API changes as well as new Apple App Store submission guidelines. Apple has since reverted these changes, but mParticle has updated the Apple SDK and the broader mParticle platform to adhere to and follow the spirit of these changes which are to be reintroduced early next year.
+Under these new privacy guidelines each app must ensure that all user data processing obeys user consent elections and ultimately protects them from breaching App Store Review guidelines.
+
+Please reference the following two Apple documents for the latest compliance requirements:
+
+- [User Privacy and Data Use Overview](https://developer.apple.com/app-store/user-privacy-and-data-use/)
+- [App Store Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
 
 ## Developer Migration Guide
 
-#### Removal of IDFA and Updated Identity API
+Please see below for Apple-SDK specific guidance, and [reference the mParticle iOS 14 guide](https://docs.mparticle.com/developers/sdk/ios/ios14) to understand how this fits into the broader platform.
+
+### App Tracking Transparency Framework Support
+
+The App Tracking Transparency framework replaces the [original `advertisingTrackingEnabled` boolean flag](https://developer.apple.com/documentation/adsupport/asidentifiermanager/1614148-advertisingtrackingenabled) with the new `ATTrackingManagerAuthorizationStatus` enumeration. With mParticle, you can now associate any device data with this new enumeration such that you can control the flow of data based on the end-user's wishes.
+
+The mParticle Apple SDK automatically collects the publisher-sandboxed IDFV, but does not automatically collect any user identifers or the IDFA and it does not automatically prompt the user for tracking authorization. It is up to you to determine if your downstream mParticle integrations require ATT authorization for cross-application tracking, and if they require the IDFA.
+
+[Please see Apple’s App Tracking Transparency guide](https://developer.apple.com/documentation/apptrackingtransparency) for how to request user authorization for tracking and collect their ATT authorization status.
+
+#### ATT API Overview
+
+- mParticle has introduced a new `att_authorization_status` field to [our data model](https://docs.mparticle.com/developers/server/json-reference/), which surfaces the same values as Apple's [`ATTrackingManagerAuthorizationStatus` enumeration](https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanagerauthorizationstatus)
+- mParticle has also introduced an optional `att_timestamp_unixtime_ms` field representing the time when the user responded to the ATT prompt or their status was otherwise updated
+- The Apple SDK lets you set these two fields, and the `MPATTAuthorizationStatus` enumeration maps directly to Apple’s `ATTrackingManagerAuthorizationStatus` enumeration.
+- All customers implementing the Apple SDK or sending iOS data server-to-server are encouraged to begin collecting and sending the status field. 
+- **At a future date, this field will become required when providing mParticle with an IDFA**
+
+
+### Collecting ATT Status with Apple SDK 8.2.0+
+
+Once provided to the SDK, the ATT status will be stored by the SDK on the device and continually included with all future uploads, for all MPIDs for the device. If not provided, the timestamp will be set to the current time. The SDK will ignore API calls to change the ATT status, if the ATT status hasn’t changed from the previous API call. This allows the SDK to keep track of the originally provided timestamp.
+
+There are two locations where you should provide the ATT status:
+
+#### 1. On SDK Initialization
+
+```swift
+let options = MParticleOptions(key: "REPLACE WITH APP KEY", secret: "REPLACE WITH APP SECRET")     
+options.attStatus = NSNumber.init(value: ATTrackingManager.trackingAuthorizationStatus.rawValue)
+MParticle.sharedInstance().start(with: options)
+```
+
+#### 2. After the user responds to the ATT prompt
+
+The code below shows the following:
+
+- On response to the user, map the `ATTrackingManagerAuthorizationStatus` enum to the mParticle `MPATTAuthorizationStatus` enum
+- If desired, provide the IDFA to the mParticle Identity API when available
+
+```swift
+ATTrackingManager.requestTrackingAuthorization { status in
+    switch status {
+    case .authorized:
+        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+    
+        // Now that we are authorized we can get the IDFA, supply to mParticle Identity API as needed
+        var identityRequest = MPIdentityApiRequest.withEmptyUser()
+        identityRequest.setIdentity(ASIdentifierManager.shared().advertisingIdentifier.uuidString, identityType: MPIdentity.iOSAdvertiserId)
+        MParticle.sharedInstance().identity.modify(identityRequest, completion: identityCallback)
+    case .denied:
+        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+    case .notDetermined:
+        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+    case .restricted:
+        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+    @unknown default:
+        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+    }
+}
+```
+
+### Removal of IDFA and Updated Identity API
 
 Apple SDK v8 no longer queries for the IDFA.
 
