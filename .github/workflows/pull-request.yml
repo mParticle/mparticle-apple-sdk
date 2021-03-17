@@ -8,7 +8,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-
+        
       - name: Update xcodeproj gem
         run: sudo gem install xcodeproj
 
