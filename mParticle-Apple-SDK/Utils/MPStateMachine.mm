@@ -41,6 +41,11 @@ static BOOL runningInBackground = NO;
 
 @end
 
+@interface MParticleUser ()
+- (void)setIdentity:(NSString *)identityString identityType:(MPIdentity)identityType;
+
+@end
+
 @interface MPStateMachine() {
     BOOL optOutSet;
     dispatch_queue_t messageQueue;
@@ -609,13 +614,20 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setAttAuthorizationStatus:(NSNumber *)authorizationState {
-    if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3 && authorizationState.integerValue != _attAuthorizationStatus.integerValue) {
+    if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3 && (_attAuthorizationStatus == nil || authorizationState.integerValue != _attAuthorizationStatus.integerValue)) {
         _attAuthorizationStatus = authorizationState;
         _attAuthorizationTimestamp = MPCurrentEpochInMilliseconds;
         
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         userDefaults[kMPATT] = _attAuthorizationStatus;
         userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
+        
+        if (authorizationState.integerValue != MPATTAuthorizationStatusAuthorized) {
+            NSArray<MParticleUser *> *users = [MParticle sharedInstance].identity.getAllUsers;
+            for (MParticleUser *user in users) {
+                [user setIdentity:NULL identityType:MPIdentityIOSAdvertiserId];
+            }
+        }
     }
 }
 

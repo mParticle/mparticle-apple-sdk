@@ -24,6 +24,12 @@
 
 @end
 
+@interface MParticleUser ()
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType;
+- (void)setUserId:(NSNumber *)userId;
+
+@end
+
 @interface MParticleTests : MPBaseTestCase {
     NSNotification *lastNotification;
     __weak dispatch_block_t testNotificationHandler;
@@ -683,34 +689,56 @@
 }
 #endif
 
-- (void)testATTAuthorizationStatus {
-    if (@available(tvOS 14, iOS 14, *)) {
-        MParticle *instance = [MParticle sharedInstance];
-        MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-        options.attStatus = @(ATTrackingManagerAuthorizationStatusAuthorized);
-        [instance startWithOptions:options];
-        MPStateMachine *stateMachine = instance.stateMachine;
-        XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, ATTrackingManagerAuthorizationStatusAuthorized);
-        XCTAssert(stateMachine.attAuthorizationTimestamp);
-    } else {
-        XCTAssert(YES);
-    }
+- (void)testATTAuthorizationStatusNotDetermined {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.attStatus = @(MPATTAuthorizationStatusNotDetermined);
+    [instance startWithOptions:options];
+    MPStateMachine *stateMachine = instance.stateMachine;
+    XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusNotDetermined);
+    XCTAssert(stateMachine.attAuthorizationTimestamp);
+}
+
+- (void)testATTAuthorizationStatusRestricted {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.attStatus = @(MPATTAuthorizationStatusRestricted);
+    [instance startWithOptions:options];
+    MPStateMachine *stateMachine = instance.stateMachine;
+    XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusRestricted);
+    XCTAssert(stateMachine.attAuthorizationTimestamp);
+}
+
+- (void)testATTAuthorizationStatusDenied {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.attStatus = @(MPATTAuthorizationStatusDenied);
+    [instance startWithOptions:options];
+    MPStateMachine *stateMachine = instance.stateMachine;
+    XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusDenied);
+    XCTAssert(stateMachine.attAuthorizationTimestamp);
+}
+
+- (void)testATTAuthorizationStatusAuthorized {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.attStatus = @(MPATTAuthorizationStatusAuthorized);
+    [instance startWithOptions:options];
+    MPStateMachine *stateMachine = instance.stateMachine;
+    XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusAuthorized);
+    XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
 
 - (void)testattAuthorizationStatusWithTimestamp {
-    if (@available(tvOS 14, iOS 14, *)) {
-        MParticle *instance = [MParticle sharedInstance];
-        NSNumber *testTimestamp = @([[NSDate date] timeIntervalSince1970] - 400);
-        MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
-        options.attStatus = @(ATTrackingManagerAuthorizationStatusRestricted);
-        options.attStatusTimestampMillis = testTimestamp;
-        [instance startWithOptions:options];
-        MPStateMachine *stateMachine = instance.stateMachine;
-        XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, ATTrackingManagerAuthorizationStatusRestricted);
-        XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
-    } else {
-        XCTAssert(YES);
-    }
+    MParticle *instance = [MParticle sharedInstance];
+    NSNumber *testTimestamp = @([[NSDate date] timeIntervalSince1970] - 400);
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
+    options.attStatus = @(MPATTAuthorizationStatusRestricted);
+    options.attStatusTimestampMillis = testTimestamp;
+    [instance startWithOptions:options];
+    MPStateMachine *stateMachine = instance.stateMachine;
+    XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusRestricted);
+    XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
 }
 
 - (void)testLogNilEvent {
@@ -749,53 +777,173 @@
 }
 #pragma clang diagnostic pop
 
-- (void)testSetATTState {
-    if (@available(iOS 14, tvOS 14, *)) {
-        MParticle *instance = [MParticle sharedInstance];
-        NSException *e = nil;
-        @try {
-            [instance setATTStatus:(MPATTAuthorizationStatus)ATTrackingManagerAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
-        } @catch (NSException *ex) {
-            e = ex;
-        }
-        XCTAssertNil(e);
-        
-        XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, ATTrackingManagerAuthorizationStatusAuthorized);
-        XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
-        
-        MPDevice *device = [[MPDevice alloc] init];
-        NSDictionary *deviceDict = [device dictionaryRepresentation];
-        
-        XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
-        XCTAssert(deviceDict[kMPATTTimestamp]);
-    } else {
-        XCTAssert(YES);
+- (void)testSetATTStatusNotDetermined {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"12345" identityType:MPIdentityIOSAdvertiserId];
+    
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+    
+    NSException *e = nil;
+    @try {
+        [instance setATTStatus:(MPATTAuthorizationStatus)MPATTAuthorizationStatusNotDetermined withATTStatusTimestampMillis:nil];
+    } @catch (NSException *ex) {
+        e = ex;
     }
+    XCTAssertNil(e);
+    
+    XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusNotDetermined);
+    XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
+    
+    MPDevice *device = [[MPDevice alloc] init];
+    NSDictionary *deviceDict = [device dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(deviceDict[kMPATT], @"not_determined");
+    XCTAssert(deviceDict[kMPATTTimestamp]);
+    
+    currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    XCTAssertNil(currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
 }
 
-- (void)testSetATTStateWithTimestamp {
-    if (@available(iOS 14, tvOS 14, *)) {
-        MParticle *instance = [MParticle sharedInstance];
-        NSNumber *testTimestamp = @([[NSDate date] timeIntervalSince1970] - 400);
-        NSException *e = nil;
-        @try {
-            [instance setATTStatus:(MPATTAuthorizationStatus)ATTrackingManagerAuthorizationStatusAuthorized withATTStatusTimestampMillis:testTimestamp];
-        } @catch (NSException *ex) {
-            e = ex;
-        }
-        XCTAssertNil(e);
-        
-        XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, ATTrackingManagerAuthorizationStatusAuthorized);
-        XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
-        
-        MPDevice *device = [[MPDevice alloc] init];
-        NSDictionary *deviceDict = [device dictionaryRepresentation];
-        
-        XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
-        XCTAssertEqual(((NSNumber *)deviceDict[kMPATTTimestamp]).doubleValue, testTimestamp.doubleValue);
-    } else {
-        XCTAssert(YES);
+- (void)testSetATTStatusRestricted {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"12345" identityType:MPIdentityIOSAdvertiserId];
+    
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+    
+    NSException *e = nil;
+    @try {
+        [instance setATTStatus:(MPATTAuthorizationStatus)MPATTAuthorizationStatusRestricted withATTStatusTimestampMillis:nil];
+    } @catch (NSException *ex) {
+        e = ex;
     }
+    XCTAssertNil(e);
+    
+    XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusRestricted);
+    XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
+    
+    MPDevice *device = [[MPDevice alloc] init];
+    NSDictionary *deviceDict = [device dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(deviceDict[kMPATT], @"restricted");
+    XCTAssert(deviceDict[kMPATTTimestamp]);
+    
+    currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    XCTAssertNil(currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+}
+
+- (void)testSetATTStatusDenied {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"12345" identityType:MPIdentityIOSAdvertiserId];
+    
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+    
+    NSException *e = nil;
+    @try {
+        [instance setATTStatus:(MPATTAuthorizationStatus)MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+    
+    XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusDenied);
+    XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
+    
+    MPDevice *device = [[MPDevice alloc] init];
+    NSDictionary *deviceDict = [device dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(deviceDict[kMPATT], @"denied");
+    XCTAssert(deviceDict[kMPATTTimestamp]);
+    
+    currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    XCTAssertNil(currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+}
+
+- (void)testSetATTStatusAuthorized {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"12345" identityType:MPIdentityIOSAdvertiserId];
+    
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+    
+    NSException *e = nil;
+    @try {
+        [instance setATTStatus:(MPATTAuthorizationStatus)MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+    
+    XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusAuthorized);
+    XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
+    
+    MPDevice *device = [[MPDevice alloc] init];
+    NSDictionary *deviceDict = [device dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
+    XCTAssert(deviceDict[kMPATTTimestamp]);
+    
+    currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+}
+
+- (void)testSetATTStatusWithTimestamp {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"12345" identityType:MPIdentityIOSAdvertiserId];
+    
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+
+    NSNumber *testTimestamp = @([[NSDate date] timeIntervalSince1970] - 400);
+    NSException *e = nil;
+    @try {
+        [instance setATTStatus:(MPATTAuthorizationStatus)MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:testTimestamp];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+    
+    XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusAuthorized);
+    XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
+    
+    MPDevice *device = [[MPDevice alloc] init];
+    NSDictionary *deviceDict = [device dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(deviceDict[kMPATT], @"authorized");
+    XCTAssertEqual(((NSNumber *)deviceDict[kMPATTTimestamp]).doubleValue, testTimestamp.doubleValue);
+    
+    currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+}
+
+- (void)testSetATTStatusRemoveIDFA {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"12345" identityType:MPIdentityIOSAdvertiserId];
+
+    XCTAssertEqualObjects(@"12345", currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
+
+    NSException *e = nil;
+    @try {
+        [instance setATTStatus:(MPATTAuthorizationStatus)MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
+    } @catch (NSException *ex) {
+        e = ex;
+    }
+    XCTAssertNil(e);
+    
+    XCTAssertEqual(instance.stateMachine.attAuthorizationStatus.intValue, MPATTAuthorizationStatusDenied);
+    XCTAssert(instance.stateMachine.attAuthorizationTimestamp);
+    
+    MPDevice *device = [[MPDevice alloc] init];
+    NSDictionary *deviceDict = [device dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(deviceDict[kMPATT], @"denied");
+    XCTAssert(deviceDict[kMPATTTimestamp]);
+    
+    currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    XCTAssertNil(currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
 }
 
 - (void)testUserAgentDefault {

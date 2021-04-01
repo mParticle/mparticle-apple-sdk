@@ -716,7 +716,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MPCurrentEpochInMilliseconds - Please provide the timestamp in milliseconds
  @see MPIdentityIOSAdvertiserId
  */
-- (void)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(nullable NSNumber *)attStatusTimestampMillis API_AVAILABLE(ios(14));
+- (void)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(nullable NSNumber *)attStatusTimestampMillis;
 
 #pragma mark - Attribution
 /**

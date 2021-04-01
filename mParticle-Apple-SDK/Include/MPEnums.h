@@ -419,7 +419,7 @@ typedef NS_ENUM(NSUInteger, MPATTAuthorizationStatus) {
     MPATTAuthorizationStatusRestricted,
     MPATTAuthorizationStatusDenied,
     MPATTAuthorizationStatusAuthorized
-} API_AVAILABLE(ios(14), macosx(11.0), tvos(14));
+};
 
 /** Posted immediately after a new session has begun.
  

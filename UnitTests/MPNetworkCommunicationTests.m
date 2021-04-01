@@ -12,9 +12,12 @@
 #import "mParticle.h"
 #import "MPPersistenceController.h"
 #import "MPURL.h"
+#import "MPStateMachine.h"
+#import "MPDevice.h"
 
 @interface MParticle ()
 
+@property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
 
@@ -251,6 +254,74 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testUploadsArrayZipSucceedWithATTNotDetermined {
+    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusNotDetermined withATTStatusTimestampMillis:nil];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    NSArray *uploads = @[upload];
+    id mockZip = OCMClassMock([MPZip class]);
+    [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
+        NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
+        return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"not_determined"]);
+    }]];
+    
+    [networkCommunication upload:uploads completionHandler:^{
+    }];
+    [mockZip verifyWithDelay:2];
+}
+
+- (void)testUploadsArrayZipSucceedWithATTRestricted {
+    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusRestricted withATTStatusTimestampMillis:nil];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    NSArray *uploads = @[upload];
+    id mockZip = OCMClassMock([MPZip class]);
+    [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
+        NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
+        return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"restricted"]);
+    }]];
+    
+    [networkCommunication upload:uploads completionHandler:^{
+    }];
+    [mockZip verifyWithDelay:2];
+}
+
+- (void)testUploadsArrayZipSucceedWithATTDenied {
+    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    NSArray *uploads = @[upload];
+    id mockZip = OCMClassMock([MPZip class]);
+    [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
+        NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
+        return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"denied"]);
+    }]];
+    
+    [networkCommunication upload:uploads completionHandler:^{
+    }];
+    [mockZip verifyWithDelay:2];
+}
+
+- (void)testUploadsArrayZipSucceedWithATTAuthorized {
+    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    NSArray *uploads = @[upload];
+    id mockZip = OCMClassMock([MPZip class]);
+    [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
+        NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
+        return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"authorized"]);
+    }]];
+    
+    [networkCommunication upload:uploads completionHandler:^{
+    }];
+    [mockZip verifyWithDelay:2];
 }
 
 - (void)testShouldStopEvents {

@@ -545,12 +545,15 @@ int main(int argc, char *argv[]);
         switch (authStatus.integerValue) {
             case MPATTAuthorizationStatusNotDetermined:
                 deviceDictionary[kMPATT] = @"not_determined";
+                [deviceDictionary removeObjectForKey:kMPDeviceAdvertiserIdKey];
                 break;
             case MPATTAuthorizationStatusRestricted:
                 deviceDictionary[kMPATT] = @"restricted";
+                [deviceDictionary removeObjectForKey:kMPDeviceAdvertiserIdKey];
                 break;
             case MPATTAuthorizationStatusDenied:
                 deviceDictionary[kMPATT] = @"denied";
+                [deviceDictionary removeObjectForKey:kMPDeviceAdvertiserIdKey];
                 break;
             case MPATTAuthorizationStatusAuthorized:
                 deviceDictionary[kMPATT] = @"authorized";
@@ -582,7 +585,8 @@ int main(int argc, char *argv[]);
         NSString *auxString;
         NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
         auxString = userIdentities[@(MPIdentityIOSAdvertiserId)];
-        if (auxString) {
+        NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+        if (auxString && (currentStatus == nil || currentStatus.integerValue == MPATTAuthorizationStatusAuthorized)) {
             deviceDictionary[kMPDeviceAdvertiserIdKey] = auxString;
         }
         

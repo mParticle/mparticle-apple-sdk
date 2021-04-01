@@ -616,7 +616,48 @@ static NSObject<MPConnectorFactory> *factory = nil;
     
     MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
     
-    NSData *zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
+    NSData *zipUploadData;
+    NSNumber *authTimestamp = [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp;
+    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    
+    if (authStatus != nil && authTimestamp != nil) {
+        NSDictionary *uploadDictionary = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
+        NSMutableDictionary *uploadDict = [uploadDictionary mutableCopy];
+        
+        NSMutableDictionary *deviceDict = [uploadDict[kMPDeviceInformationKey] mutableCopy];
+        
+        switch (authStatus.integerValue) {
+            case MPATTAuthorizationStatusNotDetermined:
+                deviceDict[kMPATT] = @"not_determined";
+                [deviceDict removeObjectForKey:kMPDeviceAdvertiserIdKey];
+                break;
+            case MPATTAuthorizationStatusRestricted:
+                deviceDict[kMPATT] = @"restricted";
+                [deviceDict removeObjectForKey:kMPDeviceAdvertiserIdKey];
+                break;
+            case MPATTAuthorizationStatusDenied:
+                deviceDict[kMPATT] = @"denied";
+                [deviceDict removeObjectForKey:kMPDeviceAdvertiserIdKey];
+                break;
+            case MPATTAuthorizationStatusAuthorized:
+                deviceDict[kMPATT] = @"authorized";
+                break;
+            default:
+                break;
+        }
+        
+        deviceDict[kMPATTTimestamp] = authTimestamp;
+        
+        uploadDict[kMPDeviceInformationKey] = [deviceDict copy];
+        
+        NSData *updatedData = [NSJSONSerialization dataWithJSONObject:[uploadDict copy] options:0 error:nil];
+        uploadString = [[NSString alloc] initWithData:updatedData encoding:NSUTF8StringEncoding];
+
+        zipUploadData = [MPZip compressedDataFromData:updatedData];
+    } else {
+        zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
+    }
+    
     if (zipUploadData == nil || zipUploadData.length <= 0) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
         return NO;

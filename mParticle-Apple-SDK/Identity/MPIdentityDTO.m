@@ -308,9 +308,13 @@
                     self->_phoneNumber3 = obj;
                     break;
                     
-                case MPIdentityIOSAdvertiserId:
-                    self->_advertiserId = obj;
+                case MPIdentityIOSAdvertiserId: {
+                    NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+                    if (currentStatus == nil || currentStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+                        self->_advertiserId = obj;
+                    }
                     break;
+                }
                     
                 case MPIdentityIOSVendorId:
                     self->_vendorId = obj;

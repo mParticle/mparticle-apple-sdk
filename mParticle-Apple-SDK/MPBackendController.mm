@@ -231,6 +231,23 @@ static BOOL appBackgrounded = NO;
         [userIdentities addObjectsFromArray:userIdentityArray];
     }
     
+    BOOL (^objectTester)(id, NSUInteger, BOOL *) = ^(id obj, NSUInteger idx, BOOL *stop) {
+        NSNumber *currentIdentityType = obj[kMPUserIdentityTypeKey];
+        BOOL foundMatch = [currentIdentityType isEqualToNumber:@(MPIdentityIOSAdvertiserId)];
+        
+        if (foundMatch) {
+            *stop = YES;
+        }
+        
+        return foundMatch;
+    };
+    
+    NSUInteger existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
+    NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    if (existingEntryIndex != NSNotFound && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
+        [userIdentities removeObjectAtIndex:existingEntryIndex];
+    }
+
     return userIdentities;
 }
 

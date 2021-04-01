@@ -57,11 +57,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify"];
     
     return _cellTitles;
 }
@@ -323,7 +323,6 @@
 }
 
 - (void)requestIDFA {
-    
     if (@available(iOS 14, *)) {
         #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
         [ATTrackingManager requestTrackingAuthorizationWithCompletionHandler: ^(ATTrackingManagerAuthorizationStatus status){
@@ -398,6 +397,10 @@
             NSLog(@"Login Successful");
         }
     }];
+}
+
+- (void)modify {
+    [self logIDFA:@"C56A4180-65AA-42EC-A945-5FD21DEC0538"];
 }
 
 
