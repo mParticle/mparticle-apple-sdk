@@ -1,5 +1,11 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.3.0
+
+- Ensure the latest ATT status is included with every upload. Uploads are typically immutable once stored. For ATT status and IDFA, the SDK will update pending, stored uploads with the latest ATT status and remove IDFA based on ATT status prior to upload
+
+- Block asserts for SPM in release mode. This prevents crashes in production apps if e.g. an NSNull value is set as an event attribute
+
 ## 8.2.0
 
 This release adds support for collecting a device’s App Tracking Transparency authorization status for improved iOS 14 compatibility.
