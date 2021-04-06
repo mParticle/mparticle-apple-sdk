@@ -2,6 +2,9 @@
 #import <mParticle_Apple_SDK/mParticle.h>
 #import <AdSupport/AdSupport.h>
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
+#import "PLCrashReportTextFormatter+StackTrace.h"
+
+@import CrashReporter;
 
 @interface AppDelegate ()
 
@@ -11,6 +14,14 @@
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+    
+    // Add observer to initialize crash reporter after mParticle has finished initializing
+    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
+        [notificationCenter addObserver:self
+                               selector:@selector(initCrashReporter)
+                                   name:mParticleDidFinishInitializing
+                                 object:nil];
+    
     //initialize mParticle
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"REPLACE WITH APP KEY"
                                                           secret:@"REPLACE WITH APP SECRET"];
@@ -103,5 +114,46 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (void)initCrashReporter {
+    // It is strongly recommended that local symbolication only be enabled for non-release builds.
+    // Use PLCrashReporterSymbolicationStrategyNone for release versions.
+    PLCrashReporterConfig *config = [[PLCrashReporterConfig alloc] initWithSignalHandlerType: PLCrashReporterSignalHandlerTypeMach
+                                                                       symbolicationStrategy: PLCrashReporterSymbolicationStrategyAll];
+    PLCrashReporter *crashReporter = [[PLCrashReporter alloc] initWithConfiguration: config];
+
+    // Enable the Crash Reporter.
+    NSError *error;
+    if (![crashReporter enableCrashReporterAndReturnError: &error]) {
+        NSLog(@"Warning: Could not enable crash reporter: %@", error);
+    }
+    
+    if ([crashReporter hasPendingCrashReport]) {
+        NSError *error;
+
+        // Try loading the crash report.
+        NSData *data = [crashReporter loadPendingCrashReportDataAndReturnError:&error];
+        if (data == nil) {
+            NSLog(@"Failed to load crash report data: %@", error);
+            return;
+        }
+
+        // Retrieving crash reporter data.
+        PLCrashReport *report = [[PLCrashReport alloc] initWithData:data error:&error];
+        if (report == nil) {
+            NSLog(@"Failed to parse crash report: %@", error);
+            return;
+        }
+
+        // Generate text for crash report.
+        NSString *text = [PLCrashReportTextFormatter stringValueForCrashReport:report withTextFormat:PLCrashReportTextFormatiOS];
+        NSString *stackTrace = [PLCrashReportTextFormatter stringValueStackTraceForCrashReport:report];
+        
+        // Log crash report.
+        [[MParticle sharedInstance] logCrash:@"Crash captured with PLCrashReporter" stackTrace:stackTrace plCrashReport:text];
+        
+        // Purge the report.
+        [crashReporter purgePendingCrashReport];
+    }
+}
 
 @end

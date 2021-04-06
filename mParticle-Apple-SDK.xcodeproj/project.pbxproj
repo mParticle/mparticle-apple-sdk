@@ -15,6 +15,7 @@
 		B26313482559D82E0059AE6B /* sample_dataplan2.json in Resources */ = {isa = PBXBuildFile; fileRef = B26313462559D82E0059AE6B /* sample_dataplan2.json */; };
 		B2AE029E1FFD59CF00C4DD89 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */; };
 		B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */; };
+		C21FB07C260A2CFD00B1EB91 /* MPMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21FB07B260A2CFD00B1EB91 /* MPMessageTests.m */; };
 		C911FD6F1D8A300C002A3516 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206B1D8A147A00D3ABBE /* UIKit.framework */; };
 		C911FD701D8A3014002A3516 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */; };
 		C911FD711D8A301C002A3516 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206F1D8A148C00D3ABBE /* Security.framework */; };
@@ -575,6 +576,7 @@
 		04610F58215D8C8B001A36AB /* MParticleUserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleUserTests.m; sourceTree = "<group>"; };
 		B26313462559D82E0059AE6B /* sample_dataplan2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sample_dataplan2.json; sourceTree = "<group>"; };
 		B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseEventsTest.m; sourceTree = "<group>"; };
+		C21FB07B260A2CFD00B1EB91 /* MPMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPMessageTests.m; sourceTree = "<group>"; };
 		C911FD7C1D8A3524002A3516 /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C91E3AE81D92CFA00062B8DA /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
 		C935A6B31D8A2B6B00A1EE2F /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1063,6 +1065,7 @@
 				DB3935131F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.h */,
 				DB3935121F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.m */,
 				C9DD20AB1D8A190600D3ABBE /* MPLaunchInfoTests.m */,
+				C21FB07B260A2CFD00B1EB91 /* MPMessageTests.m */,
 				C9DD20AC1D8A190600D3ABBE /* MPMessageBuilderTests.m */,
 				C9DD20AD1D8A190600D3ABBE /* MPNetworkCommunication+Tests.h */,
 				C9DD20AE1D8A190600D3ABBE /* MPNotificationController+Tests.h */,
@@ -2117,6 +2120,7 @@
 				DB0773BD20F8F550006A48CE /* MPNetworkCommunicationTests.m in Sources */,
 				C9DD21001D8A203900D3ABBE /* MPUserAttributeChangeTests.m in Sources */,
 				DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */,
+				C21FB07C260A2CFD00B1EB91 /* MPMessageTests.m in Sources */,
 				C9DD20F21D8A1FF000D3ABBE /* MPKitConfigurationTests.mm in Sources */,
 				04B1670B20000E0F0027F077 /* MPIdentityTests.m in Sources */,
 				DB89B696228CA0BE007A5565 /* MPAliasResponseTests.m in Sources */,

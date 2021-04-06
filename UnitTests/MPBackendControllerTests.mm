@@ -1473,6 +1473,118 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     
 }
 
+- (MPMessage *)messageWithType:(MPMessageType)type andLength:(NSInteger)length {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    NSString *longString = @"a";
+    while (longString.length < length) {
+        longString = [NSString stringWithFormat:@"%@%@", longString, longString];
+    }
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:type
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessage *message = [messageBuilder build];
+    
+    NSInteger bytesToTruncate = message.messageData.length - length;
+    NSInteger bytesLongString = longString.length - bytesToTruncate;
+    longString = [longString substringToIndex:bytesLongString];
+    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:type
+                                                         session:session
+                                                     messageInfo:@{@"MessageKey1":longString}];
+    message = [messageBuilder build];
+    return message;
+}
+
+- (void)testEventBatchAndMessageByteLimits {
+    NSInteger maxMessageBytes = 100*1024;
+    MPMessage *message = [self messageWithType:MPMessageTypeEvent andLength:maxMessageBytes];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<9; i++) {
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages
+                                                                     maxBatchMessages:NSIntegerMax
+                                                                        maxBatchBytes:(200*1024)
+                                                                      maxMessageBytes:(100*1024)];
+    XCTAssertEqual(batchArrays.count, 5);
+    for (int i=0; i<batchArrays.count; i++) {
+        NSArray *batchMessages = batchArrays[i];
+        if (i+1<batchArrays.count) {
+            XCTAssertEqual(batchMessages.count, 2);
+        } else {
+            XCTAssertEqual(batchMessages.count, 1);
+        }
+    }
+}
+
+- (void)testCrashReportBatchAndMessageByteLimits {
+    NSInteger maxMessageBytes = 1000*1024;
+    MPMessage *message = [self messageWithType:MPMessageTypeCrashReport andLength:maxMessageBytes];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<9; i++) {
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages
+                                                                     maxBatchMessages:NSIntegerMax
+                                                                        maxBatchBytes:(200*1024)
+                                                                      maxMessageBytes:(100*1024)];
+    XCTAssertEqual(batchArrays.count, 5);
+    for (int i=0; i<batchArrays.count; i++) {
+        NSArray *batchMessages = batchArrays[i];
+        if (i+1<batchArrays.count) {
+            XCTAssertEqual(batchMessages.count, 2);
+        } else {
+            XCTAssertEqual(batchMessages.count, 1);
+        }
+    }
+}
+
+- (void)testCrashReportExceedsBatchMessageByteLimits {
+    NSInteger maxMessageBytes = 1000*1024 + 1;
+    MPMessage *message = [self messageWithType:MPMessageTypeCrashReport andLength:maxMessageBytes];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<10; i++) {
+        [unlimitedMessages addObject:message];
+    }
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages
+                                                                     maxBatchMessages:NSIntegerMax
+                                                                        maxBatchBytes:(200*1024)
+                                                                      maxMessageBytes:(100*1024)];
+    XCTAssertEqual(batchArrays.count, 0);
+}
+
+- (void)testMixedBatchAndMessageByteLimits {
+    NSInteger maxEventMessageBytes = 100*1024;
+    NSInteger maxCrashMessageBytes = 1000*1024;
+    MPMessage *eventMessage = [self messageWithType:MPMessageTypeEvent andLength:maxEventMessageBytes];
+    MPMessage *crashMessage = [self messageWithType:MPMessageTypeCrashReport andLength:maxCrashMessageBytes];
+    
+    NSMutableArray *unlimitedMessages = [NSMutableArray array];
+    for (int i=0; i<3; i++) {
+        [unlimitedMessages addObject:eventMessage];
+        [unlimitedMessages addObject:crashMessage];
+    }
+    [unlimitedMessages addObject:eventMessage];
+    
+    NSArray *batchArrays = [self.backendController batchMessageArraysFromMessageArray:unlimitedMessages
+                                                                     maxBatchMessages:NSIntegerMax
+                                                                        maxBatchBytes:(2 * maxEventMessageBytes)
+                                                                      maxMessageBytes:maxEventMessageBytes];
+    XCTAssertEqual(batchArrays.count, 4);
+    for (int i=0; i<batchArrays.count; i++) {
+        NSArray *batchMessages = batchArrays[i];
+        if (i+1<batchArrays.count) {
+            XCTAssertEqual(batchMessages.count, 2);
+        } else {
+            XCTAssertEqual(batchMessages.count, 1);
+        }
+    }
+}
 
 - (void)testNoUploadOrRetryIfConfigFails {
     id mockBackendController = OCMPartialMock(self.backendController);
@@ -1515,5 +1627,212 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     [mockBackendController stopMocking];
 }
 #endif
+
+#pragma mark Error, Exception, and Crash Handling Tests
+
+- (void)testLogCrash {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    
+    NSString *message = @"crash report";
+    NSString *stackTrace = @"stack track from crash report";
+    NSString *plCrashReport = @"plcrash report test string";
+    NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    [self.backendController logCrash:message
+                         stackTrace:stackTrace
+                      plCrashReport:plCrashReport
+                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    Boolean crashReport = false;
+    NSDictionary *messageDictionary = nil;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringCrashReport]) {
+            crashReport = true;
+            messageDictionary = [NSJSONSerialization JSONObjectWithData:message.messageData options:0 error:nil];
+        }
+    }
+    XCTAssertTrue(crashReport, @"MPCrashReport messages are not being saved.");
+    XCTAssertTrue([messageDictionary[kMPCrashingSeverity] isEqualToString:@"fatal"], @"Crashing severity is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPCrashWasHandled] isEqualToString:@"false"], @"Crash was handled is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPErrorMessage] isEqualToString:message], @"Error message is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPStackTrace] isEqualToString:stackTrace], @"Stack trace is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPPLCrashReport] isEqualToString:plCrashReportBase64], @"PLCrashReport is not being persisted correctly for crash report.");
+}
+
+- (void)testLogCrashNilMessage {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    
+    NSString *message = nil;
+    NSString *stackTrace = @"stack track from crash report";
+    NSString *plCrashReport = @"plcrash report test string";
+    NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    [self.backendController logCrash:message
+                         stackTrace:stackTrace
+                      plCrashReport:plCrashReport
+                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    Boolean crashReport = false;
+    NSDictionary *messageDictionary = nil;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringCrashReport]) {
+            crashReport = true;
+            messageDictionary = [NSJSONSerialization JSONObjectWithData:message.messageData options:0 error:nil];
+        }
+    }
+    XCTAssertTrue(crashReport, @"MPCrashReport messages are not being saved.");
+    XCTAssertTrue([messageDictionary[kMPCrashingSeverity] isEqualToString:@"fatal"], @"Crashing severity is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPCrashWasHandled] isEqualToString:@"false"], @"Crash was handled is not being persisted correctly for crash report.");
+    XCTAssertNil([messageDictionary objectForKey:kMPErrorMessage], @"Nil error message is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPStackTrace] isEqualToString:stackTrace], @"Stack trace is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPPLCrashReport] isEqualToString:plCrashReportBase64], @"PLCrashReport is not being persisted correctly for crash report.");
+}
+
+- (void)testLogCrashNilStackTrace {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    
+    NSString *message = @"crash report";
+    NSString *stackTrace = nil;
+    NSString *plCrashReport = @"plcrash report test string";
+    NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    [self.backendController logCrash:message
+                         stackTrace:stackTrace
+                      plCrashReport:plCrashReport
+                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    Boolean crashReport = false;
+    NSDictionary *messageDictionary = nil;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringCrashReport]) {
+            crashReport = true;
+            messageDictionary = [NSJSONSerialization JSONObjectWithData:message.messageData options:0 error:nil];
+        }
+    }
+    XCTAssertTrue(crashReport, @"MPCrashReport messages are not being saved.");
+    XCTAssertTrue([messageDictionary[kMPCrashingSeverity] isEqualToString:@"fatal"], @"Crashing severity is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPCrashWasHandled] isEqualToString:@"false"], @"Crash was handled is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPErrorMessage] isEqualToString:message], @"Error message is not being persisted correctly for crash report.");
+    XCTAssertNil([messageDictionary objectForKey:kMPStackTrace], @"Nil stack trace is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPPLCrashReport] isEqualToString:plCrashReportBase64], @"PLCrashReport is not being persisted correctly for crash report.");
+}
+
+- (void)testLogCrashNilPlCrashReport {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
+    NSString *message = @"crash report";
+    NSString *stackTrace = @"stack track from crash report";
+    NSString *plCrashReport = nil;
+    [self.backendController logCrash:message
+                         stackTrace:stackTrace
+                      plCrashReport:plCrashReport
+                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    Boolean crashReport = false;
+    NSDictionary *messageDictionary = nil;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringCrashReport]) {
+            crashReport = true;
+            messageDictionary = [NSJSONSerialization JSONObjectWithData:message.messageData options:0 error:nil];
+        }
+    }
+    XCTAssertTrue(crashReport, @"MPCrashReport messages are not being saved.");
+    XCTAssertTrue([messageDictionary[kMPCrashingSeverity] isEqualToString:@"fatal"], @"Crashing severity is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPCrashWasHandled] isEqualToString:@"false"], @"Crash was handled is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPErrorMessage] isEqualToString:message], @"Error message is not being persisted correctly for crash report.");
+    XCTAssertTrue([messageDictionary[kMPStackTrace] isEqualToString:stackTrace], @"Stack trace is not being persisted correctly for crash report.");
+    XCTAssertNil([messageDictionary objectForKey:kMPPLCrashReport], @"Nil PLCrashReport is not being persisted correctly for crash report.");
+}
+
+- (void)testLogCrashTruncatePlCrashReport {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    
+    NSString *message = @"crash report";
+    NSString *stackTrace = @"stack track from crash report";
+    NSString *plCrashReport = @"a";
+    while (plCrashReport.length < [MPPersistenceController maxBytesPerEvent:kMPMessageTypeStringCrashReport]) {
+        plCrashReport = [NSString stringWithFormat:@"%@%@", plCrashReport, plCrashReport];
+    }
+    NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    
+    [self.backendController logCrash:message
+                         stackTrace:stackTrace
+                      plCrashReport:plCrashReportBase64
+                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+    
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:@0]; // no crash session to recover so sessionId = 0
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+    
+    Boolean crashReport = false;
+    NSData *messageData = nil;
+    for (MPMessage *message in messages) {
+        XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+        if ([message.messageType isEqualToString:kMPMessageTypeStringCrashReport]) {
+            crashReport = true;
+            messageData = message.messageData;
+        }
+    }
+    XCTAssertTrue(crashReport, @"MPCrashReport messages are not being saved.");
+    XCTAssertEqual(messageData.length, 1024000, @"Message data was not truncated to MAX_BYTES_PER_EVENT_CRASH");
+}
 
 @end

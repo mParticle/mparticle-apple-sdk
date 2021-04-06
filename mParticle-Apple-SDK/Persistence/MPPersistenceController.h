@@ -24,6 +24,8 @@
 + (void)setMpid:(nonnull NSNumber *)mpId;
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid;
 + (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid;
++ (NSInteger)maxBytesPerEvent:(nullable NSString *)messageType;
++ (NSInteger)maxBytesPerBatch:(nullable NSString *)messageType;
 - (nullable MPSession *)archiveSession:(nonnull MPSession *)session;
 - (BOOL)closeDatabase;
 - (void)resetDatabase;

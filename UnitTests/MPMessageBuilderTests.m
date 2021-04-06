@@ -451,4 +451,33 @@ NSString *const kMPStateDataConnectionKey = @"dct";
     
 }
 
+- (void)testMessageUserIdNilSession {
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    [MPPersistenceController setMpid:@1];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:nil
+                                                                       messageInfo:messageInfo];
+    MPMessage *message = [messageBuilder build];
+    
+    XCTAssertEqualObjects([MPPersistenceController mpId], message.userId);
+}
+
+- (void)testMessageUserIdSessionIdZero {
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    [MPPersistenceController setMpid:@1];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:@0];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:messageInfo];
+    MPMessage *message = [messageBuilder build];
+    
+    XCTAssertEqualObjects([MPPersistenceController mpId], message.userId);
+}
+
 @end

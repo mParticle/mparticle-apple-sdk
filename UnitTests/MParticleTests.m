@@ -988,4 +988,73 @@
     [mockWebView stopMocking];
 }
 
+#pragma mark Error, Exception, and Crash Handling Tests
+
+- (void)testLogCrash {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    NSString *message = @"crash report";
+    NSString *stackTrace = @"stack track from crash report";
+    NSString* plCrashReport = @"plcrash report test string";
+    
+    [[[mockBackend expect] ignoringNonObjectArgs] logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    [instance logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport];
+    
+    [mockBackend verifyWithDelay:5];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testLogCrashNilMessage {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    NSString *message = nil;
+    NSString *stackTrace = @"stack track from crash report";
+    NSString* plCrashReport = @"plcrash report test string";
+    
+    [[[mockBackend expect] ignoringNonObjectArgs] logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    [instance logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport];
+    
+    [mockBackend verifyWithDelay:5];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testLogCrashNilStackTrace {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    NSString *message = @"crash report";
+    NSString *stackTrace = nil;
+    NSString* plCrashReport = @"plcrash report test string";
+    
+    [[[mockBackend expect] ignoringNonObjectArgs] logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    [instance logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport];
+    
+    [mockBackend verifyWithDelay:5];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testLogCrashNilPlCrashReport {
+    // TODO: implement method to verify that logCrash is not invoked at MPBackendController
+}
+
 @end

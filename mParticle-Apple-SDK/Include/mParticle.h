@@ -779,6 +779,16 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 - (void)logException:(NSException *)exception topmostContext:(nullable id)topmostContext;
 
+/**
+ Logs a crash report with additional exception information.
+ @param message An error message to associate with the crash which occurred
+ @param stackTrace The stack trace from the crash which occurred
+ @param plCrashReport Plausible Labs crash report file (required not nil)
+ */
+- (void)logCrash:(nullable NSString *)message
+      stackTrace:(nullable NSString *)stackTrace
+   plCrashReport:(NSString *)plCrashReport;
+
 #pragma mark - eCommerce Transactions
 /**
  Logs a commerce event.

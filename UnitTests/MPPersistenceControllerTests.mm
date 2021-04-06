@@ -776,11 +776,44 @@
 
 - (void)testTooLargeMessageSaving {
     NSString *longString = @"a";
-    while (longString.length < 100001) {
+    while (longString.length < 102401) {
         longString = [NSString stringWithFormat:@"%@%@", longString, longString];
     }
+    [MPPersistenceController setMpid:@1];
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessage *message = [messageBuilder build];
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
+    [persistence deleteMessages:messages];
+    
+    [persistence saveMessage:message];
+    
+    messagesDictionary = [persistence fetchMessagesForUploading];
+    sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:session.sessionId]];
+    dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+    
+    XCTAssertEqual(messages.count, 0);
+}
+
+- (void)testTooLargeCrashMessageSaving {
+    NSString *longString = @"a";
+    while (longString.length < 1024001) {
+        longString = [NSString stringWithFormat:@"%@%@", longString, longString];
+    }
+    [MPPersistenceController setMpid:@1];
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport
                                                                            session:session
                                                                        messageInfo:@{@"MessageKey1":longString}];
     MPMessage *message = [messageBuilder build];

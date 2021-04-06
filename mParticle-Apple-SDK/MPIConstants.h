@@ -477,6 +477,8 @@ extern const NSInteger MAX_CCPA_CONSENT_PURPOSES;
 // Size limits
 extern const NSInteger MAX_BYTES_PER_EVENT;
 extern const NSInteger MAX_BYTES_PER_BATCH;
+extern const NSInteger MAX_BYTES_PER_EVENT_CRASH;
+extern const NSInteger MAX_BYTES_PER_BATCH_CRASH;
 extern const NSInteger MAX_EVENTS_PER_BATCH;
 
 #endif

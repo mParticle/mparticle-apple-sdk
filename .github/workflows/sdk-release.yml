@@ -66,4 +66,3 @@ jobs:
         run: |
               sudo gem install xcodeproj
               pod trunk push --allow-warnings
-

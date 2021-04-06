@@ -50,6 +50,23 @@
                    dataPlanVersion:dataPlanVersion];
 }
 
+- (void)truncateMessageDataProperty:(nonnull NSString *)property
+                           toLength:(NSInteger)length
+{
+    NSMutableDictionary *messageDataDict = [[NSJSONSerialization JSONObjectWithData:self.messageData options:0 error:nil] mutableCopy];
+    NSString *propertyValue = messageDataDict[property];
+    if(!propertyValue) {
+        return;
+    }
+    
+    NSData *propertyValueData = [propertyValue dataUsingEncoding:NSUTF8StringEncoding];
+    NSData *propertyValueDataTruncated = [propertyValueData subdataWithRange:NSMakeRange(0, MIN(propertyValueData.length, length))];
+    NSString * propertyValueTruncated = [[NSString alloc] initWithData:propertyValueDataTruncated encoding:NSUTF8StringEncoding];
+    
+    messageDataDict[property] = propertyValueTruncated;
+    self.messageData = [NSJSONSerialization dataWithJSONObject:messageDataDict options:0 error:nil];
+}
+
 - (NSString *)description {
     NSString *serializedString = [self serializedString];
     

@@ -39,4 +39,7 @@
                              dataPlanId:(nullable NSString *)dataPlanId
                         dataPlanVersion:(nullable NSNumber *)dataPlanVersion;
 
+- (void)truncateMessageDataProperty:(nonnull NSString *)property
+                           toLength:(NSInteger)length;
+
 @end

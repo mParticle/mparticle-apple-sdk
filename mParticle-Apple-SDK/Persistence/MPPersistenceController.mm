@@ -156,6 +156,14 @@ const int MaxBreadcrumbs = 50;
     [userDefaults synchronize];
 }
 
++ (NSInteger)maxBytesPerEvent:(NSString *)messageType {
+    return [messageType isEqualToString:kMPMessageTypeStringCrashReport] ? MAX_BYTES_PER_EVENT_CRASH : MAX_BYTES_PER_EVENT;
+}
+
++ (NSInteger)maxBytesPerBatch:(NSString *)messageType {
+    return [messageType isEqualToString:kMPMessageTypeStringCrashReport] ? MAX_BYTES_PER_BATCH_CRASH : MAX_BYTES_PER_BATCH;
+}
+
 #pragma mark Accessors
 - (NSString *)databasePath {
     if (_databasePath) {
@@ -1616,7 +1624,8 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveMessage:(MPMessage *)message {
-    if (message == nil || message.messageData.length > MAX_BYTES_PER_EVENT) {
+    NSInteger maxBytes = [MPPersistenceController maxBytesPerEvent:message.messageType];
+    if (message == nil || message.messageData.length > maxBytes) {
         MPILogError(@"Unable to save message that is nil or exceeds max message size!");
         return;
     }

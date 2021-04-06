@@ -1148,6 +1148,29 @@ NSString *const kMPStateKey = @"state";
     });
 }
 
+- (void)logCrash:(nullable NSString *)message
+      stackTrace:(nullable NSString *)stackTrace
+   plCrashReport:(NSString *)plCrashReport
+{
+    if (!plCrashReport) {
+        MPILogError(@"'plCrashReport' is required for %@", NSStringFromSelector(_cmd));
+        return;
+    }
+    
+    dispatch_async(messageQueue, ^{
+        [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:message];
+
+        [self.backendController logCrash:message
+                              stackTrace:stackTrace
+                           plCrashReport:plCrashReport
+                       completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Logged crash with message: %@", message);
+            }
+        }];
+    });
+}
+
 #pragma mark eCommerce transactions
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
     if (commerceEvent == nil) {

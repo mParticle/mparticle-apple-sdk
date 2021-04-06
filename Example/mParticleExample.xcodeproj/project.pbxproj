@@ -75,6 +75,7 @@
 		A1AEF62BB2B7E327137FEE81 /* Pods_mParticleExample.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExample.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		B373312D5497AC0E32ACE1BD /* Pods-mParticleExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample.debug.xcconfig"; path = "Pods/Target Support Files/Pods-mParticleExample/Pods-mParticleExample.debug.xcconfig"; sourceTree = "<group>"; };
 		B58368FCE09AF9716F29B8CB /* Pods_mParticleExample_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExample_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C2833205260D1688006C7E06 /* PLCrashReportTextFormatter+StackTrace.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PLCrashReportTextFormatter+StackTrace.h"; sourceTree = "<group>"; };
 		C471257D9B6443C66D22D46A /* Pods_mParticleExampleUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExampleUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D37FB8E7236208E100E47B6D /* mParticleExample-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mParticleExample-Bridging-Header.h"; sourceTree = "<group>"; };
 		D37FB8E8236208E200E47B6D /* Dummy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dummy.swift; sourceTree = "<group>"; };
@@ -209,6 +210,7 @@
 				DBD54A1E224941640053BD20 /* Info.plist */,
 				DBD54A1F224941640053BD20 /* main.m */,
 				D37FB8E7236208E100E47B6D /* mParticleExample-Bridging-Header.h */,
+				C2833205260D1688006C7E06 /* PLCrashReportTextFormatter+StackTrace.h */,
 			);
 			path = mParticleExample;
 			sourceTree = "<group>";

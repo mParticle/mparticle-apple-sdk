@@ -659,9 +659,17 @@ static BOOL appBackgrounded = NO;
     for (int i = 0; i < messages.count; i += 1) {
         MPMessage *message = messages[i];
         
-        if (message.messageData.length > maxMessageBytes) continue;
+        NSInteger iterationMaxBatchBytes = maxBatchBytes;
+        NSInteger iterationMaxMessageBytes = maxMessageBytes;
+        bool isCrashReport = [message.messageType isEqualToString:kMPMessageTypeStringCrashReport];
+        if(isCrashReport) {
+            iterationMaxBatchBytes = MAX_BYTES_PER_BATCH_CRASH;
+            iterationMaxMessageBytes = MAX_BYTES_PER_EVENT_CRASH;
+        }
         
-        if (batchMessageCount + 1 > maxBatchMessages || batchByteCount + message.messageData.length > maxBatchBytes) {
+        if (message.messageData.length > iterationMaxMessageBytes) continue;
+        
+        if (batchMessageCount + 1 > maxBatchMessages || batchByteCount + message.messageData.length > iterationMaxBatchBytes) {
             
             [batchMessageArrays addObject:[batchMessages copy]];
             
@@ -1541,6 +1549,65 @@ static BOOL skipNextUpload = NO;
     execStatus = MPExecStatusSuccess;
     
     
+    completionHandler(execMessage, execStatus);
+}
+
+-  (void)logCrash:(NSString *)message stackTrace:(NSString *)stackTrace plCrashReport:(NSString *)plCrashReport completionHandler:(void (^)(NSString *message, MPExecStatus execStatus)) completionHandler
+{
+    NSString *execMessage = message ? message : @"Crash Report";
+    MPExecStatus execStatus = MPExecStatusFail;
+    
+    NSMutableDictionary *messageInfo = [@{
+        kMPCrashingSeverity: @"fatal",
+        kMPCrashWasHandled: @"false"
+    } mutableCopy];
+    
+    if(message) {
+        messageInfo[kMPErrorMessage] = message;
+    }
+    
+    NSData* data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
+    NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
+    if(plCrashReportBase64) {
+        messageInfo[kMPPLCrashReport] = plCrashReportBase64;
+    }
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    NSArray<MPBreadcrumb *> *fetchedbreadcrumbs = [persistence fetchBreadcrumbs];
+    if (fetchedbreadcrumbs) {
+        NSMutableArray *breadcrumbs = [[NSMutableArray alloc] initWithCapacity:fetchedbreadcrumbs.count];
+        for (MPBreadcrumb *breadcrumb in fetchedbreadcrumbs) {
+            [breadcrumbs addObject:[breadcrumb dictionaryRepresentation]];
+        }
+        messageInfo[kMPMessageTypeLeaveBreadcrumbs] = breadcrumbs;
+    }
+    
+    if(stackTrace) {
+        messageInfo[kMPStackTrace] = stackTrace;
+    }
+
+    // TODO: Refactor. Duplicated from MPExceptionHandler
+    MPSession *crashSession = nil;
+    NSArray<MPSession *> *sessions = [[MParticle sharedInstance].persistenceController fetchPossibleSessionsFromCrash];
+    for (MPSession *session in sessions) {
+        if (![session isEqual:_session]) {
+            crashSession = session;
+            break;
+        }
+    }
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport session:crashSession messageInfo:messageInfo];
+    MPMessage *crashMessage = [messageBuilder build];
+    
+    NSInteger maxBytes = [MPPersistenceController maxBytesPerEvent:crashMessage.messageType];
+    if(crashMessage.messageData.length > maxBytes) {
+        NSInteger bytesToTruncate = crashMessage.messageData.length - maxBytes;
+        NSInteger bytesToRetain = plCrashReportBase64.length - bytesToTruncate;
+        [crashMessage truncateMessageDataProperty:kMPPLCrashReport toLength:bytesToRetain];
+    }
+    [persistence saveMessage:crashMessage];
+    
+    execStatus = MPExecStatusSuccess;
     completionHandler(execMessage, execStatus);
 }
 
