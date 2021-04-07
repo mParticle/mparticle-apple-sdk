@@ -179,6 +179,7 @@ NSString *const kMPUserAgentSystemVersionUserDefaultsKey = @"UserAgentSystemVers
 NSString *const kMPUserAgentValueUserDefaultsKey = @"UserAgentValue";
 NSString *const kMPFirstSeenUser = @"fsu";
 NSString *const kMPLastSeenUser = @"lsu";
+NSString *const kMPAppForePreviousForegroundTime = @"pft";
 
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";

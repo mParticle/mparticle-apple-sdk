@@ -951,7 +951,13 @@ static BOOL skipNextUpload = NO;
             [self beginSession];
         }
         
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:@{kMPAppStateTransitionType:kMPASTForegroundKey}];
+        static NSNumber *previousForegroundTime = nil;
+        NSMutableDictionary *messageDictionary = @{kMPAppStateTransitionType:kMPASTForegroundKey}.mutableCopy;
+        if (previousForegroundTime != nil) {
+            messageDictionary[kMPAppForePreviousForegroundTime] = previousForegroundTime;
+        }
+        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary];
+        previousForegroundTime = MPCurrentEpochInMilliseconds;
         messageBuilder = [messageBuilder withStateTransition:sessionExpired previousSession:nil];
 #if TARGET_OS_IOS == 1
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];

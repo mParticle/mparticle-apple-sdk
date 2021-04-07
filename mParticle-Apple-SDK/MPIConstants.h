@@ -228,6 +228,7 @@ extern NSString * _Nonnull const kMPUserAgentSystemVersionUserDefaultsKey;
 extern NSString * _Nonnull const kMPUserAgentValueUserDefaultsKey;
 extern NSString * _Nonnull const kMPFirstSeenUser;
 extern NSString * _Nonnull const kMPLastSeenUser;
+extern NSString * _Nonnull const kMPAppForePreviousForegroundTime;
 
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;

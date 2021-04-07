@@ -905,6 +905,47 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
 #endif
 }
 
+- (void)testPreviousForegroundTime {
+#if TARGET_OS_IOS == 1
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
+    NSString *sourceApplication = @"com.mParticle.UnitTest";
+    NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
+    
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
+                                              sourceApplication:sourceApplication
+                                                     annotation:annotation];
+    
+    [self.backendController handleApplicationDidBecomeActive:nil];
+    [self.backendController handleApplicationDidBecomeActive:nil];
+    
+    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
+    
+    for (MPMessage *message in messages) {
+        if ([message.messageType isEqualToString:@"ast"]) {
+            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+            NSRange testRange = [messageString rangeOfString:@"\"pft\""];
+            XCTAssertNotEqual(testRange.location, NSNotFound);
+        }
+    }
+    XCTestExpectation *expectation = [self expectationWithDescription:@"dispatch_after expectation"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+#endif
+}
+
 - (void)testSetStringAttribute {
     [self.backendController setUserAttribute:@"foo attribute 1" value:@"foo value 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {}];
     NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
