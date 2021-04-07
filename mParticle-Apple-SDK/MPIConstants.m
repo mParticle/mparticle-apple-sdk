@@ -186,6 +186,7 @@ NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
 NSString *const kMPRemoteConfigExceptionHandlingModeAppDefined = @"appdefined";
 NSString *const kMPRemoteConfigExceptionHandlingModeForce = @"forcecatch";
 NSString *const kMPRemoteConfigExceptionHandlingModeIgnore = @"forceignore";
+NSString *const kMPRemoteConfigCrashMaxPLReportLength = @"crml";
 NSString *const kMPRemoteConfigAppDefined = @"appdefined";
 NSString *const kMPRemoteConfigForceTrue = @"forcetrue";
 NSString *const kMPRemoteConfigForceFalse = @"forcefalse";

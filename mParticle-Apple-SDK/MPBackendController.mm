@@ -1573,6 +1573,15 @@ static BOOL skipNextUpload = NO;
     }
     
     NSData* data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
+    NSNumber *maxPLCrashBytesNumber = [MParticle sharedInstance].stateMachine.crashMaxPLReportLength;
+    if (maxPLCrashBytesNumber != nil) {
+        NSInteger maxPLCrashBytes = maxPLCrashBytesNumber.integerValue;
+        if (data.length > maxPLCrashBytes) {
+            NSInteger bytesToTruncate = data.length - maxPLCrashBytes;
+            NSInteger bytesRemaining = data.length - bytesToTruncate;
+            data = [data subdataWithRange:NSMakeRange(0, bytesRemaining)];
+        }
+    }
     NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
     if(plCrashReportBase64) {
         messageInfo[kMPPLCrashReport] = plCrashReportBase64;

@@ -87,6 +87,7 @@ static BOOL runningInBackground = NO;
         messageQueue = [MParticle messageQueue];
         optOutSet = NO;
         _exceptionHandlingMode = kMPRemoteConfigExceptionHandlingModeAppDefined;
+        _crashMaxPLReportLength = nil;
         _networkPerformanceMeasuringMode = kMPRemoteConfigAppDefined;
         _uploadStatus = MPUploadStatusBatch;
         _startTime = [NSDate dateWithTimeIntervalSinceNow:-1];

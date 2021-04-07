@@ -108,8 +108,15 @@
                                                           userInfo:nil];
     }
     
+    // Crash size limiting
+    NSNumber *auxNumber = !MPIsNull(_configuration[kMPRemoteConfigCrashMaxPLReportLength]) ? _configuration[kMPRemoteConfigCrashMaxPLReportLength] : nil;
+    if (auxNumber != nil) {
+        stateMachine.crashMaxPLReportLength = auxNumber;
+    }
+    
+    
     // Session timeout
-    NSNumber *auxNumber = _configuration[kMPRemoteConfigSessionTimeoutKey];
+    auxNumber = _configuration[kMPRemoteConfigSessionTimeoutKey];
     if (auxNumber != nil) {
         [MParticle sharedInstance].backendController.sessionTimeout = [auxNumber doubleValue];
     }
