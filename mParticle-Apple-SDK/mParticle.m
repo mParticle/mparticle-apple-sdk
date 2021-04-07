@@ -1685,6 +1685,17 @@ NSString *const kMPStateKey = @"state";
                     if ((NSNull *)dictionary[@"EventAttributes"] != [NSNull null]) {
                         event.customAttributes = dictionary[@"EventAttributes"];
                     }
+                    if ((NSNull *)dictionary[@"CustomFlags"] != [NSNull null]) {
+                        NSDictionary *customFlags = dictionary[@"CustomFlags"] ;
+                        for (NSString *key in customFlags.allKeys) {
+                            NSString *value = customFlags[key];
+                            if ([value isKindOfClass:[NSArray class]]) {
+                                [event addCustomFlags:(NSArray *)value withKey:key];
+                            } else {
+                                [event addCustomFlag:value withKey:key];
+                            }
+                        }
+                    }
                     [self logEvent:event];
                 }
             }
@@ -1695,6 +1706,17 @@ NSString *const kMPStateKey = @"state";
                     MPEvent *event = [[MPEvent alloc] initWithName:dictionary[@"EventName"] type:MPEventTypeNavigation];
                     if ((NSNull *)dictionary[@"EventAttributes"] != [NSNull null]) {
                         event.customAttributes = dictionary[@"EventAttributes"];
+                    }
+                    if ((NSNull *)dictionary[@"CustomFlags"] != [NSNull null]) {
+                        NSDictionary *customFlags = dictionary[@"CustomFlags"] ;
+                        for (NSString *key in customFlags.allKeys) {
+                            NSString *value = customFlags[key];
+                            if ([value isKindOfClass:[NSArray class]]) {
+                                [event addCustomFlags:(NSArray *)value withKey:key];
+                            } else {
+                                [event addCustomFlag:value withKey:key];
+                            }
+                        }
                     }
                     [self logScreenEvent:event];
                 }

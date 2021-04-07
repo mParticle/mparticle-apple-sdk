@@ -388,6 +388,7 @@
     
     MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo webview event 1" type:MPEventTypeNavigation];
     testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
+    [testEvent addCustomFlags:@[@"test1", @"test2"] withKey:@"testKeys"];
     
     [[[mockBackend expect] ignoringNonObjectArgs] logEvent:[OCMArg checkWithBlock:^BOOL(id value) {
         XCTAssert([value isKindOfClass:[MPEvent class]]);
@@ -395,6 +396,7 @@
         XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
         XCTAssertEqual(returnedEvent.type, testEvent.type);
         XCTAssertEqualObjects(returnedEvent.customAttributes, testEvent.customAttributes);
+        XCTAssertEqualObjects(returnedEvent.customFlags, testEvent.customFlags);
         
         return YES;
     }] completionHandler:[OCMArg any]];
@@ -404,7 +406,39 @@
     [[[mockInstance stub] andReturn:mockBackend] backendController];
     
     NSString *command = @"logEvent";
-    NSDictionary *dictionary = @{@"EventDataType":@(MPJavascriptMessageTypePageEvent), @"EventName":@"foo webview event 1", @"EventCategory":@(MPEventTypeNavigation), @"EventAttributes":@{@"foo webview event attribute 1":@"foo webview event attribute value 1"}};
+    NSDictionary *dictionary = @{@"EventDataType":@(MPJavascriptMessageTypePageEvent), @"EventName":@"foo webview event 1", @"EventCategory":@(MPEventTypeNavigation), @"CustomFlags":@{@"testKeys":@[@"test1", @"test2"]}, @"EventAttributes":@{@"foo webview event attribute 1":@"foo webview event attribute value 1"}};
+    [instance handleWebviewCommand:command dictionary:dictionary];
+    
+    [mockBackend verifyWithDelay:5];
+    
+    [mockInstance stopMocking];
+    [mockBackend stopMocking];
+}
+
+- (void)testWebviewLogScreenEvent {
+    id mockBackend = OCMClassMock([MPBackendController class]);
+    
+    MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo Page View" type:MPEventTypeNavigation];
+    testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
+    [testEvent addCustomFlag:@"test1" withKey:@"testKeys"];
+    
+    [[[mockBackend expect] ignoringNonObjectArgs] logScreen:[OCMArg checkWithBlock:^BOOL(id value) {
+        XCTAssert([value isKindOfClass:[MPEvent class]]);
+        MPEvent *returnedEvent = ((MPEvent *)value);
+        XCTAssertEqualObjects(returnedEvent.name, testEvent.name);
+        XCTAssertEqual(returnedEvent.type, testEvent.type);
+        XCTAssertEqualObjects(returnedEvent.customAttributes, testEvent.customAttributes);
+        XCTAssertEqualObjects(returnedEvent.customFlags, testEvent.customFlags);
+        
+        return YES;
+    }] completionHandler:[OCMArg any]];
+    
+    MParticle *instance = [[MParticle alloc] init];
+    id mockInstance = OCMPartialMock(instance);
+    [[[mockInstance stub] andReturn:mockBackend] backendController];
+    
+    NSString *command = @"logEvent";
+    NSDictionary *dictionary = @{@"EventDataType":@(MPJavascriptMessageTypePageView), @"EventName":@"foo Page View", @"EventCategory":@(MPEventTypeNavigation), @"CustomFlags":@{@"testKeys":@[@"test1"]}, @"EventAttributes":@{@"foo webview event attribute 1":@"foo webview event attribute value 1"}};
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];

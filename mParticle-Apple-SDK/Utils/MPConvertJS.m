@@ -149,6 +149,17 @@ typedef NS_ENUM(NSUInteger, MPJSIdentityType) {
     if ([json[@"CheckoutStep"] isKindOfClass:[NSNumber class]]) {
         commerceEvent.checkoutStep = [json[@"CheckoutStep"] intValue];
     }
+    if ((NSNull *)json[@"CustomFlags"] != [NSNull null]) {
+        NSDictionary *customFlags = json[@"CustomFlags"] ;
+        for (NSString *key in customFlags.allKeys) {
+            NSString *value = customFlags[key];
+            if ([value isKindOfClass:[NSArray class]]) {
+                [commerceEvent addCustomFlags:(NSArray *)value withKey:key];
+            } else {
+                [commerceEvent addCustomFlag:value withKey:key];
+            }
+        }
+    }
 
     NSMutableArray *products = [NSMutableArray array];
     NSArray *jsonProducts = json[@"ProductAction"][@"ProductList"];

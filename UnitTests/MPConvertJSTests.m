@@ -41,11 +41,20 @@
 }
 
 - (void)testConvertMPCommerceEventProductAction {
+    NSDictionary *customFlags = @{
+        @"customFlag1": @"flag1value",
+        @"customFlag2": @"flag2Value"
+    };
+    NSDictionary *customFlagsFinal = @{
+        @"customFlag1": @[@"flag1value"],
+        @"customFlag2": @[@"flag2Value"]
+    };
     NSDictionary *json = @{
         @"CheckoutOptions":@"Test checkout option",
         @"productActionListName":@"Test action list name",
         @"productActionListSource":@"Test action list source",
         @"CurrencyCode":@"Test currency code",
+        @"CustomFlags":customFlags,
         @"ProductAction":@{
                 @"ProductActionType":@(MPJSCommerceEventActionAddToCart),
                 @"Affiliation":@"Test affiliation",
@@ -67,6 +76,51 @@
     XCTAssertEqualObjects(commerceEvent.productListName, @"Test action list name");
     XCTAssertEqualObjects(commerceEvent.productListSource, @"Test action list source");
     XCTAssertEqualObjects(commerceEvent.currency, @"Test currency code");
+    XCTAssertEqualObjects(commerceEvent.customFlags, customFlagsFinal);
+    XCTAssertEqual(commerceEvent.checkoutStep, 2);
+
+    XCTAssertNotNil(commerceEvent.transactionAttributes);
+    XCTAssertEqualObjects(commerceEvent.transactionAttributes.affiliation, @"Test affiliation");
+    XCTAssertEqualObjects(commerceEvent.transactionAttributes.couponCode, @"Test coupon code");
+    XCTAssertEqualObjects(commerceEvent.transactionAttributes.shipping, @20.00);
+    XCTAssertEqualObjects(commerceEvent.transactionAttributes.tax, @30.00);
+    XCTAssertEqualObjects(commerceEvent.transactionAttributes.revenue, @450.00);
+    XCTAssertEqualObjects(commerceEvent.transactionAttributes.transactionId, @"Test transaction id");
+}
+
+- (void)testConvertMPCommerceEventProductActionWithArrayCustomFlags {
+    NSDictionary *customFlags = @{
+        @"customFlag1": @[@"flag1value", @"flagAValue"],
+        @"customFlag2": @[@"flag2Value", @"flagBValue"]
+    };
+    NSDictionary *json = @{
+        @"CheckoutOptions":@"Test checkout option",
+        @"productActionListName":@"Test action list name",
+        @"productActionListSource":@"Test action list source",
+        @"CurrencyCode":@"Test currency code",
+        @"CustomFlags":customFlags,
+        @"ProductAction":@{
+                @"ProductActionType":@(MPJSCommerceEventActionAddToCart),
+                @"Affiliation":@"Test affiliation",
+                @"CouponCode":@"Test coupon code",
+                @"ShippingAmount":@20.00,
+                @"TaxAmount":@30.00,
+                @"TotalAmount":@450.00,
+                @"TransactionId":@"Test transaction id",
+                @"ProductList": @[]
+        },
+        @"CheckoutStep": @2
+    };
+    
+    MPCommerceEvent *commerceEvent = nil;
+    commerceEvent = [MPConvertJS MPCommerceEvent:json];
+    XCTAssertNotNil(commerceEvent);
+    XCTAssertEqual(commerceEvent.action, MPCommerceEventActionAddToCart);
+    XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
+    XCTAssertEqualObjects(commerceEvent.productListName, @"Test action list name");
+    XCTAssertEqualObjects(commerceEvent.productListSource, @"Test action list source");
+    XCTAssertEqualObjects(commerceEvent.currency, @"Test currency code");
+    XCTAssertEqualObjects(commerceEvent.customFlags, customFlags);
     XCTAssertEqual(commerceEvent.checkoutStep, 2);
 
     XCTAssertNotNil(commerceEvent.transactionAttributes);
