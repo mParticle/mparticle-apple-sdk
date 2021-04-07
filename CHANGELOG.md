@@ -1,5 +1,11 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.3.1
+
+- Add Crash Logging for PLCrashReporter
+- Accept Custom Flags from WebView JS Bridge
+- Add previous foreground time to app_fore messages
+
 ## 8.3.0
 
 - Ensure the latest ATT status is included with every upload. Uploads are typically immutable once stored. For ATT status and IDFA, the SDK will update pending, stored uploads with the latest ATT status and remove IDFA based on ATT status prior to upload
