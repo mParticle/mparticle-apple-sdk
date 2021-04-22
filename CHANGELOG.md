@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.3.2
+
+- Fix Filtering for MPBaseEvent. Resolves an issue where MediaEvents where not properly forwarded to kits
+
 ## 8.3.1
 
 - Add Crash Logging for PLCrashReporter
