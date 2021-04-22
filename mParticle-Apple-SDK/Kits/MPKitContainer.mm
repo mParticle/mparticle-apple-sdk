@@ -780,7 +780,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return kitFilter;
 }
 
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPBaseEvent *const)event selector:(SEL)selector {
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector {
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     NSNumber *zero = @0;
     __block MPKitFilter *kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
@@ -883,8 +883,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return kitFilter;
 }
 
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forSelector:(SEL)selector {
-    MPKitFilter *kitFilter = nil;
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forBaseEvent:(MPBaseEvent *const)event forSelector:(SEL)selector {
+    MPKitFilter *kitFilter;
+    if (event != nil) {
+        kitFilter = [[MPKitFilter alloc] initWithEvent:event shouldFilter:NO];
+    } else {
+        kitFilter = [[MPKitFilter alloc] initWithFilter:NO];
+    }
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
     if (kitConfiguration) {
@@ -893,8 +898,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         if (messageType) {
             BOOL shouldFilter = kitConfiguration.messageTypeFilters[messageType] && [kitConfiguration.messageTypeFilters[messageType] isEqualToNumber:@0];
-            
-            kitFilter = shouldFilter ? [[MPKitFilter alloc] initWithFilter:shouldFilter] : nil;
+            if (shouldFilter) {
+                return [[MPKitFilter alloc] initWithFilter:shouldFilter];
+            }
         }
     }
     
@@ -2186,9 +2192,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
         if (event && [event isMemberOfClass:[MPEvent class]]) {
-            [self filter:kitRegister forEvent:event selector:selector];
+            [self filter:kitRegister forEvent:(MPEvent *)event selector:selector];
         } else {
-            MPKitFilter *kitFilter = [self filter:kitRegister forSelector:selector];
+            MPKitFilter *kitFilter = [self filter:kitRegister forBaseEvent:event forSelector:selector];
             [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:parameters messageType:messageType userInfo:userInfo];
         }
     }

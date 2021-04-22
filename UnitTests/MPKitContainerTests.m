@@ -60,7 +60,7 @@
 - (void)flushSerializedKits;
 - (NSDictionary *)methodMessageTypeMapping;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector;
-- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forSelector:(SEL)selector;
+- (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forBaseEvent:(MPBaseEvent *const)event forSelector:(SEL)selector;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributes:(NSDictionary *)userAttributes;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserIdentityKey:(NSString *)key identityType:(MPUserIdentity)identityType;
@@ -505,7 +505,7 @@
     event.customAttributes = @{@"speed":@25,
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
-    
+
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
     id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
@@ -862,7 +862,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
-    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forSelector:@selector(logScreen:)];
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forBaseEvent:(MPBaseEvent *)nil forSelector:@selector(logScreen:)];
     XCTAssertNotNil(kitFilter, @"Should not have been nil.");
 }
 
@@ -2203,7 +2203,7 @@
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
     id kitRegisterMock = OCMPartialMock(kitRegister);
     OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
-    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forSelector:selector];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forBaseEvent:nil forSelector:selector];
     
     [(id <MPKitProtocol>)[kitWrapperMock expect] openURL:OCMOCK_ANY sourceApplication:OCMOCK_ANY annotation:OCMOCK_ANY];
     
@@ -2227,7 +2227,7 @@
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
     id kitRegisterMock = OCMPartialMock(kitRegister);
     OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
-    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forSelector:selector];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forBaseEvent:nil forSelector:selector];
     
     [(id <MPKitProtocol>)[kitWrapperMock expect] openURL:OCMOCK_ANY options:OCMOCK_ANY];
     
@@ -2255,7 +2255,7 @@
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
     id kitRegisterMock = OCMPartialMock(kitRegister);
     OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
-    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forSelector:selector];
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forBaseEvent:nil forSelector:selector];
     
     [(id <MPKitProtocol>)[kitWrapperMock expect] continueUserActivity:OCMOCK_ANY restorationHandler:OCMOCK_ANY];
     
