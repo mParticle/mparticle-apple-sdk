@@ -166,7 +166,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  These values can be retrieved from your App's dashboard within the mParticle platform.
  */
-+ (MParticleOptions*)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
++ (instancetype)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
 
 /*
  App key. mParticle uses this to attribute incoming data to your app's acccount/workspace/platform.

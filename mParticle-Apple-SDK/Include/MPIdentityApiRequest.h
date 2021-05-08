@@ -14,8 +14,8 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @interface MPIdentityApiRequest : NSObject
 
-+ (MPIdentityApiRequest *)requestWithEmptyUser;
-+ (MPIdentityApiRequest *)requestWithUser:(MParticleUser *) user;
++ (instancetype)requestWithEmptyUser;
++ (instancetype)requestWithUser:(MParticleUser *) user;
 
 - (void)setIdentity:(nullable NSString *)identityString identityType:(MPIdentity)identityType;
 
