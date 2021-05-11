@@ -779,13 +779,9 @@ static BOOL skipNextUpload = NO;
 - (void)uploadOpenSessions:(NSMutableArray *)openSessions completionHandler:(void (^)(void))completionHandler {
     
     void (^invokeCompletionHandler)(void) = ^(void) {
-        if ([NSThread isMainThread]) {
+        [MParticle executeOnMessage:^{
             completionHandler();
-        } else {
-            dispatch_async(dispatch_get_main_queue(), ^{
-                completionHandler();
-            });
-        }
+        }];
     };
     
     if (!openSessions || openSessions.count == 0) {
