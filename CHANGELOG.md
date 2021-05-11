@@ -1,5 +1,11 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.3.3
+
+- Fix app fore thread logic if not awaiting kits
+
+This release resolves an issue where if automatic session tracking was enabled, the SDK could potentially block the main thread when handling app foreground notifications, if those resulted in a new session being started and the SDK was not waiting for kits to set integration attributes.
+
 ## 8.3.2
 
 - Fix Filtering for MPBaseEvent. Resolves an issue where MediaEvents where not properly forwarded to kits
