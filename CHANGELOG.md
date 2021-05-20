@@ -1,5 +1,9 @@
 # mParticle Apple SDK CHANGELOG
 
+## 8.4.0
+
+This release adds a new API allowing kits to consumed batched data. This allows you to create custom kits that process uploaded mParticle data and e.g. send it to your own server.
+
 ## 8.3.3
 
 - Fix app fore thread logic if not awaiting kits
