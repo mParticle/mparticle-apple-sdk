@@ -933,6 +933,51 @@ NSString *const kMPStateKey = @"state";
     });
 }
 
+- (void)logKitBatch:(NSString *)batch {
+    if (batch == nil) {
+        MPILogError(@"Cannot log nil batch!");
+        return;
+    }
+    
+    dispatch_async(messageQueue, ^{
+        dispatch_block_t block = ^{
+            if (batch) {
+                if ([MParticle.sharedInstance.kitContainer hasKitBatchingKits]) {
+                    NSData *finalData = [[NSData alloc] initWithBytes:batch.UTF8String length:batch.length];
+                    NSDictionary *kitBatch = [NSJSONSerialization JSONObjectWithData:finalData options:0 error:nil];
+                    
+                    // Forwarding calls to kits
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logBatch:)
+                                                                          batch:kitBatch
+                                                                     kitHandler:^(id<MPKitProtocol>  _Nonnull kit, NSDictionary * _Nonnull kitBatch, MPKitConfiguration * _Nonnull kitConfiguration) {
+                            NSArray<MPForwardRecord *> *forwardRecords = [kit logBatch:kitBatch];
+                            if ([forwardRecords isKindOfClass:[NSArray class]]) {
+                                for (MPForwardRecord *forwardRecord in forwardRecords) {
+                                    dispatch_async([MParticle messageQueue], ^{
+                                        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+                                    });
+                                }
+                            }
+                        }];
+                    });
+                }
+            }
+        };
+        
+        BOOL kitsInitialized = [MParticle sharedInstance].kitContainer.kitsInitialized;
+        if (kitsInitialized) {
+            block();
+        } else {
+            dispatch_block_t deferredBlock = ^{
+                dispatch_block_t blockCopy = [block copy];
+                dispatch_async(messageQueue, blockCopy);
+            };
+            [self.kitsInitializedBlocks addObject:[deferredBlock copy]];
+        }
+    });
+}
+
 - (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     MPEvent *event = [self.backendController eventWithName:eventName];
     if (event) {

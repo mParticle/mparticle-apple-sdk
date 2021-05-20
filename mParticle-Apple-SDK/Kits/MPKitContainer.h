@@ -29,7 +29,9 @@
 - (void)forwardSDKCall:(nonnull SEL)selector userAttributes:(nonnull NSDictionary *)userAttributes kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nullable forwardAttributes, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector userIdentity:(nullable NSString *)identityString identityType:(MPUserIdentity)identityType kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 - (void)forwardSDKCall:(nonnull SEL)selector consentState:(nullable MPConsentState *)state kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
+- (void)forwardSDKCall:(nonnull SEL)selector batch:(nonnull NSDictionary *)batch kitHandler:(void (^_Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nonnull batch, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 - (void)forwardIdentitySDKCall:(nonnull SEL)selector kitHandler:(void (^ _Nonnull)(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
 - (nullable NSDictionary<NSString *, NSString *> *)integrationAttributesForKit:(nonnull NSNumber *)integrationId;
 - (BOOL)shouldDelayUpload: (NSTimeInterval) maxWaitTime;
+- (BOOL)hasKitBatchingKits;
 @end

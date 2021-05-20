@@ -61,6 +61,13 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @end
 
+@interface MPForwardRecord ()
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable MPBaseEvent *)originalEvent;
+- (nullable NSData *)dataRepresentation;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+@end
+
 @interface MPKitContainer() {
     dispatch_semaphore_t kitsSemaphore;
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
@@ -2427,6 +2434,25 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 }
 
+- (void)forwardSDKCall:(SEL)selector batch:(NSDictionary *)batch kitHandler:(void (^)(id<MPKitProtocol> kit, NSDictionary *batch, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler {
+    NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+    
+    for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
+        if ([kitRegister.wrapperInstance respondsToSelector:selector]) {
+            MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
+            
+            @try {
+                kitHandler(kitRegister.wrapperInstance, batch, kitConfiguration);
+            } @catch (NSException *e) {
+                MPILogError(@"Kit handler threw an exception: %@", e);
+            }
+            
+            MPILogDebug(@"Forwarded batch to kit: %@", kitRegister.name);
+        }
+    }
+}
+
+
 - (NSArray<NSDictionary<NSString *, id> *> *)userIdentitiesArrayForKit:(NSNumber *)integrationId {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
@@ -2484,6 +2510,24 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
     }
     return NO;
+}
+
+- (BOOL)hasKitBatchingKits {
+    static BOOL first = YES;
+    static BOOL result = NO;
+    if (first) {
+        first = NO;
+        
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [self activeKitsRegistry];
+        for (id<MPExtensionKitProtocol>kitRegister in activeKitsRegistry) {
+            if ([kitRegister.wrapperInstance respondsToSelector:@selector(logBatch:)]) {
+                result = YES;
+                break;
+            }
+        }
+    }
+    
+    return result;
 }
 
 @end

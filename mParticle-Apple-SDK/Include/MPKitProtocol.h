@@ -3,6 +3,7 @@
 
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
+#import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
@@ -123,6 +124,7 @@
 - (nonnull MPKitExecStatus *)setOptOut:(BOOL)optOut;
 - (nullable NSString *)surveyURLWithUserAttributes:(nonnull NSDictionary *)userAttributes;
 - (BOOL) shouldDelayMParticleUpload;
+- (nonnull NSArray<MPForwardRecord *> *)logBatch:(nonnull NSDictionary *)batch;
 @end
 
 #endif

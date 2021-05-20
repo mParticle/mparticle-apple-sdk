@@ -18,6 +18,7 @@
 #import "MPIUserDefaults.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
+#import "MPKitFilter.h"
 
 #define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
 
@@ -30,6 +31,14 @@
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
+
+@interface MPForwardRecord ()
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable MPBaseEvent *)originalEvent;
+- (nullable NSData *)dataRepresentation;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+@end
+
 
 @interface MPPersistenceControllerTests : MPBaseTestCase
 

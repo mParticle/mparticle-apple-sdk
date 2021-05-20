@@ -21,7 +21,7 @@ NSString *const kMPFROptOutState = @"s";
 
 @implementation MPForwardRecord
 
-- (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data mpid:(NSNumber *)mpid {
+- (instancetype)initWithId:(int64_t)forwardRecordId dataDictionary:(NSDictionary *)dataDictionary mpid:(NSNumber *)mpid {
     self = [super init];
     if (!self) {
         return nil;
@@ -30,18 +30,23 @@ NSString *const kMPFROptOutState = @"s";
     _forwardRecordId = forwardRecordId;
     _mpid = mpid;
     
-    if (!MPIsNull(data)) {
-        NSError *error = nil;
-        NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
-        
-        if (!error) {
-            _dataDictionary = [NSMutableDictionary dictionaryWithDictionary:jsonDictionary];
-        } else {
-            MPILogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
-        }
+    if (!MPIsNull(dataDictionary)) {
+        _dataDictionary = [NSMutableDictionary dictionaryWithDictionary:dataDictionary];
     }
     
     return self;
+}
+
+- (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data mpid:(NSNumber *)mpid {
+    NSError *error = nil;
+    NSDictionary *jsonDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&error];
+    
+    if (!error) {
+        return [self initWithId:forwardRecordId dataDictionary:jsonDictionary mpid:mpid];
+    } else {
+        MPILogError(@"Error deserializing the data into a dictionary representation: %@", [error localizedDescription]);
+        return nil;
+    }
 }
 
 - (instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(MPKitExecStatus *)execStatus {

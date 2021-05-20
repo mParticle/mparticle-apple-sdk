@@ -61,6 +61,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+- (void)logKitBatch:(NSString *)batch;
 
 @end
 
@@ -678,6 +679,9 @@ static NSObject<MPConnectorFactory> *factory = nil;
     BOOL isInvalidCode = responseCode != 429 && responseCode >= 400 && responseCode < 500;
     if (isSuccessCode || isInvalidCode) {
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
+        if (isSuccessCode && uploadString.length) {
+            [[MParticle sharedInstance] logKitBatch:uploadString];
+        }
     }
     
     BOOL success = isSuccessCode && data && [data length] > 0;

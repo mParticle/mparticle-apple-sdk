@@ -310,8 +310,6 @@
 		DB47A15A24252A2C00869BD2 /* MPIdentityApi.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A02E24252A2A00869BD2 /* MPIdentityApi.m */; };
 		DB47A15B24252A2C00869BD2 /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A02F24252A2A00869BD2 /* MPIdentityApiManager.m */; };
 		DB47A15C24252A2C00869BD2 /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A02F24252A2A00869BD2 /* MPIdentityApiManager.m */; };
-		DB47A15D24252A2C00869BD2 /* MPForwardRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03124252A2A00869BD2 /* MPForwardRecord.h */; };
-		DB47A15E24252A2C00869BD2 /* MPForwardRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03124252A2A00869BD2 /* MPForwardRecord.h */; };
 		DB47A15F24252A2C00869BD2 /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03224252A2A00869BD2 /* MParticleUserNotification.h */; };
 		DB47A16024252A2C00869BD2 /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03224252A2A00869BD2 /* MParticleUserNotification.h */; };
 		DB47A16124252A2C00869BD2 /* MPDataModelAbstract.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03324252A2A00869BD2 /* MPDataModelAbstract.h */; };
@@ -553,6 +551,8 @@
 		DBC78E232087BB2800210806 /* MPGDPRConsentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */; };
 		DBF4CB8C208F91C500CE831F /* MPNetworkOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBF4CB8A208F919A00CE831F /* MPNetworkOptionsTests.m */; };
 		DBF4CB8D208F91C600CE831F /* MPNetworkOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBF4CB8A208F919A00CE831F /* MPNetworkOptionsTests.m */; };
+		DBF5F5F72655681600ECCF0F /* MPForwardRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = DBF5F5F62655681600ECCF0F /* MPForwardRecord.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DBF5F5F82655681600ECCF0F /* MPForwardRecord.h in Headers */ = {isa = PBXBuildFile; fileRef = DBF5F5F62655681600ECCF0F /* MPForwardRecord.h */; settings = {ATTRIBUTES = (Public, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -624,7 +624,7 @@
 		C9DD20AD1D8A190600D3ABBE /* MPNetworkCommunication+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNetworkCommunication+Tests.h"; sourceTree = "<group>"; };
 		C9DD20AE1D8A190600D3ABBE /* MPNotificationController+Tests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPNotificationController+Tests.h"; sourceTree = "<group>"; };
 		C9DD20AF1D8A190600D3ABBE /* MPNotificationControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNotificationControllerTests.m; sourceTree = "<group>"; };
-		C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		C9DD20B01D8A190600D3ABBE /* MPPersistenceControllerTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; lineEnding = 0; path = MPPersistenceControllerTests.mm; sourceTree = "<group>"; };
 		C9DD20B21D8A190600D3ABBE /* MPResponseConfigTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseConfigTests.m; sourceTree = "<group>"; };
 		C9DD20B31D8A190600D3ABBE /* MPStateMachineTests.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPStateMachineTests.mm; sourceTree = "<group>"; };
 		C9DD20B41D8A190600D3ABBE /* MPUploadBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadBuilderTests.m; sourceTree = "<group>"; };
@@ -753,7 +753,6 @@
 		DB47A02D24252A2A00869BD2 /* MPIdentityDTO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIdentityDTO.h; sourceTree = "<group>"; };
 		DB47A02E24252A2A00869BD2 /* MPIdentityApi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityApi.m; sourceTree = "<group>"; };
 		DB47A02F24252A2A00869BD2 /* MPIdentityApiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityApiManager.m; sourceTree = "<group>"; };
-		DB47A03124252A2A00869BD2 /* MPForwardRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPForwardRecord.h; sourceTree = "<group>"; };
 		DB47A03224252A2A00869BD2 /* MParticleUserNotification.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleUserNotification.h; sourceTree = "<group>"; };
 		DB47A03324252A2A00869BD2 /* MPDataModelAbstract.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPDataModelAbstract.h; sourceTree = "<group>"; };
 		DB47A03424252A2A00869BD2 /* MPMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMessage.m; sourceTree = "<group>"; };
@@ -876,6 +875,7 @@
 		DBC78E1E2087A5D900210806 /* MPConsentStateTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPConsentStateTests.m; sourceTree = "<group>"; };
 		DBC78E212087BB0E00210806 /* MPGDPRConsentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPGDPRConsentTests.m; sourceTree = "<group>"; };
 		DBF4CB8A208F919A00CE831F /* MPNetworkOptionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkOptionsTests.m; sourceTree = "<group>"; };
+		DBF5F5F62655681600ECCF0F /* MPForwardRecord.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPForwardRecord.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1271,7 +1271,6 @@
 		DB47A03024252A2A00869BD2 /* Data Model */ = {
 			isa = PBXGroup;
 			children = (
-				DB47A03124252A2A00869BD2 /* MPForwardRecord.h */,
 				DB47A03224252A2A00869BD2 /* MParticleUserNotification.h */,
 				DB47A03324252A2A00869BD2 /* MPDataModelAbstract.h */,
 				DB47A03424252A2A00869BD2 /* MPMessage.m */,
@@ -1408,6 +1407,7 @@
 		DB47A08924252A2B00869BD2 /* Include */ = {
 			isa = PBXGroup;
 			children = (
+				DBF5F5F62655681600ECCF0F /* MPForwardRecord.h */,
 				DB47A08A24252A2B00869BD2 /* MPEvent.h */,
 				DB47A08B24252A2B00869BD2 /* MPBaseEvent.h */,
 				DB47A08C24252A2B00869BD2 /* MPKitProtocol.h */,
@@ -1465,6 +1465,7 @@
 			files = (
 				DB47A20224252A2C00869BD2 /* MPKitProtocol.h in Headers */,
 				DB47A22C24252A2C00869BD2 /* MPIHasher.h in Headers */,
+				DBF5F5F82655681600ECCF0F /* MPForwardRecord.h in Headers */,
 				DB47A20024252A2C00869BD2 /* MPBaseEvent.h in Headers */,
 				DB47A24224252A2C00869BD2 /* MPProduct.h in Headers */,
 				DB47A1F624252A2C00869BD2 /* MPCustomModule.h in Headers */,
@@ -1521,7 +1522,6 @@
 				DB47A1CA24252A2C00869BD2 /* MPKitConfiguration.h in Headers */,
 				DB47A23024252A2C00869BD2 /* MPAliasRequest.h in Headers */,
 				DB47A22824252A2C00869BD2 /* MPCommerceEvent.h in Headers */,
-				DB47A15E24252A2C00869BD2 /* MPForwardRecord.h in Headers */,
 				DB47A23A24252A2C00869BD2 /* MPCommerceEvent+Dictionary.h in Headers */,
 				DB47A22E24252A2C00869BD2 /* MPIdentityApiRequest.h in Headers */,
 				DB47A23C24252A2C00869BD2 /* MPConsentState.h in Headers */,
@@ -1577,6 +1577,7 @@
 			files = (
 				DB47A20124252A2C00869BD2 /* MPKitProtocol.h in Headers */,
 				DB47A22B24252A2C00869BD2 /* MPIHasher.h in Headers */,
+				DBF5F5F72655681600ECCF0F /* MPForwardRecord.h in Headers */,
 				DB47A1FF24252A2C00869BD2 /* MPBaseEvent.h in Headers */,
 				DB47A24124252A2C00869BD2 /* MPProduct.h in Headers */,
 				DB47A1F524252A2C00869BD2 /* MPCustomModule.h in Headers */,
@@ -1633,7 +1634,6 @@
 				DB47A1C924252A2C00869BD2 /* MPKitConfiguration.h in Headers */,
 				DB47A22F24252A2C00869BD2 /* MPAliasRequest.h in Headers */,
 				DB47A22724252A2C00869BD2 /* MPCommerceEvent.h in Headers */,
-				DB47A15D24252A2C00869BD2 /* MPForwardRecord.h in Headers */,
 				DB47A23924252A2C00869BD2 /* MPCommerceEvent+Dictionary.h in Headers */,
 				DB47A22D24252A2C00869BD2 /* MPIdentityApiRequest.h in Headers */,
 				DB47A23B24252A2C00869BD2 /* MPConsentState.h in Headers */,

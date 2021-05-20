@@ -22,6 +22,7 @@
 #import "MPConsentSerialization.h"
 #import <sqlite3.h>
 #import "MPListenerProtocol.h"
+#import "MPKitFilter.h"
 
 using namespace std;
 using namespace mParticle;
@@ -60,6 +61,14 @@ const int MaxBreadcrumbs = 50;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 
+@end
+
+@interface MPForwardRecord ()
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable MPBaseEvent *)originalEvent;
+- (nullable NSData *)dataRepresentation;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+- (nonnull instancetype)initWithId:(int64_t)forwardRecordId data:(nonnull NSData *)data mpid:(nonnull NSNumber *)mpid;
 @end
 
 @interface MPPersistenceController() {

@@ -11,6 +11,15 @@
 #import "MPCommerceEvent.h"
 #import "MPBaseTestCase.h"
 #import "MPPersistenceController.h"
+
+@interface MPForwardRecord ()
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus stateFlag:(BOOL)stateFlag;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus kitFilter:(nullable MPKitFilter *)kitFilter originalEvent:(nullable MPBaseEvent *)originalEvent;
+- (nullable NSData *)dataRepresentation;
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+- (instancetype)initWithId:(int64_t)forwardRecordId data:(NSData *)data mpid:(NSNumber *)mpid;
+@end
+
 @interface MPForwardRecordTests : MPBaseTestCase
 
 @end

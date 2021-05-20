@@ -20,6 +20,7 @@
 @property (nonatomic, strong) MPStateMachine *stateMachine;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
+- (void)logKitBatch:(NSString *)batch;
 
 @end
 
@@ -453,7 +454,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
@@ -461,11 +462,19 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [[mockPersistenceController expect] deleteUpload:aliasUpload];
     
     MParticle *instance = [MParticle sharedInstance];
-    instance.persistenceController = mockPersistenceController;
+    id mockInstance = OCMPartialMock(instance);
+    [(MParticle *)[mockInstance expect] logKitBatch:[OCMArg checkWithBlock:^BOOL(id obj) {
+        if ([obj isEqual:[[NSString alloc] initWithData:eventUpload.uploadData encoding:NSUTF8StringEncoding]] && ![obj isEqual:[[NSString alloc] initWithData:aliasUpload.uploadData encoding:NSUTF8StringEncoding]]) {
+            return YES;
+        }
+        return NO;
+    }]];
+    ((MParticle *)mockInstance).persistenceController = mockPersistenceController;
     
     NSArray *uploads = @[eventUpload, aliasUpload];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     [networkCommunication upload:uploads completionHandler:^{
+        [mockInstance verify];
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
@@ -473,6 +482,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [mockConnector stopMocking];
     [mockNetworkCommunication stopMocking];
     [mockPersistenceController stopMocking];
+    [mockInstance stopMocking];
 }
 
 - (void)testUploadInvalidDeletion {
@@ -499,7 +509,11 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [[mockPersistenceController expect] deleteUpload:aliasUpload];
     
     MParticle *instance = [MParticle sharedInstance];
-    instance.persistenceController = mockPersistenceController;
+    id mockInstance = OCMPartialMock(instance);
+    [(MParticle *)[mockInstance expect] logKitBatch:[OCMArg checkWithBlock:^BOOL(id obj) {
+        return NO; // reject
+    }]];
+    ((MParticle *)mockInstance).persistenceController = mockPersistenceController;
     
     NSArray *uploads = @[eventUpload, aliasUpload];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
@@ -511,6 +525,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [mockConnector stopMocking];
     [mockNetworkCommunication stopMocking];
     [mockPersistenceController stopMocking];
+    [mockInstance stopMocking];
 }
 
 - (void)testRequestConfigWithDefaultMaxAge {

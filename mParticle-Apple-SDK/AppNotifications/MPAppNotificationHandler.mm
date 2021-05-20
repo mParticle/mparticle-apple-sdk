@@ -36,6 +36,10 @@
 - (id)initWithKitCode:(NSNumber *)integrationId;
 @end
 
+@interface MPForwardRecord ()
+- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
+@end
+
 @implementation MPAppNotificationHandler
 
 - (instancetype)init {
