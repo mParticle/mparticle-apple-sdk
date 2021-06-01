@@ -66,20 +66,20 @@ The code below shows the following:
 ATTrackingManager.requestTrackingAuthorization { status in
     switch status {
     case .authorized:
-        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+        MParticle.sharedInstance().setATTStatus((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
     
         // Now that we are authorized we can get the IDFA, supply to mParticle Identity API as needed
         var identityRequest = MPIdentityApiRequest.withEmptyUser()
-        identityRequest.setIdentity(ASIdentifierManager.shared().advertisingIdentifier.uuidString, identityType: MPIdentity.iOSAdvertiserId)
+        identityRequest.setIdentity(ASIdentifierManager.shared().advertisingIdentifier.uuidString, identityType: MPIdentity.iosAdvertiserId)
         MParticle.sharedInstance().identity.modify(identityRequest, completion: identityCallback)
     case .denied:
-        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+        MParticle.sharedInstance().setATTStatus((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
     case .notDetermined:
-        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+        MParticle.sharedInstance().setATTStatus((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
     case .restricted:
-        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+        MParticle.sharedInstance().setATTStatus((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
     @unknown default:
-        MParticle.sharedInstance().setATTState((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
+        MParticle.sharedInstance().setATTStatus((MPATTAuthorizationStatus)status, withTimestampMillis: nil)
     }
 }
 ```
