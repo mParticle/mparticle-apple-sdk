@@ -24,6 +24,7 @@ Pod::Spec.new do |s|
     s.requires_arc      = true
     s.default_subspec   = 'mParticle'
     s.module_name       = "mParticle_Apple_SDK"
+    s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
 
     pch_mParticle       = <<-EOS
                           #ifndef TARGET_OS_IOS
