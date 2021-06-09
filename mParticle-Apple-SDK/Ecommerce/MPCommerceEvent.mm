@@ -269,6 +269,10 @@ static NSArray *actionNames;
     switch (commerceEventKind) {
         case MPCommerceEventKindProduct:
             self.type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
+            // Ensure we have a transactionAttributes object, as it is required for the product event type
+            if (!_transactionAttributes) {
+                _transactionAttributes = [[MPTransactionAttributes alloc] init];
+            }
             break;
             
         case MPCommerceEventKindPromotion:

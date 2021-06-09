@@ -612,4 +612,16 @@
     XCTAssertEqualObjects([commerceEvent dictionaryRepresentation], [persistedCommerceEvent dictionaryRepresentation], @"Commerce Event should have been a match.");
 }
 
+- (void)testRevenueLogicWithoutTransactionAttributes {
+    MPProduct *product = [[MPProduct alloc] initWithName:@"productName" sku:@"sku123" quantity:@4 price:@100];
+    MPCommerceEvent *event = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    
+    NSDictionary *eventDict = [event dictionaryRepresentation];
+    NSDictionary *productDict = eventDict[@"pd"]; // kMPCEProductAction (internal key)
+    XCTAssertNotNil(productDict, @"Commerce event should have a product dictionary.");
+    NSNumber *revenueNumber = productDict[@"tr"]; // kMPTARevenue (internal key)
+    XCTAssertNotNil(revenueNumber, @"Product dictionary should have a revenue value.");
+    XCTAssertEqual(400, revenueNumber.integerValue, @"Revenue value should equal the quantity multiplied by the price.");
+}
+
 @end
