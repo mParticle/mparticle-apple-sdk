@@ -37,6 +37,10 @@ static id mockUIApplication = nil;
 
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 
+#if TARGET_OS_IOS == 1
+@property (nonatomic, strong, readwrite, nullable) NSNumber *badgeNumber;
+#endif
+
 @end
 
 @interface MPApplication() {
@@ -273,19 +277,19 @@ static id mockUIApplication = nil;
 #if TARGET_OS_IOS == 1
 - (NSNumber *)badgeNumber {
     if (![MPStateMachine isAppExtension]) {
-        __block NSInteger appBadgeNumber = 0;
-        if ([NSThread isMainThread]) {
-            appBadgeNumber = [MPApplication sharedUIApplication].applicationIconBadgeNumber;
-        } else {
-            dispatch_sync(dispatch_get_main_queue(), ^{
-                appBadgeNumber = [MPApplication sharedUIApplication].applicationIconBadgeNumber;
-            });
-        }
-        NSNumber *badgeNumber = appBadgeNumber != 0 ? @(appBadgeNumber) : nil;
-        
-        return badgeNumber;
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        NSNumber *badgeNumber = userDefaults[kMPAppBadgeNumberKey];
+        return badgeNumber.integerValue != 0 ? badgeNumber : nil;
     }
-    return 0;
+    return nil;
+}
+
+- (void)setBadgeNumber:(NSNumber * _Nullable)badgeNumber {
+    if (![MPStateMachine isAppExtension]) {
+        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        userDefaults[kMPAppBadgeNumberKey] = badgeNumber;
+        syncUserDefaults = YES;
+    }
 }
 #endif
 
@@ -357,6 +361,20 @@ static id mockUIApplication = nil;
     MPApplication *application = [[MPApplication alloc] init];
     application.storedVersion = application.version;
     application.storedBuild = application.build;
+}
+
++ (void)updateBadgeNumber {
+#if TARGET_OS_IOS == 1
+    if ([NSThread isMainThread]) {
+        MPApplication *application = [[MPApplication alloc] init];
+        application.badgeNumber = @([MPApplication sharedUIApplication].applicationIconBadgeNumber);
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            MPApplication *application = [[MPApplication alloc] init];
+            application.badgeNumber = @([MPApplication sharedUIApplication].applicationIconBadgeNumber);
+        });
+    }
+#endif
 }
 
 #pragma mark Public methods

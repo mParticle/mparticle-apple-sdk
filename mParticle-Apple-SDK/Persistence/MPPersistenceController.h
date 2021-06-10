@@ -70,6 +70,7 @@
 - (void)saveUpload:(nonnull MPUpload *)upload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
+- (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;
 
 @end
 

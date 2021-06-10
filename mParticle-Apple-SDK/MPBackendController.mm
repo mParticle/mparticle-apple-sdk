@@ -34,6 +34,7 @@
 #import "MPArchivist.h"
 #import "MPListenerController.h"
 #import "MParticleWebView.h"
+#import "MPDevice.h"
 
 #if TARGET_OS_IOS == 1
 #import "MPLocationManager.h"
@@ -1146,11 +1147,20 @@ static BOOL skipNextUpload = NO;
         MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
+        NSNumber *mpId = [MPPersistenceController mpId];
         date = date ?: [NSDate date];
         if (tempSession) {
-            self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:[MPPersistenceController mpId] uuid:tempSession.UUID];
+            self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:mpId uuid:tempSession.UUID];
         } else {
-            self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+            self.session = [[MPSession alloc] initWithStartTime:[date timeIntervalSince1970] userId:mpId];
+        }
+        
+        // Set the app and device info dicts if they weren't already created
+        if (!_session.appInfo) {
+            _session.appInfo = [[[MPApplication alloc] init] dictionaryRepresentation];
+        }
+        if (!_session.deviceInfo) {
+            _session.deviceInfo = [[[MPDevice alloc] init] dictionaryRepresentationWithMpid:mpId];
         }
         
         [persistence saveSession:_session];

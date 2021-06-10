@@ -1,6 +1,8 @@
 #import "MPSession.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
+#import "MPApplication.h"
+#import "MPDevice.h"
 
 NSString *const sessionUUIDKey = @"sessionId";
 
@@ -8,7 +10,20 @@ NSString *const sessionUUIDKey = @"sessionId";
 
 - (instancetype)init {
     NSTimeInterval now = [[NSDate date] timeIntervalSince1970];
-    return [self initWithSessionId:0 UUID:[[NSUUID UUID] UUIDString] backgroundTime:0.0 startTime:now endTime:now attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:[MPPersistenceController mpId] sessionUserIds:[[MPPersistenceController mpId] stringValue]];
+    NSNumber *mpId = [MPPersistenceController mpId];
+    return [self initWithSessionId:0
+                              UUID:[[NSUUID UUID] UUIDString]
+                    backgroundTime:0.0
+                         startTime:now
+                           endTime:now
+                        attributes:nil
+             numberOfInterruptions:0
+                      eventCounter:0
+                       suspendTime:0
+                            userId:mpId
+                    sessionUserIds:[mpId stringValue]
+                           appInfo:nil
+                        deviceInfo:nil];
 }
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId {
@@ -19,7 +34,19 @@ NSString *const sessionUUIDKey = @"sessionId";
 
 - (instancetype)initWithStartTime:(NSTimeInterval)timestamp userId:(NSNumber *)userId uuid:(NSString *)uuid {
     NSString *uuidString = uuid ?: [[NSUUID UUID] UUIDString];
-    self = [self initWithSessionId:0 UUID:uuidString backgroundTime:0.0 startTime:timestamp endTime:timestamp attributes:nil numberOfInterruptions:0 eventCounter:0 suspendTime:0 userId:userId sessionUserIds:[userId stringValue]];
+    self = [self initWithSessionId:0
+                              UUID:uuidString
+                    backgroundTime:0.0
+                         startTime:timestamp
+                           endTime:timestamp
+                        attributes:nil
+             numberOfInterruptions:0
+                      eventCounter:0
+                       suspendTime:0
+                            userId:userId
+                    sessionUserIds:[userId stringValue]
+                           appInfo:nil
+                        deviceInfo:nil];
     
     return self;
 }
@@ -35,6 +62,8 @@ NSString *const sessionUUIDKey = @"sessionId";
                       suspendTime:(NSTimeInterval)suspendTime
                            userId:(NSNumber *)userId
                    sessionUserIds:(NSString *)sessionUserIds
+                          appInfo:(nullable NSDictionary<NSString *,id> *)appInfo
+                       deviceInfo:(nullable NSDictionary *)deviceInfo
 {
     self = [super init];
     if (!self) {
@@ -52,6 +81,8 @@ NSString *const sessionUUIDKey = @"sessionId";
     _numberOfInterruptions = numberOfInterruptions;
     _suspendTime = suspendTime;
     _sessionUserIds = sessionUserIds;
+    _appInfo = appInfo;
+    _deviceInfo = deviceInfo;
     
     _attributesDictionary = attributesDictionary != nil ? attributesDictionary : [[NSMutableDictionary alloc] init];
     
@@ -88,7 +119,9 @@ NSString *const sessionUUIDKey = @"sessionId";
                                                     eventCounter:_eventCounter
                                                      suspendTime:_suspendTime
                                                           userId:_userId
-                                                  sessionUserIds:_sessionUserIds];
+                                                  sessionUserIds:_sessionUserIds
+                                                         appInfo:_appInfo
+                                                      deviceInfo:_deviceInfo];
     
     return copyObject;
 }

@@ -107,11 +107,13 @@
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time FROM sessions ORDER BY _id";
     } else if (oldVersionValue < 26) {
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length FROM sessions ORDER BY _id";
-    } else {
+    } else if (oldVersionValue < 30) {
         selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM sessions ORDER BY _id";
+    } else {
+        selectStatement = "SELECT uuid, start_time, end_time, attributes_data, session_number, background_time, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info FROM sessions ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO sessions (uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -168,7 +170,16 @@
         sqlite3_bind_double(insertStatementHandle, 10, length); // length
         sqlite3_bind_int64(insertStatementHandle, 11, [mpId longLongValue]); // mpid
         sqlite3_bind_text(insertStatementHandle, 12, (const char *)[mpId stringValue].UTF8String, -1, SQLITE_TRANSIENT); // session_user_ids
-
+        
+        if (oldVersionValue > 29) {
+            sqlite3_bind_blob(insertStatementHandle, 13, sqlite3_column_blob(selectStatementHandle, 12), sqlite3_column_bytes(selectStatementHandle, 12), SQLITE_TRANSIENT);
+            sqlite3_bind_blob(insertStatementHandle, 14, sqlite3_column_blob(selectStatementHandle, 13), sqlite3_column_bytes(selectStatementHandle, 13), SQLITE_TRANSIENT);
+        } else {
+            // Columns don't exist in old table, so just explicitly bind null
+            sqlite3_bind_null(insertStatementHandle, 13);
+            sqlite3_bind_null(insertStatementHandle, 14);
+        }
+        
         sqlite3_step(insertStatementHandle);
         sqlite3_reset(insertStatementHandle);
     }

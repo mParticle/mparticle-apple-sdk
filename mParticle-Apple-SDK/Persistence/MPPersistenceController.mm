@@ -23,6 +23,8 @@
 #import <sqlite3.h>
 #import "MPListenerProtocol.h"
 #import "MPKitFilter.h"
+#import "MPDevice.h"
+#import "MPApplication.h"
 
 using namespace std;
 using namespace mParticle;
@@ -35,6 +37,7 @@ extern "C" {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-function"
     static NSData * _Nullable dataValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
+    static bool bindDictionaryAsBlob(sqlite3_stmt * _Nonnull const preparedStatement, const int column, NSDictionary * _Nullable dict);
     static NSDictionary * _Nullable dictionaryRepresentation(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
     static double doubleValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
     static int intValue(sqlite3_stmt * _Nonnull const preparedStatement, const int column);
@@ -85,7 +88,7 @@ const int MaxBreadcrumbs = 50;
 @synthesize databasePath = _databasePath;
 
 + (void)initialize {
-    databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27, @28, @29];
+    databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27, @28, @29, @30];
 }
 
 - (instancetype)init {
@@ -355,6 +358,8 @@ const int MaxBreadcrumbs = 50;
             length REAL, \
             mpid INTEGER NOT NULL, \
             session_user_ids TEXT NOT NULL, \
+            app_info BLOB, \
+            device_info BLOB, \
             FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
         )",
         "CREATE TABLE IF NOT EXISTS previous_session ( \
@@ -1079,7 +1084,7 @@ const int MaxBreadcrumbs = 50;
     vector<MPSession *> sessionsVector;
     
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids \
+    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info \
     FROM sessions \
     WHERE mpid = ? AND _id IN ((SELECT MAX(_id) FROM sessions WHERE mpid = ?), (SELECT (MAX(_id) - 1) FROM sessions WHERE mpid = ?)) \
     ORDER BY session_number";
@@ -1100,7 +1105,9 @@ const int MaxBreadcrumbs = 50;
                                                               eventCounter:intValue(preparedStatement, 8)
                                                                suspendTime:doubleValue(preparedStatement, 9)
                                                                     userId:@(int64Value(preparedStatement, 10))
-                                                            sessionUserIds:stringValue(preparedStatement, 11)];
+                                                            sessionUserIds:stringValue(preparedStatement, 11)
+                                                                   appInfo:dictionaryRepresentation(preparedStatement, 12)
+                                                                deviceInfo:dictionaryRepresentation(preparedStatement, 13)];
             
             crashSession.length = doubleValue(preparedStatement, 10);
             
@@ -1140,7 +1147,9 @@ const int MaxBreadcrumbs = 50;
                                                       eventCounter:intValue(preparedStatement, 8)
                                                        suspendTime:doubleValue(preparedStatement, 9)
                                                             userId:@(int64Value(preparedStatement, 10))
-                                                    sessionUserIds:stringValue(preparedStatement, 11)];
+                                                    sessionUserIds:stringValue(preparedStatement, 11)
+                                                           appInfo:nil
+                                                        deviceInfo:nil];
             
             previousSession.length = doubleValue(preparedStatement, 10);
         }
@@ -1255,7 +1264,7 @@ const int MaxBreadcrumbs = 50;
 
 - (NSMutableArray<MPSession *> *)fetchSessions {
     sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM sessions ORDER BY _id";
+    const string sqlStatement = "SELECT _id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info FROM sessions ORDER BY _id";
     
     NSMutableArray<MPSession *> *sessions = nil;
     
@@ -1273,7 +1282,9 @@ const int MaxBreadcrumbs = 50;
                                                          eventCounter:intValue(preparedStatement, 8)
                                                           suspendTime:doubleValue(preparedStatement, 9)
                                                                userId:@(int64Value(preparedStatement, 11))
-                                                       sessionUserIds:stringValue(preparedStatement, 12)];
+                                                       sessionUserIds:stringValue(preparedStatement, 12)
+                                                              appInfo:dictionaryRepresentation(preparedStatement, 13)
+                                                           deviceInfo:dictionaryRepresentation(preparedStatement, 14)];
             
             session.length = doubleValue(preparedStatement, 10);
             
@@ -1761,7 +1772,7 @@ const int MaxBreadcrumbs = 50;
 - (void)saveSession:(MPSession *)session {
     if (session) {
         sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO sessions (uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        const string sqlStatement = "INSERT INTO sessions (uuid, start_time, end_time, background_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids, app_info, device_info) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
             string auxString = string([session.uuid UTF8String]);
@@ -1771,8 +1782,7 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 3, session.endTime);
             sqlite3_bind_double(preparedStatement, 4, session.backgroundTime);
             
-            NSData *attributesData = [NSJSONSerialization dataWithJSONObject:session.attributesDictionary options:0 error:nil];
-            sqlite3_bind_blob(preparedStatement, 5, [attributesData bytes], (int)[attributesData length], SQLITE_STATIC);
+            bindDictionaryAsBlob(preparedStatement, 5, session.attributesDictionary);
             
             sqlite3_bind_int64(preparedStatement, 6, 0); //session_number Deprecated
             sqlite3_bind_int(preparedStatement, 7, session.numberOfInterruptions);
@@ -1781,6 +1791,9 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_double(preparedStatement, 10, session.length);
             sqlite3_bind_int64(preparedStatement, 11, [session.userId longLongValue]);
             sqlite3_bind_text(preparedStatement, 12, [session.sessionUserIds UTF8String], (int)session.sessionUserIds.length, SQLITE_TRANSIENT);
+            
+            bindDictionaryAsBlob(preparedStatement, 13, session.appInfo);
+            bindDictionaryAsBlob(preparedStatement, 14, session.deviceInfo);
             
             if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
                 MPILogError(@"Error while storing session: %s", sqlite3_errmsg(mParticleDB));
@@ -1907,6 +1920,31 @@ const int MaxBreadcrumbs = 50;
         sqlite3_finalize(preparedStatement);
     }
 }
+
+- (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    
+    sqlite3_stmt *preparedStatement;
+    const string sqlStatement = "SELECT app_info, device_info FROM sessions WHERE _id = ?";
+    
+    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
+        sqlite3_bind_int64(preparedStatement, 1, sessionId.longLongValue);
+        
+        if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            dict[kMPApplicationInformationKey] = dictionaryRepresentation(preparedStatement, 0);
+            dict[kMPDeviceInformationKey] = dictionaryRepresentation(preparedStatement, 1);
+        }
+        
+        sqlite3_clear_bindings(preparedStatement);
+    } else {
+        MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
+    }
+    
+    sqlite3_finalize(preparedStatement);
+    
+    return dict;
+}
+
 @end
 
 // Implementation of the C functions
@@ -1925,6 +1963,24 @@ static inline NSData *dataValue(sqlite3_stmt *const preparedStatement, const int
     
     data = [NSData dataWithBytes:dataBytes length:dataLength];
     return data;
+}
+
+static inline bool bindDictionaryAsBlob(sqlite3_stmt * _Nonnull const preparedStatement, const int column, NSDictionary * _Nullable dict) {
+    if (!dict) {
+        sqlite3_bind_null(preparedStatement, column);
+        return true;
+    }
+    
+    NSError *error = nil;
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+    
+    if (error) {
+        MPILogError("Error serializing JSON: %@", error);
+        return false;
+    }
+    
+    sqlite3_bind_blob(preparedStatement, column, data.bytes, (int)data.length, SQLITE_TRANSIENT);
+    return true;
 }
 
 static inline NSDictionary *dictionaryRepresentation(sqlite3_stmt *const preparedStatement, const int column) {
