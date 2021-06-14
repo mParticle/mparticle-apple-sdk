@@ -34,7 +34,8 @@ extern NSString * _Nonnull const kMPApplicationInformationKey;
 + (void)updateLaunchCountsAndDates;
 + (void)updateStoredVersionAndBuildNumbers;
 + (void)updateBadgeNumber;
-+ (UIApplication *_Nullable)sharedUIApplication;
++ (nonnull NSDictionary *)appImageInfo;
++ (nullable UIApplication *)sharedUIApplication;
 - (nonnull NSDictionary<NSString *, id> *)dictionaryRepresentation;
 
 @end

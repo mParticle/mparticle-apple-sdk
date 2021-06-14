@@ -16,7 +16,6 @@
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
 #import "MPResponseConfig.h"
-#import "MPExceptionHandler.h"
 #import "MPBaseTestCase.h"
 #import "MPIUserDefaults.h"
 #import "MPDevice.h"
@@ -27,11 +26,9 @@
 
 #define BACKEND_TESTS_EXPECTATIONS_TIMEOUT 10
 
-@interface MPExceptionHandler(Tests)
+@interface MPMessage ()
 
-#if TARGET_OS_IOS == 1
-- (void)handleCrashReportOccurred:(NSNotification *)notification;
-#endif
+@property (nonatomic, strong, readwrite, nonnull) NSData *messageData;
 
 @end
 
@@ -1524,14 +1521,29 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
                                                                            session:session
                                                                        messageInfo:@{@"MessageKey1":longString}];
     MPMessage *message = [messageBuilder build];
-    
     NSInteger bytesToTruncate = message.messageData.length - length;
     NSInteger bytesLongString = longString.length - bytesToTruncate;
     longString = [longString substringToIndex:bytesLongString];
-    messageBuilder = [MPMessageBuilder newBuilderWithMessageType:type
-                                                         session:session
-                                                     messageInfo:@{@"MessageKey1":longString}];
-    message = [messageBuilder build];
+    
+    // NOTE: Previously we used the MPMessageBuilder to build a new message after truncating longString to
+    //       the correct length. However, the other data included in the message is not deterministic
+    //       as it includes things like CPU and memory usage which fluctuate. This could cause cases
+    //       where the final message was larger than expected if any of those other values became longer
+    //       (e.g. 9% CPU usage went to 10% CPU usage, adding another byte to the JSON).
+    //
+    //       To keep things deterministic, we are now directly modifying the contents of the original message
+    //       data instead, as that ensures that the final message data size is the size we intended.
+    
+    NSError *error = nil;
+    NSMutableDictionary *dict = [[NSJSONSerialization JSONObjectWithData:message.messageData options:0 error:&error] mutableCopy];
+    XCTAssertNil(error, "JSON deserialization failed, error: %@", error);
+    XCTAssertNotNil(dict, "messageData dict must not be nil");
+
+    dict[@"MessageKey1"] = longString;
+    error = nil;
+    message.messageData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
+    XCTAssertNil(error, "JSON serialization failed, error: %@", error);
+    XCTAssertNotNil(message.messageData, "messageData must not be nil");
     return message;
 }
 

@@ -28,10 +28,6 @@
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
-
-    #if defined(MP_CRASH_REPORTER)
-        #import "MPExceptionHandler.h"
-    #endif
 #endif
 
 static dispatch_queue_t messageQueue = nil;
@@ -60,10 +56,6 @@ NSString *const kMPStateKey = @"state";
 , WKScriptMessageHandler
 #endif
 > {
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-    MPExceptionHandler *exceptionHandler;
-#endif
-    BOOL isLoggingUncaughtExceptions;
     BOOL sdkInitialized;
 }
 
@@ -302,7 +294,6 @@ NSString *const kMPStateKey = @"state";
     messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
     dispatch_queue_set_specific(messageQueue, messageQueueKey, messageQueueToken, nil);
     sdkInitialized = NO;
-    isLoggingUncaughtExceptions = NO;
     _initialized = NO;
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
@@ -318,10 +309,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)dealloc {
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-    [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
-#endif
-    
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
     [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
@@ -340,28 +327,6 @@ NSString *const kMPStateKey = @"state";
     
     return _configSettings;
 }
-
-#pragma mark KVOs
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"backendController.session"]) {
-
-        MPSession *session = change[NSKeyValueChangeNewKey];
-        
-        if (exceptionHandler) {
-            exceptionHandler.session = session;
-        } else {
-            exceptionHandler = [[MPExceptionHandler alloc] initWithSession:session];
-        }
-        
-        if (isLoggingUncaughtExceptions && ![MPExceptionHandler isHandlingExceptions]) {
-            [exceptionHandler beginUncaughtExceptionLogging];
-        }
-    } else {
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-    }
-}
-#endif
 
 #pragma mark MPBackendControllerDelegate methods
 - (void)sessionDidBegin:(MPSession *)session {
@@ -509,10 +474,6 @@ NSString *const kMPStateKey = @"state";
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultAgentOverride:options.defaultAgent];
     
     _backendController = [[MPBackendController alloc] initWithDelegate:self];
-
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
-#endif
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
@@ -655,12 +616,6 @@ NSString *const kMPStateKey = @"state";
                                    self->_trackNotifications = [strongSelf.configSettings[kMPConfigTrackNotifications] boolValue];
                                }
 #if TARGET_OS_IOS == 1
-#if defined(MP_CRASH_REPORTER)
-                               if ([strongSelf.configSettings[kMPConfigEnableCrashReporting] boolValue]) {
-                                   [strongSelf beginUncaughtExceptionLogging];
-                               }
-#endif
-                               
                                if ([strongSelf.configSettings[kMPConfigLocationTracking] boolValue]) {
                                    CLLocationAccuracy accuracy = [strongSelf.configSettings[kMPConfigLocationAccuracy] doubleValue];
                                    CLLocationDistance distanceFilter = [strongSelf.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
@@ -1056,38 +1011,6 @@ NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark Error, Exception, and Crash Handling
-- (void)beginUncaughtExceptionLogging {
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-    if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
-        [exceptionHandler beginUncaughtExceptionLogging];
-        isLoggingUncaughtExceptions = YES;
-        MPILogDebug(@"Begin uncaught exception logging.");
-    } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
-        __weak MParticle *weakSelf = self;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong MParticle *strongSelf = weakSelf;
-            [strongSelf beginUncaughtExceptionLogging];
-        });
-    }
-#endif
-}
-
-- (void)endUncaughtExceptionLogging {
-#if defined(MP_CRASH_REPORTER) && TARGET_OS_IOS == 1
-    if (self.backendController.initializationStatus == MPInitializationStatusStarted) {
-        [exceptionHandler endUncaughtExceptionLogging];
-        isLoggingUncaughtExceptions = NO;
-        MPILogDebug(@"End uncaught exception logging.");
-    } else if (self.backendController.initializationStatus == MPInitializationStatusStarting) {
-        __weak MParticle *weakSelf = self;
-        dispatch_async(dispatch_get_main_queue(), ^{
-            __strong MParticle *strongSelf = weakSelf;
-            [strongSelf endUncaughtExceptionLogging];
-        });
-    }
-#endif
-}
-
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName {
     [self leaveBreadcrumb:breadcrumbName eventInfo:nil];
 }

@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import "MPSearchAdsAttribution.h"
+#import <libkern/OSAtomic.h>
 #import "mParticle.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
@@ -29,9 +30,39 @@ NSString *const kMPAppStoredBuildKey = @"asb";
 NSString *const kMPAppEnvironmentKey = @"env";
 NSString *const kMPAppBadgeNumberKey = @"bn";
 NSString *const kMPAppStoreReceiptKey = @"asr";
+NSString *const kMPAppImageBaseAddressKey = @"iba";
+NSString *const kMPAppImageSizeKey = @"is";
 
 static NSString *kMPAppStoreReceiptString = nil;
 static id mockUIApplication = nil;
+
+typedef struct Binaryimage {
+    struct Binaryimage *previous;
+    struct Binaryimage *next;
+    uintptr_t header;
+    char *name;
+} BinaryImage;
+
+typedef struct BinaryImageList {
+    BinaryImage *headBinaryImage;
+    BinaryImage *tailBinaryImage;
+    BinaryImage *free;
+    int32_t referenceCount;
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    OSSpinLock write_lock;
+#pragma clang diagnostic pop
+} BinaryImageList;
+
+//
+// C functions prototype declarations
+//
+static BinaryImageList sharedImageList = { 0 }; // Shared dyld image list
+static void appendImageList(BinaryImageList *list, uintptr_t header, const char *name);
+static void flagReadingImageList(BinaryImageList *list, bool enable);
+static BinaryImage *nextImageList(BinaryImageList *list, BinaryImage *current);
+static void addImageListCallback(const struct mach_header *mh, intptr_t vmaddr_slide);
+static void processBinaryImage(const char *name, const void *header, struct uuid_command *out_uuid, uintptr_t *out_baseaddr, uintptr_t *out_cmdsize);
 
 @interface MParticle ()
 
@@ -68,6 +99,8 @@ static id mockUIApplication = nil;
     
     userDefaults = [MPIUserDefaults standardUserDefaults];
     syncUserDefaults = NO;
+    
+    _dyld_register_func_for_add_image(addImageListCallback);
     
     return self;
 }
@@ -377,6 +410,32 @@ static id mockUIApplication = nil;
 #endif
 }
 
++ (NSDictionary *)appImageInfo {
+    struct uuid_command uuid = {0};
+    uintptr_t baseaddr = 0;
+    uintptr_t cmdsize = 0;
+    uintptr_t imageBaseAddress = 0;
+    unsigned long long imageSize = 0;
+    
+    flagReadingImageList(&sharedImageList, true);
+    
+    BinaryImage *image = NULL;
+    while ((image = nextImageList(&sharedImageList, image)) != NULL) {
+        processBinaryImage(image->name, (const void *)(image->header), &uuid, &baseaddr, &cmdsize);
+        
+        if (imageBaseAddress == 0) {
+            imageBaseAddress = baseaddr;
+        }
+        
+        imageSize += cmdsize;
+    }
+    
+    NSDictionary *appImageInfo = @{kMPAppImageBaseAddressKey:@(imageBaseAddress),
+                                   kMPAppImageSizeKey:@(imageSize)};
+    
+    return appImageInfo;
+}
+
 #pragma mark Public methods
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
     if (appInfo) {
@@ -473,3 +532,157 @@ static id mockUIApplication = nil;
 }
 
 @end
+
+/**
+ @internal
+ 
+ Maintains a linked list of binary images with support for async-safe iteration. Writing may occur concurrently with
+ async-safe reading, but is not async-safe.
+ 
+ Atomic compare and swap is used to ensure a consistent view of the list for readers. To simplify implementation, a
+ write mutex is held for all updates; the implementation is not designed for efficiency in the face of contention
+ between readers and writers, and it's assumed that no contention should realistically occur.
+ */
+
+/**
+ Append a new binary image record to @a list.
+ 
+ @param list The list to which the image record should be appended.
+ @param header The image's header address.
+ @param name The image's name.
+ */
+static void appendImageList(BinaryImageList *list, uintptr_t header, const char *name) {
+    // Initialize the new entry.
+    BinaryImage *new = calloc(1, sizeof(BinaryImage));
+    if (!new) {
+        return;
+    }
+    new->header = header;
+    new->name = strdup(name);
+    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    // Update the image record and issue a memory barrier to ensure a consistent view.
+    OSMemoryBarrier();
+    
+    /* Lock the list from other writers. */
+    OSSpinLockLock(&list->write_lock); {
+        /* If this is the first entry, initialize the list. */
+        if (list->tailBinaryImage == NULL) {
+            // Update the list tail. This need not be done atomically, as tail is never accessed by a lockless reader
+            list->tailBinaryImage = new;
+            
+            // Atomically update the list head; this will be iterated upon by lockless readers
+            if (!OSAtomicCompareAndSwapPtrBarrier(NULL, new, (void **) (&list->headBinaryImage))) {
+                NSLog(@"An async image head was set with tail == NULL despite holding lock.");
+            }
+        } else {
+            // Atomically slot the new record into place; this may be iterated on by a lockless reader
+            if (!OSAtomicCompareAndSwapPtrBarrier(NULL, new, (void **) (&list->tailBinaryImage->next))) {
+                NSLog(@"Failed to append to image list despite holding lock");
+            }
+            
+            // Update the previous and tail pointers. This is never accessed without a lock, so no additional barrier is required here
+            new->previous = list->tailBinaryImage;
+            list->tailBinaryImage = new;
+        }
+    } OSSpinLockUnlock(&list->write_lock);
+#pragma clang diagnostic pop
+}
+
+/**
+ Retain or release the list for reading. This method is async-safe.
+ 
+ This must be issued prior to attempting to iterate the list, and must called again once reads have completed.
+ 
+ @param list The list to be be retained or released for reading.
+ @param enable If true, the list will be retained. If false, released.
+ */
+static void flagReadingImageList(BinaryImageList *list, bool enable) {
+    if (enable) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        // Increment and issue a barrier. Once issued, no items will be deallocated while a reference is held
+        OSAtomicIncrement32Barrier(&list->referenceCount);
+    } else {
+        // Increment and issue a barrier. Once issued, items may again be deallocated
+        OSAtomicDecrement32Barrier(&list->referenceCount);
+    }
+#pragma clang diagnostic pop
+}
+
+/**
+ Returns the next image record. This method is async-safe. If no additional images are available, will return NULL.
+ 
+ @param list The list to be iterated.
+ @param current The current image record, or NULL to start iteration.
+ */
+static BinaryImage *nextImageList(BinaryImageList *list, BinaryImage *current) {
+    if (current != NULL)
+        return current->next;
+    
+    return list->headBinaryImage;
+}
+
+static void addImageListCallback(const struct mach_header *mh, intptr_t vmaddr_slide) {
+    Dl_info info;
+    
+    // Look up the image info
+    if (dladdr(mh, &info) == 0) {
+        NSLog(@"%s: dladdr(%p, ...) failed", __FUNCTION__, mh);
+        return;
+    }
+    
+    appendImageList(&sharedImageList, (uintptr_t) mh, info.dli_fname);
+}
+
+static void processBinaryImage(const char *name, const void *header, struct uuid_command *out_uuid, uintptr_t *out_baseaddr, uintptr_t *out_cmdsize) {
+    uint32_t ncmds;
+    const struct mach_header *header32 = (const struct mach_header *)header;
+    const struct mach_header_64 *header64 = (const struct mach_header_64 *)header;
+    
+    struct load_command *cmd;
+    uintptr_t cmd_size;
+    
+    // Check for headers and extract required values
+    switch (header32->magic) {
+        // 32-bit
+        case MH_MAGIC:
+        case MH_CIGAM:
+            ncmds = header32->ncmds;
+            cmd = (struct load_command *)(header32 + 1);
+            cmd_size = header32->sizeofcmds;
+            break;
+            
+        // 64-bit
+        case MH_MAGIC_64:
+        case MH_CIGAM_64:
+            ncmds = header64->ncmds;
+            cmd = (struct load_command *)(header64 + 1);
+            cmd_size = header64->sizeofcmds;
+            break;
+            
+        default:
+            NSLog(@"Invalid Mach-O header magic value: %x", header32->magic);
+            return;
+    }
+    
+    // Compute the image size and search for a UUID
+    struct uuid_command *uuid = NULL;
+    for (uint32_t i = 0; cmd != NULL && i < ncmds; ++i) {
+        // DWARF dSYM UUID
+        if (cmd->cmd == LC_UUID && cmd->cmdsize == sizeof(struct uuid_command)) {
+            uuid = (struct uuid_command *)cmd;
+        }
+        
+        cmd = (struct load_command *)((uint8_t *) cmd + cmd->cmdsize);
+    }
+    
+    uintptr_t base_addr = (uintptr_t)header;
+    *out_baseaddr = base_addr;
+    *out_cmdsize = cmd_size;
+    
+    if (out_uuid && uuid) {
+        memcpy(out_uuid, uuid, sizeof(struct uuid_command));
+    }
+}

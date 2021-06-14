@@ -136,10 +136,6 @@
 		DB3A5A1B2525269C004CE231 /* MPDataPlanFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB3A5A182525269B004CE231 /* MPDataPlanFilter.h */; };
 		DB3A5A1C2525269C004CE231 /* MPDataPlanFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3A5A192525269B004CE231 /* MPDataPlanFilter.m */; };
 		DB3A5A1D2525269C004CE231 /* MPDataPlanFilter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB3A5A192525269B004CE231 /* MPDataPlanFilter.m */; };
-		DB47A0AF24252A2C00869BD2 /* MPExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FD024252A2A00869BD2 /* MPExceptionHandler.m */; };
-		DB47A0B024252A2C00869BD2 /* MPExceptionHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FD024252A2A00869BD2 /* MPExceptionHandler.m */; };
-		DB47A0B124252A2C00869BD2 /* MPExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FD124252A2A00869BD2 /* MPExceptionHandler.h */; };
-		DB47A0B224252A2C00869BD2 /* MPExceptionHandler.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FD124252A2A00869BD2 /* MPExceptionHandler.h */; };
 		DB47A0B324252A2C00869BD2 /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FD224252A2A00869BD2 /* MPIConstants.h */; };
 		DB47A0B424252A2C00869BD2 /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FD224252A2A00869BD2 /* MPIConstants.h */; };
 		DB47A0B524252A2C00869BD2 /* MPPersistenceController.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FD424252A2A00869BD2 /* MPPersistenceController.mm */; };
@@ -666,8 +662,6 @@
 		DB3935131F8E4F5500AD073E /* MPKitTestClassNoStartImmediately.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitTestClassNoStartImmediately.h; sourceTree = "<group>"; };
 		DB3A5A182525269B004CE231 /* MPDataPlanFilter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPDataPlanFilter.h; sourceTree = "<group>"; };
 		DB3A5A192525269B004CE231 /* MPDataPlanFilter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPDataPlanFilter.m; sourceTree = "<group>"; };
-		DB479FD024252A2A00869BD2 /* MPExceptionHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPExceptionHandler.m; sourceTree = "<group>"; };
-		DB479FD124252A2A00869BD2 /* MPExceptionHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPExceptionHandler.h; sourceTree = "<group>"; };
 		DB479FD224252A2A00869BD2 /* MPIConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIConstants.h; sourceTree = "<group>"; };
 		DB479FD424252A2A00869BD2 /* MPPersistenceController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPPersistenceController.mm; sourceTree = "<group>"; };
 		DB479FD524252A2A00869BD2 /* MPDatabaseMigrationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDatabaseMigrationController.m; sourceTree = "<group>"; };
@@ -993,8 +987,6 @@
 				DB47A05524252A2B00869BD2 /* MPBackendController.h */,
 				DB47A08124252A2B00869BD2 /* MPBackendController.mm */,
 				DB47A05224252A2B00869BD2 /* MPEnums.m */,
-				DB479FD124252A2A00869BD2 /* MPExceptionHandler.h */,
-				DB479FD024252A2A00869BD2 /* MPExceptionHandler.m */,
 				DB479FD224252A2A00869BD2 /* MPIConstants.h */,
 				DB47A05324252A2B00869BD2 /* MPIConstants.m */,
 				DB47A05424252A2B00869BD2 /* MPIHasher.mm */,
@@ -1484,7 +1476,6 @@
 				DB47A15424252A2C00869BD2 /* MPIdentityApiManager.h in Headers */,
 				DB47A1F224252A2C00869BD2 /* MPCustomModulePreference.h in Headers */,
 				DB47A0FC24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */,
-				DB47A0B224252A2C00869BD2 /* MPExceptionHandler.h in Headers */,
 				D32668CE257FE910007FC798 /* MPURL.h in Headers */,
 				DB47A21224252A2C00869BD2 /* MPKitAPI.h in Headers */,
 				DB47A1D624252A2C00869BD2 /* MPILogger.h in Headers */,
@@ -1596,7 +1587,6 @@
 				DB47A15324252A2C00869BD2 /* MPIdentityApiManager.h in Headers */,
 				DB47A1F124252A2C00869BD2 /* MPCustomModulePreference.h in Headers */,
 				DB47A0FB24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */,
-				DB47A0B124252A2C00869BD2 /* MPExceptionHandler.h in Headers */,
 				D32668CD257FE910007FC798 /* MPURL.h in Headers */,
 				DB47A21124252A2C00869BD2 /* MPKitAPI.h in Headers */,
 				DB47A1D524252A2C00869BD2 /* MPILogger.h in Headers */,
@@ -1951,7 +1941,6 @@
 				DB47A1DA24252A2C00869BD2 /* MPLocationManager.m in Sources */,
 				DB47A0B624252A2C00869BD2 /* MPPersistenceController.mm in Sources */,
 				DB47A10224252A2C00869BD2 /* MPApplication.m in Sources */,
-				DB47A0B024252A2C00869BD2 /* MPExceptionHandler.m in Sources */,
 				DB47A1B024252A2C00869BD2 /* MPForwardQueueParameters.m in Sources */,
 				DB47A1C424252A2C00869BD2 /* MPKitAPI.m in Sources */,
 				DB47A0F024252A2C00869BD2 /* MPConvertJS.m in Sources */,
@@ -2053,7 +2042,6 @@
 				DB47A1D924252A2C00869BD2 /* MPLocationManager.m in Sources */,
 				DB47A0B524252A2C00869BD2 /* MPPersistenceController.mm in Sources */,
 				DB47A10124252A2C00869BD2 /* MPApplication.m in Sources */,
-				DB47A0AF24252A2C00869BD2 /* MPExceptionHandler.m in Sources */,
 				DB47A1AF24252A2C00869BD2 /* MPForwardQueueParameters.m in Sources */,
 				DB47A1C324252A2C00869BD2 /* MPKitAPI.m in Sources */,
 				DB47A0EF24252A2C00869BD2 /* MPConvertJS.m in Sources */,

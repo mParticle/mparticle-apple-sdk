@@ -8,7 +8,6 @@
 #import "MPNetworkPerformance.h"
 #import "MPIUserDefaults.h"
 #import "MPBreadcrumb.h"
-#import "MPExceptionHandler.h"
 #import "MPUpload.h"
 #import "MPSegment.h"
 #import "MPApplication.h"
@@ -1502,19 +1501,10 @@ static BOOL skipNextUpload = NO;
     
     NSString *execMessage = exception ? exception.name : message;
     
-    
     MPExecStatus execStatus = MPExecStatusFail;
     
-    NSMutableDictionary *messageInfo = [@{kMPCrashWasHandled:@"true",
-                                          kMPCrashingSeverity:@"error"}
-                                        mutableCopy];
-    
+    NSMutableDictionary *messageInfo = [@{kMPCrashWasHandled:@"true", kMPCrashingSeverity:@"error"} mutableCopy];
     if (exception) {
-        NSData *liveExceptionReportData = [MPExceptionHandler generateLiveExceptionReport];
-        if (liveExceptionReportData) {
-            messageInfo[kMPPLCrashReport] = [liveExceptionReportData base64EncodedStringWithOptions:0];
-        }
-        
         messageInfo[kMPErrorMessage] = exception.reason;
         messageInfo[kMPCrashingClass] = exception.name;
         
@@ -1545,7 +1535,7 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPAttributesKey] = eventInfo;
     }
     
-    NSDictionary *appImageInfo = [MPExceptionHandler appImageInfo];
+    NSDictionary *appImageInfo = [MPApplication appImageInfo];
     if (appImageInfo) {
         [messageInfo addEntriesFromDictionary:appImageInfo];
     }
@@ -1559,7 +1549,6 @@ static BOOL skipNextUpload = NO;
     [self saveMessage:errorMessage updateSession:YES];
     
     execStatus = MPExecStatusSuccess;
-    
     
     completionHandler(execMessage, execStatus);
 }
@@ -1607,7 +1596,6 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPStackTrace] = stackTrace;
     }
 
-    // TODO: Refactor. Duplicated from MPExceptionHandler
     MPSession *crashSession = nil;
     NSArray<MPSession *> *sessions = [[MParticle sharedInstance].persistenceController fetchPossibleSessionsFromCrash];
     for (MPSession *session in sessions) {

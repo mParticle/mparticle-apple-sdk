@@ -728,15 +728,6 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 - (nullable NSDictionary<NSNumber *, MPAttributionResult *> *)attributionInfo;
 
 #pragma mark - Error, Exception, and Crash Handling
-/**
- Enables mParticle exception handling to automatically log events on uncaught exceptions.
- */
-- (void)beginUncaughtExceptionLogging;
-
-/**
- Disables mParticle automatic exception handling.
- */
-- (void)endUncaughtExceptionLogging;
 
 /**
  Leaves a breadcrumb. Breadcrumbs are send together with crash reports to help with debugging.
