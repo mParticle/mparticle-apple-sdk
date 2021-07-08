@@ -109,8 +109,8 @@ You can leave the version settings as default and click Next one more time to co
 
 Several integrations require additional client-side add-on libraries called "kits." Some kits embed other SDKs, others just contain a bit of additional functionality. Kits are designed to feel just like server-side integrations; you enable, disable, filter, sample, and otherwise tweak kits completely from the mParticle platform UI. The Core SDK will detect kits at runtime, but you need to add them as dependencies to your app.
 
-Kit | CocoaPods | Carthage | Swift Package Manager
-----|:---------:|:-------:
+Kit | CocoaPods | Carthage | Swift Package Manager |
+----|:---------:|:-------:|:-------:|
 [Adjust](https://github.com/mparticle-integrations/mparticle-apple-integration-adjust)                                            | ✓  | ✓  | ✓  
 [Appboy](https://github.com/mparticle-integrations/mparticle-apple-integration-appboy)                                            | ✓  | ✓  | ✓  
 [Adobe](https://github.com/mparticle-integrations/mparticle-apple-integration-adobe)                                              | ✓  | ✓  |    
