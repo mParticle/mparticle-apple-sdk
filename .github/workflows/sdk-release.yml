@@ -3,15 +3,47 @@ name: iOS SDK Release
 on:
   workflow_dispatch:
     inputs:
-      VERSION:
+      dryRun:
+        description: "Do a dry run to preview instead of a real release [true/false]"
         required: true
+        default: "true"
 
 jobs:
+    # SDK release is done from public/master branch.
+  confirm-master-branch:
+    name: "Confirm release is run on master branch"
+    runs-on: macOS-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v2
+      - name: Branch name
+        run: |
+          BRANCHNAME=${GITHUB_REF##*/}
+          echo "pulling branch name, branch name is:"
+          echo $BRANCHNAME
+          if [ $BRANCHNAME != "master" ]
+          then
+            echo "You can only run a release from the master branch, you are trying to run it from ${BRANCHNAME}"
+            exit 1
+          fi
+  create-release-branch:
+    runs-on: macOS-latest
+    needs: confirm-master-branch
+    steps:
+      - name: "Checkout Internal Development Branch"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: mParticle/mparticle-apple-sdk-internal
+          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          ref: development
+      - name: "Merge back release commits to public/master repository"
+        run: git checkout -b release/${{ github.run_number }}; git push origin release/${{ github.run_number }}
   release:
     runs-on: macOS-latest
+    needs: create-release-branch
     env:
-      VERSION: ${{ github.event.inputs.VERSION }}
-      GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GITHUB_ACCESS_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
       COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
     steps:
       - name: Checkout
@@ -19,50 +51,103 @@ jobs:
 
       - name: Validate environment and no-location patch
         run: |
-              env | grep -q '^VERSION=' || (echo "Required environment variable VERSION is not set" && exit 1)
-              env | grep -q '^GITHUB_ACCESS_TOKEN=' || (echo "Required environment variable GITHUB_ACCESS_TOKEN is not set" && exit 1)
-              env | grep -q '^COCOAPODS_TRUNK_TOKEN=' || (echo "Required environment variable COCOAPODS_TRUNK_TOKEN is not set" && exit 1)
-              git apply Scripts/0001-DISABLE-LOCATION.patch || (echo "Disable location patch could not be successfully applied" && exit 1)
-              git checkout .
+          env | grep -q '^GITHUB_ACCESS_TOKEN=' || (echo "Required environment variable GITHUB_ACCESS_TOKEN is not set" && exit 1)
+          env | grep -q '^COCOAPODS_TRUNK_TOKEN=' || (echo "Required environment variable COCOAPODS_TRUNK_TOKEN is not set" && exit 1)
+          git apply Scripts/0001-DISABLE-LOCATION.patch || (echo "Disable location patch could not be successfully applied" && exit 1)
+          git checkout .
 
       - name: Setup git config
         run: |
-              git config user.email "developers@mparticle.com"
-              git config user.name "mParticle Automation"
-
-      - name: Update version numbers
+          git config user.email "developers@mparticle.com"
+          git config user.name "mParticle Automation"
+          
+      - name: "Checkout public/master Branch"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: ${{ github.repository }}
+          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          ref: master
+      - name: "Add new release branch commits to public/master for release"
         run: |
-              sed -i '' 's/NSString \*const kMParticleSDKVersion = @".*/NSString *const kMParticleSDKVersion = @"'"$VERSION"'";/' mParticle-Apple-SDK/MPIConstants.m
-              /usr/libexec/PlistBuddy -c "Set CFBundleShortVersionString $VERSION" Framework/Info.plist
-              jq --indent 3 '. += {'"\"$VERSION\""': "'"https://github.com/mParticle/mparticle-apple-sdk/releases/download/$VERSION/mParticle_Apple_SDK.framework.zip"'"}' mParticle_Apple_SDK.json > tmp.json
-              mv tmp.json mParticle_Apple_SDK.json
-              sudo npm install -g podspec-bump
-              podspec-bump -w -i $VERSION
-              git add mParticle-Apple-SDK/MPIConstants.m Framework/Info.plist; git add mParticle-Apple-SDK.podspec; git add mParticle_Apple_SDK.json; git commit -m "Update version to $VERSION"
+          git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
+          git fetch internal
+          git pull internal release/${{ github.run_number }}
 
-      - name: Build repo artifacts
+      - name: Release --dry-run
+        if: ${{ github.event.inputs.dryRun == 'true'}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          GIT_AUTHOR_NAME: mparticle-bot
+          GIT_AUTHOR_EMAIL: developers@mparticle.com
+          GIT_COMMITTER_NAME: mparticle-bot
+          GIT_COMMITTER_EMAIL: developers@mparticle.com
         run: |
-              ./Scripts/make_artifacts.sh
-              ls mParticle_Apple_SDK.framework.zip mParticle_Apple_SDK.framework.nolocation.zip mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK.xcframework.nolocation.zip generated-docs.zip || exit 1
+          npx \
+          -p lodash \
+          -p semantic-release@17 \
+          -p @semantic-release/changelog@5 \
+          -p @semantic-release/git@9 \
+          -p @semantic-release/exec@5 \
+          semantic-release --dry-run
 
-
-      - name: Push publicly to Github
+      - name: Release
+        if: ${{ github.event.inputs.dryRun == 'false'}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          GIT_AUTHOR_NAME: mparticle-bot
+          GIT_AUTHOR_EMAIL: developers@mparticle.com
+          GIT_COMMITTER_NAME: mparticle-bot
+          GIT_COMMITTER_EMAIL: developers@mparticle.com
         run: |
-              git tag $VERSION
-              git push origin HEAD:master
-              git push origin $VERSION
-
-      - name: Create GitHub release and upload repo artifacts
+          npx \
+          -p lodash \
+          -p semantic-release@17 \
+          -p @semantic-release/changelog@5 \
+          -p @semantic-release/git@9 \
+          -p @semantic-release/exec@5 \
+          semantic-release
+          
+      - name: "Merge back release commits to release branch"
+        if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
-              curl -v --data '{"tag_name": "'"$VERSION"'","target_commitish": "master","name": "Version '"$VERSION"'","body": "'"$RELEASE_BODY"'","draft": false,"prerelease": false}' https://api.github.com/repos/mParticle/mparticle-apple-sdk/releases?access_token=$GITHUB_ACCESS_TOKEN | grep '^  "id": ' | sed 's/"id":[ ]*\([^,]*\),/\1/' > /tmp/release-id
-              export RELEASE_ID="$(cat /tmp/release-id | sed 's/[ ]*//g')"
-              curl -v "https://uploads.github.com/repos/mParticle/mparticle-apple-sdk/releases/$RELEASE_ID/assets?access_token=$GITHUB_ACCESS_TOKEN&name=mParticle_Apple_SDK.framework.zip" --header 'Content-Type: application/zip' --upload-file mParticle_Apple_SDK.framework.zip -X POST || true
-              curl -v "https://uploads.github.com/repos/mParticle/mparticle-apple-sdk/releases/$RELEASE_ID/assets?access_token=$GITHUB_ACCESS_TOKEN&name=mParticle_Apple_SDK.framework.nolocation.zip" --header 'Content-Type: application/zip' --upload-file mParticle_Apple_SDK.framework.nolocation.zip -X POST || true
-              curl -v "https://uploads.github.com/repos/mParticle/mparticle-apple-sdk/releases/$RELEASE_ID/assets?access_token=$GITHUB_ACCESS_TOKEN&name=mParticle_Apple_SDK.xcframework.zip" --header 'Content-Type: application/zip' --upload-file mParticle_Apple_SDK.xcframework.zip -X POST || true
-              curl -v "https://uploads.github.com/repos/mParticle/mparticle-apple-sdk/releases/$RELEASE_ID/assets?access_token=$GITHUB_ACCESS_TOKEN&name=mParticle_Apple_SDK.xcframework.nolocation.zip" --header 'Content-Type: application/zip' --upload-file mParticle_Apple_SDK.xcframework.nolocation.zip -X POST || true
-              curl -v "https://uploads.github.com/repos/mParticle/mparticle-apple-sdk/releases/$RELEASE_ID/assets?access_token=$GITHUB_ACCESS_TOKEN&name=generated-docs.zip" --header 'Content-Type: application/zip' --upload-file generated-docs.zip -X POST || true
+          ls 
+          git status
+          git push internal HEAD:release/${{ github.run_number }}
 
       - name: Release to CocoaPods
+        if: ${{ github.event.inputs.dryRun == 'false'}}
         run: |
-              sudo gem install xcodeproj
-              pod trunk push --allow-warnings
+          sudo gem install xcodeproj
+          pod trunk push --allow-warnings
+
+  sync-repository:
+    needs: release
+    runs-on: macOS-latest
+    steps:
+      - name: "Checkout public/master Branch"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: ${{ github.repository }}
+          token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
+          ref: master
+      - name: "Add new release branch commits to public/master for release"
+        if: ${{ github.event.inputs.dryRun == 'false' }}
+        run: |
+          git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
+          git fetch internal
+          git pull internal release/${{ github.run_number }}
+      - name: "Merge back release commits to public/master repository"
+        if: ${{ github.event.inputs.dryRun == 'false'}}
+        run: |
+          git push origin HEAD:master
+      - name: "Merge back release commits to internal repository"
+        if: ${{ github.event.inputs.dryRun == 'false' }}
+        run: |
+          git push internal HEAD:development
+          git push internal HEAD:master
+      - name: "Delete Release Branch"
+        if: ${{ github.event.inputs.dryRun == 'false' }}
+        run: |
+          git push --delete internal release/${{ github.run_number }}
