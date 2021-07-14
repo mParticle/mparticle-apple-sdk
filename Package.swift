@@ -2,9 +2,15 @@
 
 import PackageDescription
 
+#if swift(>=5.3)
+let ios = SupportedPlatform.iOS(.v9)
+#else
+let ios = SupportedPlatform.iOS(.v8)
+#endif
+
 let package = Package(
     name: "mParticle-Apple-SDK",
-    platforms: [ .iOS(.v8), .tvOS(.v9) ],
+    platforms: [ ios, .tvOS(.v9) ],
     products: [
         .library(
             name: "mParticle-Apple-SDK",
