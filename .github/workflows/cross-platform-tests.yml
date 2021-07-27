@@ -1,6 +1,6 @@
 name: Cross Platform Tests
 on: 
-  [pull_request, push]
+  [pull_request]
 jobs:
   run-ios-tests:
     timeout-minutes: 20
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout cross-platform-tests
         uses: actions/checkout@v2
         with:
-          ref: initial #remove or change to development/master when initial PR is merged
+          ref: master
           token: ${{ secrets.APPLE_SDK_PAT }}  #medium-term solution, this needs to be an MParticle/non-personal PAT
           repository: mParticle/crossplatform-sdk-tests
           path: crossplatform-sdk-tests
@@ -30,9 +30,6 @@ jobs:
       - name: Install Cocoapods
         working-directory: crossplatform-sdk-tests
         run: sudo gem install cocoapods; sudo gem install cocoapods-generate
-      - name: Import Project
-        working-directory: crossplatform-sdk-tests
-        run: ./gradlew :testing:podImport
       - name: Run Tests
         working-directory: crossplatform-sdk-tests
         run: ./gradlew runIos
