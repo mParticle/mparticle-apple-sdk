@@ -1644,6 +1644,11 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveMessage:(MPMessage *)message {
+    if (!message.shouldUploadEvent) {
+        MPILogDebug(@"Not saving message for event because shouldUploadEvent was set to NO, message id: %lld, type: %@", message.messageId, message.messageType);
+        return;
+    }
+    
     NSInteger maxBytes = [MPPersistenceController maxBytesPerEvent:message.messageType];
     if (message == nil || message.messageData.length > maxBytes) {
         MPILogError(@"Unable to save message that is nil or exceeds max message size!");

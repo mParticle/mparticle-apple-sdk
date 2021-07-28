@@ -858,4 +858,63 @@
     XCTAssertNil(e);
 }
 
+- (void)testShouldUploadMessageToMParticle {
+    MParticle *instance = [MParticle sharedInstance];
+    NSDictionary *messageDictionary = @{
+        @"location": @"17 Cherry Tree Lane",
+        @"hardwareId": @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
+    };
+    NSData *messageData = [NSJSONSerialization dataWithJSONObject:messageDictionary options:0 error:nil];
+    NSNumber *sessionId = @17;
+    NSString *uuid = @"uuid";
+    MPMessage *message = [[MPMessage alloc] initWithSessionId:sessionId
+                                    messageId:1
+                                         UUID:uuid
+                                  messageType:@"test"
+                                  messageData:messageData
+                                    timestamp:[[NSDate date] timeIntervalSince1970]
+                                 uploadStatus:MPUploadStatusBatch
+                                       userId:@1
+                                   dataPlanId:nil
+                              dataPlanVersion:nil];
+    
+    [instance.persistenceController saveMessage:message];
+    NSDictionary *messages = [instance.persistenceController fetchMessagesForUploading];
+    XCTAssertEqual(messages.count, 1);
+    NSDictionary *messagesForMpid = messages[message.userId];
+    XCTAssertEqual(messagesForMpid.count, 1);
+    NSDictionary *messagesForSessionId = messagesForMpid[sessionId];
+    XCTAssertEqual(messagesForSessionId.count, 1);
+    NSDictionary *messsagesForDataPlanId = messagesForSessionId[@"0"];
+    XCTAssertEqual(messsagesForDataPlanId.count, 1);
+    NSArray *messagesForDataPlanVersion = messsagesForDataPlanId[@0];
+    XCTAssertEqual(messagesForDataPlanVersion.count, 1);
+    MPMessage *messageForUpload = messagesForDataPlanVersion[0];
+    XCTAssertEqualObjects(message, messageForUpload);
+}
+
+- (void)testShouldNotUploadMessageToMParticle {
+    MParticle *instance = [MParticle sharedInstance];
+    NSDictionary *messageDictionary = @{
+        @"location": @"17 Cherry Tree Lane",
+        @"hardwareId": @"IDFA:a5d934n0-232f-4afc-2e9a-3832d95zc702"
+    };
+    NSData *messageData = [NSJSONSerialization dataWithJSONObject:messageDictionary options:0 error:nil];
+    MPMessage *message = [[MPMessage alloc] initWithSessionId:@17
+                                    messageId:1
+                                         UUID:@"uuid"
+                                  messageType:@"test"
+                                  messageData:messageData
+                                    timestamp:[[NSDate date] timeIntervalSince1970]
+                                 uploadStatus:MPUploadStatusBatch
+                                       userId:@1
+                                   dataPlanId:nil
+                              dataPlanVersion:nil];
+    message.shouldUploadEvent = NO;
+    
+    [instance.persistenceController saveMessage:message];
+    NSDictionary *messages = [instance.persistenceController fetchMessagesForUploading];
+    XCTAssertEqual(messages.count, 0);
+}
+
 @end

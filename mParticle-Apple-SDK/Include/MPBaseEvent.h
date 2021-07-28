@@ -46,6 +46,11 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) BOOL shouldBeginSession;
 
 /**
+ Whether this event should be uploaded to mParticle when logged or only passed to kits (defaults to YES).
+ */
+@property (nonatomic) BOOL shouldUploadEvent;
+
+/**
  A Dictionary representation of this instance for uploading the event
  Must be overridden by a subclass
  */

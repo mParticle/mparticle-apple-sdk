@@ -15,6 +15,7 @@
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
+@property (nonatomic) BOOL shouldUploadEvent;
 
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId
                                 messageId:(int64_t)messageId

@@ -33,6 +33,7 @@
     _customAttributes = nil;
     _customFlags = nil;
     _shouldBeginSession = YES;
+    _shouldUploadEvent = YES;
     self.type = type;
     
     return self;
@@ -161,6 +162,7 @@
         copyObject.customAttributes = [_customAttributes copy];
         copyObject.messageType = _messageType;
         copyObject.timestamp = [_timestamp copy];
+        copyObject.shouldUploadEvent = _shouldUploadEvent;
         
         for (NSString *key in [_customFlags allKeys]) {
             [copyObject addCustomFlags:[_customFlags[key] copy] withKey:[key copy]];

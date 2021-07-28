@@ -627,6 +627,7 @@ static NSArray *actionNames;
                 
                 for (product in _productsList) {
                     event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
+                    event.shouldUploadEvent = self.shouldUploadEvent;
                     eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
 
                     productDictionary = [product beautifiedDictionaryRepresentation];
@@ -655,6 +656,7 @@ static NSArray *actionNames;
             if (purchaseOrRefund) {
                 eventName = [NSString stringWithFormat:@"eCommerce - %@ - Total", actionName];
                 event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
+                event.shouldUploadEvent = self.shouldUploadEvent;
                 
                 eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
                 eventInfo[kMPExpCECurrency] = self.currency ? : @"USD";
@@ -698,6 +700,7 @@ static NSArray *actionNames;
         case MPCommerceEventKindPromotion: {
             eventName = [NSString stringWithFormat:@"eCommerce - %@ - Item", [self.promotionContainer actionNameForAction:self.promotionContainer.action]];
             event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
+            event.shouldUploadEvent = self.shouldUploadEvent;
             eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
 
             NSDictionary *promotionDictionary = [self.promotionContainer beautifiedDictionaryRepresentation];
@@ -726,6 +729,7 @@ static NSArray *actionNames;
                     if (listedProducts.count > 0) {
                         for (product in listedProducts) {
                             event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
+                            event.shouldUploadEvent = self.shouldUploadEvent;
                             eventInfo = [[NSMutableDictionary alloc] initWithCapacity:4];
                             eventInfo[kMPExpCEProductImpressionList] = listName;
 

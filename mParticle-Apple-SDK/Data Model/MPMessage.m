@@ -26,6 +26,7 @@
         _userId = userId;
         _dataPlanId = dataPlanId;
         _dataPlanVersion = dataPlanVersion;
+        _shouldUploadEvent = YES;
     }
     
     return self;
@@ -87,6 +88,7 @@
     _timestamp == object.timestamp &&
     [_messageType isEqualToString:object.messageType] &&
     [_messageData isEqualToData:object.messageData] &&
+    _shouldUploadEvent == object.shouldUploadEvent &&
     dataPlanIdEqual &&
     dataPlanVersionEqual;
     
@@ -105,6 +107,7 @@
                                                           userId:_userId
                                                       dataPlanId:[_dataPlanId copy]
                                                  dataPlanVersion:[_dataPlanVersion copy]];
+    copyObject.shouldUploadEvent = _shouldUploadEvent;
     
     return copyObject;
 }
@@ -121,6 +124,7 @@
     [coder encodeInt64:_userId.longLongValue forKey:@"mpid"];
     [coder encodeObject:self.dataPlanId forKey:@"dataPlanId"];
     [coder encodeObject:self.dataPlanVersion forKey:@"dataPlanVersion"];
+    [coder encodeBool:self.shouldUploadEvent forKey:@"shouldUploadEvent"];
 }
 
 - (id)initWithCoder:(NSCoder *)coder {
@@ -134,6 +138,9 @@
                             userId:@([coder decodeInt64ForKey:@"mpid"])
                         dataPlanId:[coder decodeObjectOfClass:[NSString class] forKey:@"dataPlanId"]
                    dataPlanVersion:[coder decodeObjectOfClass:[NSNumber class] forKey:@"dataPlanVersion"]];
+    if ([coder containsValueForKey:@"shouldUploadEvent"]) {
+        _shouldUploadEvent = [coder decodeBoolForKey:@"shouldUploadEvent"];
+    }
     
     return self;
 }

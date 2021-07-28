@@ -1638,6 +1638,7 @@ static BOOL skipNextUpload = NO;
             messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
         #endif
             MPMessage *message = [messageBuilder build];
+            message.shouldUploadEvent = event.shouldUploadEvent;
             
             [self saveMessage:message updateSession:YES];
             
