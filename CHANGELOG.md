@@ -1,3 +1,16 @@
+# [8.5.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.4.0...v8.5.0) (2021-07-29)
+
+
+### Bug Fixes
+
+* Ensure accurate app/device info after restart (match Android SDK behavior) ([e1fdc94](https://github.com/mParticle/mparticle-apple-sdk/commit/e1fdc94784667fd30e7fee0f54234934d0bd8cd4))
+* Transaction attributes revenue logic differs from Android ([c274e42](https://github.com/mParticle/mparticle-apple-sdk/commit/c274e42171b09ddf55d800020c7434054202ac82))
+
+
+### Features
+
+* Event upload bypass option ([e58ae23](https://github.com/mParticle/mparticle-apple-sdk/commit/e58ae230acdcfb7a6fee16424e7fd9b85ab157f7))
+
 # mParticle Apple SDK CHANGELOG
 
 ## 8.4.0
