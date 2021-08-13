@@ -13,7 +13,6 @@ MPDataPlanFilter *additionalAttrsAdapter;
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
     NSDictionary *plan = @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"custom_event",@"criteria":@{@"event_name":@"Email Bounces",@"custom_event_type":@"other"} }, @"validator":@{@"definition":@{@"properties":@{@"data":@{@"properties":@{@"custom_attributes":@{@"additionalProperties": @NO, @"properties":@{@"Campaign Name": @{}, @"Campaign Id": @{}}}}}}}}}]}};
-    NSDictionary *additionalAttrsPlan = @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"custom_event",@"criteria":@{@"event_name":@"Email Bounces",@"custom_event_type":@"other"} }, @"validator":@{@"definition":@{@"properties":@{@"data":@{@"properties":@{@"custom_attributes":@{@"additionalProperties": @YES, @"properties":@{@"Campaign Name": @{}, @"Campaign Id": @{}}}}}}}}}]}};
     
     MPDataPlanOptions *dataplanOptions = [MPDataPlanOptions alloc];
     dataplanOptions.dataPlan = plan;
