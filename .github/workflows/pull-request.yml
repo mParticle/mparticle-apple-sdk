@@ -1,10 +1,10 @@
 name: iOS SDK Build
 
-on: [push, pull_request]
+on: [pull_request]
 
 jobs:
   pod-lint:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -21,9 +21,8 @@ jobs:
       - name: Undo twitter change to podspec
         run: git checkout *.podspec
 
-
   carthage-build:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -38,26 +37,51 @@ jobs:
         run: ls 2>&1 | grep .framework.zip
 
   ios-unit-tests:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run iOS unit tests repeatedly
-        run: for VARIABLE in `seq 1 4`; do xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_iOS_SDKTests -destination "platform=iOS Simulator,name=iPhone 8" test; done
-
+      - name: Run iOS unit tests
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_iOS_SDKTests -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" test
 
   tvos-unit-tests:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Run tvOS unit tests repeatedly
-        run: for VARIABLE in `seq 1 4`; do xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV 4K" test; done
+      - name: Run tvOS unit tests
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest" test
+
+##################################################################
+# Temporary tests for Xcode 13 beta, REMOVE AFTER OFFICIAL RELEASE
+# NOTE: Currently (8/13/21), the macos-latest runner still points to macOS 10.5, so we have to manually specify macOS 11 for now
+  ios-unit-tests-xcode13-beta:
+    runs-on: macos-11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run iOS unit tests
+        env:
+          DEVELOPER_DIR: "/Applications/Xcode_13.0.app/Contents/Developer"
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_iOS_SDKTests -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" test
+
+  tvos-unit-tests-xcode13-beta:
+    runs-on: macos-11
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run tvOS unit tests
+        env:
+          DEVELOPER_DIR: "/Applications/Xcode_13.0.app/Contents/Developer"
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest" test
+##################################################################
 
   compile-extension:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: ./Example
@@ -72,13 +96,13 @@ jobs:
         run: pod install
 
       - name: Build iOS extension scheme
-        run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 8'
+        run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 8,OS=latest'
 
   run-analyzer:
-    runs-on: macOS-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Run static analyzer
-        run: bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 11" clean analyze | grep -B3 "warning")'
+        run: bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 11,OS=latest" clean analyze | grep -B3 "warning")'
