@@ -9,7 +9,7 @@ on:
         default: "true"
 
 jobs:
-    # SDK release is done from public/master branch.
+  # SDK release is done from public/master branch.
   confirm-master-branch:
     name: "Confirm release is run on master branch"
     runs-on: macOS-latest

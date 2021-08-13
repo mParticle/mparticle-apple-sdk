@@ -1,6 +1,13 @@
 name: Cross Platform Tests
-on: 
-  [pull_request]
+
+on:
+  # Run for all PRs
+  pull_request:
+  # Run again once merged into development branch
+  push:
+    branches:
+      - development
+
 jobs:
   run-ios-tests:
     timeout-minutes: 20
