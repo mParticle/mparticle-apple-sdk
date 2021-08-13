@@ -299,8 +299,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                                                   @"logNetworkPerformanceMeasurement:":kMPMessageTypeStringNetworkPerformance,
                                                   @"profileChange:":kMPMessageTypeStringProfile,
                                                   @"setOptOut:":kMPMessageTypeStringOptOut,
-                                                  @"logCommerceEvent:":kMPMessageTypeStringCommerceEvent,
-                                                  @"leaveBreadcrumb:":kMPMessageTypeStringBreadcrumb
+                                                  @"logCommerceEvent:":kMPMessageTypeStringCommerceEvent
                                                   };
     
     return methodMessageTypeDictionary;
