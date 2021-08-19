@@ -33,7 +33,6 @@ jobs:
       - name: "Checkout Internal Development Branch"
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
           repository: mParticle/mparticle-apple-sdk-internal
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: development
@@ -64,14 +63,13 @@ jobs:
       - name: "Checkout public/master Branch"
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: master
       - name: "Add new release branch commits to public/master for release"
         run: |
           git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
-          git fetch internal
+          git fetch internal release/${{ github.run_number }}
           git pull internal release/${{ github.run_number }}
 
       - name: Release --dry-run
@@ -128,7 +126,6 @@ jobs:
       - name: "Checkout public/master Branch"
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: master
@@ -136,7 +133,7 @@ jobs:
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
-          git fetch internal
+          git fetch internal release/${{ github.run_number }}
           git pull internal release/${{ github.run_number }}
       - name: "Merge back release commits to public/master repository"
         if: ${{ github.event.inputs.dryRun == 'false'}}
