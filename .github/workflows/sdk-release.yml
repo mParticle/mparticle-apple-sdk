@@ -4,41 +4,49 @@ on:
   workflow_dispatch:
     inputs:
       dryRun:
-        description: "Do a dry run to preview instead of a real release [true/false]"
+        description: Do a dry run to preview instead of a real release [true/false]
         required: true
         default: "true"
 
 jobs:
-  # SDK release is done from public/master branch.
+  # SDK release is done from public master branch.
   confirm-master-branch:
-    name: "Confirm release is run on master branch"
+    name: Confirm release is run on master branch
     runs-on: macOS-latest
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
+        
       - name: Branch name
         run: |
           BRANCHNAME=${GITHUB_REF##*/}
-          echo "pulling branch name, branch name is:"
+          echo "confirming branch name, branch name is:"
           echo $BRANCHNAME
           if [ $BRANCHNAME != "master" ]
           then
             echo "You can only run a release from the master branch, you are trying to run it from ${BRANCHNAME}"
             exit 1
           fi
+
   create-release-branch:
+    name: Create release branch
     runs-on: macOS-latest
     needs: confirm-master-branch
     steps:
-      - name: "Checkout Internal Development Branch"
+      - name: Checkout internal development branch
         uses: actions/checkout@v2
         with:
           repository: mParticle/mparticle-apple-sdk-internal
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: development
-      - name: "Merge back release commits to public/master repository"
-        run: git checkout -b release/${{ github.run_number }}; git push origin release/${{ github.run_number }}
+
+      - name: Create and push release branch to internal repository
+        run: |
+          git checkout -b release/${{ github.run_number }}
+          git push origin release/${{ github.run_number }}
+
   release:
+    name: Perform release
     runs-on: macOS-latest
     needs: create-release-branch
     env:
@@ -60,16 +68,17 @@ jobs:
           git config user.email "developers@mparticle.com"
           git config user.name "mParticle Automation"
           
-      - name: "Checkout public/master Branch"
+      - name: Checkout public master branch
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: master
-      - name: "Add new release branch commits to public/master for release"
+
+      - name: Merge internal release branch into public master branch
         run: |
           git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
-          git fetch internal release/${{ github.run_number }}
           git pull internal release/${{ github.run_number }}
 
       - name: Release --dry-run
@@ -106,7 +115,7 @@ jobs:
           -p @semantic-release/exec@5 \
           semantic-release
           
-      - name: "Merge back release commits to release branch"
+      - name: Push automated release commits to internal release branch
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           ls 
@@ -120,31 +129,36 @@ jobs:
           pod trunk push --allow-warnings
 
   sync-repository:
+    name: Sync internal and public repositories
     needs: release
     runs-on: macOS-latest
     steps:
-      - name: "Checkout public/master Branch"
+      - name: Checkout public master branch
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
           ref: master
-      - name: "Add new release branch commits to public/master for release"
+
+      - name: Merge internal release branch into public master branch
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
-          git fetch internal release/${{ github.run_number }}
           git pull internal release/${{ github.run_number }}
-      - name: "Merge back release commits to public/master repository"
+          
+      - name: Push release commits to public master branch
         if: ${{ github.event.inputs.dryRun == 'false'}}
         run: |
           git push origin HEAD:master
-      - name: "Merge back release commits to internal repository"
+
+      - name: Push release commits to internal master and development branches
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           git push internal HEAD:development
           git push internal HEAD:master
-      - name: "Delete Release Branch"
+
+      - name: Delete internal release branch
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
           git push --delete internal release/${{ github.run_number }}
