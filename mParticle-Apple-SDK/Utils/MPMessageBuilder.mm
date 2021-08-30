@@ -382,6 +382,16 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     messageDictionary[kMPMessageIdKey] = uuid ? uuid : [[NSUUID UUID] UUIDString];
     
     NSNumber *userId = _session.userId.integerValue ? _session.userId : [MPPersistenceController mpId];
+    for (NSString *key in messageDictionary) {
+        if ([messageDictionary[key] isKindOfClass:[NSNumber class]]) {
+            NSNumber *value = (NSNumber *)messageDictionary[key];
+            if(value.doubleValue == INFINITY) {
+                MPILogVerbose(@"Invalid Message Data for key: %@", key);
+                MPILogVerbose(@"Value should not be infinite. Removing value from message data");
+                messageDictionary[key] = nil;
+            }
+        }
+    }
 
     message = [[MPMessage alloc] initWithSession:_session
                                      messageType:_messageType
