@@ -1993,12 +1993,14 @@
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"product name" sku:@"product sku" quantity:@1 price:@45];
     MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionViewDetail product:product];
+    commerceEvent.customAttributes = @{ @"foo attr 1": @"foo attr value 1"};
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     MPKitFilter *kitFilter = [kitContainer filter:kitRegister forCommerceEvent:commerceEvent];
     
     XCTAssert([kitFilter.forwardEvent isKindOfClass:[MPEvent class]]);
     XCTAssertEqualObjects(((MPEvent *)kitFilter.forwardEvent).name, @"af_content_view");
+    XCTAssertEqualObjects(((MPEvent *)kitFilter.forwardEvent).customAttributes, @{ @"foo attr 1": @"foo attr value 1"});
 }
 
 - (void)testShouldDelayUploadMaxTime {

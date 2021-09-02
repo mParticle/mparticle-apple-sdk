@@ -1544,6 +1544,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         projectedCommerceEvents.push_back(projectedCommerceEvent);
                     } else {
                         MPEvent *projectedEvent = [[MPEvent alloc] initWithName:(eventProjection.projectedName ? : @" ") type:MPEventTypeTransaction];
+                        projectedEvent.customAttributes = commerceEvent.customAttributes;
                         projectedEvents.push_back(projectedEvent);
                     }
                     
