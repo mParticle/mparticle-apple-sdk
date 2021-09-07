@@ -8,9 +8,11 @@
 #import "MPArchivist.h"
 #import "MPConnector.h"
 #import "MPNetworkCommunication.h"
+#import "MPConnectorProtocol.h"
 #import "OCMock.h"
+#import "MPConnectorFactoryProtocol.h"
 
-@interface MPTestConnectorFactory : NSObject <MPConnectorFactory>
+@interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>
 
 @property (nonatomic) NSMutableArray *mockConnectors;
 
@@ -18,7 +20,7 @@
 
 @implementation MPTestConnectorFactory
 
-- (MPConnector *)createConnector {
+- (NSObject<MPConnectorProtocol> *)createConnector {
     @synchronized ([self class]) {
          return OCMClassMock([MPConnector class]);
     }

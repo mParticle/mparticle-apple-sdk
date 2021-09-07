@@ -11,10 +11,14 @@
 		04610F5A215D8C8C001A36AB /* MParticleUserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 04610F58215D8C8B001A36AB /* MParticleUserTests.m */; };
 		04B1670B20000E0F0027F077 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4F166C1F1511B100D625CD /* MPIdentityTests.m */; };
 		04B1670C20000E0F0027F077 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4F166C1F1511B100D625CD /* MPIdentityTests.m */; };
+		B263073D26E29965000A12E9 /* MPConnectorResponseProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */; };
+		B26307A826E2FEC0000A12E9 /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = B26307A726E2FEC0000A12E9 /* MPNetworkCommunication.h */; };
+		B26307B626E2FEFB000A12E9 /* MPConnectorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = B26307B526E2FEFB000A12E9 /* MPConnectorProtocol.h */; };
 		B26313472559D82E0059AE6B /* sample_dataplan2.json in Resources */ = {isa = PBXBuildFile; fileRef = B26313462559D82E0059AE6B /* sample_dataplan2.json */; };
 		B26313482559D82E0059AE6B /* sample_dataplan2.json in Resources */ = {isa = PBXBuildFile; fileRef = B26313462559D82E0059AE6B /* sample_dataplan2.json */; };
 		B2AE029E1FFD59CF00C4DD89 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */; };
 		B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */; };
+		B2B3080626E6B79D005E706C /* MPConnectorFactoryProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = B2B3080526E6B79D005E706C /* MPConnectorFactoryProtocol.h */; };
 		C21FB07C260A2CFD00B1EB91 /* MPMessageTests.m in Sources */ = {isa = PBXBuildFile; fileRef = C21FB07B260A2CFD00B1EB91 /* MPMessageTests.m */; };
 		C911FD6F1D8A300C002A3516 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206B1D8A147A00D3ABBE /* UIKit.framework */; };
 		C911FD701D8A3014002A3516 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C9DD206D1D8A148400D3ABBE /* SystemConfiguration.framework */; };
@@ -434,8 +438,6 @@
 		DB47A1E224252A2C00869BD2 /* MPURLConnectionAssociate.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A07A24252A2B00869BD2 /* MPURLConnectionAssociate.m */; };
 		DB47A1E324252A2C00869BD2 /* MPConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A07B24252A2B00869BD2 /* MPConnector.m */; };
 		DB47A1E424252A2C00869BD2 /* MPConnector.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A07B24252A2B00869BD2 /* MPConnector.m */; };
-		DB47A1E524252A2C00869BD2 /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A07C24252A2B00869BD2 /* MPNetworkCommunication.h */; };
-		DB47A1E624252A2C00869BD2 /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A07C24252A2B00869BD2 /* MPNetworkCommunication.h */; };
 		DB47A1E724252A2C00869BD2 /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A07D24252A2B00869BD2 /* MPURLRequestBuilder.m */; };
 		DB47A1E824252A2C00869BD2 /* MPURLRequestBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A07D24252A2B00869BD2 /* MPURLRequestBuilder.m */; };
 		DB47A1E924252A2C00869BD2 /* MPNetworkPerformance.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A07E24252A2B00869BD2 /* MPNetworkPerformance.m */; };
@@ -570,7 +572,11 @@
 
 /* Begin PBXFileReference section */
 		04610F58215D8C8B001A36AB /* MParticleUserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleUserTests.m; sourceTree = "<group>"; };
+		B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnectorResponseProtocol.h; sourceTree = "<group>"; };
+		B26307A726E2FEC0000A12E9 /* MPNetworkCommunication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
+		B26307B526E2FEFB000A12E9 /* MPConnectorProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnectorProtocol.h; sourceTree = "<group>"; };
 		B26313462559D82E0059AE6B /* sample_dataplan2.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = sample_dataplan2.json; sourceTree = "<group>"; };
+		B2B3080526E6B79D005E706C /* MPConnectorFactoryProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnectorFactoryProtocol.h; sourceTree = "<group>"; };
 		B2BA9D861FFD4CBC0060450B /* MPResponseEventsTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPResponseEventsTest.m; sourceTree = "<group>"; };
 		C21FB07B260A2CFD00B1EB91 /* MPMessageTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPMessageTests.m; sourceTree = "<group>"; };
 		C911FD7C1D8A3524002A3516 /* mParticle_tvOS_SDKTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticle_tvOS_SDKTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -811,7 +817,6 @@
 		DB47A07924252A2B00869BD2 /* MPNetworkPerformance.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkPerformance.h; sourceTree = "<group>"; };
 		DB47A07A24252A2B00869BD2 /* MPURLConnectionAssociate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLConnectionAssociate.m; sourceTree = "<group>"; };
 		DB47A07B24252A2B00869BD2 /* MPConnector.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConnector.m; sourceTree = "<group>"; };
-		DB47A07C24252A2B00869BD2 /* MPNetworkCommunication.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
 		DB47A07D24252A2B00869BD2 /* MPURLRequestBuilder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURLRequestBuilder.m; sourceTree = "<group>"; };
 		DB47A07E24252A2B00869BD2 /* MPNetworkPerformance.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkPerformance.m; sourceTree = "<group>"; };
 		DB47A07F24252A2B00869BD2 /* MPConnector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConnector.h; sourceTree = "<group>"; };
@@ -1376,11 +1381,14 @@
 				D32668CC257FE910007FC798 /* MPURL.m */,
 				DB47A07A24252A2B00869BD2 /* MPURLConnectionAssociate.m */,
 				DB47A07B24252A2B00869BD2 /* MPConnector.m */,
-				DB47A07C24252A2B00869BD2 /* MPNetworkCommunication.h */,
 				DB47A07D24252A2B00869BD2 /* MPURLRequestBuilder.m */,
 				DB47A07E24252A2B00869BD2 /* MPNetworkPerformance.m */,
 				DB47A07F24252A2B00869BD2 /* MPConnector.h */,
 				DB47A08024252A2B00869BD2 /* MPURLConnectionAssociate.h */,
+				B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */,
+				B26307A726E2FEC0000A12E9 /* MPNetworkCommunication.h */,
+				B26307B526E2FEFB000A12E9 /* MPConnectorProtocol.h */,
+				B2B3080526E6B79D005E706C /* MPConnectorFactoryProtocol.h */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -1507,7 +1515,6 @@
 				DB47A1AA24252A2C00869BD2 /* MPAttributeProjection.h in Headers */,
 				DB47A21424252A2C00869BD2 /* MPTransactionAttributes.h in Headers */,
 				DB47A18024252A2C00869BD2 /* MPMessage.h in Headers */,
-				DB47A1E624252A2C00869BD2 /* MPNetworkCommunication.h in Headers */,
 				DB47A20A24252A2C00869BD2 /* MPListenerProtocol.h in Headers */,
 				DB47A20824252A2C00869BD2 /* FilteredMParticleUser.h in Headers */,
 				DB47A1CA24252A2C00869BD2 /* MPKitConfiguration.h in Headers */,
@@ -1587,7 +1594,6 @@
 				DB47A15324252A2C00869BD2 /* MPIdentityApiManager.h in Headers */,
 				DB47A1F124252A2C00869BD2 /* MPCustomModulePreference.h in Headers */,
 				DB47A0FB24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */,
-				D32668CD257FE910007FC798 /* MPURL.h in Headers */,
 				DB47A21124252A2C00869BD2 /* MPKitAPI.h in Headers */,
 				DB47A1D524252A2C00869BD2 /* MPILogger.h in Headers */,
 				DB47A0BD24252A2C00869BD2 /* MPSurrogateAppDelegate.h in Headers */,
@@ -1602,6 +1608,12 @@
 				DB47A0BB24252A2C00869BD2 /* MPPersistenceController.h in Headers */,
 				DB47A0D524252A2C00869BD2 /* MPConsentKitFilter.h in Headers */,
 				DB47A16124252A2C00869BD2 /* MPDataModelAbstract.h in Headers */,
+				D32668CD257FE910007FC798 /* MPURL.h in Headers */,
+				DB47A1DF24252A2C00869BD2 /* MPNetworkPerformance.h in Headers */,
+				B2B3080626E6B79D005E706C /* MPConnectorFactoryProtocol.h in Headers */,
+				B26307B626E2FEFB000A12E9 /* MPConnectorProtocol.h in Headers */,
+				B263073D26E29965000A12E9 /* MPConnectorResponseProtocol.h in Headers */,
+				B26307A826E2FEC0000A12E9 /* MPNetworkCommunication.h in Headers */,
 				DB47A22124252A2C00869BD2 /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				DB47A0F124252A2C00869BD2 /* MPStateMachine.h in Headers */,
 				DB47A0E524252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */,
@@ -1618,7 +1630,6 @@
 				DB47A1A924252A2C00869BD2 /* MPAttributeProjection.h in Headers */,
 				DB47A21324252A2C00869BD2 /* MPTransactionAttributes.h in Headers */,
 				DB47A17F24252A2C00869BD2 /* MPMessage.h in Headers */,
-				DB47A1E524252A2C00869BD2 /* MPNetworkCommunication.h in Headers */,
 				DB47A20924252A2C00869BD2 /* MPListenerProtocol.h in Headers */,
 				DB47A20724252A2C00869BD2 /* FilteredMParticleUser.h in Headers */,
 				DB47A1C924252A2C00869BD2 /* MPKitConfiguration.h in Headers */,
@@ -1640,7 +1651,6 @@
 				DB47A1A324252A2C00869BD2 /* MPBackendController.h in Headers */,
 				DB47A0D124252A2C00869BD2 /* MPConsentSerialization.h in Headers */,
 				DB47A21D24252A2C00869BD2 /* MPCCPAConsent.h in Headers */,
-				DB47A1DF24252A2C00869BD2 /* MPNetworkPerformance.h in Headers */,
 				DB47A0C524252A2C00869BD2 /* MPAppNotificationHandler.h in Headers */,
 				DB47A0FF24252A2C00869BD2 /* MPResponseConfig.h in Headers */,
 				DB47A0E324252A2C00869BD2 /* MessageTypeName.h in Headers */,

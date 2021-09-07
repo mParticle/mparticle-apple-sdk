@@ -1,4 +1,6 @@
 #import <Foundation/Foundation.h>
+#import "MPConnectorProtocol.h"
+#import "MPConnectorResponseProtocol.h"
 
 @class MPURL;
 
@@ -21,7 +23,7 @@ typedef NS_ENUM(NSInteger, HTTPStatusCode) {
     HTTPStatusCodeNetworkAuthenticationRequired = 511
 };
 
-@interface MPConnectorResponse : NSObject
+@interface MPConnectorResponse : NSObject<MPConnectorResponseProtocol>
 
 @property (nonatomic, nullable) NSData *data;
 @property (nonatomic, nullable) NSError *error;
@@ -30,9 +32,10 @@ typedef NS_ENUM(NSInteger, HTTPStatusCode) {
 
 @end
 
-@interface MPConnector : NSObject
 
-- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull MPURL *)url;
-- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams;
+@interface MPConnector : NSObject<MPConnectorProtocol>
+
+- (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromGetRequestToURL:(nonnull MPURL *)url;
+- (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams;
 
 @end

@@ -27,6 +27,7 @@
 #import "MPAliasResponse.h"
 #import "MPResponseConfig.h"
 #import "MPURL.h"
+#import "MPConnectorFactoryProtocol.h"
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
@@ -55,7 +56,7 @@ NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
 
-static NSObject<MPConnectorFactory> *factory = nil;
+static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MParticle ()
 
@@ -394,14 +395,14 @@ static NSObject<MPConnectorFactory> *factory = nil;
 }
 
 #pragma mark Public methods
-- (MPConnector *_Nonnull)makeConnector {
+- (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector {
     if (MPNetworkCommunication.connectorFactory) {
         return [MPNetworkCommunication.connectorFactory createConnector];
     }
     return [[MPConnector alloc] init];
 }
 
-- (void)requestConfig:(nullable MPConnector *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
+- (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     BOOL shouldSendRequest = [userDefaults isConfigurationExpired] || [userDefaults isConfigurationParametersOutdated];
     
@@ -429,7 +430,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointConfig url:self.configURL.url.absoluteString body:@[]];
     
     connector = connector ? connector : [self makeConnector];
-    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.configURL];
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.configURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -518,9 +519,9 @@ static NSObject<MPConnectorFactory> *factory = nil;
     
     __weak MPNetworkCommunication *weakSelf = self;
     NSDate *fetchSegmentsStartTime = [NSDate date];
-    MPConnector *connector = [self makeConnector];
+    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
 
-    MPConnectorResponse *response = [connector responseFromGetRequestToURL:self.segmentURL];
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.segmentURL];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
@@ -613,7 +614,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     
     NSString *uploadString = [upload serializedString];
-    MPConnector *connector = [self makeConnector];
+    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
     
     MPILogVerbose(@"Beginning upload for upload ID: %@", upload.uuid);
     
@@ -667,7 +668,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
     
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.eventURL
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:self.eventURL
                                                                     message:uploadString
                                                            serializedParams:zipUploadData];
     NSData *data = response.data;
@@ -724,7 +725,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
         return YES; //stop upload loop
     }
     NSString *uploadString = [upload serializedString];
-    MPConnector *connector = [self makeConnector];
+    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
     
     MPILogVerbose(@"Beginning alias request with upload ID: %@", upload.uuid);
     
@@ -737,7 +738,7 @@ static NSObject<MPConnectorFactory> *factory = nil;
     MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", _aliasURL.url, uploadString);
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:self.aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
     
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:self.aliasURL
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:self.aliasURL
                                                                     message:uploadString
                                                            serializedParams:upload.uploadData];
     NSData *data = response.data;
@@ -900,9 +901,9 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }
     [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
 
-    MPConnector *connector = [self makeConnector];
+    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
     MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
-    MPConnectorResponse *response = [connector responseFromPostRequestToURL:mpURL
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
                                                                     message:nil
                                                            serializedParams:data];
     NSData *responseData = response.data;
@@ -1080,11 +1081,11 @@ static NSObject<MPConnectorFactory> *factory = nil;
     }];
 }
 
-+ (void)setConnectorFactory:(NSObject<MPConnectorFactory> *)connectorFactory {
++ (void)setConnectorFactory:(NSObject<MPConnectorFactoryProtocol> *)connectorFactory {
     factory = connectorFactory;
 }
 
-+ (NSObject<MPConnectorFactory> *)connectorFactory {
++ (NSObject<MPConnectorFactoryProtocol> *)connectorFactory {
     return factory;
 }
 

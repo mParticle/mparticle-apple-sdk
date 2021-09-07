@@ -198,7 +198,7 @@ static NSArray *mpStoredCertificates = nil;
 }
 
 #pragma mark Public methods
-- (nonnull MPConnectorResponse *)responseFromGetRequestToURL:(nonnull MPURL *)url {
+- (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromGetRequestToURL:(nonnull MPURL *)url {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
     
     NSMutableURLRequest *urlRequest = [[MPURLRequestBuilder newBuilderWithURL:url message:nil httpMethod:kMPHTTPMethodGet] build];
@@ -238,7 +238,7 @@ static NSArray *mpStoredCertificates = nil;
     return response;
 }
 
-- (nonnull MPConnectorResponse *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
+- (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
 
     NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost]
@@ -276,5 +276,4 @@ static NSArray *mpStoredCertificates = nil;
     }
     return response;
 }
-
 @end
