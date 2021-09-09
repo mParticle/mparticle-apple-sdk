@@ -1,3 +1,12 @@
+## [8.5.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.0...v8.5.1) (2021-09-09)
+
+
+### Bug Fixes
+
+* Gracefully Handle Invalid Message Data ([b618e5b](https://github.com/mParticle/mparticle-apple-sdk/commit/b618e5ba9e29805c9d1e3b0378604a0a4bb0471a))
+* Preserve attributes when mapping commerce events ([0ff8414](https://github.com/mParticle/mparticle-apple-sdk/commit/0ff84147dc31e8c4ba64123acd5f0d99d21503c8))
+* Remove duplicate key in dictionary literal ([b1ecb17](https://github.com/mParticle/mparticle-apple-sdk/commit/b1ecb172f2204959f3dfd1153bc360d6c01a4dae))
+
 # [8.5.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.4.0...v8.5.0) (2021-07-29)
 
 
