@@ -1,3 +1,10 @@
+## [8.5.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.1...v8.5.2) (2021-09-10)
+
+
+### Bug Fixes
+
+* Revert commit e91a9a3 Update Conversion for Number Value in NSDictionary helper class ([a2280fe](https://github.com/mParticle/mparticle-apple-sdk/commit/a2280fefe187a16f1834310b1001023f078a2d16))
+
 ## [8.5.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.0...v8.5.1) (2021-09-09)
 
 
