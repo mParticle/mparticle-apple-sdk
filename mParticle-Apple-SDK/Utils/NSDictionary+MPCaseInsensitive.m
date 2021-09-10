@@ -64,7 +64,7 @@
             if (numberAttribute == (void *)kCFBooleanFalse || numberAttribute == (void *)kCFBooleanTrue) {
                 transformedDictionary[key] = [numberAttribute boolValue] ? @"true" : @"false";
             } else {
-                transformedDictionary[key] = [NSNumberFormatter localizedStringFromNumber:numberAttribute numberStyle:NSNumberFormatterDecimalStyle];
+                transformedDictionary[key] = [numberAttribute stringValue];
             }
         } else if ([obj isKindOfClass:[NSDate class]]) {
             transformedDictionary[key] = [MPDateFormatter stringFromDateRFC3339:obj];
