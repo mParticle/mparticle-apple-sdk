@@ -747,6 +747,7 @@ NSString *const kMPStateKey = @"state";
     dispatch_sync(messageQueue, ^{
         [[MPIUserDefaults standardUserDefaults] resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
+        [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
         [MParticle setSharedInstance:nil];
     });
 }
