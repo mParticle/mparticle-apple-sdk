@@ -882,7 +882,17 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         
         for (auto &projectedEvent : projectedEvents) {
             kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray];
-            [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:selector parameters:nil messageType:messageTypeCode userInfo:[[NSDictionary alloc] init]];
+            SEL mutableSelector = selector;
+            if (selector == @selector(logScreen:)) {
+                for (int i = 0; i < appliedProjectionsArray.count; i += 1) {
+                    auto appliedProjection = appliedProjectionsArray[i];
+                    if (appliedProjection.outboundMessageType == MPMessageTypeEvent) {
+                        mutableSelector = @selector(logBaseEvent:);
+                        break;
+                    }
+                }
+            }
+            [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:mutableSelector parameters:nil messageType:messageTypeCode userInfo:[[NSDictionary alloc] init]];
         }
     }];
     

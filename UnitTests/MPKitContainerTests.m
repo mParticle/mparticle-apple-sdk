@@ -1667,6 +1667,104 @@
     }
 }
 
+- (void)testScreenViewProjectionToBaseEvent {
+    [self setUserAttributesAndIdentities];
+
+    NSString *configurationStr = @"{ \
+                                     \"id\": 92, \
+                                     \"as\": { \
+                                       \"devKey\": \"INVALID_DEV_KEY\", \
+                                       \"appleAppId\": \"INVALID_APPLE_APP_ID\" \
+                                     }, \
+                                     \"hs\": {}, \
+                                     \"pr\": [ \
+                                       { \
+                                         \"id\": 170, \
+                                         \"pmmid\": 29, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 3, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"new_subscription\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       }, \
+                                       { \
+                                         \"id\": 171, \
+                                         \"pmmid\": 30, \
+                                         \"behavior\": { \
+                                           \"append_unmapped_as_is\": true \
+                                         }, \
+                                         \"action\": { \
+                                           \"projected_event_name\": \"X_NEW_NOAH_SUBSCRIPTION\", \
+                                           \"attribute_maps\": [], \
+                                           \"outbound_message_type\": 4 \
+                                         }, \
+                                         \"matches\": [ \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"Outcome\", \
+                                             \"attribute_values\": [ \
+                                               \"New_subscription\" \
+                                             ] \
+                                           }, \
+                                           { \
+                                             \"message_type\": 4, \
+                                             \"event_match_type\": \"String\", \
+                                             \"event\": \"SUBSCRIPTION_END\", \
+                                             \"attribute_key\": \"plan_id\", \
+                                             \"attribute_values\": [ \
+                                               \"3\", \
+                                               \"8\" \
+                                             ] \
+                                           } \
+                                         ] \
+                                       } \
+                                     ] \
+                                   }";
+    
+    NSData *configurationData = [configurationStr dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *configurationDictionary = [NSJSONSerialization JSONObjectWithData:configurationData options:0 error:nil];
+    NSArray *configurations = @[configurationDictionary];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+
+    MPEvent *event = [[MPEvent alloc] initWithName:@"SUBSCRIPTION_END" type:MPEventTypeTransaction];
+    event.customAttributes = @{@"plan_id":@"3", @"outcome":@"new_subscription"};
+
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] logBaseEvent:OCMOCK_ANY];
+    [(id <MPKitProtocol>)[kitWrapperMock reject] logScreen:OCMOCK_ANY];
+    
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logScreen:)];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+    [kitWrapperMock stopMocking];
+    [kitRegisterMock stopMocking];
+
+    XCTAssert([kitFilter.forwardEvent isKindOfClass:[MPEvent class]]);
+}
+
 - (void)testNonMatchingMatchArrayProjection {
     [self setUserAttributesAndIdentities];
 
