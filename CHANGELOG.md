@@ -1,3 +1,11 @@
+## [8.5.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.2...v8.5.3) (2021-09-20)
+
+
+### Bug Fixes
+
+* Calling -[MParticle reset] doesn't clean up our app delegate proxy ([d7932da](https://github.com/mParticle/mparticle-apple-sdk/commit/d7932da84ae428485628e55d001b5336a3780ef7))
+* Mapped screen events forwarding to kits ([86e7c75](https://github.com/mParticle/mparticle-apple-sdk/commit/86e7c75e38db7bc4375ca899dac7c058ebb4825d))
+
 ## [8.5.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.1...v8.5.2) (2021-09-10)
 
 
