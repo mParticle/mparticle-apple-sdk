@@ -102,6 +102,42 @@
     XCTAssertNotNil(dictionaryRepresentation, @"Should not have been nil.");
 }
 
+- (void)testMessageInstanceWithInfinite {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    double four = 4.0;
+    double zed = 0.0;
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:@{@"MessageKey1":@(four/zed)}];
+    XCTAssertNotNil(messageBuilder, @"Should not have been nil.");
+    
+    MPMessage *message = [messageBuilder build];
+    XCTAssertNotNil(message, @"Should not have been nil.");
+    
+    NSString *description = [message description];
+    XCTAssertNotNil(description, @"Should not have been nil.");
+    
+    MPMessage *messageCopy = [message copy];
+    XCTAssertNotNil(messageCopy, @"Should not have been nil.");
+    XCTAssertEqualObjects(message, messageCopy, @"Should have been equal.");
+    messageCopy.timestamp = [[NSDate date] timeIntervalSince1970];
+    XCTAssertNotEqualObjects(message, messageCopy, @"Should not have been equal.");
+
+    messageCopy = (MPMessage *)[NSNull null];
+    XCTAssertNotEqualObjects(message, messageCopy, @"Should not have been equal.");
+    XCTAssertNotEqualObjects(messageCopy, message, @"Should not have been equal.");
+    messageCopy = (MPMessage *)@"This is not a valid message object.";
+    XCTAssertNotEqualObjects(message, messageCopy, @"Should not have been equal.");
+    XCTAssertNotEqualObjects(messageCopy, message, @"Should not have been equal.");
+    messageCopy = nil;
+    XCTAssertNotEqualObjects(message, messageCopy, @"Should not have been equal.");
+    XCTAssertNotEqualObjects(messageCopy, message, @"Should not have been equal.");
+
+    NSDictionary *dictionaryRepresentation = [message dictionaryRepresentation];
+    XCTAssertNotNil(dictionaryRepresentation, @"Should not have been nil.");
+}
+
 - (void)testUploadInstance {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     

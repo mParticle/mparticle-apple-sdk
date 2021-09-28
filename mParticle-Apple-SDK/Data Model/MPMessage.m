@@ -39,11 +39,23 @@
         sessionId = @(session.sessionId);
     }
     
+    NSMutableDictionary *messageDictionary = messageInfo.mutableCopy;
+    for (NSString *key in messageInfo) {
+        if ([messageInfo[key] isKindOfClass:[NSNumber class]]) {
+            NSNumber *value = (NSNumber *)messageInfo[key];
+            if(value.doubleValue == INFINITY || value.doubleValue == -INFINITY || isnan(value.doubleValue)) {
+                MPILogVerbose(@"Invalid Message Data for key: %@", key);
+                MPILogVerbose(@"Value should not be infinite. Removing value from message data");
+                messageDictionary[key] = nil;
+            }
+        }
+    }
+    
     return [self initWithSessionId:sessionId
                          messageId:0
                               UUID:uuid
                        messageType:messageType
-                       messageData:[NSJSONSerialization dataWithJSONObject:messageInfo options:0 error:nil]
+                       messageData:[NSJSONSerialization dataWithJSONObject:messageDictionary options:0 error:nil]
                          timestamp:timestamp
                       uploadStatus:uploadStatus
                             userId:userId
