@@ -1,0 +1,41 @@
+name: Branch Name PR Check
+on:
+    pull_request:
+        types: [opened, synchronize, edited]
+jobs:
+    pr-branch-name-check:
+        name: Check PR for semantic branch name
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        runs-on: ubuntu-18.04
+        steps:
+            - name: Set PR branch validity
+              id: is-semantic
+              if: >
+                  startsWith(github.event.pull_request.head.ref, 'feat/')||
+                  startsWith(github.event.pull_request.head.ref, 'fix/') ||
+                  startsWith(github.event.pull_request.head.ref, 'perf/') ||
+                  startsWith(github.event.pull_request.head.ref, 'docs/') ||
+                  startsWith(github.event.pull_request.head.ref, 'test/') ||
+                  startsWith(github.event.pull_request.head.ref, 'refactor/') ||
+                  startsWith(github.event.pull_request.head.ref, 'style/') ||
+                  startsWith(github.event.pull_request.head.ref, 'build/') ||
+                  startsWith(github.event.pull_request.head.ref, 'ci/') ||
+                  startsWith(github.event.pull_request.head.ref, 'chore/') ||
+                  startsWith(github.event.pull_request.head.ref, 'revert/')
+              run: |
+                  OUTPUT=true
+                  echo "::set-output name=isSemantic::$OUTPUT"
+            - name: echo isSemantic
+              run: |
+                  echo ${{ steps.is-semantic.outputs.isSemantic }}
+            - name: Branch name is valid
+              if: ${{steps.is-semantic.outputs.isSemantic == 'true'}}
+              run: |
+                  echo 'Pull request branch name is valid.'
+                  echo ${{ steps.is-semantic.outputs.isSemantic }}
+            - name: Branch name is invalid
+              if: ${{ steps.is-semantic.outputs.isSemantic != 'true'}}
+              run: |
+                  echo ${{ steps.is-semantic.outputs.isSemantic }}
+                  echo 'Pull request branch name is not valid.'
+                  exit 1
