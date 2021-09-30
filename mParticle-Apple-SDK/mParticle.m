@@ -104,6 +104,7 @@ NSString *const kMPStateKey = @"state";
 - (instancetype)initWithUUID:(NSString *)uuid;
 @property (nonatomic, readwrite) NSNumber *sessionID;
 @property (nonatomic, readwrite) NSString *UUID;
+@property (nonatomic, readwrite) NSNumber *startTime;
 
 @end
 
@@ -645,6 +646,7 @@ NSString *const kMPStateKey = @"state";
     
     if (sessionInternal) {
         session = [[MParticleSession alloc] initWithUUID:sessionInternal.uuid];
+        session.startTime = MPMilliseconds(sessionInternal.startTime);
     }
     
     return session;
