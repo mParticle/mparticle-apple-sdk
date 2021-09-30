@@ -57,6 +57,11 @@ NS_ASSUME_NONNULL_BEGIN
  */
 @property (nonatomic, readonly) NSString *UUID;
 
+/**
+ The session start time.
+ */
+@property (nonatomic, readonly) NSNumber *startTime;
+
 @end
 
 /**
