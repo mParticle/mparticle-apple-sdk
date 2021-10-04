@@ -1,3 +1,11 @@
+## [8.5.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.3...v8.5.4) (2021-10-04)
+
+
+### Bug Fixes
+
+* Expose session start time ([#134](https://github.com/mParticle/mparticle-apple-sdk/issues/134)) ([8a3437f](https://github.com/mParticle/mparticle-apple-sdk/commit/8a3437ff0f34b8cf99faf45768c3157a54804379))
+* Prevent Infinite Values in Message Data ([#39](https://github.com/mParticle/mparticle-apple-sdk/issues/39)) ([d19d785](https://github.com/mParticle/mparticle-apple-sdk/commit/d19d785916b6169b90454b897c5037f5423cfa9e))
+
 ## [8.5.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.2...v8.5.3) (2021-09-20)
 
 
