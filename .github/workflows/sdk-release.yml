@@ -10,23 +10,9 @@ on:
 
 jobs:
   # SDK release is done from public master branch.
-  confirm-master-branch:
-    name: Confirm release is run on master branch
-    runs-on: macOS-latest
-    steps:
-      - name: Git checkout
-        uses: actions/checkout@v2
-        
-      - name: Branch name
-        run: |
-          BRANCHNAME=${GITHUB_REF##*/}
-          echo "confirming branch name, branch name is:"
-          echo $BRANCHNAME
-          if [ $BRANCHNAME != "master" ]
-          then
-            echo "You can only run a release from the master branch, you are trying to run it from ${BRANCHNAME}"
-            exit 1
-          fi
+  confirm-public-repo-master-branch:
+    name: "Confirm release is run from public/master branch"
+    uses: mParticle/mparticle-workflows/.github/workflows/sdk-release-repo-branch-check.yml@stable
 
   create-release-branch:
     name: Create release branch
@@ -67,7 +53,7 @@ jobs:
         run: |
           git config user.email "developers@mparticle.com"
           git config user.name "mParticle Automation"
-          
+
       - name: Checkout public master branch
         uses: actions/checkout@v2
         with:
@@ -114,7 +100,7 @@ jobs:
           -p @semantic-release/git@9 \
           -p @semantic-release/exec@5 \
           semantic-release
-          
+
       - name: Push automated release commits to internal release branch
         if: ${{ github.event.inputs.dryRun == 'false' }}
         run: |
@@ -146,7 +132,7 @@ jobs:
         run: |
           git remote add internal https://${{ secrets.MP_SEMANTIC_RELEASE_BOT }}@github.com/mParticle/mparticle-apple-sdk-internal.git
           git pull internal release/${{ github.run_number }}
-          
+
       - name: Push release commits to public master branch
         if: ${{ github.event.inputs.dryRun == 'false'}}
         run: |
