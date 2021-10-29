@@ -43,4 +43,7 @@
 - (void)truncateMessageDataProperty:(nonnull NSString *)property
                            toLength:(NSInteger)length;
 
++ (void)fixInvalidKeysInDictionary:(nonnull NSMutableDictionary*)messageDictionary
+                       messageInfo:(nonnull NSDictionary*) messageInfo;
+
 @end
