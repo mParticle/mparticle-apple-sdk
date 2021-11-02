@@ -10,33 +10,33 @@ on:
 
 jobs:
   run-ios-tests:
-    timeout-minutes: 20
+    timeout-minutes: 30
     runs-on: macos-latest
     steps:
-      - name: Checkout internal
+      - name: "Checkout Cross Platform Tests"
         uses: actions/checkout@v2
         with:
-          path: ios-sdk
-      - name: Checkout cross-platform-tests
-        uses: actions/checkout@v2
-        with:
-          ref: master
-          token: ${{ secrets.APPLE_SDK_PAT }}  #medium-term solution, this needs to be an MParticle/non-personal PAT
+          token: ${{ secrets.APPLE_SDK_PAT }} #medium-term solution, this needs to be an MParticle/non-personal PAT
+          submodules: "true"
           repository: mParticle/crossplatform-sdk-tests
-          path: crossplatform-sdk-tests
-      - name: Checkout submodules
-        working-directory: crossplatform-sdk-tests
-        run: |
-          git config --file .gitmodules --get-regexp url | while read url; do
-            git config --file=.gitmodules $(echo "$url" | sed -E "s/git@github.com:|https:\/\/github.com\//https:\/\/${{ secrets.APPLE_SDK_PAT }}:${{ secrets.APPLE_SDK_PAT }}@github.com\//")
-          done
-          git submodule sync
-          git submodule update --init
-      - name: Replace crossplatform-sdk-tests' Apple submodule with current commit
-        run: rm -rf crossplatform-sdk-tests/.sdks/apple/*; mv -v ios-sdk/* crossplatform-sdk-tests/.sdks/apple
-      - name: Install Cocoapods
-        working-directory: crossplatform-sdk-tests
+          fetch-depth: 1
+      - name: "Checkout internal"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+          path: .sdks/apple
+      - name: "Install JDK 11"
+        uses: actions/setup-java@v2
+        with:
+          distribution: "zulu"
+          java-version: "11"
+      - name: "Install Cocoapods"
         run: sudo gem install cocoapods; sudo gem install cocoapods-generate
       - name: Run Tests
-        working-directory: crossplatform-sdk-tests
         run: ./gradlew runIos
+      - name: Archive Test Results
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: ios-test-results
+          path: Users/runner/Library/Developer/Xcode/DerivedData
