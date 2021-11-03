@@ -983,6 +983,10 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
+    [self logScreen:screenName eventInfo:eventInfo shouldUploadEvent:YES];
+}
+
+- (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo shouldUploadEvent:(BOOL)shouldUploadEvent {
     if (!screenName) {
         MPILogError(@"Screen name is required.");
         return;
@@ -994,6 +998,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     event.customAttributes = eventInfo;
+    event.shouldUploadEvent = shouldUploadEvent;
     
     [self logScreenEvent:event];
 }
