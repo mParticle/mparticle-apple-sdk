@@ -102,6 +102,58 @@
     XCTAssertNotNil(dictionaryRepresentation, @"Should not have been nil.");
 }
 
+- (void)testFixInvalidKeysInDictionary {
+    double four = 4.0;
+    double zed = 0.0;
+    
+    NSDictionary *messageInfo = @{@"MessageKey1": @"MessageValue1",
+                                  @"MessageKey2": @"MessageValue2"};
+    NSMutableDictionary *messageDictionary = messageInfo.mutableCopy;
+    [MPMessage fixInvalidKeysInDictionary:messageDictionary messageInfo:messageInfo];
+    XCTAssertEqualObjects(messageInfo, messageDictionary);
+    
+    messageInfo = @{@"MessageKey1": @"MessageValue1",
+                    @"MessageKey2": @(four/zed)};
+    messageDictionary = messageInfo.mutableCopy;
+    [MPMessage fixInvalidKeysInDictionary:messageDictionary messageInfo:messageInfo];
+    XCTAssertEqual([messageDictionary objectForKey:@"MessageKey2"], nil);
+    XCTAssertEqual([messageDictionary objectForKey:@"MessageKey1"], @"MessageValue1");
+    
+    messageInfo = @{@"MessageKey1": @"MessageValue1",
+                    @"MessageKey2": @{
+                        @"NestedKey1": @(four/zed),
+                        @"NestedKey2": @"test"}};
+    messageDictionary = messageInfo.mutableCopy;
+    [MPMessage fixInvalidKeysInDictionary:messageDictionary messageInfo:messageInfo];
+    XCTAssertEqual([messageDictionary[@"MessageKey2"] objectForKey:@"NestedKey1"], nil);
+    XCTAssertEqual([messageDictionary[@"MessageKey2"] objectForKey:@"NestedKey2"], @"test");
+
+    messageInfo = @{@"MessageKey1": @"MessageValue1",
+                    @"MessageKey2": @{
+                        @"NestedKey1": @{ @"NestedKeyA": @(four/zed),
+                                          @"NestedKeyB": @"test"},
+                        @"NestedKey2": @"test"}
+                    
+    };
+    messageDictionary = messageInfo.mutableCopy;
+    [MPMessage fixInvalidKeysInDictionary:messageDictionary messageInfo:messageInfo];
+    XCTAssertEqual([messageDictionary[@"MessageKey2"][@"NestedKey1"] objectForKey:@"NestedKeyA"], nil);
+    XCTAssertEqual([messageDictionary[@"MessageKey2"][@"NestedKey1"] objectForKey:@"NestedKeyB"], @"test");
+    
+    messageInfo = @{@"MessageKey1": @(four/zed),
+                    @"MessageKey2": @{
+                        @"NestedKey1": @{ @"NestedKeyA": @(four/zed),
+                                          @"NestedKeyB": @"test"},
+                        @"NestedKey2": @(four/zed)}};
+    messageDictionary = messageInfo.mutableCopy;
+    [MPMessage fixInvalidKeysInDictionary:messageDictionary messageInfo:messageInfo];
+    XCTAssertEqual([messageDictionary objectForKey:@"MessageKey1"], nil);
+    XCTAssertEqual([messageDictionary[@"MessageKey2"] objectForKey:@"NestedKey2"], nil);
+    XCTAssertEqual([messageDictionary[@"MessageKey2"][@"NestedKey1"] objectForKey:@"NestedKeyA"], nil);
+    XCTAssertEqual([messageDictionary[@"MessageKey2"][@"NestedKey1"] objectForKey:@"NestedKeyB"], @"test");
+    
+}
+
 - (void)testMessageInstanceWithInfinite {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
