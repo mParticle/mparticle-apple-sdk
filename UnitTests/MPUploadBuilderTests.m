@@ -9,6 +9,7 @@
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
+#import "MPDevice.h"
 #import "mParticle.h"
 
 @interface MParticle ()
@@ -178,6 +179,10 @@
 
         XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
         
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertNil(deviceInfoDictionary[kMPDeviceAdvertiserIdKey]);
+        
         [expectation fulfill];
     }];
     
@@ -247,6 +252,10 @@
         XCTAssertEqualObjects(uploadDictionary[@"ua"], referenceUserAttributes);
         XCTAssertNil(upload.dataPlanId);
         XCTAssertNil(upload.dataPlanVersion);
+        
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertNil(deviceInfoDictionary[kMPDeviceAdvertiserIdKey]);
         
         [expectation fulfill];
     }];
@@ -325,6 +334,10 @@
         XCTAssertEqualObjects(upload.dataPlanId, @"test");
         XCTAssertNil(upload.dataPlanVersion);
 
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertNil(deviceInfoDictionary[kMPDeviceAdvertiserIdKey]);
+        
         [expectation fulfill];
     }];
     
@@ -403,6 +416,254 @@
         XCTAssertEqualObjects(upload.dataPlanId, @"test");
         XCTAssertEqualObjects(upload.dataPlanVersion, @1);
 
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertNil(deviceInfoDictionary[kMPDeviceAdvertiserIdKey]);
+        
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testInstanceWithAdvertiserIdInSessionNoAttStatus {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    [self configureCustomModules];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:messageInfo];
+    
+    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    MPMessage *message = [messageBuilder build];
+    
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
+                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                   messages:@[message]
+                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                                 dataPlanId:message.dataPlanId
+                                                            dataPlanVersion:message.dataPlanVersion
+    ];
+    
+    XCTAssertNotNil(uploadBuilder);
+    
+    NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
+                                     @"Arm length":@"Short",
+                                     @"Height":@20,
+                                     @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+    
+    NSSet *deletedUserAttributes = [NSSet setWithObjects:@"Push ups", nil];
+    
+    [uploadBuilder withUserAttributes:userAttributes deletedUserAttributes:deletedUserAttributes];
+    
+    NSArray *userIdentities = @[@{
+        @"n":@7,
+        @"i":@"trex@shortarmsdinosaurs.com",
+        @"dfs":MPCurrentEpochInMilliseconds,
+        @"f":@NO
+    },
+                                @{
+                                    @"n":@22,
+                                    @"i":@"C56A4180-65AA-42EC-A945-5FD21DEC0538"
+                                }
+    ];
+    
+    [uploadBuilder withUserIdentities:userIdentities];
+    
+    NSString *description = [uploadBuilder description];
+    XCTAssertNotNil(description);
+    
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
+        XCTAssertNotNil(upload);
+        Class uploadClass = [MPUpload class];
+        XCTAssertEqualObjects([upload class], uploadClass);
+        
+        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
+        XCTAssertNotNil(uploadDictionary);
+        
+        NSDictionary *referenceUserDictionary = @{@"Dinosaur":@"T-Rex",
+                                                  @"Arm length":@"Short",
+                                                  @"Height":@"20",
+                                                  @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+        
+        XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
+        
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertNil(deviceInfoDictionary[kMPDeviceAdvertiserIdKey]);
+        
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testInstanceWithAdvertiserIdInSessionAuthorizedAttStatus {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
+    
+    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    [self configureCustomModules];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:messageInfo];
+    
+    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    MPMessage *message = [messageBuilder build];
+    
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
+                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                   messages:@[message]
+                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                                 dataPlanId:message.dataPlanId
+                                                            dataPlanVersion:message.dataPlanVersion
+    ];
+    
+    XCTAssertNotNil(uploadBuilder);
+    
+    NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
+                                     @"Arm length":@"Short",
+                                     @"Height":@20,
+                                     @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+    
+    NSSet *deletedUserAttributes = [NSSet setWithObjects:@"Push ups", nil];
+    
+    [uploadBuilder withUserAttributes:userAttributes deletedUserAttributes:deletedUserAttributes];
+    
+    NSArray *userIdentities = @[@{
+        @"n":@7,
+        @"i":@"trex@shortarmsdinosaurs.com",
+        @"dfs":MPCurrentEpochInMilliseconds,
+        @"f":@NO
+    },
+                                @{
+                                    @"n":@22,
+                                    @"i":@"C56A4180-65AA-42EC-A945-5FD21DEC0538"
+                                }
+    ];
+    
+    [uploadBuilder withUserIdentities:userIdentities];
+    
+    NSString *description = [uploadBuilder description];
+    XCTAssertNotNil(description);
+    
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
+        XCTAssertNotNil(upload);
+        Class uploadClass = [MPUpload class];
+        XCTAssertEqualObjects([upload class], uploadClass);
+        
+        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
+        XCTAssertNotNil(uploadDictionary);
+        
+        NSDictionary *referenceUserDictionary = @{@"Dinosaur":@"T-Rex",
+                                                  @"Arm length":@"Short",
+                                                  @"Height":@"20",
+                                                  @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+        
+        XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
+        
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertEqualObjects(deviceInfoDictionary[kMPDeviceAdvertiserIdKey], @"C56A4180-65AA-42EC-A945-5FD21DEC0538");
+        
+        [expectation fulfill];
+    }];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testInstanceWithAdvertiserIdInSessionDeniedAttStatus {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Upload builder instance (session)"];
+    
+    [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
+    
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    
+    NSDictionary *messageInfo = @{@"key1":@"value1",
+                                  @"key2":@"value2",
+                                  @"key3":@"value3"};
+    
+    [self configureCustomModules];
+    
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
+                                                                           session:session
+                                                                       messageInfo:messageInfo];
+    
+    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    MPMessage *message = [messageBuilder build];
+    
+    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
+                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                   messages:@[message]
+                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                                 dataPlanId:message.dataPlanId
+                                                            dataPlanVersion:message.dataPlanVersion
+    ];
+    
+    XCTAssertNotNil(uploadBuilder);
+    
+    NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
+                                     @"Arm length":@"Short",
+                                     @"Height":@20,
+                                     @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+    
+    NSSet *deletedUserAttributes = [NSSet setWithObjects:@"Push ups", nil];
+    
+    [uploadBuilder withUserAttributes:userAttributes deletedUserAttributes:deletedUserAttributes];
+    
+    NSArray *userIdentities = @[@{
+        @"n":@7,
+        @"i":@"trex@shortarmsdinosaurs.com",
+        @"dfs":MPCurrentEpochInMilliseconds,
+        @"f":@NO
+    },
+                                @{
+                                    @"n":@22,
+                                    @"i":@"C56A4180-65AA-42EC-A945-5FD21DEC0538"
+                                }
+    ];
+    
+    [uploadBuilder withUserIdentities:userIdentities];
+    
+    NSString *description = [uploadBuilder description];
+    XCTAssertNotNil(description);
+    
+    [uploadBuilder build:^(MPUpload * _Nullable upload) {
+        XCTAssertNotNil(upload);
+        Class uploadClass = [MPUpload class];
+        XCTAssertEqualObjects([upload class], uploadClass);
+        
+        NSDictionary *uploadDictionary = [(MPUpload *)upload dictionaryRepresentation];
+        XCTAssertNotNil(uploadDictionary);
+        
+        NSDictionary *referenceUserDictionary = @{@"Dinosaur":@"T-Rex",
+                                                  @"Arm length":@"Short",
+                                                  @"Height":@"20",
+                                                  @"Keywords":@[@"Omnivore", @"Loud", @"Pre-historic"]};
+        
+        XCTAssertEqualObjects(uploadDictionary[kMPUserAttributeKey], referenceUserDictionary);
+        
+        NSDictionary *deviceInfoDictionary = uploadDictionary[kMPDeviceInformationKey];
+        XCTAssertNotNil(deviceInfoDictionary);
+        XCTAssertNil(deviceInfoDictionary[kMPDeviceAdvertiserIdKey]);
+        
         [expectation fulfill];
     }];
     

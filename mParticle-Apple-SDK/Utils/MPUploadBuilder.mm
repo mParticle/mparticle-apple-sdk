@@ -175,6 +175,23 @@ using namespace std;
         uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
     }
     
+    // Update the IDFA if it changed after the session was created/saved (the IDFA changed or the ATTStatus has been set to authorized)
+    NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    NSMutableArray *userIdentities = uploadDictionary[kMPUserIdentityArrayKey];
+    NSString *advertiserId;
+    for (NSMutableDictionary *userIdentityDictionary in userIdentities) {
+        NSNumber *identityTypeKey = userIdentityDictionary[kMPUserIdentityTypeKey];
+        if ([identityTypeKey isEqualToNumber:@(MPIdentityIOSAdvertiserId)]) {
+            advertiserId = userIdentityDictionary[kMPUserIdentityIdKey];
+        }
+    }
+
+    if (authStatus && advertiserId && authStatus.intValue == MPATTAuthorizationStatusAuthorized) {
+        NSMutableDictionary *deviceInfoDictCopy = [uploadDictionary[kMPDeviceInformationKey] mutableCopy];
+        deviceInfoDictCopy[kMPDeviceAdvertiserIdKey] = advertiserId;
+        uploadDictionary[kMPDeviceInformationKey] = [deviceInfoDictCopy copy];
+    }
+    
     MPConsumerInfo *consumerInfo = stateMachine.consumerInfo;
     
     NSDictionary *cookies = [consumerInfo cookiesDictionaryRepresentation];
