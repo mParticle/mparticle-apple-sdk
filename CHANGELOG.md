@@ -1,3 +1,16 @@
+# [8.6.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.4...v8.6.0) (2022-01-13)
+
+
+### Bug Fixes
+
+* remove infinite values from message data ([#138](https://github.com/mParticle/mparticle-apple-sdk/issues/138)) ([3ea7370](https://github.com/mParticle/mparticle-apple-sdk/commit/3ea7370c1bc42c09e59fb027f7c0e36dd8878d88))
+* update reusable workflow urls ([0d1dc43](https://github.com/mParticle/mparticle-apple-sdk/commit/0d1dc431e4668e5a103fe70054f3c29f89d96f85))
+
+
+### Features
+
+* add upload bypass support to logscreenevent ([#137](https://github.com/mParticle/mparticle-apple-sdk/issues/137)) ([1bfd098](https://github.com/mParticle/mparticle-apple-sdk/commit/1bfd09862360f626f4041c3d12bd11ed9667d541))
+
 ## [8.5.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.3...v8.5.4) (2021-10-04)
 
 
