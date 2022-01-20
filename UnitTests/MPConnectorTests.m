@@ -86,7 +86,7 @@
     MPURLRequestBuilder *mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
     OCMVerify([[mockRequestBuilder class] newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
     
-    MPConnectorResponse *connectorResponse = [connector responseFromGetRequestToURL:mpURL];
+    NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromGetRequestToURL:mpURL];
     XCTAssertNotNil(connectorResponse);
     OCMVerifyAll((id)mockRequestBuilder);
 }
@@ -100,7 +100,7 @@
     MPURLRequestBuilder *mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
     OCMVerify([[mockRequestBuilder class] newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
     
-    MPConnectorResponse *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil];
+    NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil];
     XCTAssertNotNil(connectorResponse);
     OCMVerifyAll((id)mockRequestBuilder);
 }

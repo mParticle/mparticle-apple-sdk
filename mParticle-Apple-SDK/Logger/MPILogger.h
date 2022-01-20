@@ -4,23 +4,21 @@
 #import "MPEnums.h"
 
 #define MPILogger(loggerLevel, format, ...) if ([MParticle sharedInstance].logLevel >= (loggerLevel) && [MParticle sharedInstance].logLevel != MPILogLevelNone) { \
-                                                NSLog((@"mParticle -> " format), ##__VA_ARGS__); \
-                                            }
+                                NSString *msg = [NSString stringWithFormat:@"mParticle -> " format, ##__VA_ARGS__]; \
+                                if ([MParticle sharedInstance].customLogger != NULL) { \
+                                    [MParticle sharedInstance].customLogger(msg); \
+                                } \
+                                else { \
+                                    NSLog(@"%@", msg); \
+                                } \
+                        }
 
-#define MPILogError(format, ...) if ([MParticle sharedInstance].logLevel >= MPILogLevelError) { \
-                                     NSLog((@"mParticle -> " format), ##__VA_ARGS__); \
-                                 }
+#define MPILogError(format, ...) MPILogger(MPILogLevelError, format, ##__VA_ARGS__);
 
-#define MPILogWarning(format, ...) if ([MParticle sharedInstance].logLevel >= MPILogLevelWarning) { \
-                                       NSLog((@"mParticle -> " format), ##__VA_ARGS__); \
-                                   }
+#define MPILogWarning(format, ...) MPILogger(MPILogLevelWarning, format, ##__VA_ARGS__);
 
-#define MPILogDebug(format, ...) if ([MParticle sharedInstance].logLevel >= MPILogLevelDebug) { \
-                                     NSLog((@"mParticle -> " format), ##__VA_ARGS__); \
-                                 }
+#define MPILogDebug(format, ...) MPILogger(MPILogLevelDebug, format, ##__VA_ARGS__);
 
-#define MPILogVerbose(format, ...) if ([MParticle sharedInstance].logLevel >= MPILogLevelVerbose) { \
-                                       NSLog((@"mParticle -> " format), ##__VA_ARGS__); \
-                                   }
+#define MPILogVerbose(format, ...) MPILogger(MPILogLevelVerbose, format, ##__VA_ARGS__);
 
 #endif

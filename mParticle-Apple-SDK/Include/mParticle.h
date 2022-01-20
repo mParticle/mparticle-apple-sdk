@@ -297,6 +297,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
 
 /**
+ A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
+ N.B.: The format/wording of mParticle log messages may change between releases--please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.
+ */
+@property (nonatomic, copy, readwrite) void (^customLogger)(NSString *message);
+
+/**
  Upload interval.
  
  Batches of data are sent periodically to the mParticle servers at the rate defined by this property. Batches are also uploaded
@@ -432,6 +438,13 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see environment
  */
 @property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
+
+/**
+ A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
+ N.B.: The format/wording of mParticle log messages may change between releases--please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.
+ @see MParticleOptions
+ */
+@property (nonatomic, copy, readwrite) void (^customLogger)(NSString *message);
 
 /**
  Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.

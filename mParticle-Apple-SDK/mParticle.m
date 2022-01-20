@@ -524,6 +524,7 @@ NSString *const kMPStateKey = @"state";
     self.backendController.uploadInterval = options.uploadInterval;
     self.backendController.sessionTimeout = options.sessionTimeout;
     self.logLevel = options.logLevel;
+    self.customLogger = options.customLogger;
     
     MPConsentState *consentState = self.options.consentState;
     
