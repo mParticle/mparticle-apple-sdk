@@ -260,7 +260,7 @@
     
     XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
     XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp - 4000));
-    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], @90000);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeHeaderKey], @90000);
 }
 
 - (void)testValidExpandedConfigurationWithNilCurrentAge {
@@ -295,7 +295,7 @@
     
     XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
     XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp));
-    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], @90000);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeHeaderKey], @90000);
 }
 
 - (void)testValidExpandedConfigurationNoMaxAge {
@@ -329,12 +329,12 @@
     
     XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
     XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp - 4000));
-    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], @90000);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeHeaderKey], @90000);
     
     [standardDefaults setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"4000" maxAge:nil];
     XCTAssertEqualObjects(responseConfiguration, [standardDefaults getConfiguration]);
     XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], @(requestTimestamp - 4000));
-    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey], nil);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeHeaderKey], nil);
 }
 
 - (void)testInvalidExpandedConfiguration {
@@ -352,7 +352,7 @@
     
     XCTAssertEqualObjects(nil, [standardDefaults getConfiguration]);
     XCTAssertEqualObjects(standardDefaults[kMPConfigProvisionedTimestampKey], nil);
-    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeKey],  nil);
+    XCTAssertEqualObjects(standardDefaults[kMPConfigMaxAgeHeaderKey],  nil);
 }
 
 - (void)testDeleteConfiguration {

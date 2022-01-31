@@ -173,7 +173,7 @@ NSString *const kMPLastIdentifiedDate = @"last_date_used";
 NSString *const kMPDeviceApplicationStampKey = @"das";
 NSString *const kMPDeviceApplicationStampStorageKey = @"dast";
 NSString *const kMPConfigProvisionedTimestampKey = @"ConfigProvisionedTimestamp";
-NSString *const kMPConfigMaxAgeKey = @"ConfigMaxAge";
+NSString *const kMPConfigMaxAgeHeaderKey = @"ConfigMaxAgeHeader";
 NSString *const kMPConfigParameters = @"ConfigParameters";
 NSString *const kMPUserAgentSystemVersionUserDefaultsKey = @"UserAgentSystemVersion";
 NSString *const kMPUserAgentValueUserDefaultsKey = @"UserAgentValue";
@@ -417,7 +417,7 @@ const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
     #endif
 
 // How long to block config requests after a successful response.
-const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 10.0*60;
+const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60;
 const NSTimeInterval CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60*60*24.0;
 
 const NSTimeInterval SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS = 30.0;

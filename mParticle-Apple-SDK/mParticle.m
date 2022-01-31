@@ -25,6 +25,7 @@
 #import "MPApplication.h"
 #import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
+#import "MPResponseConfig.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPLocationManager.h"
@@ -246,6 +247,14 @@ NSString *const kMPStateKey = @"state";
     _isSessionTimeoutSet = YES;
 }
 
+- (void)setConfigMaxAgeSeconds:(NSNumber *)configMaxAgeSeconds {
+    if (configMaxAgeSeconds != nil && [configMaxAgeSeconds doubleValue] <= 0) {
+        MPILogWarning(@"Config Max Age must be a positive number, disregarding value.");
+    } else {
+        _configMaxAgeSeconds = configMaxAgeSeconds;
+    }
+}
+
 @end
 
 @interface MPBackendController ()
@@ -448,6 +457,10 @@ NSString *const kMPStateKey = @"state";
     return [kMParticleSDKVersion copy];
 }
 
+- (NSNumber *)configMaxAgeSeconds {
+    return self.options.configMaxAgeSeconds;
+}
+
 #pragma mark Initialization
 + (instancetype)sharedInstance {
     dispatch_once(&predicate, ^{
@@ -457,7 +470,7 @@ NSString *const kMPStateKey = @"state";
     return _sharedInstance;
 }
 
-+(void)setSharedInstance:(MParticle *)instance {
++ (void)setSharedInstance:(MParticle *)instance {
     predicate = 0; // resets the once_token so dispatch_once will run again
     _sharedInstance = instance;
     
@@ -540,6 +553,10 @@ NSString *const kMPStateKey = @"state";
     [MParticle sharedInstance].stateMachine.automaticSessionTracking = options.automaticSessionTracking;
     if (options.attStatus != nil) {
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
+    }
+    
+    if ([MPResponseConfig isOlderThanConfigMaxAgeSeconds]) {
+        [MPResponseConfig deleteConfig];
     }
     
     _kitContainer = [[MPKitContainer alloc] init];

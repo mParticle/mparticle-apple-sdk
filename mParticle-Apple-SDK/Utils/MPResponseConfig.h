@@ -9,6 +9,8 @@
 - (nonnull instancetype)initWithConfiguration:(nonnull NSDictionary *)configuration dataReceivedFromServer:(BOOL)dataReceivedFromServer;
 
 + (nullable MPResponseConfig *)restore;
++ (void)deleteConfig;
++ (BOOL)isOlderThanConfigMaxAgeSeconds;
 
 #if TARGET_OS_IOS == 1
 - (void)configureLocationTracking:(nonnull NSDictionary *)locationDictionary;

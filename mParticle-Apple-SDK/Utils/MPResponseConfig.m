@@ -164,6 +164,31 @@
     return responseConfig;
 }
 
++ (void)deleteConfig {
+    [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+}
+
++ (BOOL)isOlderThanConfigMaxAgeSeconds {
+    BOOL shouldConfigurationBeDeleted = NO;
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
+    NSNumber *maxAgeSeconds = [[MParticle sharedInstance] configMaxAgeSeconds];
+    
+    if (configProvisioned != nil && maxAgeSeconds != nil && [maxAgeSeconds doubleValue] > 0) {
+        NSTimeInterval intervalConfigProvisioned = [configProvisioned doubleValue];
+        NSTimeInterval intervalNow = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval delta = intervalNow - intervalConfigProvisioned;
+        shouldConfigurationBeDeleted = delta > [maxAgeSeconds doubleValue];
+    }
+    
+    if (shouldConfigurationBeDeleted) {
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+    }
+    
+    return shouldConfigurationBeDeleted;
+}
+
 #pragma mark Public instance methods
 #if TARGET_OS_IOS == 1
 - (void)configureLocationTracking:(NSDictionary *)locationDictionary {

@@ -297,7 +297,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     [userDefaults setMPObject:eTag forKey:kMPHTTPETagHeaderKey userId:userID];
     [userDefaults setMPObject:configuration forKey:kMResponseConfigurationKey userId:userID];
     userDefaults[kMPConfigProvisionedTimestampKey] = @(requestTimestamp - [currentAge integerValue]);
-    userDefaults[kMPConfigMaxAgeKey] = maxAge;
+    userDefaults[kMPConfigMaxAgeHeaderKey] = maxAge;
     userDefaults[kMPConfigParameters] = [self currentConfigurationParameters];
 }
 
@@ -331,7 +331,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     [userDefaults removeMPObjectForKey:kMPHTTPETagHeaderKey];
     
     userDefaults[kMPConfigProvisionedTimestampKey] = nil;
-    userDefaults[kMPConfigMaxAgeKey] = nil;
+    userDefaults[kMPConfigMaxAgeHeaderKey] = nil;
     userDefaults[kMPConfigParameters] = nil;
     
     MPILogDebug(@"Configuration Deleted");
@@ -369,7 +369,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
-    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeKey];
+    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     
     if (configProvisioned != nil) {
         NSTimeInterval intervalConfigProvisioned = [configProvisioned doubleValue];

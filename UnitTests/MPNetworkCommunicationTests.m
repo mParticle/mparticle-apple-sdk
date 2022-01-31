@@ -531,7 +531,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testRequestConfigWithDefaultMaxAge {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
-    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeKey];
+    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     
     XCTAssertEqualObjects(configProvisioned, nil);
     XCTAssertEqualObjects(maxAge, nil);
@@ -582,7 +582,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     }];
     
     configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
-    maxAge = userDefaults[kMPConfigMaxAgeKey];
+    maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     
     XCTAssertNotNil(configProvisioned);
     XCTAssertNil(maxAge);
@@ -640,7 +640,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         XCTAssert(success);
     }];
     
-    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeKey];
+    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
 
     XCTAssertEqualObjects(maxAge, @43200);
 
@@ -760,7 +760,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         XCTAssert(success);
     }];
     
-    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeKey];
+    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     NSNumber *maxExpiration = @(60*60*24.0);
     
     XCTAssertEqualObjects(maxAge, maxExpiration);
@@ -819,7 +819,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         XCTAssert(success);
     }];
     
-    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeKey];
+    NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     
     XCTAssertEqualObjects(maxAge, @43200);
     

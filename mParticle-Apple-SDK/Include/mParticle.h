@@ -365,6 +365,20 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) NSNumber *attStatusTimestampMillis;
 
 /**
+ Set a maximum threshold for stored configuration age, in seconds.
+ 
+ When the SDK starts, before we attempt to fetch a fresh config from the server, we
+ will load the most recent previous config from disk. when configMaxAgeSeconds is set, we will
+ check the timestamp on that config and, if its age is greater than the threshold, instead
+ of loading it we will delete it and wait for the fresh config to arrive.
+ 
+ This field is especially useful if your application often updates the kit/forwarding logic and
+ has a portion of user's who experience prolonged network interruptions. In these cases, a reasonable
+ configMaxAgeSeconds will prevent those users from potentially using very old forwarding logic.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSNumber *configMaxAgeSeconds;
+
+/**
  Identify callback.
  
  This will be called when an identify request completes.
@@ -553,6 +567,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MParticleOptions
  */
 @property (nonatomic, readonly) MPDataPlanOptions *dataPlanOptions;
+
+/**
+ Maximum threshold for stored configuration age, in seconds.
+ @see MParticleOptions
+ */
+@property (nonatomic, readonly, nullable) NSNumber *configMaxAgeSeconds;
 
 #pragma mark - Initialization
 

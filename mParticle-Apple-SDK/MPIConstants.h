@@ -222,7 +222,7 @@ extern NSString * _Nonnull const kMPLastIdentifiedDate;
 extern NSString * _Nonnull const kMPDeviceApplicationStampKey;
 extern NSString * _Nonnull const kMPDeviceApplicationStampStorageKey;
 extern NSString * _Nonnull const kMPConfigProvisionedTimestampKey;
-extern NSString * _Nonnull const kMPConfigMaxAgeKey;
+extern NSString * _Nonnull const kMPConfigMaxAgeHeaderKey;
 extern NSString * _Nonnull const kMPConfigParameters;
 extern NSString * _Nonnull const kMPUserAgentSystemVersionUserDefaultsKey;
 extern NSString * _Nonnull const kMPUserAgentValueUserDefaultsKey;

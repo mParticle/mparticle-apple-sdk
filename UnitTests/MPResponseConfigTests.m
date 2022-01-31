@@ -10,6 +10,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong, nonnull) MParticleOptions *options;
 
 @end
 
@@ -120,5 +121,85 @@
     MPResponseConfig *persistedResponseConfig = [self attemptSecureEncodingwithClass:[MPResponseConfig class] Object:responseConfig];
     XCTAssertEqualObjects(responseConfig.configuration, persistedResponseConfig.configuration, @"Response Config should have been a match.");
 }
+
+- (void)testShouldDeleteDueToMaxConfigAgeWhenNil {
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"test" secret:@"test"];
+    options.configMaxAgeSeconds = nil;
+    [MParticle sharedInstance].options = options;
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        XCTAssertFalse([MPResponseConfig isOlderThanConfigMaxAgeSeconds]);
+        
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 10000.0) currentAge:@"0" maxAge:nil];
+        XCTAssertFalse([MPResponseConfig isOlderThanConfigMaxAgeSeconds]);
+        
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testShouldDeleteDueToMaxConfigAge {
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"test" secret:@"test"];
+    options.configMaxAgeSeconds = @60;
+    [MParticle sharedInstance].options = options;
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        XCTAssertFalse([MPResponseConfig isOlderThanConfigMaxAgeSeconds]);
+        
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 100.0) currentAge:@"0" maxAge:nil];
+        XCTAssertTrue([MPResponseConfig isOlderThanConfigMaxAgeSeconds]);
+        
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
+- (void)testDeleteDueToMaxConfigAge {
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"test" secret:@"test"];
+    options.configMaxAgeSeconds = @60;
+    [MParticle sharedInstance].options = options;
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Test instance"];
+    dispatch_async([MParticle messageQueue], ^{
+        NSString *eTag = @"1.618-2.718-3.141-42";
+        NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
+                                        kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
+                                        kMPRemoteConfigSessionTimeoutKey:@112};
+        
+        XCTAssertNil([[MPIUserDefaults standardUserDefaults] getConfiguration]);
+        NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970] - 100.0;
+        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        XCTAssertNotNil([[MPIUserDefaults standardUserDefaults] getConfiguration]);
+        
+        XCTAssertTrue([MPResponseConfig isOlderThanConfigMaxAgeSeconds]);
+        if ([MPResponseConfig isOlderThanConfigMaxAgeSeconds]) {
+            [MPResponseConfig deleteConfig];
+        }
+        XCTAssertNil([[MPIUserDefaults standardUserDefaults] getConfiguration]);
+        
+        [expectation fulfill];
+    });
+    
+    [self waitForExpectationsWithTimeout:10 handler:nil];
+}
+
 
 @end
