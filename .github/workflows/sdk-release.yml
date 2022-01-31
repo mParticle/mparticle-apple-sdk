@@ -17,7 +17,7 @@ jobs:
   create-release-branch:
     name: Create release branch
     runs-on: macOS-latest
-    needs: confirm-master-branch
+    needs: confirm-public-repo-master-branch
     steps:
       - name: Checkout internal development branch
         uses: actions/checkout@v2
