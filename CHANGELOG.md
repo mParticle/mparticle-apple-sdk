@@ -1,3 +1,17 @@
+# [8.7.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.6.0...v8.7.0) (2022-01-31)
+
+
+### Bug Fixes
+
+* custom mapping to transaction attributes not to be null-ed for ecom events ([#141](https://github.com/mParticle/mparticle-apple-sdk/issues/141)) ([19ca3b0](https://github.com/mParticle/mparticle-apple-sdk/commit/19ca3b09e907f343bfe14869df2e2f0a9fb4ef92))
+
+
+### Features
+
+* Add configMaxAgeSeconds to MParticleOptions ([cbf9464](https://github.com/mParticle/mparticle-apple-sdk/commit/cbf94640739f76513c910b96fe3fbf00428e5c3c))
+* add custom logger ([62e830d](https://github.com/mParticle/mparticle-apple-sdk/commit/62e830d6306750cad44c97c3c8d448517c5e0482))
+* add MPKitInstance enum value for GA4 kit ([a81c871](https://github.com/mParticle/mparticle-apple-sdk/commit/a81c87157817f382d5c2e5df23cb3e633191653e))
+
 # [8.6.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.5.4...v8.6.0) (2022-01-13)
 
 
