@@ -6,9 +6,7 @@ sed -i '' 's/NSString \*const kMParticleSDKVersion = @".*/NSString *const kMPart
 /usr/libexec/PlistBuddy -c "Set CFBundleShortVersionString $VERSION" Framework/Info.plist
 jq --indent 3 '. += {'"\"$VERSION\""': "'"https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.framework.zip?alt=https://github.com/mParticle/mparticle-apple-sdk/releases/download/$PREFIXED_VERSION/mParticle_Apple_SDK.xcframework.zip"'"}' mParticle_Apple_SDK.json > tmp.json
 mv tmp.json mParticle_Apple_SDK.json
-sudo npm install -g podspec-bump
-podspec-bump -w -i $VERSION
-
+sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"$VERSION"'"/' mParticle-Apple-SDK.podspec 
 
 #commit the version bump and updated docs
 git add mParticle-Apple-SDK.podspec
