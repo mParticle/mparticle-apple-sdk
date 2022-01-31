@@ -1340,10 +1340,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     };
     
     // Block to project a product according to attribute projections
-    NSDictionary * (^projectProductWithAttributes)(MPProduct *, NSArray *) = ^(MPProduct *product, NSArray<MPAttributeProjection *> *attributeProjections) {
+    NSDictionary * (^projectProductWithAttributes)(MPProduct *, NSArray *, NSDictionary *) = ^(MPProduct *product, NSArray<MPAttributeProjection *> *attributeProjections, NSDictionary *projectedDictionary) {
         NSMutableDictionary *projectedProductDictionary = [[NSMutableDictionary alloc] init];
         NSDictionary *sourceDictionary;
-        NSDictionary *projectedDictionary;
         NSPredicate *predicate;
         NSArray<MPAttributeProjection *> *filteredAttributeProjections;
         
@@ -1377,7 +1376,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         }
         
         if (projectedProductDictionary.count == 0) {
-            return (NSDictionary *)nil;
+            return projectedDictionary;
         }
         
         return (NSDictionary *)projectedProductDictionary;
@@ -1454,7 +1453,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                         
                         for (auto idx : productIndexes) {
                             MPProduct *product = products[idx];
-                            projectedDictionary = projectProductWithAttributes(product, attributeProjections);
+                            projectedDictionary = projectProductWithAttributes(product, attributeProjections, projectedDictionary);
                             
                             if (projectedDictionary) {
                                 if ((NSNull *)projectedDictionary != [NSNull null]) {
