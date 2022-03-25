@@ -87,6 +87,10 @@
     return respondsToSelector;
 }
 
+- (BOOL)conformsToProtocol:(Protocol *)aProtocol {
+    return [_originalAppDelegate conformsToProtocol:aProtocol] || [self.surrogateAppDelegate conformsToProtocol:aProtocol];
+}
+
 #pragma mark Public accessors
 - (MPSurrogateAppDelegate *)surrogateAppDelegate {
     if (_surrogateAppDelegate) {
