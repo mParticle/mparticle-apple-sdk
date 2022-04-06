@@ -13,9 +13,18 @@
 
 @implementation MPAppDelegateProxy
 
+static MPAppDelegateProxy* _defaultProxy = nil;
++ (MPAppDelegateProxy *)defaultProxy {
+    return _defaultProxy;
+}
+
 - (instancetype)initWithOriginalAppDelegate:(id)originalAppDelegate {
     _originalAppDelegate = originalAppDelegate;
     originalAppDelegateSelector = @selector(originalAppDelegate);
+    static dispatch_once_t pred = 0;
+    dispatch_once(&pred, ^{
+        _defaultProxy = self;
+    });
     return self;
 }
 
@@ -85,6 +94,12 @@
     }
     
     return respondsToSelector;
+}
+
++ (BOOL)conformsToProtocol:(Protocol *)aProtocol {
+    id original = [[MPAppDelegateProxy defaultProxy] originalAppDelegate];
+    id surrogate = [[MPAppDelegateProxy defaultProxy] surrogateAppDelegate];
+    return [original conformsToProtocol:aProtocol] || [surrogate conformsToProtocol:aProtocol];
 }
 
 #pragma mark Public accessors
