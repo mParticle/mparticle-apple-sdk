@@ -51,7 +51,7 @@ static BOOL runningInBackground = NO;
     dispatch_queue_t messageQueue;
 }
 
-@property (nonatomic, unsafe_unretained) MParticleNetworkStatus networkStatus;
+@property (nonatomic) MParticleNetworkStatus networkStatus;
 @property (nonatomic, strong) NSString *storedSDKVersion;
 @property (nonatomic, strong) MParticleReachability *reachability;
 

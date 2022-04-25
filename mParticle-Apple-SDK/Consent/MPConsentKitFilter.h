@@ -4,14 +4,14 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPConsentKitFilterItem : NSObject
 
-@property (nonatomic, assign) BOOL consented;
-@property (nonatomic, assign) int javascriptHash;
+@property (nonatomic) BOOL consented;
+@property (nonatomic) int javascriptHash;
 
 @end
 
 @interface MPConsentKitFilter : NSObject
 
-@property (nonatomic, assign) BOOL shouldIncludeOnMatch;
+@property (nonatomic) BOOL shouldIncludeOnMatch;
 @property (nonatomic, strong) NSArray<MPConsentKitFilterItem *> *filterItems;
 
 @end

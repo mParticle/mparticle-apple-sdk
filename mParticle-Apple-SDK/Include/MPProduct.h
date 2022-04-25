@@ -60,7 +60,7 @@
 /**
  The prosition of the product on the screen or impression list
  */
-@property (nonatomic, unsafe_unretained) NSUInteger position;
+@property (nonatomic) NSUInteger position;
 
 /**
  The quantity of the product. Default value is 1

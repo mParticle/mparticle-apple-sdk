@@ -65,8 +65,8 @@ extern const NSInteger kInvalidKey;
 @property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
 @property (nonatomic, strong, nullable) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong, nullable) MPSession *session;
-@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
-@property (nonatomic, unsafe_unretained) NSTimeInterval uploadInterval;
+@property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
+@property (nonatomic) NSTimeInterval uploadInterval;
 
 - (nonnull instancetype)initWithDelegate:(nonnull id<MPBackendControllerDelegate>)delegate;
 - (void)beginSession;

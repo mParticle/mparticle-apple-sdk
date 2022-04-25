@@ -75,7 +75,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
-@property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
+@property (nonatomic) BOOL kitsInitialized;
 @property (nonatomic, strong) NSDate *initializedTime;
 
 @end

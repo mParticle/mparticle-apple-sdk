@@ -18,14 +18,14 @@ NS_ASSUME_NONNULL_BEGIN
  assigned to this property.
  @see MPEventType
  */
-@property (nonatomic, unsafe_unretained) MPEventType type;
+@property (nonatomic) MPEventType type;
 
 /**
  An enum value that indicates the type of message to be sent
  assigned to this property.
  @see MPMessageType
  */
-@property (nonatomic, unsafe_unretained) MPMessageType messageType;
+@property (nonatomic) MPMessageType messageType;
 
 /**
  A dictionary containing further information about the event. The number of entries is

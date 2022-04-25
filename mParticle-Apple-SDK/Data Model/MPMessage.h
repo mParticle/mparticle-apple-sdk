@@ -8,13 +8,13 @@
 
 @property (nonatomic, strong, readonly, nonnull) NSString *messageType;
 @property (nonatomic, strong, readonly, nonnull) NSData *messageData;
-@property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
-@property (nonatomic, unsafe_unretained) int64_t messageId;
+@property (nonatomic) NSTimeInterval timestamp;
+@property (nonatomic) int64_t messageId;
 @property (nonatomic, strong, nullable) NSNumber *sessionId;
 @property (nonatomic, strong, nonnull) NSNumber *userId;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
-@property (nonatomic, unsafe_unretained) MPUploadStatus uploadStatus;
+@property (nonatomic) MPUploadStatus uploadStatus;
 @property (nonatomic) BOOL shouldUploadEvent;
 
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId

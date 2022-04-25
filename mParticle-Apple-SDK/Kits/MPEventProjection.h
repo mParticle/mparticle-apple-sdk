@@ -17,13 +17,13 @@ typedef NS_ENUM(NSUInteger, MPProjectionBehaviorSelector) {
 
 @property (nonatomic, strong, nullable) NSArray<MPProjectionMatch *> *projectionMatches;
 @property (nonatomic, strong, nullable) NSArray<MPAttributeProjection *> *attributeProjections;
-@property (nonatomic, unsafe_unretained) MPProjectionBehaviorSelector behaviorSelector;
-@property (nonatomic, unsafe_unretained) MPEventType eventType;
-@property (nonatomic, unsafe_unretained) MPMessageType messageType;
-@property (nonatomic, unsafe_unretained) MPMessageType outboundMessageType;
-@property (nonatomic, unsafe_unretained) NSUInteger maxCustomParameters;
-@property (nonatomic, unsafe_unretained) BOOL appendAsIs;
-@property (nonatomic, unsafe_unretained) BOOL isDefault;
+@property (nonatomic) MPProjectionBehaviorSelector behaviorSelector;
+@property (nonatomic) MPEventType eventType;
+@property (nonatomic) MPMessageType messageType;
+@property (nonatomic) MPMessageType outboundMessageType;
+@property (nonatomic) NSUInteger maxCustomParameters;
+@property (nonatomic) BOOL appendAsIs;
+@property (nonatomic) BOOL isDefault;
 
 - (nonnull instancetype)initWithConfiguration:(nullable NSDictionary *)configuration;
 

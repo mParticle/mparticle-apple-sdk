@@ -11,7 +11,7 @@
 @property (nonatomic, strong, readwrite) NSNumber *destinationMPID;
 @property (nonatomic, strong, readwrite) NSDate *startTime;
 @property (nonatomic, strong, readwrite) NSDate *endTime;
-@property (nonatomic, assign, readwrite) BOOL usedFirstLastSeen;
+@property (nonatomic, readwrite) BOOL usedFirstLastSeen;
 
 @end
 

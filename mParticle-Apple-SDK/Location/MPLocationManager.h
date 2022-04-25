@@ -12,10 +12,10 @@
 #ifndef MPARTICLE_LOCATION_DISABLE
 @property (nonatomic, strong, nullable) CLLocationManager *locationManager;
 #endif
-@property (nonatomic, unsafe_unretained, readonly) MPLocationAuthorizationRequest authorizationRequest;
-@property (nonatomic, unsafe_unretained, readonly) CLLocationAccuracy requestedAccuracy;
-@property (nonatomic, unsafe_unretained, readonly) CLLocationDistance requestedDistanceFilter;
-@property (nonatomic, unsafe_unretained) BOOL backgroundLocationTracking;
+@property (nonatomic, readonly) MPLocationAuthorizationRequest authorizationRequest;
+@property (nonatomic, readonly) CLLocationAccuracy requestedAccuracy;
+@property (nonatomic, readonly) CLLocationDistance requestedDistanceFilter;
+@property (nonatomic) BOOL backgroundLocationTracking;
 
 - (nullable instancetype)initWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (void)endLocationTracking;

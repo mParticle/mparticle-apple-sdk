@@ -14,8 +14,8 @@
 @property (nonatomic, strong, readonly, nullable) NSArray<MPEventProjection *> *projections;
 @property (nonatomic, strong, readonly, nullable) NSNumber *integrationId;
 
-@property (nonatomic, assign) BOOL attributeValueFilteringIsActive;
-@property (nonatomic, assign) BOOL attributeValueFilteringShouldIncludeMatches;
+@property (nonatomic) BOOL attributeValueFilteringIsActive;
+@property (nonatomic) BOOL attributeValueFilteringShouldIncludeMatches;
 @property (nonatomic, strong, nullable) NSString *attributeValueFilteringHashedAttribute;
 @property (nonatomic, strong, nullable) NSString *attributeValueFilteringHashedValue;
 

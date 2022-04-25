@@ -102,17 +102,17 @@ typedef NS_ENUM(NSUInteger, MPCommerceEventAction) {
 /**
  A value from the <b>MPCommerceEventAction</b> enum describing the commerce event action.
  */
-@property (nonatomic, unsafe_unretained) MPCommerceEventAction action;
+@property (nonatomic) MPCommerceEventAction action;
 
 /**
  The step number, within the chain of commerce event transactions, corresponding to the checkout.
  */
-@property (nonatomic, unsafe_unretained) NSInteger checkoutStep;
+@property (nonatomic) NSInteger checkoutStep;
 
 /**
  Flag indicating whether a refund is non-interactive. The default value is false/NO.
  */
-@property (nonatomic, unsafe_unretained) BOOL nonInteractive;
+@property (nonatomic) BOOL nonInteractive;
 
 /**
  Initializes an instance of MPCommerceEvent with an action and a product.
