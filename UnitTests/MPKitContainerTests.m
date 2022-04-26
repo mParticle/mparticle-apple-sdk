@@ -560,6 +560,9 @@
     activeKits = [kitContainer activeKitsRegistry];
     
     XCTAssertEqual(activeKits.count, 0);
+    NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 1);
+    XCTAssertTrue([configuredKits containsObject:@42]);
 }
 
 - (void)testForwardLoggedOutUserWithMultipleKits {
@@ -614,9 +617,88 @@
     [kitContainer configureKits:configurations];
     
     activeKits = [kitContainer activeKitsRegistry];
-    
     XCTAssertEqual(activeKits.count, 1);
     XCTAssertEqual(activeKits[0].code, @314);
+    
+    NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 2);
+    XCTAssertTrue([configuredKits containsObject:@42]);
+    XCTAssertTrue([configuredKits containsObject:@314]);
+}
+
+- (void)testConfiguredKits {
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            }
+                                    },
+                                @{
+                                    @"id":@314,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    }
+                                ];
+    
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[1]];
+    [[kitContainer startKit:@314 configuration:kitConfiguration] start];
+
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
+    
+    XCTAssertEqual(activeKits.count, 2);
+    NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 2);
+    XCTAssertTrue([configuredKits containsObject:@42]);
+    XCTAssertTrue([configuredKits containsObject:@314]);
+    
+    configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@true
+                                    },
+                                @{
+                                    @"id":@314,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    },
+                                @{
+                                    @"id":@92,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    }
+                                ];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    activeKits = [kitContainer activeKitsRegistry];
+    XCTAssertEqual(activeKits.count, 1);
+    XCTAssertEqual(activeKits[0].code, @314);
+    
+    configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 3);
+    XCTAssertTrue([configuredKits containsObject:@42]);
+    XCTAssertTrue([configuredKits containsObject:@92]);
+    XCTAssertTrue([configuredKits containsObject:@314]);
+
 }
 
 - (void)testForwardLoggedInUserWithMultipleKits {
@@ -653,6 +735,11 @@
     XCTAssertTrue([activeKits[0].code integerValue] == 42 || [activeKits[0].code integerValue] == 314);
     XCTAssertTrue([activeKits[1].code integerValue] == 42 || [activeKits[1].code integerValue] == 314);
     
+    NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 2);
+    XCTAssertTrue([configuredKits containsObject:@42]);
+    XCTAssertTrue([configuredKits containsObject:@314]);
+    
     configurations = @[
                        @{
                            @"id":@(42),
@@ -680,6 +767,10 @@
     XCTAssertEqual(activeKits.count, 2);
     XCTAssertTrue([activeKits[0].code integerValue] == 42 || [activeKits[0].code integerValue] == 314);
     XCTAssertTrue([activeKits[1].code integerValue] == 42 || [activeKits[1].code integerValue] == 314);
+    configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 2);
+    XCTAssertTrue([configuredKits containsObject:@42]);
+    XCTAssertTrue([configuredKits containsObject:@314]);
 }
 
 - (void)testFilterMessageType {

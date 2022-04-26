@@ -170,16 +170,9 @@ static NSDateFormatter *RFC1123DateFormatter;
                 kits = nil;
             }
             
-            NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
-            if (activeKitsRegistry.count > 0) {
-                NSMutableArray<NSNumber *> *activeKitIds = [[NSMutableArray alloc] initWithCapacity:activeKitsRegistry.count];
-                
-                for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
-                    [activeKitIds addObject:kitRegister.code];
-                }
-                
-                kits = [activeKitIds componentsJoinedByString:@","];
-            }
+            NSMutableArray<NSNumber *> *configuredKitIds = [[NSMutableArray alloc] initWithArray:[[MParticle sharedInstance].kitContainer configuredKitsRegistry]];
+            
+            kits = [configuredKitIds componentsJoinedByString:@","];
             
             range = [_message rangeOfString:kMPMessageTypeNetworkPerformance];
             if (range.location != NSNotFound) {

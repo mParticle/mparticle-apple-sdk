@@ -20,6 +20,7 @@
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
 
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
+- (nonnull NSArray<NSNumber *> *)configuredKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;
 - (nullable NSArray<NSNumber *> *)supportedKits;
 - (void)initializeKits;

@@ -1892,6 +1892,16 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     completionHandler(projectedEvents, appliedProjections);
 }
 
+- (nonnull NSArray<NSNumber *> *)configuredKitsRegistry {
+    NSMutableArray<NSNumber *> *configuredKits = [[NSMutableArray alloc] initWithCapacity:self.kitConfigurations.count];
+    for (NSNumber *kitId in self.kitConfigurations.allKeys) {
+        if ([self.supportedKits containsObject:kitId]) {
+            [configuredKits addObject:kitId];
+        }
+    }
+    return configuredKits;
+}
+
 #pragma mark Public methods
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
     if (kitsRegistry.count == 0) {

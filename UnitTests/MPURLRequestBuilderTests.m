@@ -375,9 +375,8 @@
     [[[mockWebView stub] andReturn:agent] userAgent];
     
     id mockKitContainer = OCMClassMock([MPKitContainer class]);
-    id mockKit = OCMProtocolMock(@protocol(MPExtensionKitProtocol));
-    [(id<MPExtensionKitProtocol>)[[mockKit stub] andReturn:@42] code];
-    [[[mockKitContainer stub] andReturn:@[mockKit]] activeKitsRegistry];
+    NSNumber *mockKitId = @42;
+    [[[mockKitContainer stub] andReturn:@[mockKitId]] configuredKitsRegistry];
     
     id mockMParticle = OCMPartialMock(sharedInstance);
     [[[mockMParticle stub] andReturn:mockWebView] webView];
@@ -432,7 +431,6 @@
     }
     [mockMParticle stopMocking];
     [mockKitContainer stopMocking];
-    [mockKit stopMocking];
     [mockWebView stopMocking];
 }
 
