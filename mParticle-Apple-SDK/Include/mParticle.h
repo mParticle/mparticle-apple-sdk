@@ -143,22 +143,22 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Whether to block unplanned events from being sent to kits, default false
  */
-@property (nonatomic, assign, readwrite) BOOL blockEvents;
+@property (nonatomic, readwrite) BOOL blockEvents;
 
 /**
  Whether to block unplanned event attributes from being sent to kits, default false
  */
-@property (nonatomic, assign, readwrite) BOOL blockEventAttributes;
+@property (nonatomic, readwrite) BOOL blockEventAttributes;
 
 /**
  Whether to block unplanned user attributes from being sent to kits, default false
  */
-@property (nonatomic, assign, readwrite) BOOL blockUserAttributes;
+@property (nonatomic, readwrite) BOOL blockUserAttributes;
 
 /**
  Whether to block unplanned user identities from being sent to kits, default false
  */
-@property (nonatomic, assign, readwrite) BOOL blockUserIdentities;
+@property (nonatomic, readwrite) BOOL blockUserIdentities;
 
 @end
 
@@ -201,7 +201,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  For future releases, the mParticle SDK will already be in the installed app, so you can change this value back to auto detect.
  */
-@property (nonatomic, unsafe_unretained, readwrite) MPInstallationType installType;
+@property (nonatomic, readwrite) MPInstallationType installType;
 
 /*
  This identity request object allows you to customize the information included in the initial Identify request sent by the SDK.
@@ -211,7 +211,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /*
  SDK Environment. Autodetected as development or production, you can also override.
  */
-@property (nonatomic, unsafe_unretained, readwrite) MPEnvironment environment;
+@property (nonatomic, readwrite) MPEnvironment environment;
 
 /*
  Whether the SDK should automatically collect UIApplicationDelegate information.
@@ -221,7 +221,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  This mechanism is acheived using NSProxy and without introducing dangerous swizzling.
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL proxyAppDelegate;
+@property (nonatomic, readwrite) BOOL proxyAppDelegate;
 
 /*
  Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.
@@ -234,7 +234,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Also note that the SDK will still start a session automatically when startWithOptions is called, even if automaticSessionTracking is disabled, unless `shouldBeginSession` is also set to NO.
  @see shouldBeginSession
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL automaticSessionTracking;
+@property (nonatomic, readwrite) BOOL automaticSessionTracking;
 
 /*
  Whether the SDK should start a session on SDK init. (Defaults to YES.)
@@ -249,7 +249,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  Note that even if this flag is set to NO, the SDK will still create sessions as a result of other application lifecycle events, unless `automaticSessionTracking` is also set to NO.
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL shouldBeginSession;
+@property (nonatomic, readwrite) BOOL shouldBeginSession;
 
 /*
  The browser user agent.
@@ -263,28 +263,28 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /*
  Whether browser user agent should be collected by the SDK. This value is ignored (always NO) if you specify a non-nil custom user agent.
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL collectUserAgent;
+@property (nonatomic, readwrite) BOOL collectUserAgent;
 
 /*
  Default user agent to be sent in case collecting the browser user agent fails repeatedly, times out or the APIs are unavailable.
  (Ignored if `customUserAgent` is set.) By default, a value of the form "mParticle Apple SDK/<SDK Version>" will be used as a fallback.
  */
-@property (nonatomic, unsafe_unretained, readwrite) NSString *defaultAgent;
+@property (nonatomic, copy, readwrite) NSString *defaultAgent;
 
 /*
  Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL collectSearchAdsAttribution;
+@property (nonatomic, readwrite) BOOL collectSearchAdsAttribution;
 
 /**
  Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL trackNotifications;
+@property (nonatomic, readwrite) BOOL trackNotifications;
 
 /*
  This value is not currently read by the SDK and should not be used at this time.
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL startKitsAsync;
+@property (nonatomic, readwrite) BOOL startKitsAsync;
 
 /*
  Log level. (Defaults to 'None'.)
@@ -294,7 +294,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  By default the SDK will produce no output. If you modify this for your development builds, please consider using
  a preprocessor directive or similar mechanism to ensure your change is not accidentally applied in production.
  */
-@property (nonatomic, unsafe_unretained, readwrite) MPILogLevel logLevel;
+@property (nonatomic, readwrite) MPILogLevel logLevel;
 
 /**
  A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
@@ -308,14 +308,14 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Batches of data are sent periodically to the mParticle servers at the rate defined by this property. Batches are also uploaded
  when the application is sent to the background.
  */
-@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval uploadInterval;
+@property (nonatomic, readwrite) NSTimeInterval uploadInterval;
 
 /**
  Session timeout.
  
  Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
  */
-@property (nonatomic, unsafe_unretained, readwrite) NSTimeInterval sessionTimeout;
+@property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 
 /**
  Allows you to override the default HTTPS hosts and certificates used by the SDK, if required.
@@ -431,27 +431,27 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see environment
  @see logLevel
  */
-@property (nonatomic, unsafe_unretained, readonly) BOOL consoleLogging DEPRECATED_MSG_ATTRIBUTE("set logLevel on MParticleOptions instead");
+@property (nonatomic, readonly) BOOL consoleLogging DEPRECATED_MSG_ATTRIBUTE("set logLevel on MParticleOptions instead");
 
 /**
  The environment property returns the running SDK environment: Development or Production.
  @see MPEnvironment
  @see startWithOptions:
  */
-@property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment;
+@property (nonatomic, readonly) MPEnvironment environment;
 
 /**
  Flag indicating whether the mParticle SDK has been fully initialized yet or not. You can KVO this property to know when the SDK 
  successfully finishes initializing
  */
-@property (nonatomic, unsafe_unretained, readonly) BOOL initialized;
+@property (nonatomic, readonly) BOOL initialized;
 
 /**
  Specifies the log level output to the console while the app is under development: none, error, warning, and debug.
  When the environment is Production, the log level will always be none, regardless of the value you assign to it.
  @see environment
  */
-@property (nonatomic, unsafe_unretained) MPILogLevel logLevel;
+@property (nonatomic) MPILogLevel logLevel;
 
 /**
  A custom handler callback for mParticle log messages. If set, this block will be invoked each time mParticle would normally log a message to the console.
@@ -464,14 +464,14 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.
  The default value is NO (opt-in of event tracking)
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL optOut;
+@property (nonatomic, readwrite) BOOL optOut;
 
 /**
  A flag indicating whether the mParticle Apple SDK has proxied the App Delegate and is handling
  application notifications automatically.
  @see startWithOptions:
  */
-@property (nonatomic, unsafe_unretained, readonly) BOOL proxiedAppDelegate;
+@property (nonatomic, readonly) BOOL proxiedAppDelegate;
 
 /**
  A flag indicating whether the mParticle Apple SDK is using
@@ -479,13 +479,13 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MParticleOptions
  @see shouldBeginSession
  */
-@property (nonatomic, unsafe_unretained, readonly) BOOL automaticSessionTracking;
+@property (nonatomic, readonly) BOOL automaticSessionTracking;
 
 /**
  A flag indicating whether the SDK should start a session on SDK init. (Defaults to YES.)
  @see MParticleOptions
  */
-@property (nonatomic, unsafe_unretained, readwrite) BOOL shouldBeginSession;
+@property (nonatomic, readwrite) BOOL shouldBeginSession;
 
 /**
  The current session. You can access properties for Session ID and UUID.
@@ -503,12 +503,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  If you disable this flag, consider populating the user agent via the customUserAgent property above if you are using
  an attribution provider (such as Kochava or Tune) via mParticle. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readonly) BOOL collectUserAgent;
+@property (atomic, readonly) BOOL collectUserAgent;
 
 /*
  Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readonly) BOOL collectSearchAdsAttribution;
+@property (atomic, readonly) BOOL collectSearchAdsAttribution;
 
 /**
  Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.
@@ -526,12 +526,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Determines whether the mParticle Apple SDK will automatically track Remote and Local Notification events. Defaults to YES
  */
-@property (atomic, unsafe_unretained, readonly) BOOL trackNotifications;
+@property (atomic, readonly) BOOL trackNotifications;
 
 /**
  Gets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
  */
-@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval sessionTimeout;
+@property (nonatomic, readonly) NSTimeInterval sessionTimeout;
 
 /**
  Unique identifier for this app running on this device. This unique identifier is synchronized with the mParticle servers.
@@ -545,7 +545,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Batches of data are sent periodically to the mParticle servers at the rate defined by the uploadInterval. Batches are also uploaded
  when the application is sent to the background or before they are terminated.
  */
-@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval uploadInterval;
+@property (nonatomic, readonly) NSTimeInterval uploadInterval;
 
 /**
  mParticle Apple SDK version
@@ -964,7 +964,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  information only when your app is running on the foreground.
  @see beginLocationTracking:minDistance:
  */
-@property (nonatomic, unsafe_unretained) BOOL backgroundLocationTracking;
+@property (nonatomic) BOOL backgroundLocationTracking;
 
 /**
  Gets/Sets the current location of the active session.

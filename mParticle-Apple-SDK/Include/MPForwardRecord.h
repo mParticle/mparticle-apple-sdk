@@ -4,7 +4,7 @@
 
 @interface MPForwardRecord : NSObject
 
-@property (nonatomic, unsafe_unretained) uint64_t forwardRecordId;
+@property (nonatomic) uint64_t forwardRecordId;
 @property (nonatomic, strong, nonnull) NSMutableDictionary *dataDictionary;
 @property (nonatomic, strong, nonnull) NSNumber *mpid;
 @property (nonatomic, strong, nonnull) NSNumber *timestamp;

@@ -15,12 +15,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  The HTTP response code returned by the server.
  */
-@property (nonatomic, assign) NSInteger responseCode;
+@property (nonatomic) NSInteger responseCode;
 
 /**
  A human-readable error message returned by the server.
  */
-@property (nonatomic, assign) NSString *errorResponse;
+@property (nonatomic, copy) NSString *errorResponse;
 
 /**
  The corresponding alias request for this response.
@@ -35,12 +35,12 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Whether the SDK will automatically try to re-send the alias request.
  */
-@property (nonatomic, assign) BOOL willRetry;
+@property (nonatomic) BOOL willRetry;
 
 /**
  Whether the alias request was successfully accepted by the server.
  */
-@property (nonatomic, assign) BOOL isSuccessful;
+@property (nonatomic) BOOL isSuccessful;
 
 @end
 

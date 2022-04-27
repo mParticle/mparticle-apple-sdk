@@ -21,7 +21,7 @@
 @property (nonatomic, strong, readonly, nonnull) NSString *messageType;
 @property (nonatomic, strong, readonly, nullable) MPSession *session;
 @property (nonatomic, strong, readonly, nonnull) NSDictionary *messageInfo;
-@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval timestamp;
+@property (nonatomic, readonly) NSTimeInterval timestamp;
 @property (nonatomic, strong, readonly, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, readonly, nullable) NSNumber *dataPlanVersion;
 

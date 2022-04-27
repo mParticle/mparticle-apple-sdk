@@ -5,8 +5,8 @@
 
 @property (nonatomic, strong, nonnull) NSString *sessionUUID;
 @property (nonatomic, strong, nonnull) NSData *breadcrumbData;
-@property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
-@property (nonatomic, unsafe_unretained) int64_t breadcrumbId;
+@property (nonatomic) NSTimeInterval timestamp;
+@property (nonatomic) int64_t breadcrumbId;
 
 - (nonnull instancetype)initWithSessionUUID:(nonnull NSString *)sessionUUID
                                breadcrumbId:(int64_t)breadcrumbId

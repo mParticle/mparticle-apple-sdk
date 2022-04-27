@@ -92,7 +92,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @property (nonatomic, strong, readonly) MPURL *aliasURL;
 
 @property (nonatomic, strong) NSString *context;
-@property (nonatomic, assign) BOOL identifying;
+@property (nonatomic) BOOL identifying;
 
 @end
 

@@ -103,7 +103,7 @@ typedef NS_ENUM(NSUInteger, MPPromotionAction) {
 /**
  A value from the <b>MPPromotionAction</b> enum describing the promotion action.
  */
-@property (nonatomic, unsafe_unretained, readonly) MPPromotionAction action;
+@property (nonatomic, readonly) MPPromotionAction action;
 
 /**
  Initializes an instance of MPPromotionContainer with an action and a promotion.
