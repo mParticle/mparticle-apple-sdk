@@ -18,9 +18,9 @@ typedef NS_ENUM(NSUInteger, MPQueueItemType) {
 
 @property (nonatomic, strong, readonly, nullable) MPCommerceEvent *commerceEvent;
 @property (nonatomic, strong, readonly, nullable) MPBaseEvent *event;
-@property (nonatomic, unsafe_unretained, readonly) MPMessageType messageType;
-@property (nonatomic, unsafe_unretained, readonly) MPQueueItemType queueItemType;
-@property (nonatomic, unsafe_unretained, readonly, nullable) SEL selector;
+@property (nonatomic, readonly) MPMessageType messageType;
+@property (nonatomic, readonly) MPQueueItemType queueItemType;
+@property (nonatomic, readonly, nullable) SEL selector;
 @property (nonatomic, strong, readonly, nullable) MPForwardQueueParameters *queueParameters;
 
 - (nullable instancetype)initWithCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent;

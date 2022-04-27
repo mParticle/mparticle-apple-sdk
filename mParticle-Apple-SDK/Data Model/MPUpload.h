@@ -7,10 +7,10 @@
 @interface MPUpload : MPDataModelAbstract <NSCopying, MPDataModelProtocol>
 
 @property (nonatomic, strong, nonnull) NSData *uploadData;
-@property (nonatomic, unsafe_unretained) NSTimeInterval timestamp;
+@property (nonatomic) NSTimeInterval timestamp;
 @property (nonatomic, strong, nullable) NSNumber *sessionId;
-@property (nonatomic, unsafe_unretained) int64_t uploadId;
-@property (nonatomic, assign) MPUploadType uploadType;
+@property (nonatomic) int64_t uploadId;
+@property (nonatomic) MPUploadType uploadType;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property BOOL containsOptOutMessage;

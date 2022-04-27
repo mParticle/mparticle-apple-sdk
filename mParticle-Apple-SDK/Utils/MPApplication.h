@@ -22,7 +22,7 @@ extern NSString * _Nonnull const kMPApplicationInformationKey;
 @property (nonatomic, strong, readonly, nullable) NSString *name __attribute__((const));
 @property (nonatomic, strong, readonly, nonnull) NSNumber *pirated;
 @property (nonatomic, strong, readonly, nullable) NSString *version __attribute__((const));
-@property (nonatomic, unsafe_unretained, readonly) MPEnvironment environment __attribute__((const));
+@property (nonatomic, readonly) MPEnvironment environment __attribute__((const));
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, readonly, nullable) NSNumber *badgeNumber;

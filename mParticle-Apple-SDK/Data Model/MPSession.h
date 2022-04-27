@@ -3,16 +3,16 @@
 @interface MPSession : MPDataModelAbstract <NSCopying>
 
 @property (nonatomic, strong, nonnull) NSMutableDictionary *attributesDictionary;
-@property (nonatomic, unsafe_unretained) NSTimeInterval backgroundTime;
-@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval foregroundTime;
-@property (nonatomic, unsafe_unretained) NSTimeInterval startTime;
-@property (nonatomic, unsafe_unretained) NSTimeInterval endTime;
-@property (nonatomic, unsafe_unretained) NSTimeInterval length;
-@property (nonatomic, unsafe_unretained, readonly) NSTimeInterval suspendTime;
-@property (nonatomic, unsafe_unretained, readonly) uint eventCounter;
-@property (nonatomic, unsafe_unretained, readonly) uint numberOfInterruptions;
-@property (nonatomic, unsafe_unretained) int64_t sessionId;
-@property (nonatomic, unsafe_unretained, readonly) BOOL persisted;
+@property (nonatomic) NSTimeInterval backgroundTime;
+@property (nonatomic, readonly) NSTimeInterval foregroundTime;
+@property (nonatomic) NSTimeInterval startTime;
+@property (nonatomic) NSTimeInterval endTime;
+@property (nonatomic) NSTimeInterval length;
+@property (nonatomic, readonly) NSTimeInterval suspendTime;
+@property (nonatomic, readonly) uint eventCounter;
+@property (nonatomic, readonly) uint numberOfInterruptions;
+@property (nonatomic) int64_t sessionId;
+@property (nonatomic, readonly) BOOL persisted;
 @property (nonatomic, strong, readwrite, nonnull) NSNumber *userId;
 @property (nonatomic, strong, readwrite, nonnull) NSString *sessionUserIds;
 @property (nonatomic, strong, readwrite, nullable) NSDictionary<NSString *, id> *appInfo;

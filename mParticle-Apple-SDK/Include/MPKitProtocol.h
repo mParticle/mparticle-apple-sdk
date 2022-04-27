@@ -29,7 +29,7 @@
 
 @protocol MPKitProtocol <NSObject>
 #pragma mark - Required methods
-@property (nonatomic, unsafe_unretained, readonly) BOOL started;
+@property (nonatomic, readonly) BOOL started;
 
 - (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
 

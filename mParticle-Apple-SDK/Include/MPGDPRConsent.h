@@ -10,7 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
 * Whether the user consented to data collection
 */
-@property (nonatomic, assign) BOOL consented;
+@property (nonatomic) BOOL consented;
 /**
 * The data collection document to which the user consented or did not consent
 */

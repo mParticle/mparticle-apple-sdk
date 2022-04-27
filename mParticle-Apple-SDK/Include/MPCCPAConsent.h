@@ -11,7 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 * Whether the user consented to data collection
  This should be set to false if the user has opted out of data sharing under the CCPA.
 */
-@property (nonatomic, assign) BOOL consented;
+@property (nonatomic) BOOL consented;
 /**
 * The data collection document to which the user consented or did not consent
 */

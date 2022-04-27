@@ -161,7 +161,7 @@ typedef void (^MPModifyApiResultCallback)(MPModifyApiResult *_Nullable apiResult
 /**
  A custom error code enumeration providing a detailed reason why the request failed.
  */
-@property (nonatomic, assign) MPIdentityErrorResponseCode code;
+@property (nonatomic) MPIdentityErrorResponseCode code;
 
 /**
  A human readable description of the error.

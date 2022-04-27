@@ -63,7 +63,7 @@ NS_ASSUME_NONNULL_BEGIN
 /**
  Whether the start/end times were automatically inferred from the source user's firstSeen and lastSeen properties
  */
-@property (nonatomic, assign, readonly) BOOL usedFirstLastSeen;
+@property (nonatomic, readonly) BOOL usedFirstLastSeen;
 
 @end
 

@@ -12,13 +12,13 @@
 
 // options
 @property (nonatomic) NSString *customAgent;
-@property (nonatomic, assign) BOOL shouldCollect;
+@property (nonatomic) BOOL shouldCollect;
 @property (nonatomic) NSString *defaultAgent;
 
 @property (nonatomic) NSDate *initializedDate;
 @property (nonatomic) NSString *resolvedAgent; // final result
-@property (nonatomic, assign) BOOL isCollecting;
-@property (nonatomic, assign) int retryCount;
+@property (nonatomic) BOOL isCollecting;
+@property (nonatomic) int retryCount;
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic) WKWebView *webView;

@@ -31,10 +31,10 @@ extern NSString * _Nonnull const kMPUserNotificationCategoryKey;
 @property (nonatomic, strong, readonly, nullable) NSString *redactedUserNotificationString;
 @property (nonatomic, strong, readonly, nonnull) NSDate *receiptTime;
 @property (nonatomic, strong, readonly, nonnull) NSString *state;
-@property (nonatomic, unsafe_unretained, readwrite) int64_t userNotificationId;
-@property (nonatomic, unsafe_unretained, readwrite) MPUserNotificationBehavior behavior;
-@property (nonatomic, unsafe_unretained, readonly) MPUserNotificationMode mode;
-@property (nonatomic, unsafe_unretained, readwrite) BOOL shouldPersist;
+@property (nonatomic, readwrite) int64_t userNotificationId;
+@property (nonatomic, readwrite) MPUserNotificationBehavior behavior;
+@property (nonatomic, readonly) MPUserNotificationMode mode;
+@property (nonatomic, readwrite) BOOL shouldPersist;
 
 - (nonnull instancetype)initWithDictionary:(nonnull NSDictionary *)notificationDictionary state:(nonnull NSString *)state behavior:(MPUserNotificationBehavior)behavior mode:(MPUserNotificationMode)mode;
 

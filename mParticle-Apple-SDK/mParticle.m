@@ -69,7 +69,7 @@ NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
-@property (nonatomic, unsafe_unretained) BOOL initialized;
+@property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite) MPNetworkOptions *networkOptions;
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
@@ -169,14 +169,14 @@ NSString *const kMPStateKey = @"state";
 
 @interface MParticleOptions ()
 
-@property (nonatomic, assign, readwrite) BOOL isProxyAppDelegateSet;
-@property (nonatomic, assign, readwrite) BOOL isCollectUserAgentSet;
-@property (nonatomic, assign, readwrite) BOOL isCollectSearchAdsAttributionSet;
-@property (nonatomic, assign, readwrite) BOOL isTrackNotificationsSet;
-@property (nonatomic, assign, readwrite) BOOL isAutomaticSessionTrackingSet;
-@property (nonatomic, assign, readwrite) BOOL isStartKitsAsyncSet;
-@property (nonatomic, assign, readwrite) BOOL isUploadIntervalSet;
-@property (nonatomic, assign, readwrite) BOOL isSessionTimeoutSet;
+@property (nonatomic, readwrite) BOOL isProxyAppDelegateSet;
+@property (nonatomic, readwrite) BOOL isCollectUserAgentSet;
+@property (nonatomic, readwrite) BOOL isCollectSearchAdsAttributionSet;
+@property (nonatomic, readwrite) BOOL isTrackNotificationsSet;
+@property (nonatomic, readwrite) BOOL isAutomaticSessionTrackingSet;
+@property (nonatomic, readwrite) BOOL isStartKitsAsyncSet;
+@property (nonatomic, readwrite) BOOL isUploadIntervalSet;
+@property (nonatomic, readwrite) BOOL isSessionTimeoutSet;
 
 @end
 
