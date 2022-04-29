@@ -1892,7 +1892,12 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     completionHandler(projectedEvents, appliedProjections);
 }
 
-- (nonnull NSArray<NSNumber *> *)configuredKitsRegistry {
+- (nullable NSArray<NSNumber *> *)configuredKitsRegistry {
+    BOOL anyKitsIncluded = self.supportedKits != nil && self.supportedKits.count > 0;
+    BOOL anyKitsConfigured = self.kitConfigurations != nil && self.kitConfigurations.count > 0;
+    if (!anyKitsIncluded || !anyKitsConfigured) {
+        return nil;
+    }
     NSMutableArray<NSNumber *> *configuredKits = [[NSMutableArray alloc] initWithCapacity:self.kitConfigurations.count];
     for (NSNumber *kitId in self.kitConfigurations.allKeys) {
         if ([self.supportedKits containsObject:kitId]) {

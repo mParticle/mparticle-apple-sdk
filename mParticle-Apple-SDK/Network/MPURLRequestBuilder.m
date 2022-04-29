@@ -170,7 +170,7 @@ static NSDateFormatter *RFC1123DateFormatter;
                 kits = nil;
             }
             
-            NSMutableArray<NSNumber *> *configuredKitIds = [[NSMutableArray alloc] initWithArray:[[MParticle sharedInstance].kitContainer configuredKitsRegistry]];
+            NSArray<NSNumber *> *configuredKitIds = MParticle.sharedInstance.kitContainer.configuredKitsRegistry.copy;
             
             kits = [configuredKitIds componentsJoinedByString:@","];
             
