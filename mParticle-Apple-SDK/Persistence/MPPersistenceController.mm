@@ -13,7 +13,6 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
-#include "MessageTypeName.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
@@ -27,7 +26,6 @@
 #import "MPApplication.h"
 
 using namespace std;
-using namespace mParticle;
 
 // Prototype declaration of the C functions
 #ifdef __cplusplus
@@ -1238,7 +1236,7 @@ const int MaxBreadcrumbs = 50;
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
-        string sessionEndMessageType = MessageTypeName::nameForMessageType(SessionEnd);
+        string sessionEndMessageType = string([NSStringFromMessageType(MPMessageTypeSessionEnd) UTF8String]);
         sqlite3_bind_text(preparedStatement, 2, sessionEndMessageType.c_str(), (int)sessionEndMessageType.size(), SQLITE_STATIC);
         
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {

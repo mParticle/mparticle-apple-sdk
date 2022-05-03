@@ -178,18 +178,10 @@
 		DB47A0D624252A2C00869BD2 /* MPConsentKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FE624252A2A00869BD2 /* MPConsentKitFilter.h */; };
 		DB47A0D724252A2C00869BD2 /* mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FE724252A2A00869BD2 /* mParticle.m */; };
 		DB47A0D824252A2C00869BD2 /* mParticle.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FE724252A2A00869BD2 /* mParticle.m */; };
-		DB47A0D924252A2C00869BD2 /* EventTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FE924252A2A00869BD2 /* EventTypeName.h */; };
-		DB47A0DA24252A2C00869BD2 /* EventTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FE924252A2A00869BD2 /* EventTypeName.h */; };
 		DB47A0DB24252A2C00869BD2 /* MPBaseEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEA24252A2A00869BD2 /* MPBaseEvent.m */; };
 		DB47A0DC24252A2C00869BD2 /* MPBaseEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEA24252A2A00869BD2 /* MPBaseEvent.m */; };
 		DB47A0DD24252A2C00869BD2 /* MPEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEB24252A2A00869BD2 /* MPEvent.m */; };
 		DB47A0DE24252A2C00869BD2 /* MPEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEB24252A2A00869BD2 /* MPEvent.m */; };
-		DB47A0DF24252A2C00869BD2 /* EventTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEC24252A2A00869BD2 /* EventTypeName.mm */; };
-		DB47A0E024252A2C00869BD2 /* EventTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEC24252A2A00869BD2 /* EventTypeName.mm */; };
-		DB47A0E124252A2C00869BD2 /* MessageTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FED24252A2A00869BD2 /* MessageTypeName.mm */; };
-		DB47A0E224252A2C00869BD2 /* MessageTypeName.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FED24252A2A00869BD2 /* MessageTypeName.mm */; };
-		DB47A0E324252A2C00869BD2 /* MessageTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FEE24252A2A00869BD2 /* MessageTypeName.h */; };
-		DB47A0E424252A2C00869BD2 /* MessageTypeName.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FEE24252A2A00869BD2 /* MessageTypeName.h */; };
 		DB47A0E524252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */; };
 		DB47A0E624252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */; };
 		DB47A0E724252A2C00869BD2 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FF224252A2A00869BD2 /* MPListenerController.m */; };
@@ -687,12 +679,8 @@
 		DB479FE524252A2A00869BD2 /* MPGDPRConsent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPGDPRConsent.m; sourceTree = "<group>"; };
 		DB479FE624252A2A00869BD2 /* MPConsentKitFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConsentKitFilter.h; sourceTree = "<group>"; };
 		DB479FE724252A2A00869BD2 /* mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mParticle.m; sourceTree = "<group>"; };
-		DB479FE924252A2A00869BD2 /* EventTypeName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EventTypeName.h; sourceTree = "<group>"; };
 		DB479FEA24252A2A00869BD2 /* MPBaseEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBaseEvent.m; sourceTree = "<group>"; };
 		DB479FEB24252A2A00869BD2 /* MPEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEvent.m; sourceTree = "<group>"; };
-		DB479FEC24252A2A00869BD2 /* EventTypeName.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = EventTypeName.mm; sourceTree = "<group>"; };
-		DB479FED24252A2A00869BD2 /* MessageTypeName.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MessageTypeName.mm; sourceTree = "<group>"; };
-		DB479FEE24252A2A00869BD2 /* MessageTypeName.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MessageTypeName.h; sourceTree = "<group>"; };
 		DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPUserSegments+Setters.h"; sourceTree = "<group>"; };
 		DB479FF224252A2A00869BD2 /* MPListenerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPListenerController.m; sourceTree = "<group>"; };
 		DB479FF424252A2A00869BD2 /* MPMessageBuilder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPMessageBuilder.mm; sourceTree = "<group>"; };
@@ -1160,12 +1148,8 @@
 		DB479FE824252A2A00869BD2 /* Event */ = {
 			isa = PBXGroup;
 			children = (
-				DB479FE924252A2A00869BD2 /* EventTypeName.h */,
 				DB479FEA24252A2A00869BD2 /* MPBaseEvent.m */,
 				DB479FEB24252A2A00869BD2 /* MPEvent.m */,
-				DB479FEC24252A2A00869BD2 /* EventTypeName.mm */,
-				DB479FED24252A2A00869BD2 /* MessageTypeName.mm */,
-				DB479FEE24252A2A00869BD2 /* MessageTypeName.h */,
 			);
 			path = Event;
 			sourceTree = "<group>";
@@ -1470,7 +1454,6 @@
 				DB47A24224252A2C00869BD2 /* MPProduct.h in Headers */,
 				DB47A1F624252A2C00869BD2 /* MPCustomModule.h in Headers */,
 				DB47A11624252A2C00869BD2 /* MPLaunchInfo.h in Headers */,
-				DB47A0DA24252A2C00869BD2 /* EventTypeName.h in Headers */,
 				DB47A10A24252A2C00869BD2 /* MPSearchAdsAttribution.h in Headers */,
 				DB3A5A1B2525269C004CE231 /* MPDataPlanFilter.h in Headers */,
 				DB47A10624252A2C00869BD2 /* MPHasher.h in Headers */,
@@ -1539,7 +1522,6 @@
 				DB47A1E024252A2C00869BD2 /* MPNetworkPerformance.h in Headers */,
 				DB47A0C624252A2C00869BD2 /* MPAppNotificationHandler.h in Headers */,
 				DB47A10024252A2C00869BD2 /* MPResponseConfig.h in Headers */,
-				DB47A0E424252A2C00869BD2 /* MessageTypeName.h in Headers */,
 				DB47A1DC24252A2C00869BD2 /* MPURLRequestBuilder.h in Headers */,
 				DB47A23E24252A2C00869BD2 /* MPKitRegister.h in Headers */,
 				DB47A1C224252A2C00869BD2 /* MPKitContainer.h in Headers */,
@@ -1580,7 +1562,6 @@
 				DB47A24124252A2C00869BD2 /* MPProduct.h in Headers */,
 				DB47A1F524252A2C00869BD2 /* MPCustomModule.h in Headers */,
 				DB47A11524252A2C00869BD2 /* MPLaunchInfo.h in Headers */,
-				DB47A0D924252A2C00869BD2 /* EventTypeName.h in Headers */,
 				DB47A10924252A2C00869BD2 /* MPSearchAdsAttribution.h in Headers */,
 				DB3A5A1A2525269C004CE231 /* MPDataPlanFilter.h in Headers */,
 				DB47A10524252A2C00869BD2 /* MPHasher.h in Headers */,
@@ -1653,7 +1634,6 @@
 				DB47A21D24252A2C00869BD2 /* MPCCPAConsent.h in Headers */,
 				DB47A0C524252A2C00869BD2 /* MPAppNotificationHandler.h in Headers */,
 				DB47A0FF24252A2C00869BD2 /* MPResponseConfig.h in Headers */,
-				DB47A0E324252A2C00869BD2 /* MessageTypeName.h in Headers */,
 				DB47A1DB24252A2C00869BD2 /* MPURLRequestBuilder.h in Headers */,
 				DB47A23D24252A2C00869BD2 /* MPKitRegister.h in Headers */,
 				DB47A1C124252A2C00869BD2 /* MPKitContainer.h in Headers */,
@@ -1918,7 +1898,6 @@
 				DB47A1A624252A2C00869BD2 /* MPKitRegister.mm in Sources */,
 				DB47A0D024252A2C00869BD2 /* MPConsentState.m in Sources */,
 				DB47A1F024252A2C00869BD2 /* MPBackendController.mm in Sources */,
-				DB47A0E224252A2C00869BD2 /* MessageTypeName.mm in Sources */,
 				DB47A1AC24252A2C00869BD2 /* MPKitConfiguration.mm in Sources */,
 				DB47A1FC24252A2C00869BD2 /* MPCustomModule.m in Sources */,
 				DB47A12E24252A2C00869BD2 /* MPSearchAdsAttribution.m in Sources */,
@@ -1975,7 +1954,6 @@
 				DB47A15624252A2C00869BD2 /* FilteredMParticleUser.m in Sources */,
 				DB47A0DC24252A2C00869BD2 /* MPBaseEvent.m in Sources */,
 				DB47A0C824252A2C00869BD2 /* MPAppNotificationHandler.mm in Sources */,
-				DB47A0E024252A2C00869BD2 /* EventTypeName.mm in Sources */,
 				DB47A14624252A2C00869BD2 /* MPNotificationController.mm in Sources */,
 				DB47A19A24252A2C00869BD2 /* MPTransactionAttributes.m in Sources */,
 				DB47A13624252A2C00869BD2 /* MPUserAttributeChange.m in Sources */,
@@ -2019,7 +1997,6 @@
 				DB47A1A524252A2C00869BD2 /* MPKitRegister.mm in Sources */,
 				DB47A0CF24252A2C00869BD2 /* MPConsentState.m in Sources */,
 				DB47A1EF24252A2C00869BD2 /* MPBackendController.mm in Sources */,
-				DB47A0E124252A2C00869BD2 /* MessageTypeName.mm in Sources */,
 				DB47A1AB24252A2C00869BD2 /* MPKitConfiguration.mm in Sources */,
 				DB47A1FB24252A2C00869BD2 /* MPCustomModule.m in Sources */,
 				DB47A12D24252A2C00869BD2 /* MPSearchAdsAttribution.m in Sources */,
@@ -2076,7 +2053,6 @@
 				DB47A15524252A2C00869BD2 /* FilteredMParticleUser.m in Sources */,
 				DB47A0DB24252A2C00869BD2 /* MPBaseEvent.m in Sources */,
 				DB47A0C724252A2C00869BD2 /* MPAppNotificationHandler.mm in Sources */,
-				DB47A0DF24252A2C00869BD2 /* EventTypeName.mm in Sources */,
 				DB47A14524252A2C00869BD2 /* MPNotificationController.mm in Sources */,
 				DB47A19924252A2C00869BD2 /* MPTransactionAttributes.m in Sources */,
 				DB47A13524252A2C00869BD2 /* MPUserAttributeChange.m in Sources */,

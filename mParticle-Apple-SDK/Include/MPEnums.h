@@ -375,6 +375,33 @@ typedef NS_ENUM(NSUInteger, MPMessageType) {
     MPMessageTypeMedia = 20
 };
 
+#define NSStringFromMessageType( value ) \
+( \
+@{ \
+@( MPMessageTypeUnknown )          : kMPMessageTypeStringUnknown, \
+@( MPMessageTypeSessionStart )            : kMPMessageTypeStringSessionStart, \
+@( MPMessageTypeSessionEnd )              : kMPMessageTypeStringSessionEnd, \
+@( MPMessageTypeScreenView )         : kMPMessageTypeStringScreenView, \
+@( MPMessageTypeEvent )         : kMPMessageTypeStringEvent, \
+@( MPMessageTypeCrashReport )      : kMPMessageTypeStringCrashReport, \
+@( MPMessageTypeOptOut )              : kMPMessageTypeStringOptOut, \
+@( MPMessageTypeFirstRun )               : kMPMessageTypeStringFirstRun, \
+@( MPMessageTypePreAttribution )           : kMPMessageTypeStringPreAttribution, \
+@( MPMessageTypePushRegistration )      : kMPMessageTypeStringPushRegistration, \
+@( MPMessageTypeAppStateTransition )            : kMPMessageTypeStringAppStateTransition, \
+@( MPMessageTypePushNotification )      : kMPMessageTypeStringPushNotification, \
+@( MPMessageTypeNetworkPerformance )               : kMPMessageTypeStringNetworkPerformance, \
+@( MPMessageTypeBreadcrumb )          : kMPMessageTypeStringBreadcrumb, \
+@( MPMessageTypeProfile )            : kMPMessageTypeStringProfile, \
+@( MPMessageTypePushNotificationInteraction )              : kMPMessageTypeStringPushNotificationInteraction, \
+@( MPMessageTypeCommerceEvent )       : kMPMessageTypeStringCommerceEvent, \
+@( MPMessageTypeUserAttributeChange )      : kMPMessageTypeStringUserAttributeChange, \
+@( MPMessageTypeUserIdentityChange )       : kMPMessageTypeStringUserIdentityChange, \
+@( MPMessageTypeMedia )  : kMPMessageTypeStringMedia, \
+} \
+[ @( value ) ] \
+)
+
 /// Upload Types
 typedef NS_ENUM(NSUInteger, MPUploadType) {
     /** Upload type for messages */
@@ -548,6 +575,8 @@ extern NSString * _Nonnull const MPKitAPIErrorKey;
 @interface MPEnum : NSObject
 
 + (BOOL)isUserIdentity:(MPIdentity)identity;
++ (MPMessageType)messageTypeFromNSString:(NSString * _Nonnull)messageTypeString;
++ (NSUInteger)messageTypeSize;
 
 @end
 
