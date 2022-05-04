@@ -261,12 +261,12 @@ static NSArray *actionNames;
 
 #pragma mark Private methods
 - (void)setEventType {
-    static const vector<MPEventType> productActionEventType {MPEventTypeAddToCart, MPEventTypeRemoveFromCart, MPEventTypeAddToWishlist, MPEventTypeRemoveFromWishlist, MPEventTypeCheckout, MPEventTypeCheckoutOption, MPEventTypeClick, MPEventTypeViewDetail, MPEventTypePurchase, MPEventTypeRefund};
-    static const vector<MPEventType> promotionActionEventType {MPEventTypePromotionClick, MPEventTypePromotionView};
+    MPEventType productActionEventType[] = {MPEventTypeAddToCart, MPEventTypeRemoveFromCart, MPEventTypeAddToWishlist, MPEventTypeRemoveFromWishlist, MPEventTypeCheckout, MPEventTypeCheckoutOption, MPEventTypeClick, MPEventTypeViewDetail, MPEventTypePurchase, MPEventTypeRefund};
+    MPEventType promotionActionEventType[] = {MPEventTypePromotionClick, MPEventTypePromotionView};
     
     switch (commerceEventKind) {
         case MPCommerceEventKindProduct:
-            self.type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
+            self.type = productActionEventType[(NSUInteger)self.action];
             // Ensure we have a transactionAttributes object, as it is required for the product event type
             if (!_transactionAttributes) {
                 _transactionAttributes = [[MPTransactionAttributes alloc] init];
@@ -274,7 +274,7 @@ static NSArray *actionNames;
             break;
             
         case MPCommerceEventKindPromotion:
-            self.type = _promotionContainer ? static_cast<MPEventType>(promotionActionEventType[(NSUInteger)self.promotionContainer.action]) : MPEventTypeOther;
+            self.type = _promotionContainer ? promotionActionEventType[(NSUInteger)self.promotionContainer.action]: MPEventTypeOther;
             break;
             
         case MPCommerceEventKindImpression:

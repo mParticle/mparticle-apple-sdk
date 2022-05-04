@@ -575,7 +575,7 @@ extern NSString * _Nonnull const MPKitAPIErrorKey;
 @interface MPEnum : NSObject
 
 + (BOOL)isUserIdentity:(MPIdentity)identity;
-+ (MPMessageType)messageTypeFromNSString:(NSString * _Nonnull)messageTypeString;
++ (MPMessageType)messageTypeFromNSString:(NSString * _Nullable)messageTypeString;
 + (NSUInteger)messageTypeSize;
 
 @end
