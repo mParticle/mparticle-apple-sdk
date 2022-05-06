@@ -1893,7 +1893,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 }
 
 - (nullable NSArray<NSNumber *> *)configuredKitsRegistry {
-    BOOL anyKitsIncluded = self.supportedKits != nil && self.supportedKits.count > 0;
+    BOOL anyKitsIncluded = self.supportedKits.count > 0;
     BOOL anyKitsConfigured = self.kitConfigurations != nil && self.kitConfigurations.count > 0;
     if (!anyKitsIncluded || !anyKitsConfigured) {
         return nil;
