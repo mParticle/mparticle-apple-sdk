@@ -1,5 +1,4 @@
 #include "MPHasher.h"
-#include "EventTypeName.h"
 #include <algorithm>
 
 namespace mParticle {
@@ -48,7 +47,7 @@ namespace mParticle {
     }
     
     vector<string> Hasher::hashedAllEventTypes() {
-        vector<int> eventTypes(EventTypeName::count);
+        vector<int> eventTypes(22);
         
         int i = 0;
         for_each(eventTypes.begin(), eventTypes.end(), [&i](int &eventType) {eventType = i++;});

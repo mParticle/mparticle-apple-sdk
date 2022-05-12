@@ -3,10 +3,10 @@
 #import "MPIConstants.h"
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
-#include "MessageTypeName.h"
 #import "MPILogger.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
+#import "MPEnums.h"
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -188,7 +188,7 @@
         return;
     }
     
-    auto numberOfMessageTypes = mParticle::MessageTypeName::size();
+    auto numberOfMessageTypes = [MPEnum messageTypeSize];
     vector<NSNumber *> configuredMessageTypeProjectionsVector;
     configuredMessageTypeProjectionsVector.reserve(numberOfMessageTypes);
     vector<MPEventProjection *> defaultProjectionsVector;

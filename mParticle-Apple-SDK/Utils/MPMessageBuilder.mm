@@ -10,7 +10,6 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#include "MessageTypeName.h"
 #import "MPLocationManager.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"

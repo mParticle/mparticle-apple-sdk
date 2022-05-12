@@ -9,7 +9,6 @@
 #import "MPIConstants.h"
 #import "MPEnums.h"
 #include <vector>
-#include "EventTypeName.h"
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"
@@ -17,7 +16,6 @@
 #import "MPILogger.h"
 
 using namespace std;
-using namespace mParticle;
 
 // Internal keys
 NSString *const kMPCECheckoutOptions = @"co";
@@ -263,12 +261,12 @@ static NSArray *actionNames;
 
 #pragma mark Private methods
 - (void)setEventType {
-    static const vector<EventType> productActionEventType {AddToCart, RemoveFromCart, AddToWishlist, RemoveFromWishlist, Checkout, CheckoutOption, Click, ViewDetail, Purchase, Refund};
-    static const vector<EventType> promotionActionEventType {PromotionClick, PromotionView};
+    MPEventType productActionEventType[] = {MPEventTypeAddToCart, MPEventTypeRemoveFromCart, MPEventTypeAddToWishlist, MPEventTypeRemoveFromWishlist, MPEventTypeCheckout, MPEventTypeCheckoutOption, MPEventTypeClick, MPEventTypeViewDetail, MPEventTypePurchase, MPEventTypeRefund};
+    MPEventType promotionActionEventType[] = {MPEventTypePromotionClick, MPEventTypePromotionView};
     
     switch (commerceEventKind) {
         case MPCommerceEventKindProduct:
-            self.type = static_cast<MPEventType>(productActionEventType[(NSUInteger)self.action]);
+            self.type = productActionEventType[(NSUInteger)self.action];
             // Ensure we have a transactionAttributes object, as it is required for the product event type
             if (!_transactionAttributes) {
                 _transactionAttributes = [[MPTransactionAttributes alloc] init];
@@ -276,15 +274,15 @@ static NSArray *actionNames;
             break;
             
         case MPCommerceEventKindPromotion:
-            self.type = _promotionContainer ? static_cast<MPEventType>(promotionActionEventType[(NSUInteger)self.promotionContainer.action]) : MPEventTypeOther;
+            self.type = _promotionContainer ? promotionActionEventType[(NSUInteger)self.promotionContainer.action]: MPEventTypeOther;
             break;
             
         case MPCommerceEventKindImpression:
-            self.type = static_cast<MPEventType>(Impression);
+            self.type = MPEventTypeImpression;
             break;
 
         default:
-            self.type = static_cast<MPEventType>(Other);
+            self.type = MPEventTypeOther;
             break;
     }
 }
