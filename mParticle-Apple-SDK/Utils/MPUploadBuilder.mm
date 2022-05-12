@@ -16,6 +16,7 @@
 #import "MPConsentState.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
+#import "MPILogger.h"
 
 using namespace std;
 
@@ -23,6 +24,7 @@ using namespace std;
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, nonnull) MParticleOptions *options;
 
 @end
 
@@ -244,6 +246,17 @@ using namespace std;
         }
     }
     
+    if (MParticle.sharedInstance.options.onCreateBatch != NULL) {
+        NSDictionary *updatedDictionary = MParticle.sharedInstance.options.onCreateBatch(uploadDictionary);
+        if (updatedDictionary == nil) {
+            MPILogWarning(@"Not uploading batch due to 'onCreateBatch' handler returning 'nil'");
+            return;
+        } else if ([updatedDictionary isKindOfClass:[NSDictionary class]] && ![updatedDictionary isEqual:uploadDictionary]) {
+            MPILogWarning(@"Replacing batch with mutated version from 'onCreateBatch' handler");
+            uploadDictionary = [updatedDictionary mutableCopy];
+            uploadDictionary[@"mb"] = @YES;
+        }
+    }
     
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId uploadDictionary:uploadDictionary dataPlanId:dPId dataPlanVersion:dPVersion];
     upload.containsOptOutMessage = containsOptOutMessage;
