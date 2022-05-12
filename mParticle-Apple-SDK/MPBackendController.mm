@@ -1975,33 +1975,33 @@ static BOOL skipNextUpload = NO;
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler {
     __weak MPBackendController *weakSelf = self;
 
-            [self requestConfig:^(BOOL uploadBatch) {
-                if (!uploadBatch) {
-                    if (completionHandler) {
-                        completionHandler(NO);
-                    }
-                    
-                    return;
-                }
-                __strong MPBackendController *strongSelf = weakSelf;
-                MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
-                BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
-                BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
-                if (shouldDelayUpload) {
-                    if (completionHandler) {
-                        completionHandler(YES);
-                    }
-                    
-                    return;
-                }
-                
-                [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
-                    if (completionHandler) {
-                        completionHandler(NO);
-                    }
-                }];
-                
-            }];
+    [self requestConfig:^(BOOL uploadBatch) {
+        if (!uploadBatch) {
+            if (completionHandler) {
+                completionHandler(NO);
+            }
+            
+            return;
+        }
+        __strong MPBackendController *strongSelf = weakSelf;
+        MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
+        BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
+        BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
+        if (shouldDelayUpload) {
+            if (completionHandler) {
+                completionHandler(YES);
+            }
+            
+            return;
+        }
+        
+        [strongSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
+            if (completionHandler) {
+                completionHandler(NO);
+            }
+        }];
+        
+    }];
     
     return MPExecStatusSuccess;
 }

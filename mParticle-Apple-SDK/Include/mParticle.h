@@ -394,6 +394,19 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, copy) void (^onAttributionComplete)(MPAttributionResult *_Nullable attributionResult, NSError *_Nullable error);
 
+/**
+ Custom handler to modify or block batch data before upload.
+
+ If set, this will be called when a new batch of data is created. By returning a different value, you can change the batch contents, or by returning 'nil' you can block the batch from being uploaded.
+
+ Use with care. This feature was initially added to allow the value of existing fields to be modified. If you add new data in a format that the platform is not expecting, it may be dropped or not parsed correctly.
+
+ Note: Use of this handler will also cause the field 'mb' (modified batch) to appear in the batch so we can distinguish for troubleshooting purposes whether data was changed.
+ 
+ Also note: Unlike other callbacks, this block will be called on the SDK queue to prevent batches from being processed out of order. Please avoid excessively blocking in this handler as this will prevent the SDK from doing other tasks.
+ */
+@property (nonatomic, copy) NSDictionary *_Nullable (^onCreateBatch)(NSDictionary * batch);
+
 @end
 
 /**
