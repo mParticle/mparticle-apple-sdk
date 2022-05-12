@@ -16,7 +16,6 @@
 #import "MPConsentState.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
-#include "MessageTypeName.h"
 
 using namespace std;
 

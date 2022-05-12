@@ -1,7 +1,6 @@
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
-#include "MessageTypeName.h"
 #import "MPStateMachine.h"
 #include "MPHasher.h"
 #import "MPKitConfiguration.h"
@@ -10,7 +9,6 @@
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
 #import "MPKitFilter.h"
-#include "EventTypeName.h"
 #import "MPEvent.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
@@ -623,7 +621,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
     
     // Event type filter
-    __block NSString *hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>([commerceEvent type])).c_str() encoding:NSUTF8StringEncoding];
+    __block NSString *hashValue = [MPIHasher hashEventType:[commerceEvent type]];
     
     __block BOOL shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
     if (shouldFilter) {
@@ -803,7 +801,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     // Event type filter
     if (selector != @selector(logScreen:)) {
         
-        hashValue = [NSString stringWithCString:mParticle::EventTypeName::hashForEventType(static_cast<mParticle::EventType>(event.type)).c_str() encoding:NSUTF8StringEncoding];
+        hashValue = [MPIHasher hashEventType:event.type];
         
         shouldFilter = kitConfiguration.eventTypeFilters[hashValue] && [kitConfiguration.eventTypeFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -841,7 +839,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     MPEvent *forwardEvent = [event copy];
     // Attributes
-    MPMessageType messageTypeCode = (MPMessageType)mParticle::MessageTypeName::messageTypeForName(string([messageType UTF8String]));
+    MPMessageType messageTypeCode = [MPEnum messageTypeFromNSString:messageType];
     if (messageTypeCode != MPMessageTypeEvent && messageTypeCode != MPMessageTypeScreenView && messageTypeCode != MPMessageTypeMedia) {
         messageTypeCode = MPMessageTypeUnknown;
     }

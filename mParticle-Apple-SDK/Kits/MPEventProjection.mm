@@ -1,7 +1,7 @@
 #import "MPEventProjection.h"
 #import "MPAttributeProjection.h"
 #include <vector>
-#include "EventTypeName.h"
+#import "MPIHasher.h"
 
 using namespace std;
 
@@ -82,7 +82,7 @@ using namespace std;
     __block NSString *auxString;
     
     auxString = matchDictionary[@"event"];
-    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? (MPEventType)mParticle::EventTypeName::eventTypeForHash(string([auxString cStringUsingEncoding:NSUTF8StringEncoding])) : MPEventTypeOther;
+    _eventType = !MPIsNull(auxString) && auxString.length > 0 ? [MPIHasher eventTypeForHash:auxString] : MPEventTypeOther;
     
     _messageType = !MPIsNull(matchDictionary[@"message_type"]) ? (MPMessageType)[matchDictionary[@"message_type"] integerValue] : MPMessageTypeEvent;
     

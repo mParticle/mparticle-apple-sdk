@@ -24,7 +24,6 @@
 #import "MPResponseConfig.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#include "MessageTypeName.h"
 #import "MPKitContainer.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
@@ -377,7 +376,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:static_cast<MPMessageType>(mParticle::MessageType::UserAttributeChange)
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserAttributeChange
                                                                            session:self.session
                                                                userAttributeChange:userAttributeChange];
     if (userAttributeChange.timestamp) {
@@ -394,7 +393,7 @@ static BOOL appBackgrounded = NO;
         return;
     }
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:static_cast<MPMessageType>(mParticle::MessageType::UserIdentityChange)
+    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeUserIdentityChange
                                                                            session:self.session
                                                                 userIdentityChange:userIdentityChange];
     if (userIdentityChange.timestamp) {

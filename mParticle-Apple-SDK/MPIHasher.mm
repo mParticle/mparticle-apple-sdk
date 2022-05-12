@@ -20,4 +20,17 @@
     return result;
 }
 
++ (NSString *)hashEventType:(MPEventType)eventType {
+    return [NSString stringWithCString:mParticle::Hasher::hashString([[@(eventType) stringValue] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+}
+
++ (MPEventType)eventTypeForHash:(NSString *)hashString {
+    for (int i = 1; i <= MPEventTypeImpression; ++i) {
+        if ([hashString isEqualToString: [MPIHasher hashEventType: (MPEventType)i]]) {
+            return (MPEventType)i;
+        }
+    }
+    
+    return MPEventTypeOther;
+}
 @end
