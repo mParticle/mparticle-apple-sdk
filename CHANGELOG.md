@@ -1,3 +1,18 @@
+# [8.8.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.7.0...v8.8.0) (2022-05-17)
+
+
+### Bug Fixes
+
+* Fix Dereferenced Garbage Pointer ([#148](https://github.com/mParticle/mparticle-apple-sdk/issues/148)) ([d2c58e1](https://github.com/mParticle/mparticle-apple-sdk/commit/d2c58e10559bc38999dca82a2910f478d2250142))
+* property memory annotations ([#146](https://github.com/mParticle/mparticle-apple-sdk/issues/146)) ([c95ddf6](https://github.com/mParticle/mparticle-apple-sdk/commit/c95ddf6da15a6e8ba381a717ec0a5b18c24e749c))
+* update active kits header ([#147](https://github.com/mParticle/mparticle-apple-sdk/issues/147)) ([d196723](https://github.com/mParticle/mparticle-apple-sdk/commit/d1967233a2cf9542f5a3c8e7c9fabd854acf4189))
+
+
+### Features
+
+* add conformsToProtocol forwarding to MPAppDelegateProxy ([#144](https://github.com/mParticle/mparticle-apple-sdk/issues/144)) ([40e517a](https://github.com/mParticle/mparticle-apple-sdk/commit/40e517aa0bff4ecd2368c095a1c7d35b5745ffd1))
+* add support for client side rules ([#151](https://github.com/mParticle/mparticle-apple-sdk/issues/151)) ([6a93096](https://github.com/mParticle/mparticle-apple-sdk/commit/6a93096d285546be9eda62c24bea72d2853033b0))
+
 # [8.7.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.6.0...v8.7.0) (2022-01-31)
 
 
