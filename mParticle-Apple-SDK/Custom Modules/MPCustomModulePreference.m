@@ -102,7 +102,7 @@
 }
 
 #pragma mark Private methods
-- (NSString *)defaultValueForMacroPlaceholder:(NSString *)macroPlaceholder __attribute__((no_sanitize("integer"))) {
+- (NSString *)defaultValueForMacroPlaceholder:(NSString *)macroPlaceholder {
     NSString *defaultValue = @"";
     
     if ([macroPlaceholder isEqualToString:@"%gn%"]) {
@@ -135,10 +135,10 @@
         CFUUIDRef uuidRef = CFUUIDCreate(kCFAllocatorDefault);
         CFUUIDBytes uuidBytes = CFUUIDGetUUIDBytes(uuidRef);
         
-        SInt64 lsbBytes[8] = {uuidBytes.byte8, uuidBytes.byte9, uuidBytes.byte10, uuidBytes.byte11,
+        uint64_t lsbBytes[8] = {uuidBytes.byte8, uuidBytes.byte9, uuidBytes.byte10, uuidBytes.byte11,
                               uuidBytes.byte12, uuidBytes.byte13, uuidBytes.byte14, uuidBytes.byte15};
         
-        SInt64 value = 0;
+        uint64_t value = 0;
         int i = 8;
         while (i--) {
             value |= lsbBytes[i] << ((7 - i) * 8);
@@ -146,7 +146,7 @@
 
         CFRelease(uuidRef);
 
-        defaultValue = [@(value) stringValue];
+        defaultValue = [@((SInt64)value) stringValue];
     } else if ([macroPlaceholder isEqualToString:@"%g%"]) {
         defaultValue = [[NSUUID UUID] UUIDString];
     }
