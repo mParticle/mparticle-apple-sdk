@@ -2,7 +2,6 @@
 #include <algorithm>
 
 namespace mParticle {
-    __attribute__((no_sanitize("integer")))
     int Hasher::hashFromString(const string &stringToHash) {
         if (stringToHash.empty()) {
             return 0;
@@ -11,7 +10,7 @@ namespace mParticle {
         string lowerCaseStringToHash = stringToHash;
         transform(lowerCaseStringToHash.begin(), lowerCaseStringToHash.end(), lowerCaseStringToHash.begin(), ::tolower);
         
-        int hash = 0;
+        unsigned int hash = 0;
         for (auto &character : lowerCaseStringToHash) {
             hash = ((hash << 5) - hash) + character;
         }
@@ -61,10 +60,9 @@ namespace mParticle {
         return Hasher::hashString(eventName);
     }
 
-    __attribute__((no_sanitize("integer")))
     int64_t Hasher::hashFNV1a(const char *bytes, int length) {
         // FNV-1a hashing
-        int64_t rampHash = 0xcbf29ce484222325;
+        uint64_t rampHash = 0xcbf29ce484222325;
         
         int i = 0;
         while (i < length) {
