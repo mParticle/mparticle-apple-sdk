@@ -146,7 +146,7 @@
 
         CFRelease(uuidRef);
 
-        defaultValue = [@(value) stringValue];
+        defaultValue = [@((SInt64)value) stringValue];
     } else if ([macroPlaceholder isEqualToString:@"%g%"]) {
         defaultValue = [[NSUUID UUID] UUIDString];
     }
