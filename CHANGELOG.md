@@ -1,3 +1,11 @@
+## [8.8.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.0...v8.8.1) (2022-07-15)
+
+
+### Bug Fixes
+
+* Add filtering check to legacy code path ([#155](https://github.com/mParticle/mparticle-apple-sdk/issues/155)) ([0212944](https://github.com/mParticle/mparticle-apple-sdk/commit/0212944ef6f3ed1849b269fcd355abdac5a4930b))
+* remove undefined hasher behavior ([#152](https://github.com/mParticle/mparticle-apple-sdk/issues/152)) ([a82b928](https://github.com/mParticle/mparticle-apple-sdk/commit/a82b9285c2844ac32638c6692fc651184b6fea81))
+
 # [8.8.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.7.0...v8.8.0) (2022-05-17)
 
 
