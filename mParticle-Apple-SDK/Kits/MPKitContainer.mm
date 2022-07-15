@@ -2031,17 +2031,19 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
                     while ((key = [attributeEnumerator nextObject])) {
                         if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
                             value = userAttributes[key];
-                            
-                            FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
-                            if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
-                                [kitInstance onSetUserAttribute:filteredUser];
-                            } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
-                                [kitInstance setUserAttribute:key value:value];
-                            } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
-                                value = [value stringValue];
-                                [kitInstance setUserAttribute:key value:value];
-                            } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
-                                [kitInstance setUserAttribute:key values:value];
+                            MPKitFilter *kitFilter = [self filter:kitRegister forUserAttributeKey:key value:value];
+                            if (!kitFilter.shouldFilter) {
+                                FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
+                                if ([kitInstance respondsToSelector:@selector(onSetUserAttribute:)] && filteredUser != nil) {
+                                    [kitInstance onSetUserAttribute:filteredUser];
+                                } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSStringClass]) {
+                                    [kitInstance setUserAttribute:key value:value];
+                                } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:value:)] && [value isKindOfClass:NSNumberClass]) {
+                                    value = [value stringValue];
+                                    [kitInstance setUserAttribute:key value:value];
+                                } else if ([kitInstance respondsToSelector:@selector(setUserAttribute:values:)] && [value isKindOfClass:NSArrayClass]) {
+                                    [kitInstance setUserAttribute:key values:value];
+                                }
                             }
                         }
                     }
