@@ -72,8 +72,7 @@
             transformedDictionary[key] = [[NSString alloc] initWithData:obj encoding:NSUTF8StringEncoding];
         } else {
             MPILogError(@"Data type is not supported as an attribute value: %@ - %@", obj, [[obj class] description]);
-            NSAssert([obj isKindOfClass:[NSString class]], @"Data type is not supported as an attribute value");
-            return;
+            transformedDictionary[key] = [obj description];
         }
     }];
     

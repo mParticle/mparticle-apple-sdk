@@ -47,7 +47,8 @@
     }
     
     NSDictionary *eventInfo = @{@"speed":@25,
-                                @"modality":@"sprinting"};
+                                @"modality":@"sprinting",
+                                @"stats":@{}};
     
     event.customAttributes = eventInfo;
     event.category = @"Olympic Games";
@@ -86,8 +87,8 @@
     XCTAssertNotNil(event.customAttributes, @"Should not have been nil.");
     XCTAssertNotNil(event.info, @"Should not have been nil.");
 
-    XCTAssertEqual(event.customAttributes.count, 2, @"Should have been two values in the customAttributes dictionary.");
-    XCTAssertEqual(event.info.count, 2, @"Should have been two values in the info dictionary.");
+    XCTAssertEqual(event.customAttributes.count, 3, @"Should have been three values in the customAttributes dictionary.");
+    XCTAssertEqual(event.info.count, 3, @"Should have been three values in the info dictionary.");
 
     NSDictionary *copyEventInfo = [eventInfo copy];
     event.customAttributes = copyEventInfo;
@@ -163,7 +164,8 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
     event.duration = eventDuration;
     event.customAttributes = @{@"speed":@25,
-                   @"modality":@"sprinting"};
+                               @"modality":@"sprinting",
+                               @"stats":@{}};
     event.category = @"Olympic Games";
     
     [session incrementCounter];
@@ -180,6 +182,7 @@
     
     NSDictionary *attributes = @{@"speed":@25,
                                  @"modality":@"sprinting",
+                                 @"stats":@{},
                                  @"$Category":@"Olympic Games",
                                  @"EventLength":eventDuration};
     XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], attributes, @"Attributes are not being set correctly.");
