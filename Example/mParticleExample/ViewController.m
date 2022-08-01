@@ -111,10 +111,11 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Event Name" type:MPEventTypeTransaction];
     
     // Add attributes to an event
+    NSDate *currentDate = [NSDate dateWithTimeIntervalSinceNow:0];
     event.customAttributes = @{@"A_String_Key":@"A String Value",
                                       @"A Number Key":@(42),
                                       @"A Date Key":[NSDate date],
-                                      @"test Dictionary": @{}};
+                               @"test Dictionary": @{@"test1": @"test", @"test2": @2, @"test3": currentDate}};
     
     // Custom flags are attributes sent to mParticle, but not forwarded to other providers
     [event addCustomFlag:@"Top Secret" withKey:@"Not_forwarded_to_providers"];
