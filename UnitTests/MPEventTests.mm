@@ -47,7 +47,8 @@
     }
     
     NSDictionary *eventInfo = @{@"speed":@25,
-                                @"modality":@"sprinting"};
+                                @"modality":@"sprinting",
+                                @"stats":@{}};
     
     event.customAttributes = eventInfo;
     event.category = @"Olympic Games";
@@ -86,8 +87,8 @@
     XCTAssertNotNil(event.customAttributes, @"Should not have been nil.");
     XCTAssertNotNil(event.info, @"Should not have been nil.");
 
-    XCTAssertEqual(event.customAttributes.count, 2, @"Should have been two values in the customAttributes dictionary.");
-    XCTAssertEqual(event.info.count, 2, @"Should have been two values in the info dictionary.");
+    XCTAssertEqual(event.customAttributes.count, 3, @"Should have been three values in the customAttributes dictionary.");
+    XCTAssertEqual(event.info.count, 3, @"Should have been three values in the info dictionary.");
 
     NSDictionary *copyEventInfo = [eventInfo copy];
     event.customAttributes = copyEventInfo;
@@ -163,7 +164,8 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
     event.duration = eventDuration;
     event.customAttributes = @{@"speed":@25,
-                   @"modality":@"sprinting"};
+                               @"modality":@"sprinting",
+                               @"stats":@{}};
     event.category = @"Olympic Games";
     
     [session incrementCounter];
@@ -180,6 +182,77 @@
     
     NSDictionary *attributes = @{@"speed":@25,
                                  @"modality":@"sprinting",
+                                 @"stats":@{},
+                                 @"$Category":@"Olympic Games",
+                                 @"EventLength":eventDuration};
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], attributes, @"Attributes are not being set correctly.");
+}
+
+- (void)testDictionaryRepresentationWithDictionaryValues {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.currentSession = session;
+    
+    NSNumber *eventDuration = @2;
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
+    event.duration = eventDuration;
+    NSDate *currentDate = [NSDate dateWithTimeIntervalSinceNow:0];
+    event.customAttributes = @{@"speed":@25,
+                               @"modality":@"sprinting",
+                               @"stats":@{@"test1": @"test", @"test2": @2, @"test3": currentDate}};
+    event.category = @"Olympic Games";
+    
+    [session incrementCounter];
+    [session incrementCounter];
+    [session incrementCounter];
+    
+    NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
+    XCTAssertNotNil(dictionaryRepresentation, @"Dictionary representation should not have been nil.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventNameKey], @"Dinosaur Run", @"Name is not correct.");
+    XCTAssertNotNil(dictionaryRepresentation[kMPEventStartTimestamp], @"Start timestamp should not have been nil.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventTypeKey], @"Other", @"Type should have been 'Other.'");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventLength], @2, @"Length should have been 2.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventCounterKey], @3, @"Event counter should have been 3.");
+    
+    NSDictionary *attributes = @{@"speed":@25,
+                                 @"modality":@"sprinting",
+                                 @"stats":@{@"test1": @"test", @"test2": @2, @"test3": currentDate},
+                                 @"$Category":@"Olympic Games",
+                                 @"EventLength":eventDuration};
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], attributes, @"Attributes are not being set correctly.");
+}
+
+- (void)testDictionaryRepresentationWithDictionaryValuesContainingDictionary {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.currentSession = session;
+    
+    NSNumber *eventDuration = @2;
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
+    event.duration = eventDuration;
+    NSDate *currentDate = [NSDate dateWithTimeIntervalSinceNow:0];
+    event.customAttributes = @{@"speed":@25,
+                               @"modality":@"sprinting",
+                               @"stats":@{@"test1": @"test", @"test2": @2, @"test3": currentDate}, @"test3": @{@"test1": @"test", @"test2": @2}};
+    event.category = @"Olympic Games";
+    
+    [session incrementCounter];
+    [session incrementCounter];
+    [session incrementCounter];
+    
+    NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
+    XCTAssertNotNil(dictionaryRepresentation, @"Dictionary representation should not have been nil.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventNameKey], @"Dinosaur Run", @"Name is not correct.");
+    XCTAssertNotNil(dictionaryRepresentation[kMPEventStartTimestamp], @"Start timestamp should not have been nil.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventTypeKey], @"Other", @"Type should have been 'Other.'");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventLength], @2, @"Length should have been 2.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventCounterKey], @3, @"Event counter should have been 3.");
+    
+    NSDictionary *attributes = @{@"speed":@25,
+                                 @"modality":@"sprinting",
+                                 @"stats":@{@"test1": @"test", @"test2": @2, @"test3": currentDate}, @"test3": @{@"test1": @"test", @"test2": @2},
                                  @"$Category":@"Olympic Games",
                                  @"EventLength":eventDuration};
     XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], attributes, @"Attributes are not being set correctly.");
