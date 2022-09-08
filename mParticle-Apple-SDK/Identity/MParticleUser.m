@@ -279,7 +279,7 @@
 - (void)setUserAttribute:(nonnull NSString *)key value:(nonnull id)value {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value];
     
-    if ([value isKindOfClass:[NSString class]] && (((NSString *)value).length <= 0)) {
+    if ([value isKindOfClass:[NSString class]] && (((NSString *)value).length < 0)) {
         MPILogDebug(@"User attribute not updated. Please use removeUserAttribute.");
         
         return;

@@ -2037,7 +2037,7 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
-    if (!(([value isKindOfClass:[NSString class]] && ((NSString *)value).length > 0) || [value isKindOfClass:[NSNumber class]]) && value != nil) {
+    if (!(([value isKindOfClass:[NSString class]] && ((NSString *)value).length >= 0) || [value isKindOfClass:[NSNumber class]]) && value != nil) {
         if (completionHandler) {
             completionHandler(keyCopy, value, MPExecStatusInvalidDataType);
         }
