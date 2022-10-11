@@ -86,7 +86,7 @@
     XCTAssertEqual(safe, 2);
     const char *version = sqlite3_libversion();
     NSString *stringVersion = [NSString stringWithCString:version encoding:NSUTF8StringEncoding];
-    NSArray *validVersions = @[@"3.19.3", @"3.22.0", @"3.14.0", @"3.16.0", @"3.24.0", @"3.28.0", @"3.32.3", @"3.36.0", @"3.37.0"];
+    NSArray *validVersions = @[@"3.19.3", @"3.22.0", @"3.14.0", @"3.16.0", @"3.24.0", @"3.28.0", @"3.32.3", @"3.36.0", @"3.37.0", @"3.39.0"];
     XCTAssertTrue([validVersions containsObject:stringVersion]);
 }
 
