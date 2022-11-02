@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest" test
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
 
 ##################################################################
 # Temporary tests for Xcode 13 beta, REMOVE AFTER OFFICIAL RELEASE
