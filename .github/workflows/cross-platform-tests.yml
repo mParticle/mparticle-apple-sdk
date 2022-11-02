@@ -11,14 +11,8 @@ on:
 jobs:
   run-ios-tests:
     timeout-minutes: 30
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
-      - name: "Update XCode tools"
-        run: |
-          sudo xcode-select -v
-          sudo xcode-select -s /Applications/Xcode_12.5.1.app
-          sudo xcode-select -v
-          xcodebuild -version
       - name: "Checkout Cross Platform Tests"
         uses: actions/checkout@v2
         with:
@@ -36,8 +30,11 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "11"
+          cache: "gradle"
       - name: "Install Cocoapods"
         run: sudo gem install cocoapods; sudo gem install cocoapods-generate
+      - name: Choose Xcode version
+        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_14.1.app/Contents/Developer; xcode-select -p
       - name: Run Tests
         run: ./gradlew runIos
       - name: Archive Test Results
