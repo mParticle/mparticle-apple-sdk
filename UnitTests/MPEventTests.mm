@@ -258,6 +258,44 @@
     XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], attributes, @"Attributes are not being set correctly.");
 }
 
+- (void)testDictionaryRepresentationWithNullValues {
+    MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.currentSession = session;
+    
+    NSNumber *eventDuration = @2;
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
+    event.duration = eventDuration;
+    event.customAttributes = @{@"speed":@25,
+                               @"modality":@"sprinting",
+                               @"stats":@{},
+                               @"null_key":[NSNull null]
+    };
+    event.category = @"Olympic Games";
+    
+    [session incrementCounter];
+    [session incrementCounter];
+    [session incrementCounter];
+    
+    NSDictionary *dictionaryRepresentation = [event dictionaryRepresentation];
+    XCTAssertNotNil(dictionaryRepresentation, @"Dictionary representation should not have been nil.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventNameKey], @"Dinosaur Run", @"Name is not correct.");
+    XCTAssertNotNil(dictionaryRepresentation[kMPEventStartTimestamp], @"Start timestamp should not have been nil.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventTypeKey], @"Other", @"Type should have been 'Other.'");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventLength], @2, @"Length should have been 2.");
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPEventCounterKey], @3, @"Event counter should have been 3.");
+    
+    NSDictionary *attributes = @{@"speed":@25,
+                                 @"modality":@"sprinting",
+                                 @"stats":@{},
+                                 @"$Category":@"Olympic Games",
+                                 @"EventLength":eventDuration,
+                                 @"null_key": [NSNull null]
+    };
+    XCTAssertEqualObjects(dictionaryRepresentation[kMPAttributesKey], attributes, @"Attributes are not being set correctly.");
+}
+
 - (void)testBreadcrumbDictionaryRepresentation {
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
     event.customAttributes = @{@"speed":@25,
