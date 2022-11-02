@@ -26,29 +26,3 @@ jobs:
 
       - name: Run tvOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
-
-##################################################################
-# Temporary tests for Xcode 13 beta, REMOVE AFTER OFFICIAL RELEASE
-# NOTE: Currently (8/13/21), the macos-latest runner still points to macOS 10.5, so we have to manually specify macOS 11 for now
-  ios-unit-tests-xcode13-beta:
-    runs-on: macos-11
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Run iOS unit tests
-        env:
-          DEVELOPER_DIR: "/Applications/Xcode_13.0.app/Contents/Developer"
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_iOS_SDKTests -destination "platform=iOS Simulator,name=iPhone 8,OS=latest" test
-
-  tvos-unit-tests-xcode13-beta:
-    runs-on: macos-11
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Run tvOS unit tests
-        env:
-          DEVELOPER_DIR: "/Applications/Xcode_13.0.app/Contents/Developer"
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV 4K,OS=latest" test
-##################################################################
