@@ -16,11 +16,10 @@ jobs:
       - name: "Checkout Cross Platform Tests"
         uses: actions/checkout@v2
         with:
-          token: ${{ secrets.APPLE_SDK_PAT }} #medium-term solution, this needs to be an MParticle/non-personal PAT
           submodules: "true"
           repository: mParticle/crossplatform-sdk-tests
           fetch-depth: 1
-      - name: "Checkout internal"
+      - name: "Checkout iOS SDK"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
