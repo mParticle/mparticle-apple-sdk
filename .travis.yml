@@ -1,6 +1,0 @@
-language: objective-c
-osx_image: xcode10.2
-script:
-- pod lib lint && pod lib lint --use-libraries
-- carthage build --no-skip-current && carthage archive && ls mParticle_Apple_SDK.framework.zip &>/dev/null
-- (xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone XS" clean analyze | grep -B3 "warning generated." || exit 0 && exit 1)

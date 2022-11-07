@@ -4,7 +4,7 @@ on: [pull_request]
 
 jobs:
   pod-lint:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
         run: git checkout *.podspec
 
   carthage-build:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -37,7 +37,7 @@ jobs:
         run: ls 2>&1 | grep .framework.zip
 
   compile-extension:
-    runs-on: macos-latest
+    runs-on: macos-12
     defaults:
       run:
         working-directory: ./Example
@@ -52,13 +52,13 @@ jobs:
         run: pod install
 
       - name: Build iOS extension scheme
-        run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 8,OS=latest'
+        run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
 
   run-analyzer:
-    runs-on: macos-latest
+    runs-on: macos-12
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Run static analyzer
-        run: bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 11,OS=latest" clean analyze | grep -B3 "warning")'
+        run: bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" clean analyze | grep -B3 "warning")'
