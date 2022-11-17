@@ -173,6 +173,10 @@ NSString *const kMPFROptOutState = @"s";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.dataDictionary hash] ^ self.forwardRecordId ^ [self.mpid hash];
+}
+
 #pragma mark Public methods
 - (NSData *)dataRepresentation {
     if (MPIsNull(_dataDictionary) || ![_dataDictionary isKindOfClass:[NSDictionary class]]) {

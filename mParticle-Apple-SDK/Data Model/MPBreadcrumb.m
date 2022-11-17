@@ -41,6 +41,10 @@
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return (NSUInteger)self.breadcrumbId ^ (NSUInteger)self.timestamp ^ [self.uuid hash] ^ [self.sessionUUID hash] ^ [self.breadcrumbData hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPBreadcrumb *copyObject = [[MPBreadcrumb alloc] initWithSessionUUID:[_sessionUUID copy]

@@ -153,6 +153,10 @@
     return (self.type == object.type) && [self.customAttributes isEqualToDictionary:object.customAttributes];
 }
 
+- (NSUInteger)hash {
+    return self.type ^ [self.customAttributes hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPBaseEvent *copyObject = [[[self class] allocWithZone:zone] init];

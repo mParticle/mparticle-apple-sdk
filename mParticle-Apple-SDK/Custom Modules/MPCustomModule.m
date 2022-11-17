@@ -66,6 +66,10 @@
     return [[self dictionaryRepresentation] isEqualToDictionary:[(MPCustomModule *)object dictionaryRepresentation]];
 }
 
+- (NSUInteger)hash {
+    return [[self dictionaryRepresentation] hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPCustomModule *copyObject = [[[self class] alloc] init];

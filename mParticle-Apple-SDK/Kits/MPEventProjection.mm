@@ -20,6 +20,10 @@ using namespace std;
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.attributeKey hash] ^ [self.attributeValues hash];
+}
+
 #pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     if (self.attributeKey) {
@@ -176,6 +180,10 @@ using namespace std;
     }
     
     return isEqual;
+}
+
+- (NSUInteger)hash {
+    return [self.projectionMatches hash] ^ self.messageType ^ self.maxCustomParameters ^ self.appendAsIs ^ self.isDefault ^ [self.attributeProjections hash];
 }
 
 #pragma mark NSSecureCoding

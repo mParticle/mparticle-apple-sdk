@@ -91,6 +91,10 @@ NSString *const kMPAttrsEventLengthKey = @"EventLength";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.name hash] ^ [self.duration hash] ^ [self.category hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPEvent *copyObject = [super copyWithZone:zone];
