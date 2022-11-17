@@ -274,7 +274,9 @@ NSString *const kMPStateKey = @"state";
 @synthesize appNotificationHandler = _appNotificationHandler;
 
 + (void)initialize {
-    eventTypeStrings = @[@"Reserved - Not Used", @"Navigation", @"Location", @"Search", @"Transaction", @"UserContent", @"UserPreference", @"Social", @"Other"];
+    if (self == [MParticle class]) {
+        eventTypeStrings = @[@"Reserved - Not Used", @"Navigation", @"Location", @"Search", @"Transaction", @"UserContent", @"UserPreference", @"Social", @"Other"];
+    }
 }
 
 + (dispatch_queue_t)messageQueue {
