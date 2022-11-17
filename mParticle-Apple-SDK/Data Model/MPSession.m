@@ -107,6 +107,10 @@ NSString *const sessionUUIDKey = @"sessionId";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return self.sessionId ^ self.eventCounter ^ [self.uuid hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPSession *copyObject = [[MPSession alloc] initWithSessionId:_sessionId

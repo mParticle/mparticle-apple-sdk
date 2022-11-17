@@ -99,6 +99,10 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     return [_objectDictionary isEqualToDictionary:((MPProduct *)object)->_objectDictionary];
 }
 
+- (NSUInteger)hash {
+    return [self.objectDictionary hash];
+}
+
 #pragma mark Private accessors
 - (NSMutableDictionary<NSString *, id> *)beautifiedAttributes {
     if (_beautifiedAttributes) {

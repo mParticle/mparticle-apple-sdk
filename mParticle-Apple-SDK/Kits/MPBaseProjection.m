@@ -129,6 +129,10 @@
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.name hash] ^ [self.projectedName hash] ^ self.matchType ^ self.projectionType;
+}
+
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] init];
     

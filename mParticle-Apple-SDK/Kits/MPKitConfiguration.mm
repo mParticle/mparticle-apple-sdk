@@ -99,6 +99,10 @@
     return [_configurationHash isEqualToNumber:object.configurationHash];
 }
 
+- (NSUInteger)hash {
+    return [self.configurationHash hash];
+}
+
 #pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:self.configurationDictionary forKey:@"configurationDictionary"];

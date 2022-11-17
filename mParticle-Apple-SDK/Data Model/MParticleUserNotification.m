@@ -88,6 +88,10 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return (NSUInteger)self.userNotificationId;
+}
+
 #pragma mark Private methods
 - (NSString *)redactUserNotification:(NSDictionary *)notificationDictionary {
     NSString * (^dictionaryToString)(NSDictionary *) = ^(NSDictionary *dictionary) {
