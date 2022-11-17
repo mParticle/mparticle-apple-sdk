@@ -66,7 +66,9 @@ static NSArray *actionNames;
 @synthesize messageType = _messageType;
 
 + (void)initialize {
-    actionNames = @[@"add_to_cart", @"remove_from_cart", @"add_to_wishlist", @"remove_from_wishlist", @"checkout", @"checkout_option", @"click", @"view_detail", @"purchase", @"refund"];
+    if (self == [MPCommerceEvent class]) {
+        actionNames = @[@"add_to_cart", @"remove_from_cart", @"add_to_wishlist", @"remove_from_wishlist", @"checkout", @"checkout_option", @"click", @"view_detail", @"purchase", @"refund"];
+    }
 }
 
 - (id)init {
