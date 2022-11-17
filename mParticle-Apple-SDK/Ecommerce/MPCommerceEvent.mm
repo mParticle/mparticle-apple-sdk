@@ -340,7 +340,7 @@ static NSArray *actionNames;
 }
 
 - (NSUInteger)hash {
-    return [self.productActionAttributes hash] ^ [self.beautifiedAttributes hash] ^ [self.productsList hash] ^ [self.productImpressions hash] ^ [self.promotionContainer hash] ^ [self.transactionAttributes hash] ^ self->commerceEventKind ^ [self.currency hash];
+    return [self.productActionAttributes hash] ^ [self.beautifiedAttributes hash] ^ [self.productsList hash] ^ [self.productImpressions hash] ^ [self.promotionContainer hash] ^ [self.transactionAttributes hash] ^ commerceEventKind ^ [self.currency hash];
 }
 
 #pragma mark NSCopying
