@@ -58,7 +58,7 @@
 }
 
 - (NSUInteger)hash {
-    return [self.sessionId hash] ^ [self.dataPlanId hash] ^ [self.dataPlanVersion hash] ^ self.uploadId ^ @(self.timestamp).intValue;
+    return [self.sessionId hash] ^ [self.dataPlanId hash] ^ [self.dataPlanVersion hash] ^ self.uploadId ^ (NSUInteger)self.timestamp;
 }
 
 #pragma mark NSCopying

@@ -55,7 +55,7 @@ NSString *const kMPSegmentMembershipDrop = @"drop";
 }
 
 - (NSUInteger)hash {
-    return self.segmentMembershipId ^ @(self.timestamp).intValue ^ self.action;
+    return self.segmentMembershipId ^ (NSUInteger)self.timestamp ^ self.action;
 }
 
 #pragma mark NSCopying
