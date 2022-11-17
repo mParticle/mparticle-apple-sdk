@@ -58,12 +58,6 @@
     return self;
 }
 
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                    name:mParticleKitDidBecomeActiveNotification
-                                                  object:nil];
-}
-
 #pragma mark Private accessors
 - (NSMutableArray<MPKitActivityMapping *> *)activityMappings {
     if (!_activityMappings) {
