@@ -84,7 +84,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 @synthesize kitsInitialized = _kitsInitialized;
 
 + (void)initialize {
-    kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
+    if (self == [MPKitContainer class]) {
+        kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
+    }
 }
 
 - (instancetype)init {

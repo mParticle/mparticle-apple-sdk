@@ -32,7 +32,9 @@ static NSArray *actionNames;
 @synthesize beautifiedAttributes = _beautifiedAttributes;
 
 + (void)initialize {
-    actionNames = @[@"click", @"view"];
+    if (self == [MPPromotion class]) {
+        actionNames = @[@"click", @"view"];
+    }
 }
 
 - (NSString *)description {

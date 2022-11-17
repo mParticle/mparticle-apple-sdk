@@ -34,10 +34,12 @@ static NSDateFormatter *RFC1123DateFormatter;
 @implementation MPURLRequestBuilder
 
 + (void)initialize {
-    RFC1123DateFormatter = [[NSDateFormatter alloc] init];
-    RFC1123DateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
-    RFC1123DateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
-    RFC1123DateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
+    if (self == [MPURLRequestBuilder class]) {
+        RFC1123DateFormatter = [[NSDateFormatter alloc] init];
+        RFC1123DateFormatter.locale = [[NSLocale alloc] initWithLocaleIdentifier:@"en_US"];
+        RFC1123DateFormatter.timeZone = [NSTimeZone timeZoneWithAbbreviation:@"GMT"];
+        RFC1123DateFormatter.dateFormat = @"EEE',' dd MMM yyyy HH':'mm':'ss 'GMT'";
+    }
 }
 
 - (instancetype)initWithURL:(MPURL *)url {

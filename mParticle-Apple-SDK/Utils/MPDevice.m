@@ -51,7 +51,7 @@ NSString *const kMPDeviceLimitAdTrackingKey = @"lat";
 NSString *const kMPDeviceIsDaylightSavingTime = @"idst";
 NSString *const kMPDeviceInvalidVendorId = @"00000000-0000-0000-0000-000000000000";
 
-static NSDictionary *jailbrokenInfo;
+static NSDictionary *jailbrokenInfo = nil;
 
 int main(int argc, char *argv[]);
 
@@ -87,10 +87,6 @@ int main(int argc, char *argv[]);
 @synthesize vendorId = _vendorId;
 @synthesize buildId = _buildId;
 @synthesize screenSize = _screenSize;
-
-+ (void)initialize {
-    jailbrokenInfo = nil;
-}
 
 - (id)init {
     self = [super init];
