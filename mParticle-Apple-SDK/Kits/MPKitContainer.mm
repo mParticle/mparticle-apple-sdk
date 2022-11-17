@@ -125,12 +125,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     return self;
 }
 
-- (void)dealloc {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
-}
-
 #pragma mark Notification handlers
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
     dispatch_async(dispatch_get_main_queue(), ^{
