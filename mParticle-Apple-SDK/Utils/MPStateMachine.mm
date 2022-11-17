@@ -139,12 +139,6 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)dealloc {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationWillTerminateNotification object:nil];
-    [notificationCenter removeObserver:self name:MParticleReachabilityChangedNotification object:nil];
-    
     if (_reachability != nil) {
         [_reachability stopNotifier];
     }

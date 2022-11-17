@@ -55,10 +55,6 @@ NSString *const kMPSegmentMembershipListKey = @"c";
                        endpointIds:segmentDictionary[kMPSegmentEndpointIds]];
 }
 
-- (void)dealloc {
-    [self removeObserver:self forKeyPath:@"memberships"];
-}
-
 - (NSString *)description {
     return [NSString stringWithFormat:@"MPSegment\n Id: %@\n Name: %@\n Memberships: %@\n", self.segmentId, self.name, self.memberships];
 }
