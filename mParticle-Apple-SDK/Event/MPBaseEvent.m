@@ -154,7 +154,7 @@
 }
 
 - (NSUInteger)hash {
-    return [self.customAttributes hash];
+    return self.type ^ [self.customAttributes hash];
 }
 
 #pragma mark NSCopying

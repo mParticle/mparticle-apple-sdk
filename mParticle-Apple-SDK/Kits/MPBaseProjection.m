@@ -130,7 +130,7 @@
 }
 
 - (NSUInteger)hash {
-    return [self.name hash] ^ [self.projectedName hash];
+    return [self.name hash] ^ [self.projectedName hash] ^ self.matchType ^ self.projectionType;
 }
 
 - (NSString *)description {

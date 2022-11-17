@@ -108,7 +108,7 @@ NSString *const sessionUUIDKey = @"sessionId";
 }
 
 - (NSUInteger)hash {
-    return [self.uuid hash];
+    return self.sessionId ^ self.eventCounter ^ [self.uuid hash];
 }
 
 #pragma mark NSCopying

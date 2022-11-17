@@ -183,7 +183,7 @@ using namespace std;
 }
 
 - (NSUInteger)hash {
-    return [self.projectionMatches hash];
+    return [self.projectionMatches hash] ^ self.messageType ^ self.maxCustomParameters ^ self.appendAsIs ^ self.isDefault ^ [self.attributeProjections hash];
 }
 
 #pragma mark NSSecureCoding

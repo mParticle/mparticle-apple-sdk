@@ -124,7 +124,7 @@
 }
 
 - (NSUInteger)hash {
-    return [self.sessionId hash] ^ [self.dataPlanId hash] ^ [self.dataPlanVersion hash] ^ [self.messageType hash] ^ [self.messageType hash] ^ [self.messageData hash];
+    return [self.sessionId hash] ^ [self.dataPlanId hash] ^ [self.dataPlanVersion hash] ^ self.messageId ^ @(self.timestamp).intValue ^ [self.messageType hash] ^ [self.messageData hash]  ^ @(self.shouldUploadEvent).intValue;
 }
 
 #pragma mark NSCopying

@@ -254,7 +254,7 @@ static NSArray *actionNames;
 }
 
 - (NSUInteger)hash {
-    return [self.promotionsArray hash];
+    return self.action ^ [self.promotionsArray hash];
 }
 
 #pragma mark Private accessors

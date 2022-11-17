@@ -89,7 +89,7 @@ NSString *const kMPUserNotificationCategoryKey = @"category";
 }
 
 - (NSUInteger)hash {
-    return [self.uuid hash];
+    return @(self.userNotificationId).intValue;
 }
 
 #pragma mark Private methods

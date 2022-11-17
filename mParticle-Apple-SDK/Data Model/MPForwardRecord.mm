@@ -174,7 +174,7 @@ NSString *const kMPFROptOutState = @"s";
 }
 
 - (NSUInteger)hash {
-    return [self.dataDictionary hash] ^ [self.mpid hash];
+    return [self.dataDictionary hash] ^ self.forwardRecordId ^ [self.mpid hash];
 }
 
 #pragma mark Public methods

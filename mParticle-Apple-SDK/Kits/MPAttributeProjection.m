@@ -39,7 +39,7 @@
 }
 
 - (NSUInteger)hash {
-    return [super hash];
+    return self.dataType ^ self.required;
 }
 
 #pragma mark NSSecureCoding

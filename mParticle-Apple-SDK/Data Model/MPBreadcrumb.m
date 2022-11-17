@@ -42,7 +42,7 @@
 }
 
 - (NSUInteger)hash {
-    return [self.uuid hash] ^ [self.sessionUUID hash] ^ [self.breadcrumbData hash];
+    return @(self.breadcrumbId).intValue ^ @(self.timestamp).intValue ^ [self.uuid hash] ^ [self.sessionUUID hash] ^ [self.breadcrumbData hash];
 }
 
 #pragma mark NSCopying
