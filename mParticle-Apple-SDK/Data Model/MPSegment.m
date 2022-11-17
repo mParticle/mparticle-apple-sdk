@@ -71,6 +71,10 @@ NSString *const kMPSegmentMembershipListKey = @"c";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.segmentId hash] ^ [self.name hash] ^ [self.memberships hash];
+}
+
 #pragma mark KVO
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
     if ([keyPath isEqualToString:@"memberships"]) {

@@ -54,6 +54,10 @@ NSString *const kMPSegmentMembershipDrop = @"drop";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return self.segmentMembershipId ^ self.action;
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPSegmentMembership *copyObject = [[MPSegmentMembership alloc] initWithSegmentId:_segmentId

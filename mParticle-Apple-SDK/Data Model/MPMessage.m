@@ -123,6 +123,10 @@
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.sessionId hash] ^ [self.dataPlanId hash] ^ [self.dataPlanVersion hash] ^ [self.messageType hash] ^ [self.messageType hash] ^ [self.messageData hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPMessage *copyObject = [[MPMessage alloc] initWithSessionId:[_sessionId copy]

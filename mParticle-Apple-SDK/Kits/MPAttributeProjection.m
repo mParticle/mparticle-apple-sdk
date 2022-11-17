@@ -38,6 +38,10 @@
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [super hash];
+}
+
 #pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];

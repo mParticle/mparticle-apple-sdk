@@ -61,6 +61,10 @@ static NSArray *actionNames;
     }
 }
 
+- (NSUInteger)hash {
+    return [self.attributes hash];
+}
+
 #pragma mark Private accessors
 - (NSMutableDictionary<NSString *, NSString *> *)attributes {
     if (_attributes) {
@@ -247,6 +251,10 @@ static NSArray *actionNames;
     }
     
     return isEqual;
+}
+
+- (NSUInteger)hash {
+    return [self.promotionsArray hash];
 }
 
 #pragma mark Private accessors

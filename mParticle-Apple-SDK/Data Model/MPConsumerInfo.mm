@@ -48,6 +48,10 @@ NSString *const kMPCKExpiration = @"e";
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.name hash];
+}
+
 #pragma mark NSSecureCoding
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:_name forKey:@"name"];

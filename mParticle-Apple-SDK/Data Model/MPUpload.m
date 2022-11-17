@@ -57,6 +57,10 @@
     return isEqual;
 }
 
+- (NSUInteger)hash {
+    return [self.sessionId hash] ^ [self.dataPlanId hash] ^ [self.dataPlanVersion hash];
+}
+
 #pragma mark NSCopying
 - (id)copyWithZone:(NSZone *)zone {
     MPUpload *copyObject = [[MPUpload alloc] initWithSessionId:[_sessionId copy]
