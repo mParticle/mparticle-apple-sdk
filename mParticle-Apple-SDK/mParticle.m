@@ -320,12 +320,6 @@ NSString *const kMPStateKey = @"state";
     return self;
 }
 
-- (void)dealloc {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-}
-
 #pragma mark Private accessors
 - (NSMutableDictionary *)configSettings {
     if (_configSettings) {

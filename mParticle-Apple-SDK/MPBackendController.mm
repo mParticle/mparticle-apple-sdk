@@ -167,19 +167,6 @@ static BOOL appBackgrounded = NO;
 }
 
 - (void)dealloc {
-    NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
-    [notificationCenter removeObserver:self name:UIApplicationDidEnterBackgroundNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidFinishLaunchingNotification object:nil];
-    [notificationCenter removeObserver:self name:kMPNetworkPerformanceMeasurementNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidReceiveMemoryWarningNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationDidBecomeActiveNotification object:nil];
-    [notificationCenter removeObserver:self name:UIApplicationWillResignActiveNotification object:nil];
-    
-#if TARGET_OS_IOS == 1
-    [notificationCenter removeObserver:self name:kMPRemoteNotificationDeviceTokenNotification object:nil];
-#endif
-    
     [self endUploadTimer];
 }
 
