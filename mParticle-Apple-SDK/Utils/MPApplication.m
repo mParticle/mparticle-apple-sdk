@@ -77,7 +77,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @interface MPApplication() {
     NSDictionary *appInfo;
     MPIUserDefaults *userDefaults;
-    BOOL syncUserDefaults;
 }
 
 @end
@@ -98,19 +97,10 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     }
     
     userDefaults = [MPIUserDefaults standardUserDefaults];
-    syncUserDefaults = NO;
     
     _dyld_register_func_for_add_image(addImageListCallback);
     
     return self;
-}
-
-- (void)dealloc {
-    if (syncUserDefaults) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [[MPIUserDefaults standardUserDefaults] synchronize];
-        });
-    }
 }
 
 - (NSString *)description {
@@ -200,7 +190,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     if (_initialLaunchTime == nil) {
         _initialLaunchTime = MPCurrentEpochInMilliseconds;
         userDefaults[kMPAppInitialLaunchTimeKey] = _initialLaunchTime;
-        syncUserDefaults = YES;
     }
     
     return _initialLaunchTime;
@@ -222,7 +211,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 - (void)setLastUseDate:(NSNumber *)lastUseDate {
     userDefaults[kMPAppLastUseDateKey] = lastUseDate;
-    syncUserDefaults = YES;
 }
 
 - (NSNumber *)launchCount {
@@ -232,7 +220,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 - (void)setLaunchCount:(NSNumber *)launchCount {
     userDefaults[kMPAppLaunchCountKey] = launchCount;
-    syncUserDefaults = YES;
 }
 
 - (NSNumber *)launchCountSinceUpgrade {
@@ -242,7 +229,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 - (void)setLaunchCountSinceUpgrade:(NSNumber *)launchCountSinceUpgrade {
     userDefaults[kMPAppLaunchCountSinceUpgradeKey] = launchCountSinceUpgrade;
-    syncUserDefaults = YES;
 }
 
 - (NSNumber *)pirated {
@@ -261,8 +247,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     } else {
         [userDefaults removeMPObjectForKey:kMPAppStoredBuildKey];
     }
-    
-    syncUserDefaults = YES;
 }
 
 - (NSString *)storedVersion {
@@ -276,8 +260,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     } else {
         [userDefaults removeMPObjectForKey:kMPAppStoredVersionKey];
     }
-    
-    syncUserDefaults = YES;
 }
 
 - (NSNumber *)upgradeDate {
@@ -287,7 +269,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 - (void)setUpgradeDate:(NSNumber *)upgradeDate {
     userDefaults[kMPAppUpgradeDateKey] = upgradeDate;
-    syncUserDefaults = YES;
 }
 
 - (NSString *)version {
@@ -321,7 +302,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     if (![MPStateMachine isAppExtension]) {
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         userDefaults[kMPAppBadgeNumberKey] = badgeNumber;
-        syncUserDefaults = YES;
     }
 }
 #endif
