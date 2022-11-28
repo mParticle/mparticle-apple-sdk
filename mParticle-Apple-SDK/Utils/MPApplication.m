@@ -90,6 +90,12 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @synthesize initialLaunchTime = _initialLaunchTime;
 @synthesize pirated = _pirated;
 
++ (void)initialize {
+    if (self == [MPApplication class]) {
+        _dyld_register_func_for_add_image(addImageListCallback);
+    }
+}
+
 - (id)init {
     self = [super init];
     if (!self) {
@@ -97,8 +103,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     }
     
     userDefaults = [MPIUserDefaults standardUserDefaults];
-    
-    _dyld_register_func_for_add_image(addImageListCallback);
     
     return self;
 }
