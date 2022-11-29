@@ -2,7 +2,6 @@
 
 @class MPSession;
 @class MPUpload;
-@class MPSegment;
 @class MPIdentityApiRequest;
 @class MPIdentityHTTPSuccessResponse;
 @class MPIdentityHTTPBaseSuccessResponse;
@@ -20,7 +19,6 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorDelayedSegments
 };
 
-typedef void(^ _Nonnull MPSegmentResponseHandler)(BOOL success, NSArray<MPSegment *> * _Nullable segments, NSTimeInterval elapsedTime, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(void);
 
 typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
@@ -34,7 +32,6 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
 - (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector;
 - (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(MPConfigCompletionHandler)completionHandler;
-- (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler;
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;

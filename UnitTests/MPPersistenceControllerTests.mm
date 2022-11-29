@@ -3,8 +3,6 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPUpload.h"
-#import "MPSegment.h"
-#import "MPSegmentMembership.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
 #import "MPIntegrationAttributes.h"
@@ -556,46 +554,6 @@
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
-- (void)testSegments {
-    [MPPersistenceController setMpid:@2];
-    
-    NSDictionary *segmentDictionary = @{@"id":@2,
-                                        @"n":@"External Name 101",
-                                        @"c":@[@{@"ct":@1395014265365,
-                                                 @"a":@"add"
-                                                 },
-                                               @{@"ct":@1395100665367,
-                                                 @"a":@"drop"
-                                                 },
-                                               @{@"ct":@1395187065367,
-                                                 @"a":@"add"
-                                                 }
-                                               ],
-                                        @"s":@[@"aaa", @"bbb", @"ccc"]
-                                        };
-    
-    MPSegment *segment = [[MPSegment alloc] initWithDictionary:segmentDictionary];
-    
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    [persistence saveSegment:segment];
-    
-    XCTAssertTrue([segment.segmentId integerValue] > 0, @"Segment id not greater than zero: %@", segment.segmentId);
-    
-    NSArray<MPSegment *> * fetchedSegments = [persistence fetchSegments];
-    MPSegment *fetchedSegment = [fetchedSegments lastObject];
-    
-    XCTAssertEqual(fetchedSegments.count, 1);
-    XCTAssertEqualObjects(segment, fetchedSegment, @"Segment and fetchedSegment are not equal.");
-    
-    [persistence deleteSegments];
-    
-    NSArray *segments = [persistence fetchSegments];
-    if (segments) {
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"segmentId == %@", fetchedSegment.segmentId];
-        segments = [segments filteredArrayUsingPredicate:predicate];
-        XCTAssertTrue(segments.count == 0, @"Segment is not being deleted.");
-    }
-}
 - (void)testFetchIntegrationAttributesForKit {
     NSNumber *integrationId = nil;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;

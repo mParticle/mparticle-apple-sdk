@@ -7,7 +7,6 @@
 #import "MPUpload.h"
 #import "MPDevice.h"
 #import "MPApplication.h"
-#import "MPSegment.h"
 #import "MPIConstants.h"
 #import "MPZip.h"
 #import "MPURLRequestBuilder.h"
@@ -45,8 +44,6 @@ NSString *const kMPConfigVersion = @"v4";
 NSString *const kMPConfigURL = @"/config";
 NSString *const kMPEventsVersion = @"v2";
 NSString *const kMPEventsURL = @"/events";
-NSString *const kMPSegmentVersion = @"v1";
-NSString *const kMPSegmentURL = @"/audience";
 NSString *const kMPIdentityVersion = @"v1";
 NSString *const kMPIdentityURL = @"";
 NSString *const kMPIdentityKey = @"identity";
@@ -82,7 +79,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MPNetworkCommunication()
 
-@property (nonatomic, strong, readonly) MPURL *segmentURL;
 @property (nonatomic, strong, readonly) MPURL *configURL;
 @property (nonatomic, strong, readonly) MPURL *eventURL;
 @property (nonatomic, strong, readonly) MPURL *identifyURL;
@@ -184,31 +180,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         _eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
     return _eventURL;
-}
-
-- (MPURL *)segmentURL {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    
-    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
-    NSString *segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
-    NSString *urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, kMPURLHost, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
-    NSURL *defaultURL = [NSURL URLWithString:urlString];
-
-    if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        segmentURLFormat = [urlFormatOverride stringByAppendingString:@"?mpID=%@"];
-        urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, kMPSegmentVersion, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
-    } else {
-        segmentURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
-        urlString = [NSString stringWithFormat:segmentURLFormat, kMPURLScheme, eventHost, stateMachine.apiKey, kMPSegmentURL, [MPPersistenceController mpId]];
-    }
-    
-    NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    MPURL *segmentURL;
-    if (modifiedURL && defaultURL) {
-        segmentURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
-    }
-    
-    return segmentURL;
 }
 
 - (MPURL *)identifyURL {
@@ -502,108 +473,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         completionHandler(success);
     } else {
         completionHandler(NO);
-    }
-}
-
-- (void)requestSegmentsWithTimeout:(NSTimeInterval)timeout completionHandler:(MPSegmentResponseHandler)completionHandler {
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    if (![MPStateMachine isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }];
-    }
-    
-    __weak MPNetworkCommunication *weakSelf = self;
-    NSDate *fetchSegmentsStartTime = [NSDate date];
-    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
-
-    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.segmentURL];
-    NSData *data = response.data;
-    NSHTTPURLResponse *httpResponse = response.httpResponse;
-    NSTimeInterval elapsedTime = [[NSDate date] timeIntervalSinceDate:fetchSegmentsStartTime];
-    __strong MPNetworkCommunication *strongSelf = weakSelf;
-    if (!strongSelf) {
-        completionHandler(NO, nil, elapsedTime, nil);
-        return;
-    }
-    
-    if (![MPStateMachine isAppExtension]) {
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }
-    
-    if (!data) {
-        completionHandler(NO, nil, elapsedTime, nil);
-        return;
-    }
-    
-    NSMutableArray<MPSegment *> *segments = nil;
-    BOOL success = NO;
-    
-    NSArray *segmentsList = nil;
-    NSInteger responseCode = [httpResponse statusCode];
-    success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
-    
-    if (success) {
-        NSError *serializationError = nil;
-        NSDictionary *segmentsDictionary = nil;
-        
-        @try {
-            segmentsDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
-            success = serializationError == nil;
-        } @catch (NSException *exception) {
-            segmentsDictionary = nil;
-            success = NO;
-            MPILogError(@"Segments Error: %@", [exception reason]);
-        }
-        
-        if (success) {
-            segmentsList = segmentsDictionary[kMPSegmentListKey];
-        }
-        
-        if (segmentsList.count > 0) {
-            segments = [[NSMutableArray alloc] initWithCapacity:segmentsList.count];
-            MPSegment *segment;
-            
-            for (NSDictionary *segmentDictionary in segmentsList) {
-                segment = [[MPSegment alloc] initWithDictionary:segmentDictionary];
-                
-                if (segment) {
-                    [segments addObject:segment];
-                }
-            }
-        }
-        
-        MPILogVerbose(@"Segments Response Code: %ld", (long)responseCode);
-    } else {
-        MPILogWarning(@"Segments Error - Response Code: %ld", (long)responseCode);
-    }
-    
-    if (segments.count == 0) {
-        segments = nil;
-    }
-    
-    NSError *segmentError = nil;
-    if (responseCode == HTTPStatusCodeForbidden) {
-        segmentError = [NSError errorWithDomain:@"mParticle Segments"
-                                           code:responseCode
-                                       userInfo:@{@"message":@"Segments not enabled for this org."}];
-    }
-    
-    if (elapsedTime < timeout) {
-        completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
-    } else {
-        segmentError = [NSError errorWithDomain:@"mParticle Segments"
-                                           code:MPNetworkErrorDelayedSegments
-                                       userInfo:@{@"message":@"It took too long to retrieve segments."}];
-        
-        completionHandler(success, (NSArray *)segments, elapsedTime, segmentError);
     }
 }
 

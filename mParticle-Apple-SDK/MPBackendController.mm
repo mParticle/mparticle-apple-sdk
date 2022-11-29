@@ -9,7 +9,6 @@
 #import "MPIUserDefaults.h"
 #import "MPBreadcrumb.h"
 #import "MPUpload.h"
-#import "MPSegment.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPMessageBuilder.h"
@@ -1338,69 +1337,6 @@ static BOOL skipNextUpload = NO;
     MPEvent *event = [[self.eventSet filteredSetUsingPredicate:predicate] anyObject];
     
     return event;
-}
-
-- (MPExecStatus)fetchSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(void (^)(NSArray *segments, NSTimeInterval elapsedTime, NSError *error))completionHandler {
-    
-    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
-    
-    NSArray *(^validSegments)(NSArray *segments) = ^(NSArray *segments) {
-        NSMutableArray *validSegments = [[NSMutableArray alloc] initWithCapacity:segments.count];
-        
-        for (MPSegment *segment in segments) {
-            if (!segment.expired && (endpointId == nil || [segment.endpointIds containsObject:endpointId])) {
-                [validSegments addObject:segment];
-            }
-        }
-        
-        if (validSegments.count == 0) {
-            validSegments = nil;
-        }
-        
-        return [validSegments copy];
-    };
-    
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    
-    [self.networkCommunication requestSegmentsWithTimeout:timeout
-                                        completionHandler:^(BOOL success, NSArray *segments, NSTimeInterval elapsedTime, NSError *error) {
-                                            if (!error) {
-                                                if (success && segments.count > 0) {
-                                                    [persistence deleteSegments];
-                                                }
-                                                
-                                                for (MPSegment *segment in segments) {
-                                                    [persistence saveSegment:segment];
-                                                }
-                                                
-                                                completionHandler(validSegments(segments), elapsedTime, error);
-                                            } else {
-                                                MPNetworkError networkError = (MPNetworkError)error.code;
-                                                
-                                                switch (networkError) {
-                                                    case MPNetworkErrorTimeout: {
-                                                        NSArray *persistedSegments = [persistence fetchSegments];
-                                                        completionHandler(validSegments(persistedSegments), timeout, nil);
-                                                    }
-                                                        break;
-                                                        
-                                                    case MPNetworkErrorDelayedSegments:
-                                                        if (success && segments.count > 0) {
-                                                            [persistence deleteSegments];
-                                                        }
-                                                        
-                                                        for (MPSegment *segment in segments) {
-                                                            [persistence saveSegment:segment];
-                                                        }
-                                                        break;
-                                                        
-                                                    default:
-                                                        break;
-                                                }
-                                            }
-                                        }];
-    
-    return MPExecStatusSuccess;
 }
 
 - (NSString *)execStatusDescription:(MPExecStatus)execStatus {

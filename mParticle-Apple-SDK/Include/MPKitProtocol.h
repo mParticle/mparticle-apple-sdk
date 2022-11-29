@@ -14,7 +14,6 @@
 @class MPBaseEvent;
 @class MPEvent;
 @class MPKitExecStatus;
-@class MPUserSegments;
 @class MPKitAPI;
 @class MPConsentState;
 @class FilteredMParticleUser;
