@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "MParticleUserNotification.h"
 
-@class MPSegment;
 @class MPMessage;
 @class MPSession;
 @class MPUpload;
@@ -38,7 +37,6 @@
 - (void)deleteNetworkPerformanceMessages;
 - (void)deletePreviousSession;
 - (void)deleteRecordsOlderThan:(NSTimeInterval)timestamp;
-- (void)deleteSegments;
 - (void)deleteAllSessionsExcept:(nullable MPSession *)session;
 - (void)deleteSession:(nonnull MPSession *)session;
 - (void)deleteUpload:(nonnull MPUpload *)upload;
@@ -52,7 +50,6 @@
 - (nullable NSMutableDictionary *)fetchMessagesForUploading;
 - (nullable NSArray<MPSession *> *)fetchPossibleSessionsFromCrash;
 - (nullable MPSession *)fetchPreviousSession;
-- (nullable NSArray<MPSegment *> *)fetchSegments;
 - (nullable MPMessage *)fetchSessionEndMessageInSession:(nonnull MPSession *)session;
 - (nullable NSMutableArray<MPSession *> *)fetchSessions;
 - (nullable NSArray<MPMessage *> *)fetchUploadedMessagesInSession:(nonnull MPSession *)session;
@@ -65,7 +62,6 @@
 - (void)saveForwardRecord:(nonnull MPForwardRecord *)forwardRecord;
 - (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
 - (void)saveMessage:(nonnull MPMessage *)message;
-- (void)saveSegment:(nonnull MPSegment *)segment;
 - (void)saveSession:(nonnull MPSession *)session;
 - (void)saveUpload:(nonnull MPUpload *)upload;
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;

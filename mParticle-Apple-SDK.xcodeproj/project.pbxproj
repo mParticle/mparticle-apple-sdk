@@ -182,8 +182,6 @@
 		DB47A0DC24252A2C00869BD2 /* MPBaseEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEA24252A2A00869BD2 /* MPBaseEvent.m */; };
 		DB47A0DD24252A2C00869BD2 /* MPEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEB24252A2A00869BD2 /* MPEvent.m */; };
 		DB47A0DE24252A2C00869BD2 /* MPEvent.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FEB24252A2A00869BD2 /* MPEvent.m */; };
-		DB47A0E524252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */; };
-		DB47A0E624252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */; };
 		DB47A0E724252A2C00869BD2 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FF224252A2A00869BD2 /* MPListenerController.m */; };
 		DB47A0E824252A2C00869BD2 /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FF224252A2A00869BD2 /* MPListenerController.m */; };
 		DB47A0E924252A2C00869BD2 /* MPMessageBuilder.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FF424252A2A00869BD2 /* MPMessageBuilder.mm */; };
@@ -316,10 +314,6 @@
 		DB47A16A24252A2C00869BD2 /* MPDataModelProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03724252A2A00869BD2 /* MPDataModelProtocol.h */; };
 		DB47A16B24252A2C00869BD2 /* MPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03824252A2A00869BD2 /* MPSession.h */; };
 		DB47A16C24252A2C00869BD2 /* MPSession.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03824252A2A00869BD2 /* MPSession.h */; };
-		DB47A16D24252A2C00869BD2 /* MPSegmentMembership.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03924252A2A00869BD2 /* MPSegmentMembership.h */; };
-		DB47A16E24252A2C00869BD2 /* MPSegmentMembership.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03924252A2A00869BD2 /* MPSegmentMembership.h */; };
-		DB47A16F24252A2C00869BD2 /* MPSegment.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A03A24252A2A00869BD2 /* MPSegment.m */; };
-		DB47A17024252A2C00869BD2 /* MPSegment.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A03A24252A2A00869BD2 /* MPSegment.m */; };
 		DB47A17124252A2C00869BD2 /* MPConsumerInfo.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB47A03B24252A2A00869BD2 /* MPConsumerInfo.mm */; };
 		DB47A17224252A2C00869BD2 /* MPConsumerInfo.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB47A03B24252A2A00869BD2 /* MPConsumerInfo.mm */; };
 		DB47A17324252A2C00869BD2 /* MPIntegrationAttributes.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A03C24252A2A00869BD2 /* MPIntegrationAttributes.h */; };
@@ -336,14 +330,10 @@
 		DB47A17E24252A2C00869BD2 /* MPForwardRecord.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04124252A2A00869BD2 /* MPForwardRecord.mm */; };
 		DB47A17F24252A2C00869BD2 /* MPMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04224252A2A00869BD2 /* MPMessage.h */; };
 		DB47A18024252A2C00869BD2 /* MPMessage.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04224252A2A00869BD2 /* MPMessage.h */; };
-		DB47A18124252A2C00869BD2 /* MPSegmentMembership.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04324252A2A00869BD2 /* MPSegmentMembership.m */; };
-		DB47A18224252A2C00869BD2 /* MPSegmentMembership.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04324252A2A00869BD2 /* MPSegmentMembership.m */; };
 		DB47A18324252A2C00869BD2 /* MPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04424252A2A00869BD2 /* MPSession.m */; };
 		DB47A18424252A2C00869BD2 /* MPSession.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04424252A2A00869BD2 /* MPSession.m */; };
 		DB47A18524252A2C00869BD2 /* MPIntegrationAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04524252A2A00869BD2 /* MPIntegrationAttributes.m */; };
 		DB47A18624252A2C00869BD2 /* MPIntegrationAttributes.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A04524252A2A00869BD2 /* MPIntegrationAttributes.m */; };
-		DB47A18724252A2C00869BD2 /* MPSegment.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04624252A2A00869BD2 /* MPSegment.h */; };
-		DB47A18824252A2C00869BD2 /* MPSegment.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04624252A2A00869BD2 /* MPSegment.h */; };
 		DB47A18924252A2C00869BD2 /* MPConsumerInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04724252A2A00869BD2 /* MPConsumerInfo.h */; };
 		DB47A18A24252A2C00869BD2 /* MPConsumerInfo.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04724252A2A00869BD2 /* MPConsumerInfo.h */; };
 		DB47A18D24252A2C00869BD2 /* MPPromotion+Dictionary.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A04A24252A2B00869BD2 /* MPPromotion+Dictionary.h */; };
@@ -408,8 +398,6 @@
 		DB47A1CC24252A2C00869BD2 /* MPKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A06A24252A2B00869BD2 /* MPKitFilter.h */; };
 		DB47A1CD24252A2C00869BD2 /* MPBaseProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A06B24252A2B00869BD2 /* MPBaseProjection.h */; };
 		DB47A1CE24252A2C00869BD2 /* MPBaseProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A06B24252A2B00869BD2 /* MPBaseProjection.h */; };
-		DB47A1CF24252A2C00869BD2 /* MPUserSegments.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A06C24252A2B00869BD2 /* MPUserSegments.m */; };
-		DB47A1D024252A2C00869BD2 /* MPUserSegments.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A06C24252A2B00869BD2 /* MPUserSegments.m */; };
 		DB47A1D124252A2C00869BD2 /* MParticleReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A06F24252A2B00869BD2 /* MParticleReachability.m */; };
 		DB47A1D224252A2C00869BD2 /* MParticleReachability.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A06F24252A2B00869BD2 /* MParticleReachability.m */; };
 		DB47A1D324252A2C00869BD2 /* MParticleReachability.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A07024252A2B00869BD2 /* MParticleReachability.h */; };
@@ -478,8 +466,6 @@
 		DB47A21C24252A2C00869BD2 /* MPIdentityApi.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09924252A2B00869BD2 /* MPIdentityApi.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB47A21D24252A2C00869BD2 /* MPCCPAConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09A24252A2B00869BD2 /* MPCCPAConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB47A21E24252A2C00869BD2 /* MPCCPAConsent.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09A24252A2B00869BD2 /* MPCCPAConsent.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DB47A21F24252A2C00869BD2 /* MPUserSegments.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09B24252A2B00869BD2 /* MPUserSegments.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		DB47A22024252A2C00869BD2 /* MPUserSegments.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09B24252A2B00869BD2 /* MPUserSegments.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB47A22124252A2C00869BD2 /* NSDictionary+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09C24252A2B00869BD2 /* NSDictionary+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB47A22224252A2C00869BD2 /* NSDictionary+MPCaseInsensitive.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09C24252A2B00869BD2 /* NSDictionary+MPCaseInsensitive.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB47A22324252A2C00869BD2 /* MParticleUser.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A09D24252A2B00869BD2 /* MParticleUser.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1458,7 +1444,6 @@
 				DB3A5A1B2525269C004CE231 /* MPDataPlanFilter.h in Headers */,
 				DB47A10624252A2C00869BD2 /* MPHasher.h in Headers */,
 				DB47A1B224252A2C00869BD2 /* MPForwardQueueItem.h in Headers */,
-				DB47A18824252A2C00869BD2 /* MPSegment.h in Headers */,
 				DB47A1EC24252A2C00869BD2 /* MPConnector.h in Headers */,
 				DB47A21A24252A2C00869BD2 /* MPListenerController.h in Headers */,
 				DB47A20624252A2C00869BD2 /* MPExtensionProtocol.h in Headers */,
@@ -1484,7 +1469,6 @@
 				DB47A16224252A2C00869BD2 /* MPDataModelAbstract.h in Headers */,
 				DB47A22224252A2C00869BD2 /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				DB47A0F224252A2C00869BD2 /* MPStateMachine.h in Headers */,
-				DB47A0E624252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */,
 				DB47A12C24252A2C00869BD2 /* MPArchivist.h in Headers */,
 				DB47A22424252A2C00869BD2 /* MParticleUser.h in Headers */,
 				DB47A21624252A2C00869BD2 /* MPCommerceEventInstruction.h in Headers */,
@@ -1513,7 +1497,6 @@
 				DB47A22A24252A2C00869BD2 /* MPAliasResponse.h in Headers */,
 				DB47A20C24252A2C00869BD2 /* MPPromotion.h in Headers */,
 				DB47A16C24252A2C00869BD2 /* MPSession.h in Headers */,
-				DB47A16E24252A2C00869BD2 /* MPSegmentMembership.h in Headers */,
 				DB47A23224252A2C00869BD2 /* MPDateFormatter.h in Headers */,
 				DB47A1EE24252A2C00869BD2 /* MPURLConnectionAssociate.h in Headers */,
 				DB47A1A424252A2C00869BD2 /* MPBackendController.h in Headers */,
@@ -1536,7 +1519,6 @@
 				DB47A14024252A2C00869BD2 /* MPBracket.h in Headers */,
 				DB47A1BE24252A2C00869BD2 /* MPForwardQueueParameters.h in Headers */,
 				DB47A11424252A2C00869BD2 /* MParticleWebView.h in Headers */,
-				DB47A22024252A2C00869BD2 /* MPUserSegments.h in Headers */,
 				DB47A16024252A2C00869BD2 /* MParticleUserNotification.h in Headers */,
 				DB47A17A24252A2C00869BD2 /* MPBreadcrumb.h in Headers */,
 				DB47A1D424252A2C00869BD2 /* MParticleReachability.h in Headers */,
@@ -1566,7 +1548,6 @@
 				DB3A5A1A2525269C004CE231 /* MPDataPlanFilter.h in Headers */,
 				DB47A10524252A2C00869BD2 /* MPHasher.h in Headers */,
 				DB47A1B124252A2C00869BD2 /* MPForwardQueueItem.h in Headers */,
-				DB47A18724252A2C00869BD2 /* MPSegment.h in Headers */,
 				DB47A1EB24252A2C00869BD2 /* MPConnector.h in Headers */,
 				DB47A21924252A2C00869BD2 /* MPListenerController.h in Headers */,
 				DB47A20524252A2C00869BD2 /* MPExtensionProtocol.h in Headers */,
@@ -1597,7 +1578,6 @@
 				B26307A826E2FEC0000A12E9 /* MPNetworkCommunication.h in Headers */,
 				DB47A22124252A2C00869BD2 /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				DB47A0F124252A2C00869BD2 /* MPStateMachine.h in Headers */,
-				DB47A0E524252A2C00869BD2 /* MPUserSegments+Setters.h in Headers */,
 				DB47A12B24252A2C00869BD2 /* MPArchivist.h in Headers */,
 				DB47A22324252A2C00869BD2 /* MParticleUser.h in Headers */,
 				DB47A21524252A2C00869BD2 /* MPCommerceEventInstruction.h in Headers */,
@@ -1626,7 +1606,6 @@
 				DB47A22924252A2C00869BD2 /* MPAliasResponse.h in Headers */,
 				DB47A20B24252A2C00869BD2 /* MPPromotion.h in Headers */,
 				DB47A16B24252A2C00869BD2 /* MPSession.h in Headers */,
-				DB47A16D24252A2C00869BD2 /* MPSegmentMembership.h in Headers */,
 				DB47A23124252A2C00869BD2 /* MPDateFormatter.h in Headers */,
 				DB47A1ED24252A2C00869BD2 /* MPURLConnectionAssociate.h in Headers */,
 				DB47A1A324252A2C00869BD2 /* MPBackendController.h in Headers */,
@@ -1648,7 +1627,6 @@
 				DB47A13F24252A2C00869BD2 /* MPBracket.h in Headers */,
 				DB47A1BD24252A2C00869BD2 /* MPForwardQueueParameters.h in Headers */,
 				DB47A11324252A2C00869BD2 /* MParticleWebView.h in Headers */,
-				DB47A21F24252A2C00869BD2 /* MPUserSegments.h in Headers */,
 				DB47A15F24252A2C00869BD2 /* MParticleUserNotification.h in Headers */,
 				DB47A17924252A2C00869BD2 /* MPBreadcrumb.h in Headers */,
 				DB47A1D324252A2C00869BD2 /* MParticleReachability.h in Headers */,
@@ -1906,15 +1884,12 @@
 				DB47A1EA24252A2C00869BD2 /* MPNetworkPerformance.m in Sources */,
 				DB47A0CE24252A2C00869BD2 /* MPConsentKitFilter.m in Sources */,
 				DB47A13A24252A2C00869BD2 /* MPLaunchInfo.m in Sources */,
-				DB47A17024252A2C00869BD2 /* MPSegment.m in Sources */,
 				D32668D0257FE910007FC798 /* MPURL.m in Sources */,
 				DB47A0F624252A2C00869BD2 /* MPZip.m in Sources */,
 				DB47A1B824252A2C00869BD2 /* MPKitActivity.m in Sources */,
 				DB47A13C24252A2C00869BD2 /* MParticleWebView.m in Sources */,
-				DB47A1D024252A2C00869BD2 /* MPUserSegments.m in Sources */,
 				DB47A0DE24252A2C00869BD2 /* MPEvent.m in Sources */,
 				DB47A11224252A2C00869BD2 /* MPDevice.m in Sources */,
-				DB47A18224252A2C00869BD2 /* MPSegmentMembership.m in Sources */,
 				DB47A1E424252A2C00869BD2 /* MPConnector.m in Sources */,
 				DB47A12624252A2C00869BD2 /* MPBracket.cpp in Sources */,
 				DB47A0C224252A2C00869BD2 /* MPSurrogateAppDelegate.m in Sources */,
@@ -2005,15 +1980,12 @@
 				DB47A1E924252A2C00869BD2 /* MPNetworkPerformance.m in Sources */,
 				DB47A0CD24252A2C00869BD2 /* MPConsentKitFilter.m in Sources */,
 				DB47A13924252A2C00869BD2 /* MPLaunchInfo.m in Sources */,
-				DB47A16F24252A2C00869BD2 /* MPSegment.m in Sources */,
 				D32668CF257FE910007FC798 /* MPURL.m in Sources */,
 				DB47A0F524252A2C00869BD2 /* MPZip.m in Sources */,
 				DB47A1B724252A2C00869BD2 /* MPKitActivity.m in Sources */,
 				DB47A13B24252A2C00869BD2 /* MParticleWebView.m in Sources */,
-				DB47A1CF24252A2C00869BD2 /* MPUserSegments.m in Sources */,
 				DB47A0DD24252A2C00869BD2 /* MPEvent.m in Sources */,
 				DB47A11124252A2C00869BD2 /* MPDevice.m in Sources */,
-				DB47A18124252A2C00869BD2 /* MPSegmentMembership.m in Sources */,
 				DB47A1E324252A2C00869BD2 /* MPConnector.m in Sources */,
 				DB47A12524252A2C00869BD2 /* MPBracket.cpp in Sources */,
 				DB47A0C124252A2C00869BD2 /* MPSurrogateAppDelegate.m in Sources */,

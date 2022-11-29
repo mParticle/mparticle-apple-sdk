@@ -6,8 +6,6 @@
 #import "MPBreadcrumb.h"
 #import "MPStateMachine.h"
 #import "MPUpload.h"
-#import "MPSegment.h"
-#import "MPSegmentMembership.h"
 #include <string>
 #include <vector>
 #import "MPILogger.h"
@@ -410,23 +408,6 @@ const int MaxBreadcrumbs = 50;
             session_number INTEGER NOT NULL, \
             mpid INTEGER NOT NULL, \
             FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-        )",
-        "CREATE TABLE IF NOT EXISTS segments ( \
-            segment_id INTEGER PRIMARY KEY, \
-            uuid TEXT NOT NULL, \
-            name TEXT NOT NULL, \
-            endpoint_ids TEXT, \
-            mpid INTEGER NOT NULL, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
-        )",
-        "CREATE TABLE IF NOT EXISTS segment_memberships ( \
-            _id INTEGER PRIMARY KEY AUTOINCREMENT, \
-            segment_id INTEGER NOT NULL, \
-            timestamp REAL NOT NULL, \
-            membership_action INTEGER NOT NULL, \
-            mpid INTEGER NOT NULL, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
-            FOREIGN KEY (segment_id) REFERENCES segments (segment_id) \
         )",
         "DROP TABLE IF EXISTS standalone_messages",
         "DROP TABLE IF EXISTS standalone_uploads",
@@ -1162,74 +1143,6 @@ const int MaxBreadcrumbs = 50;
     return previousSession;
 }
 
-- (nullable NSArray<MPSegment *> *)fetchSegments {
-    NSMutableArray<MPSegment *> *segments = nil;
-    
-    // Block to fetch segment memberships
-    NSArray *(^fetchSegmentMemberships)(int64_t segmentId) = ^(int64_t segmentId) {
-        NSMutableArray *segmentMemberships = [[NSMutableArray alloc] initWithCapacity:3];
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "SELECT _id, timestamp, membership_action FROM segment_memberships WHERE segment_id = ? AND mpid = ? ORDER BY timestamp";
-        
-        if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, segmentId);
-            sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
-            
-            while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-                MPSegmentMembership *segmentMembership = [[MPSegmentMembership alloc] initWithSegmentId:segmentId
-                                                                                    segmentMembershipId:int64Value(preparedStatement, 0)
-                                                                                              timestamp:doubleValue(preparedStatement, 1)
-                                                                                       membershipAction:(MPSegmentMembershipAction)intValue(preparedStatement, 2)];
-                
-                [segmentMemberships addObject:segmentMembership];
-            }
-            
-            sqlite3_clear_bindings(preparedStatement);
-        }
-        
-        sqlite3_finalize(preparedStatement);
-        
-        if (segmentMemberships.count == 0) {
-            segmentMemberships = nil;
-        }
-        
-        return [segmentMemberships copy];
-    };
-    
-    // Fetch segments
-    sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "SELECT segment_id, uuid, name, endpoint_ids FROM segments WHERE mpid = ? ORDER BY segment_id";
-    
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        segments = [[NSMutableArray alloc] initWithCapacity:1];
-        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
-        
-        while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-            int64_t segmentId = int64Value(preparedStatement, 0);
-            
-            NSArray *endpointIds = [stringValue(preparedStatement, 3) componentsSeparatedByString:@","];
-            
-            MPSegment *segment = [[MPSegment alloc] initWithSegmentId:@(segmentId)
-                                                                 UUID:stringValue(preparedStatement, 1)
-                                                                 name:stringValue(preparedStatement, 2)
-                                                          memberships:fetchSegmentMemberships(segmentId)
-                                                          endpointIds:endpointIds];
-            
-            [segments addObject:segment];
-        }
-        
-        sqlite3_clear_bindings(preparedStatement);
-    }
-    
-    sqlite3_finalize(preparedStatement);
-    
-    if (segments.count == 0) {
-        segments = nil;
-    }
-    
-    return (NSArray *)segments;
-}
-
 - (MPMessage *)fetchSessionEndMessageInSession:(MPSession *)session {
     MPMessage *message = nil;
     
@@ -1705,70 +1618,6 @@ const int MaxBreadcrumbs = 50;
         sqlite3_clear_bindings(preparedStatement);
     } else {
         MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(mParticleDB));
-    }
-    
-    sqlite3_finalize(preparedStatement);
-}
-
-- (void)saveSegment:(MPSegment *)segment {
-    void(^saveSegmentMembership)(MPSegmentMembership *segmentMembership) = ^(MPSegmentMembership *segmentMembership) {
-        sqlite3_stmt *preparedStatement;
-        const string sqlStatement = "INSERT INTO segment_memberships (segment_id, timestamp, membership_action, mpid) VALUES (?, ?, ?, ?)";
-        
-        if (sqlite3_prepare_v2(self->mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-            sqlite3_bind_int64(preparedStatement, 1, segmentMembership.segmentId);
-            sqlite3_bind_double(preparedStatement, 2, segmentMembership.timestamp);
-            sqlite3_bind_int(preparedStatement, 3, (int)segmentMembership.action);
-            sqlite3_bind_int64(preparedStatement, 4, [[MPPersistenceController mpId] longLongValue]);
-            
-            if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-                MPILogError(@"Error while storing segment membership: %s", sqlite3_errmsg(self->mParticleDB));
-                sqlite3_clear_bindings(preparedStatement);
-                sqlite3_finalize(preparedStatement);
-                return;
-            }
-            
-            segmentMembership.segmentMembershipId = sqlite3_last_insert_rowid(self->mParticleDB);
-            
-            sqlite3_clear_bindings(preparedStatement);
-        } else {
-            MPILogError(@"could not prepare statemnt: %s\n", sqlite3_errmsg(self->mParticleDB));
-        }
-        
-        sqlite3_finalize(preparedStatement);
-    };
-    
-    sqlite3_stmt *preparedStatement;
-    const string sqlStatement = "INSERT INTO segments (segment_id, uuid, name, endpoint_ids, mpid) VALUES (?, ?, ?, ?, ?)";
-    
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        sqlite3_bind_int(preparedStatement, 1, [segment.segmentId intValue]);
-        
-        string auxString = string([segment.uuid UTF8String]);
-        sqlite3_bind_text(preparedStatement, 2, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-        
-        auxString = string([segment.name UTF8String]);
-        sqlite3_bind_text(preparedStatement, 3, auxString.c_str(), (int)auxString.size(), SQLITE_TRANSIENT);
-        
-        if (segment.endpointIds.count > 0) {
-            NSString *endpointIds = [segment.endpointIds componentsJoinedByString:@","];
-            auxString = string([endpointIds UTF8String]);
-            sqlite3_bind_text(preparedStatement, 4, auxString.c_str(), (int)auxString.size(), SQLITE_STATIC);
-        } else {
-            sqlite3_bind_null(preparedStatement, 4);
-        }
-        
-        sqlite3_bind_int64(preparedStatement, 5, [[MPPersistenceController mpId] longLongValue]);
-        
-        if (SQLITE_DONE == sqlite3_step(preparedStatement)) {
-            for (MPSegmentMembership *segmentMembership in segment.memberships) {
-                saveSegmentMembership(segmentMembership);
-            }
-        }
-        
-        sqlite3_clear_bindings(preparedStatement);
-    } else {
-        MPILogError(@"could not prepare statement: %s\n", sqlite3_errmsg(mParticleDB));
     }
     
     sqlite3_finalize(preparedStatement);

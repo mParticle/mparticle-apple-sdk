@@ -4,7 +4,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MPUserSegments.h"
 #import "MPEnums.h"
 #import "MPConsentState.h"
 
@@ -89,17 +88,6 @@ NS_ASSUME_NONNULL_BEGIN
  @param key The user attribute key
  */
 - (void)removeUserAttribute:(NSString *)key;
-
-#pragma mark - User Segments
-/**
- Retrieves user segments from mParticle's servers and returns the result as an array of MPUserSegments objects.
- If the method takes longer than timeout seconds to return, the local cached segments will be returned instead,
- and the newly retrieved segments will update the local cache once the results arrive.
- @param timeout The maximum number of seconds to wait for a response from mParticle's servers. This value can be fractional, like 0.1 (100 milliseconds)
- @param endpointId The endpoint id
- @param completionHandler A block to be called when the results are available. The user segments array is passed to this block
- */
-- (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler __attribute__((deprecated("not available")));
 
 #pragma mark - Consent State
 /**

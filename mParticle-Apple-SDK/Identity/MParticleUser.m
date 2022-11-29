@@ -8,8 +8,6 @@
 #import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "mParticle.h"
-#import "MPUserSegments.h"
-#import "MPUserSegments+Setters.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
@@ -450,33 +448,6 @@
                                        }
                                    }
                            }];
-    });
-}
-
-#pragma mark - User Segments
-- (void)userSegments:(NSTimeInterval)timeout endpointId:(NSString *)endpointId completionHandler:(MPUserSegmentsHandler)completionHandler {
-    dispatch_async([MParticle messageQueue], ^{
-        MPExecStatus execStatus = [self.backendController fetchSegments:timeout
-                                                             endpointId:endpointId
-                                                      completionHandler:^(NSArray *segments, NSTimeInterval elapsedTime, NSError *error) {
-                                                          if (!segments) {
-                                                              dispatch_async(dispatch_get_main_queue(), ^{
-                                                                  completionHandler(nil, error);
-                                                              });
-                                                              return;
-                                                          }
-                                                          
-                                                          MPUserSegments *userSegments = [[MPUserSegments alloc] initWithSegments:segments];
-                                                          dispatch_async(dispatch_get_main_queue(), ^{
-                                                              completionHandler(userSegments, error);
-                                                          });
-                                                      }];
-        
-        if (execStatus == MPExecStatusSuccess) {
-            MPILogDebug(@"Fetching user segments");
-        } else {
-            MPILogError(@"Could not fetch user segments: %@", [self.backendController execStatusDescription:execStatus]);
-        }
     });
 }
 
