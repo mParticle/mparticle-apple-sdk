@@ -1,3 +1,22 @@
+# [8.9.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.1...v8.9.0) (2022-11-30)
+
+
+### Bug Fixes
+
+* Add class checks to initialize methods ([#165](https://github.com/mParticle/mparticle-apple-sdk/issues/165)) ([065df46](https://github.com/mParticle/mparticle-apple-sdk/commit/065df46394ccc21f1fbd2ed23d0d0c33b910f307))
+* Add Hash Methods where isEqual called ([#167](https://github.com/mParticle/mparticle-apple-sdk/issues/167)) ([7302e0d](https://github.com/mParticle/mparticle-apple-sdk/commit/7302e0dd79012e120c90e0ce78a84ffac7b781d5))
+* Allow null event attributes ([#163](https://github.com/mParticle/mparticle-apple-sdk/issues/163)) ([5fd25c6](https://github.com/mParticle/mparticle-apple-sdk/commit/5fd25c6ecd1e291452728748399d722d9d1e61f0))
+* Move dyld register callback to initialize ([#170](https://github.com/mParticle/mparticle-apple-sdk/issues/170)) ([49d3660](https://github.com/mParticle/mparticle-apple-sdk/commit/49d36609e0873b3957846a9153eab936da684098))
+* Remove unnecessary calls to removeObserver ([#168](https://github.com/mParticle/mparticle-apple-sdk/issues/168)) ([a288ba4](https://github.com/mParticle/mparticle-apple-sdk/commit/a288ba469da18690381d0a098c1a2734031b7cc6))
+* Remove Unnecessary Synchronize in Dealloc ([#169](https://github.com/mParticle/mparticle-apple-sdk/issues/169)) ([624891b](https://github.com/mParticle/mparticle-apple-sdk/commit/624891bc5771a1a92f24ef88b669eb06a2acf1c2))
+
+
+### Features
+
+* match android type support for custom attributes ([#157](https://github.com/mParticle/mparticle-apple-sdk/issues/157)) ([c9a34cd](https://github.com/mParticle/mparticle-apple-sdk/commit/c9a34cd2aab955cf81994a59ebcaa6958f9370d7))
+* Remove depreciate MPSegment code ([#171](https://github.com/mParticle/mparticle-apple-sdk/issues/171)) ([1c04262](https://github.com/mParticle/mparticle-apple-sdk/commit/1c04262a6144bd292d364873ca1701b0a3793136))
+* Update Sample App for iOS 16 ([#158](https://github.com/mParticle/mparticle-apple-sdk/issues/158)) ([fed8131](https://github.com/mParticle/mparticle-apple-sdk/commit/fed81319e196a43f83fc284e022f94713d32cd82))
+
 ## [8.8.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.0...v8.8.1) (2022-07-15)
 
 
