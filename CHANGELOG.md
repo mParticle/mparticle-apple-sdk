@@ -1,3 +1,10 @@
+## [8.9.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.1...v8.9.2) (2022-12-06)
+
+
+### Bug Fixes
+
+* Roll back min deployment target to iOS/tvOS 9 ([#172](https://github.com/mParticle/mparticle-apple-sdk/issues/172)) ([dd32132](https://github.com/mParticle/mparticle-apple-sdk/commit/dd321329c7b460a3d92873ea8292dcba60fbb84b))
+
 # [8.9.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.8.1...v8.9.0) (2022-11-30)
 
 
