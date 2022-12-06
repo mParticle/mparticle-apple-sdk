@@ -4,7 +4,7 @@ import PackageDescription
 
 let package = Package(
     name: "mParticle-Apple-SDK",
-    platforms: [ .iOS(.v11), .tvOS(.v11) ],
+    platforms: [ .iOS(.v9), .tvOS(.v9) ],
     products: [
         .library(
             name: "mParticle-Apple-SDK",

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
     s.name             = "mParticle-Apple-SDK"
-    s.version          = "8.9.0"
+    s.version          = "8.9.1"
     s.summary          = "mParticle Apple SDK."
 
     s.description      = <<-DESC
@@ -40,8 +40,8 @@ Pod::Spec.new do |s|
                           #endif
                           EOS
     s.prefix_header_contents = pch_mParticle
-    s.ios.deployment_target  = "11.0"
-    s.tvos.deployment_target = "11.0"
+    s.ios.deployment_target  = "9.0"
+    s.tvos.deployment_target = "9.0"
 
     s.subspec 'mParticle' do |ss|
         ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
