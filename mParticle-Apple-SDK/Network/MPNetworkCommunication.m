@@ -426,6 +426,12 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
     
+    if (responseCode == HTTPStatusCodeForbidden) {
+        [MPStateMachine setCanWriteMessagesToDB:NO];
+    } else {
+        [MPStateMachine setCanWriteMessagesToDB:YES];
+    }
+    
     if (responseCode == HTTPStatusCodeNotModified) {
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];

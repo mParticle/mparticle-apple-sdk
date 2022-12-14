@@ -1557,6 +1557,9 @@ const int MaxBreadcrumbs = 50;
 }
 
 - (void)saveMessage:(MPMessage *)message {
+    if (![MPStateMachine canWriteMessagesToDB]) {
+        return;
+    }
     if (!message.shouldUploadEvent) {
         MPILogDebug(@"Not saving message for event because shouldUploadEvent was set to NO, message id: %lld, type: %@", message.messageId, message.messageType);
         return;
