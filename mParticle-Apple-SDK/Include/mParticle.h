@@ -556,9 +556,10 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Gets/Sets the interval to upload data to mParticle servers.
  
  Batches of data are sent periodically to the mParticle servers at the rate defined by the uploadInterval. Batches are also uploaded
- when the application is sent to the background or before they are terminated.
+ when the application is sent to the background or before they are terminated. When set, an upload is performed immediatley before the sdk adheres to the new upload interval.
+ The minimum uploadInterval is 1 second (1.0). The default uploadInterval is 10 minutes (600.0) on iOS and 6 seconds (6.0) on tvOS.
  */
-@property (nonatomic, readonly) NSTimeInterval uploadInterval;
+@property (nonatomic, readwrite) NSTimeInterval uploadInterval;
 
 /**
  mParticle Apple SDK version

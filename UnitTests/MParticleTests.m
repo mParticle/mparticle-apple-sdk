@@ -1022,6 +1022,26 @@
     [mockWebView stopMocking];
 }
 
+- (void)testUploadInterval {
+    MParticle *instance = [MParticle sharedInstance];
+    instance.backendController = [[MPBackendController alloc] init];
+
+    XCTAssertEqual(instance.uploadInterval, DEFAULT_DEBUG_UPLOAD_INTERVAL);
+}
+
+- (void)testSetUploadInterval {
+    MParticle *instance = [MParticle sharedInstance];
+    instance.backendController = [[MPBackendController alloc] init];
+    NSTimeInterval testInterval = 800.0;
+    instance.uploadInterval = testInterval;
+
+#if TARGET_OS_TV == 1
+    XCTAssertEqual(instance.uploadInterval, DEFAULT_UPLOAD_INTERVAL);
+#else
+    XCTAssertEqual(instance.uploadInterval, testInterval);
+#endif
+}
+
 #pragma mark Error, Exception, and Crash Handling Tests
 
 - (void)testLogCrash {
