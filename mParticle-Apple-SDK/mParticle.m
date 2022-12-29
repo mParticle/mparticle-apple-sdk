@@ -439,7 +439,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval {
-    if (uploadInterval && uploadInterval != self.backendController.uploadInterval) {
+    if (uploadInterval >= 1.0 && uploadInterval != self.backendController.uploadInterval) {
         [self upload];
         self.backendController.uploadInterval = uploadInterval;
     }
