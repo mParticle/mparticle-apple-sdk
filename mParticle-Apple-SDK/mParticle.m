@@ -1859,4 +1859,19 @@ NSString *const kMPStateKey = @"state";
 }
 #endif
 
+- (void)_jsonDispatch_internal:(NSString *)command parameters:(NSDictionary *)parameters {
+#if TARGET_OS_IOS == 1
+    [self handleWebviewCommand:command dictionary:parameters];
+#endif
+}
+
+- (void)_dispatchBlock_internal:(void (^_Nonnull)(void))block {
+    dispatch_block_t blockCopy = [block copy];
+    dispatch_async([MParticle messageQueue], ^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            blockCopy();
+        });
+    });
+}
+
 @end

@@ -1128,6 +1128,27 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 #endif
 
+#pragma mark - Internal test methods
+
+// !!! Warning: The methods below are strictly for internal use only for now, and are subject to change, including signatures. !!!
+
+/**
+ **For internal use only**. Dispatches a json message to be handled by the SDK.
+ 
+ @param command An action that the SDK should take
+ @param parameters A dictionary of named parameters for the action
+ */
+- (void)_jsonDispatch_internal:(NSString *)command parameters:(NSDictionary *)parameters;
+
+/**
+ **For internal use only**. Dispatches a block to be invoked by the SDK.
+ 
+ @param block A block that the SDK should invoke for testing
+ */
+- (void)_dispatchBlock_internal:(void (^_Nonnull)(void))block;
+
+// !!! Warning: The methods above are strictly for internal use only for now, and are subject to change, including signatures. !!!
+
 @end
 
 NS_ASSUME_NONNULL_END
