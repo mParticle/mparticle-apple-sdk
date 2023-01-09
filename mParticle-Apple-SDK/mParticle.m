@@ -1860,7 +1860,7 @@ NSString *const kMPStateKey = @"state";
 /**
  Internal use only. Used by our wrapper SDKs to identify themselves during initialization.
  */
-+ (void)setWrapperSdk:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion {
++ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion {
     static dispatch_once_t predicate;
     dispatch_once(&predicate, ^{
         _wrapperSdk = wrapperSdk;
