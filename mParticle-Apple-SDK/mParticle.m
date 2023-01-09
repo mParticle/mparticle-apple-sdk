@@ -1860,7 +1860,9 @@ NSString *const kMPStateKey = @"state";
 #endif
 
 - (void)_jsonDispatch_internal:(NSString *)command parameters:(NSDictionary *)parameters {
+#if TARGET_OS_IOS == 1
     [self handleWebviewCommand:command dictionary:parameters];
+#endif
 }
 
 - (void)_dispatchBlock_internal:(void (^_Nonnull)(void))block {
