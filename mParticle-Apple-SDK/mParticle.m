@@ -438,6 +438,13 @@ NSString *const kMPStateKey = @"state";
     return [MParticle sharedInstance].stateMachine.consumerInfo.uniqueIdentifier;
 }
 
+- (void)setUploadInterval:(NSTimeInterval)uploadInterval {
+    if (uploadInterval >= 1.0 && uploadInterval != self.backendController.uploadInterval) {
+        [self upload];
+        self.backendController.uploadInterval = uploadInterval;
+    }
+}
+
 - (NSTimeInterval)uploadInterval {
     return self.backendController.uploadInterval;
 }
