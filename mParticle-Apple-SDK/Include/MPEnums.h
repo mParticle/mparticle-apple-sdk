@@ -440,6 +440,15 @@ typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     MPIdentityErrorResponseCodeRetry = 429
 };
 
+typedef NS_ENUM(NSUInteger, MPWrapperSdk) {
+    MPWrapperSdkNone = 0,
+    MPWrapperSdkUnity = 1,
+    MPWrapperSdkReactNative = 2,
+    MPWrapperSdkCordova = 3,
+    MPWrapperSdkXamarin = 4,
+    MPWrapperSdkFlutter = 5
+};
+
 /**
  @see https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanager/authorizationstatus
  */

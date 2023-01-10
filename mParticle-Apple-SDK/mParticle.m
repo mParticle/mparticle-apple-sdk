@@ -36,6 +36,9 @@ static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
 static dispatch_once_t predicate;
 
+static MPWrapperSdk _wrapperSdk = MPWrapperSdkNone;
+static NSString *_wrapperSdkVersion = nil;
+
 NSString *const kMPEventNameLogTransaction = @"Purchase";
 NSString *const kMPEventNameLTVIncrease = @"Increase LTV";
 NSString *const kMParticleFirstRun = @"firstrun";
@@ -1858,5 +1861,18 @@ NSString *const kMPStateKey = @"state";
     [self.backendController logUserNotification:userNotification];
 }
 #endif
+
+#pragma mark - Wrapper SDK Information
+
+/**
+ Internal use only. Used by our wrapper SDKs to identify themselves during initialization.
+ */
++ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion {
+    static dispatch_once_t predicate;
+    dispatch_once(&predicate, ^{
+        _wrapperSdk = wrapperSdk;
+        _wrapperSdkVersion = wrapperSdkVersion;
+    });
+}
 
 @end

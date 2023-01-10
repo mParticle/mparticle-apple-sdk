@@ -1128,6 +1128,13 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 #endif
 
+#pragma mark - Wrapper SDK Information
+
+/**
+ Internal use only. Used by our wrapper SDKs to identify themselves during initialization.
+ */
++ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
+
 @end
 
 NS_ASSUME_NONNULL_END
