@@ -1,3 +1,11 @@
+# [8.10.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.2...v8.10.0) (2023-01-10)
+
+
+### Features
+
+* Add wrapper sdk info setter ([#174](https://github.com/mParticle/mparticle-apple-sdk/issues/174)) ([c2ca247](https://github.com/mParticle/mparticle-apple-sdk/commit/c2ca2476ea96c9636b6684e6a3a57df44d37a0a1))
+* Allow uploadInterval to be set manually ([#175](https://github.com/mParticle/mparticle-apple-sdk/issues/175)) ([8d2c5cf](https://github.com/mParticle/mparticle-apple-sdk/commit/8d2c5cfdf701dfcec4494535714e9d3b8faaedf3))
+
 ## [8.9.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.1...v8.9.2) (2022-12-06)
 
 
