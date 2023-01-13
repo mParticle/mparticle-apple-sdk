@@ -1579,6 +1579,12 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
+    if (![MPStateMachine canWriteMessagesToDB]) {
+        MPILogError(@"Not saving message for event to prevent excessive local database growth because API Key appears to be invalid based on server response");
+        completionHandler(event, MPExecStatusFail);
+        return;
+    }
+    
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
     
     if (event.shouldBeginSession) {
@@ -1829,6 +1835,10 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
+    if (![MPStateMachine canWriteMessagesToDB]) {
+        MPILogError(@"Not saving message for event to prevent excessive local database growth because API Key appears to be invalid based on server response");
+        return;
+    }
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     

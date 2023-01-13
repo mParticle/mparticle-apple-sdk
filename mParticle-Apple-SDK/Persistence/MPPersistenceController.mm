@@ -1558,6 +1558,7 @@ const int MaxBreadcrumbs = 50;
 
 - (void)saveMessage:(MPMessage *)message {
     if (![MPStateMachine canWriteMessagesToDB]) {
+        MPILogError(@"Not saving message for event to prevent excessive local database growth because API Key appears to be invalid based on server response");
         return;
     }
     if (!message.shouldUploadEvent) {
