@@ -60,6 +60,8 @@
 + (BOOL)runningInBackground;
 + (void)setRunningInBackground:(BOOL)background;
 + (BOOL)isAppExtension;
++ (BOOL)canWriteMessagesToDB;
++ (void)setCanWriteMessagesToDB:(BOOL)canWriteMessagesToDB;
 - (void)configureCustomModules:(nullable NSArray<NSDictionary *> *)customModuleSettings;
 - (void)configureRampPercentage:(nullable NSNumber *)rampPercentage;
 - (void)configureTriggers:(nullable NSDictionary *)triggerDictionary;
