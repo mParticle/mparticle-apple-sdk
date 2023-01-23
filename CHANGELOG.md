@@ -1,3 +1,15 @@
+# [8.11.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.10.0...v8.11.0) (2023-01-23)
+
+
+### Bug Fixes
+
+* Identify API call using CNAME domain ([#179](https://github.com/mParticle/mparticle-apple-sdk/issues/179)) ([0aae9af](https://github.com/mParticle/mparticle-apple-sdk/commit/0aae9af3ca49b21d9f50197114a26820105e4ec9))
+
+
+### Features
+
+* Block writes on invalid API key based on Identity/Config responses ([#176](https://github.com/mParticle/mparticle-apple-sdk/issues/176)) ([d116872](https://github.com/mParticle/mparticle-apple-sdk/commit/d1168722da6363d5a6c41fe0fa26d27b816b98e9))
+
 # [8.10.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.9.2...v8.10.0) (2023-01-10)
 
 
