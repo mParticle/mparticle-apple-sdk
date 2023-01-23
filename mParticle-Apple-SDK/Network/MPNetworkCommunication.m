@@ -771,18 +771,24 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
-    MPEndpoint endpointType = MPEndpointIdentityModify;
+    MPEndpoint endpointType;
+    MPURL *mpURL;
     if ([self.identifyURL.url.absoluteString isEqualToString:url.absoluteString]) {
         endpointType = MPEndpointIdentityIdentify;
+        mpURL = self.identifyURL;
     } else if ([self.loginURL.url.absoluteString isEqualToString:url.absoluteString ]) {
         endpointType = MPEndpointIdentityLogin;
+        mpURL = self.loginURL;
     } else if ([self.logoutURL.url.absoluteString isEqualToString:url.absoluteString]) {
         endpointType = MPEndpointIdentityLogout;
+        mpURL = self.logoutURL;
+    } else {
+        endpointType = MPEndpointIdentityModify;
+        mpURL = self.modifyURL;
     }
     [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
 
     NSObject<MPConnectorProtocol> *connector = [self makeConnector];
-    MPURL *mpURL = [[MPURL alloc] initWithURL:url defaultURL:url];
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
                                                                     message:nil
                                                            serializedParams:data];
