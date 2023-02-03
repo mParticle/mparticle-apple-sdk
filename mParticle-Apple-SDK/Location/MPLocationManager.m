@@ -1,3 +1,4 @@
+#ifndef MPARTICLE_LOCATION_DISABLE
 #import "MPLocationManager.h"
 #import <UIKit/UIKit.h>
 
@@ -125,3 +126,4 @@ static BOOL trackingLocation = NO;
 }
 
 @end
+#endif

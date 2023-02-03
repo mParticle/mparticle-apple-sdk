@@ -1,3 +1,4 @@
+#ifndef MPARTICLE_LOCATION_DISABLE
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
 
@@ -24,3 +25,4 @@
 + (BOOL)trackingLocation;
 
 @end
+#endif

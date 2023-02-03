@@ -11,7 +11,9 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
+#ifndef MPARTICLE_LOCATION_DISABLE
 #import "MPLocationManager.h"
+#endif
 #import "MPKitContainer.h"
 #import "MPSearchAdsAttribution.h"
 #import <UIKit/UIKit.h>
@@ -19,7 +21,9 @@
 #import "MPDataPlanFilter.h"
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     #import <CoreLocation/CoreLocation.h>
+#endif
 #endif
 
 NSString *const kCookieDateKey = @"e";
@@ -78,7 +82,9 @@ static BOOL _canWriteMessagesToDB = YES;
 @synthesize networkStatus = _networkStatus;
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 @synthesize location = _location;
+#endif
 #endif
 
 - (instancetype)init {
@@ -479,6 +485,7 @@ static BOOL _canWriteMessagesToDB = YES;
 }
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 - (CLLocation *)location {
     if ([MPLocationManager trackingLocation]) {
         return self.locationManager.location;
@@ -498,6 +505,7 @@ static BOOL _canWriteMessagesToDB = YES;
         _location = location;
     }
 }
+#endif
 #endif
 
 - (NSString *)locationTrackingMode {

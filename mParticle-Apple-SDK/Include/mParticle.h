@@ -26,7 +26,9 @@
 #import <UIKit/UIKit.h>
 
 #if TARGET_OS_IOS == 1
-    #import <CoreLocation/CoreLocation.h>
+    #ifndef MPARTICLE_LOCATION_DISABLE
+        #import <CoreLocation/CoreLocation.h>
+    #endif
     #import <WebKit/WebKit.h>
 #endif
 
@@ -980,6 +982,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic) BOOL backgroundLocationTracking;
 
+#ifndef MPARTICLE_LOCATION_DISABLE
 /**
  Gets/Sets the current location of the active session.
  @see beginLocationTracking:minDistance:
@@ -1015,6 +1018,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Ends geographic location tracking.
  */
 - (void)endLocationTracking;
+#endif
 #endif
 
 #pragma mark - Network Performance

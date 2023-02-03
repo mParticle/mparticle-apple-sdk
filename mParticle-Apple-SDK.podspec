@@ -49,8 +49,11 @@ Pod::Spec.new do |s|
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
         ss.libraries            = 'c++', 'sqlite3', 'z'
-
+        #ifndef MPARTICLE_LOCATION_DISABLE
         ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        #else
+        ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        #endif
         ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
@@ -62,8 +65,11 @@ Pod::Spec.new do |s|
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
         ext.libraries            = 'c++', 'sqlite3', 'z'
-
+        #ifndef MPARTICLE_LOCATION_DISABLE
         ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        #else
+        ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        #endif
         ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'

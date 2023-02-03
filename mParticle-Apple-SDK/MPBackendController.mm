@@ -34,7 +34,9 @@
 #import "MPDevice.h"
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 #import "MPLocationManager.h"
+#endif
 #endif
 
 const NSInteger kNilAttributeValue = 101;
@@ -286,7 +288,9 @@ static BOOL appBackgrounded = NO;
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionEnd session:session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
         message = [[messageBuilder withTimestamp:session.endTime] build];
         
@@ -461,7 +465,9 @@ static BOOL appBackgrounded = NO;
         }
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
         messageBuilder = [messageBuilder withStateTransition:YES previousSession:nil];
         MPMessage *message = [messageBuilder build];
@@ -850,8 +856,8 @@ static BOOL skipNextUpload = NO;
         if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
             [[MParticle sharedInstance].stateMachine.locationManager.locationManager stopUpdatingLocation];
         }
-#endif
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
         MPMessage *message = [messageBuilder build];
         
@@ -975,7 +981,9 @@ static BOOL skipNextUpload = NO;
         previousForegroundTime = MPCurrentEpochInMilliseconds;
         messageBuilder = [messageBuilder withStateTransition:sessionExpired previousSession:nil];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
         MPMessage *message = [messageBuilder build];
         [self saveMessage:message updateSession:YES];
@@ -1198,7 +1206,9 @@ static BOOL skipNextUpload = NO;
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionStart session:_session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
         messageBuilder = [messageBuilder withLocation:stateMachine.location];
+#endif
 #endif
         MPMessage *message = [[messageBuilder withTimestamp:_session.startTime] build];
         
@@ -1500,7 +1510,9 @@ static BOOL skipNextUpload = NO;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
     MPMessage *errorMessage = [messageBuilder build];
     
@@ -1599,7 +1611,9 @@ static BOOL skipNextUpload = NO;
                 [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
             }
         #if TARGET_OS_IOS == 1
+        #ifndef MPARTICLE_LOCATION_DISABLE
             messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+        #endif
         #endif
             MPMessage *message = [messageBuilder build];
             message.shouldUploadEvent = event.shouldUploadEvent;
@@ -1649,7 +1663,9 @@ static BOOL skipNextUpload = NO;
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeNetworkPerformance session:self.session messageInfo:messageInfo];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
     MPMessage *message = [messageBuilder build];
     
@@ -1682,7 +1698,9 @@ static BOOL skipNextUpload = NO;
         [messageBuilder withTimestamp:[event.timestamp timeIntervalSince1970]];
     }
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
     MPMessage *message = [messageBuilder build];
     message.shouldUploadEvent = event.shouldUploadEvent;
@@ -1710,7 +1728,9 @@ static BOOL skipNextUpload = NO;
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:self.session messageInfo:@{kMPOptOutStatus:(optOutStatus ? @"true" : @"false")}];
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
 #endif
         MPMessage *message = [messageBuilder build];
         
@@ -2136,6 +2156,7 @@ static BOOL skipNextUpload = NO;
 }
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distance) parameter3:@(authorizationRequest)];
     
@@ -2162,6 +2183,7 @@ static BOOL skipNextUpload = NO;
     
     return MPExecStatusSuccess;
 }
+#endif
 
 - (MPNotificationController *)notificationController {
     return _notificationController;
@@ -2244,7 +2266,9 @@ static BOOL skipNextUpload = NO;
     }
     
     MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypePushNotification session:_session messageInfo:messageInfo];
+#ifndef MPARTICLE_LOCATION_DISABLE
     messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
+#endif
     MPMessage *message = [messageBuilder build];
     
     [self saveMessage:message updateSession:(_session != nil)];
