@@ -190,7 +190,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 }
 
 - (NSNumber *)gpsState {
-    BOOL gpsState = false;
+    BOOL gpsState = NO;
 #ifndef MPARTICLE_LOCATION_DISABLE
     gpsState = [CLLocationManager authorizationStatus] && [CLLocationManager locationServicesEnabled];
 #endif
