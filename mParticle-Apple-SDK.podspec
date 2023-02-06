@@ -65,6 +65,11 @@ Pod::Spec.new do |s|
         ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+
+        ss.pod_target_xcconfig  = {
+            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
+            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE=1'
+        }
     end
 
     s.subspec 'AppExtension' do |ext|
@@ -89,6 +94,11 @@ Pod::Spec.new do |s|
         ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+
+        ext.pod_target_xcconfig  = {
+            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
+            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE=1'
+        }
     end
 end
 

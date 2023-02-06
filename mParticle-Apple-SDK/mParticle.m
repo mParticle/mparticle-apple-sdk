@@ -1424,8 +1424,8 @@ NSString *const kMPStateKey = @"state";
         MPILogError(@"Could not end location tracking: %@", [_backendController execStatusDescription:execStatus]);
     }
 }
-#endif
-#endif
+#endif // MPARTICLE_LOCATION_DISABLE
+#endif // TARGET_OS_IOS
 
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived {
     NSURL *url = [NSURL URLWithString:urlString];

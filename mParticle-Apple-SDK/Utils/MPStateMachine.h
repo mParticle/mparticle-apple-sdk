@@ -6,8 +6,8 @@
 @class MPSession;
 @class MPNotificationController;
 @class MPConsumerInfo;
-#ifndef MPARTICLE_LOCATION_DISABLE
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     @class CLLocation;
     @class MPLocationManager;
 #endif

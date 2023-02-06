@@ -205,7 +205,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     }
     return _statusBarOrientation;
 }
-#endif
+#endif // TARGET_OS_IOS
 
 #pragma mark Public instance methods
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {
