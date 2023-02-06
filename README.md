@@ -34,7 +34,8 @@ To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guide
 
 target '<Your Target>' do
     pod 'mParticle-Apple-SDK', '~> 8'
-    # If you'd like to use a version of the SDK that doesn't include any location libraries automatically use this subspec'
+    
+    # If you'd like to use a version of the SDK that doesn't include any location libraries automatically use this subspec:
     # pod 'mParticle-Apple-SDK/mParticleNoLocation', '~> 8'
 end
 ```
