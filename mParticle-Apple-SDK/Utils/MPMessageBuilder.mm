@@ -10,7 +10,9 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#ifndef MPARTICLE_LOCATION_DISABLE
 #import "MPLocationManager.h"
+#endif
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"
@@ -396,6 +398,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 }
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 - (MPMessageBuilder *)withLocation:(CLLocation *)location {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     if ([MPStateMachine runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
@@ -417,6 +420,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     
     return self;
 }
+#endif
 #endif
 
 @end

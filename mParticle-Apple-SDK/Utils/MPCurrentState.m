@@ -5,7 +5,9 @@
 #import "mParticle.h"
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     #import <CoreLocation/CoreLocation.h>
+#endif
 #endif
 
 NSString *const kMPStateInformationKey = @"cs";
@@ -188,7 +190,10 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
 }
 
 - (NSNumber *)gpsState {
-    BOOL gpsState = [CLLocationManager authorizationStatus] && [CLLocationManager locationServicesEnabled];
+    BOOL gpsState = NO;
+#ifndef MPARTICLE_LOCATION_DISABLE
+    gpsState = [CLLocationManager authorizationStatus] && [CLLocationManager locationServicesEnabled];
+#endif
     return @(gpsState);
 }
 
@@ -200,7 +205,7 @@ NSString *const kMPStateFreeDiskSpaceKey = @"fds";
     }
     return _statusBarOrientation;
 }
-#endif
+#endif // TARGET_OS_IOS
 
 #pragma mark Public instance methods
 - (NSDictionary<NSString *, id> *)dictionaryRepresentation {

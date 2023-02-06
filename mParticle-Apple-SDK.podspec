@@ -49,11 +49,27 @@ Pod::Spec.new do |s|
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
         ss.libraries            = 'c++', 'sqlite3', 'z'
-
         ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+    end
+    
+    s.subspec 'mParticleNoLocation' do |ss|
+        ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
+
+        ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
+        ss.libraries            = 'c++', 'sqlite3', 'z'
+        ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
+
+        ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+
+        ss.pod_target_xcconfig  = {
+            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
+            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE=1'
+        }
     end
 
     s.subspec 'AppExtension' do |ext|
@@ -62,11 +78,27 @@ Pod::Spec.new do |s|
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
         ext.libraries            = 'c++', 'sqlite3', 'z'
-
         ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
 
         ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+    end
+    
+    s.subspec 'AppExtensionNoLocation' do |ext|
+        ext.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
+
+        ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
+        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
+        ext.libraries            = 'c++', 'sqlite3', 'z'
+        ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+        ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
+
+        ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
+
+        ext.pod_target_xcconfig  = {
+            'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
+            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE=1'
+        }
     end
 end
 

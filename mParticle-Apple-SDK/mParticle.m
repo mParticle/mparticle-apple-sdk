@@ -26,7 +26,9 @@
 #import "MPResponseConfig.h"
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     #import "MPLocationManager.h"
+#endif
 #endif
 
 static dispatch_queue_t messageQueue = nil;
@@ -639,11 +641,13 @@ NSString *const kMPStateKey = @"state";
                                    self->_trackNotifications = [strongSelf.configSettings[kMPConfigTrackNotifications] boolValue];
                                }
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
                                if ([strongSelf.configSettings[kMPConfigLocationTracking] boolValue]) {
                                    CLLocationAccuracy accuracy = [strongSelf.configSettings[kMPConfigLocationAccuracy] doubleValue];
                                    CLLocationDistance distanceFilter = [strongSelf.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
                                    [strongSelf beginLocationTracking:accuracy minDistance:distanceFilter];
                                }
+#endif
 #endif
                            }
                            
@@ -1344,15 +1348,24 @@ NSString *const kMPStateKey = @"state";
 - (BOOL)backgroundLocationTracking {
     [MPListenerController.sharedInstance onAPICalled:_cmd];
     
+#ifndef MPARTICLE_LOCATION_DISABLE
     return [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking;
+#else
+    return false;
+#endif
 }
 
 - (void)setBackgroundLocationTracking:(BOOL)backgroundLocationTracking {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(backgroundLocationTracking)];
     
+#ifndef MPARTICLE_LOCATION_DISABLE
     [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
+#else
+    MPILogDebug(@"Automatic background tracking has been disabled to support users excluding location services from their applications.");
+#endif
 }
 
+#ifndef MPARTICLE_LOCATION_DISABLE
 - (CLLocation *)location {
     [MPListenerController.sharedInstance onAPICalled:_cmd];
     
@@ -1411,7 +1424,8 @@ NSString *const kMPStateKey = @"state";
         MPILogError(@"Could not end location tracking: %@", [_backendController execStatusDescription:execStatus]);
     }
 }
-#endif
+#endif // MPARTICLE_LOCATION_DISABLE
+#endif // TARGET_OS_IOS
 
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived {
     NSURL *url = [NSURL URLWithString:urlString];

@@ -1,3 +1,4 @@
+#ifndef MPARTICLE_LOCATION_DISABLE
 #import <Foundation/Foundation.h>
 #import "MPEnums.h"
 
@@ -9,9 +10,7 @@
 
 #if TARGET_OS_IOS == 1
 @property (nonatomic, strong, nullable) CLLocation *location;
-#ifndef MPARTICLE_LOCATION_DISABLE
 @property (nonatomic, strong, nullable) CLLocationManager *locationManager;
-#endif
 @property (nonatomic, readonly) MPLocationAuthorizationRequest authorizationRequest;
 @property (nonatomic, readonly) CLLocationAccuracy requestedAccuracy;
 @property (nonatomic, readonly) CLLocationDistance requestedDistanceFilter;
@@ -24,3 +23,4 @@
 + (BOOL)trackingLocation;
 
 @end
+#endif

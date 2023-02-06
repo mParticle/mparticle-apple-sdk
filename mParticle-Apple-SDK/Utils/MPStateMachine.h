@@ -6,13 +6,15 @@
 @class MPSession;
 @class MPNotificationController;
 @class MPConsumerInfo;
-@class MPLocationManager;
+#if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
+    @class CLLocation;
+    @class MPLocationManager;
+#endif
+#endif
 @class MPCustomModule;
 @class MPSearchAdsAttribution;
 @class MPDataPlanOptions;
-#if TARGET_OS_IOS == 1
-    @class CLLocation;
-#endif
 
 @interface MPStateMachine : NSObject
 
@@ -25,9 +27,11 @@
 @property (nonatomic, strong, nullable) NSString *locationTrackingMode;
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 @property (nonatomic, strong, nullable) CLLocation *location;
-#endif
 @property (nonatomic, strong, nullable) MPLocationManager *locationManager;
+#endif
+#endif
 @property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;
 @property (nonatomic, strong, nullable) NSString *pushNotificationMode;
 @property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));

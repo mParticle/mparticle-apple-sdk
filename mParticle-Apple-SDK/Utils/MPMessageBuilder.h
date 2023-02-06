@@ -2,7 +2,9 @@
 #import "MPIConstants.h"
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     #import <CoreLocation/CoreLocation.h>
+#endif
 #endif
 
 @class MPSession;
@@ -47,7 +49,9 @@
 - (nonnull MPMessage *)build;
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 - (nonnull MPMessageBuilder *)withLocation:(nonnull CLLocation *)location;
+#endif
 #endif
 
 @end

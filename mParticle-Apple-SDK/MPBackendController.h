@@ -3,7 +3,9 @@
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
-    #import <CoreLocation/CoreLocation.h>
+    #ifndef MPARTICLE_LOCATION_DISABLE
+        #import <CoreLocation/CoreLocation.h>
+    #endif
 
     @class MParticleUserNotification;
 #endif
@@ -105,8 +107,10 @@ extern const NSInteger kInvalidKey;
 - (nonnull NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(nonnull NSNumber *)userId;
 
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (MPExecStatus)endLocationTracking;
+#endif
 - (void)handleDeviceTokenNotification:(nonnull NSNotification *)notification;
 - (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
