@@ -55,4 +55,9 @@ class mParticle_Swift_SDKTests: XCTestCase {
         event = MPEvent.init()
         XCTAssertNotNil(event)
     }
+    
+    func testNewMPIdentityResponseErrorCodes() {
+        XCTAssertNotNil(MPIdentityErrorResponseCode(rawValue: 500))
+        XCTAssertNotNil(MPIdentityErrorResponseCode(rawValue: 502))
+    }
 }

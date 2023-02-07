@@ -667,7 +667,6 @@
 		DB479FE724252A2A00869BD2 /* mParticle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mParticle.m; sourceTree = "<group>"; };
 		DB479FEA24252A2A00869BD2 /* MPBaseEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBaseEvent.m; sourceTree = "<group>"; };
 		DB479FEB24252A2A00869BD2 /* MPEvent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEvent.m; sourceTree = "<group>"; };
-		DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "MPUserSegments+Setters.h"; sourceTree = "<group>"; };
 		DB479FF224252A2A00869BD2 /* MPListenerController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPListenerController.m; sourceTree = "<group>"; };
 		DB479FF424252A2A00869BD2 /* MPMessageBuilder.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPMessageBuilder.mm; sourceTree = "<group>"; };
 		DB479FF524252A2A00869BD2 /* MPStateMachine.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPStateMachine.mm; sourceTree = "<group>"; };
@@ -780,7 +779,6 @@
 		DB47A06924252A2B00869BD2 /* MPKitConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitConfiguration.h; sourceTree = "<group>"; };
 		DB47A06A24252A2B00869BD2 /* MPKitFilter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPKitFilter.h; sourceTree = "<group>"; };
 		DB47A06B24252A2B00869BD2 /* MPBaseProjection.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBaseProjection.h; sourceTree = "<group>"; };
-		DB47A06C24252A2B00869BD2 /* MPUserSegments.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUserSegments.m; sourceTree = "<group>"; };
 		DB47A06F24252A2B00869BD2 /* MParticleReachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleReachability.m; sourceTree = "<group>"; };
 		DB47A07024252A2B00869BD2 /* MParticleReachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleReachability.h; sourceTree = "<group>"; };
 		DB47A07224252A2B00869BD2 /* MPILogger.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPILogger.h; sourceTree = "<group>"; };
@@ -815,7 +813,6 @@
 		DB47A09824252A2B00869BD2 /* MPListenerController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPListenerController.h; sourceTree = "<group>"; };
 		DB47A09924252A2B00869BD2 /* MPIdentityApi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPIdentityApi.h; sourceTree = "<group>"; };
 		DB47A09A24252A2B00869BD2 /* MPCCPAConsent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPCCPAConsent.h; sourceTree = "<group>"; };
-		DB47A09B24252A2B00869BD2 /* MPUserSegments.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUserSegments.h; sourceTree = "<group>"; };
 		DB47A09C24252A2B00869BD2 /* NSDictionary+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+MPCaseInsensitive.h"; sourceTree = "<group>"; };
 		DB47A09D24252A2B00869BD2 /* MParticleUser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MParticleUser.h; sourceTree = "<group>"; };
 		DB47A09E24252A2B00869BD2 /* NSArray+MPCaseInsensitive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSArray+MPCaseInsensitive.h"; sourceTree = "<group>"; };
@@ -960,7 +957,6 @@
 				DB47A07624252A2B00869BD2 /* Network */,
 				DB47A02124252A2A00869BD2 /* Notifications */,
 				DB479FD324252A2A00869BD2 /* Persistence */,
-				DB479FEF24252A2A00869BD2 /* Segments */,
 				DB479FF324252A2A00869BD2 /* Utils */,
 				DB479FE724252A2A00869BD2 /* mParticle.m */,
 				DB47A05524252A2B00869BD2 /* MPBackendController.h */,
@@ -969,7 +965,6 @@
 				DB479FD224252A2A00869BD2 /* MPIConstants.h */,
 				DB47A05324252A2B00869BD2 /* MPIConstants.m */,
 				DB47A05424252A2B00869BD2 /* MPIHasher.mm */,
-				DB47A06C24252A2B00869BD2 /* MPUserSegments.m */,
 			);
 			path = "mParticle-Apple-SDK";
 			sourceTree = "<group>";
@@ -1138,14 +1133,6 @@
 				DB479FEB24252A2A00869BD2 /* MPEvent.m */,
 			);
 			path = Event;
-			sourceTree = "<group>";
-		};
-		DB479FEF24252A2A00869BD2 /* Segments */ = {
-			isa = PBXGroup;
-			children = (
-				DB479FF024252A2A00869BD2 /* MPUserSegments+Setters.h */,
-			);
-			path = Segments;
 			sourceTree = "<group>";
 		};
 		DB479FF124252A2A00869BD2 /* Listener */ = {
@@ -1393,7 +1380,6 @@
 				DB47A09824252A2B00869BD2 /* MPListenerController.h */,
 				DB47A09924252A2B00869BD2 /* MPIdentityApi.h */,
 				DB47A09A24252A2B00869BD2 /* MPCCPAConsent.h */,
-				DB47A09B24252A2B00869BD2 /* MPUserSegments.h */,
 				DB47A09C24252A2B00869BD2 /* NSDictionary+MPCaseInsensitive.h */,
 				DB47A09D24252A2B00869BD2 /* MParticleUser.h */,
 				DB47A09E24252A2B00869BD2 /* NSArray+MPCaseInsensitive.h */,
