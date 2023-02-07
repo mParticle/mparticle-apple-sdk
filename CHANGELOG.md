@@ -1,3 +1,10 @@
+## [8.11.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.0...v8.11.1) (2023-02-07)
+
+
+### Bug Fixes
+
+* Disable All Location Code with Flag ([#180](https://github.com/mParticle/mparticle-apple-sdk/issues/180)) ([3c28771](https://github.com/mParticle/mparticle-apple-sdk/commit/3c28771451c38777f8ac8d6e90c4c1511f013e56))
+
 # [8.11.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.10.0...v8.11.0) (2023-01-23)
 
 
