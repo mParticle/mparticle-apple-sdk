@@ -434,10 +434,14 @@ typedef NS_ENUM(NSUInteger, MPIdentityErrorResponseCode) {
     MPIdentityErrorResponseCodeOptOut = 5,
     /** HTTP Error 401: Unauthorized. Ensure that you've initialized the mParticle SDK with a valid workspace key and secret. */
     MPIdentityErrorResponseCodeUnauthorized = 401,
+    /** HTTP Error 429: Identity request should be retried */
+    MPIdentityErrorResponseCodeRetry = 429,
+    /** HTTP Error 500: Identity request should be retried */
+    MPIdentityErrorResponseCodeInternalServerError = 500,
+    /** HTTP Error 502: Identity request should be retried */
+    MPIdentityErrorResponseCodeBadGateway = 502,
     /** HTTP Error 504: Identity request should be retried */
     MPIdentityErrorResponseCodeTimeout = 504,
-    /** HTTP Error 429: Identity request should be retried */
-    MPIdentityErrorResponseCodeRetry = 429
 };
 
 typedef NS_ENUM(NSUInteger, MPWrapperSdk) {
