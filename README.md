@@ -35,7 +35,7 @@ To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guide
 target '<Your Target>' do
     pod 'mParticle-Apple-SDK', '~> 8'
     
-    # If you'd like to use a version of the SDK that doesn't include any location libraries automatically use this subspec:
+    # If you'd like to use a version of the SDK that doesn't include any location tracking nor links the CoreLocation framework, use this subspec:
     # pod 'mParticle-Apple-SDK/mParticleNoLocation', '~> 8'
 end
 ```
@@ -102,11 +102,13 @@ In this case, only the _Branch Metrics_ kit would be integrated; all other kits 
 
 #### Swift Package Manager
 
-To integrate the SDK using Swift Package Manager, open your Xcode project and navigate to File > Swift Packages > Add Package Dependency
+To integrate the SDK using Swift Package Manager, open your Xcode project and click on your project in the file list on the left, click on your Project name in the middle of the window, click on the "Package Dependencies" tab, and click the "+" button underneath the Packages list.
 
-Enter the repository URL `https://github.com/mParticle/mparticle-apple-sdk` and click Next.
+Enter the repository URL `https://github.com/mParticle/mparticle-apple-sdk` in the search box on the top right, choose `mparticle-apple-sdk` from the list of pacakges, and change "Dependency Rule" to "Up to Next Major Version". Then click the "Add Package" button on the bottom right.
 
-You can leave the version settings as default and click Next one more time to complete adding the package dependency.
+Then choose either the "Package Product" called `mParticle-Apple-SDK`, or if you'd like to use a version of the SDK that doesn't include any location tracking nor links the CoreLocation framework choose `mParticle-Apple-SDK-NoLocation`.
+
+**IMPORTANT:** If you choose the `mParticle-Apple-SDK-NoLocation` package product, you will need to import the SDK using `import mParticle_Apple_SDK_NoLocation` instead of `import mParticle_Apple_SDK` as shown in the rest of the documentation and this README. 
 
 #### Currently Supported Kits
 
