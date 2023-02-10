@@ -1,3 +1,11 @@
+## [8.11.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.1...v8.11.2) (2023-02-10)
+
+
+### Bug Fixes
+
+* Add missing MPIdentityErrorResponseCode values ([#181](https://github.com/mParticle/mparticle-apple-sdk/issues/181)) ([7afd66a](https://github.com/mParticle/mparticle-apple-sdk/commit/7afd66a13033407a83dac0c206ab4ec622e9fdf5))
+* Add missing no location target for SPM ([#182](https://github.com/mParticle/mparticle-apple-sdk/issues/182)) ([d265e8a](https://github.com/mParticle/mparticle-apple-sdk/commit/d265e8addb1798480202779df2af093d250fa3cd))
+
 ## [8.11.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.0...v8.11.1) (2023-02-07)
 
 
