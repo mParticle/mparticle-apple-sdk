@@ -68,7 +68,7 @@ Pod::Spec.new do |s|
 
         ss.pod_target_xcconfig  = {
             'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
-            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE=1'
+            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
         }
     end
 
@@ -97,7 +97,7 @@ Pod::Spec.new do |s|
 
         ext.pod_target_xcconfig  = {
             'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
-            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE=1'
+            'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
         }
     end
 end
