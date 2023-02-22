@@ -14,7 +14,7 @@
         numberFormatter.numberStyle = NSNumberFormatterDecimalStyle;
         numberFormatter.maximumFractionDigits = 2;
         NSString *stringRepresentation = [numberFormatter stringFromNumber:self];
-        formattedNumber = @([[numberFormatter numberFromString:stringRepresentation] doubleValue]);
+        formattedNumber = [numberFormatter numberFromString:stringRepresentation];
     }
     
     return formattedNumber;
