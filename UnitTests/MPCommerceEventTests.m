@@ -229,7 +229,7 @@
     XCTAssertNotNil(transactionAttributes, @"Transaction attributes should not have been nil.");
     
     transactionAttributes.affiliation = @"ELB, Inc.";
-    transactionAttributes.shipping = @1.23;
+    transactionAttributes.shipping = @10000000.232;
     transactionAttributes.tax = @4.56;
     transactionAttributes.revenue = @5.79;
     transactionAttributes.transactionId = @"noroads_2015";
@@ -240,7 +240,7 @@
     
     __block NSArray *keys = @[@"ti", @"ts", @"ta", @"tr", @"tt"];
     
-    __block NSArray *values = @[@"noroads_2015", @"1.23", @"ELB, Inc.", @"5.79", @"4.56"];
+    __block NSArray *values = @[@"noroads_2015", @"10000000.23", @"ELB, Inc.", @"5.79", @"4.56"];
     
     [keys enumerateObjectsUsingBlock:^(NSString *key, NSUInteger idx, BOOL *stop) {
         XCTAssertNotNil(transactionattributesDictionary[key], @"There should have been a key/value pair.");
