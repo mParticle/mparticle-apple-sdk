@@ -44,6 +44,9 @@
 @property (nonatomic, strong, nullable, readonly) id providerKitInstance;
 @property (nonatomic, strong, nullable) MPKitAPI *kitApi;
 
+// Only used for sideloaded kits
+@property (nonatomic, strong, nonnull) NSNumber *sideloadedKitCode;
+
 #pragma mark Kit lifecycle
 - (void)start;
 - (void)deinit;

@@ -37,6 +37,22 @@
     return self;
 }
 
+- (nullable instancetype)initWithInstance:(nonnull NSObject<MPKitProtocol> *)instance kitCode:(nonnull NSNumber *)kitCode {
+    NSString *className = NSStringFromClass([instance class]);
+    self = [self initWithName:className className:className];
+    if (!self || MPIsNull(className) || MPIsNull(instance)) {
+        return nil;
+    }
+    
+    // All sideloaded kits have an internally generated code in a specified range determined by MPKitContainer
+    _code = kitCode;
+    
+    // Use the already initialized instance instead of creating one later
+    _wrapperInstance = instance;
+    
+    return self;
+}
+
 - (NSString *)description {
     NSMutableString *description = [[NSMutableString alloc] initWithFormat:@"%@ {\n", [self class]];
     [description appendFormat:@"    code: %@,\n", _code];

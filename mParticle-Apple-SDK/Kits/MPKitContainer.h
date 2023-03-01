@@ -16,6 +16,8 @@
 @property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
 @property (nonatomic, strong, nonnull) NSArray<NSDictionary *> *originalConfig;
 
+@property (nonatomic, strong, nonnull) NSArray<NSObject<MPKitProtocol>*> *sideloadedKits;
+
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
 

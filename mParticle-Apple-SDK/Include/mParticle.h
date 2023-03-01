@@ -380,6 +380,8 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, strong, readwrite, nullable) NSNumber *configMaxAgeSeconds;
 
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSObject<MPKitProtocol>*> *sideloadedKits;
+
 /**
  Identify callback.
  

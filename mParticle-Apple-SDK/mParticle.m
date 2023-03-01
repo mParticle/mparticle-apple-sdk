@@ -566,6 +566,7 @@ NSString *const kMPStateKey = @"state";
     }
     
     _kitContainer = [[MPKitContainer alloc] init];
+    _kitContainer.sideloadedKits = options.sideloadedKits ?: [NSArray array];
 
     [self.backendController startWithKey:apiKey
                                   secret:secret
