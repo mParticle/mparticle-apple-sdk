@@ -34,6 +34,7 @@
 
 - (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
 
+// Value ignored for sideloaded kits, so a value like -1 is recommended, sideloadedKitCode is used instead which is set by the SDK
 + (nonnull NSNumber *)kitCode;
 
 #pragma mark - Optional methods
