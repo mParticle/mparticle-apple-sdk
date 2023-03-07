@@ -245,7 +245,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         // Get kit code from sideloaded kits range and increment it for the next kit
         NSNumber *kitCode = @(sideloadedKitCodeNextValue);
         sideloadedKitCodeNextValue++;
-        kitInstance.sideloadedKitCode = kitCode;
+        if ([kitInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+            kitInstance.sideloadedKitCode = kitCode;
+        } else {
+            NSString *message = @"Sideloaded kits must implement the sideloadedKitCode property or they will not receive callbacks";
+            NSAssert(NO, message);
+            MPILogError(@"%@", message);
+        }
         
         // Call through to the main registration method so any listeners will receive a callback
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithInstance:kitInstance kitCode:kitCode];
