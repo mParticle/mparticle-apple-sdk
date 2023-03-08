@@ -27,6 +27,7 @@
 #import "MPBaseTestCase.h"
 #import "OCMock.h"
 #import "MPKitProtocol.h"
+#import "MPKitTestClassSideloaded.h"
 
 @interface MParticle ()
 
@@ -2505,6 +2506,68 @@
     [kitWrapperMock stopMocking];
     [kitRegisterMock stopMocking];
 }
+
+- (void)testRegisterSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    id sideloadedKitMock = OCMPartialMock(sideloadedKit);
+    [(id <MPKitProtocol>)[sideloadedKitMock expect] didFinishLaunchingWithConfiguration:OCMOCK_ANY];
+    
+    kitContainer.sideloadedKits = @[sideloadedKit];
+    [kitContainer initializeKits];
+    
+    [sideloadedKitMock verifyWithDelay:5.0];
+    [sideloadedKitMock stopMocking];
+}
+
+- (void)testRegisterMultipleSideloadedKits {
+    MPKitTestClassSideloaded *sideloadedKit1 = [[MPKitTestClassSideloaded alloc] init];
+    id sideloadedKitMock1 = OCMPartialMock(sideloadedKit1);
+    [(id <MPKitProtocol>)[sideloadedKitMock1 expect] didFinishLaunchingWithConfiguration:OCMOCK_ANY];
+    
+    MPKitTestClassSideloaded *sideloadedKit2 = [[MPKitTestClassSideloaded alloc] init];
+    id sideloadedKitMock2 = OCMPartialMock(sideloadedKit2);
+    [(id <MPKitProtocol>)[sideloadedKitMock2 expect] didFinishLaunchingWithConfiguration:OCMOCK_ANY];
+    
+    MPKitTestClassSideloaded *sideloadedKit3 = [[MPKitTestClassSideloaded alloc] init];
+    id sideloadedKitMock3 = OCMPartialMock(sideloadedKit3);
+    [(id <MPKitProtocol>)[sideloadedKitMock3 expect] didFinishLaunchingWithConfiguration:OCMOCK_ANY];
+    
+    kitContainer.sideloadedKits = @[sideloadedKit1, sideloadedKit2, sideloadedKit3];
+    [kitContainer initializeKits];
+    
+    [sideloadedKitMock1 verifyWithDelay:5.0];
+    [sideloadedKitMock2 verifyWithDelay:5.0];
+    [sideloadedKitMock3 verifyWithDelay:5.0];
+    
+    [sideloadedKitMock1 stopMocking];
+    [sideloadedKitMock2 stopMocking];
+    [sideloadedKitMock3 stopMocking];
+}
+
+- (void)testForwardEventToSideloadedKit {
+    MPEvent *event = [[MPEvent alloc] initWithName:@"test event" type:MPEventTypeOther];
+
+    MPKitTestClassSideloaded *sideloadedKit = [[MPKitTestClassSideloaded alloc] init];
+    id sideloadedKitMock = OCMPartialMock(sideloadedKit);
+    [(id <MPKitProtocol>)[sideloadedKitMock expect] logBaseEvent:OCMOCK_ANY];
+    
+    // Must be dispatched async to main thread due to OCMock weirdness
+    // NOTE: Without this, it runs fine alone but when running the all tests
+    //       it fails. Seems to possibly have something to do with other tests
+    //       calling [kitContainer configureKits:nil] even though that
+    //       shouldn't matter since the whole thing is reconstructed in setUp...
+    dispatch_async(dispatch_get_main_queue(), ^{
+        self->kitContainer.sideloadedKits = @[sideloadedKit];
+        [self->kitContainer initializeKits];
+        
+        [[MParticle sharedInstance] logEvent:event];
+    });
+    
+    [sideloadedKitMock verifyWithDelay:10.0];
+    
+    [sideloadedKitMock stopMocking];
+}
+
 #endif
 
 @end

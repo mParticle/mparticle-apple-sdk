@@ -381,6 +381,17 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) NSNumber *configMaxAgeSeconds;
 
 /**
+ Set an array of instances of kit (MPKitProtocol) objects to be "sideloaded".
+ 
+ The difference between these kits and mParticle UI enabled kits is that they do not receive a server side configuration and are always activated.
+ Registration is done locally, and these kits will receive all of the usual MPKitProtocol callback method calls. Some use cases
+ include debugging (logging all MPKitProtocol callbacks) and creating custom integrations that are not yet officially supported.
+ 
+ At the moment, all events are forwarded as event filtering is not yet supported. This will come in a future release.
+ */
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSObject<MPKitProtocol>*> *sideloadedKits;
+
+/**
  Identify callback.
  
  This will be called when an identify request completes.

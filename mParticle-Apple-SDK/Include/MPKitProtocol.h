@@ -34,6 +34,7 @@
 
 - (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration;
 
+// Value ignored for sideloaded kits, so a value like -1 is recommended, sideloadedKitCode is used instead which is set by the SDK
 + (nonnull NSNumber *)kitCode;
 
 #pragma mark - Optional methods
@@ -43,6 +44,9 @@
 @property (nonatomic, strong, nullable) NSDictionary *launchOptions;
 @property (nonatomic, strong, nullable, readonly) id providerKitInstance;
 @property (nonatomic, strong, nullable) MPKitAPI *kitApi;
+
+// Only used for sideloaded kits
+@property (nonatomic, strong, nonnull) NSNumber *sideloadedKitCode;
 
 #pragma mark Kit lifecycle
 - (void)start;

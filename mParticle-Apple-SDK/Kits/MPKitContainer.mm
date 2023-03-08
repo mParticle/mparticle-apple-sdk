@@ -42,7 +42,6 @@ NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @interface MParticle ()
-
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
@@ -50,13 +49,10 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 - (void)executeKitsInitializedBlocks;
-
 @end
 
 @interface MPKitAPI ()
-
 - (id)initWithKitCode:(NSNumber *)integrationId;
-
 @end
 
 @interface MPForwardRecord ()
@@ -66,16 +62,21 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 - (nonnull instancetype)initWithMessageType:(MPMessageType)messageType execStatus:(nonnull MPKitExecStatus *)execStatus;
 @end
 
-@interface MPKitContainer() {
+@interface MPKitRegister ()
+- (nullable instancetype)initWithInstance:(nonnull NSObject<MPKitProtocol> *)instance kitCode:(nonnull NSNumber *)kitCode;
+@end
+
+static const NSInteger sideloadedKitCodeStartValue = 1000000000;
+
+@interface MPKitContainer () {
     dispatch_semaphore_t kitsSemaphore;
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
+    NSInteger sideloadedKitCodeNextValue;
 }
-
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 @property (nonatomic) BOOL kitsInitialized;
 @property (nonatomic, strong) NSDate *initializedTime;
-
 @end
 
 
@@ -97,6 +98,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         NSMutableDictionary *linkInfo = _attributionInfo;
         _initializedTime = [NSDate date];
         kitsSemaphore = dispatch_semaphore_create(1);
+        sideloadedKitCodeNextValue = sideloadedKitCodeStartValue;
         
         _attributionCompletionHandler = [^void(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error) {
             if (attributionResult && attributionResult.kitCode) {
@@ -238,10 +240,40 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     }
 }
 
+- (void)registerSideloadedKits {
+    for (NSObject<MPKitProtocol>* kitInstance in self.sideloadedKits) {
+        // Get kit code from sideloaded kits range and increment it for the next kit
+        NSNumber *kitCode = @(sideloadedKitCodeNextValue);
+        sideloadedKitCodeNextValue++;
+        if ([kitInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+            kitInstance.sideloadedKitCode = kitCode;
+        } else {
+            NSString *message = @"Sideloaded kits must implement the sideloadedKitCode property or they will not receive callbacks";
+            NSAssert(NO, message);
+            MPILogError(@"%@", message);
+        }
+        
+        // Call through to the main registration method so any listeners will receive a callback
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithInstance:kitInstance kitCode:kitCode];
+        [MParticle registerExtension:kitRegister];
+        
+        // Create default kit configuration
+        NSDictionary *remoteConfigDict = @{@"eaa": @{}, @"ear": @{}, @"eas": @{}};
+        NSDictionary *configDict = @{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict};
+        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configDict];
+        self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
+        
+        // Finish registering kit and call its callbacks
+        [self startKitRegister:kitRegister configuration:kitConfiguration];
+    }
+}
+
 - (void)initializeKits {
     if (self.kitsInitialized) {
         return;
     }
+    
+    [self registerSideloadedKits];
     
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
     BOOL anyKitsIncluded = supportedKits != nil && supportedKits.count > 0;
@@ -260,6 +292,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
         self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
         [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
         
+        self.kitsInitialized = YES;
+    }
+    if (self.sideloadedKits.count > 0) {
         self.kitsInitialized = YES;
     }
     if ([MParticle sharedInstance].stateMachine.logLevel >= MPILogLevelDebug) {
@@ -469,7 +504,9 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
     
     NSDictionary * configuration = kitConfiguration.configuration;
     if (configuration.count > 0) {
-        kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+        if (!kitRegister.wrapperInstance) {
+            kitRegister.wrapperInstance = [[NSClassFromString(kitRegister.className) alloc] init];
+        }
         
         MPKitAPI *kitApi = [[MPKitAPI alloc] initWithKitCode:kitRegister.code];
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(setKitApi:)]) {
