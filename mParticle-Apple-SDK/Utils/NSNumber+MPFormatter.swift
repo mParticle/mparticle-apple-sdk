@@ -8,7 +8,7 @@
 
 import Foundation
 
-@objc extension NSNumber {
+@objc public extension NSNumber {
     @objc func formatWithNonScientificNotation() -> NSNumber {
         let minThreshold = 1.0E-5
         let selfAbsoluteValue = fabs(self.doubleValue)
