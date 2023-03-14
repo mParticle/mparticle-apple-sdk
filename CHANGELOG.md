@@ -1,3 +1,15 @@
+# [8.12.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.2...v8.12.0) (2023-03-14)
+
+
+### Bug Fixes
+
+* Limit Currency Values to 2 Decimal Points ([#183](https://github.com/mParticle/mparticle-apple-sdk/issues/183)) ([de70c03](https://github.com/mParticle/mparticle-apple-sdk/commit/de70c03fb6127795f0190ee3c4307bbe2f63dedc))
+
+
+### Features
+
+* Custom local kit loading aka kit sideloading ([#185](https://github.com/mParticle/mparticle-apple-sdk/issues/185)) ([a279cb0](https://github.com/mParticle/mparticle-apple-sdk/commit/a279cb0389242b1823a953bd2b4911c51e76c1b4))
+
 ## [8.11.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.1...v8.11.2) (2023-02-10)
 
 
