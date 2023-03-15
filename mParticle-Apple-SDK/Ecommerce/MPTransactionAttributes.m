@@ -1,6 +1,6 @@
 #import "MPTransactionAttributes.h"
+#import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "NSNumber+MPFormatter.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 

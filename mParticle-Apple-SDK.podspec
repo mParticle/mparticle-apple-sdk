@@ -42,12 +42,13 @@ Pod::Spec.new do |s|
     s.prefix_header_contents = pch_mParticle
     s.ios.deployment_target  = "9.0"
     s.tvos.deployment_target = "9.0"
+    s.swift_versions = ["5.0"]
 
     s.subspec 'mParticle' do |ss|
         ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
+        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         ss.libraries            = 'c++', 'sqlite3', 'z'
         ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
@@ -59,7 +60,7 @@ Pod::Spec.new do |s|
         ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
+        ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         ss.libraries            = 'c++', 'sqlite3', 'z'
         ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
@@ -76,7 +77,7 @@ Pod::Spec.new do |s|
         ext.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
+        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         ext.libraries            = 'c++', 'sqlite3', 'z'
         ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
@@ -88,7 +89,7 @@ Pod::Spec.new do |s|
         ext.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
 
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
-        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp}'
+        ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
         ext.libraries            = 'c++', 'sqlite3', 'z'
         ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
         ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
