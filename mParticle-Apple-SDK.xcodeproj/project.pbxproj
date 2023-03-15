@@ -11,6 +11,10 @@
 		04610F5A215D8C8C001A36AB /* MParticleUserTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 04610F58215D8C8B001A36AB /* MParticleUserTests.m */; };
 		04B1670B20000E0F0027F077 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4F166C1F1511B100D625CD /* MPIdentityTests.m */; };
 		04B1670C20000E0F0027F077 /* MPIdentityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB4F166C1F1511B100D625CD /* MPIdentityTests.m */; };
+		534512A529BA3CE6006970EE /* NSNumber+MPFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534512A429BA3CE6006970EE /* NSNumber+MPFormatter.swift */; };
+		534512A629BA3CE6006970EE /* NSNumber+MPFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534512A429BA3CE6006970EE /* NSNumber+MPFormatter.swift */; };
+		534512A829BA3D80006970EE /* NSNumber+MPFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */; };
+		534512A929BA3D80006970EE /* NSNumber+MPFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */; };
 		5384E41029B101230019483D /* MPKitTestClassSideloaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 5384E40F29B101230019483D /* MPKitTestClassSideloaded.m */; };
 		5384E41129B101230019483D /* MPKitTestClassSideloaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 5384E40F29B101230019483D /* MPKitTestClassSideloaded.m */; };
 		B263073D26E29965000A12E9 /* MPConnectorResponseProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */; };
@@ -204,8 +208,6 @@
 		DB47A0F824252A2C00869BD2 /* NSDictionary+MPCaseInsensitive.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FFB24252A2A00869BD2 /* NSDictionary+MPCaseInsensitive.m */; };
 		DB47A0F924252A2C00869BD2 /* MPResponseEvents.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FFC24252A2A00869BD2 /* MPResponseEvents.mm */; };
 		DB47A0FA24252A2C00869BD2 /* MPResponseEvents.mm in Sources */ = {isa = PBXBuildFile; fileRef = DB479FFC24252A2A00869BD2 /* MPResponseEvents.mm */; };
-		DB47A0FB24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FFD24252A2A00869BD2 /* NSNumber+MPFormatter.h */; };
-		DB47A0FC24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FFD24252A2A00869BD2 /* NSNumber+MPFormatter.h */; };
 		DB47A0FD24252A2C00869BD2 /* MPDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FFE24252A2A00869BD2 /* MPDateFormatter.m */; };
 		DB47A0FE24252A2C00869BD2 /* MPDateFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB479FFE24252A2A00869BD2 /* MPDateFormatter.m */; };
 		DB47A0FF24252A2C00869BD2 /* MPResponseConfig.h in Headers */ = {isa = PBXBuildFile; fileRef = DB479FFF24252A2A00869BD2 /* MPResponseConfig.h */; };
@@ -236,8 +238,6 @@
 		DB47A11824252A2C00869BD2 /* MPCurrentState.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A00B24252A2A00869BD2 /* MPCurrentState.m */; };
 		DB47A11924252A2C00869BD2 /* MPUserAttributeChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A00C24252A2A00869BD2 /* MPUserAttributeChange.h */; };
 		DB47A11A24252A2C00869BD2 /* MPUserAttributeChange.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A00C24252A2A00869BD2 /* MPUserAttributeChange.h */; };
-		DB47A11B24252A2C00869BD2 /* NSNumber+MPFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A00D24252A2A00869BD2 /* NSNumber+MPFormatter.m */; };
-		DB47A11C24252A2C00869BD2 /* NSNumber+MPFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = DB47A00D24252A2A00869BD2 /* NSNumber+MPFormatter.m */; };
 		DB47A11D24252A2C00869BD2 /* MPMessageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A00E24252A2A00869BD2 /* MPMessageBuilder.h */; };
 		DB47A11E24252A2C00869BD2 /* MPMessageBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A00E24252A2A00869BD2 /* MPMessageBuilder.h */; };
 		DB47A11F24252A2C00869BD2 /* MPZip.h in Headers */ = {isa = PBXBuildFile; fileRef = DB47A00F24252A2A00869BD2 /* MPZip.h */; };
@@ -552,6 +552,8 @@
 
 /* Begin PBXFileReference section */
 		04610F58215D8C8B001A36AB /* MParticleUserTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleUserTests.m; sourceTree = "<group>"; };
+		534512A429BA3CE6006970EE /* NSNumber+MPFormatter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+MPFormatter.swift"; sourceTree = "<group>"; };
+		534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+MPFormatterTests.m"; sourceTree = "<group>"; };
 		5384E40E29B101230019483D /* MPKitTestClassSideloaded.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitTestClassSideloaded.h; sourceTree = "<group>"; };
 		5384E40F29B101230019483D /* MPKitTestClassSideloaded.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClassSideloaded.m; sourceTree = "<group>"; };
 		B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnectorResponseProtocol.h; sourceTree = "<group>"; };
@@ -681,7 +683,6 @@
 		DB479FFA24252A2A00869BD2 /* MPZip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPZip.m; sourceTree = "<group>"; };
 		DB479FFB24252A2A00869BD2 /* NSDictionary+MPCaseInsensitive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+MPCaseInsensitive.m"; sourceTree = "<group>"; };
 		DB479FFC24252A2A00869BD2 /* MPResponseEvents.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = MPResponseEvents.mm; sourceTree = "<group>"; };
-		DB479FFD24252A2A00869BD2 /* NSNumber+MPFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNumber+MPFormatter.h"; sourceTree = "<group>"; };
 		DB479FFE24252A2A00869BD2 /* MPDateFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPDateFormatter.m; sourceTree = "<group>"; };
 		DB479FFF24252A2A00869BD2 /* MPResponseConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPResponseConfig.h; sourceTree = "<group>"; };
 		DB47A00024252A2A00869BD2 /* MPApplication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPApplication.m; sourceTree = "<group>"; };
@@ -697,7 +698,6 @@
 		DB47A00A24252A2A00869BD2 /* MPLaunchInfo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLaunchInfo.h; sourceTree = "<group>"; };
 		DB47A00B24252A2A00869BD2 /* MPCurrentState.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPCurrentState.m; sourceTree = "<group>"; };
 		DB47A00C24252A2A00869BD2 /* MPUserAttributeChange.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPUserAttributeChange.h; sourceTree = "<group>"; };
-		DB47A00D24252A2A00869BD2 /* NSNumber+MPFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+MPFormatter.m"; sourceTree = "<group>"; };
 		DB47A00E24252A2A00869BD2 /* MPMessageBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPMessageBuilder.h; sourceTree = "<group>"; };
 		DB47A00F24252A2A00869BD2 /* MPZip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPZip.h; sourceTree = "<group>"; };
 		DB47A01024252A2A00869BD2 /* MPConvertJS.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPConvertJS.h; sourceTree = "<group>"; };
@@ -1073,6 +1073,7 @@
 				D34EF328234CEB0C00D5ACBD /* mParticle_tvOS_SDKTests-Bridging-Header.h */,
 				DB9F9D8823674E3F0011E901 /* MParticleWebViewTests.m */,
 				DB0680B7252624480021612C /* MPDataPlanFilterTests.m */,
+				534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1161,7 +1162,6 @@
 				DB479FFA24252A2A00869BD2 /* MPZip.m */,
 				DB479FFB24252A2A00869BD2 /* NSDictionary+MPCaseInsensitive.m */,
 				DB479FFC24252A2A00869BD2 /* MPResponseEvents.mm */,
-				DB479FFD24252A2A00869BD2 /* NSNumber+MPFormatter.h */,
 				DB479FFE24252A2A00869BD2 /* MPDateFormatter.m */,
 				DB479FFF24252A2A00869BD2 /* MPResponseConfig.h */,
 				DB47A00024252A2A00869BD2 /* MPApplication.m */,
@@ -1177,7 +1177,6 @@
 				DB47A00A24252A2A00869BD2 /* MPLaunchInfo.h */,
 				DB47A00B24252A2A00869BD2 /* MPCurrentState.m */,
 				DB47A00C24252A2A00869BD2 /* MPUserAttributeChange.h */,
-				DB47A00D24252A2A00869BD2 /* NSNumber+MPFormatter.m */,
 				DB47A00E24252A2A00869BD2 /* MPMessageBuilder.h */,
 				DB47A00F24252A2A00869BD2 /* MPZip.h */,
 				DB47A01024252A2A00869BD2 /* MPConvertJS.h */,
@@ -1197,6 +1196,7 @@
 				DB47A01E24252A2A00869BD2 /* MPDevice.h */,
 				DB47A01F24252A2A00869BD2 /* MPBracket.h */,
 				DB47A02024252A2A00869BD2 /* MPUserIdentityChange.h */,
+				534512A429BA3CE6006970EE /* NSNumber+MPFormatter.swift */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -1443,7 +1443,6 @@
 				DB47A1D824252A2C00869BD2 /* MPLocationManager.h in Headers */,
 				DB47A15424252A2C00869BD2 /* MPIdentityApiManager.h in Headers */,
 				DB47A1F224252A2C00869BD2 /* MPCustomModulePreference.h in Headers */,
-				DB47A0FC24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */,
 				D32668CE257FE910007FC798 /* MPURL.h in Headers */,
 				DB47A21224252A2C00869BD2 /* MPKitAPI.h in Headers */,
 				DB47A1D624252A2C00869BD2 /* MPILogger.h in Headers */,
@@ -1547,7 +1546,6 @@
 				DB47A1D724252A2C00869BD2 /* MPLocationManager.h in Headers */,
 				DB47A15324252A2C00869BD2 /* MPIdentityApiManager.h in Headers */,
 				DB47A1F124252A2C00869BD2 /* MPCustomModulePreference.h in Headers */,
-				DB47A0FB24252A2C00869BD2 /* NSNumber+MPFormatter.h in Headers */,
 				DB47A21124252A2C00869BD2 /* MPKitAPI.h in Headers */,
 				DB47A1D524252A2C00869BD2 /* MPILogger.h in Headers */,
 				DB47A0BD24252A2C00869BD2 /* MPSurrogateAppDelegate.h in Headers */,
@@ -1726,11 +1724,13 @@
 					C935A6B21D8A2B6B00A1EE2F = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = DLD43Y3TRP;
+						LastSwiftMigration = 1420;
 						ProvisioningStyle = Automatic;
 					};
 					C9DD1DFE1D8A118400D3ABBE = {
 						CreatedOnToolsVersion = 8.0;
 						DevelopmentTeam = DLD43Y3TRP;
+						LastSwiftMigration = 1420;
 						ProvisioningStyle = Automatic;
 					};
 					C9DD20841D8A18F500D3ABBE = {
@@ -1824,6 +1824,7 @@
 				04610F5A215D8C8C001A36AB /* MParticleUserTests.m in Sources */,
 				C911FD9F1D8A365A002A3516 /* MPPersistenceControllerTests.mm in Sources */,
 				C911FD951D8A365A002A3516 /* MPIntegrationAttributesTest.m in Sources */,
+				534512A929BA3D80006970EE /* NSNumber+MPFormatterTests.m in Sources */,
 				B2AE029F1FFD59D000C4DD89 /* MPResponseEventsTest.m in Sources */,
 				DB0247B2228B10810007E21B /* MPDeviceTests.m in Sources */,
 				C911FD8D1D8A365A002A3516 /* MPCommerceEventTests.m in Sources */,
@@ -1884,6 +1885,7 @@
 				DB47A0DE24252A2C00869BD2 /* MPEvent.m in Sources */,
 				DB47A11224252A2C00869BD2 /* MPDevice.m in Sources */,
 				DB47A1E424252A2C00869BD2 /* MPConnector.m in Sources */,
+				534512A629BA3CE6006970EE /* NSNumber+MPFormatter.swift in Sources */,
 				DB47A12624252A2C00869BD2 /* MPBracket.cpp in Sources */,
 				DB47A0C224252A2C00869BD2 /* MPSurrogateAppDelegate.m in Sources */,
 				DB47A10C24252A2C00869BD2 /* MPUploadBuilder.mm in Sources */,
@@ -1911,7 +1913,6 @@
 				DB47A15C24252A2C00869BD2 /* MPIdentityApiManager.m in Sources */,
 				DB47A0FE24252A2C00869BD2 /* MPDateFormatter.m in Sources */,
 				DB47A1A024252A2C00869BD2 /* MPIConstants.m in Sources */,
-				DB47A11C24252A2C00869BD2 /* NSNumber+MPFormatter.m in Sources */,
 				DB47A19424252A2C00869BD2 /* MPProduct.mm in Sources */,
 				DB47A0E824252A2C00869BD2 /* MPListenerController.m in Sources */,
 				DB47A17824252A2C00869BD2 /* MParticleUserNotification.m in Sources */,
@@ -1980,6 +1981,7 @@
 				DB47A0DD24252A2C00869BD2 /* MPEvent.m in Sources */,
 				DB47A11124252A2C00869BD2 /* MPDevice.m in Sources */,
 				DB47A1E324252A2C00869BD2 /* MPConnector.m in Sources */,
+				534512A529BA3CE6006970EE /* NSNumber+MPFormatter.swift in Sources */,
 				DB47A12524252A2C00869BD2 /* MPBracket.cpp in Sources */,
 				DB47A0C124252A2C00869BD2 /* MPSurrogateAppDelegate.m in Sources */,
 				DB47A10B24252A2C00869BD2 /* MPUploadBuilder.mm in Sources */,
@@ -2007,7 +2009,6 @@
 				DB47A15B24252A2C00869BD2 /* MPIdentityApiManager.m in Sources */,
 				DB47A0FD24252A2C00869BD2 /* MPDateFormatter.m in Sources */,
 				DB47A19F24252A2C00869BD2 /* MPIConstants.m in Sources */,
-				DB47A11B24252A2C00869BD2 /* NSNumber+MPFormatter.m in Sources */,
 				DB47A19324252A2C00869BD2 /* MPProduct.mm in Sources */,
 				DB47A0E724252A2C00869BD2 /* MPListenerController.m in Sources */,
 				DB47A17724252A2C00869BD2 /* MParticleUserNotification.m in Sources */,
@@ -2094,6 +2095,7 @@
 				C9DD20EC1D8A1FA100D3ABBE /* MPDateFormatterTests.m in Sources */,
 				C9DD20F51D8A1FFE00D3ABBE /* MPKitSecondTestClass.m in Sources */,
 				D34EF32A234CEB0D00D5ACBD /* MPSwiftTests.swift in Sources */,
+				534512A829BA3D80006970EE /* NSNumber+MPFormatterTests.m in Sources */,
 				DB3935141F8E4F5600AD073E /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				D3FB08DA20F5087F008FD7D8 /* MPBaseTestCase.m in Sources */,
 				C9DD20E81D8A1F9200D3ABBE /* MPCommerceEventTests.m in Sources */,
@@ -2138,6 +2140,7 @@
 		C911FD851D8A3524002A3516 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
@@ -2166,6 +2169,7 @@
 		C911FD861D8A3524002A3516 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				CODE_SIGN_STYLE = Manual;
@@ -2193,6 +2197,7 @@
 		C935A6B91D8A2B6B00A1EE2F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
@@ -2208,6 +2213,8 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};
 			name = Debug;
@@ -2215,6 +2222,7 @@
 		C935A6BA1D8A2B6B00A1EE2F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
@@ -2230,6 +2238,7 @@
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = "appletvsimulator appletvos";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 3;
 			};
 			name = Release;
@@ -2295,6 +2304,7 @@
 					"-Wpartial-availability",
 				);
 				SDKROOT = iphoneos;
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "mParticle_Apple_SDK-Swift.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -2358,6 +2368,7 @@
 				);
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OBJC_INTERFACE_HEADER_NAME = "mParticle_Apple_SDK-Swift.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 				VALIDATE_PRODUCT = YES;
@@ -2372,6 +2383,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_ENABLE_CODE_COVERAGE = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
@@ -2385,6 +2397,8 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = mParticle_Apple_SDK;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -2394,6 +2408,7 @@
 				APPLICATION_EXTENSION_API_ONLY = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_ENABLE_CODE_COVERAGE = NO;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
@@ -2407,12 +2422,14 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = mParticle_Apple_SDK;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
 		C9DD208E1D8A18F600D3ABBE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
@@ -2437,6 +2454,7 @@
 		C9DD208F1D8A18F600D3ABBE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Manual;
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
