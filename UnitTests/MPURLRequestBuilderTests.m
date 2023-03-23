@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPURLRequestBuilder.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
@@ -13,7 +14,6 @@
 #import "MPMessage.h"
 #import "MPBaseTestCase.h"
 #import "MPKitConfiguration.h"
-#import "OCMock.h"
 #import "MParticleWebView.h"
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
@@ -429,9 +429,6 @@
             XCTAssertEqualObjects(headerValue, @"42");
         }
     }
-    [mockMParticle stopMocking];
-    [mockKitContainer stopMocking];
-    [mockWebView stopMocking];
 }
 
 - (void)testSignatureRelativePath {
@@ -478,8 +475,6 @@
     XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
     XCTAssertEqualObjects(result, @"https://identity.mparticle.com/12/modify");
-    
-    [mockMParticle stopMocking];
 }
 
 @end

@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "OCMock.h"
+#import <OCMock/OCMock.h>
 #import "MPBackendController.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
@@ -341,7 +341,6 @@
         [self.backendController processOpenSessionsEndingCurrent:YES completionHandler:nil];
         
         [mockBackendController verifyWithDelay:5.0];
-        [mockBackendController stopMocking];
     });
 }
 
@@ -1654,7 +1653,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     }];
     
     [mockBackendController verifyWithDelay:5.0];
-    [mockBackendController stopMocking];
 }
 
 #if TARGET_OS_IOS == 1
@@ -1677,7 +1675,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     [mockBackendController handleDeviceTokenNotification:testNotification];
     
     [mockBackendController verifyWithDelay:5.0];
-    [mockBackendController stopMocking];
 }
 #endif
 
@@ -1937,8 +1934,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     XCTAssertTrue([messageDictionary[kMPErrorMessage] isEqualToString:message], @"Error message is not being persisted correctly for crash report.");
     XCTAssertTrue([messageDictionary[kMPStackTrace] isEqualToString:stackTrace], @"Stack trace is not being persisted correctly for crash report.");
     XCTAssertTrue([messageDictionary[kMPPLCrashReport] isEqualToString:plCrashReportBase64], @"PLCrashReport is not being persisted correctly for crash report.");
-    [mockStateMachine stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testLogCrashTruncatePlCrashReportFieldNil {
@@ -1990,8 +1985,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     XCTAssertTrue([messageDictionary[kMPErrorMessage] isEqualToString:message], @"Error message is not being persisted correctly for crash report.");
     XCTAssertTrue([messageDictionary[kMPStackTrace] isEqualToString:stackTrace], @"Stack trace is not being persisted correctly for crash report.");
     XCTAssertTrue([messageDictionary[kMPPLCrashReport] isEqualToString:plCrashReportBase64], @"PLCrashReport is not being persisted correctly for crash report.");
-    [mockStateMachine stopMocking];
-    [mockInstance stopMocking];
 }
 
 @end

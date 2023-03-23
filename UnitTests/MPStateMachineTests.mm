@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPStateMachine.h"
 #import "MPHasher.h"
 #import "MPConsumerInfo.h"
@@ -6,7 +7,6 @@
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPKitContainer.h"
-#import "OCMock.h"
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine(Tests)

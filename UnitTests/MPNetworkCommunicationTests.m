@@ -1,9 +1,9 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import <Foundation/Foundation.h>
 #import "MPNetworkCommunication.h"
 #import "MPNetworkCommunication+Tests.h"
 #import "MPApplication.h"
-#import "OCMock.h"
 #import "MPUpload.h"
 #import "MPZip.h"
 #import "MPConnector.h"
@@ -358,9 +358,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     BOOL actualShouldStop = [networkCommunication performMessageUpload:messageUpload];
     XCTAssertEqual(shouldStop, actualShouldStop, @"Return code assertion: %d", returnCode);
-    [urlResponseMock stopMocking];
-    [mockConnector stopMocking];
-    [mockNetworkCommunication stopMocking];
 }
 
 - (void)testShouldStopAlias {
@@ -397,9 +394,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     BOOL actualShouldStop = [networkCommunication performAliasUpload:aliasUpload];
     XCTAssertEqual(shouldStop, actualShouldStop, @"Return code assertion: %d", returnCode);
-    [urlResponseMock stopMocking];
-    [mockConnector stopMocking];
-    [mockNetworkCommunication stopMocking];
 }
 
 - (void)testOfflineUpload {
@@ -432,10 +426,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    [urlResponseMock stopMocking];
-    [mockConnector stopMocking];
-    [mockNetworkCommunication stopMocking];
-    [mockPersistenceController stopMocking];
 }
 
 - (void)testUploadSuccessDeletion {
@@ -478,11 +468,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    [urlResponseMock stopMocking];
-    [mockConnector stopMocking];
-    [mockNetworkCommunication stopMocking];
-    [mockPersistenceController stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testUploadInvalidDeletion {
@@ -521,11 +506,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:1 handler:nil];
-    [urlResponseMock stopMocking];
-    [mockConnector stopMocking];
-    [mockNetworkCommunication stopMocking];
-    [mockPersistenceController stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testRequestConfigWithDefaultMaxAge {
@@ -586,8 +566,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     XCTAssertNotNil(configProvisioned);
     XCTAssertNil(maxAge);
-    
-    [mockConnector stopMocking];
 }
 
 - (void)testRequestConfigWithManualMaxAge {
@@ -643,8 +621,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
 
     XCTAssertEqualObjects(maxAge, @43200);
-
-    [mockConnector stopMocking];
 }
 
 - (void)testRequestConfigWithManualMaxAgeAndInitialAge {
@@ -705,8 +681,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     XCTAssertLessThanOrEqual(4000, approximateAge);
     XCTAssertLessThan(approximateAge, 4200);
-
-    [mockConnector stopMocking];
 }
 
 - (void)testRequestConfigWithManualMaxAgeOverMaxAllowed {
@@ -764,8 +738,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     NSNumber *maxExpiration = @(60*60*24.0);
     
     XCTAssertEqualObjects(maxAge, maxExpiration);
-    
-    [mockConnector stopMocking];
 }
 
 - (void)testRequestConfigWithComplexCacheControlHeader {
@@ -822,8 +794,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     NSNumber *maxAge = userDefaults[kMPConfigMaxAgeHeaderKey];
     
     XCTAssertEqualObjects(maxAge, @43200);
-    
-    [mockConnector stopMocking];
 }
 
 - (void)testMaxAgeForCacheEmptyString {

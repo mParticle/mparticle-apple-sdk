@@ -1,13 +1,13 @@
 #import <XCTest/XCTest.h>
+#if TARGET_OS_IOS == 1
+#import <OCMock/OCMock.h>
+#endif
 #import "MPAppNotificationHandler.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
-#if TARGET_OS_IOS == 1
-#import "OCMock.h"
-#endif
 
 @interface MParticle ()
 

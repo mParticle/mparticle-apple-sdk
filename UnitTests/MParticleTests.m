@@ -1,10 +1,10 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPBackendController.h"
-#import "OCMock.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleWebView.h"
 #import "MPPersistenceController.h"
@@ -410,9 +410,6 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testWebviewLogScreenEvent {
@@ -442,9 +439,6 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testWebviewLogCommerceAttributes {
@@ -491,9 +485,6 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testWebviewLogCommerceInvalidArray {
@@ -527,9 +518,6 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testWebviewLogCommerceInvalidArrayValues {
@@ -562,9 +550,6 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testWebviewLogCommerceNull {
@@ -605,9 +590,6 @@
     [instance handleWebviewCommand:command dictionary:dictionary];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 - (void)testTrackNotificationsDefault {
     id mockBackend = OCMClassMock([MPBackendController class]);
@@ -620,9 +602,6 @@
     [mockInstance startWithOptions:options];
     
     XCTAssertTrue(instance.trackNotifications, "By Default Track Notifications should be set to true");
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testTrackNotificationsOff {
@@ -637,9 +616,6 @@
     [mockInstance startWithOptions:options];
     
     XCTAssertFalse(instance.trackNotifications, "Track Notifications failed to set False");
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testTrackNotificationsOn {
@@ -654,9 +630,6 @@
     [mockInstance startWithOptions:options];
     
     XCTAssertTrue(instance.trackNotifications, "Track Notifications failed to set True");
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testSessionStartNotification {
@@ -718,8 +691,6 @@
     [mockInstance logNotificationOpenedWithUserInfo:[testNotification userInfo] andActionIdentifier:nil];
     
     [mockBackendController verifyWithDelay:5.0];
-    [mockBackendController stopMocking];
-    [mockInstance stopMocking];
 }
 #endif
 
@@ -1000,8 +971,6 @@
     #else
     XCTAssertEqualObjects(actualAgent, defaultAgent);
     #endif
-    [mockWebView stopMocking];
-    [mockMParticle stopMocking];
 }
 
 - (void)testUserAgentCustom {
@@ -1017,9 +986,6 @@
     NSDictionary *fields = urlRequest.allHTTPHeaderFields;
     NSString *actualAgent = fields[@"User-Agent"];
     XCTAssertEqualObjects(actualAgent, customAgent);
-    
-    [mockMParticle stopMocking];
-    [mockWebView stopMocking];
 }
 
 - (void)testUploadInterval {
@@ -1060,9 +1026,6 @@
     [instance logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testLogCrashNilMessage {
@@ -1081,9 +1044,6 @@
     [instance logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testLogCrashNilStackTrace {
@@ -1102,9 +1062,6 @@
     [instance logCrash:message stackTrace:stackTrace plCrashReport:plCrashReport];
     
     [mockBackend verifyWithDelay:5];
-    
-    [mockInstance stopMocking];
-    [mockBackend stopMocking];
 }
 
 - (void)testLogCrashNilPlCrashReport {

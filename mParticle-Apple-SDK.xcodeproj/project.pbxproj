@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -17,6 +17,8 @@
 		534512A929BA3D80006970EE /* NSNumber+MPFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */; };
 		5384E41029B101230019483D /* MPKitTestClassSideloaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 5384E40F29B101230019483D /* MPKitTestClassSideloaded.m */; };
 		5384E41129B101230019483D /* MPKitTestClassSideloaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 5384E40F29B101230019483D /* MPKitTestClassSideloaded.m */; };
+		53A79A9429CCCF2900E7489F /* OCMock.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79A9329CCCF2900E7489F /* OCMock.xcframework */; };
+		53A79A9529CCCF2900E7489F /* OCMock.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 53A79A9329CCCF2900E7489F /* OCMock.xcframework */; };
 		B263073D26E29965000A12E9 /* MPConnectorResponseProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */; };
 		B26307A826E2FEC0000A12E9 /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = B26307A726E2FEC0000A12E9 /* MPNetworkCommunication.h */; };
 		B26307B626E2FEFB000A12E9 /* MPConnectorProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = B26307B526E2FEFB000A12E9 /* MPConnectorProtocol.h */; };
@@ -121,8 +123,6 @@
 		D36997EE20FF879E009613E5 /* MParticleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D36997EC20FF879E009613E5 /* MParticleTests.m */; };
 		D3832205209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */; };
 		D3832206209A446C0017CD06 /* MPIUserDefaultsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */; };
-		D3D8839F2163BA8600669FF0 /* libOCMock.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D37A016B20A0D2C000FF2B0F /* libOCMock.a */; };
-		D3D88439216E410800669FF0 /* libOCMocktvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D3D88438216E410800669FF0 /* libOCMocktvOS.a */; };
 		D3FB08DA20F5087F008FD7D8 /* MPBaseTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = D3FB08D920F5087F008FD7D8 /* MPBaseTestCase.m */; };
 		D3FB08DB20F5087F008FD7D8 /* MPBaseTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = D3FB08D920F5087F008FD7D8 /* MPBaseTestCase.m */; };
 		DB00F6381F4E11380070A74B /* MPKitAPITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DB00F6371F4E11380070A74B /* MPKitAPITests.m */; };
@@ -556,6 +556,7 @@
 		534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+MPFormatterTests.m"; sourceTree = "<group>"; };
 		5384E40E29B101230019483D /* MPKitTestClassSideloaded.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPKitTestClassSideloaded.h; sourceTree = "<group>"; };
 		5384E40F29B101230019483D /* MPKitTestClassSideloaded.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClassSideloaded.m; sourceTree = "<group>"; };
+		53A79A9329CCCF2900E7489F /* OCMock.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = OCMock.xcframework; sourceTree = "<group>"; };
 		B263073C26E29965000A12E9 /* MPConnectorResponseProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnectorResponseProtocol.h; sourceTree = "<group>"; };
 		B26307A726E2FEC0000A12E9 /* MPNetworkCommunication.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPNetworkCommunication.h; sourceTree = "<group>"; };
 		B26307B526E2FEFB000A12E9 /* MPConnectorProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPConnectorProtocol.h; sourceTree = "<group>"; };
@@ -624,19 +625,7 @@
 		D34EF328234CEB0C00D5ACBD /* mParticle_tvOS_SDKTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "mParticle_tvOS_SDKTests-Bridging-Header.h"; sourceTree = "<group>"; };
 		D34EF329234CEB0D00D5ACBD /* MPSwiftTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPSwiftTests.swift; sourceTree = "<group>"; };
 		D36997EC20FF879E009613E5 /* MParticleTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MParticleTests.m; sourceTree = "<group>"; };
-		D37A016B20A0D2C000FF2B0F /* libOCMock.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libOCMock.a; sourceTree = "<group>"; };
-		D37A017120A0E5B200FF2B0F /* OCMockObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMockObject.h; sourceTree = "<group>"; };
-		D37A017220A0E5B200FF2B0F /* OCMMacroState.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMMacroState.h; sourceTree = "<group>"; };
-		D37A017320A0E5B200FF2B0F /* OCMock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMock.h; sourceTree = "<group>"; };
-		D37A017420A0E5B200FF2B0F /* NSNotificationCenter+OCMAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSNotificationCenter+OCMAdditions.h"; sourceTree = "<group>"; };
-		D37A017520A0E5B200FF2B0F /* OCMFunctions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMFunctions.h; sourceTree = "<group>"; };
-		D37A017620A0E5B200FF2B0F /* OCMStubRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMStubRecorder.h; sourceTree = "<group>"; };
-		D37A017720A0E5B200FF2B0F /* OCMRecorder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMRecorder.h; sourceTree = "<group>"; };
-		D37A017820A0E5B200FF2B0F /* OCMLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMLocation.h; sourceTree = "<group>"; };
-		D37A017920A0E5B200FF2B0F /* OCMConstraint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMConstraint.h; sourceTree = "<group>"; };
-		D37A017A20A0E5B200FF2B0F /* OCMArg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCMArg.h; sourceTree = "<group>"; };
 		D3832204209A446C0017CD06 /* MPIUserDefaultsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPIUserDefaultsTests.m; sourceTree = "<group>"; };
-		D3D88438216E410800669FF0 /* libOCMocktvOS.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libOCMocktvOS.a; sourceTree = "<group>"; };
 		D3FB08D920F5087F008FD7D8 /* MPBaseTestCase.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPBaseTestCase.m; sourceTree = "<group>"; };
 		D3FB08DC20F50ACD008FD7D8 /* MPBaseTestCase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPBaseTestCase.h; sourceTree = "<group>"; };
 		DB00F6371F4E11380070A74B /* MPKitAPITests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitAPITests.m; sourceTree = "<group>"; };
@@ -858,7 +847,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB93D90C20AC86B700A974E7 /* libsqlite3.tbd in Frameworks */,
-				D3D88439216E410800669FF0 /* libOCMocktvOS.a in Frameworks */,
+				53A79A9529CCCF2900E7489F /* OCMock.xcframework in Frameworks */,
 				C911FD811D8A3524002A3516 /* mParticle_Apple_SDK.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -904,7 +893,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D3D8839F2163BA8600669FF0 /* libOCMock.a in Frameworks */,
+				53A79A9429CCCF2900E7489F /* OCMock.xcframework in Frameworks */,
 				DB93D90A20AC86AB00A974E7 /* libsqlite3.tbd in Frameworks */,
 				C9DD21051D8A22B000D3ABBE /* mParticle_Apple_SDK.framework in Frameworks */,
 			);
@@ -1076,23 +1065,6 @@
 				534512A729BA3D80006970EE /* NSNumber+MPFormatterTests.m */,
 			);
 			path = UnitTests;
-			sourceTree = "<group>";
-		};
-		D37A017020A0E5B200FF2B0F /* OCMock */ = {
-			isa = PBXGroup;
-			children = (
-				D37A017120A0E5B200FF2B0F /* OCMockObject.h */,
-				D37A017220A0E5B200FF2B0F /* OCMMacroState.h */,
-				D37A017320A0E5B200FF2B0F /* OCMock.h */,
-				D37A017420A0E5B200FF2B0F /* NSNotificationCenter+OCMAdditions.h */,
-				D37A017520A0E5B200FF2B0F /* OCMFunctions.h */,
-				D37A017620A0E5B200FF2B0F /* OCMStubRecorder.h */,
-				D37A017720A0E5B200FF2B0F /* OCMRecorder.h */,
-				D37A017820A0E5B200FF2B0F /* OCMLocation.h */,
-				D37A017920A0E5B200FF2B0F /* OCMConstraint.h */,
-				D37A017A20A0E5B200FF2B0F /* OCMArg.h */,
-			);
-			path = OCMock;
 			sourceTree = "<group>";
 		};
 		DB479FD324252A2A00869BD2 /* Persistence */ = {
@@ -1411,9 +1383,7 @@
 		DBCBF44320A9F9310012ECAA /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
-				D37A017020A0E5B200FF2B0F /* OCMock */,
-				D37A016B20A0D2C000FF2B0F /* libOCMock.a */,
-				D3D88438216E410800669FF0 /* libOCMocktvOS.a */,
+				53A79A9329CCCF2900E7489F /* OCMock.xcframework */,
 			);
 			path = Libraries;
 			sourceTree = "<group>";
@@ -2147,7 +2117,11 @@
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
 				INFOPLIST_FILE = UnitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/mParticle-Apple-SDK/Libraries",
@@ -2176,7 +2150,11 @@
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
 				INFOPLIST_FILE = UnitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/mParticle-Apple-SDK/Libraries",
@@ -2206,7 +2184,11 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = ./Framework/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = mParticle_Apple_SDK;
@@ -2231,7 +2213,11 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = ./Framework/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = mParticle_Apple_SDK;
@@ -2392,7 +2378,11 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = ./Framework/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = mParticle_Apple_SDK;
@@ -2417,7 +2407,11 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				INFOPLIST_FILE = ./Framework/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				MODULEMAP_FILE = "./Framework/mParticle-Apple-SDK.modulemap";
 				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticle-Apple-SDK";
 				PRODUCT_NAME = mParticle_Apple_SDK;
@@ -2435,7 +2429,11 @@
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
 				INFOPLIST_FILE = UnitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/UnitTests/Libraries",
@@ -2460,7 +2458,11 @@
 				DEVELOPMENT_TEAM = DLD43Y3TRP;
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/UnitTests/Libraries";
 				INFOPLIST_FILE = UnitTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/UnitTests/Libraries",

@@ -2,7 +2,7 @@
 #import "MPConnector.h"
 #import "MPBaseTestCase.h"
 #if TARGET_OS_IOS == 1
-#import "OCMock.h"
+#import <OCMock/OCMock.h>
 #import "MPIConstants.h"
 #import "MPURL.h"
 #import "MPURLRequestBuilder.h"
@@ -71,7 +71,7 @@
 - (void)testURLSession {
     MPConnector *connector = [[MPConnector alloc] init];
     NSURLSession *mockSession = OCMClassMock([NSURLSession class]);
-    OCMReject(ClassMethod([(id)mockSession sessionWithConfiguration:[OCMArg any] delegate:[OCMArg any] delegateQueue:[OCMArg  isNotNil]])).andReturn(@"Test string");
+    OCMReject(ClassMethod([(id)mockSession sessionWithConfiguration:[OCMArg any] delegate:[OCMArg any] delegateQueue:[OCMArg  isNotNil]]));
     NSURLSession *resultSession = connector.urlSession;
     XCTAssertNotNil(resultSession);
     OCMVerifyAll((id)mockSession);
@@ -83,10 +83,10 @@
     NSURL *defaultURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
 
-    MPURLRequestBuilder *mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
-    OCMVerify([[mockRequestBuilder class] newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
-    
+    id mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
     NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromGetRequestToURL:mpURL];
+    
+    OCMVerify([mockRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
     XCTAssertNotNil(connectorResponse);
     OCMVerifyAll((id)mockRequestBuilder);
 }
@@ -97,10 +97,10 @@
     NSURL *defaultURL = [NSURL URLWithString:@"https://nativesdks.mparticle.com"];
     MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
 
-    MPURLRequestBuilder *mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
-    OCMVerify([[mockRequestBuilder class] newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodGet]);
-    
+    id mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
     NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil];
+    
+    OCMVerify([mockRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodPost]);
     XCTAssertNotNil(connectorResponse);
     OCMVerifyAll((id)mockRequestBuilder);
 }

@@ -3,10 +3,10 @@
 //
 
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "mParticle.h"
 #import "MPIdentityDTO.h"
 #import "MPNetworkCommunication.h"
-#import "OCMock.h"
 #import "MPBaseTestCase.h"
 #import "MPIdentityApi.h"
 #import "MPIdentityApiManager.h"
@@ -621,8 +621,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
 
     [mockUser verify];
-    
-    [mockUser stopMocking];
 }
 
 - (void)testIdentifyIdentityRequestCompleteWithKits {
@@ -841,11 +839,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock onIdentityRequestComplete:request identityRequestType:MPIdentityRequestLogin httpResponse:httpResponse completion:nil error:error];
     
     [mockPersistenceController verifyWithDelay:0.2];
-    
-    [mockContainer stopMocking];
-    [identityMock stopMocking];
-    [mockInstance stopMocking];
-    [mockPersistenceController stopMocking];
 }
 
 - (void)testModifyRequestComplete {
@@ -872,8 +865,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock onModifyRequestComplete:request httpResponse:httpResponse completion:nil error:error];
     
     [mockUser verify];
-    
-    [mockUser stopMocking];
 }
 
 - (void)testModifyRequestCompleteWithKits {
@@ -900,10 +891,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [identityMock onModifyRequestComplete:request httpResponse:httpResponse completion:nil error:error];
     
     [mockContainer verifyWithDelay:0.2];
-    
-    [mockContainer stopMocking];
-    [identityMock stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testIdentify {
