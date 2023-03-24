@@ -208,6 +208,7 @@
 
 - (void)testSetLocation {
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     id mockKitContainer = OCMClassMock([MPKitContainer class]);
     [MParticle sharedInstance].kitContainer = mockKitContainer;
     
@@ -228,6 +229,7 @@
 
 
     [self waitForExpectationsWithTimeout:1 handler:nil];
+#endif
 #endif
 }
 

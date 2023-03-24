@@ -1318,6 +1318,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
 
 - (void)testSetLocation {
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     CLLocation *location = [[CLLocation alloc] initWithLatitude:40.738526 longitude:-73.98738];
     [MParticle sharedInstance].stateMachine.location = location;
     
@@ -1350,6 +1351,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     [expectation fulfill];
     
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+#endif
 #endif
 }
 

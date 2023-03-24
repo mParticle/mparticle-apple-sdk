@@ -1,5 +1,5 @@
 #import "MPProduct.h"
-#import <mParticle_Apple_SDK/mParticle_Apple_SDK-Swift.h>
+#import "Swift.h"
 #import "MPIConstants.h"
 #include "MPHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
