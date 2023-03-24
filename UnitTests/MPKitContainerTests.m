@@ -541,7 +541,7 @@
     NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
     
     XCTAssertEqual(activeKits.count, 1);
-    XCTAssertEqual(activeKits[0].code, @42);
+    XCTAssertEqualObjects(activeKits[0].code, @42);
 
     
     configurations = @[
@@ -619,7 +619,7 @@
     
     activeKits = [kitContainer activeKitsRegistry];
     XCTAssertEqual(activeKits.count, 1);
-    XCTAssertEqual(activeKits[0].code, @314);
+    XCTAssertEqualObjects(activeKits[0].code, @314);
     
     NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
     XCTAssertEqual(configuredKits.count, 2);
@@ -692,7 +692,7 @@
     
     activeKits = [kitContainer activeKitsRegistry];
     XCTAssertEqual(activeKits.count, 1);
-    XCTAssertEqual(activeKits[0].code, @314);
+    XCTAssertEqualObjects(activeKits[0].code, @314);
     
     configuredKits = [kitContainer configuredKitsRegistry];
     XCTAssertEqual(configuredKits.count, 3);

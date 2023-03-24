@@ -27,9 +27,11 @@
 - (void)testImplementedMethods {
     MPSurrogateAppDelegate *surrogate = [[MPSurrogateAppDelegate alloc] init];
     XCTAssert([surrogate implementsSelector:@selector(application:openURL:options:)]);
+#if TARGET_OS_IOS == 1
     XCTAssert([surrogate implementsSelector:@selector(application:openURL:sourceApplication:annotation:)]);
     XCTAssert([surrogate implementsSelector:@selector(application:didRegisterForRemoteNotificationsWithDeviceToken:)]);
     XCTAssert([surrogate implementsSelector:@selector(application:didFailToRegisterForRemoteNotificationsWithError:)]);
+#endif
 }
 
 - (void)testSelectorArray {
