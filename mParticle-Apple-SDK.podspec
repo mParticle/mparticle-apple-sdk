@@ -23,50 +23,21 @@ Pod::Spec.new do |s|
     s.social_media_url  = "https://twitter.com/mparticle"
     s.requires_arc      = true
     s.default_subspec   = 'mParticle'
-    s.module_name       = "mParticle_Apple_SDK"
-    s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
-
-    pch_mParticle       = <<-EOS
-                          #ifndef TARGET_OS_IOS
-                              #define TARGET_OS_IOS TARGET_OS_IPHONE
-                          #endif
-
-                          #ifndef TARGET_OS_WATCH
-                              #define TARGET_OS_WATCH 0
-                          #endif
-
-                          #ifndef TARGET_OS_TV
-                              #define TARGET_OS_TV 0
-                          #endif
-                          EOS
-    s.prefix_header_contents = pch_mParticle
+    s.module_name       = 'mParticle_Apple_SDK'
     s.ios.deployment_target  = "9.0"
     s.tvos.deployment_target = "9.0"
     s.swift_versions = ["5.0"]
 
     s.subspec 'mParticle' do |ss|
         ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ss.libraries            = 'c++', 'sqlite3', 'z'
-        ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-        ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
-
-        ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
     end
     
     s.subspec 'mParticleNoLocation' do |ss|
         ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ss.libraries            = 'c++', 'sqlite3', 'z'
-        ss.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-        ss.ios.weak_frameworks  = 'iAd', 'UserNotifications'
-
-        ss.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-
         ss.pod_target_xcconfig  = {
             'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
             'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
@@ -75,27 +46,14 @@ Pod::Spec.new do |s|
 
     s.subspec 'AppExtension' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ext.libraries            = 'c++', 'sqlite3', 'z'
-        ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreLocation', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-        ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
-
-        ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
     end
     
     s.subspec 'AppExtensionNoLocation' do |ext|
         ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
-
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
-        ext.libraries            = 'c++', 'sqlite3', 'z'
-        ext.ios.frameworks       = 'AdSupport', 'CoreGraphics', 'CoreTelephony', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-        ext.ios.weak_frameworks  = 'iAd', 'UserNotifications'
-
-        ext.tvos.frameworks      = 'AdSupport', 'CoreGraphics', 'Foundation', 'Security', 'SystemConfiguration', 'UIKit'
-
         ext.pod_target_xcconfig  = {
             'GCC_PREPROCESSOR_DEFINITIONS' => 'MPARTICLE_LOCATION_DISABLE=1',
             'OTHER_SWIFT_FLAGS' => '-D MPARTICLE_LOCATION_DISABLE'
