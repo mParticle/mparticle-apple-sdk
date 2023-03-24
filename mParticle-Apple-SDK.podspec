@@ -45,7 +45,7 @@ Pod::Spec.new do |s|
     s.swift_versions = ["5.0"]
 
     s.subspec 'mParticle' do |ss|
-        ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
+        ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
 
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
@@ -57,7 +57,7 @@ Pod::Spec.new do |s|
     end
     
     s.subspec 'mParticleNoLocation' do |ss|
-        ss.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
+        ss.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
 
         ss.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ss.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
@@ -74,7 +74,7 @@ Pod::Spec.new do |s|
     end
 
     s.subspec 'AppExtension' do |ext|
-        ext.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
+        ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
 
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
@@ -86,7 +86,7 @@ Pod::Spec.new do |s|
     end
     
     s.subspec 'AppExtensionNoLocation' do |ext|
-        ext.public_header_files = `./Scripts/find_headers.rb --public`.split("\n")
+        ext.public_header_files = 'mParticle-Apple-SDK/Include/*.h'
 
         ext.preserve_paths       = 'mParticle-Apple-SDK', 'mParticle-Apple-SDK/**', 'mParticle-Apple-SDK/**/*'
         ext.source_files         = 'mParticle-Apple-SDK/**/*.{h,m,mm,cpp,swift}'
