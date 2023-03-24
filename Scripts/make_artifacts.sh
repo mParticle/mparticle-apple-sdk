@@ -6,62 +6,51 @@
 # If you add new files here, you need to also add them in sdk-release.yml.
 #
 
-# --- Configuration ---
-WORK_DIR="$(pwd)"
-ARTIFACT_DIR="$HOME/artifacts"
-TEMP_DIR="$HOME/temp"
-
 # --- Functions ---
 
-function setup() {
-  mkdir -p "$ARTIFACT_DIR"
-  mkdir -p "$TEMP_DIR"
-  cd "$TEMP_DIR"
-  git clone https://github.com/tomaz/appledoc
-  cd appledoc
-  sudo sh install-appledoc.sh
-  cd "$WORK_DIR"
+function build_framework_artifacts() {
+    # Build old school "fat" frameworks for iOS and tvOS, both regular and no location builds
+    ./Scripts/carthage.sh build --no-skip-current
+
+    # Zip the Cartage frameworks (includes both platforms in each zip file)
+    carthage archive mParticle_Apple_SDK 
+    carthage archive mParticle_Apple_SDK_NoLocation
+
+    # Clean up temp files
+    rm -rf Carthage
 }
 
-function apply_location_patch() {
-  git apply ./Scripts/0001-DISABLE-LOCATION.patch
-  git add .
-  git commit -m "DISABLE LOCATION"
-}
+function build_xcframework_artifacts() {
+    # Build modern xcframeworks which work on M1 macs and include both platforms in one package
+    ./Scripts/xcframework.sh mParticle-Apple-SDK mParticle_Apple_SDK
+    ./Scripts/xcframework.sh mParticle-Apple-SDK-NoLocation mParticle_Apple_SDK_NoLocation
 
-function build_carthage_artifact() {
-  rm -rf Carthage
-  echo $1 | grep nolocation && apply_location_patch
-  echo $1 | grep xcframework || (./Scripts/carthage.sh build --no-skip-current; carthage archive; mv mParticle_Apple_SDK.framework.zip "$ARTIFACT_DIR/$1")
-  echo $1 | grep xcframework && (carthage build --no-skip-current --use-xcframeworks; ditto -c -k --sequesterRsrc --keepParent ./Carthage/Build/mParticle_Apple_SDK.xcframework "$ARTIFACT_DIR/$1")
-  echo $1 | grep nolocation && git reset --hard HEAD^
+    # Zip the xcframeworks
+    zip -r mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK.xcframework
+    zip -r mParticle_Apple_SDK_NoLocation.xcframework.zip mParticle_Apple_SDK_NoLocation.xcframework
+
+    # Clean up temp files
+    rm -rf archives mParticle_Apple_SDK.xcframework mParticle_Apple_SDK_NoLocation.xcframework
 }
 
 function build_docs_artifact() {
-  appledoc --exit-threshold=2 "./Scripts/AppledocSettings.plist"
-  ditto -c -k --sequesterRsrc --keepParent "./Docs/html" "$ARTIFACT_DIR/$1"
+    local repo_dir="$(pwd)"
+    local temp_dir="$HOME/temp"
+
+    # Install appledoc
+    mkdir -p "$temp_dir"
+    cd "$temp_dir"
+    git clone https://github.com/tomaz/appledoc
+    cd appledoc
+    sudo sh install-appledoc.sh
+    cd "$repo_dir"
+
+    appledoc --exit-threshold=2 "./Scripts/AppledocSettings.plist"
+    ditto -c -k --sequesterRsrc --keepParent "./Docs/html" "$repo_dir/generated-docs.zip"
 }
 
-function move_artifacts() {
+# --- Main ---
 
-  # we can't keep them in currect directory because we manipulate git and
-  # they will get wiped out, so this moves them back in when it's safe
-
-  find "$ARTIFACT_DIR" -type f | xargs -n 1 -J % mv % .
-}
-
-# --- Main impl ---
-
-setup
-
-build_carthage_artifact mParticle_Apple_SDK.framework.zip
-
-build_carthage_artifact mParticle_Apple_SDK.framework.nolocation.zip
-
-build_carthage_artifact mParticle_Apple_SDK.xcframework.zip
-
-build_carthage_artifact mParticle_Apple_SDK.xcframework.nolocation.zip
-
-build_docs_artifact generated-docs.zip
-
-move_artifacts
+build_framework_artifacts
+build_xcframework_artifacts
+build_docs_artifact
