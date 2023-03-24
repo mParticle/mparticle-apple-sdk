@@ -1,4 +1,4 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 
 import PackageDescription
 
@@ -8,36 +8,23 @@ let package = Package(
     products: [
         .library(
             name: "mParticle-Apple-SDK",
-            targets: ["mParticle-Apple-SDK"]),
+            targets: ["mParticle_Apple_SDK"]),
         .library(
             name: "mParticle-Apple-SDK-NoLocation",
-            targets: ["mParticle-Apple-SDK-NoLocation"]),
+            targets: ["mParticle_Apple_SDK_NoLocation"]),
     ],
     dependencies: [
     ],
     targets: [
-        .target(
-            name: "mParticle-Apple-SDK",
-            dependencies: [],
-            path: "mParticle-Apple-SDK",
-            publicHeadersPath: "./Include",
-            cSettings: [
-                CSetting.headerSearchPath("./**"),
-                .define("NS_BLOCK_ASSERTIONS", to: "1", .when(configuration: .release))
-        ]),
-        .target(
-            name: "mParticle-Apple-SDK-NoLocation",
-            dependencies: [],
-            path: "SPM/mParticle-Apple-SDK-NoLocation",
-            publicHeadersPath: "./Include",
-            cSettings: [
-                CSetting.headerSearchPath("./**"),
-                .define("NS_BLOCK_ASSERTIONS", to: "1", .when(configuration: .release)),
-                .define("MPARTICLE_LOCATION_DISABLE", to: "1")
-            ],
-            swiftSettings: [
-                .define("MPARTICLE_LOCATION_DISABLE")
-        ]),
-    ],
-    cxxLanguageStandard: .cxx11
+        .binaryTarget(
+            name: "mParticle_Apple_SDK",
+            url: "https://github.com/einsteinx2/mparticle-apple-sdk/releases/download/v8.12.0/mParticle_Apple_SDK.xcframework.zip",
+            checksum: "1927586494f7f6aba345fe4bf409ec46e3411068614cd46bb369d2688d6326be"
+        ),
+        .binaryTarget(
+            name: "mParticle_Apple_SDK_NoLocation",
+            url: "https://github.com/einsteinx2/mparticle-apple-sdk/releases/download/v8.12.0/mParticle_Apple_SDK_NoLocation.xcframework.zip",
+            checksum: "fca73c3e6ab397f815ee58a64460648c625798a68439cfe999f64880e85c2d87"
+        ),
+    ]
 )
