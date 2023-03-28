@@ -7,7 +7,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Update xcodeproj gem
         run: sudo gem install xcodeproj
@@ -25,7 +25,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build with Carthage
         run: carthage build --no-skip-current || true
@@ -43,7 +43,7 @@ jobs:
         working-directory: ./Example
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Update CocoaPods repo
         run: pod repo update
@@ -58,7 +58,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Choose Xcode version
         run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_13.4.1.app/Contents/Developer; xcode-select -p

@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
@@ -22,7 +22,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run tvOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
@@ -31,7 +31,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
@@ -40,7 +40,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Run tvOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test

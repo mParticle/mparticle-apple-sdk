@@ -20,7 +20,7 @@ jobs:
     needs: confirm-main-branch
     steps:
       - name: Checkout development branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.repository }}
           token: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
@@ -40,7 +40,7 @@ jobs:
       COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Validate environment
         run: |
@@ -53,7 +53,7 @@ jobs:
           git config user.name "mParticle Automation"
 
       - name: Checkout main branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           repository: ${{ github.repository }}
@@ -117,7 +117,7 @@ jobs:
     runs-on: macOS-12
     steps:
       - name: Checkout main branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           repository: ${{ github.repository }}
