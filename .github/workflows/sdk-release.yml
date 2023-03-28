@@ -105,11 +105,11 @@ jobs:
           git status
           git push origin HEAD:release/${{ github.run_number }}
 
-      # - name: Release to CocoaPods
-      #   if: ${{ github.event.inputs.dryRun == 'false'}}
-      #   run: |
-      #     sudo gem install xcodeproj
-      #     pod trunk push --allow-warnings
+      - name: Release to CocoaPods
+        if: ${{ github.event.inputs.dryRun == 'false'}}
+        run: |
+          sudo gem install xcodeproj
+          pod trunk push --allow-warnings
 
   sync-repository:
     name: Finalize release
