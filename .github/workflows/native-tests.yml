@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run iOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_iOS_SDKTests -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
 
   tvos-unit-tests:
     runs-on: macos-latest
@@ -25,4 +25,22 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle_tvOS_SDKTests -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
+      
+  ios-nolocation-unit-tests:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run iOS unit tests
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
+
+  tvos-nolocation-unit-tests:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Run tvOS unit tests
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
