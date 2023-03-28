@@ -40,7 +40,7 @@ function build_docs_artifact() {
     # Install appledoc
     mkdir -p "$temp_dir"
     cd "$temp_dir"
-    git clone https://github.com/tomaz/appledoc
+    git clone https://github.com/mparticle/appledoc
     cd appledoc
     sudo sh install-appledoc.sh
     cd "$repo_dir"

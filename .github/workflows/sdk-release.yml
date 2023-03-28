@@ -16,7 +16,7 @@ jobs:
 
   create-release-branch:
     name: Create release branch
-    runs-on: macOS-11
+    runs-on: macOS-12
     needs: confirm-main-branch
     steps:
       - name: Checkout development branch
@@ -33,7 +33,7 @@ jobs:
 
   release:
     name: Perform release
-    runs-on: macOS-11
+    runs-on: macOS-12
     needs: create-release-branch
     env:
       GITHUB_ACCESS_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
@@ -114,7 +114,7 @@ jobs:
   sync-repository:
     name: Finalize release
     needs: release
-    runs-on: macOS-11
+    runs-on: macOS-12
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v2

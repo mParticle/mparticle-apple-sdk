@@ -31,25 +31,11 @@ module.exports = {
         {
           assets: [
             "mParticle_Apple_SDK.framework.zip",
-            "mParticle_Apple_SDK.framework.nolocation.zip",
+            "mParticle_Apple_SDK_NoLocation.framework.zip",
             "mParticle_Apple_SDK.xcframework.zip",
-            "mParticle_Apple_SDK.xcframework.nolocation.zip",
+            "mParticle_Apple_SDK_NoLocation.xcframework.zip",
             "generated-docs.zip",
           ],
-        },
-      ],
-      [
-        "@semantic-release/git",
-        {
-          assets: [
-            "mParticle-Apple-SDK/MPIConstants.m",
-            "Framework/Info.plist",
-            "mParticle-Apple-SDK.podspec",
-            "mParticle_Apple_SDK.json",
-            "CHANGELOG.md",
-          ],
-          message:
-            "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}",
         },
       ],
     ],
