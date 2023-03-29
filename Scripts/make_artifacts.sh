@@ -12,7 +12,7 @@ function build_framework_artifacts() {
     # Build old school "fat" frameworks for iOS and tvOS, both regular and no location builds
     ./Scripts/carthage.sh build --no-skip-current
 
-    # Zip the Cartage frameworks (includes both platforms in each zip file)
+    # Zip the Carthage frameworks (includes both platforms in each zip file)
     carthage archive mParticle_Apple_SDK 
     carthage archive mParticle_Apple_SDK_NoLocation
 
