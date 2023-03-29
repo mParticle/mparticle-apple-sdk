@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPKitContainer.h"
 #import "MPIConstants.h"
 #import "MPForwardQueueItem.h"
@@ -25,7 +26,6 @@
 #import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
-#import "OCMock.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
 
@@ -541,7 +541,7 @@
     NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
     
     XCTAssertEqual(activeKits.count, 1);
-    XCTAssertEqual(activeKits[0].code, @42);
+    XCTAssertEqualObjects(activeKits[0].code, @42);
 
     
     configurations = @[
@@ -619,7 +619,7 @@
     
     activeKits = [kitContainer activeKitsRegistry];
     XCTAssertEqual(activeKits.count, 1);
-    XCTAssertEqual(activeKits[0].code, @314);
+    XCTAssertEqualObjects(activeKits[0].code, @314);
     
     NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
     XCTAssertEqual(configuredKits.count, 2);
@@ -692,7 +692,7 @@
     
     activeKits = [kitContainer activeKitsRegistry];
     XCTAssertEqual(activeKits.count, 1);
-    XCTAssertEqual(activeKits[0].code, @314);
+    XCTAssertEqualObjects(activeKits[0].code, @314);
     
     configuredKits = [kitContainer configuredKitsRegistry];
     XCTAssertEqual(configuredKits.count, 3);
@@ -1851,8 +1851,6 @@
     MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logScreen:)];
     
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 
     XCTAssert([kitFilter.forwardEvent isKindOfClass:[MPEvent class]]);
 }
@@ -2340,8 +2338,6 @@
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
     
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 #pragma clang diagnostic pop
 
@@ -2362,8 +2358,6 @@
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logBaseEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
     
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testAttemptToLogBaseEventMediaTypeToKit {
@@ -2383,8 +2377,6 @@
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logBaseEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
     
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testAttemptToLegacyOpenURLToKit {
@@ -2407,8 +2399,6 @@
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] initWithParameters:parameters];
     [localKitContainer attemptToLogEventToKit:kitRegisterMock kitFilter:kitFilter selector:selector parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testAttemptToOpenURLToKit {
@@ -2435,8 +2425,6 @@
     
     [localKitContainer attemptToLogEventToKit:kitRegisterMock kitFilter:kitFilter selector:selector parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testAttemptToContinueUserActivityToKit {
@@ -2463,8 +2451,6 @@
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] initWithParameters:parameters];
     [localKitContainer attemptToLogEventToKit:kitRegisterMock kitFilter:kitFilter selector:selector parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testAttemptToSurveyToKit {
@@ -2486,8 +2472,6 @@
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:nil selector:@selector(surveyURLWithUserAttributes:) parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:[[NSDictionary alloc] init]];
     
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testAttemptToShouldDelayEventToKit {
@@ -2503,8 +2487,6 @@
     [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:nil selector:@selector(shouldDelayMParticleUpload) parameters:nil messageType:MPMessageTypeUnknown userInfo:[[NSDictionary alloc] init]];
     
     [kitWrapperMock verifyWithDelay:5.0];
-    [kitWrapperMock stopMocking];
-    [kitRegisterMock stopMocking];
 }
 
 - (void)testRegisterSideloadedKit {
@@ -2516,7 +2498,6 @@
     [kitContainer initializeKits];
     
     [sideloadedKitMock verifyWithDelay:5.0];
-    [sideloadedKitMock stopMocking];
 }
 
 - (void)testRegisterMultipleSideloadedKits {
@@ -2538,10 +2519,6 @@
     [sideloadedKitMock1 verifyWithDelay:5.0];
     [sideloadedKitMock2 verifyWithDelay:5.0];
     [sideloadedKitMock3 verifyWithDelay:5.0];
-    
-    [sideloadedKitMock1 stopMocking];
-    [sideloadedKitMock2 stopMocking];
-    [sideloadedKitMock3 stopMocking];
 }
 
 - (void)testForwardEventToSideloadedKit {
@@ -2564,8 +2541,6 @@
     });
     
     [sideloadedKitMock verifyWithDelay:10.0];
-    
-    [sideloadedKitMock stopMocking];
 }
 
 #endif

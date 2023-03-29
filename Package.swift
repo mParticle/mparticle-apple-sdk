@@ -1,6 +1,12 @@
-// swift-tools-version:5.1
+// swift-tools-version:5.3
 
 import PackageDescription
+
+let mParticle_Apple_SDK_URL = "placeholder"
+let mParticle_Apple_SDK_Checksum = "placeholder"
+
+let mParticle_Apple_SDK_NoLocation_URL = "placeholder"
+let mParticle_Apple_SDK_NoLocation_Checksum = "placeholder"
 
 let package = Package(
     name: "mParticle-Apple-SDK",
@@ -8,36 +14,23 @@ let package = Package(
     products: [
         .library(
             name: "mParticle-Apple-SDK",
-            targets: ["mParticle-Apple-SDK"]),
+            targets: ["mParticle_Apple_SDK"]),
         .library(
             name: "mParticle-Apple-SDK-NoLocation",
-            targets: ["mParticle-Apple-SDK-NoLocation"]),
+            targets: ["mParticle_Apple_SDK_NoLocation"]),
     ],
     dependencies: [
     ],
     targets: [
-        .target(
-            name: "mParticle-Apple-SDK",
-            dependencies: [],
-            path: "mParticle-Apple-SDK",
-            publicHeadersPath: "./Include",
-            cSettings: [
-                CSetting.headerSearchPath("./**"),
-                .define("NS_BLOCK_ASSERTIONS", to: "1", .when(configuration: .release))
-        ]),
-        .target(
-            name: "mParticle-Apple-SDK-NoLocation",
-            dependencies: [],
-            path: "SPM/mParticle-Apple-SDK-NoLocation",
-            publicHeadersPath: "./Include",
-            cSettings: [
-                CSetting.headerSearchPath("./**"),
-                .define("NS_BLOCK_ASSERTIONS", to: "1", .when(configuration: .release)),
-                .define("MPARTICLE_LOCATION_DISABLE", to: "1")
-            ],
-            swiftSettings: [
-                .define("MPARTICLE_LOCATION_DISABLE")
-        ]),
-    ],
-    cxxLanguageStandard: .cxx11
+        .binaryTarget(
+            name: "mParticle_Apple_SDK",
+            url: mParticle_Apple_SDK_URL,
+            checksum: mParticle_Apple_SDK_Checksum
+        ),
+        .binaryTarget(
+            name: "mParticle_Apple_SDK_NoLocation",
+            url: mParticle_Apple_SDK_NoLocation_URL,
+            checksum: mParticle_Apple_SDK_NoLocation_Checksum
+        ),
+    ]
 )

@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPDevice.h"
-#import "OCMock.h"
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 

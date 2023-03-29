@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
@@ -9,7 +10,6 @@
 #import "MPConnector.h"
 #import "MPNetworkCommunication.h"
 #import "MPConnectorProtocol.h"
-#import "OCMock.h"
 #import "MPConnectorFactoryProtocol.h"
 
 @interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>

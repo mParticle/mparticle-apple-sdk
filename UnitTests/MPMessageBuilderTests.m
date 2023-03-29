@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPMessageBuilder.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
@@ -17,7 +18,6 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
-#import "OCMock.h"
 
 NSString *const kMPStateInformationKey = @"cs";
 NSString *const kMPStateDataConnectionKey = @"dct";
@@ -137,9 +137,6 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                                                        messageInfo:messageInfo];
     
     XCTAssertEqualObjects(@"mobile", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
-    
-    [mockStateMachine stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testMessageCurrentStateFieldsWifi {
@@ -162,9 +159,6 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                                                        messageInfo:messageInfo];
     
     XCTAssertEqualObjects(@"wifi", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
-    
-    [mockStateMachine stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testMessageCurrentStateFieldsOffline {
@@ -187,9 +181,6 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                                                        messageInfo:messageInfo];
     
     XCTAssertEqualObjects(@"offline", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
-    
-    [mockStateMachine stopMocking];
-    [mockInstance stopMocking];
 }
 
 - (void)testEncodingandDecodingMessage {

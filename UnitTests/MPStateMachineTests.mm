@@ -1,4 +1,5 @@
 #import <XCTest/XCTest.h>
+#import <OCMock/OCMock.h>
 #import "MPStateMachine.h"
 #import "MPHasher.h"
 #import "MPConsumerInfo.h"
@@ -6,7 +7,6 @@
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPKitContainer.h"
-#import "OCMock.h"
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine(Tests)
@@ -208,6 +208,7 @@
 
 - (void)testSetLocation {
 #if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
     id mockKitContainer = OCMClassMock([MPKitContainer class]);
     [MParticle sharedInstance].kitContainer = mockKitContainer;
     
@@ -228,6 +229,7 @@
 
 
     [self waitForExpectationsWithTimeout:1 handler:nil];
+#endif
 #endif
 }
 

@@ -5,9 +5,6 @@
 #import "MPBaseTestCase.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
-#if TARGET_OS_IOS == 1
-#import "OCMock.h"
-#endif
 
 @interface MParticle ()
 
@@ -31,6 +28,8 @@
 - (void)tearDown {
     [super tearDown];
 }
+
+#if TARGET_OS_IOS == 1
 
 - (void)testFailedToRegisterForRemoteNotification {
     MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
@@ -81,6 +80,8 @@
     NSArray<MPForwardRecord *> *forwardedRecords = [[MParticle sharedInstance].persistenceController fetchForwardRecords];
     XCTAssertNil(forwardedRecords, @"Should have been nil.");
 }
+
+#endif
 
 - (void)testOpenURLOptions {
     MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
