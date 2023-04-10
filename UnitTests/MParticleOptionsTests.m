@@ -66,14 +66,14 @@
 - (void)testSetSearchAdsAttributionDefault {
     _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
     
-    XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution should be collected by default");
+    XCTAssertFalse(_options.collectSearchAdsAttribution, @"Search ads attribution shouldn't be collected by default");
 }
 
 - (void)testSetSearchAdsAttributionSet {
     _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    _options.collectSearchAdsAttribution = NO;
+    _options.collectSearchAdsAttribution = YES;
     
-    XCTAssertFalse(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
+    XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
 }
 
 - (void)testSetSearchAdsAttributionReset {

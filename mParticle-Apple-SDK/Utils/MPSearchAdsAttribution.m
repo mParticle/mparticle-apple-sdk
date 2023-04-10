@@ -68,7 +68,21 @@
                         }
                     } else {
                         NSDictionary *adAttributionDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:nil];
-                        [MParticle sharedInstance].stateMachine.searchAdsInfo = [[adAttributionDictionary mutableCopy] copy];
+                        // Convert the dictionary to the prior format expected by our backend
+                        NSDictionary *finalAttributionDictionary = @{
+                            @"Version4.0": @{
+                                @"iad-attribution": adAttributionDictionary[@"attribution"],
+                                @"iad-org-id": [adAttributionDictionary[@"orgId"] stringValue],
+                                @"iad-campaign-id": [adAttributionDictionary[@"campaignId"] stringValue],
+                                @"iad-conversion-type": adAttributionDictionary[@"conversionType"],
+                                @"iad-click-date": adAttributionDictionary[@"clickDate"],
+                                @"iad-adgroup-id": [adAttributionDictionary[@"adGroupId"] stringValue],
+                                @"iad-country-or-region": adAttributionDictionary[@"countryOrRegion"],
+                                @"iad-keyword-id": [adAttributionDictionary[@"keywordId"] stringValue],
+                                @"iad-ad-id": [adAttributionDictionary[@"adId"] stringValue],
+                            }
+                        };
+                        [MParticle sharedInstance].stateMachine.searchAdsInfo = [[finalAttributionDictionary mutableCopy] copy];
                         completionHandler();
                     }
                 }];
