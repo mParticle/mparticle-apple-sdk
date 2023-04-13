@@ -191,7 +191,7 @@ NSString *const kMPStateKey = @"state";
     if (self) {
         _proxyAppDelegate = YES;
         _collectUserAgent = YES;
-        _collectSearchAdsAttribution = YES;
+        _collectSearchAdsAttribution = NO;
         _trackNotifications = YES;
         _automaticSessionTracking = YES;
         _shouldBeginSession = YES;
@@ -313,7 +313,7 @@ NSString *const kMPStateKey = @"state";
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
     _collectUserAgent = YES;
-    _collectSearchAdsAttribution = YES;
+    _collectSearchAdsAttribution = NO;
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
