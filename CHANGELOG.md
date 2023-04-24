@@ -1,3 +1,12 @@
+# [8.13.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.12.0...v8.13.0) (2023-04-24)
+
+
+### Features
+
+* Port first Obj-C file to Swift ([#186](https://github.com/mParticle/mparticle-apple-sdk/issues/186)) ([18b1e1c](https://github.com/mParticle/mparticle-apple-sdk/commit/18b1e1cb027c2624387aa7056196d2fe28e8d034))
+* Use Apple Search Ads for Attribution ([#187](https://github.com/mParticle/mparticle-apple-sdk/issues/187)) ([e2bb3bc](https://github.com/mParticle/mparticle-apple-sdk/commit/e2bb3bcf14b1fc30a6323848b4576246cecb8261))
+* Use SPM binary targets and update release scripts ([#188](https://github.com/mParticle/mparticle-apple-sdk/issues/188)) ([e482df0](https://github.com/mParticle/mparticle-apple-sdk/commit/e482df0c9496d47e73276655afd72a4f483b2d66))
+
 # [8.12.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.11.2...v8.12.0) (2023-03-14)
 
 
