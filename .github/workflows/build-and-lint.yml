@@ -7,7 +7,7 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         
       - name: Update xcodeproj gem
         run: sudo gem install xcodeproj
@@ -25,15 +25,15 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build with Carthage
-        run: carthage build --no-skip-current || true
+        run: ./Scripts/carthage.sh build --no-skip-current || true
 
       - name: Carthage archive
-        run: carthage archive
+        run: carthage archive mParticle_Apple_SDK && carthage archive mParticle_Apple_SDK_NoLocation
 
-      - name: Verify carthage product
+      - name: Verify carthage products
         run: ls 2>&1 | grep .framework.zip
 
   compile-extension:
@@ -43,7 +43,7 @@ jobs:
         working-directory: ./Example
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Update CocoaPods repo
         run: pod repo update
@@ -58,10 +58,8 @@ jobs:
     runs-on: macos-12
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Choose Xcode version
-        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_13.4.1.app/Contents/Developer; xcode-select -p
+        uses: actions/checkout@v3
 
       - name: Run static analyzer
-        run: bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-iOS-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 13,OS=latest" clean analyze | grep -B3 "warning")'
+        run: |
+          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -B3 "warning")'
