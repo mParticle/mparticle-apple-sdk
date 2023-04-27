@@ -22,6 +22,12 @@
 
 @end
 
+@interface MParticleUser ()
+- (void)setIdentitySync:(NSString *)identityString identityType:(MPIdentity)identityType;
+- (void)setUserId:(NSNumber *)userId;
+
+@end
+
 @interface MPUploadBuilderTests : MPBaseTestCase
 
 @end
@@ -559,6 +565,9 @@
                                 }
     ];
     
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"C56A4180-65AA-42EC-A945-5FD21DEC0538" identityType:MPIdentityIOSAdvertiserId];
+    
     [uploadBuilder withUserIdentities:userIdentities];
     
     NSString *description = [uploadBuilder description];
@@ -640,6 +649,9 @@
                                     @"i":@"C56A4180-65AA-42EC-A945-5FD21DEC0538"
                                 }
     ];
+    
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    [currentUser setIdentitySync:@"C56A4180-65AA-42EC-A945-5FD21DEC0538" identityType:MPIdentityIOSAdvertiserId];
     
     [uploadBuilder withUserIdentities:userIdentities];
     

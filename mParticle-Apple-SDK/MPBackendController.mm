@@ -214,7 +214,7 @@ static BOOL appBackgrounded = NO;
     }
 }
 
-- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
+- (NSMutableArray<NSDictionary<NSString *, id> *> *)identitiesForUserId:(NSNumber *)userId {
     
     NSMutableArray *userIdentities = [[NSMutableArray alloc] initWithCapacity:10];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
@@ -238,6 +238,27 @@ static BOOL appBackgrounded = NO;
     NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
     if (existingEntryIndex != NSNotFound && currentStatus != nil && currentStatus.integerValue != MPATTAuthorizationStatusAuthorized) {
         [userIdentities removeObjectAtIndex:existingEntryIndex];
+    }
+
+    return userIdentities;
+}
+
+- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
+    
+    NSMutableArray *identities = [[NSMutableArray alloc] initWithCapacity:10];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSArray *identityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
+    if (identityArray) {
+        [identities addObjectsFromArray:identityArray];
+    }
+    
+    NSMutableArray *userIdentities = [identities mutableCopy];
+    int i;
+    for (i = 0; i < [identities count]; i++) {
+        NSNumber *currentIdentityType = [identities objectAtIndex:i][kMPUserIdentityTypeKey];
+        if (currentIdentityType.intValue >= MPIdentityIOSAdvertiserId) {
+            [userIdentities removeObjectAtIndex:i];
+        }
     }
 
     return userIdentities;
@@ -2062,7 +2083,7 @@ static BOOL skipNextUpload = NO;
                                                                                      value:identityString];
     
     MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew
-                                                                                      userIdentities:[self userIdentitiesForUserId:[MPPersistenceController mpId]]];
+                                                                                      userIdentities:[self identitiesForUserId:[MPPersistenceController mpId]]];
     
     userIdentityChange.timestamp = timestamp;
     
