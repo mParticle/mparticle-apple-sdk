@@ -253,8 +253,7 @@ static BOOL appBackgrounded = NO;
     }
     
     NSMutableArray *userIdentities = [identities mutableCopy];
-    int i;
-    for (i = 0; i < [identities count]; i++) {
+    for (int i = 0; i < [identities count]; i++) {
         NSNumber *currentIdentityType = [identities objectAtIndex:i][kMPUserIdentityTypeKey];
         if (currentIdentityType.intValue >= MPIdentityIOSAdvertiserId) {
             [userIdentities removeObjectAtIndex:i];
