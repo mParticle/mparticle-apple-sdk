@@ -178,14 +178,9 @@ using namespace std;
     
     // Update the IDFA if it changed after the session was created/saved (the IDFA changed or the ATTStatus has been set to authorized)
     NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    NSMutableArray *userIdentities = uploadDictionary[kMPUserIdentityArrayKey];
-    NSString *advertiserId;
-    for (NSMutableDictionary *userIdentityDictionary in userIdentities) {
-        NSNumber *identityTypeKey = userIdentityDictionary[kMPUserIdentityTypeKey];
-        if ([identityTypeKey isEqualToNumber:@(MPIdentityIOSAdvertiserId)]) {
-            advertiserId = userIdentityDictionary[kMPUserIdentityIdKey];
-        }
-    }
+    NSNumber *mpid = uploadDictionary[kMPRemoteConfigMPIDKey];
+    NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
+    NSString *advertiserId = userIdentities[@(MPIdentityIOSAdvertiserId)];
 
     if (authStatus && advertiserId && authStatus.intValue == MPATTAuthorizationStatusAuthorized) {
         NSMutableDictionary *deviceInfoDictCopy = [uploadDictionary[kMPDeviceInformationKey] mutableCopy];
