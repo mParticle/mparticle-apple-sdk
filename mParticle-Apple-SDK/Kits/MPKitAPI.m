@@ -102,34 +102,37 @@
 }
 
 - (void)onAttributionCompleteWithResult:(MPAttributionResult *)result error:(NSError *)error {
-    if (error || !result) {
+    if ([MParticle sharedInstance].kitContainer != nil) {
         
-        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-        if (_kitCode != nil) {
-            userInfo[mParticleKitInstanceKey] = _kitCode;
+        if (error || !result) {
+
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+            if (_kitCode != nil) {
+                userInfo[mParticleKitInstanceKey] = _kitCode;
+            }
+
+            NSString *errorMessage = nil;
+
+            if (error) {
+                errorMessage = @"mParticle Kit Attribution Error";
+                userInfo[NSUnderlyingErrorKey] = error;
+            }
+
+            if (!result) {
+                errorMessage = @"mParticle Kit Attribution handler was called with nil info and no error";
+            }
+
+            userInfo[MPKitAPIErrorKey] = errorMessage;
+            NSError *attributionError = [NSError errorWithDomain:MPKitAPIErrorDomain code:0 userInfo:userInfo];
+            [MParticle sharedInstance].kitContainer.attributionCompletionHandler(nil, attributionError);
+            return;
         }
-        
-        NSString *errorMessage = nil;
-        
-        if (error) {
-            errorMessage = @"mParticle Kit Attribution Error";
-            userInfo[NSUnderlyingErrorKey] = error;
-        }
-        
-        if (!result) {
-            errorMessage = @"mParticle Kit Attribution handler was called with nil info and no error";
-        }
-        
-        userInfo[MPKitAPIErrorKey] = errorMessage;
-        NSError *attributionError = [NSError errorWithDomain:MPKitAPIErrorDomain code:0 userInfo:userInfo];
-        [MParticle sharedInstance].kitContainer.attributionCompletionHandler(nil, attributionError);
-        return;
+
+        result.kitCode = _kitCode;
+        result.kitName = [self kitName];
+
+        [MParticle sharedInstance].kitContainer.attributionCompletionHandler(result, nil);
     }
-    
-    result.kitCode = _kitCode;
-    result.kitName = [self kitName];
-    
-    [MParticle sharedInstance].kitContainer.attributionCompletionHandler(result, nil);
 }
 
 #pragma mark Kit Identity methods
