@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		53384C252A2EA1FE00B3D8A3 /* MParticleComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53384C242A2EA1FE00B3D8A3 /* MParticleComponent.swift */; };
+		53384C262A2EA1FE00B3D8A3 /* MParticleComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53384C242A2EA1FE00B3D8A3 /* MParticleComponent.swift */; };
+		53384C282A2EA25900B3D8A3 /* MParticleDataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53384C272A2EA25900B3D8A3 /* MParticleDataRepository.swift */; };
+		53384C292A2EA25900B3D8A3 /* MParticleDataRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53384C272A2EA25900B3D8A3 /* MParticleDataRepository.swift */; };
+		53384C2B2A2EA34400B3D8A3 /* BaseMPMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53384C2A2A2EA34400B3D8A3 /* BaseMPMessage.swift */; };
+		53384C2C2A2EA34400B3D8A3 /* BaseMPMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53384C2A2A2EA34400B3D8A3 /* BaseMPMessage.swift */; };
 		534CD25C29CE2877008452B3 /* NSNumber+MPFormatter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B2629CDFB1F00E7489F /* NSNumber+MPFormatter.swift */; };
 		534CD25E29CE2BF1008452B3 /* Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = 534CD25D29CE2BF1008452B3 /* Swift.h */; };
 		534CD25F29CE2BF1008452B3 /* Swift.h in Headers */ = {isa = PBXBuildFile; fileRef = 534CD25D29CE2BF1008452B3 /* Swift.h */; };
@@ -537,6 +543,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		53384C242A2EA1FE00B3D8A3 /* MParticleComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleComponent.swift; sourceTree = "<group>"; };
+		53384C272A2EA25900B3D8A3 /* MParticleDataRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleDataRepository.swift; sourceTree = "<group>"; };
+		53384C2A2A2EA34400B3D8A3 /* BaseMPMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BaseMPMessage.swift; sourceTree = "<group>"; };
 		534CD25D29CE2BF1008452B3 /* Swift.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Swift.h; sourceTree = "<group>"; };
 		534CD2AA29CE2CE1008452B3 /* mParticle-Apple-SDK-NoLocationTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "mParticle-Apple-SDK-NoLocationTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		53A79A7929CCCD6400E7489F /* mParticle_Apple_SDK.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -848,6 +857,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		53384C232A2EA1BC00B3D8A3 /* Next Gen SDK */ = {
+			isa = PBXGroup;
+			children = (
+				53384C242A2EA1FE00B3D8A3 /* MParticleComponent.swift */,
+				53384C272A2EA25900B3D8A3 /* MParticleDataRepository.swift */,
+				53384C2A2A2EA34400B3D8A3 /* BaseMPMessage.swift */,
+			);
+			path = "Next Gen SDK";
+			sourceTree = "<group>";
+		};
 		53A79A6F29CCCD6400E7489F = {
 			isa = PBXGroup;
 			children = (
@@ -898,6 +917,7 @@
 				53A79B3329CDFB1F00E7489F /* Notifications */,
 				53A79AB729CDFB1E00E7489F /* Persistence */,
 				53A79B0129CDFB1F00E7489F /* Utils */,
+				53384C232A2EA1BC00B3D8A3 /* Next Gen SDK */,
 			);
 			path = "mParticle-Apple-SDK";
 			sourceTree = "<group>";
@@ -1809,6 +1829,8 @@
 				53A79C0929CDFB2100E7489F /* MPDataPlanFilter.m in Sources */,
 				53A79B9629CDFB2000E7489F /* MPSession.m in Sources */,
 				53A79B9729CDFB2000E7489F /* MPIntegrationAttributes.m in Sources */,
+				53384C252A2EA1FE00B3D8A3 /* MParticleComponent.swift in Sources */,
+				53384C282A2EA25900B3D8A3 /* MParticleDataRepository.swift in Sources */,
 				53A79B6A29CDFB2000E7489F /* MPAliasRequest.m in Sources */,
 				53A79B6829CDFB2000E7489F /* MParticleUser.m in Sources */,
 				53A79BE529CDFB2000E7489F /* MPResponseConfig.m in Sources */,
@@ -1838,6 +1860,7 @@
 				53A79C1B29CDFB2100E7489F /* MPForwardQueueItem.m in Sources */,
 				53A79C1629CDFB2100E7489F /* MPEventProjection.mm in Sources */,
 				53A79C2029CDFB2100E7489F /* MPListenerController.m in Sources */,
+				53384C2B2A2EA34400B3D8A3 /* BaseMPMessage.swift in Sources */,
 				53A79C0E29CDFB2100E7489F /* MPKitContainer.mm in Sources */,
 				53A79BD729CDFB2000E7489F /* MPUploadBuilder.mm in Sources */,
 				53A79BE429CDFB2000E7489F /* MPHasher.cpp in Sources */,
@@ -1973,6 +1996,8 @@
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
 				53A79D9A29CE23F700E7489F /* MPSession.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
+				53384C262A2EA1FE00B3D8A3 /* MParticleComponent.swift in Sources */,
+				53384C292A2EA25900B3D8A3 /* MParticleDataRepository.swift in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
 				53A79D9D29CE23F700E7489F /* MParticleUser.m in Sources */,
 				53A79D9E29CE23F700E7489F /* MPResponseConfig.m in Sources */,
@@ -2002,6 +2027,7 @@
 				53A79DB629CE23F700E7489F /* MPForwardQueueItem.m in Sources */,
 				53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */,
 				53A79DB829CE23F700E7489F /* MPListenerController.m in Sources */,
+				53384C2C2A2EA34400B3D8A3 /* BaseMPMessage.swift in Sources */,
 				53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */,
 				53A79DBA29CE23F700E7489F /* MPUploadBuilder.mm in Sources */,
 				53A79DBB29CE23F700E7489F /* MPHasher.cpp in Sources */,
