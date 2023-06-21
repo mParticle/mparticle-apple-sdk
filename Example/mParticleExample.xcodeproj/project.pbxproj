@@ -23,7 +23,7 @@
 		DBD54A4C224947400053BD20 /* MessagesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A4B224947400053BD20 /* MessagesViewController.m */; };
 		DBD54A4F224947400053BD20 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A4D224947400053BD20 /* MainInterface.storyboard */; };
 		DBD54A51224947410053BD20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A50224947410053BD20 /* Assets.xcassets */; };
-		DBD54A55224947410053BD20 /* mParticleExample_Extension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = DBD54A46224947400053BD20 /* mParticleExample_Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		DBD54A55224947410053BD20 /* mParticleExample_Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DBD54A46224947400053BD20 /* mParticleExample_Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FC392598753AF8F69DA40E9F /* Pods_mParticleExampleUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5BF017C4AC068521E78744B /* Pods_mParticleExampleUITests.framework */; };
 /* End PBXBuildFile section */
 
@@ -52,15 +52,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		DBD54A59224947410053BD20 /* Embed App Extensions */ = {
+		DBD54A59224947410053BD20 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				DBD54A55224947410053BD20 /* mParticleExample_Extension.appex in Embed App Extensions */,
+				DBD54A55224947410053BD20 /* mParticleExample_Extension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -168,7 +168,6 @@
 				7CF1AE3E00E36168C5CB1C8C /* Pods-mParticleExampleUITests.debug.xcconfig */,
 				EDB466048C3E0627D4018CDD /* Pods-mParticleExampleUITests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -257,7 +256,7 @@
 				DBD54A09224941630053BD20 /* Sources */,
 				DBD54A0A224941630053BD20 /* Frameworks */,
 				DBD54A0B224941630053BD20 /* Resources */,
-				DBD54A59224947410053BD20 /* Embed App Extensions */,
+				DBD54A59224947410053BD20 /* Embed Foundation Extensions */,
 				B55B735B8CC80E96AF0764AF /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
@@ -332,7 +331,7 @@
 		DBD54A05224941630053BD20 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1200;
+				LastUpgradeCheck = 1420;
 				ORGANIZATIONNAME = mParticle;
 				TargetAttributes = {
 					DBD54A0C224941630053BD20 = {
@@ -725,7 +724,7 @@
 				CODE_SIGN_ENTITLEMENTS = mParticleExample/mParticleExample.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				DEVELOPMENT_TEAM = UGDPBXH35F;
 				INFOPLIST_FILE = mParticleExample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -750,7 +749,7 @@
 				CODE_SIGN_ENTITLEMENTS = mParticleExample/mParticleExample.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = DLD43Y3TRP;
+				DEVELOPMENT_TEAM = UGDPBXH35F;
 				INFOPLIST_FILE = mParticleExample/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

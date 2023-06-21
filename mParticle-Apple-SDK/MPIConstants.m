@@ -314,6 +314,7 @@ NSString *const kMPNetworkPerformanceKey = @"MPNetworkPerformance";
 // Kits
 NSString *const MPKitAttributeJailbrokenKey = @"jailbroken";
 NSString *const MPIntegrationAttributesKey = @"ia";
+NSString *const MPIsUsingSideloadedKitsUserDefaultsKey = @"MPIsUsingSideloadedKitsUserDefaultsKey";
 
 // mParticle Javascript SDK paths
 NSString *const kMParticleWebViewSdkScheme = @"mp-sdk";
