@@ -9,7 +9,6 @@
 @class MPBaseEvent;
 @class MPForwardQueueParameters;
 @class MPKitConfiguration;
-@class MPSideloadedKit;
 
 @interface MPKitContainer : NSObject
 

@@ -1,6 +1,5 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
-#import "Swift.h"
 #import "MPKitContainer.h"
 #import "MPIConstants.h"
 #import "MPForwardQueueItem.h"
@@ -29,6 +28,7 @@
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
+#import "Swift.h"
 
 @interface MParticle ()
 
