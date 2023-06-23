@@ -9,6 +9,7 @@
 @class MPBaseEvent;
 @class MPForwardQueueParameters;
 @class MPKitConfiguration;
+@class MPSideloadedKit;
 
 @interface MPKitContainer : NSObject
 
@@ -16,7 +17,7 @@
 @property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
 @property (nonatomic, strong, nonnull) NSArray<NSDictionary *> *originalConfig;
 
-@property (nonatomic, strong, nonnull) NSArray<NSObject<MPKitProtocol>*> *sideloadedKits;
+@property (nonatomic, strong, nonnull) NSArray<MPSideloadedKit*> *sideloadedKits;
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
