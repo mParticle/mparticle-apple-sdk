@@ -27,8 +27,8 @@
 - (nonnull NSArray<NSNumber *> *)userIDsInUserDefaults;
 - (BOOL)isConfigurationExpired;
 - (BOOL)isConfigurationParametersOutdated;
-- (void)setIsUsingSideloadedKits:(BOOL)isUsingSideloadedKits;
-- (BOOL)isUsingSideloadedKits;
+- (void)setSideloadedKitsCount:(NSUInteger)sideloadedKitsCount;
+- (NSUInteger)sideloadedKitsCount;
 
 + (NSString *_Nullable)stringFromDeviceToken:(NSData *_Nonnull)deviceToken;
 

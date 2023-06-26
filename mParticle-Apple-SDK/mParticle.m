@@ -567,8 +567,8 @@ NSString *const kMPStateKey = @"state";
     
     _kitContainer = [[MPKitContainer alloc] init];
     _kitContainer.sideloadedKits = options.sideloadedKits ?: [NSArray array];
-    BOOL isUsingSideloadedKits = _kitContainer.sideloadedKits.count > 0;
-    [[MPIUserDefaults standardUserDefaults] setIsUsingSideloadedKits:isUsingSideloadedKits];
+    NSUInteger sideLoadedKitsCount = _kitContainer.sideloadedKits.count;
+    [[MPIUserDefaults standardUserDefaults] setSideloadedKitsCount:sideLoadedKitsCount];
 
     [self.backendController startWithKey:apiKey
                                   secret:secret

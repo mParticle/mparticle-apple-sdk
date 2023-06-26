@@ -426,12 +426,12 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     return [MPIHasher hashString:configString];
 }
 
-- (void)setIsUsingSideloadedKits:(BOOL)isUsingSideloadedKits {
-    [[NSUserDefaults standardUserDefaults] setObject:@(isUsingSideloadedKits) forKey:MPIsUsingSideloadedKitsUserDefaultsKey];
+- (void)setSideloadedKitsCount:(NSUInteger)sideloadedKitsCount {
+    [[NSUserDefaults standardUserDefaults] setObject:@(sideloadedKitsCount) forKey:MPSideloadedKitsCountUserDefaultsKey];
 }
 
-- (BOOL)isUsingSideloadedKits {
-    return [[[NSUserDefaults standardUserDefaults] objectForKey:MPIsUsingSideloadedKitsUserDefaultsKey] boolValue];
+- (NSUInteger)sideloadedKitsCount {
+    return [[[NSUserDefaults standardUserDefaults] objectForKey:MPSideloadedKitsCountUserDefaultsKey] intValue];
 }
 
 #pragma mark Objective-C Literals

@@ -32,7 +32,7 @@ NSString *const kMPAppBadgeNumberKey = @"bn";
 NSString *const kMPAppStoreReceiptKey = @"asr";
 NSString *const kMPAppImageBaseAddressKey = @"iba";
 NSString *const kMPAppImageSizeKey = @"is";
-NSString *const kMPAppIsUsingSideloadKitsKey = @"is_using_sideloaded_kits";
+NSString *const kMPAppSideloadKitsCountKey = @"sideloaded_kits_count";
 
 static NSString *kMPAppStoreReceiptString = nil;
 static id mockUIApplication = nil;
@@ -281,9 +281,9 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     return bundleInfoDictionary[@"CFBundleShortVersionString"];
 }
 
-- (NSNumber *)isUsingSideloadedKits {
-    NSNumber *isUsingSideloadedKits = @([[MPIUserDefaults standardUserDefaults] isUsingSideloadedKits]);
-    return isUsingSideloadedKits;
+- (NSNumber *)sideloadedKitsCount {
+    NSNumber *sideloadedKitsCount = @([[MPIUserDefaults standardUserDefaults] sideloadedKitsCount]);
+    return sideloadedKitsCount;
 }
 
 + (void)setMockApplication:(id)mockApplication {
@@ -447,7 +447,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
                          kMPAppBuildSDKKey:[NSString stringWithFormat:@"%i", __IPHONE_OS_VERSION_MAX_ALLOWED],
                          kMPAppEnvironmentKey:@(self.environment),
                          kMPAppFirstSeenInstallationKey:self.firstSeenInstallation,
-                         kMPAppIsUsingSideloadKitsKey:self.isUsingSideloadedKits
+                         kMPAppSideloadKitsCountKey:self.sideloadedKitsCount
                          }
                        mutableCopy];
     
