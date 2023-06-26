@@ -2545,11 +2545,11 @@
 }
 
 - (void)testAppInfoContainsSideloadKitsFlag {
-    [[MPIUserDefaults standardUserDefaults] setIsUsingSideloadedKits:YES];
+    [[MPIUserDefaults standardUserDefaults] setSideloadedKitsCount:3];
     
     NSDictionary *dict = [[[MPApplication alloc] init] dictionaryRepresentation];
     
-    XCTAssertEqualObjects(dict[@"is_using_sideloaded_kits"], @YES);
+    XCTAssertEqualObjects(dict[@"sideloaded_kits_count"], @3);
 }
 
 #endif
