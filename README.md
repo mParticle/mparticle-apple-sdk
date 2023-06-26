@@ -29,8 +29,8 @@ The mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mp
 To integrate the SDK using CocoaPods, specify it in your [Podfile](https://guides.cocoapods.org/syntax/podfile.html):
 
 ```ruby
-# Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
-# use_frameworks!
+# The line below is required since we're using Swift
+use_frameworks!
 
 target '<Your Target>' do
     pod 'mParticle-Apple-SDK', '~> 8'
@@ -47,8 +47,8 @@ Configuring your `Podfile` with the statement above will include only the _Core_
 If you'd like to add any kits, you can do so as follows:
 
 ```ruby
-# Uncomment the line below if you're using Swift or would like to use dynamic frameworks (recommended but not required)
-# use_frameworks!
+# The line below is required since we're using Swift
+use_frameworks!
 
 target '<Your Target>' do
     pod 'mParticle-Appboy', '~> 8'

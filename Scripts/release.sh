@@ -23,14 +23,20 @@ sed -i '' 's/\(^    s.version[^=]*= \).*/\1"'"$VERSION"'"/' mParticle-Apple-SDK.
 
 ./Scripts/make_artifacts.sh
 
+# Upload XCFrameworks to S3 bucket
+#
+
+aws s3 cp mParticle_Apple_SDK.xcframework.zip s3://static.mparticle.com/sdk/ios/$PREFIXED_VERSION/mParticle_Apple_SDK.xcframework.zip
+aws s3 cp mParticle_Apple_SDK_NoLocation.xcframework.zip s3://static.mparticle.com/sdk/ios/$PREFIXED_VERSION/mParticle_Apple_SDK_NoLocation.xcframework.zip
+
 # Update SPM package.swift file
 #
 
-SDK_URL="https:\/\/github.com\/mParticle\/mparticle-apple-sdk\/releases\/download\/$PREFIXED_VERSION\/mParticle_Apple_SDK.xcframework.zip"
+SDK_URL="https:\/\/static.mparticle.com\/sdk\/ios\/$PREFIXED_VERSION\/mParticle_Apple_SDK.xcframework.zip"
 SDK_CHECKSUM=$(swift package compute-checksum mParticle_Apple_SDK.xcframework.zip)
 sed -i '' 's/\(^let mParticle_Apple_SDK_URL[^=]*= \).*/\1"'"$SDK_URL"'"/' Package.swift
 sed -i '' 's/\(^let mParticle_Apple_SDK_Checksum[^=]*= \).*/\1"'"$SDK_CHECKSUM"'"/' Package.swift
-SDK_URL="https:\/\/github.com\/mParticle\/mparticle-apple-sdk\/releases\/download\/$PREFIXED_VERSION\/mParticle_Apple_SDK_NoLocation.xcframework.zip"
+SDK_URL="https:\/\/static.mparticle.com\/sdk\/ios\/$PREFIXED_VERSION\/mParticle_Apple_SDK_NoLocation.xcframework.zip"
 SDK_CHECKSUM=$(swift package compute-checksum mParticle_Apple_SDK_NoLocation.xcframework.zip)
 sed -i '' 's/\(^let mParticle_Apple_SDK_NoLocation_URL[^=]*= \).*/\1"'"$SDK_URL"'"/' Package.swift
 sed -i '' 's/\(^let mParticle_Apple_SDK_NoLocation_Checksum[^=]*= \).*/\1"'"$SDK_CHECKSUM"'"/' Package.swift

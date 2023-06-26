@@ -43,9 +43,16 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Validate environment
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.MP_IOS_SDK_S3_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MP_IOS_SDK_S3_SECRET }}
+          AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
         run: |
           env | grep -q '^GITHUB_ACCESS_TOKEN=' || (echo "Required environment variable GITHUB_ACCESS_TOKEN is not set" && exit 1)
           env | grep -q '^COCOAPODS_TRUNK_TOKEN=' || (echo "Required environment variable COCOAPODS_TRUNK_TOKEN is not set" && exit 1)
+          env | grep -q '^AWS_ACCESS_KEY_ID=' || (echo "Required environment variable AWS_ACCESS_KEY_ID is not set" && exit 1)
+          env | grep -q '^AWS_SECRET_ACCESS_KEY=' || (echo "Required environment variable AWS_SECRET_ACCESS_KEY is not set" && exit 1)
+          env | grep -q '^AWS_DEFAULT_REGION=' || (echo "Required environment variable AWS_DEFAULT_REGION is not set" && exit 1)
 
       - name: Setup git config
         run: |
@@ -89,6 +96,9 @@ jobs:
           GIT_AUTHOR_EMAIL: developers@mparticle.com
           GIT_COMMITTER_NAME: mparticle-bot
           GIT_COMMITTER_EMAIL: developers@mparticle.com
+          AWS_ACCESS_KEY_ID: ${{ secrets.MP_IOS_SDK_S3_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MP_IOS_SDK_S3_SECRET }}
+          AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
         run: |
           npx \
           -p lodash \

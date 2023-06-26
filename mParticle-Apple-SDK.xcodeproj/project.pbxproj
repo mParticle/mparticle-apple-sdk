@@ -517,6 +517,8 @@
 		53A79DBD29CE23F700E7489F /* MPLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA629CDFB1E00E7489F /* MPLocationManager.m */; };
 		53A79DBE29CE23F700E7489F /* MPUserAttributeChange.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B2729CDFB1F00E7489F /* MPUserAttributeChange.m */; };
 		53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
+		53B33E8A2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
+		53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -808,6 +810,7 @@
 		53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK-NoLocation.modulemap"; path = "Framework/mParticle-Apple-SDK-NoLocation.modulemap"; sourceTree = "<group>"; };
 		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_NoLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1159,6 +1162,7 @@
 				53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */,
 				53A79B6029CDFB1F00E7489F /* MPKitFilter.h */,
 				53A79B6129CDFB1F00E7489F /* MPBaseProjection.h */,
+				53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */,
 			);
 			path = Kits;
 			sourceTree = "<group>";
@@ -1807,6 +1811,7 @@
 				53A79B8029CDFB2000E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79BCD29CDFB2000E7489F /* MPZip.m in Sources */,
 				53A79C0929CDFB2100E7489F /* MPDataPlanFilter.m in Sources */,
+				53B33E8A2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */,
 				53A79B9629CDFB2000E7489F /* MPSession.m in Sources */,
 				53A79B9729CDFB2000E7489F /* MPIntegrationAttributes.m in Sources */,
 				53A79B6A29CDFB2000E7489F /* MPAliasRequest.m in Sources */,
@@ -1971,6 +1976,7 @@
 				53A79D9729CE23F700E7489F /* MPNetworkPerformance.m in Sources */,
 				53A79D9829CE23F700E7489F /* MPZip.m in Sources */,
 				53A79D9929CE23F700E7489F /* MPDataPlanFilter.m in Sources */,
+				53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */,
 				53A79D9A29CE23F700E7489F /* MPSession.m in Sources */,
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
