@@ -28,6 +28,7 @@
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
+#import "Swift.h"
 
 @interface MParticle ()
 
@@ -2494,7 +2495,7 @@
     id sideloadedKitMock = OCMPartialMock(sideloadedKit);
     [(id <MPKitProtocol>)[sideloadedKitMock expect] didFinishLaunchingWithConfiguration:OCMOCK_ANY];
     
-    kitContainer.sideloadedKits = @[sideloadedKit];
+    kitContainer.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit]];
     [kitContainer initializeKits];
     
     [sideloadedKitMock verifyWithDelay:5.0];
@@ -2513,7 +2514,9 @@
     id sideloadedKitMock3 = OCMPartialMock(sideloadedKit3);
     [(id <MPKitProtocol>)[sideloadedKitMock3 expect] didFinishLaunchingWithConfiguration:OCMOCK_ANY];
     
-    kitContainer.sideloadedKits = @[sideloadedKit1, sideloadedKit2, sideloadedKit3];
+    kitContainer.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit1],
+                                    [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit2],
+                                    [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit3]];
     [kitContainer initializeKits];
     
     [sideloadedKitMock1 verifyWithDelay:5.0];
@@ -2534,7 +2537,7 @@
     //       calling [kitContainer configureKits:nil] even though that
     //       shouldn't matter since the whole thing is reconstructed in setUp...
     dispatch_async(dispatch_get_main_queue(), ^{
-        self->kitContainer.sideloadedKits = @[sideloadedKit];
+        self->kitContainer.sideloadedKits = @[[[MPSideloadedKit alloc] initWithKitInstance:sideloadedKit]];
         [self->kitContainer initializeKits];
         
         [[MParticle sharedInstance] logEvent:event];

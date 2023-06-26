@@ -1,4 +1,5 @@
 #import "MPKitContainer.h"
+#import "Swift.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
 #import "MPStateMachine.h"
@@ -241,12 +242,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (void)registerSideloadedKits {
-    for (NSObject<MPKitProtocol>* kitInstance in self.sideloadedKits) {
+    for (MPSideloadedKit *sideloadedKit in self.sideloadedKits) {
         // Get kit code from sideloaded kits range and increment it for the next kit
         NSNumber *kitCode = @(sideloadedKitCodeNextValue);
         sideloadedKitCodeNextValue++;
-        if ([kitInstance respondsToSelector:@selector(sideloadedKitCode)]) {
-            kitInstance.sideloadedKitCode = kitCode;
+        if ([sideloadedKit.kitInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+            sideloadedKit.kitInstance.sideloadedKitCode = kitCode;
         } else {
             NSString *message = @"Sideloaded kits must implement the sideloadedKitCode property or they will not receive callbacks";
             NSAssert(NO, message);
@@ -254,7 +255,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
         
         // Call through to the main registration method so any listeners will receive a callback
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithInstance:kitInstance kitCode:kitCode];
+        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithInstance:sideloadedKit.kitInstance kitCode:kitCode];
         [MParticle registerExtension:kitRegister];
         
         // Create default kit configuration

@@ -38,6 +38,8 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
+@class MPSideloadedKit;
+
 /**
  An SDK session.
  
@@ -381,7 +383,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) NSNumber *configMaxAgeSeconds;
 
 /**
- Set an array of instances of kit (MPKitProtocol) objects to be "sideloaded".
+ Set an array of instances of kit (MPKitProtocol wrapped in MPSideloadedKit) objects to be "sideloaded".
  
  The difference between these kits and mParticle UI enabled kits is that they do not receive a server side configuration and are always activated.
  Registration is done locally, and these kits will receive all of the usual MPKitProtocol callback method calls. Some use cases
@@ -389,7 +391,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  At the moment, all events are forwarded as event filtering is not yet supported. This will come in a future release.
  */
-@property (nonatomic, strong, readwrite, nullable) NSArray<NSObject<MPKitProtocol>*> *sideloadedKits;
+@property (nonatomic, strong, readwrite, nullable) NSArray<MPSideloadedKit*> *sideloadedKits;
 
 /**
  Identify callback.
