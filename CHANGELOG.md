@@ -1,3 +1,17 @@
+# [8.14.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.13.0...v8.14.0) (2023-06-27)
+
+
+### Bug Fixes
+
+* Prevent Unplanned User Identities ([#190](https://github.com/mParticle/mparticle-apple-sdk/issues/190)) ([f870b20](https://github.com/mParticle/mparticle-apple-sdk/commit/f870b2075ba587827a3fc0e4b0e0602f869ea83d))
+
+
+### Features
+
+* Add Sideloaded Kit Filtering Support to API ([#202](https://github.com/mParticle/mparticle-apple-sdk/issues/202)) ([6f0339c](https://github.com/mParticle/mparticle-apple-sdk/commit/6f0339cceb1afd25732e9538d0039a6935dd7e7b))
+* Add Sideloaded Kit flag to Batches ([#200](https://github.com/mParticle/mparticle-apple-sdk/issues/200)) ([6756d8a](https://github.com/mParticle/mparticle-apple-sdk/commit/6756d8a8dd3be806b556a026a725bbfc9c13f87e))
+* Upload build artifacts to S3 for SPM ([#199](https://github.com/mParticle/mparticle-apple-sdk/issues/199)) ([923838a](https://github.com/mParticle/mparticle-apple-sdk/commit/923838a4abbaced4da2ae1e868f2babb26366c6d))
+
 # [8.13.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.12.0...v8.13.0) (2023-04-24)
 
 
