@@ -28,6 +28,7 @@
 #import "MPBaseTestCase.h"
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
+#import "MPApplication.h"
 #import "Swift.h"
 
 @interface MParticle ()
@@ -2544,6 +2545,14 @@
     });
     
     [sideloadedKitMock verifyWithDelay:10.0];
+}
+
+- (void)testAppInfoContainsSideloadKitsFlag {
+    [[MPIUserDefaults standardUserDefaults] setSideloadedKitsCount:3];
+    
+    NSDictionary *dict = [[[MPApplication alloc] init] dictionaryRepresentation];
+    
+    XCTAssertEqualObjects(dict[@"sideloaded_kits_count"], @3);
 }
 
 #endif

@@ -426,6 +426,14 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     return [MPIHasher hashString:configString];
 }
 
+- (void)setSideloadedKitsCount:(NSUInteger)sideloadedKitsCount {
+    [[NSUserDefaults standardUserDefaults] setObject:@(sideloadedKitsCount) forKey:MPSideloadedKitsCountUserDefaultsKey];
+}
+
+- (NSUInteger)sideloadedKitsCount {
+    return [[[NSUserDefaults standardUserDefaults] objectForKey:MPSideloadedKitsCountUserDefaultsKey] intValue];
+}
+
 #pragma mark Objective-C Literals
 - (id)objectForKeyedSubscript:(NSString *const)key {
     if ([key isEqualToString:@"mpid"]) {

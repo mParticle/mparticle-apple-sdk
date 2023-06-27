@@ -372,6 +372,7 @@ extern NSString * _Nonnull const kMPNetworkPerformanceKey;
 // Kits
 extern NSString * _Nonnull const MPKitAttributeJailbrokenKey;
 extern NSString * _Nonnull const MPIntegrationAttributesKey;
+extern NSString * _Nonnull const MPSideloadedKitsCountUserDefaultsKey;
 
 // mParticle Javascript SDK paths
 extern NSString * _Nonnull const kMParticleWebViewSdkScheme;
