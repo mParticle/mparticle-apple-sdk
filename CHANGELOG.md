@@ -1,3 +1,10 @@
+## [8.14.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.0...v8.14.1) (2023-07-06)
+
+
+### Bug Fixes
+
+* crash in userIdentitiesForUserId with multiple invalid identity types ([#205](https://github.com/mParticle/mparticle-apple-sdk/issues/205)) ([9d88bcc](https://github.com/mParticle/mparticle-apple-sdk/commit/9d88bcc89cd0cb2cd8b1c58e0544c3204fe31457))
+
 # [8.14.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.13.0...v8.14.0) (2023-06-27)
 
 
