@@ -5,6 +5,8 @@
 #import "MPILogger.h"
 #import "FilteredMParticleUser.h"
 
+#import "MPAttributionResult.h"
+
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;

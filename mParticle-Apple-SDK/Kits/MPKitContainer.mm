@@ -35,7 +35,10 @@
 #import "MPConsentKitFilter.h"
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
+#import "MParticleKit.h"
 #import <objc/message.h>
+
+#import "MPAttributionResult.h"
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -241,6 +244,25 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 }
 
+- (void)registerMParticleKit {
+    MPSideloadedKit *sideloadedKit = [[MPSideloadedKit alloc] initWithKitInstance:[[MParticleKit alloc] init]];
+    
+    NSNumber *kitCode = [MParticleKit kitCode];
+    
+    // Call through to the main registration method so any listeners will receive a callback
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithInstance:sideloadedKit.kitInstance kitCode:kitCode];
+    [MParticle registerExtension:kitRegister];
+    
+    // Create default kit configuration
+    NSDictionary *remoteConfigDict = @{@"eaa": @{}, @"ear": @{}, @"eas": @{}};
+    NSDictionary *configDict = @{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict};
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configDict];
+    self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
+    
+    // Finish registering kit and call its callbacks
+    [self startKitRegister:kitRegister configuration:kitConfiguration];
+}
+
 - (void)registerSideloadedKits {
     for (MPSideloadedKit *sideloadedKit in self.sideloadedKits) {
         // Get kit code from sideloaded kits range and increment it for the next kit
@@ -273,6 +295,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     if (self.kitsInitialized) {
         return;
     }
+    
+    [self registerMParticleKit];
     
     [self registerSideloadedKits];
     
