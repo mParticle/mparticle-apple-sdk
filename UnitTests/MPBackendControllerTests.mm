@@ -94,6 +94,7 @@
 - (void)requestConfig:(void(^ _Nullable)(BOOL uploadBatch))completionHandler;
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler;
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler;
+- (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 
 @end
 
@@ -1987,6 +1988,78 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     XCTAssertTrue([messageDictionary[kMPErrorMessage] isEqualToString:message], @"Error message is not being persisted correctly for crash report.");
     XCTAssertTrue([messageDictionary[kMPStackTrace] isEqualToString:stackTrace], @"Stack trace is not being persisted correctly for crash report.");
     XCTAssertTrue([messageDictionary[kMPPLCrashReport] isEqualToString:plCrashReportBase64], @"PLCrashReport is not being persisted correctly for crash report.");
+}
+
+- (void)testUserIdentitiesForUserIdNoInvalidIdTypes {
+    NSDictionary *validUserId = @{
+        @"n":@7,
+        @"i":@"trex@shortarmsdinosaurs.com",
+        @"dfs":MPCurrentEpochInMilliseconds,
+        @"f":@NO
+    };
+    
+    NSArray *userIdentities = @[validUserId];
+    
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
+    NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
+    XCTAssertEqual(currentUserIdentities.count, 1);
+    XCTAssertEqualObjects(currentUserIdentities[0], validUserId);
+}
+
+- (void)testUserIdentitiesForUserIdOneInvalidIdType {
+    NSDictionary *validUserId = @{
+        @"n":@7,
+        @"i":@"trex@shortarmsdinosaurs.com",
+        @"dfs":MPCurrentEpochInMilliseconds,
+        @"f":@NO
+    };
+    
+    NSDictionary *invalidUserId = @{
+        @"n":@22,
+        @"i":@"C56A4180-65AA-42EC-A945-5FD21DEC0538"
+    };
+    
+    NSArray *userIdentities = @[validUserId, invalidUserId];
+    
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
+    NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
+    XCTAssertEqual(currentUserIdentities.count, 1);
+    XCTAssertEqualObjects(currentUserIdentities[0], validUserId);
+}
+
+- (void)testUserIdentitiesForUserIdMultipleInvalidIdTypes {
+    NSDictionary *validUserId = @{
+        @"n":@7,
+        @"i":@"trex@shortarmsdinosaurs.com",
+        @"dfs":MPCurrentEpochInMilliseconds,
+        @"f":@NO
+    };
+    
+    NSDictionary *invalidUserId = @{
+        @"n":@22,
+        @"i":@"C56A4180-65AA-42EC-A945-5FD21DEC0538"
+    };
+    
+    NSDictionary *invalidUserId2 = @{
+        @"n":@24,
+        @"i":@"test token"
+    };
+    
+    NSArray *userIdentities = @[validUserId, invalidUserId, invalidUserId2];
+    
+    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    
+    NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
+    XCTAssertEqual(currentUserIdentities.count, 1);
+    XCTAssertEqualObjects(currentUserIdentities[0], validUserId);
 }
 
 @end

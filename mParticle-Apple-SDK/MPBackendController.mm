@@ -244,22 +244,23 @@ static BOOL appBackgrounded = NO;
 }
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId {
-    
+
     NSMutableArray *identities = [[NSMutableArray alloc] initWithCapacity:10];
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSArray *identityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:userId];
     if (identityArray) {
         [identities addObjectsFromArray:identityArray];
     }
-    
-    NSMutableArray *userIdentities = [identities mutableCopy];
-    for (int i = 0; i < [identities count]; i++) {
-        NSNumber *currentIdentityType = [identities objectAtIndex:i][kMPUserIdentityTypeKey];
-        if (currentIdentityType.intValue >= MPIdentityIOSAdvertiserId) {
-            [userIdentities removeObjectAtIndex:i];
-        }
-    }
 
+    // Remove invalid identities
+    NSMutableArray *userIdentities = [identities mutableCopy];
+    [identities enumerateObjectsWithOptions:NSEnumerationReverse usingBlock:^(id  _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        id currentIdentityType = [identities objectAtIndex:idx][kMPUserIdentityTypeKey];
+        // Should be a number and should be one of the valid identity types
+        if (![currentIdentityType isKindOfClass:[NSNumber class]] || [(NSNumber *)currentIdentityType intValue] >= MPIdentityIOSAdvertiserId) {
+            [userIdentities removeObjectAtIndex:idx];
+        }
+    }];
     return userIdentities;
 }
 
