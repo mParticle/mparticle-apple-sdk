@@ -105,7 +105,7 @@
         [[MParticle sharedInstance].kitContainer forwardSDKCall:deviceTokenSelector
                                                           event:nil
                                                      parameters:queueParameters
-                                                    messageType:MPMessageTypeUnknown
+                                                    messageType:MPMessageTypePushRegistration
                                                        userInfo:nil
          ];
     });
