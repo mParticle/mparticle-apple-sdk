@@ -17,6 +17,7 @@
 #import "MPDevice.h"
 #import "MPUpload.h"
 #import "MPStateMachine.h"
+#import "MParticleKit.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -469,8 +470,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     }
     
     dispatch_async([MParticle messageQueue], ^{
-        
-        [MParticle.sharedInstance.backendController skipNextUpload];
+        [(MParticleKit *)[MParticle.sharedInstance kitInstance:[MParticleKit kitCode]] skipNextUpload];
         [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:^{
             MPIdentityHTTPAliasRequest *request = [[MPIdentityHTTPAliasRequest alloc] initWithIdentityApiAliasRequest:aliasRequest];
             NSDictionary *aliasDictionary = request.dictionaryRepresentation;
