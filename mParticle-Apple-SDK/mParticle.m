@@ -24,6 +24,7 @@
 #import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
 #import "MPResponseConfig.h"
+#import "MPMediator.h"
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
@@ -62,6 +63,8 @@ NSString *const kMPStateKey = @"state";
 > {
     BOOL sdkInitialized;
 }
+
+@property (nonatomic, strong, readonly) MPMediator *mediator;
 
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
@@ -319,6 +322,7 @@ NSString *const kMPStateKey = @"state";
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine alloc] init];
     _webView = [[MParticleWebView alloc] init];
+    _mediator = [[MPMediator alloc] init];
     
     return self;
 }
@@ -785,7 +789,7 @@ NSString *const kMPStateKey = @"state";
 
 #pragma mark Basic tracking
 - (nullable NSSet *)activeTimedEvents {
-    return self.backendController.eventSet;
+    return self.mediator.eventLogging.eventSet;
 }
 
 - (void)beginTimedEvent:(MPEvent *)event {
@@ -820,37 +824,37 @@ NSString *const kMPStateKey = @"state";
     dispatch_async([MParticle messageQueue], ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
         
-        [self.backendController logEvent:event
+        [self.mediator.eventLogging logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                               if (kitEvent) {
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       // Forwarding calls to kits
-                                       [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(endTimedEvent:)
-                                                                                         event:kitEvent
-                                                                                    parameters:nil
-                                                                                   messageType:MPMessageTypeEvent
-                                                                                      userInfo:nil
-                                        ];
-                                       
-                                       [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logEvent:)
-                                                                                         event:kitEvent
-                                                                                    parameters:nil
-                                                                                   messageType:MPMessageTypeEvent
-                                                                                      userInfo:nil
-                                        ];
-                                   });
-                               } else {
-                                   MPILogDebug(@"Blocked timed event end from kits: %@", event);
-                               }
-                           }
-                       }];
+            if (execStatus == MPExecStatusSuccess) {
+                MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+                if (kitEvent) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        // Forwarding calls to kits
+                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(endTimedEvent:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeEvent
+                                                                       userInfo:nil
+                         ];
+                        
+                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logEvent:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeEvent
+                                                                       userInfo:nil
+                         ];
+                    });
+                } else {
+                    MPILogDebug(@"Blocked timed event end from kits: %@", event);
+                }
+            }
+        }];
     });
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
-    return [self.backendController eventWithName:eventName];
+    return [self.mediator.eventLogging eventWithName:eventName];
 }
 
 - (void)logEvent:(MPBaseEvent *)event {
@@ -867,9 +871,7 @@ NSString *const kMPStateKey = @"state";
         dispatch_async(messageQueue, ^{
             [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
             
-            [self.backendController logBaseEvent:event
-                               completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {
-                               }];
+            [self.mediator.eventLogging logBaseEvent:event completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
             MPBaseEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForBaseEvent:event] : event;
             if (kitEvent) {
             // Forwarding calls to kits
@@ -899,9 +901,7 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
 
-        [self.backendController logEvent:event
-                       completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                       }];
+        [self.mediator.eventLogging logEvent:event completionHandler:^(MPEvent *event, MPExecStatus execStatus) {}];
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
             // Forwarding calls to kits
@@ -966,7 +966,7 @@ NSString *const kMPStateKey = @"state";
 }
 
 - (void)logEvent:(NSString *)eventName eventType:(MPEventType)eventType eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
-    MPEvent *event = [self.backendController eventWithName:eventName];
+    MPEvent *event = [self.mediator.eventLogging eventWithName:eventName];
     if (event) {
         event.type = eventType;
     } else {
@@ -988,26 +988,26 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
 
-        [self.backendController logScreen:event
-                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                            if (execStatus == MPExecStatusSuccess) {
-                                MPILogDebug(@"Logged screen event: %@", event);
-                                MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForScreenEvent:event] : event;
-                                if (kitEvent) {
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        // Forwarding calls to kits
-                                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logScreen:)
-                                                                                          event:kitEvent
-                                                                                     parameters:nil
-                                                                                    messageType:MPMessageTypeScreenView
-                                                                                       userInfo:nil
-                                         ];
-                                    });
-                                } else {
-                                    MPILogDebug(@"Blocked screen event from kits: %@", event);
-                                }
-                            }
-                        }];
+        [self.mediator.eventLogging logScreen:event
+                            completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Logged screen event: %@", event);
+                MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForScreenEvent:event] : event;
+                if (kitEvent) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        // Forwarding calls to kits
+                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logScreen:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeScreenView
+                                                                       userInfo:nil
+                         ];
+                    });
+                } else {
+                    MPILogDebug(@"Blocked screen event from kits: %@", event);
+                }
+            }
+        }];
     });
 }
 
@@ -1021,7 +1021,7 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    MPEvent *event = [self.backendController eventWithName:screenName];
+    MPEvent *event = [self.mediator.eventLogging eventWithName:screenName];
     if (!event) {
         event = [[MPEvent alloc] initWithName:screenName type:MPEventTypeNavigation];
     }
@@ -1058,7 +1058,7 @@ NSString *const kMPStateKey = @"state";
         return;
     }
     
-    MPEvent *event = [self.backendController eventWithName:breadcrumbName];
+    MPEvent *event = [self.mediator.eventLogging eventWithName:breadcrumbName];
     if (!event) {
         event = [[MPEvent alloc] initWithName:breadcrumbName type:MPEventTypeOther];
     }
@@ -1072,26 +1072,26 @@ NSString *const kMPStateKey = @"state";
     dispatch_async([MParticle messageQueue], ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:breadcrumbName parameter2:eventInfo];
 
-        [self.backendController leaveBreadcrumb:event
-                              completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                                  if (execStatus == MPExecStatusSuccess) {
-                                      MPILogDebug(@"Left breadcrumb: %@", event);
-                                      MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                                      if (kitEvent) {
-                                          dispatch_async(dispatch_get_main_queue(), ^{
-                                              // Forwarding calls to kits
-                                              [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(leaveBreadcrumb:)
-                                                                                                event:kitEvent
-                                                                                           parameters:nil
-                                                                                          messageType:MPMessageTypeBreadcrumb
-                                                                                             userInfo:nil
-                                               ];
-                                          });
-                                      } else {
-                                          MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
-                                      }
-                                  }
-                              }];
+        [self.mediator.eventLogging leaveBreadcrumb:event
+                                  completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Left breadcrumb: %@", event);
+                MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+                if (kitEvent) {
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        // Forwarding calls to kits
+                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(leaveBreadcrumb:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeBreadcrumb
+                                                                       userInfo:nil
+                         ];
+                    });
+                } else {
+                    MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
+                }
+            }
+        }];
     });
 }
 
@@ -1108,22 +1108,22 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:message];
 
-        [self.backendController logError:message
-                               exception:nil
-                          topmostContext:nil
-                               eventInfo:eventInfo
-                       completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged error with message: %@", message);
-                               
-                               // Forwarding calls to kits
-                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                               [queueParameters addParameter:message];
-                               [queueParameters addParameter:eventInfo];
-                               
-                               [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
-                           }
-                       }];
+        [self.mediator.eventLogging logError:message
+                                   exception:nil
+                              topmostContext:nil
+                                   eventInfo:eventInfo
+                           completionHandler:^(NSString *message, MPExecStatus execStatus) {
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Logged error with message: %@", message);
+                
+                // Forwarding calls to kits
+                MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                [queueParameters addParameter:message];
+                [queueParameters addParameter:eventInfo];
+                
+                [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
+            }
+        }];
     });
 }
 
@@ -1135,21 +1135,21 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:exception];
 
-        [self.backendController logError:nil
-                               exception:exception
-                          topmostContext:topmostContext
-                               eventInfo:nil
-                       completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
-                               
-                               // Forwarding calls to kits
-                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                               [queueParameters addParameter:exception];
-                               
-                               [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logException:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
-                           }
-                       }];
+        [self.mediator.eventLogging logError:nil
+                                   exception:exception
+                              topmostContext:topmostContext
+                                   eventInfo:nil
+                           completionHandler:^(NSString *message, MPExecStatus execStatus) {
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
+                
+                // Forwarding calls to kits
+                MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                [queueParameters addParameter:exception];
+                
+                [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logException:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
+            }
+        }];
     });
 }
 
@@ -1165,10 +1165,10 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:message];
 
-        [self.backendController logCrash:message
-                              stackTrace:stackTrace
-                           plCrashReport:plCrashReport
-                       completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {
+        [self.mediator.eventLogging logCrash:message
+                                  stackTrace:stackTrace
+                               plCrashReport:plCrashReport
+                           completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {
             if (execStatus == MPExecStatusSuccess) {
                 MPILogDebug(@"Logged crash with message: %@", message);
             }
@@ -1188,13 +1188,13 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:commerceEvent];
 
-        [self.backendController logCommerceEvent:commerceEvent
-                               completionHandler:^(MPCommerceEvent *commerceEvent, MPExecStatus execStatus) {
-                                   if (execStatus == MPExecStatusSuccess) {
-                                   } else {
-                                       MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
-                                   }
-                               }];
+        [self.mediator.eventLogging logCommerceEvent:commerceEvent
+                                   completionHandler:^(MPCommerceEvent *commerceEvent, MPExecStatus execStatus) {
+            if (execStatus == MPExecStatusSuccess) {
+            } else {
+                MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
+            }
+        }];
         
         MPCommerceEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForCommerceEvent:commerceEvent] : commerceEvent;
         if (kitEvent) {
@@ -1228,25 +1228,25 @@ NSString *const kMPStateKey = @"state";
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(increaseAmount) parameter2:eventName parameter3:eventInfo];
     
-    [self.backendController logEvent:event
-                   completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                       if (execStatus == MPExecStatusSuccess) {
-                           MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                           if (kitEvent) {
-                               dispatch_async(dispatch_get_main_queue(), ^{
-                                   // Forwarding calls to kits
-                                   [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logLTVIncrease:event:)
-                                                                                     event:nil
-                                                                                parameters:nil
-                                                                               messageType:MPMessageTypeUnknown
-                                                                                  userInfo:nil
-                                    ];
-                               });
-                           } else {
-                               MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
-                           }
-                       }
-                   }];
+    [self.mediator.eventLogging logEvent:event
+                       completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
+        if (execStatus == MPExecStatusSuccess) {
+            MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+            if (kitEvent) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    // Forwarding calls to kits
+                    [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(logLTVIncrease:event:)
+                                                                      event:nil
+                                                                 parameters:nil
+                                                                messageType:MPMessageTypeUnknown
+                                                                   userInfo:nil
+                     ];
+                });
+            } else {
+                MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
+            }
+        }
+    }];
 }
 
 #pragma mark Extensions
@@ -1444,14 +1444,12 @@ NSString *const kMPStateKey = @"state";
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:networkPerformance];
         
-        [self.backendController logNetworkPerformanceMeasurement:networkPerformance
+        [self.mediator.eventLogging logNetworkPerformanceMeasurement:networkPerformance
                                                completionHandler:^(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus) {
-                                                   
-                                                   if (execStatus == MPExecStatusSuccess) {
-                                                       MPILogDebug(@"Logged network performance measurement");
-                                                   }
-                                               }];
-        
+            if (execStatus == MPExecStatusSuccess) {
+                MPILogDebug(@"Logged network performance measurement");
+            }
+        }];
     });
 }
 
