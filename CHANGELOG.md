@@ -1,3 +1,10 @@
+## [8.14.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.1...v8.14.2) (2023-07-31)
+
+
+### Bug Fixes
+
+* Update imports for react native compatibility ([#212](https://github.com/mParticle/mparticle-apple-sdk/issues/212)) ([c22e2f1](https://github.com/mParticle/mparticle-apple-sdk/commit/c22e2f12d87ae826697bffdbbbfa176e69219afa))
+
 ## [8.14.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.0...v8.14.1) (2023-07-06)
 
 
