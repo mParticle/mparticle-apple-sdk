@@ -53,19 +53,6 @@ end
 
 In the cases above, the _Appboy_, _Branch Metrics_, and _Localytics_ kits would be integrated together with the core SDK.
 
-#### Working with Static Libraries
-
-mParticle's iOS SDK and its embedded kits are [dynamic libraries](https://developer.apple.com/library/content/documentation/DeveloperTools/Conceptual/DynamicLibraries/100-Articles/OverviewOfDynamicLibraries.html), meaning their code is loaded into an app's address space only as needed, as opposed to a 'static' library, which is always included in full in the app's executable file. Some mParticle embedded kits rely on static libraries maintained by our partners. A static framework, wrapped in a dynamic library is incompatible with CocoaPods' `use frameworks!` option. Affected kits are: Appboy, AppsFlyer, comScore, Kahuna, Kochava, Localytics and Radar.
-
-Attempting to use these kits with `use_frameworks!` will result in the following error message:
-
-`[!] The '<your Target>' target has transitive dependencies that include static binaries: (<path to framework>)`
-
-If you need to reference these kits' methods from user-level code, you must incorporate them manually. To do this:
-
-1. Add the partner SDK (for example, `Appboy-iOS-SDK` or `AppsFlyer-SDK`) directly to your Podfile.
-2. Remove the embedded kit pod(`mParticle-<partner name>`) from the Podfile, download the source code from Github and manually drag its `.m` and `.h` files directly into your project.
-
 #### Crash Reporter
 
 For iOS only, you can also choose to install the crash reporter by including it as a separate pod:
