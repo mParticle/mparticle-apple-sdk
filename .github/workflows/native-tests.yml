@@ -10,76 +10,61 @@ on:
 
 jobs:
   ios-unit-tests:
+    strategy:
+      matrix:
+        xcode_version: ['/Applications/Xcode_14.2.app', '/Applications/Xcode_15.0.app']
     runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Select Xcode
+        run: sudo xcode-select -s ${{ matrix.xcode_version }}
+        
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
 
   tvos-unit-tests:
+    strategy:
+      matrix:
+        xcode_version: ['/Applications/Xcode_14.2.app', '/Applications/Xcode_15.0.app']
     runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Select Xcode
+        run: sudo xcode-select -s ${{ matrix.xcode_version }}
+        
       - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=tvOS Simulator,name=Apple TV,OS=latest," test
       
   ios-nolocation-unit-tests:
+    strategy:
+      matrix:
+        xcode_version: ['/Applications/Xcode_14.2.app', '/Applications/Xcode_15.0.app']
     runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Select Xcode
+        run: sudo xcode-select -s ${{ matrix.xcode_version }}
+        
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
 
   tvos-nolocation-unit-tests:
+    strategy:
+      matrix:
+        xcode_version: ['/Applications/Xcode_14.2.app', '/Applications/Xcode_15.0.app']
     runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
-
-##################################################################
-# Temporary tests for Xcode 15 beta, REMOVE AFTER OFFICIAL RELEASE
-# NOTE: Currently (8/14/23), the macos-latest runner still points to macOS 12, so we have to manually specify macOS 13 for now
-  ios-unit-tests-xcode15-beta:
-    runs-on: macos-13
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run iOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
-
-  tvos-unit-tests-xcode15-beta:
-    runs-on: macos-13
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
-      
-  ios-nolocation-unit-tests-xcode15-beta:
-    runs-on: macos-13
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run iOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
-
-  tvos-nolocation-unit-tests-xcode15-beta:
-    runs-on: macos-13
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
+      - name: Select Xcode
+        run: sudo xcode-select -s ${{ matrix.xcode_version }}
+        
       - name: Run tvOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
