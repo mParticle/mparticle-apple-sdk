@@ -448,7 +448,7 @@
     result = builder.url.url.absoluteString;
     XCTAssertEqualObjects(result, @"https://identity.mp.example.com/v1/12/modify");
     
-    networkOptions.identityHost = @"https://example.com";
+    networkOptions.identityHost = @"example.com";
     networkOptions.overridesIdentitySubdirectory = YES;
     baseURL = [networkCommunication modifyURL];
     builder = [MPURLRequestBuilder newBuilderWithURL:baseURL];
@@ -456,7 +456,7 @@
     result = builder.url.defaultURL.absoluteString;
     XCTAssertEqualObjects(result, @"https://identity.mparticle.com/v1/12/modify");
     result = builder.url.url.absoluteString;
-    XCTAssertEqualObjects(result, @"https://https://example.com/12/modify");
+    XCTAssertEqualObjects(result, @"https://example.com/12/modify");
     
     networkOptions.identityHost = (id _Nonnull)nil;
     baseURL = [networkCommunication modifyURL];
