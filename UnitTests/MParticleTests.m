@@ -642,7 +642,7 @@
         NSNumber *sessionID = userInfo[mParticleSessionId];
         XCTAssertEqualObjects(NSStringFromClass([sessionID class]), @"__NSCFNumber");
         NSString *sessionUUID = userInfo[mParticleSessionUUID];
-        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
+        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"Swift.__StringStorage");
         [expectation fulfill];
     };
     testNotificationHandler = block;
@@ -662,7 +662,7 @@
         NSNumber *sessionID = userInfo[mParticleSessionId];
         XCTAssertEqualObjects(NSStringFromClass([sessionID class]), @"__NSCFNumber");
         NSString *sessionUUID = userInfo[mParticleSessionUUID];
-        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
+        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"Swift.__StringStorage");
         [expectation fulfill];
     };
     testNotificationHandler = block;
