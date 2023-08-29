@@ -227,7 +227,8 @@ int main(int argc, char *argv[]);
 }
 
 - (NSString *)language {
-    return [[NSLocale preferredLanguages] objectAtIndex:0];
+    // Extra logic added to strip out the country code to stay consistent with earlier iOS releases
+    return [[[[NSLocale preferredLanguages] firstObject] componentsSeparatedByString:@"-"] firstObject];
 }
 
 - (NSNumber *)limitAdTracking {
