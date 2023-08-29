@@ -9,38 +9,28 @@ on:
       - development
 
 jobs:
-  ios-unit-tests:
-    runs-on: macos-latest
+  native-unit-tests:
+    strategy:
+      matrix:
+        xcode: ["14.3.1", "15.0"]
+        platform: [iOS, tvOS]
+        scheme: [mParticle-Apple-SDK, mParticle-Apple-SDK-NoLocation]
+        include:
+          - xcode: "14.3.1"
+            os: "16.4"
+          - xcode: "15.0"
+            os: "17.0"
+          - platform: iOS
+            device: iPhone 14
+          - platform: tvOS
+            device: Apple TV
+    runs-on: macos-13
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+        
       - name: Run iOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
-
-  tvos-unit-tests:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
-      
-  ios-nolocation-unit-tests:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run iOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" test
-
-  tvos-nolocation-unit-tests:
-    runs-on: macos-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Run tvOS unit tests
-        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme mParticle-Apple-SDK-NoLocation -destination "platform=tvOS Simulator,name=Apple TV,OS=latest" test
+        run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'platform=${{ matrix.platform }} Simulator,name=${{ matrix.device }},OS=${{ matrix.os }}' test
