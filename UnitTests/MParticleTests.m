@@ -640,9 +640,9 @@
         NSDictionary *userInfo = self->lastNotification.userInfo;
         XCTAssertEqual(2, userInfo.count);
         NSNumber *sessionID = userInfo[mParticleSessionId];
-        XCTAssertEqualObjects(NSStringFromClass([sessionID class]), @"__NSCFNumber");
+        XCTAssertTrue([sessionID isKindOfClass:[NSNumber class]]);
         NSString *sessionUUID = userInfo[mParticleSessionUUID];
-        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
+        XCTAssertTrue([sessionUUID isKindOfClass:[NSString class]]);
         [expectation fulfill];
     };
     testNotificationHandler = block;
@@ -660,9 +660,9 @@
         NSDictionary *userInfo = self->lastNotification.userInfo;
         XCTAssertEqual(2, userInfo.count);
         NSNumber *sessionID = userInfo[mParticleSessionId];
-        XCTAssertEqualObjects(NSStringFromClass([sessionID class]), @"__NSCFNumber");
+        XCTAssertTrue([sessionID isKindOfClass:[NSNumber class]]);
         NSString *sessionUUID = userInfo[mParticleSessionUUID];
-        XCTAssertEqualObjects(NSStringFromClass([sessionUUID class]), @"__NSCFString");
+        XCTAssertTrue([sessionUUID isKindOfClass:[NSString class]]);
         [expectation fulfill];
     };
     testNotificationHandler = block;
