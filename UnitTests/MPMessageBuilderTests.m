@@ -20,7 +20,6 @@
 #import "MPStateMachine.h"
 
 NSString *const kMPStateInformationKey = @"cs";
-NSString *const kMPStateDataConnectionKey = @"dct";
 
 @interface MParticle ()
 
@@ -114,73 +113,7 @@ NSString *const kMPStateDataConnectionKey = @"dct";
                                                                            session:self.session
                                                                        messageInfo:messageInfo];
     
-    XCTAssertEqualObjects(@"offline", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
-}
-
-- (void)testMessageCurrentStateFieldsWWAN {
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
-    id mockStateMachine = OCMPartialMock(stateMachine);
-    
-    [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(MParticleNetworkStatusReachableViaWAN)] networkStatus];
-
-    MParticle *instance = [MParticle sharedInstance];
-    id mockInstance = OCMPartialMock(instance);
-    [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
-    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
-    
-    NSDictionary *messageInfo = @{@"key1":@"value1",
-                                  @"key2":@"value2",
-                                  @"key3":@"value3"};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:self.session
-                                                                       messageInfo:messageInfo];
-    
-    XCTAssertEqualObjects(@"mobile", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
-}
-
-- (void)testMessageCurrentStateFieldsWifi {
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
-    id mockStateMachine = OCMPartialMock(stateMachine);
-    
-    [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(MParticleNetworkStatusReachableViaWiFi)] networkStatus];
-    
-    MParticle *instance = [MParticle sharedInstance];
-    id mockInstance = OCMPartialMock(instance);
-    [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
-    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
-    
-    NSDictionary *messageInfo = @{@"key1":@"value1",
-                                  @"key2":@"value2",
-                                  @"key3":@"value3"};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:self.session
-                                                                       messageInfo:messageInfo];
-    
-    XCTAssertEqualObjects(@"wifi", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
-}
-
-- (void)testMessageCurrentStateFieldsOffline {
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
-    id mockStateMachine = OCMPartialMock(stateMachine);
-    
-    [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(MParticleNetworkStatusNotReachable)] networkStatus];
-    
-    MParticle *instance = [MParticle sharedInstance];
-    id mockInstance = OCMPartialMock(instance);
-    [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
-    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
-    
-    NSDictionary *messageInfo = @{@"key1":@"value1",
-                                  @"key2":@"value2",
-                                  @"key3":@"value3"};
-    
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:self.session
-                                                                       messageInfo:messageInfo];
-    
-    XCTAssertEqualObjects(@"offline", messageBuilder.messageInfo[kMPStateInformationKey][kMPStateDataConnectionKey]);
+    XCTAssertNil(messageBuilder.messageInfo[kMPStateInformationKey]);
 }
 
 - (void)testEncodingandDecodingMessage {

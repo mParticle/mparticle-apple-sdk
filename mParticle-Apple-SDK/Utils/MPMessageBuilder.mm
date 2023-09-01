@@ -5,7 +5,6 @@
 #import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
 #import "MPEnums.h"
-#import "MPCurrentState.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
@@ -273,13 +272,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 }
 
 #pragma mark Private methods
-- (MPMessageBuilder *)withCurrentState {
-    MPCurrentState *currentState = [[MPCurrentState alloc] init];
-    messageDictionary[kMPStateInformationKey] = [currentState dictionaryRepresentation];
-    
-    return self;
-}
-
 - (MPMessageBuilder *)withUserAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange {
     messageDictionary[kMPUserAttributeWasDeletedKey] = userAttributeChange.deleted ? @YES : @NO;
     messageDictionary[kMPEventNameKey] = userAttributeChange.key;
@@ -317,7 +309,6 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 + (MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType session:(MPSession *)session messageInfo:(NSDictionary<NSString *, id> *)messageInfo {
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:messageType session:session messageInfo:messageInfo];
-    [messageBuilder withCurrentState];
     return messageBuilder;
 }
 
