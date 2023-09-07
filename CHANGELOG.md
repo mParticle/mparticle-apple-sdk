@@ -1,3 +1,10 @@
+# [8.15.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.2...v8.15.0) (2023-09-07)
+
+
+### Features
+
+* Remove Disk Space API Usage ([#221](https://github.com/mParticle/mparticle-apple-sdk/issues/221)) ([8bdf935](https://github.com/mParticle/mparticle-apple-sdk/commit/8bdf9351ff53847f54192e7d5182ea77b5ceb0c8))
+
 ## [8.14.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.1...v8.14.2) (2023-07-31)
 
 
