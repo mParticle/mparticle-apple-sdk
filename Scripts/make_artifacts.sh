@@ -25,6 +25,10 @@ function build_xcframework_artifacts() {
     ./Scripts/xcframework.sh mParticle-Apple-SDK mParticle_Apple_SDK
     ./Scripts/xcframework.sh mParticle-Apple-SDK-NoLocation mParticle_Apple_SDK_NoLocation
 
+    # Sign the xcframeworks
+    codesign --timestamp -s "Apple Distribution: mParticle, inc (DLD43Y3TRP)" mParticle_Apple_SDK.xcframework
+    codesign --timestamp -s "Apple Distribution: mParticle, inc (DLD43Y3TRP)" mParticle_Apple_SDK_NoLocation.xcframework
+
     # Zip the xcframeworks
     zip -r mParticle_Apple_SDK.xcframework.zip mParticle_Apple_SDK.xcframework
     zip -r mParticle_Apple_SDK_NoLocation.xcframework.zip mParticle_Apple_SDK_NoLocation.xcframework

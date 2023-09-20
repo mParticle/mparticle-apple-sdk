@@ -47,12 +47,18 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.MP_IOS_SDK_S3_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.MP_IOS_SDK_S3_SECRET }}
           AWS_DEFAULT_REGION: ${{ secrets.MP_IOS_SDK_S3_REGION }}
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
         run: |
           env | grep -q '^GITHUB_ACCESS_TOKEN=' || (echo "Required environment variable GITHUB_ACCESS_TOKEN is not set" && exit 1)
           env | grep -q '^COCOAPODS_TRUNK_TOKEN=' || (echo "Required environment variable COCOAPODS_TRUNK_TOKEN is not set" && exit 1)
           env | grep -q '^AWS_ACCESS_KEY_ID=' || (echo "Required environment variable AWS_ACCESS_KEY_ID is not set" && exit 1)
           env | grep -q '^AWS_SECRET_ACCESS_KEY=' || (echo "Required environment variable AWS_SECRET_ACCESS_KEY is not set" && exit 1)
           env | grep -q '^AWS_DEFAULT_REGION=' || (echo "Required environment variable AWS_DEFAULT_REGION is not set" && exit 1)
+          env | grep -q '^BUILD_CERTIFICATE_BASE64=' || (echo "Required environment variable BUILD_CERTIFICATE_BASE64 is not set" && exit 1)
+          env | grep -q '^P12_PASSWORD=' || (echo "Required environment variable P12_PASSWORD is not set" && exit 1)
+          env | grep -q '^KEYCHAIN_PASSWORD=' || (echo "Required environment variable KEYCHAIN_PASSWORD is not set" && exit 1)
 
       - name: Setup git config
         run: |
@@ -70,6 +76,28 @@ jobs:
       - name: Merge release branch into main branch
         run: |
           git pull origin release/${{ github.run_number }}
+
+      - name: Install the signing certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_P12 }}
+          P12_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+          KEYCHAIN_PASSWORD: ${{ secrets.MP_IOS_SIGNING_CERTIFICATE_PASS }}
+        run: |
+          # Create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # Import certificate from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          # Create temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
+
+          # Import certificate to keychain
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Release --dry-run
         if: ${{ github.event.inputs.dryRun == 'true'}}
