@@ -49,9 +49,9 @@ NSString *const kMPIdentityURL = @"";
 NSString *const kMPIdentityKey = @"identity";
 
 NSString *const kMPURLScheme = @"https";
-NSString *const kMPURLHost = @"nativesdks.mparticle.com";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
-NSString *const kMPURLHostIdentity = @"identity.mparticle.com";
+NSString *const kMPURLHostEventSubdomain = @"nativesdks";
+NSString *const kMPURLHostIdentitySubdomain = @"identity";
 
 static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
@@ -114,6 +114,31 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 #pragma mark Private accessors
+
+- (NSString *)defaultHostWithSubdomain:(NSString *)subdomain apiKey:(NSString *)apiKey enableDirectRouting:(BOOL)enableDirectRouting {
+    if (enableDirectRouting) {
+        NSArray *splitKey = [apiKey componentsSeparatedByString:@"-"];
+        if (splitKey.count <= 1) {
+            // Handle case with no prefix, default to US1 (old keys)
+            return [NSString stringWithFormat:@"%@.us1.mparticle.com", subdomain];
+        }
+        return [NSString stringWithFormat:@"%@.%@.mparticle.com", subdomain, splitKey[0]];
+    }
+    
+    // Handle feature flag disabled (old behavior)
+    return [NSString stringWithFormat:@"%@.mparticle.com", subdomain];
+}
+
+- (NSString *)defaultEventHost {
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    return [self defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+}
+
+- (NSString *)defaultIdentityHost {
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    return [self defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+}
+
 - (MPURL *)configURL {
     if (_configURL) {
         return _configURL;
@@ -165,8 +190,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
-    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, kMPURLHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
+    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
     if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
@@ -213,8 +238,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
-    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, pathComponent];
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+    NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
@@ -237,8 +262,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: kMPURLHostIdentity;
-    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, kMPURLHostIdentity, kMPIdentityVersion, [MPPersistenceController mpId],  pathComponent];
+    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
@@ -267,13 +292,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *pathComponent = @"alias";
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
-    NSString *eventHost = [MParticle sharedInstance].networkOptions.aliasHost ?: kMPURLHost;
-    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, kMPURLHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
+    NSString *eventHost = [MParticle sharedInstance].networkOptions.aliasHost ?: self.defaultEventHost;
+    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
     BOOL overrides = [MParticle sharedInstance].networkOptions.overridesAliasSubdirectory;
     if (![MParticle sharedInstance].networkOptions.eventsOnly && ![MParticle sharedInstance].networkOptions.aliasHost) {
-        eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: kMPURLHost;
+        eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
         overrides = [MParticle sharedInstance].networkOptions.overridesEventsSubdirectory;
     }
     
