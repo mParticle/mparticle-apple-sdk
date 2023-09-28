@@ -40,7 +40,6 @@
 #endif
 
 const NSInteger kNilAttributeValue = 101;
-const NSInteger kExceededAttributeCountLimit = 103;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
 const NSInteger kExceededAttributeKeyMaximumLength = 105;
 const NSInteger kInvalidDataType = 106;
@@ -1282,14 +1281,6 @@ static BOOL skipNextUpload = NO;
 
 + (BOOL)checkAttribute:(NSDictionary *)attributesDictionary key:(NSString *)key value:(id)value error:(out NSError *__autoreleasing *)error  {
     static NSString *attributeValidationErrorDomain = @"Attribute Validation";
-    if (attributesDictionary.count >= LIMIT_ATTR_COUNT) {
-        if (error) {
-            *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kExceededAttributeCountLimit userInfo:nil];
-        }
-        MPILogError(@"Error while setting attribute: there are more attributes than the maximum number allowed.");
-        return NO;
-    }
-    
     if (MPIsNull(key)) {
         if (error) {
             *error = [NSError errorWithDomain:attributeValidationErrorDomain code:kInvalidKey userInfo:nil];

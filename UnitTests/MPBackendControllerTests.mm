@@ -456,14 +456,13 @@
 }
 
 
-- (void)testCheckAttributeTooManyAttributes {
+- (void)testCheckAttributeNoMaximum {
     id mockAttributes = [OCMockObject mockForClass:[NSMutableDictionary class]];
-    OCMStub([mockAttributes count]).andReturn(LIMIT_ATTR_COUNT);
+    OCMStub([mockAttributes count]).andReturn(200);
     NSError *error = nil;
     BOOL success = [MPBackendController checkAttribute:mockAttributes key:@"foo" value:@"bar" error:&error];
-    XCTAssertFalse(success);
-    XCTAssertNotNil(error);
-    XCTAssertEqual(kExceededAttributeCountLimit, error.code);
+    XCTAssertTrue(success);
+    XCTAssertNil(error);
 }
 
 - (void)testCheckAttributeKeyTooLong {

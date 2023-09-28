@@ -46,13 +46,6 @@
     
     NSUInteger numberOfEntries = attributes.count;
     
-    NSAssert(numberOfEntries <= LIMIT_ATTR_COUNT, @"Event info has more than 100 key/value pairs.");
-    
-    if (numberOfEntries > LIMIT_ATTR_COUNT) {
-        MPILogError(@"Number of attributes exceeds the maximum number of attributes allowed per event. Discarding attributes.");
-        return;
-    }
-    
     if (([attributes isKindOfClass:[NSDictionary<NSString *,id> class]]) && (numberOfEntries > 0)) {
         __block BOOL respectsConstraints = YES;
         
