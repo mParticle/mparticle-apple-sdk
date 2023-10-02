@@ -48,7 +48,6 @@ typedef NS_ENUM(NSUInteger, MPExecStatus) {
 
 extern const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold;
 extern const NSInteger kNilAttributeValue;
-extern const NSInteger kExceededAttributeCountLimit;
 extern const NSInteger kExceededAttributeValueMaximumLength;
 extern const NSInteger kExceededAttributeKeyMaximumLength;
 extern const NSInteger kInvalidDataType;

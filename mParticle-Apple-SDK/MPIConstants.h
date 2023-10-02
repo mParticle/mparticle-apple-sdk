@@ -467,7 +467,6 @@ extern const NSInteger SEARCH_ADS_ATTRIBUTION_MAX_RETRIES;
 extern const NSTimeInterval NETWORK_REQUEST_MAX_WAIT_SECONDS;
 
 // Attributes limits
-extern const NSInteger LIMIT_ATTR_COUNT;
 extern const NSInteger LIMIT_ATTR_KEY_LENGTH;
 extern const NSInteger LIMIT_ATTR_VALUE_LENGTH;
 extern const NSInteger MAX_USER_ATTR_LIST_SIZE;
