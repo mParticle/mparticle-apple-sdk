@@ -74,6 +74,8 @@ NSString * const MPKitAPIErrorKey = @"mParticle Kit API Error";
         return MPMessageTypeBreadcrumb;
     } else if ([messageTypeString isEqualToString:kMPMessageTypeStringProfile]) {
         return MPMessageTypeProfile;
+    } else if ([messageTypeString isEqualToString:kMPMessageTypeStringPushNotification]) {
+        return MPMessageTypePushNotification;
     } else if ([messageTypeString isEqualToString:kMPMessageTypeStringPushNotificationInteraction]) {
         return MPMessageTypePushNotificationInteraction;
     } else if ([messageTypeString isEqualToString:kMPMessageTypeStringCommerceEvent]) {

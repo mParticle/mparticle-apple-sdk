@@ -184,7 +184,7 @@
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypePushNotification
-                                                       userInfo:nil
+                                                       userInfo:userInfo
          ];
     });
 }
@@ -227,7 +227,17 @@
         
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
-                [kitRegister.wrapperInstance userNotificationCenter:center willPresentNotification:notification];
+                MPKitExecStatus *execStatus = [kitRegister.wrapperInstance userNotificationCenter:center willPresentNotification:notification];
+                
+                if (execStatus.success) {
+                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification execStatus:execStatus];
+                    
+                    dispatch_async([MParticle messageQueue], ^{
+                        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+                    });
+                    
+                    MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
+                }
             }
         }
     });
@@ -255,14 +265,13 @@
                 MPKitExecStatus *execStatus = [kitRegister.wrapperInstance userNotificationCenter:center didReceiveNotificationResponse:response];
                 
                 if (execStatus.success) {
-                    
-                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotification execStatus:execStatus];
+                    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypePushNotificationInteraction execStatus:execStatus];
                     
                     dispatch_async([MParticle messageQueue], ^{
                         [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
                     });
                     
-                    MPILogDebug(@"Forwarded user notifications call to kit: %@", kitRegister.name);
+                    MPILogDebug(@"Forwarded user notifications response call to kit: %@", kitRegister.name);
                 }
             }
         }
