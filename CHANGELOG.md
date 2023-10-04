@@ -1,3 +1,10 @@
+## [8.15.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.0...v8.15.1) (2023-10-04)
+
+
+### Bug Fixes
+
+* Push Registration events to show forwarded for kits ([#208](https://github.com/mParticle/mparticle-apple-sdk/issues/208)) ([705e568](https://github.com/mParticle/mparticle-apple-sdk/commit/705e568f68484ab0f41430832f9ed66c42a72395))
+
 # [8.15.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.14.2...v8.15.0) (2023-09-07)
 
 
