@@ -3,7 +3,6 @@
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
 #import "MPStateMachine.h"
-#include "MPHasher.h"
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"
@@ -382,12 +381,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     __block BOOL isMatch = NO;
     [attributes enumerateKeysAndObjectsUsingBlock:^(NSString * _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-        NSString *hashedAttribute = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        NSString *hashedAttribute = [MPIHasher hashUserAttributeKey:key];
         if ([hashedAttribute isEqualToString:configuration.attributeValueFilteringHashedAttribute]) {
             *stop = YES;
             if ([obj isKindOfClass:[NSString class]]) {
                 NSString *value = (NSString *)obj;
-                NSString *hashedValue = [NSString stringWithCString:mParticle::Hasher::hashString([[value lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                NSString *hashedValue = [MPIHasher hashUserAttributeValue:value];
                 if ([hashedValue isEqualToString:configuration.attributeValueFilteringHashedValue]) {
                     isMatch = YES;
                 }
@@ -435,9 +434,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     MPGDPRConsent *gdprConsent = gdprConsentState[purpose];
                     BOOL userConsented = gdprConsent.consented;
                     
-                    string stringToHash = string(kMPConsentGDPRRegulationType.UTF8String);
-                    stringToHash += string([[purpose lowercaseString] UTF8String]);
-                    NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+                    NSString *purposeHash = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
                     
                     if (consented == userConsented && [purposeHash isEqual:hashString]) {
                         isMatch = YES;
@@ -448,9 +445,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
                 
                 if (ccpaConsentState != nil) {
-                    string stringToHash = string(kMPConsentCCPARegulationType.UTF8String);
-                    stringToHash += string(kMPConsentCCPAPurposeName.UTF8String);
-                    NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(stringToHash).c_str() encoding:NSUTF8StringEncoding];
+                    NSString *purposeHash = [MPIHasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
                     
                     if (consented == ccpaConsentState.consented && [purposeHash isEqual:hashString]) {
                         isMatch = YES;
@@ -732,12 +727,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSDictionary *commerceEventAttributeFilters = kitConfiguration.commerceEventAttributeFilters;
         if (commerceEventAttributeFilters) {
             // Commerce event attribute filter (expanded attributes)
-            __block NSString *auxString;
             __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] init];
             
             [[forwardCommerceEvent beautifiedAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                hashValue = [MPIHasher hashCommerceEventAttribute:[commerceEvent type] key:key];
                 
                 id filterValue = commerceEventAttributeFilters[hashValue];
                 BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -753,9 +746,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             filteredAttributes = [[NSMutableDictionary alloc] init];
             
             [[forwardCommerceEvent customAttributes] enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
-                
+                hashValue = [MPIHasher hashCommerceEventAttribute:[commerceEvent type] key:key];
+
                 id filterValue = commerceEventAttributeFilters[hashValue];
                 BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
                 
@@ -770,8 +762,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             __block MPTransactionAttributes *filteredTransactionAttributes = [[MPTransactionAttributes alloc] init];
             
             [[forwardCommerceEvent.transactionAttributes beautifiedDictionaryRepresentation] enumerateKeysAndObjectsUsingBlock:^(id _Nonnull key, id _Nonnull obj, BOOL * _Nonnull stop) {
-                auxString = [NSString stringWithFormat:@"%@%@", [@([commerceEvent type]) stringValue], key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[auxString lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+                hashValue = [MPIHasher hashCommerceEventAttribute:[commerceEvent type] key:key];
                 
                 id filterValue = commerceEventAttributeFilters[hashValue];
                 BOOL filterValueIsFalse = [filterValue isEqualToNumber:zero];
@@ -859,14 +850,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     NSDictionary *attributeFilters;
     NSDictionary *nameFilters;
-    NSString *eventTypeString;
     
     if ([selectorString isEqualToString:@"logScreen:"]) { // Screen name and screen attribute filters
-        eventTypeString = @"0";
         nameFilters = kitConfiguration.screenNameFilters;
         attributeFilters = kitConfiguration.screenAttributeFilters;
     } else { // Event name and event attribute filters
-        eventTypeString = [@(event.type) stringValue];
         nameFilters = kitConfiguration.eventNameFilters;
         attributeFilters = kitConfiguration.eventAttributeFilters;
     }
@@ -879,9 +867,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 
     if ([event isKindOfClass:[MPEvent class]]) {
-        __block NSString *auxString = [[NSString stringWithFormat:@"%@%@", eventTypeString, ((MPEvent *)event).name] lowercaseString];
-        hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                       encoding:NSUTF8StringEncoding];
+        hashValue = [MPIHasher hashEventName:event.type eventName:event.name isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
         
         shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -893,9 +879,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             __block NSMutableDictionary *filteredAttributes = [[NSMutableDictionary alloc] initWithCapacity:forwardEvent.customAttributes.count];
             
             [forwardEvent.customAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-                auxString = [NSString stringWithFormat:@"%@%@%@", eventTypeString, ((MPEvent *)event).name, key];
-                hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([auxString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                               encoding:NSUTF8StringEncoding];
+                hashValue = [MPIHasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
                 
                 id attributeFilterValue = attributeFilters[hashValue];
                 BOOL attributeFilterIsFalse = [attributeFilterValue isEqualToNumber:zero];
@@ -966,8 +950,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     if (kitConfiguration) {
         [userAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-            NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                     encoding:NSUTF8StringEncoding];
+            NSString *hashValue = [MPIHasher hashUserAttributeKey:key];
             
             BOOL shouldFilter = kitConfiguration.userAttributeFilters[hashValue] && [kitConfiguration.userAttributeFilters[hashValue] isEqualToNumber:@0];
             if (!shouldFilter) {
@@ -988,8 +971,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return nil;
     }
     
-    NSString *hashValue = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                             encoding:NSUTF8StringEncoding];
+    NSString *hashValue = [MPIHasher hashUserAttributeKey:key];
     
     MPKitConfiguration *kitConfiguration = self.kitConfigurations[kitRegister.code];
     
@@ -1035,14 +1017,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         MPCCPAConsent *ccpaConsentState = state.ccpaConsentState;
 
         NSDictionary<NSString *, MPGDPRConsent *> *gdprState = state.gdprConsentState;
-        
-        NSString *regulationString = nil;
-        
+                
         if (ccpaConsentState != nil) {
-            regulationString = [[NSString alloc] initWithFormat:@"%@%@", kMPConsentCCPARegulationType, kMPConsentCCPAPurposeName];
-            
-            NSString *regulationHash = [NSString stringWithCString:mParticle::Hasher::hashString(string([[regulationString lowercaseString] UTF8String])).c_str()
-                                                          encoding:NSUTF8StringEncoding];
+            NSString *regulationHash = [MPIHasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
             
             if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
                 kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
@@ -1057,10 +1034,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
         
         if (gdprState) {
-            regulationString = kMPConsentGDPRRegulationType;
-            
-            NSString *regulationHash = [NSString stringWithCString:mParticle::Hasher::hashString(string([[regulationString lowercaseString] UTF8String])).c_str()
-                                                          encoding:NSUTF8StringEncoding];
+            NSString *regulationHash = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
             
             if (kitConfiguration.consentRegulationFilters[regulationHash] && [kitConfiguration.consentRegulationFilters[regulationHash] isEqual:@0]) {
                 kitFilter = [[MPKitFilter alloc] initWithFilter:YES];
@@ -1075,9 +1049,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 NSMutableDictionary<NSString *, MPGDPRConsent *> *filteredGDPRState = [NSMutableDictionary dictionary];
                 
                 for (NSString *purpose in gdprState) {
-                    
-                    NSString *purposeHash = [NSString stringWithCString:mParticle::Hasher::hashString(string(regulationString.UTF8String) + string([[purpose lowercaseString] UTF8String])).c_str()
-                                                               encoding:NSUTF8StringEncoding];
+                    NSString *purposeHash = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:purpose];
                     
                     BOOL shouldFilterPurpose = kitConfiguration.consentPurposeFilters[purposeHash] && [kitConfiguration.consentPurposeFilters[purposeHash] isEqual:@0];
                     
@@ -1155,8 +1127,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         [eventProjection.projectionMatches enumerateObjectsUsingBlock:^(MPProjectionMatch * _Nonnull projectionMatch, NSUInteger idx, BOOL * _Nonnull stop) {
             __block BOOL isApplicable = NO;
             [sourceDictionary enumerateKeysAndObjectsUsingBlock:^(NSString *key, id value, BOOL *stop) {
-                NSString *keyHash = [NSString stringWithCString:mParticle::Hasher::hashString(to_string(typeOfCommerceEvent) + string([[key lowercaseString] UTF8String])).c_str()
-                                                       encoding:NSUTF8StringEncoding];
+                NSString *keyHash = [MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key];
                 
                 isApplicable = [projectionMatch.attributeKey isEqualToString:keyHash] && [projectionMatch.attributeValues caseInsensitiveContainsObject:value];
                 *stop = isApplicable;
@@ -1275,9 +1246,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 NSString *key;
                 NSEnumerator *keyEnumerator = [sourceDictionary keyEnumerator];
                 while ((key = [keyEnumerator nextObject])) {
-                    string attributeToHash = to_string(typeOfCommerceEvent) + string([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-                    
-                    int hashValue = mParticle::Hasher::hashFromString(attributeToHash);
+                    int hashValue = [[MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key] intValue];
                     hashKeyMap[hashValue] = key;
                 }
                 
@@ -1659,11 +1628,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSString *key;
         NSEnumerator *keyEnumerator = [eventInfo keyEnumerator];
         while ((key = [keyEnumerator nextObject])) {
-            string attributeToHash = messageType == MPMessageTypeScreenView ? "0" : to_string(event.type);
-            attributeToHash += string([[event.name lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-            attributeToHash += string([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-            
-            int hashValue = mParticle::Hasher::hashFromString(attributeToHash);
+            int hashValue = [[MPIHasher hashEventAttributeKey:event.type eventName:event.name customAttributeName:key isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
             keyHashMap[key] = hashValue;
             hashKeyMap[hashValue] = key;
         }
@@ -1830,9 +1795,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     
                 case MPProjectionMatchTypeHash: {
                     if (eventNameHash == 0) {
-                        string nameToHash = messageType == MPMessageTypeScreenView ? "0" : to_string(event.type);
-                        nameToHash += string([[event.name lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-                        eventNameHash = mParticle::Hasher::hashFromString(nameToHash);
+                        eventNameHash = [[MPIHasher hashEventName:event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
                     }
                     
                     if (eventNameHash == [eventProjection.name integerValue]) {

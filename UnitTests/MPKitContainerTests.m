@@ -61,7 +61,6 @@
 - (nullable NSString *)nameForKitCode:(nonnull NSNumber *)integrationId;
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 - (void)flushSerializedKits;
-- (NSDictionary *)methodMessageTypeMapping;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forEvent:(MPEvent *const)event selector:(SEL)selector;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forBaseEvent:(MPBaseEvent *const)event forSelector:(SEL)selector;
 - (MPKitFilter *)filter:(id<MPExtensionKitProtocol>)kitRegister forUserAttributeKey:(NSString *)key value:(id)value;
