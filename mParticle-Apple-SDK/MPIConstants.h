@@ -273,6 +273,8 @@ extern NSString * _Nonnull const kMPRemoteConfigRestrictIDFA;
 extern NSString * _Nonnull const kMPRemoteConfigAliasMaxWindow;
 extern NSString * _Nonnull const kMPRemoteConfigAllowASR;
 extern NSString * _Nonnull const kMPRemoteConfigExcludeAnonymousUsersKey;
+extern NSString * _Nonnull const kMPRemoteConfigDirectURLRouting;
+
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEvents;
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedEventAttributes;
 extern NSString * _Nonnull const kMPRemoteConfigBlockUnplannedIdentities;
@@ -323,8 +325,6 @@ extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValue
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionUnknown;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionView;
 extern NSString * _Nonnull const kMPRemoteConfigDataPlanningDataPlanVersionValueImpressionClick;
-
-
 
 // Notifications
 extern NSString * _Nonnull const kMPCrashReportOccurredNotification;

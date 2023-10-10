@@ -99,6 +99,7 @@
     [stateMachine configureDataBlocking:_configuration[kMPRemoteConfigDataPlanningResults]];
     
     stateMachine.allowASR = [_configuration[kMPRemoteConfigAllowASR] boolValue];
+    stateMachine.enableDirectRouting = [_configuration[kMPRemoteConfigDirectURLRouting] boolValue];
         
     // Exception handling
     NSString *auxString = !MPIsNull(_configuration[kMPRemoteConfigExceptionHandlingModeKey]) ? _configuration[kMPRemoteConfigExceptionHandlingModeKey] : nil;
