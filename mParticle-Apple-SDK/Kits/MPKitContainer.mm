@@ -35,6 +35,7 @@
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
+#include <vector>
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
