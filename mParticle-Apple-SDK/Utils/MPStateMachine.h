@@ -57,6 +57,7 @@
 @property (nonatomic) BOOL automaticSessionTracking;
 @property (nonatomic) BOOL allowASR;
 @property (nonatomic, nullable) MPDataPlanOptions *dataPlanOptions;
+@property (nonatomic) BOOL enableDirectRouting;
 
 + (MPEnvironment)environment;
 + (void)setEnvironment:(MPEnvironment)environment;

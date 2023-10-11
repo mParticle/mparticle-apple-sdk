@@ -838,4 +838,31 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test5], @16);
 }
 
+- (void)testPodURLRouting {
+    // NOTE: All keys are fake and randomly generated just for this test
+    NSArray *testKeys = @[
+        @[@"4u8wmsug0pf5tbf58lgjiouma3qukrgbu",     @"nativesdks.us1.mparticle.com", @"identity.us1.mparticle.com"],
+        @[@"us1-1vc4gbp24cdtx6e31s58icnymzy83f1uf", @"nativesdks.us1.mparticle.com", @"identity.us1.mparticle.com"],
+        @[@"us2-v2p8lr3w2g90vtpaumbq21zy05cl50qm3", @"nativesdks.us2.mparticle.com", @"identity.us2.mparticle.com"],
+        @[@"eu1-bkabfno0b8zpv5bwi2zm2mfa1kfml19al", @"nativesdks.eu1.mparticle.com", @"identity.eu1.mparticle.com"],
+        @[@"au1-iermuj83dbeoshm0n32f10feotclq6i4a", @"nativesdks.au1.mparticle.com", @"identity.au1.mparticle.com"],
+        @[@"st1-k77ivhkbbqf4ce0s3y12zpcthyn1ixfyu", @"nativesdks.st1.mparticle.com", @"identity.st1.mparticle.com"],
+        @[@"us3-w1y2y8yj8q58d5bx9u2dvtxzl4cpa7cuf", @"nativesdks.us3.mparticle.com", @"identity.us3.mparticle.com"]
+    ];
+    NSString *oldEventHost = @"nativesdks.mparticle.com";
+    NSString *oldIdentityHost = @"identity.mparticle.com";
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    for (NSArray *test in testKeys) {
+        NSString *key = test[0];
+        NSString *eventHost = test[1];
+        NSString *identityHost = test[2];
+        
+        XCTAssertEqualObjects(eventHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:key enableDirectRouting:YES]);
+        XCTAssertEqualObjects(identityHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:key enableDirectRouting:YES]);
+        XCTAssertEqualObjects(oldEventHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:key enableDirectRouting:NO]);
+        XCTAssertEqualObjects(oldIdentityHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:key enableDirectRouting:NO]);
+    }
+}
+
 @end

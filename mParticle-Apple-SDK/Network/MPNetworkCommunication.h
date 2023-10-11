@@ -11,8 +11,6 @@
 
 
 extern NSString * _Nonnull const kMPURLScheme;
-extern NSString * _Nonnull const kMPURLHost;
-extern NSString * _Nonnull const kMPURLHostConfig;
 
 typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorTimeout = 1,
