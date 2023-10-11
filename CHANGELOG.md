@@ -1,3 +1,10 @@
+# [8.16.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.1...v8.16.0) (2023-10-11)
+
+
+### Features
+
+* Direct routing to correct pod ([#223](https://github.com/mParticle/mparticle-apple-sdk/issues/223)) ([#229](https://github.com/mParticle/mparticle-apple-sdk/issues/229)) ([#230](https://github.com/mParticle/mparticle-apple-sdk/issues/230)) ([14168f9](https://github.com/mParticle/mparticle-apple-sdk/commit/14168f9167f15f8b850b93ea1004273cf927bd0e))
+
 ## [8.15.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.0...v8.15.1) (2023-10-04)
 
 
