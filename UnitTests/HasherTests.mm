@@ -4,6 +4,8 @@
 #import "MPEvent.h"
 #import "MPBaseTestCase.h"
 #import "MPIHasher.h"
+#import "mparticle.h"
+#import "MPIConstants.h"
 
 @interface HasherTests : MPBaseTestCase
 
@@ -291,6 +293,97 @@
     
     hashTestString = [MPIHasher hashEventType:MPEventTypeImpression];
     XCTAssertEqualObjects(hashTestString, @"1600", @"Should have been equal.");
+}
+
+- (void)testHashEventName {
+    NSString *hashTestString = [MPIHasher hashEventName:MPEventTypeNavigation eventName:@"test" isLogScreen:false];
+    XCTAssertEqualObjects(hashTestString, @"48809027", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashEventName:MPEventTypeNavigation eventName:@"test" isLogScreen:true];
+    XCTAssertEqualObjects(hashTestString, @"47885506", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashEventName:MPEventTypeLocation eventName:@"test" isLogScreen:false];
+    XCTAssertEqualObjects(hashTestString, @"49732548", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashEventName:MPEventTypeLocation eventName:@"test" isLogScreen:true];
+    XCTAssertEqualObjects(hashTestString, @"47885506", @"Should have been equal.");
+}
+
+- (void)testHashEventAttributeKey {
+    NSString *hashTestString = [MPIHasher hashEventAttributeKey:MPEventTypeNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
+    XCTAssertEqualObjects(hashTestString, @"-1449619668", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashEventAttributeKey:MPEventTypeNavigation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:true];
+    XCTAssertEqualObjects(hashTestString, @"-1578702387", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashEventAttributeKey:MPEventTypeLocation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:false];
+    XCTAssertEqualObjects(hashTestString, @"-1320536949", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashEventAttributeKey:MPEventTypeLocation eventName:@"test" customAttributeName:@"testAtt" isLogScreen:true];
+    XCTAssertEqualObjects(hashTestString, @"-1578702387", @"Should have been equal.");
+}
+
+- (void)testHashUserAttributeKeyAndValue {
+    NSString *hashTestString = [MPIHasher hashUserAttributeKey:@"key1"];
+    XCTAssertEqualObjects(hashTestString, @"3288498", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashUserAttributeKey:@"key2"];
+    XCTAssertEqualObjects(hashTestString, @"3288499", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashUserAttributeValue:@"value1"];
+    XCTAssertEqualObjects(hashTestString, @"-823812896", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashUserAttributeValue:@"value2"];
+    XCTAssertEqualObjects(hashTestString, @"-823812895", @"Should have been equal.");
+}
+
+- (void)testHashUserIdentity {
+    NSString *hashTestString = [MPIHasher hashUserIdentity:MPUserIdentityOther];
+    XCTAssertEqualObjects(hashTestString, @"0", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashUserIdentity:MPUserIdentityCustomerId];
+    XCTAssertEqualObjects(hashTestString, @"1", @"Should have been equal.");
+}
+
+- (void)testHashConsentPurpose {
+    NSString *hashTestString = [MPIHasher hashConsentPurpose:kMPConsentCCPARegulationType purpose:kMPConsentCCPAPurposeName];
+    XCTAssertEqualObjects(hashTestString, @"-575335347", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@""];
+    XCTAssertEqualObjects(hashTestString, @"49", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashConsentPurpose:kMPConsentGDPRRegulationType purpose:@"purpose1"];
+    XCTAssertEqualObjects(hashTestString, @"-910367228", @"Should have been equal.");
+}
+
+- (void)testHashCommerceEventAttribute {
+    NSString *hashTestString = [MPIHasher hashCommerceEventAttribute:MPEventTypePurchase key:@"price"];
+    XCTAssertEqualObjects(hashTestString, @"-2104051132", @"Should have been equal.");
+    
+    hashTestString = [MPIHasher hashCommerceEventAttribute:MPEventTypeRefund key:@"price"];
+    XCTAssertEqualObjects(hashTestString, @"-2075421981", @"Should have been equal.");
+}
+
+- (void)testHashDifferences {
+    // Creates a product object
+    MPProduct *product = [[MPProduct alloc] initWithName:@"Awesome Book" sku:@"1234567890" quantity:@1 price:@9.99];
+    product.brand = @"A Publisher";
+    product.category = @"Fiction";
+    product.couponCode = @"XYZ123";
+    product.position = 1;
+    product[@"custom key"] = @"custom value"; // A product may contain custom key/value pairs
+    
+    // Creates a commerce event object
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionPurchase product:product];
+    NSString *key = @"an_extra_key";
+    commerceEvent.customAttributes = @{key: @"an_extra_value"}; // A commerce event may contain custom key/value pairs
+    
+    string attributeToHash = to_string([commerceEvent type]) + string([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
+    int hashValueOldInt = mParticle::Hasher::hashFromString(attributeToHash);
+    
+    NSString *hashValueNewString = [MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key];
+    XCTAssertEqual(hashValueOldInt, [hashValueNewString intValue], @"Should have been equal.");
+
 }
 
 @end
