@@ -12,12 +12,10 @@ jobs:
   native-unit-tests:
     strategy:
       matrix:
-        xcode: ["14.3.1", "15.0"]
+        xcode: ["15.0"]
         platform: [iOS, tvOS]
         scheme: [mParticle-Apple-SDK, mParticle-Apple-SDK-NoLocation]
         include:
-          - xcode: "14.3.1"
-            os: "16.4"
           - xcode: "15.0"
             os: "17.0"
           - platform: iOS
