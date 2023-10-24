@@ -6,7 +6,6 @@
 #import "MPEvent.h"
 #import "MPExtensionProtocol.h"
 #import <Foundation/Foundation.h>
-#import "MPIHasher.h"
 #import "MPKitExecStatus.h"
 #import "MPKitRegister.h"
 #import "MPProduct.h"
