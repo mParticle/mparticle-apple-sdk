@@ -1,3 +1,9 @@
+#ifndef MPARTICLE_LOCATION_DISABLE
+@import mParticle_Apple_SDK;
+#else
+@import mParticle_Apple_SDK_NoLocation;
+#endif
+
 #import <XCTest/XCTest.h>
 #import "MPKitApi.h"
 #import "MPKitContainer.h"
@@ -9,7 +15,6 @@
 #import "MPIConstants.h"
 #import "FilteredMParticleUser.h"
 #import "MPBaseTestCase.h"
-#import "MPIHasher.h"
 
 @interface MPKitContainer ()
 

@@ -1,5 +1,4 @@
 #import "MPKitConfiguration.h"
-#import "MPIHasher.h"
 #import "MPIConstants.h"
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
@@ -7,6 +6,7 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPEnums.h"
+#import "Swift.h"
 #import <vector>
 
 @interface MPKitConfiguration()

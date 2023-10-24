@@ -1,8 +1,13 @@
+#ifndef MPARTICLE_LOCATION_DISABLE
+@import mParticle_Apple_SDK;
+#else
+@import mParticle_Apple_SDK_NoLocation;
+#endif
+
 #import <XCTest/XCTest.h>
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "MPBaseTestCase.h"
-#import "MPIHasher.h"
 #import "mparticle.h"
 #import "MPIConstants.h"
 
@@ -33,7 +38,7 @@
 - (void)testHashingPerformance {
     [self measureBlock:^{
         NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-        [MPIHasher hashString:referenceString];
+        (void)[MPIHasher hashString:referenceString];
     }];
 }
 

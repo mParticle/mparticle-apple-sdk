@@ -1,6 +1,6 @@
 #import "MPEventProjection.h"
 #import "MPAttributeProjection.h"
-#import "MPIHasher.h"
+#import "Swift.h"
 #import <vector>
 
 @implementation MPProjectionMatch

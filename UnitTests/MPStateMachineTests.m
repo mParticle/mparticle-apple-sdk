@@ -1,7 +1,12 @@
+#ifndef MPARTICLE_LOCATION_DISABLE
+@import mParticle_Apple_SDK;
+#else
+@import mParticle_Apple_SDK_NoLocation;
+#endif
+
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MPStateMachine.h"
-#import "MPIHasher.h"
 #import "MPConsumerInfo.h"
 #import "MPLaunchInfo.h"
 #import "MPBaseTestCase.h"
