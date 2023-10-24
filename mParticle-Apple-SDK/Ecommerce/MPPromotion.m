@@ -144,7 +144,7 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        NSString *hashedKey = [MPIHasher hashString:key.lowercaseString];
+        NSString *hashedKey = [MPIHasher hashString:key];
         id hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {

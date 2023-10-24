@@ -22,7 +22,7 @@
 
 - (void)testHashingString {
     NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-    NSString *hashedString = [MPIHasher hashString:referenceString.lowercaseString];
+    NSString *hashedString = [MPIHasher hashString:referenceString];
     XCTAssertEqualObjects(hashedString, @"-142870245", @"Hasher is not hashing strings properly.");
     
     referenceString = @"";
@@ -379,7 +379,7 @@
     NSString *key = @"an_extra_key";
     commerceEvent.customAttributes = @{key: @"an_extra_value"}; // A commerce event may contain custom key/value pairs
     
-    NSString *attributeTohash = [[@(commerceEvent.type) stringValue] stringByAppendingString:key.lowercaseString];
+    NSString *attributeTohash = [[@(commerceEvent.type) stringValue] stringByAppendingString:key];
     int hashValueOldInt = [[MPIHasher hashString:attributeTohash] intValue];
     
     NSString *hashValueNewString = [MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key];
