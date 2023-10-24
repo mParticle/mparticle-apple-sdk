@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPIUserDefaults.h"
-#include "MPHasher.h"
 #import "MPDateFormatter.h"
 #import "MPPersistenceController.h"
 #import "NSString+MPPercentEscape.h"

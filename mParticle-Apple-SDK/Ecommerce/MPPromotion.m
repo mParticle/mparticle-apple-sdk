@@ -1,6 +1,6 @@
 #import "MPPromotion.h"
 #import "MPIConstants.h"
-#include "MPHasher.h"
+#import "MPIHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 
 // Internal keys
@@ -144,7 +144,7 @@ static NSArray *actionNames;
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        NSString *hashedKey = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        NSString *hashedKey = [MPIHasher hashString:key.lowercaseString];
         id hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {

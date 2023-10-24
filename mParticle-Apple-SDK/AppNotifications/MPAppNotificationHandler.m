@@ -8,7 +8,6 @@
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
 #import "MPKitContainer.h"
-#include "MPHasher.h"
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"

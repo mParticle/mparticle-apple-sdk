@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
-#include "MPHasher.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPApplication.h"

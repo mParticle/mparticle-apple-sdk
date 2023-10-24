@@ -30,7 +30,7 @@ mParticle::Bracket makeBracket() {
 }
 
 - (void)testBracketPointer {
-    shared_ptr<mParticle::Bracket> bracket = make_shared<mParticle::Bracket>(-(LONG_MAX - 271828182), 40, 41);
+    std::shared_ptr<mParticle::Bracket> bracket = std::make_shared<mParticle::Bracket>(-(LONG_MAX - 271828182), 40, 41);
     XCTAssertTrue(bracket->shouldForward(), @"Bracket should be forwarding.");
     
     bracket->low = 41;
@@ -58,7 +58,7 @@ mParticle::Bracket makeBracket() {
 
 - (void)testBracketComparison {
     mParticle::Bracket bracket = makeBracket();
-    shared_ptr<mParticle::Bracket> bracketPtr = make_shared<mParticle::Bracket>(-(LONG_MAX - 271828182), 40, 41);
+    std::shared_ptr<mParticle::Bracket> bracketPtr = std::make_shared<mParticle::Bracket>(-(LONG_MAX - 271828182), 40, 41);
     XCTAssertFalse(bracket == *bracketPtr, @"Brackets should have been different.");
     
     bracketPtr->mpId = LONG_MAX - 3141592;

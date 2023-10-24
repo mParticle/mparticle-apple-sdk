@@ -1,5 +1,5 @@
 #import "MPKitConfiguration.h"
-#include "MPHasher.h"
+#import "MPIHasher.h"
 #import "MPIConstants.h"
 #import "MPEventProjection.h"
 #import "MPStateMachine.h"
@@ -7,6 +7,7 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPEnums.h"
+#import <vector>
 
 @interface MPKitConfiguration()
 @property (nonatomic, strong) NSDictionary *configurationDictionary;
@@ -25,7 +26,7 @@
     
     NSData *ekConfigData = [NSJSONSerialization dataWithJSONObject:configurationDictionary options:0 error:nil];
     NSString *ekConfigString = [[NSString alloc] initWithData:ekConfigData encoding:NSUTF8StringEncoding];
-    _configurationHash = @(mParticle::Hasher::hashFromString([ekConfigString cStringUsingEncoding:NSUTF8StringEncoding]));
+    _configurationHash = @([[MPIHasher hashString:ekConfigString] intValue]);
     
     // Attribute value filtering
     NSDictionary *attributeValueFiltering = configurationDictionary[@"avf"];
@@ -193,11 +194,11 @@
     }
     
     auto numberOfMessageTypes = [MPEnum messageTypeSize];
-    vector<NSNumber *> configuredMessageTypeProjectionsVector;
+    std::vector<NSNumber *> configuredMessageTypeProjectionsVector;
     configuredMessageTypeProjectionsVector.reserve(numberOfMessageTypes);
-    vector<MPEventProjection *> defaultProjectionsVector;
+    std::vector<MPEventProjection *> defaultProjectionsVector;
     defaultProjectionsVector.reserve(numberOfMessageTypes);
-    vector<MPEventProjection *> projectionsVector;
+    std::vector<MPEventProjection *> projectionsVector;
     projectionsVector.reserve(projections.count - 1);
     
     for (NSUInteger i = 0; i < numberOfMessageTypes; ++i) {

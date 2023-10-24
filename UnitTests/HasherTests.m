@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import "MPHasher.h"
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "MPBaseTestCase.h"
@@ -23,42 +22,48 @@
 
 - (void)testHashingString {
     NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-    NSString *hashedString = [NSString stringWithCString:mParticle::Hasher::hashString([[referenceString lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                encoding:NSUTF8StringEncoding];
+    NSString *hashedString = [MPIHasher hashString:referenceString.lowercaseString];
     XCTAssertEqualObjects(hashedString, @"-142870245", @"Hasher is not hashing strings properly.");
     
     referenceString = @"";
-    hashedString = [NSString stringWithCString:mParticle::Hasher::hashString([referenceString cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                      encoding:NSUTF8StringEncoding];
+    hashedString = [MPIHasher hashString:referenceString];
     XCTAssertEqualObjects(hashedString, @"", @"Hashing an empty string.");
-    
-    int hash = mParticle::Hasher::hashFromString("");
-    XCTAssertEqual(hash, 0, @"Should have been equal.");
-    
-    std::string hashedEvent = mParticle::Hasher::hashEvent("Loaded screen", "Navigation");
-    XCTAssertEqual(hashedEvent, "431828539", @"Should have been equal.");
 }
 
 - (void)testHashingPerformance {
     [self measureBlock:^{
         NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
-        mParticle::Hasher::hashString([referenceString cStringUsingEncoding:NSUTF8StringEncoding]);
+        [MPIHasher hashString:referenceString];
     }];
+}
+
+- (NSArray<NSString*> *)hashedEventTypes:(NSArray<NSNumber*> *)eventTypes {
+    NSMutableArray *hashedTypes = [NSMutableArray arrayWithCapacity:eventTypes.count];
+    if (eventTypes.count == 0) {
+        return hashedTypes;
+    }
+    
+    for (NSNumber *eventType in eventTypes) {
+        NSString *hashedEventType = [MPIHasher hashString:eventType.stringValue];
+        [hashedTypes addObject:hashedEventType];
+    }
+    return hashedTypes;
+}
+
+- (NSArray<NSString*> *)hashedAllEventTypes {
+    NSMutableArray *eventTypes = [NSMutableArray arrayWithCapacity:22];
+    for (int i = 0; i < 22; i++) {
+        [eventTypes addObject:@(i)];
+    }
+    
+    NSArray *hashes = [self hashedEventTypes:eventTypes];
+    return hashes;
 }
 
 - (void)testHashAllEventTypes {
     NSString *hashedEventType;
     
-    vector<string> hashedAllEventTypes = mParticle::Hasher::hashedAllEventTypes();
-    NSMutableArray *mHashedEventTypes = [[NSMutableArray alloc] initWithCapacity:hashedAllEventTypes.size()];
-    
-    for_each(hashedAllEventTypes.begin(), hashedAllEventTypes.end(),
-             [&mHashedEventTypes](string str) {
-                 NSString *nsstr = [NSString stringWithUTF8String:str.c_str()];
-                 [mHashedEventTypes addObject:nsstr];
-             });
-    
-    NSArray *hashedEventTypes = (NSArray *)mHashedEventTypes;
+    NSArray *hashedEventTypes = [self hashedAllEventTypes];
     
     hashedEventType = hashedEventTypes[MPEventTypeNavigation];
     XCTAssertEqualObjects(hashedEventType, @"49", @"Hashed event type navigation is incorrect.");
@@ -86,21 +91,12 @@
 }
 
 - (void)testHashSomeEventTypes {
-    vector<int> eventTypes;
-    vector<string> hashedAllEventTypes = mParticle::Hasher::hashedEventTypes(eventTypes);
-    XCTAssertTrue(hashedAllEventTypes.empty(), @"Should have been empty.");
-
-    eventTypes = {MPEventTypeNavigation, MPEventTypeTransaction, MPEventTypeOther};
-    hashedAllEventTypes = mParticle::Hasher::hashedEventTypes(eventTypes);
-    NSMutableArray *mHashedEventTypes = [[NSMutableArray alloc] initWithCapacity:hashedAllEventTypes.size()];
+    NSArray *eventTypes = [NSArray array];
+    NSArray *hashedEventTypes = [self hashedEventTypes:eventTypes];
+    XCTAssertTrue(hashedEventTypes.count == 0, @"Should have been empty.");
     
-    for_each(hashedAllEventTypes.begin(), hashedAllEventTypes.end(),
-             [&mHashedEventTypes](string str) {
-                 NSString *nsstr = [NSString stringWithUTF8String:str.c_str()];
-                 [mHashedEventTypes addObject:nsstr];
-             });
-    
-    NSArray *hashedEventTypes = (NSArray *)mHashedEventTypes;
+    eventTypes = @[@(MPEventTypeNavigation), @(MPEventTypeTransaction), @(MPEventTypeOther)];
+    hashedEventTypes = [self hashedEventTypes:eventTypes];
     
     XCTAssertTrue([hashedEventTypes containsObject:@"49"], @"Not hashing event type navigation.");
     XCTAssertTrue([hashedEventTypes containsObject:@"52"], @"Not hashing event type transaction.");
@@ -110,7 +106,7 @@
 - (void)testRampHash {
     NSString *rampString = @"E1492888-3B7C-4FB2-98A5-6C483BF9EBEB";
     NSData *rampData = [rampString dataUsingEncoding:NSUTF8StringEncoding];
-    int64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+    int64_t rampHash = [MPIHasher hashFNV1a:rampData];
     
     XCTAssertEqual(rampHash, -1177587625323713153, @"Ramp hash is being calculated incorrectly.");
 }
@@ -296,16 +292,16 @@
 }
 
 - (void)testHashEventName {
-    NSString *hashTestString = [MPIHasher hashEventName:MPEventTypeNavigation eventName:@"test" isLogScreen:false];
+    NSString *hashTestString = [MPIHasher hashEventType:MPEventTypeNavigation eventName:@"test" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"48809027", @"Should have been equal.");
     
-    hashTestString = [MPIHasher hashEventName:MPEventTypeNavigation eventName:@"test" isLogScreen:true];
+    hashTestString = [MPIHasher hashEventType:MPEventTypeNavigation eventName:@"test" isLogScreen:true];
     XCTAssertEqualObjects(hashTestString, @"47885506", @"Should have been equal.");
     
-    hashTestString = [MPIHasher hashEventName:MPEventTypeLocation eventName:@"test" isLogScreen:false];
+    hashTestString = [MPIHasher hashEventType:MPEventTypeLocation eventName:@"test" isLogScreen:false];
     XCTAssertEqualObjects(hashTestString, @"49732548", @"Should have been equal.");
     
-    hashTestString = [MPIHasher hashEventName:MPEventTypeLocation eventName:@"test" isLogScreen:true];
+    hashTestString = [MPIHasher hashEventType:MPEventTypeLocation eventName:@"test" isLogScreen:true];
     XCTAssertEqualObjects(hashTestString, @"47885506", @"Should have been equal.");
 }
 
@@ -364,6 +360,11 @@
     XCTAssertEqualObjects(hashTestString, @"-2075421981", @"Should have been equal.");
 }
 
+- (void)testHashTriggerEvent {
+    NSString *hashedEvent = [MPIHasher hashTriggerEventName:@"Loaded screen" eventType:@"Navigation"];
+    XCTAssertEqualObjects(hashedEvent, @"431828539", @"Should have been equal.");
+}
+
 - (void)testHashDifferences {
     // Creates a product object
     MPProduct *product = [[MPProduct alloc] initWithName:@"Awesome Book" sku:@"1234567890" quantity:@1 price:@9.99];
@@ -378,8 +379,8 @@
     NSString *key = @"an_extra_key";
     commerceEvent.customAttributes = @{key: @"an_extra_value"}; // A commerce event may contain custom key/value pairs
     
-    string attributeToHash = to_string([commerceEvent type]) + string([[key lowercaseString] cStringUsingEncoding:NSUTF8StringEncoding]);
-    int hashValueOldInt = mParticle::Hasher::hashFromString(attributeToHash);
+    NSString *attributeTohash = [[@(commerceEvent.type) stringValue] stringByAppendingString:key.lowercaseString];
+    int hashValueOldInt = [[MPIHasher hashString:attributeTohash] intValue];
     
     NSString *hashValueNewString = [MPIHasher hashCommerceEventAttribute:commerceEvent.type key:key];
     XCTAssertEqual(hashValueOldInt, [hashValueNewString intValue], @"Should have been equal.");

@@ -1,5 +1,5 @@
 #import "MPZip.h"
-#include "zlib.h"
+#import "zlib.h"
 
 @implementation MPZip
 

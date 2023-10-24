@@ -8,14 +8,12 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPIConstants.h"
 #import "MPEnums.h"
-#include <vector>
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-
-using namespace std;
+#import <vector>
 
 // Internal keys
 NSString *const kMPCECheckoutOptions = @"co";
@@ -609,7 +607,7 @@ static NSArray *actionNames;
 }
 
 - (NSArray<MPCommerceEventInstruction *> *)expandedInstructions {
-    __block vector<MPCommerceEventInstruction *> expansionInstructions;
+    __block std::vector<MPCommerceEventInstruction *> expansionInstructions;
     NSString *eventName;
     __block MPEvent *event;
     __block NSMutableDictionary *eventInfo;

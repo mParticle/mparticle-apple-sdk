@@ -1,9 +1,7 @@
 #import "MPEventProjection.h"
 #import "MPAttributeProjection.h"
-#include <vector>
 #import "MPIHasher.h"
-
-using namespace std;
+#import <vector>
 
 @implementation MPProjectionMatch
 
@@ -140,7 +138,7 @@ using namespace std;
     
     NSArray *attributeMaps = !MPIsNull(actionDictionary[@"attribute_maps"]) ? actionDictionary[@"attribute_maps"] : nil;
     if (attributeMaps) {
-        __block vector<MPAttributeProjection *> attributeProjectionsVector;
+        __block std::vector<MPAttributeProjection *> attributeProjectionsVector;
         
         [attributeMaps enumerateObjectsUsingBlock:^(NSDictionary *attributeMap, NSUInteger idx, BOOL *stop) {
             MPAttributeProjection *attributeProjection = [[MPAttributeProjection alloc] initWithConfiguration:configuration projectionType:MPProjectionTypeAttribute attributeIndex:idx];

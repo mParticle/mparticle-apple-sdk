@@ -6,8 +6,6 @@
 #import "MPBreadcrumb.h"
 #import "MPStateMachine.h"
 #import "MPUpload.h"
-#include <string>
-#include <vector>
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardRecord.h"
@@ -22,6 +20,8 @@
 #import "MPKitFilter.h"
 #import "MPDevice.h"
 #import "MPApplication.h"
+#import <string>
+#import <vector>
 
 using namespace std;
 

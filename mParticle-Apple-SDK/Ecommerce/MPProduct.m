@@ -1,7 +1,7 @@
 #import "MPProduct.h"
 #import "Swift.h"
 #import "MPIConstants.h"
-#include "MPHasher.h"
+#import "MPIHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPILogger.h"
 #import "mParticle.h"
@@ -305,7 +305,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     NSNumber *const zero = @0;
     
     [_beautifiedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        hashedKey = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        hashedKey = [MPIHasher hashString:key.lowercaseString];
         hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {
@@ -314,7 +314,7 @@ NSString *const kMPExpProductTotalAmount = @"Total Product Amount";
     }];
     
     [_userDefinedAttributes enumerateKeysAndObjectsUsingBlock:^(NSString *key, id obj, BOOL *stop) {
-        hashedKey = [NSString stringWithCString:mParticle::Hasher::hashString([[key lowercaseString] UTF8String]).c_str() encoding:NSUTF8StringEncoding];
+        hashedKey = [MPIHasher hashString:key.lowercaseString];
         hashedValue = hashedMap[hashedKey];
         
         if ([hashedValue isEqualToNumber:zero]) {

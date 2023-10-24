@@ -15,7 +15,6 @@
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPHasher.h"
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
 #import "MPResponseEvents.h"
@@ -1910,9 +1909,7 @@ static BOOL skipNextUpload = NO;
         NSString *eventType = messageDictionary[kMPEventTypeKey];
         
         if (!error && eventName && eventType) {
-            NSString *hashedEvent = [NSString stringWithCString:mParticle::Hasher::hashEvent([eventName cStringUsingEncoding:NSUTF8StringEncoding], [eventType cStringUsingEncoding:NSUTF8StringEncoding]).c_str()
-                                                       encoding:NSUTF8StringEncoding];
-            
+            NSString *hashedEvent = [MPIHasher hashTriggerEventName:eventName eventType:eventType];
             shouldUpload = [stateMachine.triggerEventTypes containsObject:hashedEvent];
         }
     }
@@ -1924,7 +1921,7 @@ static BOOL skipNextUpload = NO;
     }
 }
 
-- (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)())completionHandler {
+- (MPExecStatus)waitForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(void))completionHandler {
     [self checkForKitsAndUploadWithCompletionHandler:^(BOOL didShortCircuit) {
         if (!didShortCircuit) {
             if (completionHandler) {
