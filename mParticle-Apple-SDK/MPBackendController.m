@@ -31,6 +31,7 @@
 #import "MPListenerController.h"
 #import "MParticleWebView.h"
 #import "MPDevice.h"
+#import "Swift.h"
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE

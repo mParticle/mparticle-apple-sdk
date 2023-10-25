@@ -19,11 +19,11 @@
 #import "MPIUserDefaults.h"
 #import "MPConvertJS.h"
 #import "MPIdentityApi.h"
-#import "MPIHasher.h"
 #import "MPApplication.h"
 #import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
 #import "MPResponseConfig.h"
+#import "Swift.h"
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE

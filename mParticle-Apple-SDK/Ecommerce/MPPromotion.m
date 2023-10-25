@@ -1,7 +1,7 @@
 #import "MPPromotion.h"
 #import "MPIConstants.h"
-#import "MPIHasher.h"
 #import "NSDictionary+MPCaseInsensitive.h"
+#import "Swift.h"
 
 // Internal keys
 NSString *const kMPPMAction = @"an";

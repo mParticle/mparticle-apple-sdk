@@ -2,8 +2,8 @@
 #import "mParticle.h"
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"
-#import "MPIHasher.h"
 #import "MPDataPlanFilter.h"
+#import "Swift.h"
 
 @interface MParticle ()
 
