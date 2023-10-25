@@ -78,7 +78,6 @@ static BOOL appBackgrounded = NO;
     dispatch_semaphore_t backendSemaphore;
     dispatch_queue_t messageQueue;
     BOOL originalAppDelegateProxied;
-    BOOL resignedActive;
     MParticleSession *tempSession;
 }
 @property NSTimeInterval timeAppWentToBackground;
@@ -142,11 +141,6 @@ static BOOL appBackgrounded = NO;
         [notificationCenter addObserver:self
                                selector:@selector(handleApplicationDidBecomeActive:)
                                    name:UIApplicationDidBecomeActiveNotification
-                                 object:nil];
-        
-        [notificationCenter addObserver:self
-                               selector:@selector(handleApplicationWillResignActive:)
-                                   name:UIApplicationWillResignActiveNotification
                                  object:nil];
         
 #if TARGET_OS_IOS == 1
@@ -2122,7 +2116,6 @@ static BOOL skipNextUpload = NO;
     
     appBackgrounded = NO;
     [MPStateMachine setRunningInBackground:NO];
-    resignedActive = NO;
     
     if (![MPStateMachine isAppExtension]) {
         [self endBackgroundTask];
@@ -2135,8 +2128,7 @@ static BOOL skipNextUpload = NO;
             dispatch_async(messageQueue, ^{
                 [[MParticle sharedInstance].persistenceController updateSession:self.session];
                 [self skipNextUpload];
-                [self processOpenSessionsEndingCurrent:YES
-                                     completionHandler:^(void) {
+                [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
                     MPILogDebug(@"SDK has ended background activity.");
                     [self beginSession];
                     [self waitForKitsAndUploadWithCompletionHandler:nil];
@@ -2162,11 +2154,6 @@ static BOOL skipNextUpload = NO;
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
     if ([MParticle sharedInstance].stateMachine.optOut) {
-        return;
-    }
-    
-    if (resignedActive) {
-        resignedActive = NO;
         return;
     }
     
@@ -2205,10 +2192,6 @@ static BOOL skipNextUpload = NO;
         
         MPILogVerbose(@"Application Did Become Active");
     });
-}
-
-- (void)handleApplicationWillResignActive:(NSNotification *)notification {
-    resignedActive = YES;
 }
 
 - (void)beginBackgroundTimer {
