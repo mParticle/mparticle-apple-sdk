@@ -13,7 +13,6 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPEventProjection.h"
-#include <map>
 #import "MPAttributeProjection.h"
 #import "MPPromotion.h"
 #import "MPPromotion+Dictionary.h"
@@ -22,7 +21,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "NSArray+MPCaseInsensitive.h"
 #import "MPIUserDefaults.h"
-#include "MPBracket.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardQueueItem.h"
 #import "MPTransactionAttributes.h"
@@ -35,7 +33,11 @@
 #import "MPIConstants.h"
 #import "MPDataPlanFilter.h"
 #import <objc/message.h>
-#include <vector>
+#import "MPBracket.h"
+#import <map>
+#import <vector>
+
+using namespace std;
 
 #define DEFAULT_ALLOCATION_FOR_KITS 2
 
@@ -868,7 +870,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     }
 
     if ([event isKindOfClass:[MPEvent class]]) {
-        hashValue = [MPIHasher hashEventName:event.type eventName:event.name isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
+        hashValue = [MPIHasher hashEventType:event.type eventName:event.name isLogScreen:[selectorString isEqualToString:@"logScreen:"]];
         
         shouldFilter = nameFilters[hashValue] && [nameFilters[hashValue] isEqualToNumber:zero];
         if (shouldFilter) {
@@ -1796,7 +1798,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     
                 case MPProjectionMatchTypeHash: {
                     if (eventNameHash == 0) {
-                        eventNameHash = [[MPIHasher hashEventName:event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
+                        eventNameHash = [[MPIHasher hashEventType:event.type eventName:event.name isLogScreen:(messageType == MPMessageTypeScreenView)] intValue];
                     }
                     
                     if (eventNameHash == [eventProjection.name integerValue]) {

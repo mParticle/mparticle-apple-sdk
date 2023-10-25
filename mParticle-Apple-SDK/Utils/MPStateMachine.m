@@ -4,10 +4,9 @@
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPDevice.h"
-#include <sys/sysctl.h>
+#import <sys/sysctl.h>
 #import "MPNotificationController.h"
 #import "MPDateFormatter.h"
-#import "MPHasher.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
@@ -26,10 +25,10 @@
 #endif
 #endif
 
-NSString *const kCookieDateKey = @"e";
-NSString *const kMinUploadDateKey = @"MinUploadDate";
-NSString *const kMinAliasDateKey = @"MinAliasDate";
-NSString *const kMPStateKey = @"state";
+static NSString *const kCookieDateKey = @"e";
+static NSString *const kMinUploadDateKey = @"MinUploadDate";
+static NSString *const kMinAliasDateKey = @"MinAliasDate";
+static NSString *const kMPStateKey = @"state";
 
 static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
@@ -207,9 +206,11 @@ static BOOL _canWriteMessagesToDB = YES;
 + (MPEnvironment)getEnvironment {
     MPEnvironment environment;
     
-#if !TARGET_OS_SIMULATOR
+#if TARGET_OS_SIMULATOR
+    environment = MPEnvironmentDevelopment;
+#else
     int numberOfBytes = 4;
-    int *name = new int[numberOfBytes];
+    int name[numberOfBytes];
     name[0] = CTL_KERN;
     name[1] = KERN_PROC;
     name[2] = KERN_PROC_PID;
@@ -220,7 +221,6 @@ static BOOL _canWriteMessagesToDB = YES;
     info.kp_proc.p_flag = 0;
     
     sysctl(name, numberOfBytes, &info, &infoSize, NULL, 0);
-    delete[] name;
     BOOL isDebuggerRunning = (info.kp_proc.p_flag & P_TRACED) != 0;
     
     if (isDebuggerRunning) {
@@ -229,8 +229,6 @@ static BOOL _canWriteMessagesToDB = YES;
         NSString *provisioningProfileString = [MPStateMachine provisioningProfileString];
         environment = provisioningProfileString ? MPEnvironmentDevelopment : MPEnvironmentProduction;
     }
-#else
-    environment = MPEnvironmentDevelopment;
 #endif
     
     return environment;
@@ -745,7 +743,7 @@ static BOOL _canWriteMessagesToDB = YES;
         MPDevice *device = [[MPDevice alloc] init];
         NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         
-        uint64_t rampHash = mParticle::Hasher::hashFNV1a((const char *)[rampData bytes], (int)[rampData length]);
+        uint64_t rampHash = [MPIHasher hashFNV1a:rampData];
         NSUInteger modRampHash = rampHash % 100;
         
         dataRamped = modRampHash > [rampPercentage integerValue];

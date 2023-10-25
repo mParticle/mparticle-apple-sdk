@@ -1,5 +1,5 @@
-#include "MPBracket.h"
-#include <stdlib.h>
+#import "MPBracket.h"
+#import <stdlib.h>
 
 namespace mParticle {
     bool Bracket::shouldForward() {

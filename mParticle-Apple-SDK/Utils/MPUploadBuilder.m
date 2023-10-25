@@ -1,5 +1,4 @@
 #import "MPUploadBuilder.h"
-#include <vector>
 #import "MPMessage.h"
 #import "MPSession.h"
 #import "MPUpload.h"
@@ -17,8 +16,6 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPILogger.h"
-
-using namespace std;
 
 @interface MParticle ()
 

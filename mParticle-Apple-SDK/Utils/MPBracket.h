@@ -1,10 +1,8 @@
 #ifndef __mParticle__Bracket__
 #define __mParticle__Bracket__
 
-#include <cstdint>
-#include <memory>
-
-using namespace std;
+#import <cstdint>
+#import <memory>
 
 namespace mParticle {
     class Bracket final {

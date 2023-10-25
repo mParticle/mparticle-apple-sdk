@@ -1,7 +1,7 @@
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
 #import "MPZip.h"
-#include "zlib.h"
+#import "zlib.h"
 
 @interface MPZipTestHelper : NSObject
 

@@ -41,11 +41,11 @@ static dispatch_once_t predicate;
 static MPWrapperSdk _wrapperSdk = MPWrapperSdkNone;
 static NSString *_wrapperSdkVersion = nil;
 
-NSString *const kMPEventNameLogTransaction = @"Purchase";
-NSString *const kMPEventNameLTVIncrease = @"Increase LTV";
-NSString *const kMParticleFirstRun = @"firstrun";
-NSString *const kMPMethodName = @"$MethodName";
-NSString *const kMPStateKey = @"state";
+static NSString *const kMPEventNameLogTransaction = @"Purchase";
+static NSString *const kMPEventNameLTVIncrease = @"Increase LTV";
+static NSString *const kMParticleFirstRun = @"firstrun";
+static NSString *const kMPMethodName = @"$MethodName";
+static NSString *const kMPStateKey = @"state";
 
 @interface MPIdentityApi ()
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
