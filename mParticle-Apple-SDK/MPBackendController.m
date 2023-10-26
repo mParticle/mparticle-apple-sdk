@@ -791,32 +791,16 @@ static BOOL skipNextUpload = NO;
 
 #pragma mark Timers
 
-
-- (void)beginUploadTimer {
-    __weak MPBackendController *weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (weakSelf.uploadSource) {
-            dispatch_source_cancel(weakSelf.uploadSource);
-            weakSelf.uploadSource = nil;
-        }
-        
-        weakSelf.uploadSource = [weakSelf createSourceTimer:weakSelf.uploadInterval eventHandler:^{
-            dispatch_async([MParticle messageQueue], ^{
-                [weakSelf waitForKitsAndUploadWithCompletionHandler:nil];
-            });
-        } cancelHandler:^{}];
-    });
-}
-
+// Timer blocks fire on message queue
 - (dispatch_source_t)createSourceTimer:(uint64_t)interval eventHandler:(dispatch_block_t)eventHandler cancelHandler:(dispatch_block_t)cancelHandler {
-    dispatch_source_t sourceTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());
-    
+    dispatch_source_t sourceTimer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, [MParticle messageQueue]);
+
     if (sourceTimer) {
         dispatch_source_set_timer(sourceTimer, dispatch_walltime(NULL, 0), interval * NSEC_PER_SEC, 0.1 * NSEC_PER_SEC);
         dispatch_source_set_event_handler(sourceTimer, eventHandler);
         dispatch_source_set_cancel_handler(sourceTimer, cancelHandler);
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(interval * NSEC_PER_SEC)), [MParticle messageQueue], ^{
             dispatch_resume(sourceTimer);
         });
     }
@@ -824,10 +808,26 @@ static BOOL skipNextUpload = NO;
     return sourceTimer;
 }
 
+- (void)beginUploadTimer {
+    @synchronized (self) {
+        if (self.uploadSource) {
+            dispatch_source_cancel(self.uploadSource);
+            self.uploadSource = nil;
+        }
+        
+        __weak MPBackendController *weakSelf = self;
+        self.uploadSource = [self createSourceTimer:self.uploadInterval eventHandler:^{
+            [weakSelf waitForKitsAndUploadWithCompletionHandler:nil];
+        } cancelHandler:^{}];
+    }
+}
+
 - (void)endUploadTimer {
-    if (self.uploadSource) {
-        dispatch_source_cancel(self.uploadSource);
-        self.uploadSource = nil;
+    @synchronized (self) {
+        if (self.uploadSource) {
+            dispatch_source_cancel(self.uploadSource);
+            self.uploadSource = nil;
+        }
     }
 }
 
@@ -2117,6 +2117,7 @@ static BOOL skipNextUpload = NO;
                 MPILogVerbose(@"Less than %f time remaining in background, uploading batch and ending background task", kMPRemainingBackgroundTimeMinimumThreshold);
                 dispatch_async([MParticle messageQueue], ^{
                     [self waitForKitsAndUploadWithCompletionHandler:^{
+                        [self endUploadTimer];
                         [self endBackgroundTask];
                     }];
                 });
