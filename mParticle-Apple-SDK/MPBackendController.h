@@ -65,7 +65,7 @@ extern const NSInteger kInvalidKey;
 @property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
 @property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
 @property (nonatomic, strong, nullable) MPNetworkCommunication *networkCommunication;
-@property (nonatomic, strong, nullable) MPSession *session;
+@property (strong, nullable) MPSession *session;
 @property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 @property (nonatomic) NSTimeInterval uploadInterval;
 
@@ -79,7 +79,7 @@ extern const NSInteger kInvalidKey;
 - (void)beginTimedEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 + (BOOL)checkAttribute:(nonnull NSDictionary *)attributesDictionary key:(nonnull NSString *)key value:(nonnull id)value error:(out NSError *__autoreleasing _Nullable * _Nullable)error;
 - (nullable MPEvent *)eventWithName:(nonnull NSString *)eventName;
-- (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
++ (nullable NSString *)execStatusDescription:(MPExecStatus)execStatus;
 - (nullable NSNumber *)incrementSessionAttribute:(nonnull MPSession *)session key:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (nullable NSNumber *)incrementUserAttribute:(nonnull NSString *)key byValue:(nonnull NSNumber *)value;
 - (void)leaveBreadcrumb:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
