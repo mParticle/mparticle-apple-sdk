@@ -74,7 +74,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     MPAppDelegateProxy *appDelegateProxy;
     NSTimeInterval nextCleanUpTime;
     dispatch_semaphore_t backendSemaphore;
-    dispatch_queue_t messageQueue;
     BOOL originalAppDelegateProxied;
     MParticleSession *tempSession;
 }
@@ -100,7 +99,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
     self = [super init];
     if (self) {
-        messageQueue = [MParticle messageQueue];
         _networkCommunication = [[MPNetworkCommunication alloc] init];
 #if TARGET_OS_IOS == 1
         _notificationController = [[MPNotificationController alloc] init];
@@ -976,7 +974,7 @@ static BOOL skipNextUpload = NO;
             return;
         }
         if (_session == nil && tempSession != nil) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), messageQueue, ^{
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 0.1 * NSEC_PER_SEC), [MParticle messageQueue], ^{
                 [self endSessionWithIsManual:isManual];
             });
             return;
@@ -1120,7 +1118,7 @@ static BOOL skipNextUpload = NO;
     
     session.attributesDictionary[localKey] = newValue;
     
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         [[MParticle sharedInstance].persistenceController updateSession:session];
     });
     
@@ -1459,7 +1457,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)setOptOut:(BOOL)optOutStatus completionHandler:(void (^)(BOOL optOut, MPExecStatus execStatus))completionHandler {
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(optOutStatus)];
         
         MPExecStatus execStatus = MPExecStatusFail;
@@ -1544,7 +1542,7 @@ static BOOL skipNextUpload = NO;
     }
     
     __weak MPBackendController *weakSelf = self;
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
 
         if (shouldBeginSession) {
@@ -1642,7 +1640,7 @@ static BOOL skipNextUpload = NO;
     }
     
     if (shouldUpload) {
-        dispatch_async(messageQueue, ^{
+        dispatch_async([MParticle messageQueue], ^{
             [self waitForKitsAndUploadWithCompletionHandler:nil];
         });
     }
@@ -1926,7 +1924,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)handleDeviceTokenNotification:(NSNotification *)notification {
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         NSDictionary *userInfo = [notification userInfo];
         NSData *deviceToken = userInfo[kMPRemoteNotificationDeviceTokenKey];
         NSData *oldDeviceToken = userInfo[kMPRemoteNotificationOldDeviceTokenKey];
@@ -2065,7 +2063,7 @@ static BOOL skipNextUpload = NO;
     
     [self beginBackgroundTask];
         
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         [self setPreviousSessionSuccessfullyClosed:@YES];
         [[MParticle sharedInstance].persistenceController purgeMemory];
         [self cleanUp];
@@ -2155,7 +2153,7 @@ static BOOL skipNextUpload = NO;
     if (self.session != nil && [self shouldEndSession]) {
         self.session.endTime = self.timeAppWentToBackground;
         
-        dispatch_async(messageQueue, ^{
+        dispatch_async([MParticle messageQueue], ^{
             [[MParticle sharedInstance].persistenceController updateSession:self.session];
             [self skipNextUpload];
             [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
@@ -2187,7 +2185,7 @@ static BOOL skipNextUpload = NO;
 #endif
 #endif
     
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         [self requestConfig:nil];
     });
 }
@@ -2198,7 +2196,7 @@ static BOOL skipNextUpload = NO;
     }
     
     [self beginUploadTimer];
-    dispatch_async(messageQueue, ^{
+    dispatch_async([MParticle messageQueue], ^{
         BOOL sessionExpired = (self.session == nil);
         if (!sessionExpired) {
             NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
