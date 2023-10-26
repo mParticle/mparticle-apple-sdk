@@ -408,7 +408,7 @@ const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL =
     #if TARGET_OS_TV == 1
         2.0;
     #else
-        20.0;
+        60.0;
     #endif
 
 const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
