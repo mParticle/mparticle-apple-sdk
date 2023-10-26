@@ -846,7 +846,7 @@ static BOOL skipNextUpload = NO;
     }
     
     // If running in an extension our processor time is extremely limited
-    if ([[[NSBundle mainBundle] executablePath] containsString:@".appex/"]) {
+    if ([MPStateMachine isAppExtension]) {
         _uploadInterval = 1.0;
     }
     return _uploadInterval;
