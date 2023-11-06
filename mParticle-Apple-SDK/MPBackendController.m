@@ -844,7 +844,7 @@ static BOOL skipNextUpload = NO;
 
 - (NSTimeInterval)uploadInterval {
     if (_uploadInterval == 0.0) {
-        _uploadInterval = [MPStateMachine environment] == MPEnvironmentDevelopment ? DEFAULT_DEBUG_UPLOAD_INTERVAL : DEFAULT_UPLOAD_INTERVAL;
+        _uploadInterval = DEFAULT_UPLOAD_INTERVAL;
     }
     
     // If running in an extension our processor time is extremely limited

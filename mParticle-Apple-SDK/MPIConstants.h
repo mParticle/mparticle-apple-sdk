@@ -448,7 +448,6 @@ extern const NSTimeInterval SEVEN_DAYS;
 extern const NSTimeInterval NINETY_DAYS;
 
 // Interval between uploads if not specified
-extern const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL;
 extern const NSTimeInterval DEFAULT_UPLOAD_INTERVAL;
 
 // Delay before processing uploads to allow app to get started
