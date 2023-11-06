@@ -1296,7 +1296,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
         XCTAssertNotNil(userAttributeValue);
         XCTAssertEqualObjects(userAttributeValue, @1);
         
-        [self.backendController removeUserAttribute:userAttributeKey timestamp:[NSDate date] completionHandler:{}];
+        [self.backendController removeUserAttribute:userAttributeKey timestamp:[NSDate date] completionHandler:nil];
         userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
         XCTAssertNil(userAttributeValue);
         [expectation fulfill];
