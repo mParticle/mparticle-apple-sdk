@@ -316,7 +316,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Session timeout.
  
- Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
+ Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval, counted since the last event was logged.
  */
 @property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 

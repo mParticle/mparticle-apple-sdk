@@ -78,12 +78,14 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     MParticleSession *tempSession;
 }
 @property NSTimeInterval timeAppWentToBackground;
+@property NSTimeInterval timeOfLastEventInBackground;
 @property dispatch_source_t backgroundSource;
 @property dispatch_source_t uploadSource;
 @property NSMutableSet<NSString *> *deletedUserAttributes;
 @property NSNotification *didFinishLaunchingNotification;
 @property UIBackgroundTaskIdentifier backendBackgroundTaskIdentifier;
 @property NSOperationQueue *backgroundCheckQueue;
+@property NSNumber *previousForegroundTime;
 
 @end
 
@@ -1596,6 +1598,12 @@ static BOOL skipNextUpload = NO;
         return;
     }
     
+    NSTimeInterval lastEventTimestamp = message.timestamp ?: [[NSDate date] timeIntervalSince1970];
+    if (MPStateMachine.runningInBackground) {
+        self.timeOfLastEventInBackground = lastEventTimestamp;
+        NSLog(@"BEN - timeOfLastEventInBackground updated: %f", self.timeOfLastEventInBackground);
+    }
+    
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     MPMessageType messageTypeCode = [MPMessageBuilder messageTypeForString:message.messageType];
@@ -1615,7 +1623,7 @@ static BOOL skipNextUpload = NO;
     MPSession *session = self.session;
     if (updateSession && session) {
         
-        session.endTime = message.timestamp != 0 ? message.timestamp : [[NSDate date] timeIntervalSince1970];
+        session.endTime = lastEventTimestamp;
         
         if (session.persisted) {
             [persistence updateSession:session];
@@ -2006,7 +2014,9 @@ static BOOL skipNextUpload = NO;
 
 #endif
 
-#pragma mark - Background Handling
+#pragma mark - Background Handling -
+
+#pragma mark Background Task
 
 - (void)beginBackgroundTask {
     if ([MPStateMachine isAppExtension]) {
@@ -2036,36 +2046,71 @@ static BOOL skipNextUpload = NO;
     }];
 }
 
-- (void)cleanUp {
+#pragma mark Session Handling
+
+- (BOOL)shouldEndSession {
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    if (nextCleanUpTime < currentTime) {
-        MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-        [persistence deleteRecordsOlderThan:(currentTime - NINETY_DAYS)];
-        nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
+    NSTimeInterval backgroundTime = self.timeOfLastEventInBackground;
+    if (backgroundTime == 0.0) {
+        return NO;
+    }
+    
+    NSTimeInterval idleTimeInBackground = currentTime - backgroundTime;
+    return idleTimeInBackground >= self.sessionTimeout;
+}
+
+- (void)endSessionIfTimedOut {
+    if (!MParticle.sharedInstance.automaticSessionTracking) {
+        return;
+    }
+    
+    if (self.session != nil && [self shouldEndSession]) {
+        NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
+        self.session.endTime = lastEventTime;
+        
+        NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+        if (self.timeAppWentToBackground > 0.0) {
+            self.session.backgroundTime += currentTime - self.timeAppWentToBackground;
+        }
+        
+        // Reset time of last event to reset the session timeout
+        self.timeOfLastEventInBackground = currentTime;
+        
+        [MParticle executeOnMessage:^{
+            [[MParticle sharedInstance].persistenceController updateSession:self.session];
+            [self skipNextUpload];
+            [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
+                [self beginSession];
+            }];
+        }];
     }
 }
 
-- (UIApplicationState)applicationState {
-    // Check the background state on the main thread
-    __block UIApplicationState appState;
-    dispatch_sync(dispatch_get_main_queue(), ^{
-        appState = [MPApplication sharedUIApplication].applicationState;
-    });
-    return appState;
+#pragma mark Application Lifecycle
+
+- (void)cleanUp {
+    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    if (nextCleanUpTime < currentTime) {
+        [persistence deleteRecordsOlderThan:(currentTime - NINETY_DAYS)];
+        nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
+    }
+    [persistence purgeMemory];
 }
 
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
     MPILogVerbose(@"Application Did Enter Background");
     
+    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
     [MPStateMachine setRunningInBackground:YES];
-    
-    self.timeAppWentToBackground = [[NSDate date] timeIntervalSince1970];
-    
     [self beginBackgroundTask];
         
-    dispatch_async([MParticle messageQueue], ^{
+    [MParticle executeOnMessage:^{
+        self.timeAppWentToBackground = timestamp;
+        self.timeOfLastEventInBackground = timestamp;
+        NSLog(@"BEN - did enter background, timeAppWentToBackground and timeOfLastEventInBackground set to %f", timestamp);
+        
         [self setPreviousSessionSuccessfullyClosed:@YES];
-        [[MParticle sharedInstance].persistenceController purgeMemory];
         [self cleanUp];
                 
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition 
@@ -2085,7 +2130,7 @@ static BOOL skipNextUpload = NO;
         [self saveMessage:message updateSession:YES];
         
         [self beginBackgroundTimeCheckLoop];
-    });
+    }];
 }
 
 - (void)beginBackgroundTimeCheckLoop {
@@ -2095,76 +2140,53 @@ static BOOL skipNextUpload = NO;
     
     // Cancel any existing background check loops
     [self.backgroundCheckQueue cancelAllOperations];
-    
+        
     NSBlockOperation *blockOperation = [[NSBlockOperation alloc] init];
     __weak NSBlockOperation *weakBlockOperation = blockOperation;
     [blockOperation addExecutionBlock:^{
+        // Reusable block to check application state on main thread
+        UIApplicationState (^getApplicationState)(void) = ^UIApplicationState(void) {
+            __block UIApplicationState appState;
+            dispatch_sync(dispatch_get_main_queue(), ^{
+                appState = [MPApplication sharedUIApplication].applicationState;
+            });
+            return appState;
+        };
+        
         UIApplication *sharedApplication = [MPApplication sharedUIApplication];
-        UIApplicationState appState = [self applicationState];
+        UIApplicationState applicationState = getApplicationState();
         
         // Loop to check the background state and time remaining to decide when to upload
-        while (appState == UIApplicationStateBackground) {
+        while (applicationState == UIApplicationStateBackground) {
+            // Handle edge case where app leaves and re-enters background during while the thread is asleep
             if (!weakBlockOperation || weakBlockOperation.isCancelled) {
                 return;
             }
             
-            [self checkIfShouldEndSession:YES];
+            [self endSessionIfTimedOut];
             
             if (sharedApplication.backgroundTimeRemaining <= kMPRemainingBackgroundTimeMinimumThreshold) {
                 // Less than kMPRemainingBackgroundTimeMinimumThreshold seconds left in the background, upload the batch
                 MPILogVerbose(@"Less than %f time remaining in background, uploading batch and ending background task", kMPRemainingBackgroundTimeMinimumThreshold);
-                dispatch_async([MParticle messageQueue], ^{
+                [MParticle executeOnMessage:^{
                     [self waitForKitsAndUploadWithCompletionHandler:^{
                         [self endUploadTimer];
                         [self endBackgroundTask];
                     }];
-                });
+                }];
                 return;
             }
-            MPILogVerbose(@"Background time reamining %f", sharedApplication.backgroundTimeRemaining);
+            MPILogVerbose(@"Background time remaining %f", sharedApplication.backgroundTimeRemaining);
             
             // Short sleep to prevent burning CPU cycles
             [NSThread sleepForTimeInterval:1.0];
-            appState = [self applicationState];
+            applicationState = getApplicationState();
         }
         
         // The app is no longer in the background, so end the background task
         [self endBackgroundTask];
     }];
     [self.backgroundCheckQueue addOperation:blockOperation];
-}
-
-- (BOOL)shouldEndSession {
-    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    NSTimeInterval backgroundTime = self.timeAppWentToBackground;
-    if (backgroundTime == 0) {
-        return NO;
-    }
-    NSTimeInterval timeInBackground = currentTime - backgroundTime;
-    
-    return timeInBackground >= self.sessionTimeout;
-}
-
-- (void)checkIfShouldEndSession:(BOOL)isBackgrounded {
-    if (!MParticle.sharedInstance.automaticSessionTracking) {
-        return;
-    }
-    
-    if (self.session != nil && [self shouldEndSession]) {
-        self.session.endTime = self.timeAppWentToBackground;
-        
-        dispatch_async([MParticle messageQueue], ^{
-            [[MParticle sharedInstance].persistenceController updateSession:self.session];
-            [self skipNextUpload];
-            [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
-                MPILogDebug(@"SDK has ended background activity.");
-                [self beginSession];
-                [self waitForKitsAndUploadWithCompletionHandler:nil];
-            }];
-        });
-    } else if (!isBackgrounded) {
-        [self beginSession];
-    }
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
@@ -2175,8 +2197,9 @@ static BOOL skipNextUpload = NO;
     
     [self endBackgroundTask];
     
-    [self checkIfShouldEndSession:NO];
-    
+    // This will no-op if we already have an active session
+    [self beginSession];
+        
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
     if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
@@ -2185,9 +2208,9 @@ static BOOL skipNextUpload = NO;
 #endif
 #endif
     
-    dispatch_async([MParticle messageQueue], ^{
+    [MParticle executeOnMessage:^{
         [self requestConfig:nil];
-    });
+    }];
 }
 
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification {
@@ -2196,30 +2219,19 @@ static BOOL skipNextUpload = NO;
     }
     
     [self beginUploadTimer];
-    dispatch_async([MParticle messageQueue], ^{
-        BOOL sessionExpired = (self.session == nil);
-        if (!sessionExpired) {
-            NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-            if (self.timeAppWentToBackground > 0.0) {
-                self.session.backgroundTime += currentTime - self.timeAppWentToBackground;
-            }
-            self.timeAppWentToBackground = 0.0;
-            self.session.endTime = currentTime;
-            [[MParticle sharedInstance].persistenceController updateSession:self.session];
-        }
+    [MParticle executeOnMessage:^{
+        self.timeAppWentToBackground = 0.0;
+        self.timeOfLastEventInBackground = 0.0;
         
-        if (MParticle.sharedInstance.automaticSessionTracking) {
-            [self beginSession];
-        }
-        
-        static NSNumber *previousForegroundTime = nil;
+        BOOL isLaunch = NO;
         NSMutableDictionary *messageDictionary = @{kMPAppStateTransitionType:kMPASTForegroundKey}.mutableCopy;
-        if (previousForegroundTime != nil) {
-            messageDictionary[kMPAppForePreviousForegroundTime] = previousForegroundTime;
+        if (self.previousForegroundTime != nil) {
+            messageDictionary[kMPAppForePreviousForegroundTime] = self.previousForegroundTime;
+            isLaunch = YES;
         }
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary];
-        previousForegroundTime = MPCurrentEpochInMilliseconds;
-        messageBuilder = [messageBuilder withStateTransition:sessionExpired previousSession:nil];
+        self.previousForegroundTime = MPCurrentEpochInMilliseconds;
+        messageBuilder = [messageBuilder withStateTransition:isLaunch previousSession:nil];
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
         messageBuilder = [messageBuilder withLocation:[MParticle sharedInstance].stateMachine.location];
@@ -2229,7 +2241,7 @@ static BOOL skipNextUpload = NO;
         [self saveMessage:message updateSession:YES];
         
         MPILogVerbose(@"Application Did Become Active");
-    });
+    }];
 }
 
 @end
