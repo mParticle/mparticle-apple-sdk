@@ -942,9 +942,7 @@ static BOOL skipNextUpload = NO;
             messageInfo[kMPPreviousSessionIdKey] = previousSession.uuid;
             messageInfo[kMPPreviousSessionStartKey] = MPMilliseconds(previousSession.startTime);
         }
-        
-        NSLog(@"BEN - Starting new session: %@\nPrevious session: %@", _session, previousSession);
-        
+                
         messageInfo[kMPPreviousSessionLengthKey] = @(previousSessionLength);
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeSessionStart session:_session messageInfo:messageInfo];
@@ -1604,7 +1602,6 @@ static BOOL skipNextUpload = NO;
     NSTimeInterval lastEventTimestamp = message.timestamp ?: [[NSDate date] timeIntervalSince1970];
     if (MPStateMachine.runningInBackground) {
         self.timeOfLastEventInBackground = lastEventTimestamp;
-        NSLog(@"BEN - timeOfLastEventInBackground updated: %f", self.timeOfLastEventInBackground);
     }
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -2087,10 +2084,7 @@ static BOOL skipNextUpload = NO;
         // this can result in incorrectly calculated foreground time when ending a session in the background. So subtract the additional
         // time since timeOfLastEventInBackground from the background time to correct this.
         self.session.backgroundTime -= currentTime - self.timeOfLastEventInBackground;
-        
-        NSLog(@"BEN - timeOfLastEventInBackground: %f", self.timeOfLastEventInBackground);
-        NSLog(@"BEN - Ending session: %@", self.session);
-        
+                
         // Reset time of last event to reset the session timeout
         self.timeOfLastEventInBackground = currentTime;
         
@@ -2125,14 +2119,11 @@ static BOOL skipNextUpload = NO;
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
     [MPStateMachine setRunningInBackground:YES];
     [self beginBackgroundTask];
-    
-    NSLog(@"BEN - entering background, session backgroundTime: %f  interruptions: %d", self.session.backgroundTime, self.session.numberOfInterruptions);
-        
+            
     [MParticle executeOnMessage:^{
         self.timeAppWentToBackground = currentTime;
         self.timeAppWentToBackgroundInCurrentSession = currentTime;
         self.timeOfLastEventInBackground = currentTime;
-        NSLog(@"BEN - did enter background, timeAppWentToBackground and timeOfLastEventInBackground set to %f", currentTime);
         
         [self setPreviousSessionSuccessfullyClosed:@YES];
         [self cleanUp];
@@ -2231,8 +2222,6 @@ static BOOL skipNextUpload = NO;
             // Only update background time if this is the same session that entered the background otherwise foregroundTime will be negative
             [self updateSessionBackgroundTime];
         }
-            
-        NSLog(@"BEN - entering foreground, session: %@", self.session);
         
         #if TARGET_OS_IOS == 1
         #ifndef MPARTICLE_LOCATION_DISABLE
