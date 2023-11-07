@@ -132,7 +132,9 @@ NSString *const sessionUUIDKey = @"sessionId";
 
 #pragma mark Public accessors
 - (NSTimeInterval)foregroundTime {
-    return _length - _backgroundTime;//sl
+    NSTimeInterval foreground = _length - _backgroundTime;
+    // Don't allow negative foreground time
+    return foreground < 0.0 ? 0.0 : foreground;
 }
 
 - (void)setEndTime:(NSTimeInterval)endTime {
