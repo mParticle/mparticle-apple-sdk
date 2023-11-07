@@ -2081,7 +2081,6 @@ static BOOL skipNextUpload = NO;
         NSTimeInterval lastEventTime = self.timeOfLastEventInBackground;
         self.session.endTime = lastEventTime;
         
-        // TODO: don't include difference between last event and entering background  or just don't update background time at all here
         [self updateSessionBackgroundTime];
         
         // Since we use the timeAppWentToBackground to calculate background time, but timeOfLastEventInBackground as the endTime,
@@ -2225,25 +2224,26 @@ static BOOL skipNextUpload = NO;
     
     [self endBackgroundTask];
     
-    if (self.timeAppWentToBackground == self.timeAppWentToBackgroundInCurrentSession) {
-        // Only update background time if this is the same session that entered the background otherwise foregroundTime will be negative
-        [self updateSessionBackgroundTime];
-    }
-        
-    NSLog(@"BEN - entering foreground, session: %@", self.session);
-
-    // This will no-op if we already have an active session or automatic session management is disabled
-    [self beginSession];
-        
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
-        [[MParticle sharedInstance].stateMachine.locationManager.locationManager startUpdatingLocation];
-    }
-#endif
-#endif
-    
     [MParticle executeOnMessage:^{
+        [self endSessionIfTimedOut];
+        
+        if (self.timeAppWentToBackground == self.timeAppWentToBackgroundInCurrentSession) {
+            // Only update background time if this is the same session that entered the background otherwise foregroundTime will be negative
+            [self updateSessionBackgroundTime];
+        }
+            
+        NSLog(@"BEN - entering foreground, session: %@", self.session);
+        
+        #if TARGET_OS_IOS == 1
+        #ifndef MPARTICLE_LOCATION_DISABLE
+        [MParticle executeOnMain:^{
+            if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
+                [[MParticle sharedInstance].stateMachine.locationManager.locationManager startUpdatingLocation];
+            }
+        }];
+        #endif
+        #endif
+    
         [self requestConfig:nil];
     }];
 }
