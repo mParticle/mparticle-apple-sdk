@@ -142,7 +142,7 @@
                                                                     sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
                                       ];
@@ -214,7 +214,7 @@
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId]
                                                                 messages:@[message]
-                                                          uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                          uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                               dataPlanId:message.dataPlanId
                                                          dataPlanVersion:message.dataPlanVersion
                                       ];
@@ -294,7 +294,7 @@
                                                                     sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
                                       ];
@@ -376,7 +376,7 @@
                                                                     sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
                                       ];
@@ -455,7 +455,7 @@
                                                                   sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
     ];
@@ -537,7 +537,7 @@
                                                                   sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
     ];
@@ -622,7 +622,7 @@
                                                                   sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
     ];
@@ -703,7 +703,7 @@
                                                                   sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:message.dataPlanId
                                                             dataPlanVersion:message.dataPlanVersion
     ];
