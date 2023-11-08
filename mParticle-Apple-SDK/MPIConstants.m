@@ -385,12 +385,7 @@ NSString *const kMPEventTypeStringProductImpression = @"ProductImpression";
 //
 const NSTimeInterval MINIMUM_SESSION_TIMEOUT = 1.0;
 
-const NSTimeInterval MAXIMUM_SESSION_TIMEOUT =
-    #if TARGET_OS_TV == 1
-        12.0;
-    #else
-        120.0;
-    #endif
+const NSTimeInterval MAXIMUM_SESSION_TIMEOUT = DBL_MAX;
 
 const NSTimeInterval DEFAULT_SESSION_TIMEOUT =
     #if TARGET_OS_TV == 1
