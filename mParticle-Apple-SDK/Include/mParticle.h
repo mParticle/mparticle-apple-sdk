@@ -177,23 +177,27 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 + (instancetype)optionsWithKey:(NSString *)apiKey secret:(NSString *)secret;
 
-/*
- App key. mParticle uses this to attribute incoming data to your app's acccount/workspace/platform.
+/**
+ App key.
+ 
+ mParticle uses this to attribute incoming data to your app's acccount/workspace/platform.
  */
 @property (nonatomic, strong, readwrite) NSString *apiKey;
 
-/*
- App secret. An additional authentication token used to produce a signature header required by the server.
+/**
+ App secret. 
+ 
+ An additional authentication token used to produce a signature header required by the server.
  */
 @property (nonatomic, strong, readwrite) NSString *apiSecret;
 
-/*
+/**
  If you have an App and App Extension, setting this value will share user defaults data between them.
  */
 @property (nonatomic, strong, readwrite) NSString *sharedGroupID;
 
 
-/*
+/**
  Allows you to specify a specific installation type, or specify that the SDK should detect automatically.
  
  You can specify that this is a known-install, known-upgrade or known-same-version.
@@ -206,17 +210,17 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, readwrite) MPInstallationType installType;
 
-/*
+/**
  This identity request object allows you to customize the information included in the initial Identify request sent by the SDK.
  */
 @property (nonatomic, strong, readwrite) MPIdentityApiRequest *identifyRequest;
 
-/*
+/**
  SDK Environment. Autodetected as development or production, you can also override.
  */
 @property (nonatomic, readwrite) MPEnvironment environment;
 
-/*
+/**
  Whether the SDK should automatically collect UIApplicationDelegate information.
  
  If set to NO, you will need to manually add some calls to the SDK within certain AppDelegate methods.
@@ -226,7 +230,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, readwrite) BOOL proxyAppDelegate;
 
-/*
+/**
  Whether the SDK should automatically attempt to measure sessions. Ignored in App Extensions.
  
  If set to YES (the default), the SDK will start a timer when the app enters the background and will end the session if a
@@ -239,7 +243,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, readwrite) BOOL automaticSessionTracking;
 
-/*
+/**
  Whether the SDK should start a session on SDK init. (Defaults to YES.)
  
  The behavior of this flag does not change depending on whether automatic session tracking is enabled.
@@ -254,7 +258,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, readwrite) BOOL shouldBeginSession;
 
-/*
+/**
  The browser user agent.
  
  This is normally collected by the SDK automatically. If you are already incurring the cost of instantiating
@@ -263,18 +267,18 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, strong, nullable) NSString *customUserAgent;
 
-/*
+/**
  Whether browser user agent should be collected by the SDK. This value is ignored (always NO) if you specify a non-nil custom user agent.
  */
 @property (nonatomic, readwrite) BOOL collectUserAgent;
 
-/*
+/**
  Default user agent to be sent in case collecting the browser user agent fails repeatedly, times out or the APIs are unavailable.
  (Ignored if `customUserAgent` is set.) By default, a value of the form "mParticle Apple SDK/<SDK Version>" will be used as a fallback.
  */
 @property (nonatomic, copy, readwrite) NSString *defaultAgent;
 
-/*
+/**
  Whether the SDK should attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
 @property (nonatomic, readwrite) BOOL collectSearchAdsAttribution;
@@ -284,12 +288,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (nonatomic, readwrite) BOOL trackNotifications;
 
-/*
+/**
  This value is not currently read by the SDK and should not be used at this time.
  */
 @property (nonatomic, readwrite) BOOL startKitsAsync;
 
-/*
+/**
  Log level. (Defaults to 'None'.)
  
  This controls the verbosity of the SDK.
@@ -316,6 +320,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Session timeout.
  
  Sets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval, counted since the last event was logged.
+ 
  */
 @property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 
@@ -531,7 +536,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  */
 @property (atomic, readonly) BOOL collectUserAgent;
 
-/*
+/**
  Determines whether the SDK will attempt to collect Apple Search Ads attribution information. Defaults to YES
  */
 @property (atomic, readonly) BOOL collectSearchAdsAttribution;
@@ -555,7 +560,8 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (atomic, readonly) BOOL trackNotifications;
 
 /**
- Gets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged.
+ Gets the user session timeout interval. A session is ended if the app goes into the background for longer than the session timeout interval or when more than 1000 events are logged
+ This value is no longer capped, any value from 1.0 to `DBL_MAX` seconds can be chosen.
  */
 @property (nonatomic, readonly) NSTimeInterval sessionTimeout;
 
