@@ -273,47 +273,29 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 }
 
 - (void)broadcastSessionDidBegin:(MPSession *)session {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self.delegate sessionDidBegin:session];
-    });
-    
-    __weak MPBackendController *weakSelf = self;
     MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (weakSelf) {
-            NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
-            if (mparticleSession.sessionID != nil) {
-                mutableInfo[mParticleSessionId] = mparticleSession.sessionID;
-            }
-            if (mparticleSession.UUID) {
-                mutableInfo[mParticleSessionUUID] = mparticleSession.UUID;
-            }
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
-                                                                object:weakSelf.delegate
-                                                              userInfo:[mutableInfo copy]];
-        }
-    });
+    [MParticle executeOnMain:^{
+        [self.delegate sessionDidBegin:session];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+        userInfo[mParticleSessionId] = mparticleSession.sessionID;
+        userInfo[mParticleSessionUUID] = mparticleSession.UUID;
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidBeginNotification
+                                                            object:self.delegate
+                                                          userInfo:userInfo];
+    }];
 }
 
 - (void)broadcastSessionDidEnd:(MPSession *)session {
-    [self.delegate sessionDidEnd:session];
-    
-    __weak MPBackendController *weakSelf = self;
     MParticleSession *mparticleSession = [[MParticleSession alloc] initWithUUID:session.uuid];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (weakSelf) {
-            NSMutableDictionary *mutableInfo = [NSMutableDictionary dictionary];
-            if (mparticleSession.sessionID != nil) {
-                mutableInfo[mParticleSessionId] = mparticleSession.sessionID;
-            }
-            if (mparticleSession.UUID) {
-                mutableInfo[mParticleSessionUUID] = mparticleSession.UUID;
-            }
-            [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
-                                                                object:weakSelf.delegate
-                                                              userInfo:[mutableInfo copy]];
-        }
-    });
+    [MParticle executeOnMain:^{
+        [self.delegate sessionDidEnd:session];
+        NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+        userInfo[mParticleSessionId] = mparticleSession.sessionID;
+        userInfo[mParticleSessionUUID] = mparticleSession.UUID;
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleSessionDidEndNotification
+                                                            object:self.delegate
+                                                          userInfo:userInfo];
+    }];
 }
                    
 - (void)logUserAttributeChange:(MPUserAttributeChange *)userAttributeChange {
@@ -816,9 +798,8 @@ static BOOL skipNextUpload = NO;
             self.uploadSource = nil;
         }
         
-        __weak MPBackendController *weakSelf = self;
         self.uploadSource = [self createSourceTimer:self.uploadInterval eventHandler:^{
-            [weakSelf waitForKitsAndUploadWithCompletionHandler:nil];
+            [self waitForKitsAndUploadWithCompletionHandler:nil];
         } cancelHandler:^{}];
     }
 }
@@ -1544,7 +1525,6 @@ static BOOL skipNextUpload = NO;
         date = [NSDate date];
     }
     
-    __weak MPBackendController *weakSelf = self;
     dispatch_async([MParticle messageQueue], ^{
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
 
@@ -1554,16 +1534,16 @@ static BOOL skipNextUpload = NO;
         
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
                 
-        [weakSelf processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
-        [weakSelf waitForKitsAndUploadWithCompletionHandler:nil];
+        [self processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
+        [self waitForKitsAndUploadWithCompletionHandler:nil];
         
-        [weakSelf beginUploadTimer];
+        [self beginUploadTimer];
         
         if (firstRun) {
             MPMessage *message = [messageBuilder build];
             message.uploadStatus = MPUploadStatusBatch;
             
-            [weakSelf saveMessage:message updateSession:YES];
+            [self saveMessage:message updateSession:YES];
             
             MPILogDebug(@"Application First Run");
         }
@@ -1571,8 +1551,8 @@ static BOOL skipNextUpload = NO;
         void (^searchAdsCompletion)(void) = ^{
             static dispatch_once_t onceToken;
             dispatch_once(&onceToken, ^{
-                [weakSelf processDidFinishLaunching:weakSelf.didFinishLaunchingNotification];
-                [weakSelf waitForKitsAndUploadWithCompletionHandler:nil];
+                [self processDidFinishLaunching:self.didFinishLaunchingNotification];
+                [self waitForKitsAndUploadWithCompletionHandler:nil];
             });
         };
         
@@ -1583,7 +1563,7 @@ static BOOL skipNextUpload = NO;
             searchAdsCompletion();
         }
         
-        [weakSelf processPendingArchivedMessages];
+        [self processPendingArchivedMessages];
         
         [MPResponseConfig restore];
         [self requestConfig:nil];
@@ -1670,7 +1650,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler {
-    __weak MPBackendController *weakSelf = self;
     [self requestConfig:^(BOOL uploadBatch) {
         if (!uploadBatch) {
             if (completionHandler) {
@@ -1689,7 +1668,7 @@ static BOOL skipNextUpload = NO;
             return;
         }
         
-        [weakSelf uploadBatchesWithCompletionHandler:^(BOOL success) {
+        [self uploadBatchesWithCompletionHandler:^(BOOL success) {
             if (completionHandler) {
                 completionHandler(NO);
             }
