@@ -399,6 +399,13 @@ const NSTimeInterval SEVEN_DAYS = 60 * 60 * 24 * 7; // Old messages purged on mi
 const NSTimeInterval NINETY_DAYS = 60 * 60 * 24 * 90; // Old messages purge interval = 60 seconds * 60 minutes * 24 hours * 90 days
 
 // Interval between uploads if not specified
+const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL =
+    #if TARGET_OS_TV == 1
+        2.0;
+    #else
+        60.0;
+    #endif
+
 const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
     #if TARGET_OS_TV == 1
         6.0;
