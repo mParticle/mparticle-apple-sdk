@@ -2072,7 +2072,6 @@ static BOOL skipNextUpload = NO;
         
         [MParticle executeOnMessage:^{
             [[MParticle sharedInstance].persistenceController updateSession:self.session];
-            [self skipNextUpload];
             [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
                 [self beginSession];
             }];
