@@ -992,7 +992,7 @@
     MParticle *instance = [MParticle sharedInstance];
     instance.backendController = [[MPBackendController alloc] init];
 
-    XCTAssertEqual(instance.uploadInterval, DEFAULT_UPLOAD_INTERVAL);
+    XCTAssertEqual(instance.uploadInterval, DEFAULT_DEBUG_UPLOAD_INTERVAL);
 }
 
 - (void)testSetUploadInterval {
