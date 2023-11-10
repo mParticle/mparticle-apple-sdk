@@ -308,8 +308,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Upload interval.
  
- Batches of data are sent periodically to the mParticle servers at the rate defined by this property. Batches are also uploaded
- when the application is sent to the background.
+ Batches of data are sent periodically to the mParticle servers at the rate defined by this property. This continues while the app is in the background (e.g. playing music).
  */
 @property (nonatomic, readwrite) NSTimeInterval uploadInterval;
 

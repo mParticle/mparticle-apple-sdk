@@ -2189,6 +2189,7 @@ static BOOL skipNextUpload = NO;
                 MPILogVerbose(@"Less than %f time remaining in background, uploading batch and ending background task", kMPRemainingBackgroundTimeMinimumThreshold);
                 [MParticle executeOnMessage:^{
                     [self waitForKitsAndUploadWithCompletionHandler:^{
+                        // Allow iOS to sleep the app
                         [self endUploadTimer];
                         [self endBackgroundTask];
                     }];
