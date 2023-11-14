@@ -1002,18 +1002,17 @@
     
     key = @"Dinosaur";
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
-
-        [self->kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
-                    userAttributeKey:key
-                               value:values
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
-                              XCTAssertNotNil(kit);
-                              
-                              MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
-                              XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
-              
-                          }];
-
+    
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+        XCTAssertNotNil(kit);
+        
+        MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+        XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+        
+    }];
 }
 
 - (void)testNotForwardUserAttributeList {    
@@ -2750,17 +2749,16 @@
     key = @"Dinosaur";
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
 
-        [self->kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
-                    userAttributeKey:key
-                               value:values
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
-                              XCTAssertNotNil(kit);
-                              
-                              MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
-                              XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
-              
-                          }];
-
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+        XCTAssertNotNil(kit);
+        
+        MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+        XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+        
+    }];
 }
 
 - (void)testNotForwardUserAttributeListForSideloadedKit {
