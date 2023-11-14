@@ -2595,15 +2595,8 @@
     event.category = @"Olympic Games";
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
-            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
-            if (kitExtension.code.intValue == 1000000000) {
-                return YES;
-            }
-        }
-        return NO;
-    }] anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
     
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
@@ -2627,15 +2620,8 @@
     event.category = @"Olympic Games";
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
-            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
-            if (kitExtension.code.intValue == 1000000000) {
-                return YES;
-            }
-        }
-        return NO;
-    }] anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
     
@@ -2654,15 +2640,8 @@
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
-            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
-            if (kitExtension.code.intValue == 1000000000) {
-                return YES;
-            }
-        }
-        return NO;
-    }] anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logScreen:)];
     
@@ -2689,15 +2668,8 @@
     event.category = @"Olympic Games";
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
-            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
-            if (kitExtension.code.intValue == 1000000000) {
-                return YES;
-            }
-        }
-        return NO;
-    }] anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
     
@@ -2719,15 +2691,8 @@
     event.category = @"Olympic Games";
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
-            id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
-            if (kitExtension.code.intValue == 1000000000) {
-                return YES;
-            }
-        }
-        return NO;
-    }] anyObject];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
     MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
     
