@@ -1002,18 +1002,17 @@
     
     key = @"Dinosaur";
     values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
-
-        [self->kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
-                    userAttributeKey:key
-                               value:values
-                          kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
-                              XCTAssertNotNil(kit);
-                              
-                              MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
-                              XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
-              
-                          }];
-
+    
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+        XCTAssertNotNil(kit);
+        
+        MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+        XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+        
+    }];
 }
 
 - (void)testNotForwardUserAttributeList {    
@@ -2524,6 +2523,33 @@
     [sideloadedKitMock3 verifyWithDelay:5.0];
 }
 
+- (void)testConfigureKits {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addEventTypeFilterWithEventType:MPEventTypeClick];
+    
+    MPKitTestClassSideloaded *sideloadedKitInstance2 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit2 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance2];
+    [sideloadedKit2 addScreenNameFilterWithScreenName:@"test"];
+    
+    MPKitTestClassSideloaded *sideloadedKitInstance3 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit3 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance3];
+    [sideloadedKit3 addUserIdentityFilterWithUserIdentity:MPUserIdentityGoogle];
+    
+    kitContainer.sideloadedKits = @[sideloadedKit1,
+                                    sideloadedKit2,
+                                    sideloadedKit3];
+    [kitContainer initializeKits];
+    
+    MPKitConfiguration *config1 = kitContainer.kitConfigurations[@1000000000];
+    MPKitConfiguration *config2 = kitContainer.kitConfigurations[@1000000001];
+    MPKitConfiguration *config3 = kitContainer.kitConfigurations[@1000000002];
+    
+    XCTAssertEqualObjects(config1.filters, [sideloadedKit1 getKitFilters]);
+    XCTAssertEqualObjects(config2.filters, [sideloadedKit2 getKitFilters]);
+    XCTAssertEqualObjects(config3.filters, [sideloadedKit3 getKitFilters]);
+}
+
 - (void)testForwardEventToSideloadedKit {
     MPEvent *event = [[MPEvent alloc] initWithName:@"test event" type:MPEventTypeOther];
 
@@ -2552,6 +2578,471 @@
     NSDictionary *dict = [[[MPApplication alloc] init] dictionaryRepresentation];
     
     XCTAssertEqualObjects(dict[@"sideloaded_kits_count"], @3);
+}
+
+- (void)testFilterEventTypeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addEventTypeFilterWithEventType:MPEventTypeOther];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
+    event.duration = @2;
+    event.customAttributes = @{@"speed":@25,
+                   @"modality":@"sprinting"};
+    event.category = @"Olympic Games";
+
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+    XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
+}
+
+- (void)testFilterMessageTypeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addMessageTypeFilterWithMessageTypeConstant:kMPMessageTypeStringEvent];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
+    event.duration = @2;
+    event.customAttributes = @{@"speed":@25,
+                   @"modality":@"sprinting"};
+    event.category = @"Olympic Games";
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+    XCTAssertNil(kitFilter.filteredAttributes, @"Filtered attributes should have been nil.");
+}
+
+- (void)testFilterEventTypeNavigationForSideloadedKitForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addEventTypeFilterWithEventType:MPEventTypeNavigation];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logScreen:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertFalse(kitFilter.shouldFilter, @"Event type filtering should not be taking place for screen events.");
+    
+    kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Non-screen event should have been filtered by event type");
+}
+
+- (void)testFilterEventNameForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addEventNameFilterWithEventType:MPEventTypeTransaction eventName:@"Purchase"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
+    event.duration = @2;
+    event.customAttributes = @{@"Product":@"Running shoes",
+                   @"modality":@"sprinting"};
+    event.category = @"Olympic Games";
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter event: %@", event);
+}
+
+- (void)testFilterEventNameAndAttributesForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addEventAttributeFilterWithEventType:(MPEventType)MPEventTypeTransaction eventName:@"Purchase" customAttributeKey:@"Product"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    MPEvent *event = [[MPEvent alloc] initWithName:@"Purchase" type:MPEventTypeTransaction];
+    event.duration = @2;
+    event.customAttributes = @{@"Product":@"Running shoes",
+                   @"modality":@"sprinting"};
+    event.category = @"Olympic Games";
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forEvent:event selector:@selector(logEvent:)];
+    
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertEqual(kitFilter.filteredAttributes.count, 1, @"There should be only one attribute in the list.");
+    XCTAssertEqualObjects(kitFilter.filteredAttributes[@"modality"], @"sprinting", @"Not filtering the correct attribute.");
+}
+
+- (void)testFilterForSelectorForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addMessageTypeFilterWithMessageTypeConstant:kMPMessageTypeStringScreenView];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forBaseEvent:(MPBaseEvent *)nil forSelector:@selector(logScreen:)];
+    XCTAssertNotNil(kitFilter, @"Should not have been nil.");
+}
+
+- (void)testFilterForUserAttributeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addUserAttributeFilterWithUserAttributeKey:@"Shoe Size"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+
+    NSString *key = @"Shoe Size";
+    NSString *value = @"11";
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
+    XCTAssertNotNil(kitFilter);
+    XCTAssertTrue(kitFilter.shouldFilter);
+    
+    key = @"teeth";
+    value = @"sharp";
+    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
+    XCTAssertNil(kitFilter);
+    
+    key = nil;
+    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:value];
+    XCTAssertNil(kitFilter);
+    
+    key = @"Shoe Size";
+    NSMutableArray *values = [@[@"9", @"10", @"11"] mutableCopy];
+    kitFilter = [kitContainer filter:registeredKit forUserAttributeKey:key value:values];
+    XCTAssertNotNil(kitFilter);
+    
+    key = @"Dinosaur";
+    values = [@[@"T-Rex", @"Short arms", @"Omnivore"] mutableCopy];
+
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+        XCTAssertNotNil(kit);
+        
+        MPKitExecStatus *execStatus = [kit setUserAttribute:key values:values];
+        XCTAssertEqual(execStatus.returnCode, MPKitReturnCodeSuccess);
+        
+    }];
+}
+
+- (void)testNotForwardUserAttributeListForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addUserAttributeFilterWithUserAttributeKey:@"Shoe Size"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSString *key = @"Shoe Size";
+    NSMutableArray *values = [@[@"9", @"10", @"11"] mutableCopy];
+
+    [kitContainer forwardSDKCall:@selector(setUserAttribute:values:)
+                userAttributeKey:key
+                           value:values
+                      kitHandler:^(id<MPKitProtocol> _Nonnull kit, MPKitConfiguration *kitConfig) {
+                          NSAssert(false, @"This line should never be executed.");
+                      }];
+}
+
+- (void)testFilterForUserAttributesForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addUserAttributeFilterWithUserAttributeKey:@"$Age"];
+    [sideloadedKit1 addUserAttributeFilterWithUserAttributeKey:@"member_since"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+
+    
+    NSDictionary *userAttributes = @{@"$Age":@24,
+                                     @"member_since":[NSDate date],
+                                     @"arms":@"short",
+                                     @"growl":@"loud",
+                                     @"teeth":@"sharp"};
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserAttributes:userAttributes];
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter user attribute.");
+    XCTAssertEqual(kitFilter.filteredAttributes[@"arms"], @"short", @"User attribute should not have been filtered.");
+    XCTAssertEqual(kitFilter.filteredAttributes[@"growl"], @"loud", @"User attribute should not have been filtered.");
+    XCTAssertEqual(kitFilter.filteredAttributes[@"teeth"], @"sharp", @"User attribute should not have been filtered.");
+    XCTAssertNil(kitFilter.filteredAttributes[@"$Age"], @"User attribute should have been filtered.");
+    XCTAssertNil(kitFilter.filteredAttributes[@"member_since"], @"User attribute should have been filtered.");
+
+    userAttributes = @{@"$Age":@24,
+                       @"member_since":[NSDate date]
+                       };
+    
+    kitFilter = [kitContainer filter:registeredKit forUserAttributes:userAttributes];
+    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+    
+    kitFilter = [kitContainer filter:registeredKit forUserAttributes:nil];
+    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+}
+
+- (void)testFilterForUserIdentityForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addUserIdentityFilterWithUserIdentity:MPUserIdentityEmail];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+
+    NSString *identityString = @"earl.sinclair@shortarmsdinosaurs.com";
+    MPUserIdentity identityType = MPUserIdentityEmail;
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forUserIdentityKey:identityString identityType:identityType];
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+    XCTAssertTrue(kitFilter.shouldFilter, @"Filter should be signaling to filter user identity.");
+    
+    identityType = MPUserIdentityCustomerId;
+    kitFilter = [kitContainer filter:registeredKit forUserIdentityKey:identityString identityType:identityType];
+    XCTAssertNil(kitFilter, @"Filter should have been nil.");
+}
+
+- (void)testFilterCommerceEvent_EventTypeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addEventTypeFilterWithEventType:MPEventTypeAddToCart];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id registeredKit = [registeredKits anyObject];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    product[@"key1"] = @"val1";
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
+    XCTAssertEqual(commerceEvent.products.count, 1, @"Incorrect product count.");
+    
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    commerceEvent.customAttributes = @{@"key_string": @"val_string", @"key_number": @"3.14"};
+    
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
+    transactionAttributes.affiliation = @"Doctor";
+    transactionAttributes.shipping = @1.23;
+    transactionAttributes.tax = @4.56;
+    transactionAttributes.revenue = @18;
+    transactionAttributes.transactionId = @"42";
+    commerceEvent.transactionAttributes = transactionAttributes;
+    XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
+
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+}
+
+- (void)testFilterCommerceEvent_EntityTypeForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addCommerceEventEntityTypeFilterWithCommerceEventKind:MPCommerceEventKindProduct];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id registeredKit = [registeredKits anyObject];
+
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    product[@"key1"] = @"val1";
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
+    XCTAssertEqual(commerceEvent.products.count, 1, @"Incorrect product count.");
+    
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    commerceEvent.customAttributes = @{@"key_string": @"val_string", @"key_number": @"3.14"};
+    
+    product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
+    product.brand = @"Gallifrey Tardis";
+    product.category = @"Time Machine";
+    product.position = 2;
+    product.variant = @"Police Box";
+    
+    [commerceEvent addProduct:product];
+    XCTAssertEqual(commerceEvent.products.count, 2, @"Incorrect product count.");
+    
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
+    transactionAttributes.affiliation = @"Doctor";
+    transactionAttributes.shipping = @1.23;
+    transactionAttributes.tax = @4.56;
+    transactionAttributes.revenue = @18;
+    transactionAttributes.transactionId = @"42";
+    commerceEvent.transactionAttributes = transactionAttributes;
+    XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
+
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+}
+
+- (void)testFilterCommerceEvent_OtherForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addCommerceEventAppFamilyAttributeFilterWithAttributeKey:@"key1"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    id registeredKit = [registeredKits anyObject];
+    
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    product[@"key1"] = @"val1";
+    product[@"key_number"] = @"1";
+    product[@"key_bool"] = @"YES";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    XCTAssertNotNil(commerceEvent, @"Commerce event should not have been nil.");
+    XCTAssertEqual(commerceEvent.products.count, 1, @"Incorrect product count.");
+    
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    commerceEvent.customAttributes = @{@"key_string": @"val_string", @"key_number": @"3.14"};
+    
+    product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
+    product.brand = @"Gallifrey Tardis";
+    product.category = @"Time Machine";
+    product.position = 2;
+    product.variant = @"Police Box";
+    
+    [commerceEvent addProduct:product];
+    XCTAssertEqual(commerceEvent.products.count, 2, @"Incorrect product count.");
+    
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
+    transactionAttributes.affiliation = @"Doctor";
+    transactionAttributes.shipping = @1.23;
+    transactionAttributes.tax = @4.56;
+    transactionAttributes.revenue = @18;
+    transactionAttributes.transactionId = @"42";
+    commerceEvent.transactionAttributes = transactionAttributes;
+    XCTAssertNotNil(commerceEvent.transactionAttributes, @"Transaction attributes should not have been nil.");
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+
+    XCTAssertNotNil(kitFilter, @"Filter should not have been nil.");
+}
+
+- (void)testFilterCommerceEvent_TransactionAttributesForSideloadedKit {
+    MPKitTestClassSideloaded *sideloadedKitInstance1 = [[MPKitTestClassSideloaded alloc] init];
+    MPSideloadedKit *sideloadedKit1 = [[MPSideloadedKit alloc] initWithKitInstance:sideloadedKitInstance1];
+    [sideloadedKit1 addCommerceEventAttributeFilterWithEventType:MPEventTypeAddToCart eventAttributeKey:@"Affiliation"];
+    [sideloadedKit1 addCommerceEventAttributeFilterWithEventType:MPEventTypeAddToCart eventAttributeKey:@"Total Amount"];
+    kitContainer.sideloadedKits = @[sideloadedKit1];
+    [kitContainer initializeKits];
+    
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
+    id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
+    
+    MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
+    product.brand = @"DLC";
+    product.category = @"Time Machine";
+    product.couponCode = @"88mph";
+    product.position = 1;
+    product.variant = @"It depends";
+    
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:product];
+    XCTAssertNotNil(commerceEvent);
+    XCTAssertEqual(commerceEvent.products.count, 1);
+    
+    commerceEvent.checkoutOptions = @"option 1";
+    commerceEvent.screenName = @"Time Traveling";
+    commerceEvent.checkoutStep = 1;
+    
+    product = [[MPProduct alloc] initWithName:@"Tardis" sku:@"trds" quantity:@1 price:@7.89];
+    product.brand = @"Gallifrey Tardis";
+    product.category = @"Time Machine";
+    product.position = 2;
+    product.variant = @"Police Box";
+    
+    [commerceEvent addProduct:product];
+    XCTAssertEqual(commerceEvent.products.count, 2);
+    
+    MPTransactionAttributes *transactionAttributes = [[MPTransactionAttributes alloc] init];
+    transactionAttributes.affiliation = @"Doctor";
+    transactionAttributes.shipping = @3;
+    transactionAttributes.tax = @4.56;
+    transactionAttributes.revenue = @18;
+    transactionAttributes.transactionId = @"42";
+    commerceEvent.transactionAttributes = transactionAttributes;
+    XCTAssertNotNil(commerceEvent.transactionAttributes);
+    
+    MPKitFilter *kitFilter = [kitContainer filter:registeredKit forCommerceEvent:commerceEvent];
+    
+    XCTAssertNotNil(kitFilter);
+    XCTAssertNotNil(kitFilter.forwardCommerceEvent);
+    XCTAssertNotNil(kitFilter.forwardCommerceEvent.transactionAttributes);
+    XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.affiliation);
+    XCTAssertNil(kitFilter.forwardCommerceEvent.transactionAttributes.revenue);
+    XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.shipping, @3);
+    XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.tax, @4.56);
+    XCTAssertEqualObjects(kitFilter.forwardCommerceEvent.transactionAttributes.transactionId, @"42");
 }
 
 #endif

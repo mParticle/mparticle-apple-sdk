@@ -65,7 +65,7 @@ import Foundation
     }
     
     @objc public func addCommerceEventAttributeFilter(eventType: MPEventType, eventAttributeKey: String) {
-        commerceEventAttributeFilters[MPIHasher.hashCommerceEventAttribute(eventType, key: eventAttributeKey)] = 1
+        commerceEventAttributeFilters[MPIHasher.hashCommerceEventAttribute(eventType, key: eventAttributeKey)] = 0
     }
     
     @objc public func addCommerceEventEntityTypeFilter(commerceEventKind: MPCommerceEventKind) {
@@ -91,28 +91,28 @@ import Foundation
         self.messageTypeFilters[messageTypeConstant] = 0
     }
     
-    @objc public func getKitConfiguration() -> [String:Any] {
-        var kitConfig: [String:Any] = [:]
-        kitConfig["et"] = self.eventTypeFilters
-        kitConfig["ec"] = self.eventNameFilters
-        kitConfig["ea"] = self.eventAttributeFilters
-        kitConfig["mt"] = self.messageTypeFilters
-        kitConfig["svec"] = self.screenNameFilters
-        kitConfig["svea"] = self.screenAttributeFilters
-        kitConfig["uid"] = self.userIdentityFilters
-        kitConfig["ua"] = self.userAttributeFilters
-        kitConfig["cea"] = self.commerceEventAttributeFilters
-        kitConfig["ent"] = self.commerceEventEntityTypeFilters
-        kitConfig["afa"] = self.commerceEventAppFamilyAttributeFilters
-        kitConfig["avf"] = self.attributeValueFiltering
+    @objc public func getKitFilters() -> [String:Any] {
+        var kitFilters: [String:Any] = [:]
+        kitFilters["et"] = self.eventTypeFilters
+        kitFilters["ec"] = self.eventNameFilters
+        kitFilters["ea"] = self.eventAttributeFilters
+        kitFilters["mt"] = self.messageTypeFilters
+        kitFilters["svec"] = self.screenNameFilters
+        kitFilters["svea"] = self.screenAttributeFilters
+        kitFilters["uid"] = self.userIdentityFilters
+        kitFilters["ua"] = self.userAttributeFilters
+        kitFilters["cea"] = self.commerceEventAttributeFilters
+        kitFilters["ent"] = self.commerceEventEntityTypeFilters
+        kitFilters["afa"] = self.commerceEventAppFamilyAttributeFilters
+        kitFilters["avf"] = self.attributeValueFiltering
         
-        kitConfig["eaa"] = self.addEventAttributeList
-        kitConfig["ear"] = self.removeEventAttributeList
-        kitConfig["eas"] = self.singleItemEventAttributeList
+        kitFilters["eaa"] = self.addEventAttributeList
+        kitFilters["ear"] = self.removeEventAttributeList
+        kitFilters["eas"] = self.singleItemEventAttributeList
         
-        kitConfig["reg"] = self.consentRegulationFilters
-        kitConfig["pur"] = self.consentPurposeFilters
+        kitFilters["reg"] = self.consentRegulationFilters
+        kitFilters["pur"] = self.consentPurposeFilters
         
-        return kitConfig
+        return kitFilters
     }
 }

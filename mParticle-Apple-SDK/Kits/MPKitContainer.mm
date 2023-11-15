@@ -261,7 +261,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         [MParticle registerExtension:kitRegister];
         
         // Create default kit configuration
-        NSDictionary *remoteConfigDict = @{@"eaa": @{}, @"ear": @{}, @"eas": @{}};
+        NSDictionary *remoteConfigDict = [sideloadedKit getKitFilters];
         NSDictionary *configDict = @{@"id": kitCode, @"as": @{}, kMPRemoteConfigKitHashesKey: remoteConfigDict};
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configDict];
         self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
