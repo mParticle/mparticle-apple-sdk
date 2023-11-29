@@ -732,15 +732,10 @@
         }];
         [expectation fulfill];
     });
-    XCTestExpectation *expectation2 = [self expectationWithDescription:@"dispatch_after expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation2 fulfill];
-    });
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testDidBecomeActiveWithAppLink {
-#if TARGET_OS_IOS == 1
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
@@ -756,39 +751,32 @@
                                                      annotation:annotation];
     
     [self.backendController handleApplicationDidBecomeActive:nil];
-    dispatch_sync(messageQueue, ^{
-    });
     
-    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
-    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
-    XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-    
-    for (MPMessage *message in messages) {
-        if ([message.messageType isEqualToString:@"ast"]) {
-            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-            NSRange testRange = [messageString rangeOfString:@"al_applink_data"];
-            XCTAssertNotEqual(testRange.location, NSNotFound, @"AppLinks is not in the launch URL.");
-            
-            testRange = [messageString rangeOfString:@"\"src\":\"AppLink(com.mParticle.UnitTest)\""];
-            XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
-            
-            testRange = [messageString rangeOfString:@"\"nsi\""];
-            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
-            
-            testRange = [messageString rangeOfString:@"lpr"];
-            XCTAssertNotEqual(testRange.location, NSNotFound);
+    dispatch_sync([MParticle messageQueue], ^{
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
+        
+        for (MPMessage *message in messages) {
+            if ([message.messageType isEqualToString:@"ast"]) {
+                NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+                NSRange testRange = [messageString rangeOfString:@"al_applink_data"];
+                XCTAssertNotEqual(testRange.location, NSNotFound, @"AppLinks is not in the launch URL.");
+                
+                testRange = [messageString rangeOfString:@"\"src\":\"AppLink(com.mParticle.UnitTest)\""];
+                XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
+                
+                testRange = [messageString rangeOfString:@"\"nsi\""];
+                XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
+                
+                testRange = [messageString rangeOfString:@"lpr"];
+                XCTAssertNotEqual(testRange.location, NSNotFound);
+            }
         }
-    }
-    XCTestExpectation *expectation = [self expectationWithDescription:@"dispatch_after expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    
-#endif
 }
 
 - (void)testSetIdentityToNil {
@@ -840,7 +828,6 @@
 }
 
 - (void)testDidBecomeActive {
-#if TARGET_OS_IOS == 1
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
@@ -857,42 +844,37 @@
     
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
-    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
-XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-    
-    for (MPMessage *message in messages) {
-        if ([message.messageType isEqualToString:@"ast"]) {
-            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-            NSRange testRange = [messageString rangeOfString:@"particlebox"];
-            XCTAssertNotEqual(testRange.location, NSNotFound, @"particlebox is not in the launch URL.");
-            
-            testRange = [messageString rangeOfString:@"\"src\":\"com.mParticle.UnitTest\""];
-            XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
-            
-            testRange = [messageString rangeOfString:@"\"nsi\""];
-            XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
-            
-            testRange = [messageString rangeOfString:@"lpr"];
-            XCTAssertNotEqual(testRange.location, NSNotFound);
-            
-            testRange = [messageString rangeOfString:@"key2"];
-            XCTAssertNotEqual(testRange.location, NSNotFound);
+    dispatch_sync([MParticle messageQueue], ^{
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
+        
+        for (MPMessage *message in messages) {
+            if ([message.messageType isEqualToString:@"ast"]) {
+                NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
+                NSRange testRange = [messageString rangeOfString:@"particlebox"];
+                XCTAssertNotEqual(testRange.location, NSNotFound, @"particlebox is not in the launch URL.");
+                
+                testRange = [messageString rangeOfString:@"\"src\":\"com.mParticle.UnitTest\""];
+                XCTAssertNotEqual(testRange.location, NSNotFound, @"Source application is not present or formatted incorrectly.");
+                
+                testRange = [messageString rangeOfString:@"\"nsi\""];
+                XCTAssertNotEqual(testRange.location, NSNotFound, @"'nsi' is not present.");
+                
+                testRange = [messageString rangeOfString:@"lpr"];
+                XCTAssertNotEqual(testRange.location, NSNotFound);
+                
+                testRange = [messageString rangeOfString:@"key2"];
+                XCTAssertNotEqual(testRange.location, NSNotFound);
+            }
         }
-    }
-    XCTestExpectation *expectation = [self expectationWithDescription:@"dispatch_after expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-#endif
 }
 
 - (void)testPreviousForegroundTime {
-#if TARGET_OS_IOS == 1
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
@@ -910,26 +892,78 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     [self.backendController handleApplicationDidBecomeActive:nil];
     [self.backendController handleApplicationDidBecomeActive:nil];
     
-    NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
-    NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
-    NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
-    NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
-    NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
-XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persisted.");
-    
-    for (MPMessage *message in messages) {
-        if ([message.messageType isEqualToString:@"ast"]) {
-            NSString *messageString = [[NSString alloc] initWithData:message.messageData encoding:NSUTF8StringEncoding];
-            NSRange testRange = [messageString rangeOfString:@"\"pft\""];
-            XCTAssertNotEqual(testRange.location, NSNotFound);
-        }
-    }
-    XCTestExpectation *expectation = [self expectationWithDescription:@"dispatch_after expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
+    dispatch_sync([MParticle messageQueue], ^{
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        XCTAssertEqual(messages.count, 3, @"Launch messages are not being persisted.");
+        
+        // First event, should be a session start event
+        MPMessage *ss = messages[0];
+        XCTAssertEqualObjects(ss.messageType, @"ss");
+        
+        // First AST event, should not have the pft key set since we're just launching the app
+        MPMessage *ast1 = messages[1];
+        XCTAssertEqualObjects(ast1.messageType, @"ast");
+        NSString *ast1String = [[NSString alloc] initWithData:ast1.messageData encoding:NSUTF8StringEncoding];
+        NSRange ast1PftRange = [ast1String rangeOfString:@"\"pft\""];
+        XCTAssertEqual(ast1PftRange.location, NSNotFound);
+        
+        // Second AST event, should have the pft key set since we're re-entering the foreground
+        MPMessage *ast2 = messages[2];
+        XCTAssertEqualObjects(ast2.messageType, @"ast");
+        NSString *ast2String = [[NSString alloc] initWithData:ast2.messageData encoding:NSUTF8StringEncoding];
+        NSRange ast2PftRange = [ast2String rangeOfString:@"\"pft\""];
+        XCTAssertNotEqual(ast2PftRange.location, NSNotFound);
     });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-#endif
+}
+
+- (void)testIsLaunchCheck {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
+    NSString *sourceApplication = @"com.mParticle.UnitTest";
+    NSDictionary *annotation = @{@"key1":@1, @"key2":[NSDate date]};
+    
+    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:url
+                                              sourceApplication:sourceApplication
+                                                     annotation:annotation];
+    
+    [self.backendController handleApplicationDidBecomeActive:nil];
+    [self.backendController handleApplicationDidBecomeActive:nil];
+    
+    dispatch_sync([MParticle messageQueue], ^{
+        NSDictionary *messagesDictionary = [[MParticle sharedInstance].persistenceController fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController mpId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        XCTAssertEqual(messages.count, 3, @"Launch messages are not being persisted.");
+        
+        // First event, should be a session start event
+        MPMessage *ss = messages[0];
+        XCTAssertEqualObjects(ss.messageType, @"ss");
+        
+        // First AST event, should have sf key set to true as this is the app launch
+        MPMessage *ast1 = messages[1];
+        XCTAssertEqualObjects(ast1.messageType, @"ast");
+        NSString *ast1String = [[NSString alloc] initWithData:ast1.messageData encoding:NSUTF8StringEncoding];
+        NSRange ast1SfTrueRange = [ast1String rangeOfString:@"\"sf\":true"];
+        XCTAssertNotEqual(ast1SfTrueRange.location, NSNotFound);
+        
+        // Second AST event, should have the sf key set to false as this returning from the background
+        MPMessage *ast2 = messages[2];
+        XCTAssertEqualObjects(ast2.messageType, @"ast");
+        NSString *ast2String = [[NSString alloc] initWithData:ast2.messageData encoding:NSUTF8StringEncoding];
+        NSRange ast2SfFalseRange = [ast2String rangeOfString:@"\"sf\":false"];
+        XCTAssertNotEqual(ast2SfFalseRange.location, NSNotFound);
+    });
 }
 
 - (void)testSetStringAttribute {
@@ -1353,12 +1387,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
     XCTAssertEqualObjects(session.attributesDictionary[@"foo-session-attribute-1"], @2);
     [self.backendController incrementSessionAttribute:session key:@"foo-session-attribute-1" byValue:@3];
     XCTAssertEqualObjects(session.attributesDictionary[@"foo-session-attribute-1"], @5);
-    
-    XCTestExpectation *expectation = [self expectationWithDescription:@"dispatch_after expectation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
 - (void)testMessageWithOptOut {
