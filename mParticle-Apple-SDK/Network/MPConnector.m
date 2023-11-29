@@ -242,10 +242,8 @@ static NSArray *mpStoredCertificates = nil;
 
 - (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
-
-    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost]
-                                             withPostData:serializedParams]
-                                            build];
+    
+    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost] withPostData:serializedParams] build];
     
     if (urlRequest) {
         requestStartTime = [NSDate date];
@@ -261,7 +259,7 @@ static NSArray *mpStoredCertificates = nil;
             completionHttpResponse = httpResponse;
             dispatch_semaphore_signal(requestSemaphore);
         };
-        self.dataTask = [self.urlSession uploadTaskWithRequest:urlRequest fromData:serializedParams];
+        self.dataTask = [self.urlSession dataTaskWithRequest:urlRequest];
         [_dataTask resume];
         long exitCode = dispatch_semaphore_wait(requestSemaphore, dispatch_time(DISPATCH_TIME_NOW, (NETWORK_REQUEST_MAX_WAIT_SECONDS + 1) * NSEC_PER_SEC));
         if (exitCode == 0) {
