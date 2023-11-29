@@ -722,7 +722,7 @@
                                                                   sessionId:[NSNumber numberWithLong:session.sessionId]
                                                                    messages:@[message]
                                                              sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_DEBUG_UPLOAD_INTERVAL
+                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                  dataPlanId:@"test"
                                                             dataPlanVersion:@(1)];
     

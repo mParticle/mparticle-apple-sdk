@@ -512,7 +512,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 }
 
-- (BOOL)performMessageUpload:(MPUpload *)upload {
+- (BOOL)performMessageUpload:(MPUpload *)upload {    
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES;  //stop upload loop

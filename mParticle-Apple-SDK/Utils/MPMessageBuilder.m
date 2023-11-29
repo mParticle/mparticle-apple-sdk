@@ -346,6 +346,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
+// NOTE: Here "sessionFinalized" is really referring to if we are starting a new session on launch, see Facebook event forwarder backend code
 - (MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(MPSession *)previousSession {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     

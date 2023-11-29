@@ -385,38 +385,18 @@ NSString *const kMPEventTypeStringProductImpression = @"ProductImpression";
 //
 const NSTimeInterval MINIMUM_SESSION_TIMEOUT = 1.0;
 
-const NSTimeInterval MAXIMUM_SESSION_TIMEOUT =
-    #if TARGET_OS_TV == 1
-        12.0;
-    #else
-        120.0;
-    #endif
+const NSTimeInterval MAXIMUM_SESSION_TIMEOUT = DBL_MAX;
 
-const NSTimeInterval DEFAULT_SESSION_TIMEOUT =
-    #if TARGET_OS_TV == 1
-        6.0;
-    #else
-        60.0;
-    #endif
+const NSTimeInterval DEFAULT_SESSION_TIMEOUT = 60.0;
 
 const NSTimeInterval TWENTY_FOUR_HOURS = 86400; // database clean up interval
 const NSTimeInterval SEVEN_DAYS = 60 * 60 * 24 * 7; // Old messages purged on migration = 60 seconds * 60 minutes * 24 hours * 7 days
 const NSTimeInterval NINETY_DAYS = 60 * 60 * 24 * 90; // Old messages purge interval = 60 seconds * 60 minutes * 24 hours * 90 days
 
 // Interval between uploads if not specified
-const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL =
-    #if TARGET_OS_TV == 1
-        2.0;
-    #else
-        20.0;
-    #endif
+const NSTimeInterval DEFAULT_DEBUG_UPLOAD_INTERVAL = 60.0;
 
-const NSTimeInterval DEFAULT_UPLOAD_INTERVAL =
-    #if TARGET_OS_TV == 1
-        6.0;
-    #else
-        600.0;
-    #endif
+const NSTimeInterval DEFAULT_UPLOAD_INTERVAL = 600.0;
 
 // How long to block config requests after a successful response.
 const NSTimeInterval CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60;

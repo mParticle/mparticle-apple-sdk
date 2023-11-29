@@ -92,7 +92,7 @@ NSString *const sessionUUIDKey = @"sessionId";
 }
 
 - (NSString *)description {
-    return [NSString stringWithFormat:@"Session\n Id: %lld\n UUID: %@\n Background time: %.0f\n Start: %.0f\n End: %.0f\n Length: %.0f\n EventCounter: %d\n Persisted: %d\n Attributes: %@\n Interruptions: %d\n", self.sessionId, self.uuid, self.backgroundTime, self.startTime, self.endTime, self.length, self.eventCounter, self.persisted, self.attributesDictionary, self.numberOfInterruptions];
+    return [NSString stringWithFormat:@"Session\n Id: %lld\n UUID: %@\n Background time: %.0f\n Foreground time: %.0f\n Start: %.0f\n End: %.0f\n Length: %.0f\n EventCounter: %d\n Persisted: %d\n Interruptions: %d\n Attributes: %@\n", self.sessionId, self.uuid, self.backgroundTime, self.foregroundTime, self.startTime, self.endTime, self.length, self.eventCounter, self.persisted, self.numberOfInterruptions, self.attributesDictionary];
 }
 
 - (BOOL)isEqual:(MPSession *)object {
@@ -132,7 +132,9 @@ NSString *const sessionUUIDKey = @"sessionId";
 
 #pragma mark Public accessors
 - (NSTimeInterval)foregroundTime {
-    return _length - _backgroundTime;//sl
+    NSTimeInterval foreground = _length - _backgroundTime;
+    // Don't allow negative foreground time
+    return foreground < 0.0 ? 0.0 : foreground;
 }
 
 - (void)setEndTime:(NSTimeInterval)endTime {

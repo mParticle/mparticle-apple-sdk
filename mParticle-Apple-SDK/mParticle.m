@@ -300,6 +300,14 @@ static NSString *const kMPStateKey = @"state";
     }
 }
 
++ (void)executeOnMain:(void(^)(void))block {
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -1413,7 +1421,7 @@ static NSString *const kMPStateKey = @"state";
     if (execStatus == MPExecStatusSuccess) {
         MPILogDebug(@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter);
     } else {
-        MPILogError(@"Could not begin location tracking: %@", [_backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not begin location tracking: %@", [MPBackendController execStatusDescription:execStatus]);
     }
 }
 
@@ -1424,7 +1432,7 @@ static NSString *const kMPStateKey = @"state";
     if (execStatus == MPExecStatusSuccess) {
         MPILogDebug(@"Ended location tracking");
     } else {
-        MPILogError(@"Could not end location tracking: %@", [_backendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not end location tracking: %@", [MPBackendController execStatusDescription:execStatus]);
     }
 }
 #endif // MPARTICLE_LOCATION_DISABLE
@@ -1477,7 +1485,7 @@ static NSString *const kMPStateKey = @"state";
         if (execStatus == MPExecStatusSuccess) {
             MPILogDebug(@"Set session attribute - %@:%@", key, value);
         } else {
-            MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [self.backendController execStatusDescription:execStatus]);
+            MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [MPBackendController execStatusDescription:execStatus]);
         }
     });
 }
@@ -1515,7 +1523,7 @@ static NSString *const kMPStateKey = @"state";
         if (execStatus == MPExecStatusSuccess) {
             MPILogDebug(@"Forcing Upload");
         } else {
-            MPILogError(@"Could not upload data: %@", [strongSelf.backendController execStatusDescription:execStatus]);
+            MPILogError(@"Could not upload data: %@", [MPBackendController execStatusDescription:execStatus]);
         }
     });
 }

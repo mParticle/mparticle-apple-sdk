@@ -211,14 +211,6 @@
 }
 #endif
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"backendController.session"]) {
-        self.session = change[NSKeyValueChangeNewKey];
-    } else {
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-    }
-}
-
 - (void)testBeginSession {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Begin session test"];
     dispatch_sync(messageQueue, ^{
@@ -376,8 +368,6 @@
         session = self.backendController.session;
         sessions = [persistence fetchSessions];
         XCTAssertEqual(sessions.count, 2);
-        
-        [self.backendController backgroundTaskBlock];
         XCTAssertNotNil(self.backendController.session);
         
         MPMessage *message = [persistence fetchSessionEndMessageInSession:session];
@@ -1214,7 +1204,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    [self addObserver:self forKeyPath:@"backendController.session" options:NSKeyValueObservingOptionNew context:NULL];
     XCTestExpectation *expectation = [self expectationWithDescription:@"User identity changed"];
     __weak MPBackendControllerTests *weakSelf = self;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -1290,7 +1279,6 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
         [expectation fulfill];
     }];
     [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
-    [self removeObserver:self forKeyPath:@"backendController.session" context:NULL];
 }
 
 - (void)testIncrementUserAttribute {
@@ -1308,7 +1296,7 @@ XCTAssertGreaterThan(messages.count, 0, @"Launch messages are not being persiste
         XCTAssertNotNil(userAttributeValue);
         XCTAssertEqualObjects(userAttributeValue, @1);
         
-        [self.backendController removeUserAttribute:userAttributeKey timestamp:[NSDate date] completionHandler:{}];
+        [self.backendController removeUserAttribute:userAttributeKey timestamp:[NSDate date] completionHandler:nil];
         userAttributeValue = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]][userAttributeKey];
         XCTAssertNil(userAttributeValue);
         [expectation fulfill];
