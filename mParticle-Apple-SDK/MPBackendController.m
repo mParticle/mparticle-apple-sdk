@@ -2226,11 +2226,11 @@ static BOOL skipNextUpload = NO;
         self.timeAppWentToBackgroundInCurrentSession = 0.0;
         self.timeOfLastEventInBackground = 0.0;
         
-        BOOL isLaunch = NO;
+        BOOL isLaunch = YES;
         NSMutableDictionary *messageDictionary = @{kMPAppStateTransitionType:kMPASTForegroundKey}.mutableCopy;
         if (self.previousForegroundTime != nil) {
             messageDictionary[kMPAppForePreviousForegroundTime] = self.previousForegroundTime;
-            isLaunch = YES;
+            isLaunch = NO;
         }
         MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeAppStateTransition session:self.session messageInfo:messageDictionary];
         self.previousForegroundTime = MPCurrentEpochInMilliseconds;
