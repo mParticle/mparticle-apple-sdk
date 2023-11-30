@@ -1,3 +1,18 @@
+# [8.17.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.16.0...v8.17.0) (2023-11-30)
+
+
+### Bug Fixes
+
+* CFNetwork upload warning setting body twice ([#240](https://github.com/mParticle/mparticle-apple-sdk/issues/240)) ([0a177f9](https://github.com/mParticle/mparticle-apple-sdk/commit/0a177f960e1b3874e1a7e6709364f2504335ba5f))
+
+
+### Features
+
+* 5343 Refactor Kit Filter Hash Functions ([#228](https://github.com/mParticle/mparticle-apple-sdk/issues/228)) ([5c26a9e](https://github.com/mParticle/mparticle-apple-sdk/commit/5c26a9efb4e86b8cc31b9908dc1967a75a07e3db))
+* Begin Implementation MPSideloadedKit Filtering Methods ([#231](https://github.com/mParticle/mparticle-apple-sdk/issues/231)) ([ad543fb](https://github.com/mParticle/mparticle-apple-sdk/commit/ad543fb4875700a8ad6a1b23ad318b17aa6c4533))
+* Finish Implementation of MPSideLoadedKits ([#239](https://github.com/mParticle/mparticle-apple-sdk/issues/239)) ([96e62f5](https://github.com/mParticle/mparticle-apple-sdk/commit/96e62f5763b524dcf6ddfde6037278053fd4707d))
+* Improve background batch uploading and session management ([#238](https://github.com/mParticle/mparticle-apple-sdk/issues/238)) ([dc6a9cb](https://github.com/mParticle/mparticle-apple-sdk/commit/dc6a9cb670144ebffb9cac4c28384fb75ab4e68e))
+
 # [8.16.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.15.1...v8.16.0) (2023-10-11)
 
 
