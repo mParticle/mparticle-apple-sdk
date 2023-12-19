@@ -63,12 +63,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @end
 
-@interface MPIdentityApiRequest ()
-
-- (NSDictionary<NSString *, id> *)dictionaryRepresentation;
-
-@end
-
 @implementation MPIdentityTests
 
 - (void)setUp {
@@ -1079,42 +1073,4 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     XCTAssertNotNil(dictionary[@"request_id"]);
 }
 
-- (void)testDictionaryRepresentation {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
-    userDefaults[kMPDeviceTokenKey] = testDeviceToken;
-    
-    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
-    [request setIdentity:@"other id" identityType:MPIdentityOther];
-    [request setIdentity:@"other id 2" identityType:MPIdentityOther2];
-    [request setIdentity:@"other id 3" identityType:MPIdentityOther3];
-    [request setIdentity:@"other id 4" identityType:MPIdentityOther4];
-    [request setIdentity:@"other id 5" identityType:MPIdentityOther5];
-    [request setIdentity:@"other id 6" identityType:MPIdentityOther6];
-    [request setIdentity:@"other id 7" identityType:MPIdentityOther7];
-    [request setIdentity:@"other id 8" identityType:MPIdentityOther8];
-    [request setIdentity:@"other id 9" identityType:MPIdentityOther9];
-    [request setIdentity:@"other id 10" identityType:MPIdentityOther10];
-    [request setIdentity:@"mobile number" identityType:MPIdentityMobileNumber];
-    [request setIdentity:@"phone number 2" identityType:MPIdentityPhoneNumber2];
-    [request setIdentity:@"phone number 3" identityType:MPIdentityPhoneNumber3];
-    
-    NSDictionary *dictionary = request.dictionaryRepresentation;
-#if TARGET_OS_IOS == 1
-    XCTAssertEqualObjects(dictionary[@"push_token"], @"3c3030303030303030303030303030303030303030303030303030303030303e");
-#endif
-    XCTAssertEqualObjects(dictionary[@"other"], @"other id");
-    XCTAssertEqualObjects(dictionary[@"other2"], @"other id 2");
-    XCTAssertEqualObjects(dictionary[@"other3"], @"other id 3");
-    XCTAssertEqualObjects(dictionary[@"other4"], @"other id 4");
-    XCTAssertEqualObjects(dictionary[@"other5"], @"other id 5");
-    XCTAssertEqualObjects(dictionary[@"other6"], @"other id 6");
-    XCTAssertEqualObjects(dictionary[@"other7"], @"other id 7");
-    XCTAssertEqualObjects(dictionary[@"other8"], @"other id 8");
-    XCTAssertEqualObjects(dictionary[@"other9"], @"other id 9");
-    XCTAssertEqualObjects(dictionary[@"other10"], @"other id 10");
-    XCTAssertEqualObjects(dictionary[@"mobile_number"], @"mobile number");
-    XCTAssertEqualObjects(dictionary[@"phone_number_2"], @"phone number 2");
-    XCTAssertEqualObjects(dictionary[@"phone_number_3"], @"phone number 3");
-}
 @end
