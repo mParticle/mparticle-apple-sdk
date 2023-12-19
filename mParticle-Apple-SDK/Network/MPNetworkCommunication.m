@@ -984,9 +984,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         return;
     }
 
-    NSString *mpid = [MPPersistenceController mpId].stringValue;
-    MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithMPID:mpid identityChanges:[identityChanges copy]];
-    
+    MPIdentityHTTPModifyRequest *request = [[MPIdentityHTTPModifyRequest alloc] initWithIdentityChanges:[identityChanges copy]];
     [self identityApiRequestWithURL:self.modifyURL.url identityRequest:request blockOtherRequests:blockOtherRequests completion:^(MPIdentityHTTPBaseSuccessResponse * _Nullable httpResponse, NSError * _Nullable error) {
         if (completion) {
             completion((MPIdentityHTTPModifySuccessResponse *)httpResponse, error);

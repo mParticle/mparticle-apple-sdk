@@ -130,11 +130,10 @@
 
 @implementation MPIdentityHTTPModifyRequest
 
-- (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges {
+- (instancetype)initWithIdentityChanges:(NSArray *)identityChanges {
     self = [super init];
     if (self) {
         _identityChanges = identityChanges;
-        _mpid = mpid;
     }
     return self;
 }
