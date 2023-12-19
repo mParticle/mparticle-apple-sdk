@@ -21,7 +21,7 @@
     [request setIdentity:@"foo" identityType:MPIdentityOther];
     XCTAssertEqualObjects(@"foo", [request.identities objectForKey:@(MPIdentityOther)]);
     [request setIdentity:nil identityType:MPIdentityOther];
-    XCTAssertEqual([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
+    XCTAssertEqualObjects([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
 }
 
 - (void)testSetNullIdentity {
@@ -29,7 +29,7 @@
     [request setIdentity:@"foo" identityType:MPIdentityOther];
     XCTAssertEqualObjects(@"foo", [request.identities objectForKey:@(MPIdentityOther)]);
     [request setIdentity:(id)[NSNull null] identityType:MPIdentityOther];
-    XCTAssertEqual([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
+    XCTAssertEqualObjects([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
 }
 
 - (void)testsetIdentity {
@@ -53,8 +53,8 @@
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     request.customerId = nil;
     request.email = nil;
-    XCTAssertNotEqual((NSNull *)request.email, [NSNull null]);
-    XCTAssertNotEqual((NSNull *)request.customerId, [NSNull null]);
+    XCTAssertNotEqualObjects(request.email, [NSNull null]);
+    XCTAssertNotEqualObjects(request.customerId, [NSNull null]);
 }
 
 @end
