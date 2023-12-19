@@ -21,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, strong, nullable) NSString *email;
 @property (nonatomic, strong, nullable) NSString *customerId;
-@property (nonatomic, strong, nullable, readonly) NSDictionary *identities;
+@property (nonatomic, strong, nullable, readonly) NSDictionary<NSNumber*, NSString*> *identities;
 
 @end
 
