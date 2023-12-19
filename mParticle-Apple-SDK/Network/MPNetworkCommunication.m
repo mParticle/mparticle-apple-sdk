@@ -27,6 +27,7 @@
 #import "MPResponseConfig.h"
 #import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
+#import "MPIdentityCaching.h"
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
@@ -52,6 +53,8 @@ NSString *const kMPURLScheme = @"https";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 NSString *const kMPURLHostEventSubdomain = @"nativesdks";
 NSString *const kMPURLHostIdentitySubdomain = @"identity";
+
+NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
 
 static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
@@ -415,9 +418,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         completionHandler(YES);
         return;
     }
-    
-    __weak MPNetworkCommunication *weakSelf = self;
-    
+        
     MPILogVerbose(@"Starting config request");
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
@@ -441,14 +442,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     NSString *cacheControl = httpResponse.allHeaderFields[kMPHTTPCacheControlHeaderKey];
     NSString *ageString = httpResponse.allHeaderFields[kMPHTTPAgeHeaderKey];
-
     NSNumber *maxAge = [self maxAgeForCache:cacheControl];
-        
-    __strong MPNetworkCommunication *strongSelf = weakSelf;
-    if (!strongSelf) {
-        completionHandler(NO);
-        return;
-    }
     
     if (![MPStateMachine isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
@@ -769,32 +763,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (blockOtherRequests) {
         self.identifying = YES;
     }
-    __weak MPNetworkCommunication *weakSelf = self;
-    
-    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-    
-    if (![MPStateMachine isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
-            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                __strong MPNetworkCommunication *strongSelf = weakSelf;
-                if (strongSelf) {
-                    strongSelf.identifying = NO;
-                }
-                
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-            }
-        }];
-    }
-    
-    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
-    
-    NSDictionary *dictionary = [identityRequest dictionaryRepresentation];
-    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
-    NSString *jsonRequest = [[NSString alloc] initWithData:data
-                                                  encoding:NSUTF8StringEncoding];
-    
-    MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
     
     MPEndpoint endpointType;
     MPURL *mpURL;
@@ -811,64 +779,113 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         endpointType = MPEndpointIdentityModify;
         mpURL = self.modifyURL;
     }
+    
+    NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
+    
+    NSDictionary *dictionary = [identityRequest dictionaryRepresentation];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
+    NSString *jsonRequest = [[NSString alloc] initWithData:data
+                                                  encoding:NSUTF8StringEncoding];
+    
+    MPILogVerbose(@"Identity request:\nURL: %@ \nBody:%@", url, jsonRequest);
+    
+    
     [MPListenerController.sharedInstance onNetworkRequestStarted:endpointType url:url.absoluteString body:data];
-
-    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
-    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
-                                                                    message:nil
-                                                           serializedParams:data];
-    NSData *responseData = response.data;
-    NSError *error = response.error;
-    NSHTTPURLResponse *httpResponse = response.httpResponse;
     
-    __strong MPNetworkCommunication *strongSelf = weakSelf;
-    
-    if (!strongSelf) {
-        if (completion) {
-            MPIdentityHTTPErrorResponse *errorResponse = [[MPIdentityHTTPErrorResponse alloc] initWithJsonObject:nil httpCode:0];
-            completion(nil, [NSError errorWithDomain:mParticleIdentityErrorDomain code:MPIdentityErrorResponseCodeUnknown userInfo:@{mParticleIdentityErrorKey:errorResponse}]);
-        }
-        
-        return;
-    }
-    
-    if (![MPStateMachine isAppExtension]) {
-        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
-            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
-        }
-    }
-    
+    BOOL success = NO;
+    NSError *error = nil;
     NSDictionary *responseDictionary = nil;
     NSString *responseString = nil;
-    NSInteger responseCode = [httpResponse statusCode];
-    BOOL success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+    NSInteger responseCode = 0;
     
-    success = success && [responseData length] > 0;
-    
-    NSError *serializationError = nil;
-    
-    MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
-    
-    [self checkResponseCodeToDisableEventLogging:[httpResponse statusCode]];
-    
-    if (success) {
+    MPIdentityCachedResponse *cachedResponse = [MPIdentityCaching getCachedIdentityResponseForEndpoint:endpointType identityRequest:identityRequest];
+    if (cachedResponse) {
         @try {
-            responseString = [[NSString alloc] initWithData:responseData
-                                                   encoding:NSUTF8StringEncoding];
-            responseDictionary = [NSJSONSerialization JSONObjectWithData:responseData
-                                                                 options:0
-                                                                   error:&serializationError];
+            NSError *serializationError = nil;
+            responseString = [[NSString alloc] initWithData:cachedResponse.bodyData encoding:NSUTF8StringEncoding];
+            responseDictionary = [NSJSONSerialization JSONObjectWithData:cachedResponse.bodyData options:0 error:&serializationError];
+            
+            if (serializationError) {
+                responseDictionary = nil;
+                success = NO;
+                MPILogError(@"Identity response serialization error: %@", [serializationError localizedDescription]);
+            }
         } @catch (NSException *exception) {
             responseDictionary = nil;
             success = NO;
             MPILogError(@"Identity response serialization error: %@", [exception reason]);
         }
+    } else {
+        __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        
+        if (![MPStateMachine isAppExtension]) {
+            backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+                if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+                    self.identifying = NO;
+                    
+                    [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                    backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+                }
+            }];
+        }
+        
+        NSObject<MPConnectorProtocol> *connector = [self makeConnector];
+        NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
+                                                                        message:nil
+                                                               serializedParams:data];
+        
+        NSData *responseData = response.data;
+        error = response.error;
+        NSHTTPURLResponse *httpResponse = response.httpResponse;
+        
+        if (![MPStateMachine isAppExtension]) {
+            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+            }
+        }
+        
+        responseCode = [httpResponse statusCode];
+        success = responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted;
+        success = success && [responseData length] > 0;
+        
+        
+        MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
+        
+        [self checkResponseCodeToDisableEventLogging:[httpResponse statusCode]];
+        
+        if (success) {
+            @try {
+                NSError *serializationError = nil;
+                responseString = [[NSString alloc] initWithData:responseData encoding:NSUTF8StringEncoding];
+                responseDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&serializationError];
+                
+                if (responseDictionary && !serializationError) {
+                    // Cache response if it contains a the custom max age header
+                    NSInteger maxAgeSeconds = [response.httpResponse.allHeaderFields[kMPIdentityCachingMaxAgeHeader] integerValue];
+                    if (maxAgeSeconds > 0) {
+                        NSDate *expires = [[NSDate date] dateByAddingTimeInterval:(NSTimeInterval)maxAgeSeconds];
+                        MPIdentityCachedResponse *cachedResponse = [[MPIdentityCachedResponse alloc] initWithBodyData:responseData
+                                                                                                           statusCode:responseCode
+                                                                                                              expires:expires];
+                        [MPIdentityCaching cacheIdentityResponse:cachedResponse endpoint:endpointType identityRequest:identityRequest];
+                    }
+                } else {
+                    responseDictionary = nil;
+                    success = NO;
+                    MPILogError(@"Identity response serialization error: %@", [serializationError localizedDescription]);
+                }
+            } @catch (NSException *exception) {
+                responseDictionary = nil;
+                success = NO;
+                MPILogError(@"Identity response serialization error: %@", [exception reason]);
+            }
+        }
     }
     
     MPILogVerbose(@"Identity execution time: %.2fms", ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
     
-    strongSelf.identifying = NO;
+    self.identifying = NO;
     
     [MPListenerController.sharedInstance onNetworkRequestFinished:endpointType url:url.absoluteString body:responseDictionary responseCode:responseCode];
     if (success) {

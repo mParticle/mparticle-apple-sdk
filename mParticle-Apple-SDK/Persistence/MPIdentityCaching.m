@@ -1,0 +1,242 @@
+//
+//  MPIdentityCaching.m
+//  mParticle-Apple-SDK
+//
+//  Created by Ben Baron on 12/12/23.
+//
+
+#import "MPIdentityCaching.h"
+#import "MPIUserDefaults.h"
+#import <CommonCrypto/CommonCrypto.h>
+
+// User defaults key
+static NSString *const kMPIdentityCachingCachedIdentityCallsKey = @"kMPIdentityCachingCachedIdentityCallsKey";
+
+// Dictionary keys
+static NSString *const kMPIdentityCachingBodyData = @"kMPIdentityCachingBodyData";
+static NSString *const kMPIdentityCachingStatusCode = @"kMPIdentityCachingStatusCode";
+static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
+
+@interface MPIdentityCachedResponse()
+@property (nonnull, nonatomic, readwrite) NSData *bodyData;
+@property (nonatomic, readwrite) NSInteger statusCode;
+@property (nonnull, nonatomic, readwrite) NSDate *expires;
+- (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary;
+- (NSDictionary *)dictionaryRepresentation;
+@end
+
+@implementation MPIdentityCachedResponse
+
+- (nonnull instancetype)initWithBodyData:(nonnull NSData *)bodyData statusCode:(NSInteger)statusCode expires:(nonnull NSDate *)expires {
+    if (self = [super init]) {
+        _bodyData = bodyData;
+        _statusCode = statusCode;
+        _expires = expires;
+    }
+    return self;
+}
+
+- (nullable instancetype)initWithDictionary:(NSDictionary *)dictionary {
+    if ([dictionary count] != 3) {
+        return nil;
+    }
+    
+    NSData *bodyData = dictionary[kMPIdentityCachingBodyData];
+    NSNumber *statusCode = dictionary[kMPIdentityCachingStatusCode];
+    NSDate *expires = dictionary[kMPIdentityCachingExpires];
+    if (!bodyData || !statusCode || !expires) {
+        return nil;
+    }
+    
+    if (self = [super init]) {
+        _bodyData = bodyData;
+        _statusCode = [statusCode integerValue];
+        _expires = expires;
+    }
+    return self;
+}
+
+- (nonnull NSDictionary *)dictionaryRepresentation {
+    return @{
+        kMPIdentityCachingBodyData: _bodyData,
+        kMPIdentityCachingStatusCode: @(_statusCode),
+        kMPIdentityCachingExpires: _expires
+    };
+}
+
+- (NSUInteger)hash {
+    return _bodyData.hash ^ _statusCode ^ _expires.hash;
+}
+
+- (BOOL)isEqual:(id)object {
+    if (![object isKindOfClass:self.class]) {
+        return NO;
+    }
+    
+    MPIdentityCachedResponse *rhs = object;
+    return [_bodyData isEqualToData:rhs.bodyData] && _statusCode == rhs.statusCode && [_expires isEqualToDate:rhs.expires];
+}
+
+@end
+
+@implementation MPIdentityCaching
+
+#pragma mark - Public
+
++ (void)cacheIdentityResponse:(nonnull MPIdentityCachedResponse *)cachedResponse endpoint:(MPEndpoint)endpoint identityRequest:(nonnull MPIdentityHTTPBaseRequest *)identityRequest {
+    NSDictionary *identities = [self identitiesFromIdentityRequest:identityRequest];
+    return [self cacheIdentityResponse:cachedResponse endpoint:endpoint identities:identities];
+}
+
++ (nullable MPIdentityCachedResponse *)getCachedIdentityResponseForEndpoint:(MPEndpoint)endpoint identityRequest:(nonnull MPIdentityHTTPBaseRequest *)identityRequest {
+    NSDictionary *identities = [self identitiesFromIdentityRequest:identityRequest];
+    return [self getCachedIdentityResponseForEndpoint:endpoint identities:identities];
+}
+
++ (void)cacheIdentityResponse:(nonnull MPIdentityCachedResponse *)cachedResponse endpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
+    NSString *key = [self keyWithEndpoint:endpoint identities:identities];
+    if (key.length == 0) {
+        return;
+    }
+    
+    NSDictionary *cache = [self getCache] ?: @{};
+    NSMutableDictionary *mutableCache = [cache mutableCopy];
+    [mutableCache setObject:cachedResponse.dictionaryRepresentation forKey:key];
+    [self setCache:mutableCache];
+}
+
++ (nullable MPIdentityCachedResponse *)getCachedIdentityResponseForEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
+    NSDictionary *cache = [self getCache];
+    NSString *key = [self keyWithEndpoint:endpoint identities:identities];
+    if (key.length == 0) {
+        return nil;
+    }
+    
+    NSDictionary *dictionary = [cache objectForKey:key];
+    if (!dictionary) {
+        return nil;
+    }
+    
+    MPIdentityCachedResponse *cachedResponse = [[MPIdentityCachedResponse alloc] initWithDictionary:dictionary];
+    if (!cachedResponse || [[NSDate date] timeIntervalSinceDate:cachedResponse.expires] > 0) {
+        return nil;
+    }
+    return cachedResponse;
+}
+
++ (void)clearAllCache {
+    [self setCache:nil];
+}
+
++ (void)clearExpiredCache {
+    NSDictionary *cache = [self getCache];
+    NSMutableDictionary *mutableCache = [cache mutableCopy];
+    [cache enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+        if ([obj isKindOfClass:[NSDictionary class]]) {
+            NSDate *expires = [obj objectForKey:kMPIdentityCachingExpires];
+            if (!expires || [expires timeIntervalSinceDate:[NSDate date]] < 0) {
+                [mutableCache removeObjectForKey:key];
+            }
+        } else {
+            // Invalid cache data, remove from cache
+            [mutableCache removeObjectForKey:key];
+        }
+    }];
+    
+    if ([cache count] != [mutableCache count]) {
+        [self setCache:mutableCache];
+    }
+}
+
+#pragma mark - Private
+
++ (nullable NSDictionary<NSString*, NSDictionary*> *)getCache {
+    return [[MPIUserDefaults standardUserDefaults] mpObjectForKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
+}
+
++ (void)setCache:(nullable NSDictionary<NSString*, NSDictionary*> *)cache {
+    [[MPIUserDefaults standardUserDefaults] setMPObject:cache forKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
+}
+
++ (nonnull NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
+    return [NSString stringWithFormat:@"%ld::%@", (long)endpoint, [self hashIdentities:identities]];
+}
+
++ (nullable NSDictionary *)identitiesFromIdentityRequest:(nonnull MPIdentityHTTPBaseRequest *)identityRequest {
+    NSDictionary *dict = identityRequest.dictionaryRepresentation;
+    
+    // Identify and Login requests include a known identities dictionary which can be used for the cache key
+    NSDictionary *knownIdentities = dict[@"known_identities"];
+    if (knownIdentities) {
+        return knownIdentities;
+    }
+    
+    // Modify requests include an array of identity changes which need to be converted to a dictionary first
+    NSArray *identityChanges = dict[@"identity_changes"];
+    if (identityChanges) {
+        // The data format should be an array of dictionaries, each of which should always have an identity_type key
+        // We can use this key as the dictionary key as there can only be one of each type
+        // If for some reason it doesn't exist, bail and don't cache
+        NSMutableDictionary *identities = [[NSMutableDictionary alloc] initWithCapacity:identityChanges.count];
+        for (NSDictionary *change in identityChanges) {
+            if (![change isKindOfClass:[NSDictionary class]]) {
+                return nil;
+            }
+            
+            NSString *identityType = change[@"identity_type"];
+            if (![identityType isKindOfClass:[NSString class]]) {
+                return nil;
+            }
+            identities[identityType] = change;
+        }
+        return identities;
+    }
+    
+    return nil;
+}
+
++ (nullable NSString *)hashIdentities:(NSDictionary *)identities {
+    NSString *serializedIdentities = [self serializeIdentities:identities];
+    NSString *hashedString = [self sha256Hash:serializedIdentities];
+    return hashedString;
+}
+
++ (nullable NSString *)serializeIdentities:(NSDictionary *)identities {
+    NSArray *sortedKeys = [identities.allKeys sortedArrayUsingSelector: @selector(compare:)];
+    NSMutableString *serializedString = [[NSMutableString alloc] init];
+    for (NSString *key in sortedKeys) {
+        [serializedString appendFormat:@"::%@", key];
+        
+        // Can be either a string or NSNull
+        NSObject *value = identities[key];
+        if ([value isKindOfClass:[NSString class]]) {
+            [serializedString appendFormat:@":%@", (NSString *)value];
+        } else if ([value isKindOfClass:[NSNull class]]) {
+            [serializedString appendString:@":null"];
+        } else {
+            // This should never happen, so return nil
+            return nil;
+        }
+    }
+    
+    return serializedString;
+}
+
++ (nullable NSString *)sha256Hash:(NSString *)string {
+    NSData *dataIn = [string dataUsingEncoding:NSUTF8StringEncoding];
+    if (!dataIn || dataIn.length == 0) {
+        return nil;
+    }
+    
+    NSMutableData *dataOut = [NSMutableData dataWithLength:CC_SHA256_DIGEST_LENGTH];
+    CC_SHA256(dataIn.bytes, (CC_LONG)dataIn.length, dataOut.mutableBytes);
+    
+    const uint8_t *dataOutBytes = dataOut.bytes;
+    NSMutableString *hexString = [NSMutableString stringWithCapacity:CC_SHA256_DIGEST_LENGTH * 2];
+    for (int i = 0; i < CC_SHA256_DIGEST_LENGTH; i++) {
+        [hexString appendFormat:@"%02x", dataOutBytes[i]];
+    }
+    return hexString;
+}
+
+@end

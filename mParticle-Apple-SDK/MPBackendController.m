@@ -31,6 +31,7 @@
 #import "MPListenerController.h"
 #import "MParticleWebView.h"
 #import "MPDevice.h"
+#import "MPIdentityCaching.h"
 #import "Swift.h"
 
 #if TARGET_OS_IOS == 1
@@ -2089,6 +2090,7 @@ static BOOL skipNextUpload = NO;
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
     [persistence purgeMemory];
+    [MPIdentityCaching clearExpiredCache];
 }
 
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
