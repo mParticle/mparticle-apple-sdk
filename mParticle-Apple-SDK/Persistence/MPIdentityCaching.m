@@ -158,8 +158,13 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
     [[MPIUserDefaults standardUserDefaults] setMPObject:cache forKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
 }
 
-+ (nonnull NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
-    return [NSString stringWithFormat:@"%ld::%@", (long)endpoint, [self hashIdentities:identities]];
++ (nullable NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
+    NSString *hash = [self hashIdentities:identities];
+    if (!hash) {
+        return nil;
+    }
+    NSString *key = [NSString stringWithFormat:@"%ld::%@", (long)endpoint, hash];
+    return key;
 }
 
 + (nullable NSDictionary *)identitiesFromIdentityRequest:(nonnull MPIdentityHTTPBaseRequest *)identityRequest {
@@ -187,7 +192,8 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
             if (![identityType isKindOfClass:[NSString class]]) {
                 return nil;
             }
-            identities[identityType] = change;
+            // Hash the dictionary to get a reproducible string value
+            identities[identityType] = [self hashIdentities:change];
         }
         return identities;
     }
@@ -197,6 +203,10 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
 
 + (nullable NSString *)hashIdentities:(NSDictionary *)identities {
     NSString *serializedIdentities = [self serializeIdentities:identities];
+    if (!serializedIdentities) {
+        return nil;
+    }
+    
     NSString *hashedString = [self sha256Hash:serializedIdentities];
     return hashedString;
 }

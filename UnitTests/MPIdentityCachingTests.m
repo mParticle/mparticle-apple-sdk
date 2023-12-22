@@ -23,7 +23,7 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
 + (nullable MPIdentityCachedResponse *)getCachedIdentityResponseForEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities;
 + (nullable NSDictionary<NSString*, NSDictionary*> *)getCache;
 + (void)setCache:(nullable NSDictionary<NSString*, NSDictionary*> *)cache;
-+ (nonnull NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities;
++ (nullable NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities;
 + (nullable NSDictionary *)identitiesFromIdentityRequest:(nonnull MPIdentityHTTPBaseRequest *)identityRequest;
 + (nullable NSString *)hashIdentities:(NSDictionary *)identities;
 + (nullable NSString *)serializeIdentities:(NSDictionary *)identities;

@@ -809,6 +809,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 responseDictionary = nil;
                 success = NO;
                 MPILogError(@"Identity response serialization error: %@", [serializationError localizedDescription]);
+            } else {
+                responseCode = cachedResponse.statusCode;
+                success = YES;
             }
         } @catch (NSException *exception) {
             responseDictionary = nil;
