@@ -248,9 +248,9 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
     
     NSDictionary *identities = [MPIdentityCaching identitiesFromIdentityRequest:modifyRequest];
     NSDictionary *expected = @{
-        @"email": @{@"identity_type": @"email", @"old_value": @"test1@test1.com", @"new_value": @"test2@test2.com"},
-        @"customerid": @{@"identity_type": @"customerid", @"old_value": [NSNull null], @"new_value": @"12345"},
-        @"other2": @{@"identity_type": @"other2", @"old_value": @"1234", @"new_value": @"5678"}
+        @"email": @"f7d23cbd1bf6f52cb02dc284975e82d6736e7f78c91debe52b8ff662a91bba3f",
+        @"customerid": @"01b5fceb64d02bf05e06b21e733ad2352f603535c278b1c5da37f7d36e51ed57",
+        @"other2": @"e544742c897e61c4a4d6fddf3bec3182ba9f611a5f6b6c6bc4b20cfdf4bd7495"
     };
     XCTAssertEqualObjects(identities, expected);
 }
