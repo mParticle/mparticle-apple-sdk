@@ -7,6 +7,8 @@
 
 #import "MPIdentityCaching.h"
 #import "MPIUserDefaults.h"
+#import "MPILogger.h"
+#import "mParticle.h"
 #import <CommonCrypto/CommonCrypto.h>
 
 // User defaults key
@@ -89,20 +91,31 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
 }
 
 + (nullable MPIdentityCachedResponse *)getCachedIdentityResponseForEndpoint:(MPEndpoint)endpoint identityRequest:(nonnull MPIdentityHTTPBaseRequest *)identityRequest {
-    NSDictionary *identities = [self identitiesFromIdentityRequest:identityRequest];
-    return [self getCachedIdentityResponseForEndpoint:endpoint identities:identities];
+    if (endpoint == MPEndpointIdentityIdentify || endpoint == MPEndpointIdentityLogin) {
+        // Cache identify and login calls
+        NSDictionary *identities = [self identitiesFromIdentityRequest:identityRequest];
+        return [self getCachedIdentityResponseForEndpoint:endpoint identities:identities];
+    } else if (endpoint == MPEndpointIdentityModify || endpoint == MPEndpointIdentityLogout) {
+        // Clear cache on modify and logout calls
+        [self clearAllCache];
+    }
+    return nil;
 }
 
 + (void)cacheIdentityResponse:(nonnull MPIdentityCachedResponse *)cachedResponse endpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
-    NSString *key = [self keyWithEndpoint:endpoint identities:identities];
-    if (key.length == 0) {
-        return;
+    // Only cache identify and login calls
+    if (endpoint == MPEndpointIdentityIdentify || endpoint == MPEndpointIdentityLogin) {
+        NSString *key = [self keyWithEndpoint:endpoint identities:identities];
+        if (key.length == 0) {
+            return;
+        }
+        
+        NSDictionary *cache = [self getCache] ?: @{};
+        NSMutableDictionary *mutableCache = [cache mutableCopy];
+        [mutableCache setObject:cachedResponse.dictionaryRepresentation forKey:key];
+        [self setCache:mutableCache];
+        MPILogVerbose(@"Identity Caching - Cached response for endpoint %ld, key: %@, expires: %@, bodyData.length: %lu", (long)endpoint, key, cachedResponse.expires, (unsigned long)cachedResponse.bodyData.length);
     }
-    
-    NSDictionary *cache = [self getCache] ?: @{};
-    NSMutableDictionary *mutableCache = [cache mutableCopy];
-    [mutableCache setObject:cachedResponse.dictionaryRepresentation forKey:key];
-    [self setCache:mutableCache];
 }
 
 + (nullable MPIdentityCachedResponse *)getCachedIdentityResponseForEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {
@@ -118,30 +131,42 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
     }
     
     MPIdentityCachedResponse *cachedResponse = [[MPIdentityCachedResponse alloc] initWithDictionary:dictionary];
-    if (!cachedResponse || [[NSDate date] timeIntervalSinceDate:cachedResponse.expires] > 0) {
+    NSDate *now = [NSDate date];
+    if (!cachedResponse) {
+        MPILogVerbose(@"Identity Caching - No cached response found for key: %@", key);
+    }
+    if (!cachedResponse || [now timeIntervalSinceDate:cachedResponse.expires] > 0) {
+        MPILogVerbose(@"Identity Caching - Expired cached response found for key: %@, expired: %@, seconds since expired: %.1f", key, cachedResponse.expires, [now timeIntervalSinceDate:cachedResponse.expires]);
         return nil;
     }
+    MPILogVerbose(@"Identity Caching - Valid cached response found for key: %@, expires: %@, seconds left: %.1f", key, cachedResponse.expires, [cachedResponse.expires timeIntervalSinceDate:now]);
     return cachedResponse;
 }
 
 + (void)clearAllCache {
     [self setCache:nil];
+    MPILogVerbose(@"Identity Caching - Removed all cached responses");
 }
 
 + (void)clearExpiredCache {
     NSDictionary *cache = [self getCache];
     NSMutableDictionary *mutableCache = [cache mutableCopy];
+    __block int numberRemoved = 0;
     [cache enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
         if ([obj isKindOfClass:[NSDictionary class]]) {
             NSDate *expires = [obj objectForKey:kMPIdentityCachingExpires];
             if (!expires || [expires timeIntervalSinceDate:[NSDate date]] < 0) {
                 [mutableCache removeObjectForKey:key];
+                numberRemoved++;
             }
         } else {
             // Invalid cache data, remove from cache
             [mutableCache removeObjectForKey:key];
+            numberRemoved++;
         }
     }];
+    
+    MPILogVerbose(@"Identity Caching - Removed %d expired cached responses", numberRemoved);
     
     if ([cache count] != [mutableCache count]) {
         [self setCache:mutableCache];

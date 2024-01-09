@@ -798,27 +798,38 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *responseString = nil;
     NSInteger responseCode = 0;
     
-    MPIdentityCachedResponse *cachedResponse = [MPIdentityCaching getCachedIdentityResponseForEndpoint:endpointType identityRequest:identityRequest];
-    if (cachedResponse) {
-        @try {
-            NSError *serializationError = nil;
-            responseString = [[NSString alloc] initWithData:cachedResponse.bodyData encoding:NSUTF8StringEncoding];
-            responseDictionary = [NSJSONSerialization JSONObjectWithData:cachedResponse.bodyData options:0 error:&serializationError];
-            
-            if (serializationError) {
+    BOOL enableIdentityCaching = MParticle.sharedInstance.stateMachine.enableIdentityCaching;
+    BOOL usedCachedResponse = NO;
+        
+    // Try to use the cache if enabled
+    if (enableIdentityCaching) {
+        MPIdentityCachedResponse *cachedResponse = [MPIdentityCaching getCachedIdentityResponseForEndpoint:endpointType identityRequest:identityRequest];
+        if (cachedResponse) {
+            @try {
+                NSError *serializationError = nil;
+                responseString = [[NSString alloc] initWithData:cachedResponse.bodyData encoding:NSUTF8StringEncoding];
+                responseDictionary = [NSJSONSerialization JSONObjectWithData:cachedResponse.bodyData options:0 error:&serializationError];
+                
+                if (serializationError) {
+                    responseDictionary = nil;
+                    success = NO;
+                    usedCachedResponse = NO;
+                    MPILogError(@"Identity response serialization error: %@", [serializationError localizedDescription]);
+                } else {
+                    responseCode = cachedResponse.statusCode;
+                    success = YES;
+                    usedCachedResponse = YES;
+                }
+            } @catch (NSException *exception) {
                 responseDictionary = nil;
                 success = NO;
-                MPILogError(@"Identity response serialization error: %@", [serializationError localizedDescription]);
-            } else {
-                responseCode = cachedResponse.statusCode;
-                success = YES;
+                usedCachedResponse = NO;
+                MPILogError(@"Identity response serialization error: %@", [exception reason]);
             }
-        } @catch (NSException *exception) {
-            responseDictionary = nil;
-            success = NO;
-            MPILogError(@"Identity response serialization error: %@", [exception reason]);
         }
-    } else {
+    } 
+    
+    if (!usedCachedResponse) {
         __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         
         if (![MPStateMachine isAppExtension]) {
@@ -864,14 +875,17 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                 responseDictionary = [NSJSONSerialization JSONObjectWithData:responseData options:0 error:&serializationError];
                 
                 if (responseDictionary && !serializationError) {
-                    // Cache response if it contains a the custom max age header
-                    NSInteger maxAgeSeconds = [response.httpResponse.allHeaderFields[kMPIdentityCachingMaxAgeHeader] integerValue];
-                    if (maxAgeSeconds > 0) {
-                        NSDate *expires = [[NSDate date] dateByAddingTimeInterval:(NSTimeInterval)maxAgeSeconds];
-                        MPIdentityCachedResponse *cachedResponse = [[MPIdentityCachedResponse alloc] initWithBodyData:responseData
-                                                                                                           statusCode:responseCode
-                                                                                                              expires:expires];
-                        [MPIdentityCaching cacheIdentityResponse:cachedResponse endpoint:endpointType identityRequest:identityRequest];
+                    // Cache response if it contains the custom max age header and the feature is enabled
+                    if (enableIdentityCaching) {
+                        NSInteger maxAgeSeconds = [response.httpResponse.allHeaderFields[kMPIdentityCachingMaxAgeHeader] integerValue];
+                        MPILogVerbose(@"Identity Caching - max age header value (in seconds): %li", (long)maxAgeSeconds);
+                        if (maxAgeSeconds > 0) {
+                            NSDate *expires = [[NSDate date] dateByAddingTimeInterval:(NSTimeInterval)maxAgeSeconds];
+                            MPIdentityCachedResponse *cachedResponse = [[MPIdentityCachedResponse alloc] initWithBodyData:responseData
+                                                                                                               statusCode:responseCode
+                                                                                                                  expires:expires];
+                            [MPIdentityCaching cacheIdentityResponse:cachedResponse endpoint:endpointType identityRequest:identityRequest];
+                        }
                     }
                 } else {
                     responseDictionary = nil;
