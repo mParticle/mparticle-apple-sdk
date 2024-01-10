@@ -46,7 +46,7 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
     NSData *bodyData = dictionary[kMPIdentityCachingBodyData];
     NSNumber *statusCode = dictionary[kMPIdentityCachingStatusCode];
     NSDate *expires = dictionary[kMPIdentityCachingExpires];
-    if (!bodyData || !statusCode || !expires) {
+    if (bodyData == nil || statusCode == nil || expires == nil) {
         return nil;
     }
     
