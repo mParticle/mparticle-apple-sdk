@@ -11,7 +11,7 @@
 #import "MPIdentityDTO.h"
 
 @interface MPIdentityApiRequest ()
-@property (nonatomic) NSMutableDictionary *mutableIdentities;
+@property (nonatomic) NSMutableDictionary<NSNumber*, NSString*> *mutableIdentities;
 @end
 
 @implementation MPIdentityApiRequest
@@ -49,40 +49,9 @@
     return request;
 }
 
-- (NSDictionary<NSString *, id> *)dictionaryRepresentation {
-    NSMutableDictionary *knownIdentities = [NSMutableDictionary dictionary];
-    
-    [_mutableIdentities enumerateKeysAndObjectsUsingBlock:^(NSNumber * _Nonnull key, NSString * _Nonnull obj, BOOL * _Nonnull stop) {
-        
-        NSString *identityKey = [MPIdentityHTTPIdentities stringForIdentityType:[key intValue]];
-        knownIdentities[identityKey] = obj;
-    }];
-    
-    MPDevice *device = [[MPDevice alloc] init];
-    
-    NSString *vendorId = device.vendorId;
-    if (vendorId && !knownIdentities[@"ios_idfv"]) {
-        knownIdentities[@"ios_idfv"] = vendorId;
-    }
-    
-#if TARGET_OS_IOS == 1
-    if (![MPStateMachine isAppExtension]) {
-        NSData *deviceTokenData = [MPNotificationController deviceToken];
-        if (deviceTokenData) {
-            NSString *deviceTokenString = [MPIUserDefaults stringFromDeviceToken:deviceTokenData];
-            if (deviceTokenString && [deviceTokenString length] > 0) {
-                knownIdentities[@"push_token"] = deviceTokenString;
-            }
-        }
-    }
-#endif
-    
-    return knownIdentities;
-}
-
 - (NSString *)email {
     NSString *result = _mutableIdentities[@(MPIdentityEmail)];
-    if ((NSNull *)result == [NSNull null]) {
+    if ([result isEqual:[NSNull null]]) {
         result = nil;
     }
     return result;
@@ -94,7 +63,7 @@
 
 - (NSString *)customerId {
     NSString *result = _mutableIdentities[@(MPIdentityCustomerId)];
-    if ((NSNull *)result == [NSNull null]) {
+    if ([result isEqual:[NSNull null]]) {
         result = nil;
     }
     return result;
@@ -104,7 +73,7 @@
     [self setIdentity:customerId identityType:MPIdentityCustomerId];
 }
 
-- (NSDictionary *)identities {
+- (NSDictionary<NSNumber*, NSString*> *)identities {
     return [_mutableIdentities copy];
 }
 

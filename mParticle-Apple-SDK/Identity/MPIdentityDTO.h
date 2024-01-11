@@ -78,9 +78,8 @@
 @interface MPIdentityHTTPModifyRequest : MPIdentityHTTPBaseRequest
 
 @property (nonatomic) NSArray *identityChanges;
-@property (nonatomic) NSString *mpid;
 
-- (instancetype)initWithMPID:(NSString *)mpid identityChanges:(NSArray *)identityChanges;
+- (instancetype)initWithIdentityChanges:(NSArray *)identityChanges;
 
 @end
 

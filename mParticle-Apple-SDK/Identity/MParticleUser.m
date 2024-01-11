@@ -62,16 +62,12 @@
     return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
 }
 
--(NSDictionary*) identities {
-    NSMutableArray *userIdentitiesArray = [[NSMutableArray alloc] initWithCapacity:10];
+- (NSDictionary*) identities {
     MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
-    if (userIdentityArray) {
-        [userIdentitiesArray addObjectsFromArray:userIdentityArray];
-    }
     
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
-    [userIdentitiesArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+    [userIdentityArray enumerateObjectsUsingBlock:^(NSDictionary<NSString *,id> * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
         NSString *identity = obj[@"i"];
         NSNumber *type = obj[@"n"];
         [userIdentities setObject:identity forKey:type];
