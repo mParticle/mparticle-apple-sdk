@@ -30,7 +30,7 @@ import Foundation
        
         var hash: Int32 = 0
         for byte in dataToHash {
-            hash = ((hash << 5) &- hash) + Int32(byte);
+            hash = ((hash << 5) &- hash) &+ Int32(byte);
         }
         
         return String(hash)
