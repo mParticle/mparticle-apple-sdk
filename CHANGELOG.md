@@ -1,3 +1,15 @@
+# [8.18.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.17.0...v8.18.0) (2024-01-16)
+
+
+### Bug Fixes
+
+* Rare arithmetic overflow crash in MPIHasher ([#246](https://github.com/mParticle/mparticle-apple-sdk/issues/246)) ([65fad25](https://github.com/mParticle/mparticle-apple-sdk/commit/65fad255cb454e7f90c2c44c49890c709239fced))
+
+
+### Features
+
+* Identity API response caching ([#244](https://github.com/mParticle/mparticle-apple-sdk/issues/244)) ([9eaa0ea](https://github.com/mParticle/mparticle-apple-sdk/commit/9eaa0ea535b61bfb8d50ff447c0cc4fa505239da))
+
 # [8.17.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.16.0...v8.17.0) (2023-11-30)
 
 
