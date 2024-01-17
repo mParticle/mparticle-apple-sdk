@@ -394,7 +394,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)checkResponseCodeToDisableEventLogging:(NSInteger)responseCode {
-    if (responseCode == HTTPStatusCodeBadRequest || responseCode == HTTPStatusCodeUnauthorized || responseCode == HTTPStatusCodeForbidden) {
+    NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+
+    if (responseCode == HTTPStatusCodeBadRequest || responseCode == HTTPStatusCodeUnauthorized || responseCode == HTTPStatusCodeForbidden || currentStatus.integerValue == MPATTAuthorizationStatusDenied) {
         [MPStateMachine setCanWriteMessagesToDB:NO];
         MPILogError(@"API Key appears to be invalid based on server response, disabling event logging to prevent excessive local database growth");
     } else {

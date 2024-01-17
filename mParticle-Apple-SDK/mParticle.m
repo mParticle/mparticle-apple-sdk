@@ -1047,6 +1047,13 @@ static NSString *const kMPStateKey = @"state";
         if (attStatusTimestampMillis != nil) {
             [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp = attStatusTimestampMillis;
         }
+        
+        if (status == MPATTAuthorizationStatusDenied) {
+            [MPStateMachine setCanWriteMessagesToDB:NO];
+            MPILogError(@"ATT Status is denied, disabling event logging to prevent excessive local database growth");
+        } else {
+            [MPStateMachine setCanWriteMessagesToDB:YES];
+        }
     }
 }
 
