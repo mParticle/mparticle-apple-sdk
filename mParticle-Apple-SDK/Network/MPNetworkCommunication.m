@@ -53,6 +53,8 @@ NSString *const kMPURLScheme = @"https";
 NSString *const kMPURLHostConfig = @"config2.mparticle.com";
 NSString *const kMPURLHostEventSubdomain = @"nativesdks";
 NSString *const kMPURLHostIdentitySubdomain = @"identity";
+NSString *const kMPURLHostEventTrackingSubdomain = @"tracking-nativesdks";
+NSString *const kMPURLHostIdentityTrackingSubdomain = @"tracking-identity";
 
 NSString *const kMPIdentityCachingMaxAgeHeader = @"X-MP-Max-Age";
 
@@ -134,12 +136,20 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (NSString *)defaultEventHost {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    return [self defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+    if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        return [self defaultHostWithSubdomain:kMPURLHostEventTrackingSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+    } else {
+        return [self defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+    }
 }
 
 - (NSString *)defaultIdentityHost {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    return [self defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+    if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        return [self defaultHostWithSubdomain:kMPURLHostIdentityTrackingSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+    } else {
+        return [self defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
+    }
 }
 
 - (MPURL *)configURL {
