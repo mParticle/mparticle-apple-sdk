@@ -4,6 +4,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "MPAudience.h"
 #import "MPEnums.h"
 #import "MPConsentState.h"
 
@@ -88,6 +89,13 @@ NS_ASSUME_NONNULL_BEGIN
  @param key The user attribute key
  */
 - (void)removeUserAttribute:(NSString *)key;
+
+#pragma mark - User Audiences
+/**
+ Retrieves user audiences from mParticle's servers and returns the result as two arrays of MPAudience objects
+ @param completionHandler A block to be called when the results are available.
+ */
+- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSArray<MPAudience *> *pastAudiences, NSError * _Nullable error))completionHandler;
 
 #pragma mark - Consent State
 /**

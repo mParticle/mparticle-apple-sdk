@@ -5,6 +5,7 @@
 #import "MPConnector.h"
 #import "MPUpload.h"
 #import "MPApplication.h"
+#import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleReachability.h"
@@ -40,6 +41,8 @@ NSString *const kMPConfigVersion = @"v4";
 NSString *const kMPConfigURL = @"/config";
 NSString *const kMPEventsVersion = @"v2";
 NSString *const kMPEventsURL = @"/events";
+NSString *const kMPAudienceVersion = @"v1";
+NSString *const kMPAudienceURL = @"/audience";
 NSString *const kMPIdentityVersion = @"v1";
 NSString *const kMPIdentityURL = @"";
 NSString *const kMPIdentityKey = @"identity";
@@ -80,6 +83,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @end
 
 @interface MPNetworkCommunication_PRIVATE()
+
+@property (nonatomic, strong, readonly) MPURL *audienceURL;
+@property (nonatomic, strong, readonly) MPURL *configURL;
+@property (nonatomic, strong, readonly) MPURL *eventURL;
+@property (nonatomic, strong, readonly) MPURL *identifyURL;
+@property (nonatomic, strong, readonly) MPURL *loginURL;
+@property (nonatomic, strong, readonly) MPURL *logoutURL;
+@property (nonatomic, strong, readonly) MPURL *modifyURL;
+@property (nonatomic, strong, readonly) MPURL *aliasURL;
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
@@ -206,6 +218,31 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
     return eventURL;
+}
+
+- (MPURL *)audienceURL {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
+    NSString *audienceURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
+    NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+    NSURL *defaultURL = [NSURL URLWithString:urlString];
+
+    if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
+        audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpID=%@"];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+    } else {
+        audienceURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+    }
+    
+    NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    MPURL *audienceURL;
+    if (modifiedURL && defaultURL) {
+        audienceURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+    }
+    
+    return audienceURL;
 }
 
 - (MPURL *)identifyURL {
@@ -504,6 +541,108 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     } else {
         completionHandler(NO);
     }
+}
+
+- (void)requestAudiencesWithCompletionHandler:(MPAudienceResponseHandler)completionHandler {
+    __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+    
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+            if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+            }
+        }];
+    }
+    
+    __weak MPNetworkCommunication_PRIVATE *weakSelf = self;
+    NSObject<MPConnectorProtocol> *connector = [self makeConnector];
+
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromGetRequestToURL:self.audienceURL];
+    NSData *data = response.data;
+    NSHTTPURLResponse *httpResponse = response.httpResponse;
+    __strong MPNetworkCommunication_PRIVATE *strongSelf = weakSelf;
+    if (!strongSelf) {
+        completionHandler(NO, nil, nil, nil);
+        return;
+    }
+    
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
+            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+            backgroundTaskIdentifier = UIBackgroundTaskInvalid;
+        }
+    }
+    
+    if (!data) {
+        completionHandler(NO, nil, nil, nil);
+        return;
+    }
+    
+    NSMutableArray<MPAudience *> *currentAudiences = nil;
+    NSMutableArray<MPAudience *> *pastAudiences = nil;
+    BOOL success = NO;
+    
+    NSArray *audiencesList = nil;
+    NSInteger responseCode = [httpResponse statusCode];
+    success = (responseCode == HTTPStatusCodeSuccess || responseCode == HTTPStatusCodeAccepted) && [data length] > 0;
+    
+    if (success) {
+        NSError *serializationError = nil;
+        NSDictionary *audiencesDictionary = nil;
+        
+        @try {
+            audiencesDictionary = [NSJSONSerialization JSONObjectWithData:data options:0 error:&serializationError];
+            success = serializationError == nil;
+        } @catch (NSException *exception) {
+            audiencesDictionary = nil;
+            success = NO;
+            MPILogError(@"Audiences Error: %@", [exception reason]);
+        }
+        
+        if (success) {
+            audiencesList = audiencesDictionary[kMPAudienceListKey];
+        }
+        
+        if (audiencesList.count > 0) {
+            currentAudiences = [[NSMutableArray alloc] init];
+            pastAudiences = [[NSMutableArray alloc] init];
+            
+            for (NSDictionary *audienceDictionary in audiencesList) {
+                MPAudience *audience = [[MPAudience alloc] initWithDictionary:audienceDictionary];
+                
+                if (audience) {
+                    if ([audienceDictionary[kMPAudienceMembershipListKey][0][kMPAudienceMembershipListChangeActionKey] isEqualToString:kMPAudienceMembershipListChangeActionAddValue]) {
+                        [currentAudiences addObject:audience];
+                    }
+                    if ([audienceDictionary[kMPAudienceMembershipListKey][0][kMPAudienceMembershipListChangeActionKey] isEqualToString:kMPAudienceMembershipListChangeActionDropValue]) {
+                        [pastAudiences addObject:audience];
+                    }
+                }
+            }
+            
+            MPILogVerbose(@"Audiences Response Code: %ld", (long)responseCode);
+        } else {
+            MPILogWarning(@"Audiences Error - Response Code: %ld", (long)responseCode);
+        }
+    }
+    
+    if (currentAudiences.count == 0) {
+        currentAudiences = nil;
+    }
+    
+    if (pastAudiences.count == 0) {
+        pastAudiences = nil;
+    }
+    NSError *audienceError = nil;
+
+    if (responseCode == HTTPStatusCodeForbidden) {
+        audienceError = [NSError errorWithDomain:@"mParticle Audiences"
+                                           code:responseCode
+                                       userInfo:@{@"message":@"Audiences not enabled for this org."}];
+    }
+    
+    completionHandler(success, currentAudiences, pastAudiences, audienceError);
 }
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
