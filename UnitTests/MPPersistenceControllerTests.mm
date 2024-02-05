@@ -3,6 +3,7 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPUpload.h"
+#import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
 #import "MPIntegrationAttributes.h"
@@ -554,6 +555,28 @@
     [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
 }
 
+- (void)testAudiences {
+    [MPPersistenceController setMpid:@2];
+    
+    NSDictionary *audienceDictionary = @{@"id":@2,
+                                        @"n":@"External Name 101",
+                                        @"c":@[@{@"ct":@1395014265365,
+                                                 @"a":@"add"
+                                                 },
+                                               @{@"ct":@1395100665367,
+                                                 @"a":@"drop"
+                                                 },
+                                               @{@"ct":@1395187065367,
+                                                 @"a":@"add"
+                                                 }
+                                               ],
+                                        @"s":@[@"aaa", @"bbb", @"ccc"]
+                                        };
+    
+    MPAudience *audience = [[MPAudience alloc] initWithDictionary:audienceDictionary];
+    XCTAssertTrue([audience.name isEqualToString:@"External Name 101"]);
+    XCTAssertTrue(audience.audienceId.intValue == 2);
+}
 - (void)testFetchIntegrationAttributesForKit {
     NSNumber *integrationId = nil;
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;

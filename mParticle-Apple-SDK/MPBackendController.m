@@ -9,6 +9,7 @@
 #import "MPIUserDefaults.h"
 #import "MPBreadcrumb.h"
 #import "MPUpload.h"
+#import "MPAudience.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
 #import "MPMessageBuilder.h"
@@ -1064,11 +1065,28 @@ static BOOL skipNextUpload = NO;
     return event;
 }
 
+- (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSArray * _Nullable pastAudiences, NSError * _Nullable error))completionHandler {
+    
+    NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
+        
+    [self.networkCommunication requestAudiencesWithCompletionHandler:^(BOOL success, NSArray *currentAudiences, NSArray *pastAudiences, NSError *error) {
+        if (!error) {
+            MPILogVerbose(@"Audiences Request Succesful: /nCurrent Audiences: %@/nPast Audiences: %@", currentAudiences, pastAudiences);
+        } else {
+            MPILogError(@"Audience request failed with error: %@", error)
+        }
+        
+        completionHandler(currentAudiences, pastAudiences, error);
+    }];
+    
+    return MPExecStatusSuccess;
+}
+
 + (NSString *)execStatusDescription:(MPExecStatus)execStatus {
     static NSArray *execStatusDescriptions;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        execStatusDescriptions = @[@"Success", @"Fail", @"Missing Parameter", @"Feature Disabled Remotely", @"Feature Enabled Remotely", 
+        execStatusDescriptions = @[@"Success", @"Fail", @"Missing Parameter", @"Feature Disabled Remotely", @"Feature Enabled Remotely",
                                    @"User Opted Out of Tracking", @"Data Already Being Fetched", @"Invalid Data Type", @"Data is Being Uploaded",
                                    @"Server is Busy", @"Item Not Found", @"Feature is Disabled in Settings", @"There is no network connectivity"];
     });

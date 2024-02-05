@@ -745,29 +745,6 @@ const int MaxBreadcrumbs = 50;
     }
 }
 
-- (void)deleteSegments {
-    sqlite3_stmt *preparedStatement;
-    string sqlStatement = "DELETE FROM segment_memberships";
-    
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-            MPILogError(@"Error while deleting segment memberships: %s", sqlite3_errmsg(mParticleDB));
-        }
-    }
-    
-    sqlite3_finalize(preparedStatement);
-    
-    sqlStatement = "DELETE FROM segments";
-    
-    if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
-            MPILogError(@"Error while deleting segments: %s", sqlite3_errmsg(mParticleDB));
-        }
-    }
-    
-    sqlite3_finalize(preparedStatement);
-}
-
 - (void)deleteAllSessionsExcept:(nullable MPSession *)session {
     // Delete sessions
     sqlite3_stmt *preparedStatement;
@@ -1318,8 +1295,6 @@ const int MaxBreadcrumbs = 50;
                                  @"previous_session",
                                  @"messages",
                                  @"breadcrumbs",
-                                 @"segments",
-                                 @"segment_memberships",
                                  @"cookies",
                                  @"consumer_info"
                                  ];
