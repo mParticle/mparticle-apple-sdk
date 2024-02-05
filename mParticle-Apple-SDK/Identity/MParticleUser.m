@@ -8,6 +8,7 @@
 #import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+#import "MPAudience.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
@@ -444,6 +445,13 @@
                                        }
                                    }
                            }];
+    });
+}
+
+#pragma mark - User Segments
+- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSArray<MPAudience *> *pastAudiences, NSError * _Nullable error))completionHandler {
+    dispatch_async([MParticle messageQueue], ^{
+        [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
     });
 }
 
