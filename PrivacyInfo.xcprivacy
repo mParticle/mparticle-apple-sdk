@@ -22,8 +22,6 @@
 		</dict>
 		<dict>
 			<key>NSPrivacyCollectedDataType</key>
-			<string></string>
-			<key>New item</key>
 			<string>NSPrivacyCollectedDataTypeAdvertisingData</string>
 			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<true/>
