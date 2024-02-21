@@ -838,30 +838,64 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssertEqualObjects([networkCommunication maxAgeForCache:test5], @16);
 }
 
-- (void)testPodURLRouting {
+- (void)testPodURLRoutingAndTrackingURL {
     // NOTE: All keys are fake and randomly generated just for this test
     NSArray *testKeys = @[
-        @[@"4u8wmsug0pf5tbf58lgjiouma3qukrgbu",     @"nativesdks.us1.mparticle.com", @"identity.us1.mparticle.com"],
-        @[@"us1-1vc4gbp24cdtx6e31s58icnymzy83f1uf", @"nativesdks.us1.mparticle.com", @"identity.us1.mparticle.com"],
-        @[@"us2-v2p8lr3w2g90vtpaumbq21zy05cl50qm3", @"nativesdks.us2.mparticle.com", @"identity.us2.mparticle.com"],
-        @[@"eu1-bkabfno0b8zpv5bwi2zm2mfa1kfml19al", @"nativesdks.eu1.mparticle.com", @"identity.eu1.mparticle.com"],
-        @[@"au1-iermuj83dbeoshm0n32f10feotclq6i4a", @"nativesdks.au1.mparticle.com", @"identity.au1.mparticle.com"],
-        @[@"st1-k77ivhkbbqf4ce0s3y12zpcthyn1ixfyu", @"nativesdks.st1.mparticle.com", @"identity.st1.mparticle.com"],
-        @[@"us3-w1y2y8yj8q58d5bx9u2dvtxzl4cpa7cuf", @"nativesdks.us3.mparticle.com", @"identity.us3.mparticle.com"]
+        @[@"4u8wmsug0pf5tbf58lgjiouma3qukrgbu", @"nativesdks.us1.mparticle.com", @"identity.us1.mparticle.com", @"tracking-nativesdks.us1.mparticle.com", @"tracking-identity.us1.mparticle.com"],
+        @[@"us1-1vc4gbp24cdtx6e31s58icnymzy83f1uf", @"nativesdks.us1.mparticle.com", @"identity.us1.mparticle.com", @"tracking-nativesdks.us1.mparticle.com", @"tracking-identity.us1.mparticle.com"],
+        @[@"us2-v2p8lr3w2g90vtpaumbq21zy05cl50qm3", @"nativesdks.us2.mparticle.com", @"identity.us2.mparticle.com", @"tracking-nativesdks.us2.mparticle.com", @"tracking-identity.us2.mparticle.com"],
+        @[@"eu1-bkabfno0b8zpv5bwi2zm2mfa1kfml19al", @"nativesdks.eu1.mparticle.com", @"identity.eu1.mparticle.com", @"tracking-nativesdks.eu1.mparticle.com", @"tracking-identity.eu1.mparticle.com"],
+        @[@"au1-iermuj83dbeoshm0n32f10feotclq6i4a", @"nativesdks.au1.mparticle.com", @"identity.au1.mparticle.com", @"tracking-nativesdks.au1.mparticle.com", @"tracking-identity.au1.mparticle.com"],
+        @[@"st1-k77ivhkbbqf4ce0s3y12zpcthyn1ixfyu", @"nativesdks.st1.mparticle.com", @"identity.st1.mparticle.com", @"tracking-nativesdks.st1.mparticle.com", @"tracking-identity.st1.mparticle.com"],
+        @[@"us3-w1y2y8yj8q58d5bx9u2dvtxzl4cpa7cuf", @"nativesdks.us3.mparticle.com", @"identity.us3.mparticle.com", @"tracking-nativesdks.us3.mparticle.com", @"tracking-identity.us3.mparticle.com"]
     ];
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     NSString *oldEventHost = @"nativesdks.mparticle.com";
     NSString *oldIdentityHost = @"identity.mparticle.com";
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    stateMachine.enableDirectRouting = NO;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
     for (NSArray *test in testKeys) {
         NSString *key = test[0];
+        stateMachine.apiKey = key;
+        
+        XCTAssertEqualObjects(oldEventHost, [networkCommunication defaultEventHost]);
+        XCTAssertEqualObjects(oldIdentityHost, [networkCommunication defaultIdentityHost]);
+    }
+    
+    NSString *newEventHost = @"tracking-nativesdks.mparticle.com";
+    NSString *newIdentityHost = @"tracking-identity.mparticle.com";
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    for (NSArray *test in testKeys) {
+        NSString *key = test[0];
+        stateMachine.apiKey = key;
+        
+        XCTAssertEqualObjects(newEventHost, [networkCommunication defaultEventHost]);
+        XCTAssertEqualObjects(newIdentityHost, [networkCommunication defaultIdentityHost]);
+    }
+    
+    stateMachine.enableDirectRouting = YES;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusNotDetermined);
+    for (NSArray *test in testKeys) {
+        NSString *key = test[0];
+        stateMachine.apiKey = key;
         NSString *eventHost = test[1];
         NSString *identityHost = test[2];
         
-        XCTAssertEqualObjects(eventHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:key enableDirectRouting:YES]);
-        XCTAssertEqualObjects(identityHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:key enableDirectRouting:YES]);
-        XCTAssertEqualObjects(oldEventHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostEventSubdomain apiKey:key enableDirectRouting:NO]);
-        XCTAssertEqualObjects(oldIdentityHost, [networkCommunication defaultHostWithSubdomain:kMPURLHostIdentitySubdomain apiKey:key enableDirectRouting:NO]);
+        XCTAssertEqualObjects(eventHost, [networkCommunication defaultEventHost]);
+        XCTAssertEqualObjects(identityHost, [networkCommunication defaultIdentityHost]);
+    }
+    
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    for (NSArray *test in testKeys) {
+        NSString *key = test[0];
+        stateMachine.apiKey = key;
+        NSString *eventHost = test[3];
+        NSString *identityHost = test[4];
+        
+        XCTAssertEqualObjects(eventHost, [networkCommunication defaultEventHost]);
+        XCTAssertEqualObjects(identityHost, [networkCommunication defaultIdentityHost]);
     }
 }
 
