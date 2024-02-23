@@ -1,3 +1,11 @@
+# [8.19.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.18.0...v8.19.0) (2024-02-23)
+
+
+### Features
+
+* Add Privacy Manifest and Tracking Domain Logic ([#249](https://github.com/mParticle/mparticle-apple-sdk/issues/249)) ([d88acde](https://github.com/mParticle/mparticle-apple-sdk/commit/d88acdee70daa690374f2359fbc3efed7e46744d)), closes [#248](https://github.com/mParticle/mparticle-apple-sdk/issues/248)
+* Add privacy manifest to build artifacts ([#255](https://github.com/mParticle/mparticle-apple-sdk/issues/255)) ([aaeb8e4](https://github.com/mParticle/mparticle-apple-sdk/commit/aaeb8e44ab0aea152ad8704093543289801e7490))
+
 # [8.18.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.17.0...v8.18.0) (2024-01-16)
 
 
