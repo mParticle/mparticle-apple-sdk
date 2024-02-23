@@ -12,7 +12,7 @@ jobs:
   native-unit-tests:
     strategy:
       matrix:
-        xcode: ["15.0"]
+        xcode: ["15.2"]
         platform: [iOS, tvOS]
         scheme: [mParticle-Apple-SDK, mParticle-Apple-SDK-NoLocation]
         include:
@@ -23,7 +23,7 @@ jobs:
     runs-on: macos-13
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
