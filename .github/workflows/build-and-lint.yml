@@ -4,10 +4,13 @@ on: [pull_request]
 
 jobs:
   pod-lint:
-    runs-on: macos-12
+    runs-on: macOS-13
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+      
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
         
       - name: Update xcodeproj gem
         run: sudo gem install xcodeproj
@@ -22,10 +25,13 @@ jobs:
         run: git checkout *.podspec
 
   carthage-build:
-    runs-on: macos-12
+    runs-on: macOS-13
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
 
       - name: Build with Carthage
         run: ./Scripts/carthage.sh build --no-skip-current || true
@@ -37,13 +43,16 @@ jobs:
         run: ls 2>&1 | grep .framework.zip
 
   compile-extension:
-    runs-on: macos-12
+    runs-on: macOS-13
     defaults:
       run:
         working-directory: ./Example
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
 
       - name: Update CocoaPods repo
         run: pod repo update
@@ -55,10 +64,13 @@ jobs:
         run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
 
   run-analyzer:
-    runs-on: macos-12
+    runs-on: macOS-13
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
 
       - name: Run static analyzer
         run: |

@@ -11,16 +11,16 @@ on:
 jobs:
   run-ios-tests:
     timeout-minutes: 30
-    runs-on: macos-12
+    runs-on: macOS-13
     steps:
       - name: "Checkout Cross Platform Tests"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: "true"
           repository: mParticle/crossplatform-sdk-tests
           fetch-depth: 1
       - name: "Checkout iOS SDK"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
           path: .sdks/apple
