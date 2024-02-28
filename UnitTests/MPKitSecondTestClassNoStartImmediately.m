@@ -20,7 +20,7 @@
     return @314;
 }
 
-- (void)deinit {
+- (void)stop {
     
 }
 

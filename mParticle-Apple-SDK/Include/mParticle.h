@@ -617,12 +617,34 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 
 /**
  Starts the SDK with your API key and secret and installation type.
- It is required that you use either this method or `start` to authorize the SDK before
+ It is required that you use either this method to authorize the SDK before
  using the other API methods. The apiKey and secret that are passed in to this method
- will override the api_key and api_secret parameters of the (optional) MParticleConfig.plist.
+ will override the `api_key` and `api_secret` parameters of the (optional) MParticleConfig.plist.
  @param options SDK startup options
  */
 - (void)startWithOptions:(MParticleOptions *)options;
+
+/**
+ Switches the SDK to a new API key and secret.
+ 
+ Will first attempt to upload any batches that have not been sent to mParticle,
+ then all SDK state including user defaults, database, etc will be completely reset.
+ After that, `startWithOptions` will be called with the new key and secret
+ and the SDK will initialize again as if it is a new app launch.
+ 
+ Any kits that do not implement the `stop` method will be deactivated and will
+ not receive any events until the app is restarted. Any kits that were not used by the
+ previous workspace will continue to be available even if they don't implement `stop`.
+ Any sideloaded kits will need new instances passed in via `options.sideloadedKits`.
+ It is recommended to implement the `stop` in all sideloaded kits, though if it is not
+ implemented then the old instances will still not receive any new events.
+ 
+ The apiKey and secret that are passed in to this method will override the `api_key`
+ and `api_secret` parameters of the (optional) MParticleConfig.plist.
+ 
+ @param options SDK startup options
+ */
+- (void)switchWorkspaceWithOptions:(MParticleOptions *)options;
 
 #pragma mark - Application notifications
 #if TARGET_OS_IOS == 1
@@ -704,6 +726,16 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  The SDK will be shut down and [MParticle sharedInstance] will return a new instance without apiKey or secretKey. MParticle can be restarted by calling MParticle.startWithOptions
  */
 - (void)reset;
+
+/**
+ This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further upload or download behavior that may be prepared
+
+ If you have any reference to the MParticle instance, you must remove your reference by setting it to "nil", in order to avoid any unexpected behavior
+ The SDK will be shut down and [MParticle sharedInstance] will return a new instance without apiKey or secretKey. MParticle can be restarted by calling MParticle.startWithOptions
+ 
+ @param completion A block to execute on the main thread after the SDK is completely reset
+ */
+- (void)reset:(nullable void (^)(void))completion;
 
 #pragma mark - Basic Tracking
 /**

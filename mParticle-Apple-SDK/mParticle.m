@@ -300,11 +300,27 @@ static NSString *const kMPStateKey = @"state";
     }
 }
 
++ (void)executeOnMessageSync:(void(^)(void))block {
+    if ([MParticle isMessageQueue]) {
+        block();
+    } else {
+        dispatch_sync([MParticle messageQueue], block);
+    }
+}
+
 + (void)executeOnMain:(void(^)(void))block {
     if ([NSThread isMainThread]) {
         block();
     } else {
         dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
++ (void)executeOnMainSync:(void(^)(void))block {
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), block);
     }
 }
 
@@ -689,6 +705,35 @@ static NSString *const kMPStateKey = @"state";
     return session;
 }
 
+- (void)switchWorkspaceWithOptions:(MParticleOptions *)options {
+    void (^finishReset)(void) = ^void(void) {
+        // Remove any kits that can't be reconfigured
+        [self.kitContainer removeKitsFromRegistryInvalidForWorkspaceSwitch];
+        
+        // Reset SDK (config, database, etc)
+        [self reset:^{
+            // Start the SDK using the new options
+            // NOTE: Explicitely calling sharedInstance here to generate a new one
+            // as reset nil's out the old one and self may be deallocated
+            [[MParticle sharedInstance] startWithOptions:options];
+        }];
+    };
+    
+    if (sdkInitialized) {
+        // End session if we use automatic session tracking
+        if (self.currentSession && self.automaticSessionTracking) {
+            [self.backendController endSession];
+        }
+        
+        // Upload events
+        [self.backendController waitForKitsAndUploadWithCompletionHandler:^{
+            finishReset();
+        }];
+    } else {
+        finishReset();
+    }
+}
+
 #pragma mark Application notifications
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
@@ -780,15 +825,24 @@ static NSString *const kMPStateKey = @"state";
     return [[MParticle sharedInstance].appNotificationHandler continueUserActivity:userActivity restorationHandler:restorationHandler];
 }
 
-
+- (void)reset:(void (^)(void))completion {
+    [MParticle executeOnMessageSync:^{
+        [self.kitContainer flushSerializedKits];
+        [self.kitContainer removeAllSideloadedKits];
+        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [self.persistenceController resetDatabase];
+        [MParticle executeOnMainSync:^{
+            [self.backendController unproxyOriginalAppDelegate];
+            [MParticle setSharedInstance:nil];
+            if (completion) {
+                completion();
+            }
+        }];
+    }];
+}
 
 - (void)reset {
-    dispatch_sync(messageQueue, ^{
-        [[MPIUserDefaults standardUserDefaults] resetDefaults];
-        [[MParticle sharedInstance].persistenceController resetDatabase];
-        [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
-        [MParticle setSharedInstance:nil];
-    });
+    [self reset:nil];
 }
 
 #pragma mark Basic tracking

@@ -196,6 +196,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 #pragma mark Private methods
+
++ (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry {
+    return kitsRegistry;
+}
+
 - (const std::shared_ptr<mParticle::Bracket>)bracketForKit:(NSNumber *)integrationId {
     NSAssert(integrationId != nil, @"Required parameter. It cannot be nil.");
     
@@ -221,8 +226,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
     
     if (kitRegister.wrapperInstance) {
-        if ([kitRegister.wrapperInstance respondsToSelector:@selector(deinit)]) {
-            [kitRegister.wrapperInstance deinit];
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(stop)]) {
+            [kitRegister.wrapperInstance stop];
         }
         
         kitRegister.wrapperInstance = nil;
@@ -1906,6 +1911,29 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 #pragma mark Public methods
+
+- (void)removeAllSideloadedKits {
+    // Remove all sideloaded kits as new instances will be provided in the new MParticleOptions
+    NSSet *kits = [kitsRegistry copy];
+    for (id<MPExtensionKitProtocol>kitRegister in kits) {
+        if ([kitRegister.wrapperInstance respondsToSelector:@selector(sideloadedKitCode)]) {
+            [kitsRegistry removeObject:kitRegister];
+        }
+    }
+}
+
+- (void)removeKitsFromRegistryInvalidForWorkspaceSwitch {
+    // Remove kits from registry that can't be freed so they won't receive new events
+    // Leave any kit that was never used yet (i.e. was not used in the previous workspace)
+    NSSet *kits = [kitsRegistry copy];
+    for (id<MPExtensionKitProtocol>kitRegister in kits) {
+        if (![kitRegister.wrapperInstance respondsToSelector:@selector(stop)] &&
+            [self.kitConfigurations.allKeys containsObject:[kitRegister.wrapperInstance.class kitCode]]) {
+            [kitsRegistry removeObject:kitRegister];
+        }
+    }
+}
+
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry {
     if (kitsRegistry.count == 0) {
         return nil;

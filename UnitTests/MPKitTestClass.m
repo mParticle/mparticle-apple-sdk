@@ -18,7 +18,7 @@
     return @42;
 }
 
-- (void)deinit {
+- (void)stop {
     
 }
 
