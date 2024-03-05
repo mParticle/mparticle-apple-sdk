@@ -62,4 +62,26 @@
     return description;
 }
 
+- (NSUInteger)hash {
+    return _code.hash ^ _className.hash ^ _name.hash;
+}
+
+- (BOOL)isEqual:(id)other
+{
+    if (other == self) {
+        return YES;
+    } else if (![super isEqual:other]) {
+        return NO;
+    } else {
+        MPKitRegister *otherRegister = other;
+        return [_code isEqualToNumber:otherRegister.code]
+            && [_className isEqualToString:otherRegister.className]
+            && [_name isEqualToString:otherRegister.name];
+    }
+}
+
+- (void)setWrapperInstance:(id<MPKitProtocol>)wrapperInstance {
+    _wrapperInstance = wrapperInstance;
+}
+
 @end

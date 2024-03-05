@@ -21,6 +21,9 @@
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
 
+- (void)flushSerializedKits;
+- (void)removeAllSideloadedKits;
+- (void)removeKitsFromRegistryInvalidForWorkspaceSwitch;
 - (nullable NSArray<id<MPExtensionKitProtocol>> *)activeKitsRegistry;
 - (nullable NSArray<NSNumber *> *)configuredKitsRegistry;
 - (void)configureKits:(nullable NSArray<NSDictionary *> *)kitsConfiguration;

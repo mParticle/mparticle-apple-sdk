@@ -18,6 +18,10 @@
     return YES;
 }
 
+- (id)providerKitInstance {
+    return self;
+}
+
 - (nonnull MPKitExecStatus *)didFinishLaunchingWithConfiguration:(nonnull NSDictionary *)configuration {
     return [[MPKitExecStatus alloc] initWithSDKCode:self.sideloadedKitCode returnCode:MPKitReturnCodeSuccess];
 }

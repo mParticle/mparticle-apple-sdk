@@ -2,13 +2,21 @@
 #import "MPKitExecStatus.h"
 #import "mParticle.h"
 
+@interface MParticle()
++ (void)executeOnMainSync:(void(^)(void))block;
+@end
+
+@interface MPKitTestClassNoStartImmediately()
+@property (nonatomic, readwrite) BOOL started;
+@end
+
 @implementation MPKitTestClassNoStartImmediately
 
 - (MPKitExecStatus *)didFinishLaunchingWithConfiguration:(NSDictionary *)configuration {
     MPKitExecStatus *execStatus = nil;
     
-    _configuration = configuration;
-    _started = NO;
+    self.configuration = configuration;
+    self.started = NO;
     
     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
@@ -18,25 +26,20 @@
     return @42;
 }
 
-- (void)deinit {
-    
-}
-
 - (MPKitExecStatus *)didBecomeActive {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:[[self class] kitCode] returnCode:MPKitReturnCodeSuccess];
     return execStatus;
 }
 
 - (void)start {
-    _started = YES;
+    self.started = YES;
 
-    dispatch_async(dispatch_get_main_queue(), ^{
+    [MParticle executeOnMainSync:^{
         NSDictionary *userInfo = @{mParticleKitInstanceKey:[[self class] kitCode]};
-        
         [[NSNotificationCenter defaultCenter] postNotificationName:mParticleKitDidBecomeActiveNotification
                                                             object:nil
                                                           userInfo:userInfo];
-    });
+    }];
 }
 
 - (MPKitExecStatus *)logBaseEvent:(MPBaseEvent *)event {
@@ -65,7 +68,7 @@
 }
 
 - (id)providerKitInstance {
-    return _started ? self : nil;
+    return self.started ? self : nil;
 }
 
 - (MPKitExecStatus *)setDebugMode:(BOOL)debugMode {
@@ -97,3 +100,16 @@
 }
 
 @end
+
+@implementation MPKitTestClassNoStartImmediatelyWithStop
+
++ (nonnull NSNumber *)kitCode {
+    return @43;
+}
+
+- (void)stop {
+    self.started = NO;
+}
+
+@end
+

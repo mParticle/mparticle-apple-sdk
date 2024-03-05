@@ -13,3 +13,6 @@
 + (nonnull NSNumber *)kitCode;
 
 @end
+
+@interface MPKitTestClassNoStartImmediatelyWithStop: MPKitTestClassNoStartImmediately
+@end

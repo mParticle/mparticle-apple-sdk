@@ -497,6 +497,7 @@ The reason for this is that when an iOS app is first launched, the app delegate 
 */
 static id unproxiedAppDelegateReference = nil;
 
+// NOTE: This can only be called from the main thread
 - (void)unproxyOriginalAppDelegate {
     if (!originalAppDelegateProxied && appDelegateProxy) {
         return;

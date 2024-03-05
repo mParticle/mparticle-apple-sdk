@@ -50,7 +50,7 @@
 
 #pragma mark Kit lifecycle
 - (void)start;
-- (void)deinit;
+- (void)stop;
 
 #pragma mark Application
 - (nonnull MPKitExecStatus *)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray * _Nullable restorableObjects))restorationHandler;
