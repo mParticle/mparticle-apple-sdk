@@ -1,3 +1,10 @@
+# [8.20.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.19.0...v8.20.0) (2024-03-05)
+
+
+### Features
+
+* Switch workspaces without restarting app ([#258](https://github.com/mParticle/mparticle-apple-sdk/issues/258)) ([8f0a027](https://github.com/mParticle/mparticle-apple-sdk/commit/8f0a0276a3008b3a848630d125cc41a60addaef9))
+
 # [8.19.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.18.0...v8.19.0) (2024-02-23)
 
 
