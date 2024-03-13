@@ -689,9 +689,9 @@
     dispatch_async(messageQueue, ^{
         MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
         
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                               session:session
-                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                                 session:session
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
         MPMessage *message = [messageBuilder build];
         
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -1397,9 +1397,9 @@
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
     
@@ -1418,7 +1418,7 @@
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
     
     MPMessage *message = [messageBuilder build];
     [[MParticle sharedInstance].backendController saveMessage:message updateSession:NO];
@@ -1437,9 +1437,9 @@
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                               session:session
-                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                                 session:session
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
         MPMessage *message = [messageBuilder build];
         [unlimitedMessages addObject:message];
     }
@@ -1457,9 +1457,9 @@
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
-        MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                               session:session
-                                                                           messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                                 session:session
+                                                                             messageInfo:@{@"MessageKey1":@"MessageValue1"}];
         MPMessage *message = [messageBuilder build];
         [unlimitedMessages addObject:message];
     }
@@ -1474,9 +1474,9 @@
 
 - (void)testBatchAndMessageLimitsBytesPerBatch {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
@@ -1503,9 +1503,9 @@
     while (longString.length < 1000) {
         longString = [NSString stringWithFormat:@"%@%@", longString, longString];
     }
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":longString}];
     MPMessage *message = [messageBuilder build];
     NSMutableArray *unlimitedMessages = [NSMutableArray array];
     for (int i=0; i<10; i++) {
@@ -1534,9 +1534,9 @@
     while (longString.length < length) {
         longString = [NSString stringWithFormat:@"%@%@", longString, longString];
     }
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:type
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:type
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":longString}];
     MPMessage *message = [messageBuilder build];
     NSInteger bytesToTruncate = message.messageData.length - length;
     NSInteger bytesLongString = longString.length - bytesToTruncate;

@@ -13,12 +13,7 @@
 @class MPUserIdentityChange;
 @class MPMessage;
 
-@interface MPMessageBuilder : NSObject {
-@protected
-    NSMutableDictionary<NSString *, id> *messageDictionary;
-    NSString *uuid;
-    MPMessageType messageTypeValue;
-}
+@interface MPMessageBuilder : NSObject
 
 @property (nonatomic, strong, readonly, nonnull) NSString *messageType;
 @property (nonatomic, strong, readonly, nullable) MPSession *session;
@@ -29,28 +24,26 @@
 
 + (NSString *_Nullable)stringForMessageType:(MPMessageType)type;
 + (MPMessageType)messageTypeForString:(NSString *_Nonnull)string;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType
-                                                session:(nullable MPSession *)session
-                                            messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType
-                                                session:(nonnull MPSession *)session
-                                    userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
-+ (nonnull MPMessageBuilder *)newBuilderWithMessageType:(MPMessageType)messageType
-                                                session:(nonnull MPSession *)session
-                                     userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
-- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType
+- (nullable instancetype)initWithMessageType:(MPMessageType)messageType
                                     session:(nullable MPSession *)session;
-- (nonnull instancetype)initWithMessageType:(MPMessageType)messageType
+- (nullable instancetype)initWithMessageType:(MPMessageType)messageType
                                     session:(nullable MPSession *)session
                                 messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
-- (nonnull MPMessageBuilder *)withLaunchInfo:(nonnull NSDictionary *)launchInfo;
-- (nonnull MPMessageBuilder *)withTimestamp:(NSTimeInterval)timestamp;
-- (nonnull MPMessageBuilder *)withStateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
+- (nullable instancetype)initWithMessageType:(MPMessageType)messageType
+                                     session:(nullable MPSession *)session
+                          userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
+- (nullable instancetype)initWithMessageType:(MPMessageType)messageType
+                                     session:(nonnull MPSession *)session
+                         userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
+
+- (void)launchInfo:(nonnull NSDictionary *)launchInfo;
+- (void)timestamp:(NSTimeInterval)timestamp;
+- (void)stateTransition:(BOOL)sessionFinalized previousSession:(nullable MPSession *)previousSession;
 - (nonnull MPMessage *)build;
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-- (nonnull MPMessageBuilder *)withLocation:(nonnull CLLocation *)location;
+- (void)location:(nonnull CLLocation *)location;
 #endif
 #endif
 
