@@ -79,9 +79,9 @@
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:nil
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:nil
+                                                                         messageInfo:messageInfo];
     
     [persistence saveMessage:[messageBuilder build]];
     MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@1,@28,@28]];
@@ -94,9 +94,9 @@
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:nil
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:nil
+                                                                         messageInfo:messageInfo];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:@123 sessionId:nil messages:@[[messageBuilder build]] sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
     __block BOOL tested = NO;
@@ -116,9 +116,9 @@
                                   @"key3":@"value3"};
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:@123];
     session.sessionId = 11;
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
     [persistence saveMessage:[messageBuilder build]];
     MPDatabaseMigrationController *migrationController = [[MPDatabaseMigrationController alloc] initWithDatabaseVersions:@[@1,@28,@29]];
@@ -142,9 +142,9 @@
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:@123];
     session.sessionId = 11;
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:@123 sessionId:@11 messages:@[[messageBuilder build]] sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
     __block BOOL tested = NO;
@@ -200,9 +200,9 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     [persistence saveSession:session];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     [persistence saveMessage:message];
     
@@ -239,9 +239,9 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     [persistence saveSession:session];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     [persistence saveMessage:message];
     
@@ -277,9 +277,9 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     [persistence saveSession:session];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     [persistence saveMessage:message];
     
@@ -314,9 +314,9 @@
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     [persistence saveSession:session];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     [persistence saveMessage:message];
     
@@ -347,9 +347,9 @@
 - (void)testUpload {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
@@ -394,9 +394,9 @@
 
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                            session:session
+                                                                        messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
@@ -440,9 +440,9 @@
 
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO,
@@ -487,9 +487,9 @@
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":@"MessageValue1"}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10 dataPlanId:@"test" dataPlanVersion:@(1)];
@@ -515,7 +515,7 @@
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeOptOut session:session messageInfo:@{kMPOptOutStatus:(@"true")}];
     
     MPMessage *message = [messageBuilder build];
     
@@ -709,7 +709,7 @@
     XCTAssertEqualObjects(forwardRecord, fetchedForwardRecord);
     
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent session:session messageInfo:@{}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent session:session messageInfo:@{}];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -734,9 +734,9 @@
     }
     [MPPersistenceController setMpid:@1];
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":longString}];
     MPMessage *message = [messageBuilder build];
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -766,9 +766,9 @@
     }
     [MPPersistenceController setMpid:@1];
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeCrashReport
-                                                                           session:session
-                                                                       messageInfo:@{@"MessageKey1":longString}];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeCrashReport
+                                                                             session:session
+                                                                         messageInfo:@{@"MessageKey1":longString}];
     MPMessage *message = [messageBuilder build];
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;

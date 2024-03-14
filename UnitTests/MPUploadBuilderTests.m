@@ -123,11 +123,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -197,11 +197,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:nil
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:nil
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId]
@@ -275,11 +275,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -357,11 +357,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -436,11 +436,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -518,11 +518,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -603,11 +603,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
@@ -684,11 +684,11 @@
     
     [self configureCustomModules];
     
-    MPMessageBuilder *messageBuilder = [MPMessageBuilder newBuilderWithMessageType:MPMessageTypeEvent
-                                                                           session:session
-                                                                       messageInfo:messageInfo];
+    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
+                                                                             session:session
+                                                                         messageInfo:messageInfo];
     
-    messageBuilder = [messageBuilder withTimestamp:[[NSDate date] timeIntervalSince1970]];
+    [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
     MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
