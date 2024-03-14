@@ -10,14 +10,6 @@
 
 @implementation MPIntegrationAttributesTest
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testInstance {
     NSNumber *integrationId = @(MPKitInstanceUrbanAirship);
     NSDictionary<NSString *, NSString *> *attributes = @{@"key":@"value"};

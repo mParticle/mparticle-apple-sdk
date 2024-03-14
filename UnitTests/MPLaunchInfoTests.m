@@ -13,14 +13,6 @@
 
 @implementation MPLaunchInfoTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testAnnotation {
     NSURL *url = [NSURL URLWithString:@"http://mparticle.com"];
     NSString *sourceApp = @"testApp";

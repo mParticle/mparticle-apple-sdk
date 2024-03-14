@@ -24,16 +24,6 @@
 
 @implementation MPEventTests
 
-- (void)setUp {
-    [super setUp];
-    
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testInstance {
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeOther];
     

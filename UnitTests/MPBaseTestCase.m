@@ -30,14 +30,15 @@
 
 @implementation MPBaseTestCase
 
-- (void)setUp {
+- (void)setUpWithCompletionHandler:(void (^)(NSError * _Nullable))completion {
     [super setUp];
-    [[MParticle sharedInstance] reset];
-    MPNetworkCommunication.connectorFactory = [[MPTestConnectorFactory alloc] init];
+    [[MParticle sharedInstance] reset:^{
+        MPNetworkCommunication.connectorFactory = [[MPTestConnectorFactory alloc] init];
+        completion(nil);
+    }];
 }
 
 - (void)tearDown {
-    [[MParticle sharedInstance] reset];
     MPNetworkCommunication.connectorFactory = nil;
     [super tearDown];
 }

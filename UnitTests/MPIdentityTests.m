@@ -65,14 +65,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @implementation MPIdentityTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testConstructIdentityApiRequest {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"other id" identityType:MPIdentityOther];

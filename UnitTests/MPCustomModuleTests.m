@@ -95,10 +95,6 @@
     [MPPersistenceController setMpid:@1];
 }
 
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testConfiguration {
     NSData *customModuleData = [self.customModulesString dataUsingEncoding:NSUTF8StringEncoding];
     XCTAssertNotNil(customModuleData, @"Should not have been nil.");

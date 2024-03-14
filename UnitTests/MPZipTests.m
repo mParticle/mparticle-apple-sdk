@@ -74,14 +74,6 @@
 
 @implementation MPZipTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testSimpleCompressAndExpand {
     NSString *input = @"";
     for (int i=0; i<100; i++) {

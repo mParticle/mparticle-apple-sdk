@@ -5,112 +5,102 @@
 
 @interface MParticleOptionsTests : MPBaseTestCase
 
-@property (nonatomic) MParticleOptions *options;
-
 @end
 
 @implementation MParticleOptionsTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    _options = nil;
-    [super tearDown];
-}
 
 - (void)testNoArgInit {
-    _options = [[MParticleOptions alloc] init];
-    XCTAssertNotNil(_options, @"Expected no-arg init to produce a non-nil options object");
+    MParticleOptions *options = [[MParticleOptions alloc] init];
+    XCTAssertNotNil(options, @"Expected no-arg init to produce a non-nil options object");
 }
 
 - (void)testKeySecretInit {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
     
-    XCTAssertNotNil(_options, @"Expected optionsWithKey to produce a non-nil options object");
+    XCTAssertNotNil(options, @"Expected optionsWithKey to produce a non-nil options object");
     
-    XCTAssertEqualObjects(_options.apiKey, @"unit_test_app_key", @"Expected key to match the one passed in");
-    XCTAssertEqualObjects(_options.apiSecret, @"unit_test_secret", @"Expected secret to match the one passed in");
+    XCTAssertEqualObjects(options.apiKey, @"unit_test_app_key", @"Expected key to match the one passed in");
+    XCTAssertEqualObjects(options.apiSecret, @"unit_test_secret", @"Expected secret to match the one passed in");
 }
 
 - (void)testDisableProxyAppDelegate {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    XCTAssertTrue(_options.proxyAppDelegate, @"Expected proxy AppDelegate to default to YES");
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertTrue(options.proxyAppDelegate, @"Expected proxy AppDelegate to default to YES");
     
-    _options.proxyAppDelegate = NO;
-    XCTAssertFalse(_options.proxyAppDelegate, @"Expected proxy AppDelegate to be NO after setting to NO");
+    options.proxyAppDelegate = NO;
+    XCTAssertFalse(options.proxyAppDelegate, @"Expected proxy AppDelegate to be NO after setting to NO");
 }
 
 - (void)testDisableAutoSessionTracking {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    XCTAssertTrue(_options.automaticSessionTracking, @"Expected auto session tracking to default to YES");
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertTrue(options.automaticSessionTracking, @"Expected auto session tracking to default to YES");
     
-    _options.automaticSessionTracking = NO;
-    XCTAssertFalse(_options.automaticSessionTracking, @"Expected auto session tracking to be NO after setting to NO");
+    options.automaticSessionTracking = NO;
+    XCTAssertFalse(options.automaticSessionTracking, @"Expected auto session tracking to be NO after setting to NO");
 }
 
 - (void)testLogLevel {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
     
-    XCTAssertEqual(_options.logLevel, MPILogLevelNone, @"Default Debug Level was incorrect");
+    XCTAssertEqual(options.logLevel, MPILogLevelNone, @"Default Debug Level was incorrect");
 }
 
 - (void)testSetLogLevel {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    _options.logLevel = MPILogLevelDebug;
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    options.logLevel = MPILogLevelDebug;
     
-    XCTAssertEqual(_options.logLevel, MPILogLevelDebug, @"Debug Level was was not set correctly");
+    XCTAssertEqual(options.logLevel, MPILogLevelDebug, @"Debug Level was was not set correctly");
 }
 
 - (void)testSetSearchAdsAttributionDefault {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
     
-    XCTAssertFalse(_options.collectSearchAdsAttribution, @"Search ads attribution shouldn't be collected by default");
+    XCTAssertFalse(options.collectSearchAdsAttribution, @"Search ads attribution shouldn't be collected by default");
 }
 
 - (void)testSetSearchAdsAttributionSet {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    _options.collectSearchAdsAttribution = YES;
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    options.collectSearchAdsAttribution = YES;
     
-    XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
+    XCTAssertTrue(options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
 }
 
 - (void)testSetSearchAdsAttributionReset {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    _options.collectSearchAdsAttribution = NO;
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    options.collectSearchAdsAttribution = NO;
     
-    _options.collectSearchAdsAttribution = YES;
-    XCTAssertTrue(_options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
+    options.collectSearchAdsAttribution = YES;
+    XCTAssertTrue(options.collectSearchAdsAttribution, @"Search ads attribution was not set correctly");
 }
 
 - (void)testSessionTimeout {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    XCTAssertEqual(_options.sessionTimeout, DEFAULT_SESSION_TIMEOUT, @"Session Timeout Interval default correct");
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertEqual(options.sessionTimeout, DEFAULT_SESSION_TIMEOUT, @"Session Timeout Interval default correct");
     
-    _options.sessionTimeout = 100.0;
-    XCTAssertEqual(_options.sessionTimeout, 100.0, @"Session Timeout Interval set correctly");
+    options.sessionTimeout = 100.0;
+    XCTAssertEqual(options.sessionTimeout, 100.0, @"Session Timeout Interval set correctly");
 }
 
 - (void)testDataBlockOptions {
-    _options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
-    XCTAssertNil(_options.dataPlanOptions.dataPlan);
-    XCTAssertFalse(_options.dataPlanOptions.blockEvents);
-    XCTAssertFalse(_options.dataPlanOptions.blockEventAttributes);
-    XCTAssertFalse(_options.dataPlanOptions.blockUserAttributes);
-    XCTAssertFalse(_options.dataPlanOptions.blockUserIdentities);
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit_test_app_key" secret:@"unit_test_secret"];
+    XCTAssertNil(options.dataPlanOptions.dataPlan);
+    XCTAssertFalse(options.dataPlanOptions.blockEvents);
+    XCTAssertFalse(options.dataPlanOptions.blockEventAttributes);
+    XCTAssertFalse(options.dataPlanOptions.blockUserAttributes);
+    XCTAssertFalse(options.dataPlanOptions.blockUserIdentities);
     
-    _options.dataPlanOptions = [[MPDataPlanOptions alloc] init];
-    _options.dataPlanOptions.dataPlan = @{};
-    _options.dataPlanOptions.blockEvents = YES;
-    _options.dataPlanOptions.blockEventAttributes = YES;
-    _options.dataPlanOptions.blockUserAttributes = YES;
-    _options.dataPlanOptions.blockUserIdentities = YES;
-    XCTAssertNotNil(_options.dataPlanOptions.dataPlan);
-    XCTAssertTrue(_options.dataPlanOptions.blockEvents);
-    XCTAssertTrue(_options.dataPlanOptions.blockEventAttributes);
-    XCTAssertTrue(_options.dataPlanOptions.blockUserAttributes);
-    XCTAssertTrue(_options.dataPlanOptions.blockUserIdentities);
+    options.dataPlanOptions = [[MPDataPlanOptions alloc] init];
+    options.dataPlanOptions.dataPlan = @{};
+    options.dataPlanOptions.blockEvents = YES;
+    options.dataPlanOptions.blockEventAttributes = YES;
+    options.dataPlanOptions.blockUserAttributes = YES;
+    options.dataPlanOptions.blockUserIdentities = YES;
+    XCTAssertNotNil(options.dataPlanOptions.dataPlan);
+    XCTAssertTrue(options.dataPlanOptions.blockEvents);
+    XCTAssertTrue(options.dataPlanOptions.blockEventAttributes);
+    XCTAssertTrue(options.dataPlanOptions.blockUserAttributes);
+    XCTAssertTrue(options.dataPlanOptions.blockUserIdentities);
 }
 
 @end

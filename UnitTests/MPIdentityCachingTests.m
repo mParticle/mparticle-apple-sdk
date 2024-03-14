@@ -40,11 +40,6 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
     [MPIdentityCaching setCache:nil];
 }
 
-- (void)tearDown {
-    [super tearDown];
-    [MPIdentityCaching setCache:nil];
-}
-
 - (void)testGetCachedResponse {
     NSDictionary *identities = @{
         @"ios_idfv": @"abcdefg",

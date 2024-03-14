@@ -8,14 +8,6 @@
 
 @implementation MPUserAttributeChangeTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testInstance {
     NSArray *val2Array = @[@"item1", @"item2"];
     NSDictionary<NSString *, id> *userAttributes = @{@"key1":@"val1",

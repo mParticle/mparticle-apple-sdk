@@ -40,14 +40,6 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 @implementation MPNetworkCommunicationTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {    
-    [super tearDown];
-}
-
 - (void) swizzleInstanceMethodForInstancesOfClass:(Class)targetClass selector:(SEL)selector
 {
     originalMethod = class_getInstanceMethod(targetClass, selector);

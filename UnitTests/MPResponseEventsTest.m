@@ -18,16 +18,6 @@
 
 @implementation MPResponseEventsTest
 
-- (void)setUp {
-    [super setUp];
-    
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testParseConfiguration {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     

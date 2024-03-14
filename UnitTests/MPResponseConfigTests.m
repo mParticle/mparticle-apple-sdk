@@ -20,18 +20,6 @@
 
 @implementation MPResponseConfigTests
 
-- (void)setUp {
-    [super setUp];
-    
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-}
-
-- (void)tearDown {
-    [[MPIUserDefaults standardUserDefaults] resetDefaults];
-
-    [super tearDown];
-}
-
 - (void)testInstance {
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],

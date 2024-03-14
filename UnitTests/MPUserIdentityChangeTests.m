@@ -18,16 +18,6 @@
 
 @implementation MPUserIdentityChangeTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [[MPIUserDefaults standardUserDefaults] resetDefaults];
-
-    [super tearDown];
-}
-
 - (void)testUserIdentityRequest {
     MParticle *mParticle = [MParticle sharedInstance];
     mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];

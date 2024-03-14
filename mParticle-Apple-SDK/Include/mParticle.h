@@ -720,12 +720,14 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler;
 
 /**
- This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further upload or download behavior that may be prepared
+ DEPRECATED: This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further upload or download behavior that may be prepared
+ 
+ NOTE: This method is less comprehensive than the new `reset:` method. It resets less state and is called within a `dispatch_sync()` which has the potential to deadlock in rare cases.
 
  If you have any reference to the MParticle instance, you must remove your reference by setting it to "nil", in order to avoid any unexpected behavior
  The SDK will be shut down and [MParticle sharedInstance] will return a new instance without apiKey or secretKey. MParticle can be restarted by calling MParticle.startWithOptions
  */
-- (void)reset;
+- (void)reset DEPRECATED_MSG_ATTRIBUTE("replace calls to `reset` with `reset:` and a completion handler");
 
 /**
  This method will permanently remove ALL MParticle data from the device, including MParticle UserDefaults and Database, it will also halt any further upload or download behavior that may be prepared

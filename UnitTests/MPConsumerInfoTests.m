@@ -56,10 +56,6 @@
     consumerInfoDictionary = responseDictionary[kMPRemoteConfigConsumerInfoKey];
 }
 
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testInstance {
     MPConsumerInfo *consumerInfo = [[MPConsumerInfo alloc] init];
     

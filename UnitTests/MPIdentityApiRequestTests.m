@@ -8,14 +8,6 @@
 
 @implementation MPIdentityApiRequestTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testSetNilIdentity {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"foo" identityType:MPIdentityOther];
