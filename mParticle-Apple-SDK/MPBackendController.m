@@ -1960,39 +1960,41 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logUserNotification:(MParticleUserNotification *)userNotification {
-    NSMutableDictionary *messageInfo = [@{kMPPushNotificationStateKey:userNotification.state,
-                                          kMPPushMessageProviderKey:kMPPushMessageProviderValue,
-                                          kMPPushMessageTypeKey:userNotification.type}
-                                        mutableCopy];
-    
-    NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController deviceToken]];
-    if (tokenString) {
-        messageInfo[kMPDeviceTokenKey] = tokenString;
-    }
-                             
-    if (userNotification.redactedUserNotificationString) {
-        messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
-    }
-    
-    if (userNotification.actionTitle) {
-        messageInfo[kMPPushNotificationActionTitleKey] = userNotification.actionTitle;
-    }
+    [MParticle executeOnMessage:^{
+        NSMutableDictionary *messageInfo = [@{kMPPushNotificationStateKey:userNotification.state,
+                                              kMPPushMessageProviderKey:kMPPushMessageProviderValue,
+                                              kMPPushMessageTypeKey:userNotification.type}
+                                            mutableCopy];
+        
+        NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController deviceToken]];
+        if (tokenString) {
+            messageInfo[kMPDeviceTokenKey] = tokenString;
+        }
+                                 
+        if (userNotification.redactedUserNotificationString) {
+            messageInfo[kMPPushMessagePayloadKey] = userNotification.redactedUserNotificationString;
+        }
+        
+        if (userNotification.actionTitle) {
+            messageInfo[kMPPushNotificationActionTitleKey] = userNotification.actionTitle;
+        }
 
-    if (userNotification.actionIdentifier) {
-        messageInfo[kMPPushNotificationActionIdentifierKey] = userNotification.actionIdentifier;
-    }
+        if (userNotification.actionIdentifier) {
+            messageInfo[kMPPushNotificationActionIdentifierKey] = userNotification.actionIdentifier;
+        }
     
-    if (userNotification.behavior > 0) {
-        messageInfo[kMPPushNotificationBehaviorKey] = @(userNotification.behavior);
-    }
+        if (userNotification.behavior > 0) {
+            messageInfo[kMPPushNotificationBehaviorKey] = @(userNotification.behavior);
+        }
     
-    MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushNotification session:_session messageInfo:messageInfo];
+        MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypePushNotification session:self.session messageInfo:messageInfo];
 #ifndef MPARTICLE_LOCATION_DISABLE
-    [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
+        [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
 #endif
-    MPMessage *message = [messageBuilder build];
+        MPMessage *message = [messageBuilder build];
     
-    [self saveMessage:message updateSession:(_session != nil)];
+        [self saveMessage:message updateSession:(self.session != nil)];
+    }];
 }
 
 #endif
