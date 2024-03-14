@@ -20,8 +20,10 @@
 @interface MPKitContainer(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
++ (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
 
 @end
+
 
 #pragma mark - MPKitActivityTests
 @interface MPKitActivityTests : MPBaseTestCase
@@ -38,32 +40,23 @@
 
     _kitActivity = [[MPKitActivity alloc] init];
     
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    stateMachine.apiKey = @"unit_test_app_key";
-    stateMachine.secret = @"unit_test_secret";
+    [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
+    [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
         
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
-    if (!registeredKits) {
-        MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
-        
-        NSDictionary *configuration = @{
-                                        @"id":@42,
-                                        @"as":@{
-                                                @"appId":@"MyAppId"
-                                                }
-                                        };
-        
-        MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-        [[[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration] start];
-    }
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
+    [MPKitContainer registerKit:kitRegister];
+    NSDictionary *configuration = @{@"id": @42, @"as": @{@"appId":@"MyAppId"}};
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
+    [[[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration] start];
 }
 
 - (void)tearDown {
     _kitActivity = nil;
+    
+    // Ensure registeredKits is empty
+    [MPKitContainer.kitsRegistry removeAllObjects];
     
     [super tearDown];
 }

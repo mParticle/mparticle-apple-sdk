@@ -50,16 +50,6 @@ NSString *const kMPStateInformationKey = @"cs";
     return _session;
 }
 
-- (void)setUp {
-    [super setUp];
-    
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testBuildingMessage {
     NSDictionary *messageInfo = @{@"key1":@"value1",
                                   @"key2":@"value2",

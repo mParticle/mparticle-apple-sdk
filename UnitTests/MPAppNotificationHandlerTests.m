@@ -21,14 +21,6 @@
 
 @implementation MPAppNotificationHandlerTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 #if TARGET_OS_IOS == 1
 
 - (void)testFailedToRegisterForRemoteNotification {

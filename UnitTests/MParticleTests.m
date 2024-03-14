@@ -63,7 +63,7 @@
     lastNotification = nil;
 }
 
-- (void)testResetInstance {
+- (void)testDeprecatedResetInstance {
     MParticle *instance = [MParticle sharedInstance];
     MParticle *instance2 = [MParticle sharedInstance];
     XCTAssertNotNil(instance);
@@ -73,6 +73,22 @@
     MParticle *instance4 = [MParticle sharedInstance];
     XCTAssertNotEqual(instance, instance3);
     XCTAssertEqual(instance3, instance4);
+}
+
+- (void)testResetInstance {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
+    MParticle *instance = [MParticle sharedInstance];
+    MParticle *instance2 = [MParticle sharedInstance];
+    XCTAssertNotNil(instance);
+    XCTAssertEqual(instance, instance2);
+    [instance reset:^{
+        MParticle *instance3 = [MParticle sharedInstance];
+        MParticle *instance4 = [MParticle sharedInstance];
+        XCTAssertNotEqual(instance, instance3);
+        XCTAssertEqual(instance3, instance4);
+        [expectation fulfill];
+    }];
+    [self waitForExpectationsWithTimeout:3 handler:nil];
 }
 
 - (void)testOptOut {

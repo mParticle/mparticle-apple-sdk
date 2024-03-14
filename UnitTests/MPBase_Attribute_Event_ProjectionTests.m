@@ -10,14 +10,6 @@
 
 @implementation MPBase_Attribute_Event_ProjectionTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testBaseInstanceEvent {
     NSDictionary *configuration = @{@"action":@{@"projected_event_name":@"Projected Event"
                                                 },

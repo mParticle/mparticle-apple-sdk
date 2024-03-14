@@ -26,15 +26,6 @@
 
 @implementation MPForwardRecordTests
 
-- (void)setUp {
-    
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testInstance {
     MPKitExecStatus *execStatus = [[MPKitExecStatus alloc] initWithSDKCode:@(MPKitInstanceAppboy) returnCode:MPKitReturnCodeSuccess];
     XCTAssertTrue([execStatus success], @"Should have been true.");

@@ -8,14 +8,6 @@
 
 @implementation BracketTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 mParticle::Bracket makeBracket() {
     mParticle::Bracket bracket(LONG_MAX - 3141592, 95, 97);
     return bracket;

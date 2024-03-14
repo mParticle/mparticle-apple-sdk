@@ -24,10 +24,6 @@
     referenceDate = [dateComponents date];
 }
 
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testDatesFromString {
     NSDate *date = [MPDateFormatter dateFromString:@"1955-11-5T01:15:00-8"];
     XCTAssertNotNil(date, @"Should not have been nil.");

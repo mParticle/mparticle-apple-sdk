@@ -79,13 +79,6 @@
     _kitApi = [[MPKitAPI alloc] initWithKitCode:@42];
 }
 
-- (void)tearDown {
-    [MParticle sharedInstance].backendController = nil;
-    [[MPIUserDefaults standardUserDefaults] resetDefaults];
-
-    [super tearDown];
-}
-
 - (void)testIntegrationAttributes {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];

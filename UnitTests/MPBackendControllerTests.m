@@ -114,35 +114,22 @@
 - (void)setUp {
     [super setUp];
     messageQueue = [MParticle messageQueue];
-    
+        
     [MPPersistenceController setMpid:@1];
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    stateMachine.apiKey = @"unit_test_app_key";
-    stateMachine.secret = @"unit_test_secret";
+    [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
+    [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
     
-    MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    [MParticle sharedInstance].backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     self.backendController = [MParticle sharedInstance].backendController;
     [self notificationController];
 }
 
 - (void)tearDown {
     [MParticle sharedInstance].stateMachine.launchInfo = nil;
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    [persistence deleteRecordsOlderThan:[[NSDate date] timeIntervalSince1970]];
-    NSMutableArray *sessions = [persistence fetchSessions];
-    for (MPSession *session in sessions) {
-        [persistence deleteSession:session];
-    }
-    
-    sessions = [persistence fetchSessions];
-    XCTAssertEqual(sessions.count, 0, @"Sessions have not been deleted.");
-    [persistence closeDatabase];
     [super tearDown];
 }
 

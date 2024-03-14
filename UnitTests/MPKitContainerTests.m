@@ -86,10 +86,8 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    stateMachine.apiKey = @"unit_test_app_key";
-    stateMachine.secret = @"unit_test_secret";
+    [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
+    [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
     kitContainer = [MParticle sharedInstance].kitContainer;

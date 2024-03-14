@@ -16,14 +16,6 @@
 
 @implementation MPCommerceEventTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testProduct {
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean"
                                                      sku:@"OutATime"

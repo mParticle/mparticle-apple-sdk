@@ -47,13 +47,7 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
-}
-
-- (void)tearDown {
-    
-    [super tearDown];
 }
 
 - (void)testMultiThreadedAccess {

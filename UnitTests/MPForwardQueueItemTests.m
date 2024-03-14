@@ -49,14 +49,6 @@
 
 @implementation MPForwardQueueItemTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testCommerceInstance {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Forward Queue Item Test (Ecommerce)"];
     MPProduct *product = [[MPProduct alloc] initWithName:@"Sonic Screwdriver" sku:@"SNCDRV" quantity:@1 price:@3.14];

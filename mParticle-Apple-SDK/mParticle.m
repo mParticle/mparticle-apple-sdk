@@ -826,12 +826,12 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)reset:(void (^)(void))completion {
-    [MParticle executeOnMessageSync:^{
+    [MParticle executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
         [[MPIUserDefaults standardUserDefaults] resetDefaults];
         [self.persistenceController resetDatabase];
-        [MParticle executeOnMainSync:^{
+        [MParticle executeOnMain:^{
             [self.backendController unproxyOriginalAppDelegate];
             [MParticle setSharedInstance:nil];
             if (completion) {
@@ -842,7 +842,12 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)reset {
-    [self reset:nil];
+    [MParticle executeOnMessageSync:^{
+        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [[MParticle sharedInstance].persistenceController resetDatabase];
+        [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
+        [MParticle setSharedInstance:nil];
+    }];
 }
 
 #pragma mark Basic tracking

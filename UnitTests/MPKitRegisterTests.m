@@ -10,14 +10,6 @@
 
 @implementation MPKitRegisterTests
 
-- (void)setUp {
-    [super setUp];    
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testInstance {
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
     XCTAssertNotNil(kitRegister, @"Should not have been nil.");

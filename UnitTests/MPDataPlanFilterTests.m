@@ -1,16 +1,18 @@
 #import <XCTest/XCTest.h>
 #import "MPDataPlanFilter.h"
 
-MPDataPlanFilter *adapter;
-MPDataPlanFilter *noBlockAdapter;
-MPDataPlanFilter *additionalAttrsAdapter;
-
-@interface MPDataPlanFilterTests : XCTestCase
+@interface MPDataPlanFilterTests : XCTestCase {
+    MPDataPlanFilter *adapter;
+    MPDataPlanFilter *noBlockAdapter;
+    MPDataPlanFilter *additionalAttrsAdapter;
+}
 @end
 
 @implementation MPDataPlanFilterTests
 
 - (void)setUp {
+    [super setUp];
+    
     // Put setup code here. This method is called before the invocation of each test method in the class.
     NSDictionary *plan = @{@"version_document":@{@"data_points":@[@{@"match":@{@"type":@"custom_event",@"criteria":@{@"event_name":@"Email Bounces",@"custom_event_type":@"other"} }, @"validator":@{@"definition":@{@"properties":@{@"data":@{@"properties":@{@"custom_attributes":@{@"additionalProperties": @NO, @"properties":@{@"Campaign Name": @{}, @"Campaign Id": @{}}}}}}}}}]}};
     
@@ -38,11 +40,6 @@ MPDataPlanFilter *additionalAttrsAdapter;
     addAttrsDataplanOptions.blockUserIdentities = YES;
     additionalAttrsAdapter = [[MPDataPlanFilter alloc] initWithDataPlanOptions:addAttrsDataplanOptions];
 }
-
-- (void)tearDown {
-    
-}
-
 
 // No attribute custom event tests
 - (void)testNoBlockPlannedCustomEventNameType {
@@ -106,15 +103,16 @@ MPDataPlanFilter *additionalAttrsAdapter;
 
 
 
-@interface MPKDataPlanFilterCommonTests : XCTestCase
+@interface MPKDataPlanFilterCommonTests : XCTestCase {
+    MPDataPlanOptions *dataplanOptions;
+}
 @end
 
 @implementation MPKDataPlanFilterCommonTests
 
-MPDataPlanOptions *dataplanOptions;
-
-
 -(void)setUp {
+    [super setUp];
+    
     NSString *path = [[NSBundle bundleForClass:[self class]] pathForResource:@"sample_dataplan2" ofType:@"json"];
     NSString *jsonString = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
     NSData * jsonData = [jsonString dataUsingEncoding:0];

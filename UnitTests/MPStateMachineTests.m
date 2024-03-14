@@ -35,16 +35,6 @@
 
 @implementation MPStateMachineTests
 
-- (void)setUp {
-    [super setUp];
-    
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testOptOut {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.optOut = YES;

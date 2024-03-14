@@ -37,8 +37,6 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].stateMachine = [[MPStateMachine alloc] init];
-
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
@@ -53,12 +51,6 @@
     attributes = @{@"keyB":@"valueB"};
     integrationAttributes = [[MPIntegrationAttributes alloc] initWithIntegrationId:integrationId attributes:attributes];
     [persistence saveIntegrationAttributes:integrationAttributes];
-}
-
-- (void)tearDown {
-    [super tearDown];
-    
-    [[MParticle sharedInstance].persistenceController deleteAllIntegrationAttributes];
 }
 
 - (void)configureCustomModules {

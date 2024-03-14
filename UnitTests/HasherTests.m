@@ -14,14 +14,6 @@
 
 @implementation HasherTests
 
-- (void)setUp {
-    [super setUp];
-}
-
-- (void)tearDown {
-    [super tearDown];
-}
-
 - (void)testHashingString {
     NSString *referenceString = @"The Quick Brown Fox Jumps Over the Lazy Dog.";
     NSString *hashedString = [MPIHasher hashString:referenceString];
