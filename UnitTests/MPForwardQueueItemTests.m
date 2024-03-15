@@ -9,8 +9,6 @@
 #import "MPForwardQueueParameters.h"
 #import "MPBaseTestCase.h"
 
-#define FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT 10
-
 #pragma mark
 @interface MPKitMockTest : NSObject <MPKitProtocol>
 
@@ -69,7 +67,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventInstance {
@@ -91,7 +89,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInvalidInstances {
@@ -133,7 +131,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:FORWARD_QUEUE_ITEM_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 @end

@@ -24,8 +24,6 @@
 #import <CoreLocation/CoreLocation.h>
 #endif
 
-#define BACKEND_TESTS_EXPECTATIONS_TIMEOUT 10
-
 @interface MPMessage ()
 
 @property (nonatomic, strong, readwrite, nonnull) NSData *messageData;
@@ -222,7 +220,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEndSession {
@@ -282,7 +280,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testAutomaticSessionEnd {
@@ -363,7 +361,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testSessionStartTimestamp {
@@ -719,7 +717,7 @@
         }];
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testDidBecomeActiveWithAppLink {
@@ -1036,7 +1034,7 @@
         XCTAssertEqual(execStatus, MPExecStatusSuccess);
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
     NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController mpId]];
     XCTAssertEqual(attributes.count, 1);
     NSString *value = attributes[@"foo tag 1"];
@@ -1054,7 +1052,7 @@
         XCTAssertEqualObjects(value, [NSNull null]);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testSetUserAttributeKits {
@@ -1299,7 +1297,7 @@
         XCTAssertEqualObjects(userIdentity[@"n"], @(MPUserIdentityCustomerId));
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testIncrementUserAttribute {
@@ -1322,7 +1320,7 @@
         XCTAssertNil(userAttributeValue);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testSetLocation {
@@ -1359,7 +1357,7 @@
     
     [expectation fulfill];
     
-    [self waitForExpectationsWithTimeout:BACKEND_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 #endif
 #endif
 }

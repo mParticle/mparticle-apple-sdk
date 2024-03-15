@@ -88,7 +88,7 @@
         XCTAssertEqual(instance3, instance4);
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testOptOut {
@@ -122,7 +122,7 @@
         XCTAssertNotNil(session, "Not Opted Out but nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInitStartsSessionSync {
@@ -163,7 +163,7 @@
         XCTAssertNil(session, "No auto tracking but non-nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testNoAutoTrackingManualSession {
@@ -179,7 +179,7 @@
         XCTAssertNotNil(session, "No auto tracking called begin but nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testNoAutoTrackingManualEndSession {
@@ -197,7 +197,7 @@
         XCTAssertNil(session, "No auto tracking called begin/end but non-nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 #if TARGET_OS_IOS == 1
@@ -220,7 +220,7 @@
         XCTAssertNil(session, "Auto tracking but non-nil current session after content-available push");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventStartSession {
@@ -240,7 +240,7 @@
         XCTAssertNotNil(session, "Auto tracking but nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventNoStartSession {
@@ -261,7 +261,7 @@
         XCTAssertNil(session, "Auto tracking but non-nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventStartSessionManual {
@@ -281,7 +281,7 @@
         XCTAssertNotNil(session, "No auto tracking but nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventNoStartSessionManual {
@@ -302,7 +302,7 @@
         XCTAssertNil(session, "No auto tracking but non-nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 #endif
@@ -320,7 +320,7 @@
         XCTAssertEqual(-6881666186511944082, sessionID.integerValue);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testOptionsConsentStateInitialNil {
@@ -346,7 +346,7 @@
         XCTAssert(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testOptionsConsentStateInitialSet {
@@ -384,7 +384,7 @@
         XCTAssertFalse(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)handleTestSessionStart:(NSNotification *)notification {
@@ -676,7 +676,7 @@
     testNotificationHandler = block;
     MParticle *instance = [MParticle sharedInstance];
     [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
     testNotificationHandler = nil;
 }
 
@@ -699,7 +699,7 @@
     dispatch_async([MParticle messageQueue], ^{
         [[MParticle sharedInstance].backendController endSession];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
     testNotificationHandler = nil;
 }
 
@@ -1128,7 +1128,7 @@
         });
     });
 
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testSwitchWorkspaceSideloadedKits {
@@ -1168,7 +1168,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:5 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 // Kits without configurations should NOT be removed from the registry even if they implement `stop` becuase it means they weren't used by the previous workspace
@@ -1193,7 +1193,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 // Kits with configurations that don't implement `stop` should be removed from the registry because they can't be cleanly restarted
@@ -1221,7 +1221,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 // Kits with configurations that implement `stop` shouldn't be removed from the registry because they can be cleanly restarted
@@ -1249,7 +1249,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 @end

@@ -78,7 +78,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testKitAlreadyStarted {

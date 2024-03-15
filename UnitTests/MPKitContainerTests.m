@@ -291,7 +291,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testIsDisabledByBracketConfiguration {

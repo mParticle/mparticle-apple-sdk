@@ -18,8 +18,6 @@
 #import "MPStateMachine.h"
 #import "MPKitFilter.h"
 
-#define DATABASE_TESTS_EXPECTATIONS_TIMEOUT 1
-
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
@@ -70,7 +68,7 @@
         [expectation fulfill];
     });
     workBlock();
-    [self waitForExpectationsWithTimeout:0.11 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testMigrateMessagesWithNullSessions {
@@ -385,7 +383,7 @@
     
     [expectation fulfill];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadWithDataPlan {
@@ -432,7 +430,7 @@
     
     [expectation fulfill];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadWithDataPlanNoVersion {
@@ -478,7 +476,7 @@
     
     [expectation fulfill];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadWithOptOut {
@@ -506,7 +504,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadWithOptOutMessage {
@@ -545,7 +543,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:DATABASE_TESTS_EXPECTATIONS_TIMEOUT handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testFetchIntegrationAttributesForKit {
@@ -688,7 +686,7 @@
         
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testForwardRecord {
