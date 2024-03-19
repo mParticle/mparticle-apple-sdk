@@ -1,3 +1,16 @@
+# [8.21.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.20.0...v8.21.0) (2024-03-19)
+
+
+### Bug Fixes
+
+* Correct threading around user notification log ([#261](https://github.com/mParticle/mparticle-apple-sdk/issues/261)) ([456160b](https://github.com/mParticle/mparticle-apple-sdk/commit/456160b845c656cc3359425375edb88b7070eac0))
+* Refactor MPUploadBuilder to attempt to eliminate rare crash in withLocation: method ([#262](https://github.com/mParticle/mparticle-apple-sdk/issues/262)) ([60cd0c8](https://github.com/mParticle/mparticle-apple-sdk/commit/60cd0c801e4b9da6a5a1c86efd230797391801ab))
+
+
+### Features
+
+* Improve mParticle reset methods ([#263](https://github.com/mParticle/mparticle-apple-sdk/issues/263)) ([cde71a2](https://github.com/mParticle/mparticle-apple-sdk/commit/cde71a273318a64a7a76279dc5e67c6405fcf0e5))
+
 # [8.20.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.19.0...v8.20.0) (2024-03-05)
 
 
