@@ -185,7 +185,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInstanceWithoutSession {
@@ -259,7 +259,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInstanceWithDataPlanId {
@@ -340,7 +340,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInstanceWithDataPlanVersion {
@@ -422,7 +422,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInstanceWithAdvertiserIdInSessionNoAttStatus {
@@ -502,7 +502,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInstanceWithAdvertiserIdInSessionAuthorizedAttStatus {
@@ -587,7 +587,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInstanceWithAdvertiserIdInSessionDeniedAttStatus {
@@ -672,7 +672,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (MPUploadBuilder *)createTestUploadBuilder {
@@ -761,7 +761,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testNoBatchMutation {
@@ -792,7 +792,7 @@
         [expectation fulfill];
     }];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testBatchBlocking {

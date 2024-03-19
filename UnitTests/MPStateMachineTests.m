@@ -157,7 +157,7 @@
     
     [stateMachine handleApplicationWillTerminate:nil];
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testRamping {
@@ -214,7 +214,7 @@
     });
 
 
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 #endif
 #endif
 }

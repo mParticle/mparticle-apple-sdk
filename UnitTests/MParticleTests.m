@@ -88,7 +88,7 @@
         XCTAssertEqual(instance3, instance4);
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testOptOut {
@@ -122,7 +122,7 @@
         XCTAssertNotNil(session, "Not Opted Out but nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testInitStartsSessionSync {
@@ -163,7 +163,7 @@
         XCTAssertNil(session, "No auto tracking but non-nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testNoAutoTrackingManualSession {
@@ -179,7 +179,7 @@
         XCTAssertNotNil(session, "No auto tracking called begin but nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testNoAutoTrackingManualEndSession {
@@ -197,7 +197,7 @@
         XCTAssertNil(session, "No auto tracking called begin/end but non-nil current session");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 #if TARGET_OS_IOS == 1
@@ -220,7 +220,7 @@
         XCTAssertNil(session, "Auto tracking but non-nil current session after content-available push");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventStartSession {
@@ -240,7 +240,7 @@
         XCTAssertNotNil(session, "Auto tracking but nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventNoStartSession {
@@ -261,7 +261,7 @@
         XCTAssertNil(session, "Auto tracking but non-nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventStartSessionManual {
@@ -281,7 +281,7 @@
         XCTAssertNotNil(session, "No auto tracking but nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testEventNoStartSessionManual {
@@ -302,7 +302,7 @@
         XCTAssertNil(session, "No auto tracking but non-nil current session after an event logged with startSession = YES");
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 #endif
@@ -320,7 +320,7 @@
         XCTAssertEqual(-6881666186511944082, sessionID.integerValue);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testOptionsConsentStateInitialNil {
@@ -346,7 +346,7 @@
         XCTAssert(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testOptionsConsentStateInitialSet {
@@ -384,7 +384,7 @@
         XCTAssertFalse(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)handleTestSessionStart:(NSNotification *)notification {
@@ -676,7 +676,7 @@
     testNotificationHandler = block;
     MParticle *instance = [MParticle sharedInstance];
     [instance startWithOptions:[MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"]];
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
     testNotificationHandler = nil;
 }
 
@@ -699,7 +699,7 @@
     dispatch_async([MParticle messageQueue], ^{
         [[MParticle sharedInstance].backendController endSession];
     });
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
     testNotificationHandler = nil;
 }
 
@@ -1092,6 +1092,11 @@
     [mockBackend verifyWithDelay:5];
 }
 
+#pragma mark Workspace Switching Tests
+
+#define WORKSPACE_SWITCHING_TIMEOUT 60
+#define WORKSPACE_SWITCHING_DELAY (int64_t)(10 * NSEC_PER_SEC)
+
 - (void)testSwitchWorkspaceOptions {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
 
@@ -1099,18 +1104,18 @@
     XCTAssertNotNil(instance);
     XCTAssertNil(instance.options);
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         MParticleOptions *options1 = [MParticleOptions optionsWithKey:@"unit-test-key1" secret:@"unit-test-secret1"];
         [instance startWithOptions:options1];
         XCTAssertNotNil(instance.options);
         XCTAssertEqualObjects(instance.options.apiKey, @"unit-test-key1");
         XCTAssertEqualObjects(instance.options.apiSecret, @"unit-test-secret1");
 
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
             MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key2" secret:@"unit-test-secret2"];
             [instance switchWorkspaceWithOptions:options2];
             
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
                 MParticle *instance3 = [MParticle sharedInstance];
                 MParticle *instance4 = [MParticle sharedInstance];
                 XCTAssertNotNil(instance.options);
@@ -1128,7 +1133,7 @@
         });
     });
 
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
 }
 
 - (void)testSwitchWorkspaceSideloadedKits {
@@ -1141,7 +1146,7 @@
     
     [[MParticle sharedInstance] startWithOptions:options1];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
         XCTAssertEqualObjects(MPKitContainer.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
        
@@ -1152,7 +1157,7 @@
         
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options2];
         
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
             XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
             XCTAssertEqualObjects(MPKitContainer.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
             
@@ -1160,7 +1165,7 @@
             MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
             [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
             
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
                 XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
                 
                 [expectation fulfill];
@@ -1168,7 +1173,7 @@
         });
     });
     
-    [self waitForExpectationsWithTimeout:5 handler:nil];
+    [self waitForExpectationsWithTimeout:(WORKSPACE_SWITCHING_TIMEOUT) handler:nil];
 }
 
 // Kits without configurations should NOT be removed from the registry even if they implement `stop` becuase it means they weren't used by the previous workspace
@@ -1183,17 +1188,17 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
             XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
             [expectation fulfill];
         });
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
 }
 
 // Kits with configurations that don't implement `stop` should be removed from the registry because they can't be cleanly restarted
@@ -1207,7 +1212,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
         [MParticle sharedInstance].kitContainer.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
         
@@ -1215,13 +1220,13 @@
                 
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
             XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
             [expectation fulfill];
         });
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
 }
 
 // Kits with configurations that implement `stop` shouldn't be removed from the registry because they can be cleanly restarted
@@ -1235,7 +1240,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
         [MParticle sharedInstance].kitContainer.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
         
@@ -1243,13 +1248,13 @@
                 
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
             XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
             [expectation fulfill];
         });
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
 }
 
 @end

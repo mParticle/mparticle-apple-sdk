@@ -246,7 +246,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [networkCommunication upload:uploads completionHandler:^{
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadsArrayZipSucceedWithATTNotDetermined {
@@ -417,7 +417,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [networkCommunication upload:uploads completionHandler:^{
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadSuccessDeletion {
@@ -459,7 +459,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         [mockInstance verify];
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUploadInvalidDeletion {
@@ -497,7 +497,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [networkCommunication upload:uploads completionHandler:^{
         [expectation fulfill];
     }];
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testRequestConfigWithDefaultMaxAge {

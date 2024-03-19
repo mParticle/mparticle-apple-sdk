@@ -116,7 +116,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testDisableCollectUserAgent {
@@ -144,7 +144,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:1 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testHMACSha256Encode {

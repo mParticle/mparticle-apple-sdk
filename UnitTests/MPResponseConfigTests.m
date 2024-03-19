@@ -45,7 +45,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testUpdateCustomModuleSettingsOnRestore {
@@ -96,7 +96,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testResponseConfigEncoding {
@@ -132,7 +132,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testShouldDeleteDueToMaxConfigAge {
@@ -157,7 +157,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 - (void)testDeleteDueToMaxConfigAge {
@@ -186,7 +186,7 @@
         [expectation fulfill];
     });
     
-    [self waitForExpectationsWithTimeout:10 handler:nil];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
 
