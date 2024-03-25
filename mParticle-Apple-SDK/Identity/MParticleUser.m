@@ -449,7 +449,7 @@
 }
 
 #pragma mark - User Segments
-- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSArray<MPAudience *> *pastAudiences, NSError * _Nullable error))completionHandler {
+- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler {
     dispatch_async([MParticle messageQueue], ^{
         [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
     });

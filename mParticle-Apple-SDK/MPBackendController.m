@@ -1068,18 +1068,18 @@ static BOOL skipNextUpload = NO;
     return event;
 }
 
-- (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSArray * _Nullable pastAudiences, NSError * _Nullable error))completionHandler {
+- (MPExecStatus)fetchAudiencesWithCompletionHandler:(void (^ _Nonnull)(NSArray * _Nullable currentAudiences, NSError * _Nullable error))completionHandler {
     
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
         
-    [self.networkCommunication requestAudiencesWithCompletionHandler:^(BOOL success, NSArray *currentAudiences, NSArray *pastAudiences, NSError *error) {
+    [self.networkCommunication requestAudiencesWithCompletionHandler:^(BOOL success, NSArray *currentAudiences, NSError *error) {
         if (!error) {
-            MPILogVerbose(@"Audiences Request Succesful: /nCurrent Audiences: %@/nPast Audiences: %@", currentAudiences, pastAudiences);
+            MPILogVerbose(@"Audiences Request Succesful: /nCurrent Audiences: %@", currentAudiences);
         } else {
             MPILogError(@"Audience request failed with error: %@", error)
         }
         
-        completionHandler(currentAudiences, pastAudiences, error);
+        completionHandler(currentAudiences, error);
     }];
     
     return MPExecStatusSuccess;
