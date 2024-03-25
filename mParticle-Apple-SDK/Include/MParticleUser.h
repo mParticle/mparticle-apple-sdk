@@ -95,7 +95,7 @@ NS_ASSUME_NONNULL_BEGIN
  Retrieves user audiences from mParticle's servers and returns the result as two arrays of MPAudience objects
  @param completionHandler A block to be called when the results are available.
  */
-- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSArray<MPAudience *> *pastAudiences, NSError * _Nullable error))completionHandler;
+- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler;
 
 #pragma mark - Consent State
 /**
