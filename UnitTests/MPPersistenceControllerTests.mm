@@ -548,25 +548,7 @@
 }
 
 - (void)testAudiences {
-    [MPPersistenceController setMpid:@2];
-    
-    NSDictionary *audienceDictionary = @{@"id":@2,
-                                        @"n":@"External Name 101",
-                                        @"c":@[@{@"ct":@1395014265365,
-                                                 @"a":@"add"
-                                                 },
-                                               @{@"ct":@1395100665367,
-                                                 @"a":@"drop"
-                                                 },
-                                               @{@"ct":@1395187065367,
-                                                 @"a":@"add"
-                                                 }
-                                               ],
-                                        @"s":@[@"aaa", @"bbb", @"ccc"]
-                                        };
-    
-    MPAudience *audience = [[MPAudience alloc] initWithDictionary:audienceDictionary];
-    XCTAssertTrue([audience.name isEqualToString:@"External Name 101"]);
+    MPAudience *audience = [[MPAudience alloc] initWithAudienceId:@2];
     XCTAssertTrue(audience.audienceId.intValue == 2);
 }
 - (void)testFetchIntegrationAttributesForKit {

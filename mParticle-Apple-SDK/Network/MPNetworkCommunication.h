@@ -18,7 +18,7 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorDelayedSegments
 };
 
-typedef void(^ _Nonnull MPAudienceResponseHandler)(BOOL success, NSArray<MPAudience *> * _Nullable currentAudience, NSArray<MPAudience *> * _Nullable pastAudience, NSError * _Nullable error);
+typedef void(^ _Nonnull MPAudienceResponseHandler)(BOOL success, NSArray<MPAudience *> * _Nullable currentAudience, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(void);
 
 typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);

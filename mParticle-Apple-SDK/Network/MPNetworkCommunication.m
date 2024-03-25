@@ -565,7 +565,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     __strong MPNetworkCommunication *strongSelf = weakSelf;
     if (!strongSelf) {
-        completionHandler(NO, nil, nil, nil);
+        completionHandler(NO, nil, nil);
         return;
     }
     
@@ -577,12 +577,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     if (!data) {
-        completionHandler(NO, nil, nil, nil);
+        completionHandler(NO, nil, nil);
         return;
     }
     
     NSMutableArray<MPAudience *> *currentAudiences = nil;
-    NSMutableArray<MPAudience *> *pastAudiences = nil;
     BOOL success = NO;
     
     NSArray *audiencesList = nil;
@@ -603,24 +602,15 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
         
         if (success) {
-            audiencesList = audiencesDictionary[kMPAudienceListKey];
+            audiencesList = audiencesDictionary[kMPAudienceMembershipKey];
         }
         
         if (audiencesList.count > 0) {
             currentAudiences = [[NSMutableArray alloc] init];
-            pastAudiences = [[NSMutableArray alloc] init];
             
             for (NSDictionary *audienceDictionary in audiencesList) {
-                MPAudience *audience = [[MPAudience alloc] initWithDictionary:audienceDictionary];
-                
-                if (audience) {
-                    if ([audienceDictionary[kMPAudienceMembershipListKey][0][kMPAudienceMembershipListChangeActionKey] isEqualToString:kMPAudienceMembershipListChangeActionAddValue]) {
-                        [currentAudiences addObject:audience];
-                    }
-                    if ([audienceDictionary[kMPAudienceMembershipListKey][0][kMPAudienceMembershipListChangeActionKey] isEqualToString:kMPAudienceMembershipListChangeActionDropValue]) {
-                        [pastAudiences addObject:audience];
-                    }
-                }
+                MPAudience *audience = [[MPAudience alloc] initWithAudienceId:audienceDictionary[kMPAudienceIdKey]];
+                [currentAudiences addObject:audience];
             }
             
             MPILogVerbose(@"Audiences Response Code: %ld", (long)responseCode);
@@ -633,9 +623,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         currentAudiences = nil;
     }
     
-    if (pastAudiences.count == 0) {
-        pastAudiences = nil;
-    }
     NSError *audienceError = nil;
 
     if (responseCode == HTTPStatusCodeForbidden) {
@@ -644,7 +631,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
                                        userInfo:@{@"message":@"Audiences not enabled for this org."}];
     }
     
-    completionHandler(success, currentAudiences, pastAudiences, audienceError);
+    completionHandler(success, currentAudiences, audienceError);
 }
 
 - (BOOL)performMessageUpload:(MPUpload *)upload {
