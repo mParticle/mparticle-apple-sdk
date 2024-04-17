@@ -6,6 +6,10 @@
 
 @end
 
+@interface MPIdentityApiRequest ()
+@property (nonatomic) NSMutableDictionary<NSNumber*, NSObject*> *mutableIdentities;
+@end
+
 @implementation MPIdentityApiRequestTests
 
 - (void)testSetNilIdentity {
@@ -24,7 +28,7 @@
     XCTAssertEqualObjects([NSNull null], [request.identities objectForKey:@(MPIdentityOther)]);
 }
 
-- (void)testsetIdentity {
+- (void)testSetIdentity {
     MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
     [request setIdentity:@"foo" identityType:MPIdentityOther];
     XCTAssertEqualObjects(@"foo", [request.identities objectForKey:@(MPIdentityOther)]);
@@ -47,6 +51,30 @@
     request.email = nil;
     XCTAssertNotEqualObjects(request.email, [NSNull null]);
     XCTAssertNotEqualObjects(request.customerId, [NSNull null]);
+}
+
+- (void)testSetEmail {
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    XCTAssertNil(request.email);
+    request.email = @"test@test.com";
+    XCTAssertEqualObjects(@"test@test.com", request.email);
+    XCTAssertEqualObjects(@"test@test.com", request.mutableIdentities[@(MPIdentityEmail)]);
+    
+    request.email = nil;
+    XCTAssertNil(request.email);
+    XCTAssertEqualObjects(request.mutableIdentities[@(MPIdentityEmail)], [NSNull null]);
+}
+
+- (void)testSetCustomerId {
+    MPIdentityApiRequest *request = [[MPIdentityApiRequest alloc] init];
+    XCTAssertNil(request.customerId);
+    request.customerId = @"some id";
+    XCTAssertEqualObjects(@"some id", request.customerId);
+    XCTAssertEqualObjects(@"some id", request.mutableIdentities[@(MPIdentityCustomerId)]);
+    
+    request.customerId = nil;
+    XCTAssertNil(request.customerId);
+    XCTAssertEqualObjects(request.mutableIdentities[@(MPIdentityCustomerId)], [NSNull null]);
 }
 
 @end

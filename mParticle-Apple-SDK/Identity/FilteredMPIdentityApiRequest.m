@@ -37,7 +37,7 @@
 }
 
 - (NSDictionary<NSNumber *,NSString *> *)userIdentities {
-    NSDictionary<NSNumber *, NSString *> *unfilteredUserIdentities = self.request.identities;
+    NSDictionary<NSNumber *, NSObject *> *unfilteredUserIdentities = self.request.identities;
     NSMutableDictionary *filteredUserIdentities = [NSMutableDictionary dictionary];
     
     for (NSNumber* key in unfilteredUserIdentities) {

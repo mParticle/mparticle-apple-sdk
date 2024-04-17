@@ -11,7 +11,7 @@
 #import "MPIdentityDTO.h"
 
 @interface MPIdentityApiRequest ()
-@property (nonatomic) NSMutableDictionary<NSNumber*, NSString*> *mutableIdentities;
+@property (nonatomic) NSMutableDictionary<NSNumber*, NSObject*> *mutableIdentities;
 @end
 
 @implementation MPIdentityApiRequest
@@ -50,11 +50,11 @@
 }
 
 - (NSString *)email {
-    NSString *result = _mutableIdentities[@(MPIdentityEmail)];
-    if ([result isEqual:[NSNull null]]) {
-        result = nil;
+    NSObject *result = _mutableIdentities[@(MPIdentityEmail)];
+    if ([result isKindOfClass:[NSString class]]) {
+        return (NSString *)result;
     }
-    return result;
+    return nil;
 }
 
 - (void)setEmail:(NSString *)email {
@@ -62,18 +62,18 @@
 }
 
 - (NSString *)customerId {
-    NSString *result = _mutableIdentities[@(MPIdentityCustomerId)];
-    if ([result isEqual:[NSNull null]]) {
-        result = nil;
+    NSObject *result = _mutableIdentities[@(MPIdentityCustomerId)];
+    if ([result isKindOfClass:[NSString class]]) {
+        return (NSString *)result;
     }
-    return result;
+    return nil;
 }
 
 - (void)setCustomerId:(NSString *)customerId {
     [self setIdentity:customerId identityType:MPIdentityCustomerId];
 }
 
-- (NSDictionary<NSNumber*, NSString*> *)identities {
+- (NSDictionary<NSNumber*, NSObject*> *)identities {
     return [_mutableIdentities copy];
 }
 
