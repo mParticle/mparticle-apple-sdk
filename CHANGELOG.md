@@ -1,3 +1,10 @@
+## [8.21.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.0...v8.21.1) (2024-04-17)
+
+
+### Bug Fixes
+
+* Type hinting MPIdentityApiRequest.identities ([#270](https://github.com/mParticle/mparticle-apple-sdk/issues/270)) ([f56879f](https://github.com/mParticle/mparticle-apple-sdk/commit/f56879f77be87d46f9d44514983c6663451862d0))
+
 # [8.21.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.20.0...v8.21.0) (2024-03-19)
 
 
