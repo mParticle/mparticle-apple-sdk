@@ -386,6 +386,19 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) NSNumber *configMaxAgeSeconds;
 
 /**
+ Set a maximum threshold for stored events, batches, and sessions, in seconds.
+ 
+ By default, data is persisted for 90 days before being deleted to minimize data loss, however
+ this can lead to excessive storage usage on some users' devices. This is exacerbated if you log
+ a large number of events, or events with a lot of data (attributes, etc).
+ 
+ You can set this to any value greater than 0 seconds, so if you have storage usage concerns, set a lower
+ value such as 48 hours or 1 week. Or alternatively, if you have data loss concerns, you can set this to an even
+ longer value than the default.
+ */
+@property (nonatomic, strong, nullable) NSNumber *persistenceMaxAgeSeconds;
+
+/**
  Set an array of instances of kit (MPKitProtocol wrapped in MPSideloadedKit) objects to be "sideloaded".
  
  The difference between these kits and mParticle UI enabled kits is that they do not receive a server side configuration and are always activated.
@@ -606,6 +619,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MParticleOptions
  */
 @property (nonatomic, readonly, nullable) NSNumber *configMaxAgeSeconds;
+
+/**
+ Maximum threshold for stored events, batches, and sessions, in seconds.
+ @see MParticleOptions
+ */
+@property (nonatomic, readonly, nullable) NSNumber *persistenceMaxAgeSeconds;
 
 #pragma mark - Initialization
 

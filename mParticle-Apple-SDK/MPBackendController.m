@@ -2089,9 +2089,15 @@ static BOOL skipNextUpload = NO;
 
 - (void)cleanUp {
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    [self cleanUp:currentTime];
+}
+
+- (void)cleanUp:(NSTimeInterval)currentTime {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     if (nextCleanUpTime < currentTime) {
-        [persistence deleteRecordsOlderThan:(currentTime - NINETY_DAYS)];
+        NSNumber *persistanceMaxAgeSeconds = [MParticle sharedInstance].persistenceMaxAgeSeconds;
+        NSTimeInterval maxAgeSeconds = persistanceMaxAgeSeconds ? persistanceMaxAgeSeconds.doubleValue : NINETY_DAYS;
+        [persistence deleteRecordsOlderThan:(currentTime - maxAgeSeconds)];
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
     [persistence purgeMemory];
