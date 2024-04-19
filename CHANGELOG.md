@@ -1,3 +1,10 @@
+# [8.22.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.1...v8.22.0) (2024-04-19)
+
+
+### Features
+
+* Update mParticle-Apple-SDK.podspec for privacy manifest ([#271](https://github.com/mParticle/mparticle-apple-sdk/issues/271)) ([f4a4750](https://github.com/mParticle/mparticle-apple-sdk/commit/f4a4750a1a06766c3f35ef5d8a16c0b0ca4a1e40))
+
 ## [8.21.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.0...v8.21.1) (2024-04-17)
 
 
