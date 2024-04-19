@@ -403,15 +403,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return maxAge;
 }
 
-- (void)checkResponseCodeToDisableEventLogging:(NSInteger)responseCode {
-    if (responseCode == HTTPStatusCodeBadRequest || responseCode == HTTPStatusCodeUnauthorized || responseCode == HTTPStatusCodeForbidden) {
-        [MPStateMachine setCanWriteMessagesToDB:NO];
-        MPILogError(@"API Key appears to be invalid based on server response, disabling event logging to prevent excessive local database growth");
-    } else {
-        [MPStateMachine setCanWriteMessagesToDB:YES];
-    }
-}
-
 #pragma mark Public methods
 - (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector {
     if (MPNetworkCommunication.connectorFactory) {
@@ -463,9 +454,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     NSInteger responseCode = [httpResponse statusCode];
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
-    
-    [self checkResponseCodeToDisableEventLogging:responseCode];
-    
+        
     if (responseCode == HTTPStatusCodeNotModified) {
         MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
         [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];
@@ -875,9 +864,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         
         
         MPILogVerbose(@"Identity response code: %ld", (long)responseCode);
-        
-        [self checkResponseCodeToDisableEventLogging:[httpResponse statusCode]];
-        
+                
         if (success) {
             @try {
                 NSError *serializationError = nil;
