@@ -1,3 +1,10 @@
+# [8.23.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.22.0...v8.23.0) (2024-04-24)
+
+
+### Features
+
+* Add max persistence age override option ([#273](https://github.com/mParticle/mparticle-apple-sdk/issues/273)) ([241e773](https://github.com/mParticle/mparticle-apple-sdk/commit/241e7734f6b26f617afb1a4aa51af37355f05de9))
+
 # [8.22.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.21.1...v8.22.0) (2024-04-19)
 
 
