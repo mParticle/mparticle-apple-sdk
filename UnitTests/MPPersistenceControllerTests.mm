@@ -859,4 +859,76 @@
     XCTAssertEqual(messages.count, 0);
 }
 
+- (void)testDeleteRecordsOlderThan_DontDelete {
+    NSTimeInterval oneDayAgo = [[NSDate date] timeIntervalSince1970] - 24*60*60;
+    NSTimeInterval ninteyDaysAgo = [[NSDate date] timeIntervalSince1970] - 90*24*60*60;
+    
+    // Store a message
+    MParticle *instance = [MParticle sharedInstance];
+    NSLog(@"instance: %@", instance);
+    NSDictionary *messageDictionary = @{@"test": @"test"};
+    NSData *messageData = [NSJSONSerialization dataWithJSONObject:messageDictionary options:0 error:nil];
+    MPMessage *message = [[MPMessage alloc] initWithSessionId:@17 messageId:1 UUID:@"uuid" messageType:@"test" messageData:messageData timestamp:oneDayAgo uploadStatus:MPUploadStatusBatch userId:@1 dataPlanId:nil dataPlanVersion:nil];
+    [instance.persistenceController saveMessage:message];
+    XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 1);
+    
+    // Store a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:oneDayAgo userId:[MPPersistenceController mpId]];
+    session.endTime = oneDayAgo;
+    session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
+    [instance.persistenceController saveSession:session];
+    XCTAssertEqual([instance.persistenceController fetchSessions].count, 1);
+    
+    // Store an upload
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO, kMPSessionTimeoutKey:@120, kMPUploadIntervalKey:@10, kMPLifeTimeValueKey:@0, kMPMessagesKey:@[[message dictionaryRepresentation]], kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil];
+    upload.timestamp = oneDayAgo;
+    [instance.persistenceController saveUpload:upload];
+    XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
+    
+    // Cleanup persistence using default 90 day limit
+    [instance.persistenceController deleteRecordsOlderThan:ninteyDaysAgo];
+    
+    // Check that the records still exist
+    XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 1);
+    XCTAssertEqual([instance.persistenceController fetchSessions].count, 1);
+    XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
+}
+
+- (void)testDeleteRecordsOlderThan_Delete {
+    NSTimeInterval sevenDaysAgo = [[NSDate date] timeIntervalSince1970] - 7*24*60*60;
+    NSTimeInterval twoDaysAgo = [[NSDate date] timeIntervalSince1970] - 2*24*60*60;
+    
+    // Store a message
+    MParticle *instance = [MParticle sharedInstance];
+    NSLog(@"instance: %@", instance);
+    NSDictionary *messageDictionary = @{@"test": @"test"};
+    NSData *messageData = [NSJSONSerialization dataWithJSONObject:messageDictionary options:0 error:nil];
+    MPMessage *message = [[MPMessage alloc] initWithSessionId:@17 messageId:1 UUID:@"uuid" messageType:@"test" messageData:messageData timestamp:sevenDaysAgo uploadStatus:MPUploadStatusBatch userId:@1 dataPlanId:nil dataPlanVersion:nil];
+    [instance.persistenceController saveMessage:message];
+    XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 1);
+    
+    // Store a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:sevenDaysAgo userId:[MPPersistenceController mpId]];
+    session.endTime = sevenDaysAgo;
+    session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
+    [instance.persistenceController saveSession:session];
+    XCTAssertEqual([instance.persistenceController fetchSessions].count, 1);
+    
+    // Store an upload
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO, kMPSessionTimeoutKey:@120, kMPUploadIntervalKey:@10, kMPLifeTimeValueKey:@0, kMPMessagesKey:@[[message dictionaryRepresentation]], kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil];
+    upload.timestamp = sevenDaysAgo;
+    [instance.persistenceController saveUpload:upload];
+    XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
+    
+    // Cleanup persistence using 2 day limit
+    [instance.persistenceController deleteRecordsOlderThan:twoDaysAgo];
+    
+    // Check that the records no longer exist
+    XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 0);
+    XCTAssertEqual([instance.persistenceController fetchSessions].count, 0);
+    XCTAssertEqual([instance.persistenceController fetchUploads].count, 0);
+}
+
 @end

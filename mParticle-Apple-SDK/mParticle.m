@@ -258,6 +258,14 @@ static NSString *const kMPStateKey = @"state";
     }
 }
 
+- (void)setPersistenceMaxAgeSeconds:(NSNumber *)persistenceMaxAgeSeconds {
+    if (persistenceMaxAgeSeconds != nil && [persistenceMaxAgeSeconds doubleValue] <= 0) {
+        MPILogWarning(@"Persistence Max Age must be a positive number, disregarding value.");
+    } else {
+        _persistenceMaxAgeSeconds = persistenceMaxAgeSeconds;
+    }
+}
+
 @end
 
 @interface MPBackendController ()
@@ -489,6 +497,10 @@ static NSString *const kMPStateKey = @"state";
 
 - (NSNumber *)configMaxAgeSeconds {
     return self.options.configMaxAgeSeconds;
+}
+
+- (NSNumber *)persistenceMaxAgeSeconds {
+    return self.options.persistenceMaxAgeSeconds;
 }
 
 #pragma mark Initialization

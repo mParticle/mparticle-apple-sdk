@@ -33,7 +33,6 @@ static NSString *const kMPStateKey = @"state";
 
 static MPEnvironment runningEnvironment = MPEnvironmentAutoDetect;
 static BOOL runningInBackground = NO;
-static BOOL _canWriteMessagesToDB = YES;
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
@@ -346,18 +345,6 @@ static BOOL _canWriteMessagesToDB = YES;
 #else
     return NO;
 #endif
-}
-
-+ (BOOL)canWriteMessagesToDB {
-    @synchronized(self) {
-        return _canWriteMessagesToDB;
-    }
-}
-
-+ (void)setCanWriteMessagesToDB:(BOOL)canWriteMessagesToDB {
-    @synchronized(self) {
-        _canWriteMessagesToDB = canWriteMessagesToDB;
-    }
 }
 
 #pragma mark Public accessors

@@ -12,6 +12,10 @@
 #import "MPConnectorProtocol.h"
 #import "MPConnectorFactoryProtocol.h"
 
+@interface MParticle (Tests)
+@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@end
+
 @interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>
 
 @property (nonatomic) NSMutableArray *mockConnectors;
@@ -32,7 +36,13 @@
 
 - (void)setUpWithCompletionHandler:(void (^)(NSError * _Nullable))completion {
     [super setUp];
-    [[MParticle sharedInstance] reset:^{
+    MParticle *instance = [MParticle sharedInstance];
+    if (!instance.persistenceController) {
+        // Ensure we have a persistence controller to reset the db etc
+        instance.persistenceController = [[MPPersistenceController alloc] init];
+    }
+    
+    [instance reset:^{
         MPNetworkCommunication.connectorFactory = [[MPTestConnectorFactory alloc] init];
         completion(nil);
     }];

@@ -53,6 +53,7 @@
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
+@property (nonatomic, strong, nonnull) MParticleOptions *options;
 
 @end
 
@@ -93,6 +94,7 @@
 - (MPExecStatus)checkForKitsAndUploadWithCompletionHandler:(void (^ _Nullable)(BOOL didShortCircuit))completionHandler;
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler;
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
+- (void)cleanUp:(NSTimeInterval)currentTime;
 
 @end
 
@@ -2060,6 +2062,29 @@
     NSArray *currentUserIdentities = [[[MParticle sharedInstance] backendController] userIdentitiesForUserId:currentUser.userId];
     XCTAssertEqual(currentUserIdentities.count, 1);
     XCTAssertEqualObjects(currentUserIdentities[0], validUserId);
+}
+
+- (void)testPersistanceMaxAgeCleanup {
+    NSTimeInterval maxAge = 24 * 60 * 60; // 24 hours
+    
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [[MParticleOptions alloc] init];
+    options.persistenceMaxAgeSeconds = @(maxAge); // 24 hours
+    instance.options = options;
+    
+    MPBackendController *backendController = [[MPBackendController alloc] init];
+    MPPersistenceController *persistenceController = [[MPPersistenceController alloc] init];
+    id mockPersistenceController = OCMPartialMock(persistenceController);
+    
+    NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    [[mockPersistenceController expect] deleteRecordsOlderThan:(currentTime - maxAge)];
+    
+    instance.backendController = backendController;
+    instance.persistenceController = mockPersistenceController;
+    
+    [instance.backendController cleanUp:currentTime];
+    
+    [mockPersistenceController verifyWithDelay:1.0];
 }
 
 @end

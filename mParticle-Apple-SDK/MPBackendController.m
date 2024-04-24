@@ -1317,12 +1317,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)logBaseEvent:(MPBaseEvent *)event completionHandler:(void (^)(MPBaseEvent *event, MPExecStatus execStatus))completionHandler {
-    if (![MPStateMachine canWriteMessagesToDB]) {
-        MPILogError(@"Not saving message for event to prevent excessive local database growth because API Key appears to be invalid based on server response");
-        completionHandler(event, MPExecStatusFail);
-        return;
-    }
-    
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
     
     if (event.shouldBeginSession) {
@@ -1578,11 +1572,6 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
-    if (![MPStateMachine canWriteMessagesToDB]) {
-        MPILogError(@"Not saving message for event to prevent excessive local database growth because API Key appears to be invalid based on server response");
-        return;
-    }
-    
     NSTimeInterval lastEventTimestamp = message.timestamp ?: [[NSDate date] timeIntervalSince1970];
     if (MPStateMachine.runningInBackground) {
         self.timeOfLastEventInBackground = lastEventTimestamp;
@@ -2089,9 +2078,15 @@ static BOOL skipNextUpload = NO;
 
 - (void)cleanUp {
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
+    [self cleanUp:currentTime];
+}
+
+- (void)cleanUp:(NSTimeInterval)currentTime {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     if (nextCleanUpTime < currentTime) {
-        [persistence deleteRecordsOlderThan:(currentTime - NINETY_DAYS)];
+        NSNumber *persistanceMaxAgeSeconds = [MParticle sharedInstance].persistenceMaxAgeSeconds;
+        NSTimeInterval maxAgeSeconds = persistanceMaxAgeSeconds == nil ? NINETY_DAYS : persistanceMaxAgeSeconds.doubleValue;
+        [persistence deleteRecordsOlderThan:(currentTime - maxAgeSeconds)];
         nextCleanUpTime = currentTime + TWENTY_FOUR_HOURS;
     }
     [persistence purgeMemory];
