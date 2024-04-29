@@ -127,6 +127,46 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
 }
 
+- (void)testModifyURLWithOptionsAndTrackingOverride {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.identityHost = @"identity.mpproxy.example.com";
+    options.identityTrackingHost = @"identity-tracking.mpproxy.example.com";
+    [MParticle sharedInstance].networkOptions = options;
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *modifyURL = [networkCommunication modifyURL].url;
+    
+    [self deswizzle];
+    
+    XCTAssert([modifyURL.absoluteString rangeOfString:@"https://identity-tracking.mpproxy.example.com/v1/0/modify"].location != NSNotFound);
+    XCTAssert([modifyURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+- (void)testEventURLWithOptionsAndOverrideAndEventsOnlyAndTrackingHost {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.eventsHost = @"events.mpproxy.example.com";
+    options.eventsTrackingHost = @"events-tracking.mpproxy.example.com";
+    options.eventsOnly = true;
+    [MParticle sharedInstance].networkOptions = options;
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *eventURL = [networkCommunication eventURL].url;
+    
+    [self deswizzle];
+    
+    XCTAssert([eventURL.absoluteString rangeOfString:@"https://events-tracking.mpproxy.example.com/"].location != NSNotFound);
+    XCTAssert([eventURL.absoluteString rangeOfString:@"v1"].location == NSNotFound);
+    XCTAssert([eventURL.absoluteString rangeOfString:@"identity"].location == NSNotFound);
+}
+
 
 - (void)testAliasURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
@@ -221,6 +261,31 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self deswizzle];
     
     XCTAssert([aliasURL.absoluteString rangeOfString:@"https://alias.mpproxy.example.com/"].location != NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"v1"].location == NSNotFound);
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"identity"].location == NSNotFound);
+    XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
+}
+
+- (void)testAliasURLWithOptionsAndOverrideAndEventsOnlyAndTrackingHost {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
+    
+    MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
+    options.eventsHost = @"events.mpproxy.example.com";
+    options.eventsTrackingHost = @"events-tracking.mpproxy.example.com";
+    options.aliasHost = @"alias.mpproxy.example.com";
+    options.aliasTrackingHost = @"alias-tracking.mpproxy.example.com";
+    options.overridesAliasSubdirectory = true;
+    options.eventsOnly = true;
+    [MParticle sharedInstance].networkOptions = options;
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    
+    [self deswizzle];
+    
+    XCTAssert([aliasURL.absoluteString rangeOfString:@"https://alias-tracking.mpproxy.example.com/"].location != NSNotFound);
     XCTAssert([aliasURL.absoluteString rangeOfString:@"v1"].location == NSNotFound);
     XCTAssert([aliasURL.absoluteString rangeOfString:@"identity"].location == NSNotFound);
     XCTAssert([aliasURL.accessibilityHint isEqualToString:@"identity"]);
