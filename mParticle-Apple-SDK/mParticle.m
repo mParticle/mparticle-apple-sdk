@@ -1119,6 +1119,19 @@ static NSString *const kMPStateKey = @"state";
             [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp = attStatusTimestampMillis;
         }
     }
+    
+    // Forward to kits
+    dispatch_async(dispatch_get_main_queue(), ^{
+        NSNumber *parameter0 = @(status);
+        NSObject *parameter1 = attStatusTimestampMillis ?: [NSNull null];
+        MPForwardQueueParameters *parameters = [[MPForwardQueueParameters alloc] initWithParameters:@[parameter0, parameter1]];
+        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setATTStatus:withATTStatusTimestampMillis:)
+                                                          event:nil
+                                                     parameters:parameters
+                                                    messageType:MPMessageTypeUnknown
+                                                       userInfo:nil
+         ];
+    });
 }
 
 #pragma mark Attribution
