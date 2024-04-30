@@ -1,3 +1,10 @@
+## [8.23.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.0...v8.23.1) (2024-04-30)
+
+
+### Bug Fixes
+
+* Forwarding ATT status to kits ([#276](https://github.com/mParticle/mparticle-apple-sdk/issues/276)) ([9fd95f7](https://github.com/mParticle/mparticle-apple-sdk/commit/9fd95f72a7a88bc1e1ae30d33d261098cd5bc1ee))
+
 # [8.23.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.22.0...v8.23.0) (2024-04-24)
 
 
