@@ -2302,6 +2302,10 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                 } else if (selector == @selector(shouldDelayMParticleUpload)) {
                     [kitRegister.wrapperInstance shouldDelayMParticleUpload];
                     execStatus = [[MPKitExecStatus alloc] initWithSDKCode:kitRegister.code returnCode:MPKitReturnCodeSuccess];
+                } else if (selector == @selector(setATTStatus:withATTStatusTimestampMillis:)) {
+                    MPATTAuthorizationStatus status = (MPATTAuthorizationStatus)[parameters[0] unsignedIntValue];
+                    NSNumber *timestamp = [parameters[1] isKindOfClass:[NSNumber class]] ? (NSNumber*)parameters[1] : nil;
+                    execStatus = [kitRegister.wrapperInstance setATTStatus:status withATTStatusTimestampMillis:timestamp];
                 } else if (parameters.count == 3) {
                     typedef MPKitExecStatus *(*send_type)(id, SEL, id, id, id);
                     send_type func = (send_type)objc_msgSend;
