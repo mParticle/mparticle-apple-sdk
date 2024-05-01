@@ -1023,8 +1023,17 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     NSDate *startTime = nil;
     NSDate *endTime = nil;
     MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    XCTAssertEqual(request.sourceMPID, mpid1);
+    XCTAssertEqual(request.destinationMPID, mpid2);
+    XCTAssertFalse(request.startTime);
+    XCTAssertFalse(request.endTime);
+
     BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
-    XCTAssertFalse(result);
+    
+    XCTAssertTrue(request.startTime);
+    XCTAssertTrue(request.endTime);
+    XCTAssertTrue([request.startTime compare:request.endTime] == NSOrderedAscending);
+    XCTAssertTrue(result);
 }
 
 - (void)testAliasDatesReversed {
@@ -1033,8 +1042,20 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:200];
     NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:100];
     MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    XCTAssertEqual(request.sourceMPID, mpid1);
+    XCTAssertEqual(request.destinationMPID, mpid2);
+    XCTAssertEqual(request.startTime, startTime);
+    XCTAssertEqual(request.endTime, endTime);
+    XCTAssertTrue([request.startTime compare:request.endTime] != NSOrderedAscending);
+    
     BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
-    XCTAssertFalse(result);
+    
+    XCTAssertEqual(request.sourceMPID, mpid1);
+    XCTAssertEqual(request.destinationMPID, mpid2);
+    XCTAssertEqual(request.startTime, startTime);
+    XCTAssertEqual(request.endTime, endTime);
+    XCTAssertTrue([request.startTime compare:request.endTime] != NSOrderedAscending);
+    XCTAssertTrue(result);
 }
 
 - (void)testAliasValidData {
@@ -1043,7 +1064,19 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     NSDate *startTime = [NSDate dateWithTimeIntervalSince1970:100];
     NSDate *endTime = [NSDate dateWithTimeIntervalSince1970:200];
     MPAliasRequest *request = [MPAliasRequest requestWithSourceMPID:mpid1 destinationMPID:mpid2 startTime:startTime endTime:endTime];
+    XCTAssertEqual(request.sourceMPID, mpid1);
+    XCTAssertEqual(request.destinationMPID, mpid2);
+    XCTAssertEqual(request.startTime, startTime);
+    XCTAssertEqual(request.endTime, endTime);
+    XCTAssertTrue([request.startTime compare:request.endTime] == NSOrderedAscending);
+    
     BOOL result = [MParticle.sharedInstance.identity aliasUsers:request];
+    
+    XCTAssertEqual(request.sourceMPID, mpid1);
+    XCTAssertEqual(request.destinationMPID, mpid2);
+    XCTAssertEqual(request.startTime, startTime);
+    XCTAssertEqual(request.endTime, endTime);
+    XCTAssertTrue([request.startTime compare:request.endTime] == NSOrderedAscending);
     XCTAssertTrue(result);
 }
 

@@ -450,22 +450,23 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         return NO;
     }
     
+    double maxDaysAgo = MParticle.sharedInstance.stateMachine.aliasMaxWindow != nil ? MParticle.sharedInstance.stateMachine.aliasMaxWindow.doubleValue : 90;
+    double secondsPerDay = 60*60*24;
+    NSDate *oldestAllowableDate = [NSDate dateWithTimeIntervalSinceNow:-1*secondsPerDay*maxDaysAgo];
+    
     if (aliasRequest.usedFirstLastSeen) {
-        double maxDaysAgo = MParticle.sharedInstance.stateMachine.aliasMaxWindow.doubleValue;
-        double secondsPerDay = 60*60*24;
-        NSDate *oldestAllowableDate = [NSDate dateWithTimeIntervalSinceNow:-1*secondsPerDay*maxDaysAgo];
         if ([aliasRequest.startTime compare:oldestAllowableDate] == NSOrderedAscending) {
             aliasRequest.startTime = oldestAllowableDate;
         }
     }
     
-    if (aliasRequest.startTime == nil || aliasRequest.endTime == nil || [aliasRequest.startTime compare:aliasRequest.endTime] != NSOrderedAscending) {
-        if (!aliasRequest.usedFirstLastSeen) {
-            MPILogError(@"Invalid alias request - both start and end dates must exist and start date must occur before end date.");
-        } else {
-            MPILogError(@"Invalid alias request - Source User has not been seen in the last %@ days", MParticle.sharedInstance.stateMachine.aliasMaxWindow);
-        }
-        return NO;
+    if (aliasRequest.startTime == nil || aliasRequest.endTime == nil) {
+        aliasRequest.startTime = oldestAllowableDate;
+        aliasRequest.endTime = [NSDate dateWithTimeIntervalSinceNow:0];
+    }
+    
+    if ([aliasRequest.startTime compare:aliasRequest.endTime] != NSOrderedAscending) {
+        MPILogWarning(@"Invalid alias request - Start date must occur before end date. Alias Request will likely fail");
     }
     
     dispatch_async([MParticle messageQueue], ^{
