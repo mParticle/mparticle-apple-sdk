@@ -1,3 +1,15 @@
+# [8.24.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.1...v8.24.0) (2024-05-01)
+
+
+### Bug Fixes
+
+* Allow Alias When Start and End Time Not Set ([#275](https://github.com/mParticle/mparticle-apple-sdk/issues/275)) ([241ecd4](https://github.com/mParticle/mparticle-apple-sdk/commit/241ecd4fef6c732f885100844c9ff8a24ffbe842))
+
+
+### Features
+
+* Add Tracking Support for Custom Domains ([#274](https://github.com/mParticle/mparticle-apple-sdk/issues/274)) ([1584dae](https://github.com/mParticle/mparticle-apple-sdk/commit/1584daed11afabc94f9d6c1e08c1d718e088caee))
+
 ## [8.23.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.0...v8.23.1) (2024-04-30)
 
 
