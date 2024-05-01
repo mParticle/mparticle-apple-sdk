@@ -100,6 +100,10 @@ Allows you to override the default event host.
 */
 @property (nonatomic) NSString *eventsHost;
 /**
+Allows you to override the tracking event host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+*/
+@property (nonatomic) NSString *eventsTrackingHost;
+/**
 Defaults to false. If set true the eventsHost above with overwrite the subdirectory of the URL in addition to the host.
 */
 @property (nonatomic) BOOL overridesEventsSubdirectory;
@@ -109,6 +113,10 @@ Allows you to override the default identity host.
 */
 @property (nonatomic) NSString *identityHost;
 /**
+Allows you to override the tracking identity host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+*/
+@property (nonatomic) NSString *identityTrackingHost;
+/**
 Defaults to false. If set true the identityHost above with overwrite the subdirectory of the URL in addition to the host.
 */
 @property (nonatomic) BOOL overridesIdentitySubdirectory;
@@ -117,6 +125,10 @@ Defaults to false. If set true the identityHost above with overwrite the subdire
 Allows you to override the default alias host.
 */
 @property (nonatomic) NSString *aliasHost;
+/**
+Allows you to override the tracking alias host. Set this to automatically use an alternate custom domain when ATTStatus has been authorized.
+*/
+@property (nonatomic) NSString *aliasTrackingHost;
 /**
 Defaults to false. If set true the aliasHost above with overwrite the subdirectory of the URL in addition to the host.
 */

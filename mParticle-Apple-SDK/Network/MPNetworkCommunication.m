@@ -203,7 +203,12 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
+    NSString *eventHost;
+    if ([MParticle sharedInstance].networkOptions.eventsTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        eventHost = [MParticle sharedInstance].networkOptions.eventsTrackingHost;
+    } else {
+        eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
+    }
     NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
@@ -251,7 +256,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    NSString *identityHost;
+    if ([MParticle sharedInstance].networkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        identityHost = [MParticle sharedInstance].networkOptions.identityTrackingHost;
+    } else {
+        identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+    }
     NSString *urlString = [NSString stringWithFormat:identityURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
@@ -275,7 +286,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
-    NSString *identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    NSString *identityHost;
+    if ([MParticle sharedInstance].networkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        identityHost = [MParticle sharedInstance].networkOptions.identityTrackingHost;
+    } else {
+        identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
+    }
     NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
@@ -305,7 +322,12 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *pathComponent = @"alias";
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
-    NSString *eventHost = [MParticle sharedInstance].networkOptions.aliasHost ?: self.defaultEventHost;
+    NSString *eventHost;
+    if ([MParticle sharedInstance].networkOptions.aliasTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        eventHost = [MParticle sharedInstance].networkOptions.aliasTrackingHost;
+    } else {
+        eventHost = [MParticle sharedInstance].networkOptions.aliasHost ?: self.defaultEventHost;
+    }
     NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
