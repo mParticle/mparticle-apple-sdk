@@ -70,7 +70,8 @@ You can read detailed instructions for including the Crash Reporter at its repos
 To integrate the SDK using Carthage, specify it in your [Cartfile](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#cartfile):
 
 ```ogdl
-github "mparticle/mparticle-apple-sdk" ~> 8.0
+
+binary "https://raw.githubusercontent.com/mParticle/mparticle-apple-sdk/main/mParticle_Apple_SDK.json" ~> 8.0
 ```
 
 If you'd like to add any kits, you can do so as follows:
