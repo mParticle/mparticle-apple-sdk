@@ -24,16 +24,11 @@ extern NSString * _Nonnull const kMPApplicationInformationKey;
 @property (nonatomic, strong, readonly, nullable) NSString *version __attribute__((const));
 @property (nonatomic, readonly) MPEnvironment environment __attribute__((const));
 
-#if TARGET_OS_IOS == 1
-@property (nonatomic, strong, readonly, nullable) NSNumber *badgeNumber;
-#endif
-
 + (nullable NSString *)appStoreReceipt;
 + (void)markInitialLaunchTime;
 + (void)updateLastUseDate:(nonnull NSDate *)date;
 + (void)updateLaunchCountsAndDates;
 + (void)updateStoredVersionAndBuildNumbers;
-+ (void)updateBadgeNumber;
 + (nonnull NSDictionary *)appImageInfo;
 + (nullable UIApplication *)sharedUIApplication;
 - (nonnull NSDictionary<NSString *, id> *)dictionaryRepresentation;
