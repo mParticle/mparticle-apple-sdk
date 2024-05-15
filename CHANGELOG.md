@@ -1,3 +1,10 @@
+## [8.24.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.0...v8.24.1) (2024-05-15)
+
+
+### Bug Fixes
+
+* Remove unnecessary badge number functionality ([#277](https://github.com/mParticle/mparticle-apple-sdk/issues/277)) ([266612f](https://github.com/mParticle/mparticle-apple-sdk/commit/266612fc86991a44c90dc97a09ca699dcd30a34f))
+
 # [8.24.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.23.1...v8.24.0) (2024-05-01)
 
 
