@@ -28,7 +28,6 @@ NSString *const kMPAppLastUseDateKey = @"lud";
 NSString *const kMPAppStoredVersionKey = @"asv";
 NSString *const kMPAppStoredBuildKey = @"asb";
 NSString *const kMPAppEnvironmentKey = @"env";
-NSString *const kMPAppBadgeNumberKey = @"bn";
 NSString *const kMPAppStoreReceiptKey = @"asr";
 NSString *const kMPAppImageBaseAddressKey = @"iba";
 NSString *const kMPAppImageSizeKey = @"is";
@@ -68,10 +67,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-
-#if TARGET_OS_IOS == 1
-@property (nonatomic, strong, readwrite, nullable) NSNumber *badgeNumber;
-#endif
 
 @end
 
@@ -298,24 +293,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     return nil;
 }
 
-#if TARGET_OS_IOS == 1
-- (NSNumber *)badgeNumber {
-    if (![MPStateMachine isAppExtension]) {
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        NSNumber *badgeNumber = userDefaults[kMPAppBadgeNumberKey];
-        return badgeNumber.integerValue != 0 ? badgeNumber : nil;
-    }
-    return nil;
-}
-
-- (void)setBadgeNumber:(NSNumber * _Nullable)badgeNumber {
-    if (![MPStateMachine isAppExtension]) {
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        userDefaults[kMPAppBadgeNumberKey] = badgeNumber;
-    }
-}
-#endif
-
 - (NSDictionary *)searchAdsAttribution {
     return MParticle.sharedInstance.stateMachine.searchAdsInfo;
 }
@@ -384,20 +361,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     MPApplication *application = [[MPApplication alloc] init];
     application.storedVersion = application.version;
     application.storedBuild = application.build;
-}
-
-+ (void)updateBadgeNumber {
-#if TARGET_OS_IOS == 1
-    if ([NSThread isMainThread]) {
-        MPApplication *application = [[MPApplication alloc] init];
-        application.badgeNumber = @([MPApplication sharedUIApplication].applicationIconBadgeNumber);
-    } else {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            MPApplication *application = [[MPApplication alloc] init];
-            application.badgeNumber = @([MPApplication sharedUIApplication].applicationIconBadgeNumber);
-        });
-    }
-#endif
 }
 
 + (NSDictionary *)appImageInfo {
@@ -509,13 +472,6 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
     if ([MParticle sharedInstance].stateMachine.allowASR && [MPApplication appStoreReceipt]) {
         applicationInfo[kMPAppStoreReceiptKey] = [MPApplication appStoreReceipt];
     }
-    
-#if TARGET_OS_IOS == 1
-    NSNumber *badgeNumber = self.badgeNumber;
-    if (badgeNumber != nil) {
-        applicationInfo[kMPAppBadgeNumberKey] = badgeNumber;
-    }
-#endif
     
     appInfo = (NSDictionary *)applicationInfo;
     

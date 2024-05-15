@@ -137,7 +137,6 @@ static BOOL runningInBackground = NO;
             
             [MPApplication markInitialLaunchTime];
             [MPApplication updateLaunchCountsAndDates];
-            [MPApplication updateBadgeNumber];
         });
     }
     
@@ -260,12 +259,11 @@ static BOOL runningInBackground = NO;
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
     [MPApplication updateLastUseDate:_launchDate];
     _backgrounded = YES;
-
+    
     __weak MPStateMachine *weakSelf = self;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPStateMachine *strongSelf = weakSelf;
         strongSelf.launchInfo = nil;
-        [MPApplication updateBadgeNumber];
     });
 }
 
@@ -275,7 +273,6 @@ static BOOL runningInBackground = NO;
     dispatch_async(dispatch_get_main_queue(), ^{
         __strong MPStateMachine *strongSelf = weakSelf;
         strongSelf->_backgrounded = NO;
-        [MPApplication updateBadgeNumber];
     });
 }
 
