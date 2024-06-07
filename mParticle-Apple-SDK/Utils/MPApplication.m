@@ -6,7 +6,6 @@
 #import "MPIUserDefaults.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
-#import "MPSearchAdsAttribution.h"
 #import <libkern/OSAtomic.h>
 #import "mParticle.h"
 

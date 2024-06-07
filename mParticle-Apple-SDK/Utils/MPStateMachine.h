@@ -52,7 +52,9 @@
 @property (nonatomic) NSNumber * _Nullable attAuthorizationStatus;
 @property (nonatomic) NSNumber * _Nullable attAuthorizationTimestamp;
 @property (nonatomic, strong, nonnull) NSNumber *aliasMaxWindow;
+#if TARGET_OS_IOS == 1
 @property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
+#endif
 @property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
 @property (nonatomic) BOOL automaticSessionTracking;
 @property (nonatomic) BOOL allowASR;

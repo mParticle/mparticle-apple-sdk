@@ -1,12 +1,12 @@
+#import <Foundation/Foundation.h>
+
+#if TARGET_OS_IOS == 1
 #import "MPSearchAdsAttribution.h"
 #import "mParticle.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-
-#if TARGET_OS_IOS == 1
 #import <AdServices/AAAttribution.h>
-#endif
 
 @interface MParticle ()
 
@@ -16,6 +16,7 @@
 @end
 
 @implementation MPSearchAdsAttribution 
+
 
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
     NSError *error;
@@ -78,3 +79,4 @@
 }
 
 @end
+#endif

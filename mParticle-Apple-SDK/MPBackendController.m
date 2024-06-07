@@ -25,7 +25,9 @@
 #import "MPKitContainer.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
+#if TARGET_OS_IOS == 1
 #import "MPSearchAdsAttribution.h"
+#endif
 #import "MPURLRequestBuilder.h"
 #import "MPArchivist.h"
 #import "MPListenerController.h"
@@ -1554,12 +1556,16 @@ static BOOL skipNextUpload = NO;
             });
         };
         
+#if TARGET_OS_IOS == 1
         if (MParticle.sharedInstance.collectSearchAdsAttribution) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(SEARCH_ADS_ATTRIBUTION_GLOBAL_TIMEOUT_SECONDS * NSEC_PER_SEC)), [MParticle messageQueue], searchAdsCompletion);
             [stateMachine.searchAttribution requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
         } else {
             searchAdsCompletion();
         }
+#else
+        searchAdsCompletion();
+#endif
         
         [self processPendingArchivedMessages];
         
