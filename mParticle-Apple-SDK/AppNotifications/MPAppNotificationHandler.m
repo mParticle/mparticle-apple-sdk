@@ -105,7 +105,7 @@
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypePushRegistration
-                                                       userInfo:nil
+                                                       userInfo:@{@"state":@1}
          ];
     });
 }
