@@ -1,3 +1,10 @@
+## [8.24.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.1...v8.24.2) (2024-06-10)
+
+
+### Bug Fixes
+
+* Record PushRegistration Correctly in UI ([#280](https://github.com/mParticle/mparticle-apple-sdk/issues/280)) ([2d124ec](https://github.com/mParticle/mparticle-apple-sdk/commit/2d124ec089aa8625b8acb1c3360349903c4a6af4))
+
 ## [8.24.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.0...v8.24.1) (2024-05-15)
 
 
