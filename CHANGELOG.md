@@ -1,3 +1,10 @@
+## [8.24.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.2...v8.24.3) (2024-06-10)
+
+
+### Bug Fixes
+
+* Remove deprecated iAd framework ([#279](https://github.com/mParticle/mparticle-apple-sdk/issues/279)) ([31b283c](https://github.com/mParticle/mparticle-apple-sdk/commit/31b283c4e78a57d72dae195ad16491a510d3a13b))
+
 ## [8.24.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.1...v8.24.2) (2024-06-10)
 
 
