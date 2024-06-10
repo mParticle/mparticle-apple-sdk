@@ -14,7 +14,9 @@
 #import "MPLocationManager.h"
 #endif
 #import "MPKitContainer.h"
+#if TARGET_OS_IOS == 1
 #import "MPSearchAdsAttribution.h"
+#endif
 #import <UIKit/UIKit.h>
 #import "MPForwardQueueParameters.h"
 #import "MPDataPlanFilter.h"
@@ -102,7 +104,9 @@ static BOOL runningInBackground = NO;
         _launchDate = [NSDate date];
         _launchOptions = nil;
         _logLevel = MPILogLevelNone;
+#if TARGET_OS_IOS == 1
         _searchAttribution = [[MPSearchAdsAttribution alloc] init];
+#endif
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         
