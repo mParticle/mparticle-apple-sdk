@@ -17,7 +17,6 @@
 
 @implementation MPSearchAdsAttribution 
 
-
 - (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted {
     NSError *error;
     if (@available(iOS 14.3, *)) {
