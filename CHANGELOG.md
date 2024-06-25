@@ -1,3 +1,10 @@
+# [8.25.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.3...v8.25.0) (2024-06-25)
+
+
+### Features
+
+* Add Option to Disable Certificate Pinning ([#282](https://github.com/mParticle/mparticle-apple-sdk/issues/282)) ([3a42719](https://github.com/mParticle/mparticle-apple-sdk/commit/3a42719784330cdc56f3e831c24f90ca8a4c2901))
+
 ## [8.24.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.2...v8.24.3) (2024-06-10)
 
 
