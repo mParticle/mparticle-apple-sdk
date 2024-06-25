@@ -139,6 +139,7 @@ static NSString *const kMPStateKey = @"state";
     self = [super init];
     if (self) {
         _pinningDisabledInDevelopment = NO;
+        _pinningDisabled = NO;
         _overridesConfigSubdirectory = NO;
         _overridesEventsSubdirectory = NO;
         _overridesIdentitySubdirectory = NO;
@@ -163,6 +164,7 @@ static NSString *const kMPStateKey = @"state";
     [description appendFormat:@"  overridesAliasSubdirectory: %s\n", _overridesAliasSubdirectory ? "true" : "false"];
     [description appendFormat:@"  certificates: %@\n", _certificates];
     [description appendFormat:@"  pinningDisabledInDevelopment: %s\n", _pinningDisabledInDevelopment ? "true" : "false"];
+    [description appendFormat:@"  pinningDisabled: %s\n", _pinningDisabled ? "true" : "false"];
     [description appendFormat:@"  eventsOnly: %s\n", _eventsOnly ? "true" : "false"];
     [description appendString:@"}"];
     return description;

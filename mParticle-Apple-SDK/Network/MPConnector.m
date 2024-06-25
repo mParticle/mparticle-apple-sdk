@@ -138,7 +138,7 @@ static NSArray *mpStoredCertificates = nil;
                 }
             }
             
-            BOOL shouldDisablePinning = networkOptions.pinningDisabledInDevelopment && [MParticle sharedInstance].environment == MPEnvironmentDevelopment;
+            BOOL shouldDisablePinning = (networkOptions.pinningDisabledInDevelopment && [MParticle sharedInstance].environment == MPEnvironmentDevelopment) || networkOptions.pinningDisabled;
             if (trustChallenge || shouldDisablePinning) {
                 NSURLCredential *urlCredential = [NSURLCredential credentialForTrust:trustRef];
                 completionHandler(NSURLSessionAuthChallengeUseCredential, urlCredential);

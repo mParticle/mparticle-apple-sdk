@@ -137,6 +137,8 @@ Defaults to false. If set true the aliasHost above with overwrite the subdirecto
 @property (nonatomic) NSArray<NSData *> *certificates;
 
 @property (nonatomic) BOOL pinningDisabledInDevelopment;
+
+@property (nonatomic) BOOL pinningDisabled;
 /**
 Defaults to false. Prevents the eventsHost above from overwriting the alias endpoint.
 */
