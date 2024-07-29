@@ -1,5 +1,5 @@
 //
-//  Swift.h
+//  MParticleSwift.h
 //  mParticle-Apple-SDK
 //
 //  Created by Ben Baron on 3/24/23.

@@ -8,7 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 
 @interface NSNumber_MPFormatterTests : MPBaseTestCase
 

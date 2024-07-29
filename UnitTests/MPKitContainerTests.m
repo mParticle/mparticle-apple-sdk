@@ -29,7 +29,7 @@
 #import "MPKitProtocol.h"
 #import "MPKitTestClassSideloaded.h"
 #import "MPApplication.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 
