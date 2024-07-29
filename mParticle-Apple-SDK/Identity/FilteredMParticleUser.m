@@ -3,7 +3,7 @@
 #import "MParticleUser.h"
 #import "MPKitConfiguration.h"
 #import "MPDataPlanFilter.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 

@@ -34,7 +34,7 @@
 #import "MParticleWebView.h"
 #import "MPDevice.h"
 #import "MPIdentityCaching.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE

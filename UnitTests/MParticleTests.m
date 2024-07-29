@@ -15,7 +15,7 @@
 #import "MPKitTestClassSideloaded.h"
 #import "MPKitTestClassNoStartImmediately.h"
 #import "MPKitConfiguration.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 
 @interface MParticle ()

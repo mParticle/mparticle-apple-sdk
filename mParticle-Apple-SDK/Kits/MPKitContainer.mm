@@ -1,5 +1,5 @@
 #import "MPKitContainer.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
 #import "MPStateMachine.h"

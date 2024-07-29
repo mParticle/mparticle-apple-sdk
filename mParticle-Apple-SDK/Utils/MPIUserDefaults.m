@@ -7,7 +7,7 @@
 #import "MPArchivist.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
-#import "Swift.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 
