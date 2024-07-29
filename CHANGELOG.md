@@ -1,3 +1,10 @@
+## [8.25.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.0...v8.25.1) (2024-07-29)
+
+
+### Bug Fixes
+
+* Rename internal Swift.h header to avoid Expo conflicts ([#283](https://github.com/mParticle/mparticle-apple-sdk/issues/283)) ([36c6be4](https://github.com/mParticle/mparticle-apple-sdk/commit/36c6be4c015d0e4775267dd866d123589f221447))
+
 # [8.25.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.24.3...v8.25.0) (2024-06-25)
 
 
