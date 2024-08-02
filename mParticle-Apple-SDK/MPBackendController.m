@@ -660,9 +660,9 @@ static BOOL skipNextUpload = NO;
     skipNextUpload = YES;
 }
 
-- (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
-    const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
+- (void)prepareBatchesForUpload {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
@@ -681,13 +681,7 @@ static BOOL skipNextUpload = NO;
                         
                         for (int i = 0; i < batchMessageArrays.count; i += 1) {
                             NSArray *limitedMessages = batchMessageArrays[i];
-                            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:self.sessionTimeout uploadInterval:self.uploadInterval dataPlanId:nullableDataPlanId dataPlanVersion:nullableDataPlanVersion];
-                            
-                            if (!uploadBuilder) {
-                                completionHandlerCopy(YES);
-                                return;
-                            }
-                            
+                            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:self.sessionTimeout uploadInterval:self.uploadInterval dataPlanId:nullableDataPlanId dataPlanVersion:nullableDataPlanVersion apiKey:stateMachine.apiKey apiSecret:stateMachine.secret];
                             [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {
@@ -708,6 +702,14 @@ static BOOL skipNextUpload = NO;
     
     //Fetch all sessions and delete them if inactive (5)
     [persistence deleteAllSessionsExcept:[MParticle sharedInstance].stateMachine.currentSession];
+}
+
+- (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
+    // Prepare upload records
+    [self prepareBatchesForUpload];
+    
+    const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     if (skipNextUpload) {
         skipNextUpload = NO;

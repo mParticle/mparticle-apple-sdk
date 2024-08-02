@@ -30,17 +30,22 @@
     BOOL containsOptOutMessage;
     NSString *dPId;
     NSNumber *dPVersion;
+    NSString *aKey;
+    NSString *aSecret;
 }
 
 @end
 
 @implementation MPUploadBuilder
 
-- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
+- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion apiKey:(nonnull NSString *)apiKey apiSecret:(nonnull NSString *)apiSecret {
     self = [super init];
     if (!self || !messages || messages.count == 0) {
         return nil;
     }
+    
+    aKey = apiKey;
+    aSecret = apiSecret;
     
     _sessionId = sessionId;
     containsOptOutMessage = NO;
@@ -239,7 +244,7 @@
         }
     }
     
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId uploadDictionary:uploadDictionary dataPlanId:dPId dataPlanVersion:dPVersion];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId uploadDictionary:uploadDictionary dataPlanId:dPId dataPlanVersion:dPVersion apiKey:aKey apiSecret:aSecret];
     upload.containsOptOutMessage = containsOptOutMessage;
     completionHandler(upload);
 }

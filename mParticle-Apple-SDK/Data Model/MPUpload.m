@@ -4,9 +4,8 @@
 
 @implementation MPUpload
 
-- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
+- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadDictionary:(NSDictionary *)uploadDictionary dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion apiKey:(nonnull NSString *)apiKey apiSecret:(nonnull NSString *)apiSecret {
     NSData *uploadData = [NSJSONSerialization dataWithJSONObject:uploadDictionary options:0 error:nil];
-    
     return [self initWithSessionId:sessionId
                           uploadId:0
                               UUID:uploadDictionary[kMPMessageIdKey]
@@ -14,10 +13,12 @@
                          timestamp:[uploadDictionary[kMPTimestampKey] doubleValue]
                         uploadType:MPUploadTypeMessage
                         dataPlanId:dataPlanId
-                   dataPlanVersion:dataPlanVersion];
+                   dataPlanVersion:dataPlanVersion
+                            apiKey:apiKey
+                         apiSecret:apiSecret];
 }
 
-- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadId:(int64_t)uploadId UUID:(NSString *)uuid uploadData:(NSData *)uploadData timestamp:(NSTimeInterval)timestamp uploadType:(MPUploadType)uploadType dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
+- (instancetype)initWithSessionId:(NSNumber *)sessionId uploadId:(int64_t)uploadId UUID:(NSString *)uuid uploadData:(NSData *)uploadData timestamp:(NSTimeInterval)timestamp uploadType:(MPUploadType)uploadType dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion apiKey:(nonnull NSString *)apiKey apiSecret:(nonnull NSString *)apiSecret {
     self = [super init];
     if (self) {
         _sessionId = sessionId;
@@ -29,6 +30,8 @@
         _containsOptOutMessage = NO;
         _dataPlanId = dataPlanId;
         _dataPlanVersion = dataPlanVersion;
+        _apiKey = apiKey;
+        _apiSecret = apiSecret;
     }
     
     return self;
@@ -70,8 +73,9 @@
                                                      timestamp:_timestamp
                                                     uploadType:_uploadType
                                                     dataPlanId:[_dataPlanId copy]
-                                               dataPlanVersion:[_dataPlanVersion copy]];
-    
+                                               dataPlanVersion:[_dataPlanVersion copy]
+                                                        apiKey:[_apiKey copy]
+                                                     apiSecret:[_apiSecret copy]];
     return copyObject;
 }
 

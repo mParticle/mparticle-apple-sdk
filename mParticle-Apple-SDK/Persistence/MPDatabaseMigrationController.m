@@ -7,11 +7,13 @@
 #import "MPPersistenceController.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPStateMachine.h"
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 
 @end
 
@@ -272,6 +274,8 @@
 }
 
 - (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     const char *uuid;
@@ -284,11 +288,13 @@
         selectStatement = "SELECT uuid, message_data, timestamp, session_id FROM uploads ORDER BY _id";
     } else if (oldVersionValue < 29) {
         selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type FROM uploads ORDER BY _id";
+    } else if (oldVersionValue < 31) {
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
     } else {
-           selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
-       }
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret FROM uploads ORDER BY _id";
+    }
     
-    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -337,6 +343,16 @@
             } else {
                 sqlite3_bind_null(insertStatementHandle, 7); // data_plan_version
             }
+        }
+        
+        if (oldVersionValue < 31) {
+            sqlite3_bind_text(insertStatementHandle, 8, [stateMachine.apiKey cStringUsingEncoding:NSUTF8StringEncoding], -1, SQLITE_TRANSIENT); // api_key
+            sqlite3_bind_text(insertStatementHandle, 9, [stateMachine.secret cStringUsingEncoding:NSUTF8StringEncoding], -1, SQLITE_TRANSIENT); // api_secret
+        } else {
+            const char *apiKey = (const char *)sqlite3_column_text(selectStatementHandle, 8);
+            sqlite3_bind_text(insertStatementHandle, 8, apiKey, -1, SQLITE_TRANSIENT); // api_key
+            const char *apiSecret = (const char *)sqlite3_column_text(selectStatementHandle, 9);
+            sqlite3_bind_text(insertStatementHandle, 9, apiSecret, -1, SQLITE_TRANSIENT); // api_secret
         }
         
         sqlite3_step(insertStatementHandle);

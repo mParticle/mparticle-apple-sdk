@@ -486,7 +486,9 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                                                          timestamp:[NSDate date].timeIntervalSince1970
                                                         uploadType:MPUploadTypeAlias
                                                         dataPlanId:[MParticle sharedInstance].dataPlanId
-                                                   dataPlanVersion:[MParticle sharedInstance].dataPlanVersion];
+                                                   dataPlanVersion:[MParticle sharedInstance].dataPlanVersion
+                                                            apiKey:[MParticle sharedInstance].stateMachine.apiKey
+                                                         apiSecret:[MParticle sharedInstance].stateMachine.secret];
             
             [MParticle.sharedInstance.persistenceController saveUpload:upload];
             [MParticle.sharedInstance.backendController waitForKitsAndUploadWithCompletionHandler:nil];

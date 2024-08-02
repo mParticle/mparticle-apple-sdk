@@ -14,11 +14,16 @@
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property BOOL containsOptOutMessage;
+@property (nonatomic, strong, nonnull) NSString *apiKey;
+@property (nonatomic, strong, nonnull) NSString *apiSecret;
 
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId
                          uploadDictionary:(nonnull NSDictionary *)uploadDictionary
                                dataPlanId:(nullable NSString *)dataPlanId
-                          dataPlanVersion:(nullable NSNumber *)dataPlanVersion;
+                          dataPlanVersion:(nullable NSNumber *)dataPlanVersion
+                                   apiKey:(nonnull NSString *)apiKey
+                                apiSecret:(nonnull NSString *)apiSecret;
+
 - (nonnull instancetype)initWithSessionId:(nullable NSNumber *)sessionId
                                  uploadId:(int64_t)uploadId
                                      UUID:(nonnull NSString *)uuid
@@ -26,6 +31,8 @@
                                 timestamp:(NSTimeInterval)timestamp
                                uploadType:(MPUploadType)uploadType
                                dataPlanId:(nullable NSString *)dataPlanId
-                          dataPlanVersion:(nullable NSNumber *)dataPlanVersion;
+                          dataPlanVersion:(nullable NSNumber *)dataPlanVersion
+                                   apiKey:(nonnull NSString *)apiKey
+                                apiSecret:(nonnull NSString *)apiSecret;
 
 @end
