@@ -129,17 +129,6 @@
     return description;
 }
 
-#pragma mark Public class methods
-+ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid messages:(nonnull NSArray<MPMessage *> *)messages uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion{
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:nil messages:messages sessionTimeout:0 uploadInterval:uploadInterval dataPlanId:dataPlanId dataPlanVersion:dataPlanVersion];
-    return uploadBuilder;
-}
-
-+ (nonnull MPUploadBuilder *)newBuilderWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion {
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:sessionId messages:messages sessionTimeout:sessionTimeout uploadInterval:uploadInterval dataPlanId:dataPlanId dataPlanVersion:dataPlanVersion];
-    return uploadBuilder;
-}
-
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
