@@ -137,8 +137,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion  
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -212,8 +211,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion 
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -293,8 +291,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
 
     XCTAssertNotNil(uploadBuilder);
     
@@ -376,8 +373,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion 
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -456,8 +452,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion 
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -539,8 +534,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -625,8 +619,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -707,8 +700,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:message.dataPlanId
                                                            dataPlanVersion:message.dataPlanVersion
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     

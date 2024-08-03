@@ -662,7 +662,6 @@ static BOOL skipNextUpload = NO;
 
 - (void)prepareBatchesForUpload {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     //Fetch all stored messages (1)
     NSDictionary *mpidMessages = [persistence fetchMessagesForUploading];
@@ -681,7 +680,14 @@ static BOOL skipNextUpload = NO;
                         
                         for (int i = 0; i < batchMessageArrays.count; i += 1) {
                             NSArray *limitedMessages = batchMessageArrays[i];
-                            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:self.sessionTimeout uploadInterval:self.uploadInterval dataPlanId:nullableDataPlanId dataPlanVersion:nullableDataPlanVersion apiKey:stateMachine.apiKey apiSecret:stateMachine.secret];
+                            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid
+                                                                                         sessionId:nullableSessionID
+                                                                                          messages:limitedMessages
+                                                                                    sessionTimeout:self.sessionTimeout
+                                                                                    uploadInterval:self.uploadInterval
+                                                                                        dataPlanId:nullableDataPlanId
+                                                                                   dataPlanVersion:nullableDataPlanVersion
+                                                                                    uploadSettings:[MPUploadSettings currentUploadSettings]];
                             [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {

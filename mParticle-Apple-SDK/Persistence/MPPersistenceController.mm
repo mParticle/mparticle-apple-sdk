@@ -395,8 +395,7 @@ const int MaxBreadcrumbs = 50;
             upload_type INTEGER NOT NULL, \
             data_plan_id TEXT, \
             data_plan_version INTEGER, \
-            api_key TEXT NOT NULL, \
-            api_secret TEXT NOT NULL \
+            upload_settings BLOB NOT NULL \
         )",
         "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -1254,13 +1253,18 @@ const int MaxBreadcrumbs = 50;
     sqlite3_stmt *preparedStatement;
     string sqlStatement;
     
-    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret FROM uploads ORDER BY timestamp, _id LIMIT 100";
+    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings FROM uploads ORDER BY timestamp, _id LIMIT 100";
     
     vector<MPUpload *> uploadsVector;
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
+            
+#pragma message "BEN TODO - ERROR HANDLING"
+            NSData *uploadSettingsData = dataValue(preparedStatement, 8);
+            MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchiveObjectWithData:uploadSettingsData];
+            
             MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
                                                           uploadId:int64Value(preparedStatement, 0)
                                                               UUID:stringValue(preparedStatement, 1)
@@ -1269,8 +1273,7 @@ const int MaxBreadcrumbs = 50;
                                                         uploadType:(MPUploadType)int64Value(preparedStatement, 5)
                                                         dataPlanId:stringValue(preparedStatement, 6)
                                                    dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil
-                                                            apiKey:stringValue(preparedStatement, 8)
-                                                         apiSecret:stringValue(preparedStatement, 9)];
+                                                    uploadSettings:uploadSettings];
 
             
             uploadsVector.push_back(upload);
@@ -1674,7 +1677,7 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         string auxString = string([upload.uuid UTF8String]);
@@ -1704,11 +1707,9 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_null(preparedStatement, 7);
         }
         
-        string apiKeyString = string([upload.apiKey UTF8String]);
-        sqlite3_bind_text(preparedStatement, 8, apiKeyString.c_str(), (int)apiKeyString.size(), SQLITE_TRANSIENT);
-        
-        string apiSecretString = string([upload.apiSecret UTF8String]);
-        sqlite3_bind_text(preparedStatement, 9, apiSecretString.c_str(), (int)apiSecretString.size(), SQLITE_TRANSIENT);
+#pragma message "BEN TODO - ERROR HANDLING"
+        NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings];
+        sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));

@@ -26,29 +26,26 @@
 @end
 
 @interface MPUploadBuilder() {
-    NSMutableDictionary<NSString *, id> *uploadDictionary;
-    BOOL containsOptOutMessage;
-    NSString *dPId;
-    NSNumber *dPVersion;
-    NSString *aKey;
-    NSString *aSecret;
+    NSMutableDictionary<NSString *, id> *_uploadDictionary;
+    BOOL _containsOptOutMessage;
+    NSString *_dPId;
+    NSNumber *_dPVersion;
+    MPUploadSettings *_uploadSettings;
 }
 
 @end
 
 @implementation MPUploadBuilder
 
-- (nonnull instancetype)initWithMpid: (nonnull NSNumber *) mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion apiKey:(nonnull NSString *)apiKey apiSecret:(nonnull NSString *)apiSecret {
+- (nonnull instancetype)initWithMpid:(nonnull NSNumber *)mpid sessionId:(nullable NSNumber *)sessionId messages:(nonnull NSArray<MPMessage *> *)messages sessionTimeout:(NSTimeInterval)sessionTimeout uploadInterval:(NSTimeInterval)uploadInterval dataPlanId:(nullable NSString *)dataPlanId dataPlanVersion:(nullable NSNumber *)dataPlanVersion uploadSettings:(id)uploadSettings {
     self = [super init];
     if (!self || !messages || messages.count == 0) {
         return nil;
     }
     
-    aKey = apiKey;
-    aSecret = apiSecret;
-    
+    _uploadSettings = uploadSettings;
     _sessionId = sessionId;
-    containsOptOutMessage = NO;
+    _containsOptOutMessage = NO;
     
     NSUInteger numberOfMessages = messages.count;
     NSMutableArray *messageDictionaries = [[NSMutableArray alloc] initWithCapacity:numberOfMessages];
@@ -57,7 +54,7 @@
     [messages enumerateObjectsUsingBlock:^(MPMessage *message, NSUInteger idx, BOOL *stop) {
         if (message != nil && (NSNull *)message != [NSNull null]) {
             if ([message.messageType isEqualToString:kMPMessageTypeStringOptOut]) {
-                self->containsOptOutMessage = YES;
+                self->_containsOptOutMessage = YES;
             }
             
             [self->_preparedMessageIds addObject:@(message.messageId)];
@@ -78,7 +75,7 @@
     
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
-    uploadDictionary = [@{
+    _uploadDictionary = [@{
         kMPOptOutKey:@(stateMachine.optOut),
         kMPUploadIntervalKey:@(uploadInterval),
         kMPLifeTimeValueKey:ltv
@@ -89,22 +86,22 @@
         } mutableCopy];
         
         dataPlanDictionary[kMPDataPlanIdKey] = dataPlanId;
-        dPId = dataPlanId;
+        _dPId = dataPlanId;
         
         if (dataPlanVersion != nil) {
             dataPlanDictionary[kMPDataPlanVersionKey] = dataPlanVersion;
-            dPVersion = dataPlanVersion;
+            _dPVersion = dataPlanVersion;
         }
         
-        uploadDictionary[kMPContextKey] = @{kMPDataPlanKey:dataPlanDictionary};
+        _uploadDictionary[kMPContextKey] = @{kMPDataPlanKey:dataPlanDictionary};
     }
 
     if (messageDictionaries.count > 0) {
-        uploadDictionary[kMPMessagesKey] = messageDictionaries;
+        _uploadDictionary[kMPMessagesKey] = messageDictionaries;
     }
 
     if (sessionTimeout > 0) {
-        uploadDictionary[kMPSessionTimeoutKey] = @(sessionTimeout);
+        _uploadDictionary[kMPSessionTimeoutKey] = @(sessionTimeout);
     }
     
     if (stateMachine.customModules) {
@@ -114,10 +111,10 @@
             customModulesDictionary[[customModule.customModuleId stringValue]] = [customModule dictionaryRepresentation];
         }
         
-        uploadDictionary[kMPRemoteConfigCustomModuleSettingsKey] = customModulesDictionary;
+        _uploadDictionary[kMPRemoteConfigCustomModuleSettingsKey] = customModulesDictionary;
     }
     
-    uploadDictionary[kMPRemoteConfigMPIDKey] = mpid;
+    _uploadDictionary[kMPRemoteConfigMPIDKey] = mpid;
     
     return self;
 }
@@ -126,9 +123,9 @@
     NSString *description;
     
     if (_sessionId != nil) {
-        description = [NSString stringWithFormat:@"MPUploadBuilder\n Session Id: %lld\n UploadDictionary: %@", self.sessionId.longLongValue, uploadDictionary];
+        description = [NSString stringWithFormat:@"MPUploadBuilder\n Session Id: %lld\n UploadDictionary: %@", self.sessionId.longLongValue, _uploadDictionary];
     } else {
-        description = [NSString stringWithFormat:@"MPUploadBuilder\n UploadDictionary: %@", uploadDictionary];
+        description = [NSString stringWithFormat:@"MPUploadBuilder\n UploadDictionary: %@", _uploadDictionary];
     }
     
     return description;
@@ -138,57 +135,57 @@
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
-    uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
-    uploadDictionary[kMPmParticleSDKVersionKey] = kMParticleSDKVersion;
-    uploadDictionary[kMPMessageIdKey] = [[NSUUID UUID] UUIDString];
-    uploadDictionary[kMPTimestampKey] = MPMilliseconds([[NSDate date] timeIntervalSince1970]);
-    uploadDictionary[kMPApplicationKey] = stateMachine.apiKey;
+    _uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
+    _uploadDictionary[kMPmParticleSDKVersionKey] = kMParticleSDKVersion;
+    _uploadDictionary[kMPMessageIdKey] = [[NSUUID UUID] UUIDString];
+    _uploadDictionary[kMPTimestampKey] = MPMilliseconds([[NSDate date] timeIntervalSince1970]);
+    _uploadDictionary[kMPApplicationKey] = stateMachine.apiKey;
     
     NSDictionary *appAndDeviceInfoDict = [[MParticle sharedInstance].persistenceController appAndDeviceInfoForSessionId:_sessionId];
     
     NSDictionary *appInfoDict = appAndDeviceInfoDict[kMPApplicationInformationKey];
     if (appInfoDict) {
-        uploadDictionary[kMPApplicationInformationKey] = appInfoDict;
+        _uploadDictionary[kMPApplicationInformationKey] = appInfoDict;
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
         MPApplication *application = [[MPApplication alloc] init];
-        uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
+        _uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
     }
     
     NSDictionary *deviceInfoDict = appAndDeviceInfoDict[kMPDeviceInformationKey];
     if (deviceInfoDict) {
-        uploadDictionary[kMPDeviceInformationKey] = deviceInfoDict;
+        _uploadDictionary[kMPDeviceInformationKey] = deviceInfoDict;
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
         MPDevice *device = [[MPDevice alloc] init];
-        NSNumber *mpid = uploadDictionary[kMPRemoteConfigMPIDKey];
-        uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
+        NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
+        _uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
     }
     
     // Update the IDFA if it changed after the session was created/saved (the IDFA changed or the ATTStatus has been set to authorized)
     NSNumber *authStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
-    NSNumber *mpid = uploadDictionary[kMPRemoteConfigMPIDKey];
+    NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
     NSDictionary *userIdentities = [[[MParticle sharedInstance] identity] getUser:mpid].identities;
     NSString *advertiserId = userIdentities[@(MPIdentityIOSAdvertiserId)];
 
     if (authStatus && advertiserId && authStatus.intValue == MPATTAuthorizationStatusAuthorized) {
-        NSMutableDictionary *deviceInfoDictCopy = [uploadDictionary[kMPDeviceInformationKey] mutableCopy];
+        NSMutableDictionary *deviceInfoDictCopy = [_uploadDictionary[kMPDeviceInformationKey] mutableCopy];
         deviceInfoDictCopy[kMPDeviceAdvertiserIdKey] = advertiserId;
-        uploadDictionary[kMPDeviceInformationKey] = [deviceInfoDictCopy copy];
+        _uploadDictionary[kMPDeviceInformationKey] = [deviceInfoDictCopy copy];
     }
     
     MPConsumerInfo *consumerInfo = stateMachine.consumerInfo;
     
     NSDictionary *cookies = [consumerInfo cookiesDictionaryRepresentation];
     if (cookies) {
-        uploadDictionary[kMPRemoteConfigCookiesKey] = cookies;
+        _uploadDictionary[kMPRemoteConfigCookiesKey] = cookies;
     }
     
     NSString *deviceApplicationStamp = consumerInfo.deviceApplicationStamp;
     if (deviceApplicationStamp) {
-        uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
+        _uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
     }
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -208,7 +205,7 @@
         }
         
         if (fsr.count > 0) {
-            uploadDictionary[kMPForwardStatsRecord] = fsr;
+            _uploadDictionary[kMPForwardStatsRecord] = fsr;
             [persistence deleteForwardRecordsIds:forwardRecordsIds];
         }
     }
@@ -221,31 +218,35 @@
             [integrationAttributesDictionary addEntriesFromDictionary:[integrationAttributes dictionaryRepresentation]];
         }
         
-        uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
+        _uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
     }
     
-    MPConsentState *consentState = [MPPersistenceController consentStateForMpid:uploadDictionary[kMPRemoteConfigMPIDKey]];
+    MPConsentState *consentState = [MPPersistenceController consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
         NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {
-            uploadDictionary[kMPConsentState] = consentStateDictionary;
+            _uploadDictionary[kMPConsentState] = consentStateDictionary;
         }
     }
     
     if (MParticle.sharedInstance.options.onCreateBatch != NULL) {
-        NSDictionary *updatedDictionary = MParticle.sharedInstance.options.onCreateBatch(uploadDictionary);
+        NSDictionary *updatedDictionary = MParticle.sharedInstance.options.onCreateBatch(_uploadDictionary);
         if (updatedDictionary == nil) {
             MPILogWarning(@"Not uploading batch due to 'onCreateBatch' handler returning 'nil'");
             return;
-        } else if ([updatedDictionary isKindOfClass:[NSDictionary class]] && ![updatedDictionary isEqual:uploadDictionary]) {
+        } else if ([updatedDictionary isKindOfClass:[NSDictionary class]] && ![updatedDictionary isEqual:_uploadDictionary]) {
             MPILogWarning(@"Replacing batch with mutated version from 'onCreateBatch' handler");
-            uploadDictionary = [updatedDictionary mutableCopy];
-            uploadDictionary[@"mb"] = @YES;
+            _uploadDictionary = [updatedDictionary mutableCopy];
+            _uploadDictionary[@"mb"] = @YES;
         }
     }
     
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId uploadDictionary:uploadDictionary dataPlanId:dPId dataPlanVersion:dPVersion apiKey:aKey apiSecret:aSecret];
-    upload.containsOptOutMessage = containsOptOutMessage;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:_sessionId
+                                          uploadDictionary:_uploadDictionary
+                                                dataPlanId:_dPId
+                                           dataPlanVersion:_dPVersion
+                                            uploadSettings:_uploadSettings];
+    upload.containsOptOutMessage = _containsOptOutMessage;
     completionHandler(upload);
 }
 
@@ -269,12 +270,12 @@
         }
         
         if (userAttributesCopy.count > 0) {
-            uploadDictionary[kMPUserAttributeKey] = userAttributesCopy;
+            _uploadDictionary[kMPUserAttributeKey] = userAttributesCopy;
         }
     }
     
     if (deletedUserAttributes.count > 0 && _sessionId) {
-        uploadDictionary[kMPUserAttributeDeletedKey] = [deletedUserAttributes allObjects];
+        _uploadDictionary[kMPUserAttributeDeletedKey] = [deletedUserAttributes allObjects];
     }
     
     return self;
@@ -282,7 +283,7 @@
 
 - (MPUploadBuilder *)withUserIdentities:(NSArray<NSDictionary<NSString *, id> *> *)userIdentities {
     if (userIdentities.count > 0) {
-        uploadDictionary[kMPUserIdentityArrayKey] = userIdentities;
+        _uploadDictionary[kMPUserIdentityArrayKey] = userIdentities;
     }
     
     return self;

@@ -100,7 +100,7 @@
                                                                              session:nil
                                                                          messageInfo:messageInfo];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:@123 sessionId:nil messages:@[[messageBuilder build]] sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) apiKey:@"" apiSecret:@""];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:@123 sessionId:nil messages:@[[messageBuilder build]] sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     __block BOOL tested = NO;
     [uploadBuilder build:^(MPUpload * _Nullable upload) {
         [persistence saveUpload:upload];
@@ -148,7 +148,7 @@
                                                                              session:session
                                                                          messageInfo:messageInfo];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:@123 sessionId:@11 messages:@[[messageBuilder build]] sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) apiKey:@"" apiSecret:@""];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:@123 sessionId:@11 messages:@[[messageBuilder build]] sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     __block BOOL tested = NO;
     [uploadBuilder build:^(MPUpload * _Nullable upload) {
         [persistence saveUpload:upload];
@@ -361,7 +361,7 @@
                                        kMPMessagesKey:@[[message dictionaryRepresentation]],
                                        kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
     
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil apiKey:@"" apiSecret:@""];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
@@ -408,7 +408,7 @@
                                        kMPMessagesKey:@[[message dictionaryRepresentation]],
                                        kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
     
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) apiKey:@"" apiSecret:@""];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
@@ -454,7 +454,7 @@
                                        kMPMessagesKey:@[[message dictionaryRepresentation]],
                                        kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
     
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:nil apiKey:@"" apiSecret:@""];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
@@ -494,7 +494,7 @@
                                                                          messageInfo:@{@"MessageKey1":@"MessageValue1"}];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10 dataPlanId:@"test" dataPlanVersion:@(1) apiKey:@"" apiSecret:@""];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     [uploadBuilder build:^(MPUpload *upload) {
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -521,7 +521,7 @@
     
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10 dataPlanId:nil dataPlanVersion:nil apiKey:@"" apiSecret:@""];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:@(session.sessionId) messages:@[message] sessionTimeout:120 uploadInterval:10 dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     [uploadBuilder build:^(MPUpload *upload) {
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -721,8 +721,7 @@
                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
                                                                 dataPlanId:@"test"
                                                            dataPlanVersion:@(1)
-                                                                    apiKey:@""
-                                                                 apiSecret:@""];
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     [uploadBuilder build: ^(MPUpload * _Nullable upload) {
     }];
@@ -887,7 +886,7 @@
     
     // Store an upload
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO, kMPSessionTimeoutKey:@120, kMPUploadIntervalKey:@10, kMPLifeTimeValueKey:@0, kMPMessagesKey:@[[message dictionaryRepresentation]], kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil apiKey:@"" apiSecret:@""];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
     upload.timestamp = oneDayAgo;
     [instance.persistenceController saveUpload:upload];
     XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
@@ -923,7 +922,7 @@
     
     // Store an upload
     NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO, kMPSessionTimeoutKey:@120, kMPUploadIntervalKey:@10, kMPLifeTimeValueKey:@0, kMPMessagesKey:@[[message dictionaryRepresentation]], kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil apiKey:@"" apiSecret:@""];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
     upload.timestamp = sevenDaysAgo;
     [instance.persistenceController saveUpload:upload];
     XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);

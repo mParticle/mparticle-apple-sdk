@@ -8,6 +8,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPStateMachine.h"
+#import "MPUpload.h"
 
 @interface MParticle ()
 
@@ -273,9 +274,7 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
-- (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    
+- (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {    
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     const char *uuid;
@@ -294,7 +293,7 @@
         selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret FROM uploads ORDER BY _id";
     }
     
-    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
@@ -346,13 +345,14 @@
         }
         
         if (oldVersionValue < 31) {
-            sqlite3_bind_text(insertStatementHandle, 8, [stateMachine.apiKey cStringUsingEncoding:NSUTF8StringEncoding], -1, SQLITE_TRANSIENT); // api_key
-            sqlite3_bind_text(insertStatementHandle, 9, [stateMachine.secret cStringUsingEncoding:NSUTF8StringEncoding], -1, SQLITE_TRANSIENT); // api_secret
+            MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
+            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:uploadSettings];
+            sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
         } else {
-            const char *apiKey = (const char *)sqlite3_column_text(selectStatementHandle, 8);
-            sqlite3_bind_text(insertStatementHandle, 8, apiKey, -1, SQLITE_TRANSIENT); // api_key
-            const char *apiSecret = (const char *)sqlite3_column_text(selectStatementHandle, 9);
-            sqlite3_bind_text(insertStatementHandle, 9, apiSecret, -1, SQLITE_TRANSIENT); // api_secret
+#pragma message "BEN TODO - ERROR HANDLING"
+            const void *uploadSettingsData = sqlite3_column_blob(selectStatementHandle, 8);
+            int uploadSettingsDataLength = sqlite3_column_bytes(selectStatementHandle, 8);
+            sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData, uploadSettingsDataLength, SQLITE_TRANSIENT);
         }
         
         sqlite3_step(insertStatementHandle);

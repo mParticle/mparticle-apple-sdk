@@ -199,7 +199,7 @@
                                        kMPMessagesKey:@[[message dictionaryRepresentation]],
                                        kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
     
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) apiKey:@"" apiSecret:@""];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:[NSNumber numberWithLongLong:session.sessionId] uploadDictionary:uploadDictionary dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     XCTAssertNotNil(upload, @"Should not have been nil.");
     
     NSString *description = [upload description];
