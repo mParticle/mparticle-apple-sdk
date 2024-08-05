@@ -84,14 +84,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MPNetworkCommunication()
 
-@property (nonatomic, strong, readonly) MPURL *configURL;
-@property (nonatomic, strong, readonly) MPURL *identifyURL;
-@property (nonatomic, strong, readonly) MPURL *loginURL;
-@property (nonatomic, strong, readonly) MPURL *logoutURL;
-@property (nonatomic, strong, readonly) MPURL *modifyURL;
-- (MPURL *)eventURLForUpload:(MPUpload *)mpUpload;
-- (MPURL *)aliasURLForUpload:(MPUpload *)mpUpload;
-
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
 

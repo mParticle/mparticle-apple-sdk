@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 
+@class MPURL;
 @class MPSession;
 @class MPUpload;
 @class MPIdentityApiRequest;
@@ -24,6 +25,14 @@ typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessRe
 typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
 @interface MPNetworkCommunication : NSObject
+
+@property (nonatomic, strong, readonly, nonnull) MPURL *configURL;
+@property (nonatomic, strong, readonly, nonnull) MPURL *identifyURL;
+@property (nonatomic, strong, readonly, nonnull) MPURL *loginURL;
+@property (nonatomic, strong, readonly, nonnull) MPURL *logoutURL;
+@property (nonatomic, strong, readonly, nonnull) MPURL *modifyURL;
+- (nonnull MPURL *)eventURLForUpload:(nonnull MPUpload *)mpUpload;
+- (nonnull MPURL *)aliasURLForUpload:(nonnull MPUpload *)mpUpload;
 
 + (void)setConnectorFactory:(NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;
 + (NSObject<MPConnectorFactoryProtocol> *_Nullable)connectorFactory;

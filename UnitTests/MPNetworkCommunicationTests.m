@@ -158,7 +158,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *eventURL = [networkCommunication eventURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -172,7 +173,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -187,7 +189,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -203,7 +206,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -221,7 +225,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -238,7 +243,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -256,7 +262,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -281,7 +288,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
