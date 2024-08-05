@@ -298,6 +298,7 @@
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
+    MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         uuid = (const char *)sqlite3_column_text(selectStatementHandle, 0);
         sqlite3_bind_text(insertStatementHandle, 1, uuid, -1, SQLITE_TRANSIENT); // uuid
@@ -345,11 +346,15 @@
         }
         
         if (oldVersionValue < 31) {
-            MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
-            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:uploadSettings];
-            sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+            @try {
+                NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:uploadSettings];
+                sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+            } @catch(NSException *exception) {
+                MPILogError(@"Error while migrating upload record: %@: %@", exception.name, exception.reason);
+                sqlite3_reset(insertStatementHandle);
+                continue;
+            }
         } else {
-#pragma message "BEN TODO - ERROR HANDLING"
             const void *uploadSettingsData = sqlite3_column_blob(selectStatementHandle, 8);
             int uploadSettingsDataLength = sqlite3_column_bytes(selectStatementHandle, 8);
             sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData, uploadSettingsDataLength, SQLITE_TRANSIENT);

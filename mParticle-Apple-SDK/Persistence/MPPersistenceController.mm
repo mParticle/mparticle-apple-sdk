@@ -1258,27 +1258,26 @@ const int MaxBreadcrumbs = 50;
     vector<MPUpload *> uploadsVector;
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-            
-#pragma message "BEN TODO - ERROR HANDLING"
             NSData *uploadSettingsData = dataValue(preparedStatement, 8);
-            MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchiveObjectWithData:uploadSettingsData];
-            
-            MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
-                                                          uploadId:int64Value(preparedStatement, 0)
-                                                              UUID:stringValue(preparedStatement, 1)
-                                                        uploadData:dataValue(preparedStatement, 2)
-                                                         timestamp:doubleValue(preparedStatement, 3)
-                                                        uploadType:(MPUploadType)int64Value(preparedStatement, 5)
-                                                        dataPlanId:stringValue(preparedStatement, 6)
-                                                   dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil
-                                                    uploadSettings:uploadSettings];
-
-            
-            uploadsVector.push_back(upload);
+            if (uploadSettingsData) {
+                @try {
+                    MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchiveObjectWithData:uploadSettingsData];
+                    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
+                                                                  uploadId:int64Value(preparedStatement, 0)
+                                                                      UUID:stringValue(preparedStatement, 1)
+                                                                uploadData:dataValue(preparedStatement, 2)
+                                                                 timestamp:doubleValue(preparedStatement, 3)
+                                                                uploadType:(MPUploadType)int64Value(preparedStatement, 5)
+                                                                dataPlanId:stringValue(preparedStatement, 6)
+                                                           dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil
+                                                            uploadSettings:uploadSettings];
+                    uploadsVector.push_back(upload);
+                } @catch(NSException *exception) {
+                    MPILogError(@"Error while fetching upload: %@: %@", exception.name, exception.reason);
+                }
+            }
         }
-        
         sqlite3_clear_bindings(preparedStatement);
     }
     
@@ -1707,9 +1706,15 @@ const int MaxBreadcrumbs = 50;
             sqlite3_bind_null(preparedStatement, 7);
         }
         
-#pragma message "BEN TODO - ERROR HANDLING"
-        NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings];
-        sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+        @try {
+            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings];
+            sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+        } @catch(NSException *exception) {
+            MPILogError(@"Error while storing upload: %@: %@", exception.name, exception.reason);
+            sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
+        }
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing upload: %s", sqlite3_errmsg(mParticleDB));
