@@ -251,6 +251,33 @@ const int MaxBreadcrumbs = 50;
     [self removeDatabase];
 }
 
+- (void)clearDatabaseForWorkspaceSwitching {
+    [self openDatabase];
+    
+    // Delete all records except uploads
+    vector<string> sqlStatements = {
+        "DELETE FROM sessions",
+        "DELETE FROM previous_session",
+        "DELETE FROM messages",
+        "DELETE FROM breadcrumbs",
+        "DELETE FROM consumer_info",
+        "DELETE FROM cookies",
+        "DELETE FROM product_bags",
+        "DELETE FROM forwarding_records",
+        "DELETE FROM integration_attributes"
+    };
+    
+    int status;
+    char *errMsg;
+    for (const auto &sqlStatement : sqlStatements) {
+        status = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
+        
+        if (status != SQLITE_OK) {
+            MPILogError("Problem clearing table for workspace switching: %s\n", sqlStatement.c_str());
+        }
+    }
+}
+
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
     sqlite3_stmt *preparedStatement;
     
@@ -406,9 +433,6 @@ const int MaxBreadcrumbs = 50;
             session_number INTEGER NOT NULL, \
             mpid INTEGER NOT NULL \
         )",
-        "DROP TABLE IF EXISTS standalone_messages",
-        "DROP TABLE IF EXISTS standalone_uploads",
-        "DROP TABLE IF EXISTS remote_notifications",
         "CREATE TABLE IF NOT EXISTS consumer_info ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             mpid INTEGER, \

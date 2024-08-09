@@ -67,6 +67,7 @@
 - (void)updateConsumerInfo:(nonnull MPConsumerInfo *)consumerInfo;
 - (void)updateSession:(nonnull MPSession *)session;
 - (nonnull NSDictionary<NSString *, NSDictionary *> *)appAndDeviceInfoForSessionId:(nonnull NSNumber *)sessionId;
+- (void)clearDatabaseForWorkspaceSwitching;
 
 @end
 

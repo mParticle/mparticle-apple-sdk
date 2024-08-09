@@ -722,13 +722,35 @@ static NSString *const kMPStateKey = @"state";
     return session;
 }
 
+- (void)resetForSwitchingWorkspaces:(void (^)(void))completion {
+    [MParticle executeOnMessage:^{
+        // Clean up kits
+        [self.kitContainer flushSerializedKits];
+        [self.kitContainer removeAllSideloadedKits];
+        
+        // Clean up persistence
+        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [self.persistenceController clearDatabaseForWorkspaceSwitching];
+        [self.persistenceController closeDatabase];
+        
+        // Clean up mParticle instance
+        [MParticle executeOnMain:^{
+            [self.backendController unproxyOriginalAppDelegate];
+            [MParticle setSharedInstance:nil];
+            if (completion) {
+                completion();
+            }
+        }];
+    }];
+}
+
 - (void)switchWorkspaceWithOptions:(MParticleOptions *)options {
     void (^finishReset)(void) = ^void(void) {
         // Remove any kits that can't be reconfigured
         [self.kitContainer removeKitsFromRegistryInvalidForWorkspaceSwitch];
         
-        // Reset SDK (config, database, etc)
-        [self reset:^{
+        // Reset SDK (config, database--except uploads, user defaults, etc)
+        [self resetForSwitchingWorkspaces:^{
             // Start the SDK using the new options
             // NOTE: Explicitely calling sharedInstance here to generate a new one
             // as reset nil's out the old one and self may be deallocated
@@ -742,10 +764,9 @@ static NSString *const kMPStateKey = @"state";
             [self.backendController endSession];
         }
         
-        // Upload events
-        [self.backendController waitForKitsAndUploadWithCompletionHandler:^{
-            finishReset();
-        }];
+        // Batch any remaining messages into upload records
+        [self.backendController prepareBatchesForUpload];
+        finishReset();
     } else {
         finishReset();
     }

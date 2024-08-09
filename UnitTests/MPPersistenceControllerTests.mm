@@ -936,4 +936,39 @@
     XCTAssertEqual([instance.persistenceController fetchUploads].count, 0);
 }
 
+- (void)testClearDatabaseForWorkspaceSwitching {
+    NSTimeInterval sevenDaysAgo = [[NSDate date] timeIntervalSince1970] - 7*24*60*60;
+    
+    // Store a message
+    MParticle *instance = [MParticle sharedInstance];
+    NSLog(@"instance: %@", instance);
+    NSDictionary *messageDictionary = @{@"test": @"test"};
+    NSData *messageData = [NSJSONSerialization dataWithJSONObject:messageDictionary options:0 error:nil];
+    MPMessage *message = [[MPMessage alloc] initWithSessionId:@17 messageId:1 UUID:@"uuid" messageType:@"test" messageData:messageData timestamp:sevenDaysAgo uploadStatus:MPUploadStatusBatch userId:@1 dataPlanId:nil dataPlanVersion:nil];
+    [instance.persistenceController saveMessage:message];
+    XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 1);
+    
+    // Store a session
+    MPSession *session = [[MPSession alloc] initWithStartTime:sevenDaysAgo userId:[MPPersistenceController mpId]];
+    session.endTime = sevenDaysAgo;
+    session.attributesDictionary = [@{@"key1":@"value1"} mutableCopy];
+    [instance.persistenceController saveSession:session];
+    XCTAssertEqual([instance.persistenceController fetchSessions].count, 1);
+    
+    // Store an upload
+    NSDictionary *uploadDictionary = @{kMPOptOutKey:@NO, kMPSessionTimeoutKey:@120, kMPUploadIntervalKey:@10, kMPLifeTimeValueKey:@0, kMPMessagesKey:@[[message dictionaryRepresentation]], kMPMessageIdKey:[[NSUUID UUID] UUIDString]};
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(session.sessionId) uploadDictionary:uploadDictionary dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    upload.timestamp = sevenDaysAgo;
+    [instance.persistenceController saveUpload:upload];
+    XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
+    
+    // Cleanup all records except uploads
+    [instance.persistenceController clearDatabaseForWorkspaceSwitching];
+    
+    // Check that the records no longer exist
+    XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 0);
+    XCTAssertEqual([instance.persistenceController fetchSessions].count, 0);
+    XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
+}
+
 @end
