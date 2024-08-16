@@ -1,3 +1,10 @@
+# [8.26.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.1...v8.26.0) (2024-08-16)
+
+
+### Features
+
+* Cert Pinning Update ([#286](https://github.com/mParticle/mparticle-apple-sdk/issues/286)) ([15cf961](https://github.com/mParticle/mparticle-apple-sdk/commit/15cf961cc9b9d4f31b68df3a0d58e8b5c478e5c0))
+
 ## [8.25.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.0...v8.25.1) (2024-07-29)
 
 
