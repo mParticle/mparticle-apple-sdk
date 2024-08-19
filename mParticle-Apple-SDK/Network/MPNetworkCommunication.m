@@ -573,8 +573,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
     
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:eventURL
-                                                                    message:uploadString
-                                                           serializedParams:zipUploadData];
+                                                                                      message:uploadString
+                                                                             serializedParams:zipUploadData
+                                                                                       secret:upload.uploadSettings.secret];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -646,8 +647,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
     
     NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:aliasURL
-                                                                    message:uploadString
-                                                           serializedParams:upload.uploadData];
+                                                                                      message:uploadString
+                                                                             serializedParams:upload.uploadData
+                                                                                       secret:upload.uploadSettings.secret];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -853,8 +855,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         
         NSObject<MPConnectorProtocol> *connector = [self makeConnector];
         NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
-                                                                        message:nil
-                                                               serializedParams:data];
+                                                                                          message:nil
+                                                                                 serializedParams:data 
+                                                                                           secret:nil];
         
         NSData *responseData = response.data;
         error = response.error;

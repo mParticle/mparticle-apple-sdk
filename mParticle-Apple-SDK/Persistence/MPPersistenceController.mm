@@ -251,7 +251,7 @@ const int MaxBreadcrumbs = 50;
     [self removeDatabase];
 }
 
-- (void)clearDatabaseForWorkspaceSwitching {
+- (void)resetDatabaseForWorkspaceSwitching {
     [self openDatabase];
     
     // Delete all records except uploads
@@ -276,6 +276,8 @@ const int MaxBreadcrumbs = 50;
             MPILogError("Problem clearing table for workspace switching: %s\n", sqlStatement.c_str());
         }
     }
+    
+    [self closeDatabase];
 }
 
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {

@@ -1535,6 +1535,9 @@ static BOOL skipNextUpload = NO;
     
     dispatch_async([MParticle messageQueue], ^{
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+        
+        // Restore cached config if exists
+        [MPResponseConfig restore];
 
         if (shouldBeginSession) {
             [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
@@ -1542,8 +1545,8 @@ static BOOL skipNextUpload = NO;
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
                 
+        // TODO: BEN - This needs to handle cases where the workspace changed
         [self processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
-        [self waitForKitsAndUploadWithCompletionHandler:nil];
         
         [self beginUploadTimer];
         
@@ -1557,11 +1560,8 @@ static BOOL skipNextUpload = NO;
         }
         
         void (^searchAdsCompletion)(void) = ^{
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                [self processDidFinishLaunching:self.didFinishLaunchingNotification];
-                [self waitForKitsAndUploadWithCompletionHandler:nil];
-            });
+            [self processDidFinishLaunching:self.didFinishLaunchingNotification];
+            [self waitForKitsAndUploadWithCompletionHandler:nil];
         };
         
 #if TARGET_OS_IOS == 1
@@ -1576,9 +1576,6 @@ static BOOL skipNextUpload = NO;
 #endif
         
         [self processPendingArchivedMessages];
-        
-        [MPResponseConfig restore];
-        [self requestConfig:nil];
         MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
         
         completionHandler();

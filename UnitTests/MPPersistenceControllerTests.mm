@@ -963,7 +963,8 @@
     XCTAssertEqual([instance.persistenceController fetchUploads].count, 1);
     
     // Cleanup all records except uploads
-    [instance.persistenceController clearDatabaseForWorkspaceSwitching];
+    [instance.persistenceController resetDatabaseForWorkspaceSwitching];
+    [instance.persistenceController openDatabase];
     
     // Check that the records no longer exist
     XCTAssertEqual([instance.persistenceController fetchMessagesForUploading].count, 0);

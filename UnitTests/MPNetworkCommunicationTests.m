@@ -413,7 +413,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -448,7 +448,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -469,7 +469,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -501,7 +501,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -543,7 +543,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);

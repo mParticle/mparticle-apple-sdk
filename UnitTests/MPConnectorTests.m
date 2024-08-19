@@ -90,7 +90,7 @@
     MPURL *mpURL = [[MPURL alloc] initWithURL:customURL defaultURL:defaultURL];
 
     id mockRequestBuilder = OCMClassMock([MPURLRequestBuilder class]);
-    NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil];
+    NSObject<MPConnectorResponseProtocol> *connectorResponse = [connector responseFromPostRequestToURL:mpURL message:nil serializedParams:nil secret:nil];
     
     OCMVerify([mockRequestBuilder newBuilderWithURL:mpURL message:nil httpMethod:kMPHTTPMethodPost]);
     XCTAssertNotNil(connectorResponse);
