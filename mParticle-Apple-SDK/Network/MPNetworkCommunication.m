@@ -204,7 +204,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
-    MPURL *eventURL = nil;
+    MPURL *eventURL;
     if (modifiedURL && defaultURL) {
         eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
@@ -328,7 +328,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     defaultURL.accessibilityHint = @"identity";
     modifiedURL.accessibilityHint = @"identity";
     
-    MPURL *aliasURL = nil;
+    MPURL *aliasURL;
     if (modifiedURL && defaultURL) {
         aliasURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
