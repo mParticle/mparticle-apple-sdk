@@ -290,7 +290,7 @@
     } else if (oldVersionValue < 31) {
         selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
     } else {
-        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, api_key, api_secret FROM uploads ORDER BY _id";
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings FROM uploads ORDER BY _id";
     }
     
     insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
