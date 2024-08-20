@@ -77,7 +77,7 @@ static NSString * const kEventsOnly = @"eventsOnly";
 }
 
 + (BOOL)supportsSecureCoding {
-    return TRUE;
+    return YES;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
