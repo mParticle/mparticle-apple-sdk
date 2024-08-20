@@ -522,7 +522,7 @@
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
 
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController mpId]] deletedUserAttributes:nil];
@@ -600,7 +600,7 @@
     XCTAssertNil([MParticle sharedInstance].identity.currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
 
 
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
     [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:mpid] deletedUserAttributes:nil];
@@ -690,7 +690,7 @@
         NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
         NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"test"];
         NSArray *persistedMessages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:1]];
-        MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1)];
+        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:persistedMessages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
         XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
         
         if (!uploadBuilder) {

@@ -22,7 +22,8 @@ static NSDateFormatter *RFC1123DateFormatter;
 @end
     
 @interface MPURLRequestBuilder() {
-    BOOL SDKURLRequest;
+    BOOL _SDKURLRequest;
+    NSString *_secret;
 }
 
 @property (nonatomic, strong) NSData *headerData;
@@ -91,7 +92,7 @@ static NSDateFormatter *RFC1123DateFormatter;
     MPURLRequestBuilder *urlRequestBuilder = [[MPURLRequestBuilder alloc] initWithURL:url];
     
     if (urlRequestBuilder) {
-        urlRequestBuilder->SDKURLRequest = NO;
+        urlRequestBuilder->_SDKURLRequest = NO;
     }
     
     return urlRequestBuilder;
@@ -103,7 +104,7 @@ static NSDateFormatter *RFC1123DateFormatter;
     urlRequestBuilder.message = message;
     
     if (urlRequestBuilder) {
-        urlRequestBuilder->SDKURLRequest = YES;
+        urlRequestBuilder->_SDKURLRequest = YES;
     }
     
     return urlRequestBuilder;
@@ -136,6 +137,12 @@ static NSDateFormatter *RFC1123DateFormatter;
     return self;
 }
 
+- (MPURLRequestBuilder *)withSecret:(nullable NSString *)secret {
+    _secret = secret;
+    
+    return self;
+}
+
 - (NSMutableURLRequest *)build {
     NSMutableURLRequest *urlRequest = [NSMutableURLRequest requestWithURL:_url.url];
     [urlRequest setCachePolicy:NSURLRequestReloadIgnoringLocalCacheData];
@@ -144,7 +151,7 @@ static NSDateFormatter *RFC1123DateFormatter;
 
     BOOL isIdentityRequest = [urlRequest.URL.accessibilityHint isEqualToString:@"identity"];
     
-    if (SDKURLRequest || isIdentityRequest) {
+    if (_SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
         MPKitContainer *kitContainer = !isIdentityRequest ? [MParticle sharedInstance].kitContainer : nil;
         NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
@@ -206,7 +213,8 @@ static NSDateFormatter *RFC1123DateFormatter;
             }
         }
         
-        NSString *hmacSha256Encode = [self hmacSha256Encode:signatureMessage key:[MParticle sharedInstance].stateMachine.secret];
+        NSString *secret = _secret ?: [MParticle sharedInstance].stateMachine.secret;
+        NSString *hmacSha256Encode = [self hmacSha256Encode:signatureMessage key:secret];
         if (hmacSha256Encode) {
             [urlRequest setValue:hmacSha256Encode forHTTPHeaderField:@"x-mp-signature"];
         }

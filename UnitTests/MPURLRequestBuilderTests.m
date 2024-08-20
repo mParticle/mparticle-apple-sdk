@@ -17,6 +17,7 @@
 #import "MParticleWebView.h"
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
+#import "MPUpload.h"
 
 @interface MParticle ()
 
@@ -104,8 +105,9 @@
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURLForUpload:upload]
                                                                             message:[message serializedString]
                                                                          httpMethod:@"POST"];
     
@@ -130,8 +132,9 @@
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURLForUpload:upload]
                                                                             message:[message serializedString]
                                                                          httpMethod:@"POST"];
     
@@ -396,8 +399,9 @@
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     
-    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURL]
+    MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication eventURLForUpload:upload]
                                                                             message:[message serializedString]
                                                                          httpMethod:@"POST"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];

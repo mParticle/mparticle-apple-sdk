@@ -84,14 +84,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MPNetworkCommunication()
 
-@property (nonatomic, strong, readonly) MPURL *configURL;
-@property (nonatomic, strong, readonly) MPURL *eventURL;
-@property (nonatomic, strong, readonly) MPURL *identifyURL;
-@property (nonatomic, strong, readonly) MPURL *loginURL;
-@property (nonatomic, strong, readonly) MPURL *logoutURL;
-@property (nonatomic, strong, readonly) MPURL *modifyURL;
-@property (nonatomic, strong, readonly) MPURL *aliasURL;
-
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
 
@@ -100,11 +92,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @implementation MPNetworkCommunication
 
 @synthesize configURL = _configURL;
-@synthesize eventURL = _eventURL;
 @synthesize identifyURL = _identifyURL;
 @synthesize loginURL = _loginURL;
 @synthesize logoutURL = _logoutURL;
-@synthesize aliasURL = _aliasURL;
 @synthesize identifying = _identifying;
 
 - (instancetype)init {
@@ -197,32 +187,28 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return _configURL;
 }
 
-- (MPURL *)eventURL {
-    if (_eventURL) {
-        return _eventURL;
-    }
-    
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+- (MPURL *)eventURLForUpload:(MPUpload *)mpUpload {
     NSString *eventHost;
-    if ([MParticle sharedInstance].networkOptions.eventsTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        eventHost = [MParticle sharedInstance].networkOptions.eventsTrackingHost;
+    if (mpUpload.uploadSettings.eventsTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        eventHost = mpUpload.uploadSettings.eventsTrackingHost;
     } else {
-        eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
+        eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
     }
-    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+    NSString *urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, self.defaultEventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
-    if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, kMPEventsURL];
+    if (mpUpload.uploadSettings.overridesEventsSubdirectory) {
+        urlString = [NSString stringWithFormat:urlFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     } else {
-        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, stateMachine.apiKey, kMPEventsURL];
+        urlString = [NSString stringWithFormat:urlFormat, kMPURLScheme, eventHost, kMPEventsVersion, mpUpload.uploadSettings.apiKey, kMPEventsURL];
     }
     
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    MPURL *eventURL;
     if (modifiedURL && defaultURL) {
-        _eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+        eventURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
-    return _eventURL;
+    return eventURL;
 }
 
 - (MPURL *)identifyURL {
@@ -314,44 +300,40 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     return modifyURL;
 }
 
-- (MPURL *)aliasURL {
-    if (_aliasURL) {
-        return _aliasURL;
-    }
-    
+- (MPURL *)aliasURLForUpload:(MPUpload *)mpUpload {
     NSString *pathComponent = @"alias";
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *eventHost;
-    if ([MParticle sharedInstance].networkOptions.aliasTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
-        eventHost = [MParticle sharedInstance].networkOptions.aliasTrackingHost;
+    if (mpUpload.uploadSettings.aliasTrackingHost && [MParticle sharedInstance].stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
+        eventHost = mpUpload.uploadSettings.aliasTrackingHost;
     } else {
-        eventHost = [MParticle sharedInstance].networkOptions.aliasHost ?: self.defaultEventHost;
+        eventHost = mpUpload.uploadSettings.aliasHost ?: self.defaultEventHost;
     }
-    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
+    NSString *urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, self.defaultEventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
     
-    BOOL overrides = [MParticle sharedInstance].networkOptions.overridesAliasSubdirectory;
-    if (![MParticle sharedInstance].networkOptions.eventsOnly && ![MParticle sharedInstance].networkOptions.aliasHost) {
-        eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
-        overrides = [MParticle sharedInstance].networkOptions.overridesEventsSubdirectory;
+    BOOL overrides = mpUpload.uploadSettings.overridesAliasSubdirectory;
+    if (!mpUpload.uploadSettings.eventsOnly && !mpUpload.uploadSettings.aliasHost) {
+        eventHost = mpUpload.uploadSettings.eventsHost ?: self.defaultEventHost;
+        overrides = mpUpload.uploadSettings.overridesEventsSubdirectory;
     }
     
     if (overrides) {
-        urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, stateMachine.apiKey, pathComponent];
+        urlString = [NSString stringWithFormat:aliasURLFormatOverride, kMPURLScheme, eventHost, mpUpload.uploadSettings.apiKey, pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, stateMachine.apiKey, pathComponent];
+        urlString = [NSString stringWithFormat:aliasURLFormat, kMPURLScheme, eventHost, kMPIdentityVersion, kMPIdentityKey, mpUpload.uploadSettings.apiKey, pathComponent];
     }
     
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
     defaultURL.accessibilityHint = @"identity";
     modifiedURL.accessibilityHint = @"identity";
     
+    MPURL *aliasURL;
     if (modifiedURL && defaultURL) {
-        _aliasURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
+        aliasURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
     }
     
-    return _aliasURL;
+    return aliasURL;
 }
 
 
@@ -527,11 +509,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
 }
 
-- (BOOL)performMessageUpload:(MPUpload *)upload {    
+- (BOOL)performMessageUpload:(MPUpload *)upload {
     NSDate *minUploadDate = [MParticle.sharedInstance.stateMachine minUploadDateForUploadType:MPUploadTypeMessage];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES;  //stop upload loop
     }
+    
+    MPURL *eventURL = [self eventURLForUpload:upload];
     
     NSString *uploadString = [upload serializedString];
     NSObject<MPConnectorProtocol> *connector = [self makeConnector];
@@ -586,11 +570,12 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:self.eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointEvents url:eventURL.url.absoluteString body:@[uploadString, zipUploadData]];
     
-    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:self.eventURL
-                                                                    message:uploadString
-                                                           serializedParams:zipUploadData];
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:eventURL
+                                                                                      message:uploadString
+                                                                             serializedParams:zipUploadData
+                                                                                       secret:upload.uploadSettings.secret];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -606,7 +591,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     BOOL success = isSuccessCode && data && [data length] > 0;
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:self.eventURL.url.absoluteString body:response.data responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointEvents url:eventURL.url.absoluteString body:response.data responseCode:responseCode];
     if (success) {
         @try {
             NSError *serializationError = nil;
@@ -644,6 +629,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         return YES; //stop upload loop
     }
+    
+    MPURL *aliasURL = [self aliasURLForUpload:upload];
+    
     NSString *uploadString = [upload serializedString];
     NSObject<MPConnectorProtocol> *connector = [self makeConnector];
     
@@ -655,12 +643,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     NSTimeInterval start = [[NSDate date] timeIntervalSince1970];
     
-    MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", _aliasURL.url, uploadString);
-    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:self.aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
+    MPILogVerbose(@"Alias request:\nURL: %@ \nBody:%@", aliasURL.url, uploadString);
+    [MPListenerController.sharedInstance onNetworkRequestStarted:MPEndpointAlias url:aliasURL.url.absoluteString body:@[uploadString, upload.uploadData]];
     
-    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:self.aliasURL
-                                                                    message:uploadString
-                                                           serializedParams:upload.uploadData];
+    NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:aliasURL
+                                                                                      message:uploadString
+                                                                             serializedParams:upload.uploadData
+                                                                                       secret:upload.uploadSettings.secret];
     NSData *data = response.data;
     NSHTTPURLResponse *httpResponse = response.httpResponse;
     
@@ -673,7 +662,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         [[MParticle sharedInstance].persistenceController deleteUpload:upload];
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointAlias url:self.aliasURL.url.absoluteString body:response.data responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointAlias url:aliasURL.url.absoluteString body:response.data responseCode:responseCode];
     
     NSString *responseString = [[NSString alloc] initWithData:response.data encoding:NSUTF8StringEncoding];
     if (responseString != nil && responseString.length > 0) {
@@ -866,8 +855,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         
         NSObject<MPConnectorProtocol> *connector = [self makeConnector];
         NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
-                                                                        message:nil
-                                                               serializedParams:data];
+                                                                                          message:nil
+                                                                                 serializedParams:data 
+                                                                                           secret:nil];
         
         NSData *responseData = response.data;
         error = response.error;

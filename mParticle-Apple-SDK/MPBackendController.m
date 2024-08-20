@@ -660,8 +660,7 @@ static BOOL skipNextUpload = NO;
     skipNextUpload = YES;
 }
 
-- (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
-    const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
+- (void)prepareBatchesForUpload {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     //Fetch all stored messages (1)
@@ -681,13 +680,14 @@ static BOOL skipNextUpload = NO;
                         
                         for (int i = 0; i < batchMessageArrays.count; i += 1) {
                             NSArray *limitedMessages = batchMessageArrays[i];
-                            MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid: mpid sessionId:nullableSessionID messages:limitedMessages sessionTimeout:self.sessionTimeout uploadInterval:self.uploadInterval dataPlanId:nullableDataPlanId dataPlanVersion:nullableDataPlanVersion];
-                            
-                            if (!uploadBuilder) {
-                                completionHandlerCopy(YES);
-                                return;
-                            }
-                            
+                            MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid
+                                                                                         sessionId:nullableSessionID
+                                                                                          messages:limitedMessages
+                                                                                    sessionTimeout:self.sessionTimeout
+                                                                                    uploadInterval:self.uploadInterval
+                                                                                        dataPlanId:nullableDataPlanId
+                                                                                   dataPlanVersion:nullableDataPlanVersion
+                                                                                    uploadSettings:[MPUploadSettings currentUploadSettings]];
                             [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {
@@ -708,6 +708,14 @@ static BOOL skipNextUpload = NO;
     
     //Fetch all sessions and delete them if inactive (5)
     [persistence deleteAllSessionsExcept:[MParticle sharedInstance].stateMachine.currentSession];
+}
+
+- (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
+    // Prepare upload records
+    [self prepareBatchesForUpload];
+    
+    const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     if (skipNextUpload) {
         skipNextUpload = NO;
@@ -1527,6 +1535,9 @@ static BOOL skipNextUpload = NO;
     
     dispatch_async([MParticle messageQueue], ^{
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+        
+        // Restore cached config if exists
+        [MPResponseConfig restore];
 
         if (shouldBeginSession) {
             [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
@@ -1535,7 +1546,6 @@ static BOOL skipNextUpload = NO;
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
                 
         [self processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
-        [self waitForKitsAndUploadWithCompletionHandler:nil];
         
         [self beginUploadTimer];
         
@@ -1549,11 +1559,8 @@ static BOOL skipNextUpload = NO;
         }
         
         void (^searchAdsCompletion)(void) = ^{
-            static dispatch_once_t onceToken;
-            dispatch_once(&onceToken, ^{
-                [self processDidFinishLaunching:self.didFinishLaunchingNotification];
-                [self waitForKitsAndUploadWithCompletionHandler:nil];
-            });
+            [self processDidFinishLaunching:self.didFinishLaunchingNotification];
+            [self waitForKitsAndUploadWithCompletionHandler:nil];
         };
         
 #if TARGET_OS_IOS == 1
@@ -1568,9 +1575,6 @@ static BOOL skipNextUpload = NO;
 #endif
         
         [self processPendingArchivedMessages];
-        
-        [MPResponseConfig restore];
-        [self requestConfig:nil];
         MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
         
         completionHandler();

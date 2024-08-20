@@ -85,7 +85,7 @@ const int MaxBreadcrumbs = 50;
 
 + (void)initialize {
     if (self == [MPPersistenceController class]) {
-        databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27, @28, @29, @30];
+        databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27, @28, @29, @30, @31];
     }
 }
 
@@ -251,6 +251,35 @@ const int MaxBreadcrumbs = 50;
     [self removeDatabase];
 }
 
+- (void)resetDatabaseForWorkspaceSwitching {
+    [self openDatabase];
+    
+    // Delete all records except uploads
+    vector<string> sqlStatements = {
+        "DELETE FROM sessions",
+        "DELETE FROM previous_session",
+        "DELETE FROM messages",
+        "DELETE FROM breadcrumbs",
+        "DELETE FROM consumer_info",
+        "DELETE FROM cookies",
+        "DELETE FROM product_bags",
+        "DELETE FROM forwarding_records",
+        "DELETE FROM integration_attributes"
+    };
+    
+    int status;
+    char *errMsg;
+    for (const auto &sqlStatement : sqlStatements) {
+        status = sqlite3_exec(mParticleDB, sqlStatement.c_str(), NULL, NULL, &errMsg);
+        
+        if (status != SQLITE_OK) {
+            MPILogError("Problem clearing table for workspace switching: %s\n", sqlStatement.c_str());
+        }
+    }
+    
+    [self closeDatabase];
+}
+
 - (void)saveCookie:(MPCookie *)cookie forConsumerInfo:(MPConsumerInfo *)consumerInfo {
     sqlite3_stmt *preparedStatement;
     
@@ -357,8 +386,7 @@ const int MaxBreadcrumbs = 50;
             mpid INTEGER NOT NULL, \
             session_user_ids TEXT NOT NULL, \
             app_info BLOB, \
-            device_info BLOB, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+            device_info BLOB \
         )",
         "CREATE TABLE IF NOT EXISTS previous_session ( \
             session_id INTEGER, \
@@ -373,8 +401,7 @@ const int MaxBreadcrumbs = 50;
             suspend_time REAL, \
             length REAL, \
             mpid INTEGER NOT NULL, \
-            session_user_ids TEXT NOT NULL, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+            session_user_ids TEXT NOT NULL \
         )",
         "CREATE TABLE IF NOT EXISTS messages ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -386,8 +413,7 @@ const int MaxBreadcrumbs = 50;
             upload_status INTEGER, \
             data_plan_id TEXT, \
             data_plan_version INTEGER, \
-            mpid INTEGER NOT NULL, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+            mpid INTEGER NOT NULL \
         )",
         "CREATE TABLE IF NOT EXISTS uploads ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -397,7 +423,8 @@ const int MaxBreadcrumbs = 50;
             timestamp REAL NOT NULL, \
             upload_type INTEGER NOT NULL, \
             data_plan_id TEXT, \
-            data_plan_version INTEGER \
+            data_plan_version INTEGER, \
+            upload_settings BLOB NOT NULL \
         )",
         "CREATE TABLE IF NOT EXISTS breadcrumbs ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -406,12 +433,8 @@ const int MaxBreadcrumbs = 50;
             timestamp REAL NOT NULL, \
             breadcrumb_data BLOB NOT NULL, \
             session_number INTEGER NOT NULL, \
-            mpid INTEGER NOT NULL, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid) \
+            mpid INTEGER NOT NULL \
         )",
-        "DROP TABLE IF EXISTS standalone_messages",
-        "DROP TABLE IF EXISTS standalone_uploads",
-        "DROP TABLE IF EXISTS remote_notifications",
         "CREATE TABLE IF NOT EXISTS consumer_info ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
             mpid INTEGER, \
@@ -424,9 +447,7 @@ const int MaxBreadcrumbs = 50;
             domain TEXT, \
             expiration TEXT, \
             name TEXT, \
-            mpid INTEGER NOT NULL, \
-            FOREIGN KEY (mpid) REFERENCES consumerInfo (mpid), \
-            FOREIGN KEY (consumer_info_id) references consumer_info (_id) \
+            mpid INTEGER NOT NULL \
         )",
         "CREATE TABLE IF NOT EXISTS product_bags ( \
             _id INTEGER PRIMARY KEY AUTOINCREMENT, \
@@ -1258,26 +1279,31 @@ const int MaxBreadcrumbs = 50;
     sqlite3_stmt *preparedStatement;
     string sqlStatement;
     
-    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY timestamp, _id LIMIT 100";
+    sqlStatement = "SELECT _id, uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings FROM uploads ORDER BY timestamp, _id LIMIT 100";
     
     vector<MPUpload *> uploadsVector;
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
-            MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
-                                                          uploadId:int64Value(preparedStatement, 0)
-                                                              UUID:stringValue(preparedStatement, 1)
-                                                        uploadData:dataValue(preparedStatement, 2)
-                                                         timestamp:doubleValue(preparedStatement, 3)
-                                                        uploadType:(MPUploadType)int64Value(preparedStatement, 5)
-                                                        dataPlanId:stringValue(preparedStatement, 6)
-                                                   dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil];
-
-            
-            uploadsVector.push_back(upload);
+            NSData *uploadSettingsData = dataValue(preparedStatement, 8);
+            if (uploadSettingsData) {
+                @try {
+                    MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchiveObjectWithData:uploadSettingsData];
+                    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@(int64Value(preparedStatement, 4))
+                                                                  uploadId:int64Value(preparedStatement, 0)
+                                                                      UUID:stringValue(preparedStatement, 1)
+                                                                uploadData:dataValue(preparedStatement, 2)
+                                                                 timestamp:doubleValue(preparedStatement, 3)
+                                                                uploadType:(MPUploadType)int64Value(preparedStatement, 5)
+                                                                dataPlanId:stringValue(preparedStatement, 6)
+                                                           dataPlanVersion:intValue(preparedStatement, 7) ? @(intValue(preparedStatement, 7)) : nil
+                                                            uploadSettings:uploadSettings];
+                    uploadsVector.push_back(upload);
+                } @catch(NSException *exception) {
+                    MPILogError(@"Error while fetching upload: %@: %@", exception.name, exception.reason);
+                }
+            }
         }
-        
         sqlite3_clear_bindings(preparedStatement);
     }
     
@@ -1676,7 +1702,7 @@ const int MaxBreadcrumbs = 50;
     }
     
     sqlite3_stmt *preparedStatement;
-    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    string sqlStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         string auxString = string([upload.uuid UTF8String]);
@@ -1704,6 +1730,16 @@ const int MaxBreadcrumbs = 50;
         } else {
             sqlite3_bind_null(preparedStatement, 6);
             sqlite3_bind_null(preparedStatement, 7);
+        }
+        
+        @try {
+            NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:upload.uploadSettings];
+            sqlite3_bind_blob(preparedStatement, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+        } @catch(NSException *exception) {
+            MPILogError(@"Error while storing upload: %@: %@", exception.name, exception.reason);
+            sqlite3_clear_bindings(preparedStatement);
+            sqlite3_finalize(preparedStatement);
+            return;
         }
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {

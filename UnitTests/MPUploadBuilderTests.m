@@ -130,14 +130,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                    sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-                                      ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion  
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -204,12 +204,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                messages:@[message]
-                                                          uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                              dataPlanId:message.dataPlanId
-                                                         dataPlanVersion:message.dataPlanVersion
-                                      ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:nil
+                                                                  messages:@[message]
+                                                            sessionTimeout:0
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion 
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -282,15 +284,15 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                    sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-                                      ];
-    
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
+
     XCTAssertNotNil(uploadBuilder);
     
     NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
@@ -364,14 +366,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                    sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-                                      ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion 
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -443,14 +445,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-    ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion 
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -525,14 +527,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-    ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -610,14 +612,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-    ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     
@@ -691,14 +693,14 @@
     [messageBuilder timestamp:[[NSDate date] timeIntervalSince1970]];
     MPMessage *message = [messageBuilder build];
     
-    MPUploadBuilder *uploadBuilder = [MPUploadBuilder    newBuilderWithMpid:[MPPersistenceController mpId]
-                                                                  sessionId:[NSNumber numberWithLong:session.sessionId]
-                                                                   messages:@[message]
-                                                             sessionTimeout:DEFAULT_SESSION_TIMEOUT
-                                                             uploadInterval:DEFAULT_UPLOAD_INTERVAL
-                                                                 dataPlanId:message.dataPlanId
-                                                            dataPlanVersion:message.dataPlanVersion
-    ];
+    MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController mpId]
+                                                                 sessionId:[NSNumber numberWithLong:session.sessionId]
+                                                                  messages:@[message]
+                                                            sessionTimeout:DEFAULT_SESSION_TIMEOUT
+                                                            uploadInterval:DEFAULT_UPLOAD_INTERVAL
+                                                                dataPlanId:message.dataPlanId
+                                                           dataPlanVersion:message.dataPlanVersion
+                                                            uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     XCTAssertNotNil(uploadBuilder);
     

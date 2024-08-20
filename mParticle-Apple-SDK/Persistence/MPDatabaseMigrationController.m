@@ -7,11 +7,14 @@
 #import "MPPersistenceController.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
+#import "MPStateMachine.h"
+#import "MPUpload.h"
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
 
 @end
 
@@ -271,7 +274,7 @@
     sqlite3_finalize(insertStatementHandle);
 }
 
-- (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {
+- (void)migrateUploadsFromDatabase:(sqlite3 *)oldDatabase version:(NSNumber *)oldVersion toDatabase:(sqlite3 *)newDatabase {    
     const char *selectStatement, *insertStatement;
     sqlite3_stmt *selectStatementHandle, *insertStatementHandle;
     const char *uuid;
@@ -284,15 +287,18 @@
         selectStatement = "SELECT uuid, message_data, timestamp, session_id FROM uploads ORDER BY _id";
     } else if (oldVersionValue < 29) {
         selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type FROM uploads ORDER BY _id";
+    } else if (oldVersionValue < 31) {
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
     } else {
-           selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version FROM uploads ORDER BY _id";
-       }
+        selectStatement = "SELECT uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings FROM uploads ORDER BY _id";
+    }
     
-    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    insertStatement = "INSERT INTO uploads (uuid, message_data, timestamp, session_id, upload_type, data_plan_id, data_plan_version, upload_settings) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
+    MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         uuid = (const char *)sqlite3_column_text(selectStatementHandle, 0);
         sqlite3_bind_text(insertStatementHandle, 1, uuid, -1, SQLITE_TRANSIENT); // uuid
@@ -337,6 +343,21 @@
             } else {
                 sqlite3_bind_null(insertStatementHandle, 7); // data_plan_version
             }
+        }
+        
+        if (oldVersionValue < 31) {
+            @try {
+                NSData *uploadSettingsData = [NSKeyedArchiver archivedDataWithRootObject:uploadSettings];
+                sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData.bytes, (int)uploadSettingsData.length, SQLITE_TRANSIENT);
+            } @catch(NSException *exception) {
+                MPILogError(@"Error while migrating upload record: %@: %@", exception.name, exception.reason);
+                sqlite3_reset(insertStatementHandle);
+                continue;
+            }
+        } else {
+            const void *uploadSettingsData = sqlite3_column_blob(selectStatementHandle, 8);
+            int uploadSettingsDataLength = sqlite3_column_bytes(selectStatementHandle, 8);
+            sqlite3_bind_blob(insertStatementHandle, 8, uploadSettingsData, uploadSettingsDataLength, SQLITE_TRANSIENT);
         }
         
         sqlite3_step(insertStatementHandle);

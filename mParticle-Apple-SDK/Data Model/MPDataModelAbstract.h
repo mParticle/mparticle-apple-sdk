@@ -6,7 +6,7 @@
     NSString *_uuid;
 }
 
-@property (nonatomic, strong, nonnull) NSString *uuid;
+@property (nonatomic, strong, nullable) NSString *uuid;
 
 - (nonnull id)copyWithZone:(nullable NSZone *)zone;
 

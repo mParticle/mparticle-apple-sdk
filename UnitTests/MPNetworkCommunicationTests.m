@@ -158,7 +158,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *eventURL = [networkCommunication eventURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *eventURL = [networkCommunication eventURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -172,7 +173,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -187,7 +189,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -203,7 +206,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -221,7 +225,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -238,7 +243,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -256,7 +262,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -281,7 +288,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [MParticle sharedInstance].networkOptions = options;
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    NSURL *aliasURL = [networkCommunication aliasURL].url;
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:nil dataPlanVersion:nil uploadSettings:[MPUploadSettings currentUploadSettings]];
+    NSURL *aliasURL = [networkCommunication aliasURLForUpload:upload].url;
     
     [self deswizzle];
     
@@ -303,7 +311,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 - (void)testUploadsArrayZipFail {
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZip class]);
     OCMStub([mockZip compressedDataFromData:OCMOCK_ANY]).andReturn(nil);
@@ -318,7 +326,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusNotDetermined withATTStatusTimestampMillis:nil];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZip class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
@@ -335,7 +343,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusRestricted withATTStatusTimestampMillis:nil];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZip class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
@@ -352,7 +360,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusDenied withATTStatusTimestampMillis:nil];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZip class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
@@ -369,7 +377,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     [[MParticle sharedInstance] setATTStatus:MPATTAuthorizationStatusAuthorized withATTStatusTimestampMillis:nil];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
     id mockZip = OCMClassMock([MPZip class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
@@ -405,13 +413,13 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
     
-    MPUpload *messageUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *messageUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     
     BOOL actualShouldStop = [networkCommunication performMessageUpload:messageUpload];
     XCTAssertEqual(shouldStop, actualShouldStop, @"Return code assertion: %d", returnCode);
@@ -440,13 +448,13 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
     [[[mockNetworkCommunication stub] andReturn:mockConnector] makeConnector];
     
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     BOOL actualShouldStop = [networkCommunication performAliasUpload:aliasUpload];
@@ -461,7 +469,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -473,8 +481,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MParticle *instance = [MParticle sharedInstance];
     instance.persistenceController = mockPersistenceController;
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     NSArray *uploads = @[eventUpload, aliasUpload];
@@ -493,7 +501,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -501,8 +509,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1)];
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     [[mockPersistenceController expect] deleteUpload:eventUpload];
@@ -535,7 +543,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     response.httpResponse = urlResponseMock;
     
     id mockConnector = OCMClassMock([MPConnector class]);
-    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY];
+    [[[mockConnector stub] andReturn:response] responseFromPostRequestToURL:OCMOCK_ANY message:OCMOCK_ANY serializedParams:OCMOCK_ANY secret:OCMOCK_ANY];
     
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     id mockNetworkCommunication = OCMPartialMock(networkCommunication);
@@ -543,8 +551,8 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     
     id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
     
-    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
-    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1)];
+    MPUpload *eventUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
+    MPUpload *aliasUpload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     aliasUpload.uploadType = MPUploadTypeAlias;
     
     [[mockPersistenceController expect] deleteUpload:eventUpload];

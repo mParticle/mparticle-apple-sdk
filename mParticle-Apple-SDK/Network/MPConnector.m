@@ -237,10 +237,10 @@ static NSArray *mpStoredCertificates = nil;
     return response;
 }
 
-- (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams {
+- (nonnull NSObject<MPConnectorResponseProtocol> *)responseFromPostRequestToURL:(nonnull MPURL *)url message:(nullable NSString *)message serializedParams:(nullable NSData *)serializedParams secret:(nullable NSString *)secret {
     MPConnectorResponse *response = [[MPConnectorResponse alloc] init];
     
-    NSMutableURLRequest *urlRequest = [[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost] withPostData:serializedParams] build];
+    NSMutableURLRequest *urlRequest = [[[[MPURLRequestBuilder newBuilderWithURL:url message:message httpMethod:kMPHTTPMethodPost] withPostData:serializedParams] withSecret:secret] build];
     
     if (urlRequest) {
         requestStartTime = [NSDate date];
