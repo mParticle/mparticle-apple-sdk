@@ -1545,7 +1545,6 @@ static BOOL skipNextUpload = NO;
         
         MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeFirstRun session:self.session messageInfo:nil];
                 
-        // TODO: BEN - This needs to handle cases where the workspace changed
         [self processOpenSessionsEndingCurrent:NO completionHandler:^(void) {}];
         
         [self beginUploadTimer];
