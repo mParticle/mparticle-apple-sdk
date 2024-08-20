@@ -857,7 +857,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         NSObject<MPConnectorResponseProtocol> *response = [connector responseFromPostRequestToURL:mpURL
                                                                                           message:nil
                                                                                  serializedParams:data 
-                                                                                           secret:upload.uploadSettings.secret];
+                                                                                           secret:nil];
         
         NSData *responseData = response.data;
         error = response.error;
