@@ -1,3 +1,15 @@
+# [8.27.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.26.0...v8.27.0) (2024-09-04)
+
+
+### Bug Fixes
+
+* Properly attribute events when workspace switches on new launch ([#288](https://github.com/mParticle/mparticle-apple-sdk/issues/288)) ([407749a](https://github.com/mParticle/mparticle-apple-sdk/commit/407749abcb047c97b804592fcc3c5c553792d2f8))
+
+
+### Features
+
+* Workspace switching improvements ([#287](https://github.com/mParticle/mparticle-apple-sdk/issues/287)) ([0c8da18](https://github.com/mParticle/mparticle-apple-sdk/commit/0c8da18dd1faa701186abd6f45820fc6c54fa71f))
+
 # [8.26.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.25.1...v8.26.0) (2024-08-16)
 
 
