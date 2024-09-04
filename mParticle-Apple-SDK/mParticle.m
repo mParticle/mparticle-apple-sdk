@@ -24,6 +24,7 @@
 #import "MPDataPlanFilter.h"
 #import "MPResponseConfig.h"
 #import "MParticleSwift.h"
+#import "MPUpload.h"
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
@@ -74,7 +75,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
-@property (nonatomic, readwrite) MPNetworkOptions *networkOptions;
+@property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong) MParticleWebView *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
@@ -613,6 +614,7 @@ static NSString *const kMPStateKey = @"state";
 
     [self.backendController startWithKey:apiKey
                                   secret:secret
+                          networkOptions:options.networkOptions
                                 firstRun:firstRun
                         installationType:installationType
                         proxyAppDelegate:proxyAppDelegate
@@ -765,7 +767,7 @@ static NSString *const kMPStateKey = @"state";
         
         // Batch any remaining messages into upload records
         [MParticle executeOnMessage:^{
-            [self.backendController prepareBatchesForUpload];
+            [self.backendController prepareBatchesForUpload:[MPUploadSettings currentUploadSettings]];
             finishReset();
         }];
     } else {

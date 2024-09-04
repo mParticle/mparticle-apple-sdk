@@ -8,6 +8,7 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
+#import "MPUpload.h"
 
 @interface MParticle ()
 
@@ -432,6 +433,35 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
 
 - (NSUInteger)sideloadedKitsCount {
     return [[[NSUserDefaults standardUserDefaults] objectForKey:MPSideloadedKitsCountUserDefaultsKey] intValue];
+}
+
+- (void)setLastUploadSettings:(nullable MPUploadSettings *)lastUploadSettings {
+    if (!lastUploadSettings) {
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:kMPLastUploadSettingsUserDefaultsKey];
+        return;
+    }
+    
+    @try {
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:lastUploadSettings];
+        [[NSUserDefaults standardUserDefaults] setObject:data forKey:kMPLastUploadSettingsUserDefaultsKey];
+    } @catch(NSException *exception) {
+        MPILogError(@"Error serializing last upload settings: %@: %@", exception.name, exception.reason);
+        [self setLastUploadSettings:nil];
+    }
+}
+
+- (nullable MPUploadSettings *)lastUploadSettings {
+    NSData *data = [[NSUserDefaults standardUserDefaults] objectForKey:kMPLastUploadSettingsUserDefaultsKey];
+    if (data) {
+        @try {
+            MPUploadSettings *uploadSettings = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            return uploadSettings;
+        } @catch(NSException *exception) {
+            MPILogError(@"Error deserializing last upload settings: %@: %@", exception.name, exception.reason);
+            [self setLastUploadSettings:nil];
+        }
+    }
+    return nil;
 }
 
 #pragma mark Objective-C Literals

@@ -660,7 +660,7 @@ static BOOL skipNextUpload = NO;
     skipNextUpload = YES;
 }
 
-- (void)prepareBatchesForUpload {
+- (void)prepareBatchesForUpload:(MPUploadSettings *)uploadSettings {
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
     
     //Fetch all stored messages (1)
@@ -687,7 +687,7 @@ static BOOL skipNextUpload = NO;
                                                                                     uploadInterval:self.uploadInterval
                                                                                         dataPlanId:nullableDataPlanId
                                                                                    dataPlanVersion:nullableDataPlanVersion
-                                                                                    uploadSettings:[MPUploadSettings currentUploadSettings]];
+                                                                                    uploadSettings:uploadSettings];
                             [uploadBuilder withUserAttributes:[self userAttributesForUserId:mpid] deletedUserAttributes:self.deletedUserAttributes];
                             [uploadBuilder withUserIdentities:[self userIdentitiesForUserId:mpid]];
                             [uploadBuilder build:^(MPUpload *upload) {
@@ -712,7 +712,7 @@ static BOOL skipNextUpload = NO;
 
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler {
     // Prepare upload records
-    [self prepareBatchesForUpload];
+    [self prepareBatchesForUpload:[MPUploadSettings currentUploadSettings]];
     
     const void (^completionHandlerCopy)(BOOL) = [completionHandler copy];
     MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
@@ -1500,7 +1500,7 @@ static BOOL skipNextUpload = NO;
     return MPExecStatusSuccess;
 }
 
-- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
+- (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:apiKey parameter2:secret parameter3:@(firstRun) parameter4:consentState];
     
     if (![MPStateMachine isAppExtension]) {
@@ -1535,6 +1535,23 @@ static BOOL skipNextUpload = NO;
     
     dispatch_async([MParticle messageQueue], ^{
         [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+        
+        // Check if we've switched workspaces on startup
+        MPUploadSettings *lastUploadSettings = [[MPIUserDefaults standardUserDefaults] lastUploadSettings];
+        if (![lastUploadSettings.apiKey isEqualToString:apiKey]) {
+            // Different workspace, so batch previous messages under old upload settings before starting
+            [self prepareBatchesForUpload:lastUploadSettings];
+            
+            // Delete the stored upload settings
+            [[MPIUserDefaults standardUserDefaults] setLastUploadSettings:nil];
+            
+            // Delete the cached config
+            [MPResponseConfig deleteConfig];
+        }
+        
+        // Cache the upload settings in case we switch workspaces on startup
+        MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
+        [[MPIUserDefaults standardUserDefaults] setLastUploadSettings:uploadSettings];
         
         // Restore cached config if exists
         [MPResponseConfig restore];

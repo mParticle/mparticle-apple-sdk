@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 
 @class MPKitConfiguration;
+@class MPUploadSettings;
 
 @interface MPIUserDefaults : NSObject
 
@@ -29,6 +30,8 @@
 - (BOOL)isConfigurationParametersOutdated;
 - (void)setSideloadedKitsCount:(NSUInteger)sideloadedKitsCount;
 - (NSUInteger)sideloadedKitsCount;
+- (void)setLastUploadSettings:(nullable MPUploadSettings *)lastUploadSettings;
+- (nullable MPUploadSettings *)lastUploadSettings;
 
 + (NSString *_Nullable)stringFromDeviceToken:(NSData *_Nonnull)deviceToken;
 
