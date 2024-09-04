@@ -3,6 +3,7 @@
 #import "MPEnums.h"
 
 @class MPSession;
+@class MPNetworkOptions;
 
 // Upload credentials and options
 @interface MPUploadSettings : NSObject <NSCopying, NSSecureCoding>
@@ -19,6 +20,8 @@
 + (nonnull MPUploadSettings *)currentUploadSettings;
 
 - (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret eventsHost:(nullable NSString *)eventsHost eventsTrackingHost:(nullable NSString *)eventsTrackingHost overridesEventsSubdirectory:(BOOL)overridesEventsSubdirectory aliasHost:(nullable NSString *)aliasHost aliasTrackingHost:(nullable NSString *)aliasTrackingHost overridesAliasSubdirectory:(BOOL)overridesAliasSubdirectory eventsOnly:(BOOL)eventsOnly;
+
+- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions;
 
 @end
 

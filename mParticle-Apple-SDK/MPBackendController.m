@@ -1542,15 +1542,12 @@ static BOOL skipNextUpload = NO;
             // Different workspace, so batch previous messages under old upload settings before starting
             [self prepareBatchesForUpload:lastUploadSettings];
             
-            // Delete the stored upload settings
-            [[MPIUserDefaults standardUserDefaults] setLastUploadSettings:nil];
-            
             // Delete the cached config
             [MPResponseConfig deleteConfig];
         }
         
         // Cache the upload settings in case we switch workspaces on startup
-        MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
+        MPUploadSettings *uploadSettings = [[MPUploadSettings alloc] initWithApiKey:apiKey secret:secret networkOptions:networkOptions];
         [[MPIUserDefaults standardUserDefaults] setLastUploadSettings:uploadSettings];
         
         // Restore cached config if exists

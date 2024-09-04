@@ -14,13 +14,7 @@
     MParticle *mParticle = [MParticle sharedInstance];
     MPUploadSettings *uploadSettings = [[MPUploadSettings alloc] initWithApiKey:mParticle.stateMachine.apiKey
                                                                          secret:mParticle.stateMachine.secret
-                                                                     eventsHost:mParticle.networkOptions.eventsHost
-                                                             eventsTrackingHost:mParticle.networkOptions.eventsTrackingHost
-                                                    overridesEventsSubdirectory:mParticle.networkOptions.overridesEventsSubdirectory
-                                                                      aliasHost:mParticle.networkOptions.aliasHost
-                                                              aliasTrackingHost:mParticle.networkOptions.aliasTrackingHost
-                                                     overridesAliasSubdirectory:mParticle.networkOptions.overridesAliasSubdirectory
-                                                                     eventsOnly:mParticle.networkOptions.eventsOnly];
+                                                                 networkOptions:mParticle.networkOptions];
     return uploadSettings;
 }
 
@@ -37,6 +31,18 @@
         _eventsOnly = eventsOnly;
     }
     return self;
+}
+
+- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(MPNetworkOptions *)networkOptions {
+    return [self initWithApiKey:apiKey
+                         secret:secret
+                     eventsHost:networkOptions.eventsHost
+             eventsTrackingHost:networkOptions.eventsTrackingHost
+    overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
+                      aliasHost:networkOptions.aliasHost
+              aliasTrackingHost:networkOptions.aliasTrackingHost
+     overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
+                     eventsOnly:networkOptions.eventsOnly];        
 }
 
 static NSString * const kApiKey = @"apiKey";
