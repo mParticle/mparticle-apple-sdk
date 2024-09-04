@@ -343,7 +343,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  
  (Provided to accomodate certain advanced use cases. Most integrations of the SDK will not require modifying this property.)
  */
-@property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
+@property (nonatomic, strong, readwrite, nullable) MPNetworkOptions *networkOptions;
 
 /**
  Consent state.
@@ -572,7 +572,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Allows you to proxy SDK traffic by overriding the default network endpoints and certificates used by the SDK.
  @see MParticleOptions
  */
-@property (nonatomic, readonly) MPNetworkOptions *networkOptions;
+@property (nonatomic, readonly, nullable) MPNetworkOptions *networkOptions;
  
  #if TARGET_OS_IOS == 1
  /**
