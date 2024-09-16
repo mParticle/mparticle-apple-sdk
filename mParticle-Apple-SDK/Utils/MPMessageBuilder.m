@@ -9,14 +9,12 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#ifndef MPARTICLE_LOCATION_DISABLE
-#import "MPLocationManager.h"
-#endif
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
 #import "mParticle.h"
+#import "MParticleSwift.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
