@@ -1,3 +1,10 @@
+## [8.27.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.0...v8.27.1) (2024-09-17)
+
+
+### Bug Fixes
+
+* Prevent Repeated Sessions on active Background ([#290](https://github.com/mParticle/mparticle-apple-sdk/issues/290)) ([9ead27d](https://github.com/mParticle/mparticle-apple-sdk/commit/9ead27d25cf2f31cbb97f7b26216524b48afdcae))
+
 # [8.27.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.26.0...v8.27.0) (2024-09-04)
 
 
