@@ -2086,7 +2086,7 @@ static BOOL skipNextUpload = NO;
         [MParticle executeOnMessage:^{
             [[MParticle sharedInstance].persistenceController updateSession:self.session];
             [self processOpenSessionsEndingCurrent:YES completionHandler:^(void) {
-                [self beginSession];
+                MPILogVerbose(@"Session ended in the background. New session will begin if an mParticle event is logged or app enters foreground.");
             }];
         }];
     }
@@ -2222,6 +2222,8 @@ static BOOL skipNextUpload = NO;
             [self updateSessionBackgroundTime];
         }
         
+        [self beginSession];
+
         #if TARGET_OS_IOS == 1
         #ifndef MPARTICLE_LOCATION_DISABLE
         [MParticle executeOnMain:^{
