@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-#if os(iOS)
+#if os(iOS) && !MPARTICLE_LOCATION_DISABLE
 import CoreLocation
 #endif
 
@@ -19,7 +19,7 @@ import CoreLocation
         return _trackingLocation
     }
     
-    #if os(iOS)
+    #if os(iOS) && !MPARTICLE_LOCATION_DISABLE
     private static var _locationManager: CLLocationManager?
     
     @objc public var location: CLLocation?
@@ -93,7 +93,7 @@ import CoreLocation
     #endif
 }
 
-#if os(iOS)
+#if os(iOS) && !MPARTICLE_LOCATION_DISABLE
 extension MPLocationManager_PRIVATE: CLLocationManagerDelegate {
     public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         Self._trackingLocation = (status == .authorizedAlways || status == .authorizedWhenInUse)
