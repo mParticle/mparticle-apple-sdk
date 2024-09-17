@@ -10,9 +10,6 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
-#ifndef MPARTICLE_LOCATION_DISABLE
-#import "MPLocationManager.h"
-#endif
 #import "MPKitContainer.h"
 #if TARGET_OS_IOS == 1
 #import "MPSearchAdsAttribution.h"
@@ -474,7 +471,7 @@ static BOOL runningInBackground = NO;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
 - (CLLocation *)location {
-    if ([MPLocationManager trackingLocation]) {
+    if ([MPLocationManager_PRIVATE trackingLocation]) {
         return self.locationManager.location;
     } else {
         return _location;
@@ -482,7 +479,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setLocation:(CLLocation *)location {
-    if ([MPLocationManager trackingLocation]) {
+    if ([MPLocationManager_PRIVATE trackingLocation]) {
         if (self.locationManager) {
             self.locationManager.location = location;
         }

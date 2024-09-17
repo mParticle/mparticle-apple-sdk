@@ -9,7 +9,7 @@
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
     @class CLLocation;
-    @class MPLocationManager;
+    @class MPLocationManager_PRIVATE;
 #endif
 #endif
 @class MPCustomModule;
@@ -29,7 +29,7 @@
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
 @property (nonatomic, strong, nullable) CLLocation *location;
-@property (nonatomic, strong, nullable) MPLocationManager *locationManager;
+@property (nonatomic, strong, nullable) MPLocationManager_PRIVATE *locationManager;
 #endif
 #endif
 @property (nonatomic, strong, nullable) NSString *networkPerformanceMeasuringMode;

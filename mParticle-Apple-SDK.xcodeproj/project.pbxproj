@@ -96,8 +96,6 @@
 		53A79B6F29CDFB2000E7489F /* MPIdentityApi.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA129CDFB1E00E7489F /* MPIdentityApi.m */; };
 		53A79B7029CDFB2000E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
 		53A79B7129CDFB2000E7489F /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA329CDFB1E00E7489F /* MPBackendController.h */; };
-		53A79B7229CDFB2000E7489F /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA529CDFB1E00E7489F /* MPLocationManager.h */; };
-		53A79B7329CDFB2000E7489F /* MPLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA629CDFB1E00E7489F /* MPLocationManager.m */; };
 		53A79B7429CDFB2000E7489F /* MPURLRequestBuilder.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA829CDFB1E00E7489F /* MPURLRequestBuilder.h */; };
 		53A79B7529CDFB2000E7489F /* MPNetworkCommunication.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */; };
 		53A79B7629CDFB2000E7489F /* MPURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AAA29CDFB1E00E7489F /* MPURL.m */; };
@@ -395,7 +393,6 @@
 		53A79D4129CE23F700E7489F /* MPDatabaseMigrationController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ABA29CDFB1E00E7489F /* MPDatabaseMigrationController.h */; };
 		53A79D4229CE23F700E7489F /* MPZip.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B1B29CDFB1F00E7489F /* MPZip.h */; };
 		53A79D4329CE23F700E7489F /* MParticleUserNotification.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ABD29CDFB1E00E7489F /* MParticleUserNotification.h */; };
-		53A79D4429CE23F700E7489F /* MPLocationManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA529CDFB1E00E7489F /* MPLocationManager.h */; };
 		53A79D4529CE23F700E7489F /* MPForwardQueueItem.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5229CDFB1F00E7489F /* MPForwardQueueItem.h */; };
 		53A79D4629CE23F700E7489F /* MPDevice.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B2B29CDFB1F00E7489F /* MPDevice.h */; };
 		53A79D4729CE23F700E7489F /* MPAttributeProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B4E29CDFB1F00E7489F /* MPAttributeProjection.h */; };
@@ -510,9 +507,10 @@
 		53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5029CDFB1F00E7489F /* MPKitContainer.mm */; };
 		53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B1229CDFB1F00E7489F /* MPUploadBuilder.m */; };
 		53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5329CDFB1F00E7489F /* MPBaseProjection.m */; };
-		53A79DBD29CE23F700E7489F /* MPLocationManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA629CDFB1E00E7489F /* MPLocationManager.m */; };
 		53A79DBE29CE23F700E7489F /* MPUserAttributeChange.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B2729CDFB1F00E7489F /* MPUserAttributeChange.m */; };
 		53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */; };
+		53B28FB22C938C26009072FC /* MPLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B28FB12C938C26009072FC /* MPLocationManager.swift */; };
+		53B28FB32C938C26009072FC /* MPLocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B28FB12C938C26009072FC /* MPLocationManager.swift */; };
 		53B33E8A2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
 		53B33E8B2A4606CD00CC8A19 /* MPSideloadedKit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */; };
 		53FDD1BD2AE871AF003D5FA1 /* MPIHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */; };
@@ -558,8 +556,6 @@
 		53A79AA129CDFB1E00E7489F /* MPIdentityApi.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityApi.m; sourceTree = "<group>"; };
 		53A79AA229CDFB1E00E7489F /* MPIdentityApiManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIdentityApiManager.m; sourceTree = "<group>"; };
 		53A79AA329CDFB1E00E7489F /* MPBackendController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBackendController.h; sourceTree = "<group>"; };
-		53A79AA529CDFB1E00E7489F /* MPLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPLocationManager.h; sourceTree = "<group>"; };
-		53A79AA629CDFB1E00E7489F /* MPLocationManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPLocationManager.m; sourceTree = "<group>"; };
 		53A79AA829CDFB1E00E7489F /* MPURLRequestBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPURLRequestBuilder.h; sourceTree = "<group>"; };
 		53A79AA929CDFB1E00E7489F /* MPNetworkCommunication.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkCommunication.m; sourceTree = "<group>"; };
 		53A79AAA29CDFB1E00E7489F /* MPURL.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPURL.m; sourceTree = "<group>"; };
@@ -807,6 +803,7 @@
 		53A79CFE29CE12AB00E7489F /* mParticle-Apple-SDK.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK.modulemap"; path = "Framework/mParticle-Apple-SDK.modulemap"; sourceTree = "<group>"; };
 		53A79CFF29CE23D600E7489F /* mParticle-Apple-SDK-NoLocation.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; name = "mParticle-Apple-SDK-NoLocation.modulemap"; path = "Framework/mParticle-Apple-SDK-NoLocation.modulemap"; sourceTree = "<group>"; };
 		53A79DC629CE23F700E7489F /* mParticle_Apple_SDK_NoLocation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = mParticle_Apple_SDK_NoLocation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		53B28FB12C938C26009072FC /* MPLocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPLocationManager.swift; sourceTree = "<group>"; };
 		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
 		53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIHasher.swift; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
@@ -928,8 +925,7 @@
 		53A79AA429CDFB1E00E7489F /* Location */ = {
 			isa = PBXGroup;
 			children = (
-				53A79AA529CDFB1E00E7489F /* MPLocationManager.h */,
-				53A79AA629CDFB1E00E7489F /* MPLocationManager.m */,
+				53B28FB12C938C26009072FC /* MPLocationManager.swift */,
 			);
 			path = Location;
 			sourceTree = "<group>";
@@ -1395,7 +1391,6 @@
 				53A79B8529CDFB2000E7489F /* MPDatabaseMigrationController.h in Headers */,
 				53A79BE029CDFB2000E7489F /* MPZip.h in Headers */,
 				53A79B8729CDFB2000E7489F /* MParticleUserNotification.h in Headers */,
-				53A79B7229CDFB2000E7489F /* MPLocationManager.h in Headers */,
 				53A79C1029CDFB2100E7489F /* MPForwardQueueItem.h in Headers */,
 				53A79BF029CDFB2000E7489F /* MPDevice.h in Headers */,
 				53A79C0C29CDFB2100E7489F /* MPAttributeProjection.h in Headers */,
@@ -1502,7 +1497,6 @@
 				53A79D4129CE23F700E7489F /* MPDatabaseMigrationController.h in Headers */,
 				53A79D4229CE23F700E7489F /* MPZip.h in Headers */,
 				53A79D4329CE23F700E7489F /* MParticleUserNotification.h in Headers */,
-				53A79D4429CE23F700E7489F /* MPLocationManager.h in Headers */,
 				53A79D4529CE23F700E7489F /* MPForwardQueueItem.h in Headers */,
 				53A79D4629CE23F700E7489F /* MPDevice.h in Headers */,
 				53A79D4729CE23F700E7489F /* MPAttributeProjection.h in Headers */,
@@ -1818,6 +1812,7 @@
 				53A79B9729CDFB2000E7489F /* MPIntegrationAttributes.m in Sources */,
 				53A79B6A29CDFB2000E7489F /* MPAliasRequest.m in Sources */,
 				53A79B6829CDFB2000E7489F /* MParticleUser.m in Sources */,
+				53B28FB22C938C26009072FC /* MPLocationManager.swift in Sources */,
 				53A79BE529CDFB2000E7489F /* MPResponseConfig.m in Sources */,
 				53A79BC529CDFB2000E7489F /* MParticleReachability.m in Sources */,
 				53A79C0B29CDFB2100E7489F /* MPKitExecStatus.m in Sources */,
@@ -1849,7 +1844,6 @@
 				53A79C0E29CDFB2100E7489F /* MPKitContainer.mm in Sources */,
 				53A79BD729CDFB2000E7489F /* MPUploadBuilder.m in Sources */,
 				53A79C1129CDFB2100E7489F /* MPBaseProjection.m in Sources */,
-				53A79B7329CDFB2000E7489F /* MPLocationManager.m in Sources */,
 				53A79BEC29CDFB2000E7489F /* MPUserAttributeChange.m in Sources */,
 				53A79B7029CDFB2000E7489F /* MPIdentityApiManager.m in Sources */,
 			);
@@ -1983,6 +1977,7 @@
 				53A79D9B29CE23F700E7489F /* MPIntegrationAttributes.m in Sources */,
 				53A79D9C29CE23F700E7489F /* MPAliasRequest.m in Sources */,
 				53A79D9D29CE23F700E7489F /* MParticleUser.m in Sources */,
+				53B28FB32C938C26009072FC /* MPLocationManager.swift in Sources */,
 				53A79D9E29CE23F700E7489F /* MPResponseConfig.m in Sources */,
 				53A79D9F29CE23F700E7489F /* MParticleReachability.m in Sources */,
 				53A79DA029CE23F700E7489F /* MPKitExecStatus.m in Sources */,
@@ -2014,7 +2009,6 @@
 				53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */,
 				53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */,
 				53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */,
-				53A79DBD29CE23F700E7489F /* MPLocationManager.m in Sources */,
 				53A79DBE29CE23F700E7489F /* MPUserAttributeChange.m in Sources */,
 				53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */,
 			);

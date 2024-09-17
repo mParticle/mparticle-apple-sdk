@@ -26,12 +26,6 @@
 #import "MParticleSwift.h"
 #import "MPUpload.h"
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-    #import "MPLocationManager.h"
-#endif
-#endif
-
 static dispatch_queue_t messageQueue = nil;
 static void *messageQueueKey = "mparticle message queue key";
 static void *messageQueueToken = "mparticle message queue token";

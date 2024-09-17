@@ -36,12 +36,6 @@
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-#import "MPLocationManager.h"
-#endif
-#endif
-
 const NSInteger kNilAttributeValue = 101;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
 const NSInteger kExceededAttributeKeyMaximumLength = 105;
@@ -1898,7 +1892,7 @@ static BOOL skipNextUpload = NO;
         return MPExecStatusDisabledRemotely;
     }
     
-    MPLocationManager *locationManager = [[MPLocationManager alloc] initWithAccuracy:accuracy distanceFilter:distance authorizationRequest:authorizationRequest];
+    MPLocationManager_PRIVATE *locationManager = [[MPLocationManager_PRIVATE alloc] initWithAccuracy:accuracy distanceFilter:distance authorizationRequest:authorizationRequest];
     [MParticle sharedInstance].stateMachine.locationManager = locationManager ? : nil;
     
     return MPExecStatusSuccess;
@@ -2137,7 +2131,7 @@ static BOOL skipNextUpload = NO;
                                                                              messageInfo:@{kMPAppStateTransitionType: kMPASTBackgroundKey}];
     #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-        if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
+        if ([MPLocationManager_PRIVATE trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
             [[MParticle sharedInstance].stateMachine.locationManager.locationManager stopUpdatingLocation];
         }
         [messageBuilder location:[MParticle sharedInstance].stateMachine.location];
@@ -2231,7 +2225,7 @@ static BOOL skipNextUpload = NO;
         #if TARGET_OS_IOS == 1
         #ifndef MPARTICLE_LOCATION_DISABLE
         [MParticle executeOnMain:^{
-            if ([MPLocationManager trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
+            if ([MPLocationManager_PRIVATE trackingLocation] && ![MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking) {
                 [[MParticle sharedInstance].stateMachine.locationManager.locationManager startUpdatingLocation];
             }
         }];
