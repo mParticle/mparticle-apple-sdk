@@ -16,7 +16,7 @@ import Foundation
     * Whether the user consented to data collection
     This should be set to false if the user has opted out of data sharing under the CCPA.
     */
-    @objc public var consented: Bool = false
+    @objc public var consented = false
     
     /**
     * The data collection document to which the user consented or did not consent
@@ -26,7 +26,7 @@ import Foundation
     /**
     * Timestamp when the user was prompted for consent
     */
-    @objc public var timestamp: Date
+    @objc public var timestamp = Date()
     
     /**
     * Where the consent prompt took place. This can be a physical or digital location (e.g. URL)
@@ -38,18 +38,13 @@ import Foundation
     */
     @objc public var hardwareId: String?
     
-    @objc public override init() {
-        self.timestamp = Date()
-        super.init()
-    }
-    
     @objc public func copy(with zone: NSZone? = nil) -> Any {
         let copy = MPCCPAConsent()
-        copy.consented = self.consented
-        copy.document = self.document
-        copy.timestamp = self.timestamp
-        copy.location = self.location
-        copy.hardwareId = self.hardwareId
+        copy.consented = consented
+        copy.document = document
+        copy.timestamp = timestamp
+        copy.location = location
+        copy.hardwareId = hardwareId
         return copy
     }
 }
