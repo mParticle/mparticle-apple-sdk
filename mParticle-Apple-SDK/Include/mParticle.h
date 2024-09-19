@@ -18,7 +18,6 @@
 #import "MPIdentityApi.h"
 #import "MPKitAPI.h"
 #import "MPConsentState.h"
-#import "MPGDPRConsent.h"
 #import "MPListenerController.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
