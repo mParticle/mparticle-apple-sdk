@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "MPGDPRConsent.h"
+#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
 static NSTimeInterval epsilon = 0.05;
