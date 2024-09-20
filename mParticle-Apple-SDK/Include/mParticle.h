@@ -1,7 +1,6 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "MPDateFormatter.h"
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "MPExtensionProtocol.h"

@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPLaunchInfo.h"
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
 @interface MPLaunchInfoTests : MPBaseTestCase

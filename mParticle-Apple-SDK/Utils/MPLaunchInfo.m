@@ -1,7 +1,7 @@
 #import "MPLaunchInfo.h"
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 

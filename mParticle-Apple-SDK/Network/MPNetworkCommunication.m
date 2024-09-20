@@ -15,7 +15,7 @@
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
 #import "MPEnums.h"

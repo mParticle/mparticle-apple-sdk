@@ -2,7 +2,6 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPStateMachine.h"
-#import "MPDateFormatter.h"
 #import <UIKit/UIKit.h>
 #import "MPEnums.h"
 #import "MPCommerceEvent.h"

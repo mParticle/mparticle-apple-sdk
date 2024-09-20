@@ -1,5 +1,5 @@
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 
