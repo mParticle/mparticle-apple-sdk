@@ -9,10 +9,10 @@ import Foundation
 
 public struct MPLogger {
     
-    public static func MPLogger(loggerLevel: MPILogLevel, format: String, arguments: any CVarArg...) {
+    private static func MPLogger(loggerLevel: MPILogLevel, format: String, arguments: any CVarArg...) {
         if (MParticle.sharedInstance().logLevel.rawValue >= loggerLevel.rawValue && loggerLevel != .none) {
             let msg = String.localizedStringWithFormat(format, arguments)
-// Custom Logger is marked as nonnull despite the fact that we expect it to be null if not set by the client
+// TODO: Uncomment the following once MParticle.h converted to Swift. Custom Logger is marked as nonnull despite the fact that we expect it to be null if not set by the client
 //         if let customLogger = MParticle.sharedInstance().customLogger {
 //             customLogger(msg)
 //         } else
