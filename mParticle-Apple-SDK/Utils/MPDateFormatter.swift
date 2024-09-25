@@ -10,8 +10,7 @@ import Foundation
 @objc public class MPDateFormatter : NSObject {
     private static var dateFormatterRFC3339: DateFormatter = {
         let formatter = DateFormatter()
-        let enUSPOSIXLocale = Locale(identifier: "en_US_POSIX")
-        formatter.locale = enUSPOSIXLocale
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         formatter.dateFormat = "yyyy'-'MM'-'dd'T'HH':'mm':'ssZ"
         formatter.timeZone = TimeZone(secondsFromGMT: 0)
         return formatter
