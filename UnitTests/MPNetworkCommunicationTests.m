@@ -5,7 +5,6 @@
 #import "MPNetworkCommunication+Tests.h"
 #import "MPApplication.h"
 #import "MPUpload.h"
-#import "MPZip.h"
 #import "MPConnector.h"
 #import "MPIUserDefaults.h"
 #import "MPBaseTestCase.h"
@@ -14,6 +13,7 @@
 #import "MPURL.h"
 #import "MPStateMachine.h"
 #import "MPDevice.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 
@@ -313,7 +313,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip class]);
+    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
     OCMStub([mockZip compressedDataFromData:OCMOCK_ANY]).andReturn(nil);
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     [networkCommunication upload:uploads completionHandler:^{
@@ -328,7 +328,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip class]);
+    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"not_determined"]);
@@ -345,7 +345,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip class]);
+    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"restricted"]);
@@ -362,7 +362,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip class]);
+    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"denied"]);
@@ -379,7 +379,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:@1 uploadDictionary:@{kMPDeviceInformationKey: @{}} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
     NSArray *uploads = @[upload];
-    id mockZip = OCMClassMock([MPZip class]);
+    id mockZip = OCMClassMock([MPZip_PRIVATE class]);
     [[mockZip expect] compressedDataFromData:[OCMArg checkWithBlock:^BOOL(id value) {
         NSMutableDictionary *uploadDict = [NSJSONSerialization JSONObjectWithData:value options:0 error:nil];
         return ([uploadDict[kMPDeviceInformationKey][kMPATT] isEqual: @"authorized"]);
