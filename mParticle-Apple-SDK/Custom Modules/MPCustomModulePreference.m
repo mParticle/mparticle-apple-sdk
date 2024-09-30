@@ -1,7 +1,7 @@
 #import "MPCustomModulePreference.h"
 #import "MPIUserDefaults.h"
 #import "MPILogger.h"
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 

@@ -6,7 +6,6 @@
 #import "MPDevice.h"
 #import <sys/sysctl.h>
 #import "MPNotificationController.h"
-#import "MPDateFormatter.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
