@@ -514,7 +514,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  N.B.: The format/wording of mParticle log messages may change between releases--please avoid using this programatically to detect SDK behavior unless absolutely necessary, and then only as a temporary workaround.
  @see MParticleOptions
  */
-@property (nonatomic, copy, readwrite) void (^customLogger)(NSString *message);
+@property (nonatomic, copy, nullable, readwrite) void (^customLogger)(NSString *message);
 
 /**
  Gets/Sets the opt-in/opt-out status for the application. Set it to YES to opt-out of event tracking. Set it to NO to opt-in of event tracking.
