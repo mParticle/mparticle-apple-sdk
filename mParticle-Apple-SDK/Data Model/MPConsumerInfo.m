@@ -2,7 +2,7 @@
 #import "MPIConstants.h"
 #import "MPILogger.h"
 #import "MPIUserDefaults.h"
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "NSString+MPPercentEscape.h"
 #import "mParticle.h"

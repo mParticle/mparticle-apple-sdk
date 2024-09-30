@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "MPDateFormatter.h"
+#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
 @interface MPDateFormatterTests : MPBaseTestCase {
@@ -56,8 +56,8 @@
     XCTAssertEqualObjects(dateString, @"1955-11-05T09:15:00+0000", @"Should have been equal.");
 }
 
-- (void)testIndalidDatesFromString {
-    NSString *dateString = (NSString *)[NSNull null];
+- (void)testInvalidDatesFromString {
+    NSString *dateString = @"";
     NSDate *date = [MPDateFormatter dateFromString:dateString];
     XCTAssertNil(date, @"Should have been nil.");
     
@@ -78,16 +78,6 @@
     dateString = @"The day the flux capacitor was invented.";
     date = [MPDateFormatter dateFromString:dateString];
     XCTAssertNil(date, @"Should have been nil.");
-}
-
-- (void)testInvalidStringFromDates {
-    NSDate *date = (NSDate *)[NSNull null];
-    NSString *dateString = [MPDateFormatter stringFromDateRFC1123:date];
-    XCTAssertNil(dateString, @"Should have been nil.");
-    
-    date = nil;
-    dateString = [MPDateFormatter stringFromDateRFC3339:date];
-    XCTAssertNil(dateString, @"Should have been nil.");
 }
 
 @end
