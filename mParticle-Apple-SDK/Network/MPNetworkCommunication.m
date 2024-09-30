@@ -8,7 +8,6 @@
 #import "MPDevice.h"
 #import "MPApplication.h"
 #import "MPIConstants.h"
-#import "MPZip.h"
 #import "MPURLRequestBuilder.h"
 #import "MParticleReachability.h"
 #import "MPILogger.h"
@@ -28,6 +27,7 @@
 #import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIdentityCaching.h"
+#import "MParticleSwift.h"
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
@@ -559,9 +559,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         NSData *updatedData = [NSJSONSerialization dataWithJSONObject:[uploadDict copy] options:0 error:nil];
         uploadString = [[NSString alloc] initWithData:updatedData encoding:NSUTF8StringEncoding];
 
-        zipUploadData = [MPZip compressedDataFromData:updatedData];
+        zipUploadData = [MPZip_PRIVATE compressedDataFromData:updatedData];
     } else {
-        zipUploadData = [MPZip compressedDataFromData:upload.uploadData];
+        zipUploadData = [MPZip_PRIVATE compressedDataFromData:upload.uploadData];
     }
     
     if (zipUploadData == nil || zipUploadData.length <= 0) {
