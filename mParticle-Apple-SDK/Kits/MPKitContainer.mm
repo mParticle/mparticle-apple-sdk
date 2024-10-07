@@ -19,7 +19,6 @@
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "NSArray+MPCaseInsensitive.h"
 #import "MPIUserDefaults.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardQueueItem.h"
