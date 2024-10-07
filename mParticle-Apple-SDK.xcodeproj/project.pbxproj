@@ -515,8 +515,6 @@
 		D3CEDAC92CA2F214001B32DF /* MPLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDAC72CA2F214001B32DF /* MPLogger.swift */; };
 		D3CEDACB2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
 		D3CEDACC2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
-		D3CEDACD2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
-		D3CEDACE2CB027E1001B32DF /* MPConvertJS.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3CEDACA2CB027E1001B32DF /* MPConvertJS.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1699,7 +1697,6 @@
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
 				534CD27E29CE2CE1008452B3 /* MParticleOptionsTests.m in Sources */,
-				D3CEDACE2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
 				534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */,
 				534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */,
 				534CD28129CE2CE1008452B3 /* MPConsentStateTests.m in Sources */,
@@ -1869,7 +1866,6 @@
 				53A79CEC29CE019F00E7489F /* MPZipTests.m in Sources */,
 				53A79CCC29CE019F00E7489F /* MPIntegrationAttributesTest.m in Sources */,
 				53A79CBD29CE019F00E7489F /* MPDataModelTests.m in Sources */,
-				D3CEDACD2CB027E1001B32DF /* MPConvertJS.swift in Sources */,
 				53A79CCF29CE019F00E7489F /* MParticleOptionsTests.m in Sources */,
 				53A79CEE29CE019F00E7489F /* NSNumber+MPFormatterTests.m in Sources */,
 				53A79CD929CE019F00E7489F /* MPResponseEventsTest.m in Sources */,
