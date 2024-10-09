@@ -7,7 +7,6 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
 #import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"

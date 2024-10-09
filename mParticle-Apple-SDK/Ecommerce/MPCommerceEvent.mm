@@ -10,9 +10,9 @@
 #import "MPEnums.h"
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "mParticle.h"
 #import "MPILogger.h"
+#import "MParticleSwift.h"
 #import <vector>
 
 // Internal keys

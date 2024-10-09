@@ -12,12 +12,12 @@
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
+#import "MParticleSwift.h"
 
 NSString *const kMPStateInformationKey = @"cs";
 
@@ -265,6 +265,54 @@ NSString *const kMPStateInformationKey = @"cs";
     
     value = [dictionary valueForCaseInsensitiveKey:@"This key does not exist"];
     XCTAssertNil(value, @"Should have been nil.");
+}
+
+- (void)testTransformValuesToString {
+    NSDate *currentDate = [[NSDate alloc] init];
+    NSString *currentDateString = [MPDateFormatter stringFromDateRFC3339:currentDate];
+    NSString *dataString = @"<1234 5678>";
+    NSData *data = [dataString dataUsingEncoding:NSUTF8StringEncoding];
+    NSDictionary *testDictionary = @{@"Key1":@"Value1",
+                                     @"kEY2":@"Value2"
+                                    };
+    NSMutableDictionary *testMutDictionary = [testDictionary mutableCopy];
+    NSArray *testArray = @[@"Key1", @"kEY2"];
+    NSMutableArray *testMutArray = [testArray mutableCopy];
+    
+    NSDictionary *dictionary = @{@"Key1":@"Value1",
+                                 @"Key2":@"Value2",
+                                 @"Key3":@(YES),
+                                 @"Key4":@(1),
+                                 @"Key5":@(NO),
+                                 @"Key6":@(10),
+                                 @"Key7":currentDate,
+                                 @"Key8":data,
+                                 @"Key9":testDictionary,
+                                 @"Key10":testMutDictionary,
+                                 @"Key11":testArray,
+                                 @"Key12":testMutArray,
+                                 @"Key13":[NSNull null]
+    };
+    
+    NSDictionary *stringDictionary = @{@"Key1":@"Value1",
+                                       @"Key2":@"Value2",
+                                       @"Key3":@"true",
+                                       @"Key4":[@(1) stringValue],
+                                       @"Key5":@"false",
+                                       @"Key6":[@(10) stringValue],
+                                       @"Key7":currentDateString,
+                                       @"Key8":dataString,
+                                       @"Key9":[testDictionary description],
+                                       @"Key10":[testMutDictionary description],
+                                       @"Key11":[testArray description],
+                                       @"Key12":[testMutArray description],
+                                       @"Key13":[NSNull null]
+    };
+    
+    NSDictionary *transformedDictionary = dictionary.transformValuesToString;
+    for (NSString *key in transformedDictionary.allKeys) {
+        XCTAssertEqualObjects(transformedDictionary[key], stringDictionary[key]);
+    }
 }
 
 - (void)testUserAttributeChange {
