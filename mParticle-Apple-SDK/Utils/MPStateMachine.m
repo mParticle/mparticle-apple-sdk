@@ -106,31 +106,29 @@ static BOOL runningInBackground = NO;
         
         NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
         
-        __weak MPStateMachine *weakSelf = self;
         dispatch_async(dispatch_get_main_queue(), ^{
-            __strong MPStateMachine *strongSelf = weakSelf;
             
-            strongSelf.storedSDKVersion = kMParticleSDKVersion;
+            self.storedSDKVersion = kMParticleSDKVersion;
             
-            [strongSelf.reachability startNotifier];
-            strongSelf.networkStatus = [strongSelf.reachability currentReachabilityStatus];
+            [self.reachability startNotifier];
+            self.networkStatus = [self.reachability currentReachabilityStatus];
             
-            [notificationCenter addObserver:strongSelf
+            [notificationCenter addObserver:self
                                    selector:@selector(handleApplicationDidEnterBackground:)
                                        name:UIApplicationDidEnterBackgroundNotification
                                      object:nil];
             
-            [notificationCenter addObserver:strongSelf
+            [notificationCenter addObserver:self
                                    selector:@selector(handleApplicationWillEnterForeground:)
                                        name:UIApplicationWillEnterForegroundNotification
                                      object:nil];
             
-            [notificationCenter addObserver:strongSelf
+            [notificationCenter addObserver:self
                                    selector:@selector(handleApplicationWillTerminate:)
                                        name:UIApplicationWillTerminateNotification
                                      object:nil];
             
-            [notificationCenter addObserver:strongSelf
+            [notificationCenter addObserver:self
                                    selector:@selector(handleReachabilityChanged:)
                                        name:MParticleReachabilityChangedNotification
                                      object:nil];
@@ -259,21 +257,11 @@ static BOOL runningInBackground = NO;
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
     [MPApplication updateLastUseDate:_launchDate];
     _backgrounded = YES;
-    
-    __weak MPStateMachine *weakSelf = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __strong MPStateMachine *strongSelf = weakSelf;
-        strongSelf.launchInfo = nil;
-    });
+    self.launchInfo = nil;
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
-    __weak MPStateMachine *weakSelf = self;
-    
-    dispatch_async(dispatch_get_main_queue(), ^{
-        __strong MPStateMachine *strongSelf = weakSelf;
-        strongSelf->_backgrounded = NO;
-    });
+    _backgrounded = NO;
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
