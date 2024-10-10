@@ -1,3 +1,10 @@
+## [8.27.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.1...v8.27.2) (2024-10-10)
+
+
+### Bug Fixes
+
+* Potential crash in MPStateMachine when entering foreground ([#299](https://github.com/mParticle/mparticle-apple-sdk/issues/299)) ([50ba03b](https://github.com/mParticle/mparticle-apple-sdk/commit/50ba03bb97e7f5c1a8a4213f359a00b73bf90f2a))
+
 ## [8.27.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.0...v8.27.1) (2024-09-17)
 
 
