@@ -21,6 +21,10 @@ extension NSDictionary {
             }
         }
         
+        if (resultKey == nil) {
+            resultKey = key
+        }
+        
         return resultKey
     }
 
@@ -60,7 +64,7 @@ extension NSDictionary {
                     transformedDictionary[key] = dictionaryValue.description
                 } else if let mutDictionaryValue = originalDictionary[key] as? NSMutableDictionary {
                     transformedDictionary[key] = mutDictionaryValue.description
-                } else if let arrayValue = originalDictionary[key] as? NSArray {
+                } else if let arrayValue = originalDictionary[key] as? [Any] {
                     transformedDictionary[key] = arrayValue.description
                 } else if let mutArrayValue = originalDictionary[key] as? NSMutableArray {
                     transformedDictionary[key] = mutArrayValue.description

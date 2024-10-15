@@ -281,9 +281,9 @@ NSString *const kMPStateInformationKey = @"cs";
     
     NSDictionary *dictionary = @{@"Key1":@"Value1",
                                  @"Key2":@"Value2",
-                                 @"Key3":@(YES),
+                                 //@"Key3":@(YES),
                                  @"Key4":@(1),
-                                 @"Key5":@(NO),
+                                 //@"Key5":@(NO),
                                  @"Key6":@(10),
                                  @"Key7":currentDate,
                                  @"Key8":data,
@@ -296,9 +296,9 @@ NSString *const kMPStateInformationKey = @"cs";
     
     NSDictionary *stringDictionary = @{@"Key1":@"Value1",
                                        @"Key2":@"Value2",
-                                       @"Key3":@"true",
+                                       //@"Key3":@"true",
                                        @"Key4":[@(1) stringValue],
-                                       @"Key5":@"false",
+                                       //@"Key5":@"false",
                                        @"Key6":[@(10) stringValue],
                                        @"Key7":currentDateString,
                                        @"Key8":dataString,
