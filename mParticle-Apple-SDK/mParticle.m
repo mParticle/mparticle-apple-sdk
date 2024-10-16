@@ -17,7 +17,6 @@
 #import "MPSession.h"
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
-#import "MPConvertJS.h"
 #import "MPIdentityApi.h"
 #import "MPApplication.h"
 #import "MParticleWebView.h"
@@ -1857,7 +1856,7 @@ static NSString *const kMPStateKey = @"state";
                 break;
                 
             case MPJavascriptMessageTypeCommerce: {
-                MPCommerceEvent *event = [MPConvertJS MPCommerceEvent:dictionary];
+                MPCommerceEvent *event = [MPConvertJS_PRIVATE commerceEvent:dictionary];
                 if (event != nil) {
                     [self logEvent:event];
                 }
@@ -1876,7 +1875,7 @@ static NSString *const kMPStateKey = @"state";
                 break;
         }
     } else if ([command hasPrefix:kMParticleWebViewPathIdentify]) {
-        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
             MPILogError(@"Unable to create identify request from webview JS dictionary: %@", dictionary);
@@ -1889,7 +1888,7 @@ static NSString *const kMPStateKey = @"state";
         
         
     } else if ([command hasPrefix:kMParticleWebViewPathLogin]) {
-        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
             MPILogError(@"Unable to create login request from webview JS dictionary: %@", dictionary);
@@ -1900,7 +1899,7 @@ static NSString *const kMPStateKey = @"state";
             
         }];
     } else if ([command hasPrefix:kMParticleWebViewPathLogout]) {
-        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
             MPILogError(@"Unable to create logout request from webview JS dictionary: %@", dictionary);
@@ -1911,7 +1910,7 @@ static NSString *const kMPStateKey = @"state";
             
         }];
     } else if ([command hasPrefix:kMParticleWebViewPathModify]) {
-        MPIdentityApiRequest *request = [MPConvertJS MPIdentityApiRequest:dictionary];
+        MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
             MPILogError(@"Unable to create modify request from webview JS dictionary: %@", dictionary);
