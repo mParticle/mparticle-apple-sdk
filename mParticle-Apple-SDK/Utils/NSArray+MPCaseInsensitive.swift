@@ -8,7 +8,6 @@
 import Foundation
 
 extension NSArray {
-
     @objc public func caseInsensitiveContainsObject(_ object: String) -> Bool {
         return contains { item in
             guard let item = item as? String else {
