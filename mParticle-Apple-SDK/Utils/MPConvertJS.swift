@@ -7,36 +7,23 @@
 
 import Foundation
 
-@objc public enum MPJSCommerceEventAction : UInt, @unchecked Sendable {
-
-    
+@objc public enum MPJSCommerceEventAction: UInt, @unchecked Sendable {
     case unknown = 0
-
     case addToCart = 1
-
     case removeFromCart = 2
-
     case checkout = 3
-
     case checkoutOptions = 4
-
     case click = 5
-
     case viewDetail = 6
-
     case purchase = 7
-
     case refund = 8
-
     case addToWishList = 9
-
     case removeFromWishlist = 10
 }
 
-@objc final public class MPConvertJS_PRIVATE : NSObject {
-
+@objc final public class MPConvertJS_PRIVATE: NSObject {
     
-    @objc public static func CommerceEventAction(_ json: NSNumber!) -> MPCommerceEventAction {
+    @objc public static func commerceEventAction(_ json: NSNumber) -> MPCommerceEventAction {
         switch json.uintValue {
         case MPJSCommerceEventAction.addToCart.rawValue:
             return .addToCart
@@ -64,18 +51,13 @@ import Foundation
         }
     }
     
-    @objc public static func CommerceEvent(_ json: [AnyHashable : Any]!) -> MPCommerceEvent! {
-        if (json["ProductAction"] != nil) {
-            guard (json["ProductAction"] is [String: Any]) else {
-                MPLogger.MPLogError(format: "Unexpected commerce event data received from webview")
-                return nil
-            }
+    @objc public static func commerceEvent(_ json: [AnyHashable : Any]) -> MPCommerceEvent? {
+        guard json["ProductAction"] == nil || json["ProductAction"] is [String: Any] else {
+            MPLogger.MPLogError(format: "Unexpected commerce event data received from webview")
+            return nil
         }
         
-        var commerceEvent: MPCommerceEvent? = nil
-        
         let productAction = json["ProductAction"] as? [String: Any]
-        
         let isProductAction = productAction?["ProductActionType"] != nil
         let isPromotion = json["PromotionAction"] != nil
         let isImpression = json["ProductImpressions"] != nil
@@ -83,72 +65,67 @@ import Foundation
         
         if !isValid {
             MPLogger.MPLogError(format: "Invalid commerce event dictionary received from webview: %@", arguments: json)
-            return commerceEvent
+            return nil
         }
         
+        let commerceEvent: MPCommerceEvent
         if isProductAction {
             guard let productActionType = productAction?["ProductActionType"] as? NSNumber else {
                 MPLogger.MPLogError(format: "Unexpected product action type received from webview")
                 return nil
             }
-            let action = MPConvertJS_PRIVATE.CommerceEventAction(productActionType)
+            let action = Self.commerceEventAction(productActionType)
             commerceEvent = MPCommerceEvent(action: action)
         } else if isPromotion {
-            let promotionContainer = MPConvertJS_PRIVATE.PromotionContainer(json)
+            let promotionContainer = Self.promotionContainer(json)
             commerceEvent = MPCommerceEvent(promotionContainer: promotionContainer)
         } else {
             commerceEvent = MPCommerceEvent(impressionName: nil, product: nil)
         }
         
         if let eventAttributes = json["EventAttributes"] as? [String : Any] {
-            commerceEvent?.customAttributes = eventAttributes
+            commerceEvent.customAttributes = eventAttributes
         }
         if let checkoutOptions = json["CheckoutOptions"] as? String {
-            commerceEvent?.checkoutOptions = checkoutOptions
+            commerceEvent.checkoutOptions = checkoutOptions
         }
         if let productActionListName = json["productActionListName"] as? String {
-            commerceEvent?.productListName = productActionListName
+            commerceEvent.productListName = productActionListName
         }
         if let productActionListSource = json["productActionListSource"] as? String {
-            commerceEvent?.productListSource = productActionListSource
+            commerceEvent.productListSource = productActionListSource
         }
         if let currencyCode = json["CurrencyCode"] as? String {
-            commerceEvent?.currency = currencyCode
+            commerceEvent.currency = currencyCode
         }
-        if productAction != nil {
-            commerceEvent?.transactionAttributes = MPConvertJS_PRIVATE.TransactionAttributes(productAction)
+        if let productAction = productAction {
+            commerceEvent.transactionAttributes = Self.transactionAttributes(productAction)
         }
         if let checkoutStep = json["CheckoutStep"] as? NSNumber {
-            commerceEvent?.checkoutStep = checkoutStep.intValue
+            commerceEvent.checkoutStep = checkoutStep.intValue
         }
         if let customFlags = json["CustomFlags"] as? [String : Any] {
             for key in customFlags.keys {
                 if let valueArray = customFlags[key] as? [String] {
-                    commerceEvent?.addCustomFlags(valueArray, withKey: key)
+                    commerceEvent.addCustomFlags(valueArray, withKey: key)
                 } else if let valueString = customFlags[key] as? String {
-                    commerceEvent?.addCustomFlag(valueString, withKey: key)
+                    commerceEvent.addCustomFlag(valueString, withKey: key)
                 }
             }
         }
 
-        var products: [MPProduct] = []
         if let jsonProducts = productAction?["ProductList"] as? [[AnyHashable : Any]] {
-            for jsonObject in jsonProducts {
-                if let product = MPConvertJS_PRIVATE.Product(jsonObject) {
-                    products.append(product)
-                }
-            }
+            let products = jsonProducts.map { Self.product($0) }
+            commerceEvent.addProducts(products)
         }
-        commerceEvent?.addProducts(products)
 
         if let jsonImpressions = json["ProductImpressions"] as? [[AnyHashable : Any]] {
             for jsonImpression in jsonImpressions {
                 if let listName = jsonImpression["ProductImpressionList"] as? String,
-                let jsonProducts = jsonImpression["ProductList"] as? [[AnyHashable : Any]] {
+                   let jsonProducts = jsonImpression["ProductList"] as? [[AnyHashable : Any]] {
                     for jsonObject in jsonProducts {
-                        if let product = MPConvertJS_PRIVATE.Product(jsonObject) {
-                            commerceEvent?.addImpression(product, listName: listName)
-                        }
+                        let product = MPConvertJS_PRIVATE.product(jsonObject)
+                        commerceEvent.addImpression(product, listName: listName)
                     }
                 }
             }
@@ -157,7 +134,7 @@ import Foundation
         return commerceEvent
     }
     
-    @objc public static func PromotionContainer(_ json: [AnyHashable : Any]!) -> MPPromotionContainer! {
+    @objc public static func promotionContainer(_ json: [AnyHashable : Any]) -> MPPromotionContainer? {
         guard let promotionDictionary = (json["PromotionAction"] as? [String: Any]) else {
             MPLogger.MPLogError(format: "Unexpected promotion container action data received from webview")
             return nil
@@ -167,13 +144,12 @@ import Foundation
             MPLogger.MPLogError(format: "Unexpected promotion container action type data received from webview")
             return nil
         }
+        
         let promotionAction = promotionActionTypeNumber.intValue == 1 ? MPPromotionAction.view : MPPromotionAction.click
         let promotionContainer = MPPromotionContainer(action: promotionAction, promotion: nil)
         if let jsonPromotions = promotionDictionary["PromotionList"] as? [[AnyHashable : Any]] {
             for jsonObject in jsonPromotions {
-                if let promotion = MPConvertJS_PRIVATE.Promotion(jsonObject) {
-                    promotionContainer.addPromotion(promotion)
-                }
+                promotionContainer.addPromotion(MPConvertJS_PRIVATE.promotion(jsonObject))
             }
         } else {
             MPLogger.MPLogError(format: "Unexpected promotion container list data received from webview")
@@ -183,7 +159,7 @@ import Foundation
         return promotionContainer;
     }
     
-    @objc public static func Promotion(_ json: [AnyHashable : Any]!) -> MPPromotion! {
+    @objc public static func promotion(_ json: [AnyHashable : Any]) -> MPPromotion {
         let promotion = MPPromotion()
 
         if let creative = json["Creative"] as? String {
@@ -195,14 +171,14 @@ import Foundation
         if let position = json["Position"] as? String {
             promotion.position = position
         }
-        if let iD = json["Id"] as? String {
-            promotion.promotionId = iD
+        if let id = json["Id"] as? String {
+            promotion.promotionId = id
         }
         
         return promotion;
     }
     
-    @objc public static func TransactionAttributes(_ json: [AnyHashable : Any]! = [:]) -> MPTransactionAttributes! {
+    @objc public static func transactionAttributes(_ json: [AnyHashable : Any] = [:]) -> MPTransactionAttributes! {
         let transactionAttributes = MPTransactionAttributes()
         
         if let affiliation = json["Affiliation"] as? String {
@@ -227,7 +203,7 @@ import Foundation
         return transactionAttributes;
     }
     
-    @objc public static func Product(_ json: [AnyHashable : Any]!) -> MPProduct! {
+    @objc public static func product(_ json: [AnyHashable : Any]) -> MPProduct {
         let product = MPProduct()
         
         if let brand = json["Brand"] as? String {
@@ -244,10 +220,8 @@ import Foundation
         }
         if let price = json["Price"] as? NSNumber {
             product.price = price
-        } else if let price = json["Price"] as? String {
-            if let double = double_t(price) {
-                product.price = NSNumber(value: double)
-            }
+        } else if let price = json["Price"] as? String, let double = double_t(price) {
+            product.price = NSNumber(value: double)
         }
         if let sku = json["Sku"] as? String {
             product.sku = sku
@@ -261,23 +235,20 @@ import Foundation
         if let quantity = json["Quantity"] as? NSNumber {
             product.quantity = quantity
         }
-
         if let jsonAttributes = json["Attributes"] as? [String : String] {
-            for key in jsonAttributes.keys {
-                if let value = jsonAttributes[key] {
-                    product.setValue(value, forKey: key)
-                }
+            for (key, value) in jsonAttributes {
+                product.setValue(value, forKey: key)
             }
         }
 
         return product;
     }
     
-    @objc private static func IdentityFromNumber(_ identityTypeNumber: NSNumber!) -> MPIdentity {
-        return MPIdentity(rawValue: identityTypeNumber.uintValue) ?? MPIdentity.other
+    @objc private static func identityFromNumber(_ identityTypeNumber: NSNumber) -> MPIdentity {
+        return MPIdentity(rawValue: identityTypeNumber.uintValue) ?? .other
     }
     
-    @objc public static func IdentityApiRequest(_ json: [AnyHashable : Any]!) -> MPIdentityApiRequest! {
+    @objc public static func identityApiRequest(_ json: [AnyHashable : Any]) -> MPIdentityApiRequest? {
         let request = MPIdentityApiRequest.withEmptyUser()
         
         guard let userIdentities = json["UserIdentities"] as? [[AnyHashable : Any]] else {

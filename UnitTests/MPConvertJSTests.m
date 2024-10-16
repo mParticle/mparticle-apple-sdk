@@ -20,7 +20,7 @@
                            };
     
     MPTransactionAttributes *transactionAttributes = nil;
-    transactionAttributes = [MPConvertJS_PRIVATE TransactionAttributes:json];
+    transactionAttributes = [MPConvertJS_PRIVATE transactionAttributes:json];
     XCTAssertNotNil(transactionAttributes);
     XCTAssertEqualObjects(transactionAttributes.affiliation, @"Test affiliation");
     XCTAssertEqualObjects(transactionAttributes.couponCode, @"Test coupon code");
@@ -59,7 +59,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.action, MPCommerceEventActionAddToCart);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
@@ -103,7 +103,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.action, MPCommerceEventActionAddToCart);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
@@ -142,7 +142,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.action, MPCommerceEventActionPurchase);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
@@ -180,7 +180,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.action, MPCommerceEventActionAddToCart);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
@@ -222,7 +222,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.type, MPEventTypeImpression);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
@@ -246,7 +246,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.type, MPEventTypeImpression);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
@@ -281,7 +281,7 @@
     };
     
     MPCommerceEvent *commerceEvent = nil;
-    commerceEvent = [MPConvertJS_PRIVATE CommerceEvent:json];
+    commerceEvent = [MPConvertJS_PRIVATE commerceEvent:json];
     XCTAssertNotNil(commerceEvent);
     XCTAssertEqual(commerceEvent.type, MPEventTypeImpression);
     XCTAssertEqualObjects(commerceEvent.checkoutOptions, @"Test checkout option");
