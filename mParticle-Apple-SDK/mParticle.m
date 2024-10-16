@@ -449,9 +449,12 @@ static NSString *const kMPStateKey = @"state";
     self.stateMachine.optOut = optOut;
     
     // Forwarding calls to kits
+    MPForwardQueueParameters *optOutParameters = [[MPForwardQueueParameters alloc] init];
+    [optOutParameters addParameter:@(optOut)];
+    
     [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setOptOut:)
                                                       event:nil
-                                                 parameters:nil
+                                                 parameters:optOutParameters
                                                 messageType:MPMessageTypeOptOut
                                                    userInfo:@{kMPStateKey:@(optOut)}
      ];

@@ -2377,6 +2377,45 @@
     [kitWrapperMock verifyWithDelay:5.0];
 }
 
+- (void)testAttemptToSetOptOutToKitTrue {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forEvent:nil selector:@selector(setOptOut:)];
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] setOptOut:YES];
+    
+    MPForwardQueueParameters *optOutParameters = [[MPForwardQueueParameters alloc] init];
+    [optOutParameters addParameter:@(1)];
+    
+    [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(setOptOut:) parameters:optOutParameters messageType:MPMessageTypeOptOut userInfo:@{@"state":@(1)}];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+}
+
+- (void)testAttemptToSetOptOutToKitFalse {
+    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    
+    MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
+    id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
+    id kitRegisterMock = OCMPartialMock(kitRegister);
+    OCMStub([kitRegisterMock wrapperInstance]).andReturn(kitWrapperMock);
+    MPKitFilter *kitFilter = [kitContainer filter:kitRegisterMock forEvent:nil selector:@selector(setOptOut:)];
+    
+    [(id <MPKitProtocol>)[kitWrapperMock expect] setOptOut:FALSE];
+    
+    MPForwardQueueParameters *optOutParameters = [[MPForwardQueueParameters alloc] init];
+    NSNumber *optOutStatus = @(0);
+    [optOutParameters addParameter:optOutStatus];
+    
+    [localKitContainer attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(setOptOut:) parameters:optOutParameters messageType:MPMessageTypeOptOut userInfo:@{@"state":optOutStatus}];
+    
+    [kitWrapperMock verifyWithDelay:5.0];
+}
+
 - (void)testAttemptToLegacyOpenURLToKit {
     MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
     SEL selector = @selector(openURL:sourceApplication:annotation:);
