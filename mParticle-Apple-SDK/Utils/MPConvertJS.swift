@@ -248,10 +248,10 @@ import Foundation
         return MPIdentity(rawValue: identityTypeNumber.uintValue) ?? .other
     }
     
-    @objc public static func identityApiRequest(_ json: [AnyHashable : Any]) -> MPIdentityApiRequest? {
+    @objc public static func identityApiRequest(_ json: [AnyHashable : Any]?) -> MPIdentityApiRequest? {
         let request = MPIdentityApiRequest.withEmptyUser()
         
-        guard let userIdentities = json["UserIdentities"] as? [[AnyHashable : Any]] else {
+        guard let userIdentities = json?["UserIdentities"] as? [[AnyHashable : Any]] else {
             MPLogger.MPLogError(format: "Unexpected user identity data received from webview")
             return nil
         }
@@ -266,8 +266,8 @@ import Foundation
             }
         }
 
-        if let identity = json["Identity"] as? String,
-           let identityTypeNumber = json["Type"] as? NSNumber,
+        if let identity = json?["Identity"] as? String,
+           let identityTypeNumber = json?["Type"] as? NSNumber,
            let identityType = MPIdentity(rawValue: identityTypeNumber.uintValue) {
             request.setIdentity(identity, identityType: identityType)
         }
