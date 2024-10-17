@@ -4,7 +4,6 @@
 #import "MPIUserDefaults.h"
 #import "MParticleSwift.h"
 #import "MPPersistenceController.h"
-#import "NSString+MPPercentEscape.h"
 #import "mParticle.h"
 
 NSString *const kMPCKContent = @"c";

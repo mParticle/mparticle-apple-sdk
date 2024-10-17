@@ -20,7 +20,6 @@
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
-#import "NSString+MPPercentEscape.h"
 #import "MPResponseEvents.h"
 #import "MPAliasResponse.h"
 #import "MPResponseConfig.h"
