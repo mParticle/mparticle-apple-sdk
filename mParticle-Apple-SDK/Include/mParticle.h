@@ -656,10 +656,10 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  Switches the SDK to a new API key and secret.
  
- Will first attempt to upload any batches that have not been sent to mParticle,
- then all SDK state including user defaults, database, etc will be completely reset.
- After that, `startWithOptions` will be called with the new key and secret
- and the SDK will initialize again as if it is a new app launch.
+ Will first batch all events that have not been sent to mParticle into upload records,
+ then all SDK state including user defaults, database (except uploads), etc will be
+ completely reset. After that, `startWithOptions` will be called with the new
+ key and secret and the SDK will initialize again as if it is a new app launch.
  
  Any kits that do not implement the `stop` method will be deactivated and will
  not receive any events until the app is restarted. Any kits that were not used by the
