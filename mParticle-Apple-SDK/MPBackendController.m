@@ -29,7 +29,6 @@
 #import "MPSearchAdsAttribution.h"
 #endif
 #import "MPURLRequestBuilder.h"
-#import "MPArchivist.h"
 #import "MPListenerController.h"
 #import "MParticleWebView.h"
 #import "MPDevice.h"
@@ -438,40 +437,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     }
     
     [self uploadOpenSessions:sessions completionHandler:completionHandler];
-}
-
-- (void)processPendingArchivedMessages {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSString *crashLogsDirectoryPath = CRASH_LOGS_DIRECTORY_PATH;
-    NSString *archivedMessagesDirectoryPath = ARCHIVED_MESSAGES_DIRECTORY_PATH;
-    NSArray *directoryPaths = @[crashLogsDirectoryPath, archivedMessagesDirectoryPath];
-    NSArray *fileExtensions = @[@".log", @".arcmsg"];
-    
-    [directoryPaths enumerateObjectsUsingBlock:^(NSString *directoryPath, NSUInteger idx, BOOL *stop) {
-        if (![fileManager fileExistsAtPath:directoryPath]) {
-            return;
-        }
-        
-        NSArray *directoryContents = [fileManager contentsOfDirectoryAtPath:directoryPath error:nil];
-        NSString *predicateFormat = [NSString stringWithFormat:@"self ENDSWITH '%@'", fileExtensions[idx]];
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:predicateFormat];
-        directoryContents = [directoryContents filteredArrayUsingPredicate:predicate];
-        
-        for (NSString *fileName in directoryContents) {
-            NSString *filePath = [directoryPath stringByAppendingPathComponent:fileName];
-            @try {
-                MPMessage *message = [MPArchivist unarchiveObjectOfClass:[MPMessage class] withFile:filePath error:nil];
-
-                if (message) {
-                    [self saveMessage:message updateSession:NO];
-                }
-            } @catch (NSException* ex) {
-                MPILogError(@"Failed To retrieve crash messages from archive: %@", ex);
-            } @finally {
-                [fileManager removeItemAtPath:filePath error:nil];
-            }
-        }
-    }];
 }
 
 - (void)proxyOriginalAppDelegate {
@@ -1582,7 +1547,6 @@ static BOOL skipNextUpload = NO;
         searchAdsCompletion();
 #endif
         
-        [self processPendingArchivedMessages];
         MPILogDebug(@"SDK %@ has started", kMParticleSDKVersion);
         
         completionHandler();

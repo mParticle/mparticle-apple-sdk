@@ -6,7 +6,6 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MPAppNotificationHandler.h"
-#import "MPArchivist.h"
 #import "MPConnector.h"
 #import "MPNetworkCommunication.h"
 #import "MPConnectorProtocol.h"
@@ -70,18 +69,15 @@
         [fileManager removeItemAtPath:testFile error:nil];
     }
     
-    NSError *error = nil;
-    BOOL success = [MPArchivist archiveDataWithRootObject:object toFile:testFile error:&error];
+    BOOL success = [NSKeyedArchiver archiveRootObject:object toFile:testFile];
     XCTAssertTrue(success);
-    XCTAssertNil(error);
     
     //Retrieve Object
     XCTAssert([fileManager fileExistsAtPath:testFile]);
     
-    id returnedObject = nil;
-    
-    returnedObject = [MPArchivist unarchiveObjectOfClass:class withFile:testFile error:nil];
-    
+    id returnedObject = [NSKeyedUnarchiver unarchiveObjectWithFile:testFile];
+    XCTAssertNotNil(returnedObject);
+        
     //Remove Object
     if ([fileManager fileExistsAtPath:testFile]) {
         [fileManager removeItemAtPath:testFile error:nil];
