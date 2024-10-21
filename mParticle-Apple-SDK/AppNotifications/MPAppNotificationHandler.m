@@ -339,7 +339,7 @@
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.optOut) {
+    if (stateMachine.optOut || !url) {
         return;
     }
     

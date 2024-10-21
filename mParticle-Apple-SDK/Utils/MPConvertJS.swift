@@ -46,14 +46,14 @@ import Foundation
         case MPJSCommerceEventAction.removeFromWishlist.rawValue:
             return .removeFromWishlist
         default:
-            MPLogger.MPLogError(format: "Invalid commerce event action received from webview: %@", arguments: json)
+            MPLogError("Invalid commerce event action received from webview: %@", json)
             return .addToCart
         }
     }
     
     @objc public static func commerceEvent(_ json: [AnyHashable : Any]) -> MPCommerceEvent? {
         guard json["ProductAction"] == nil || json["ProductAction"] is [String: Any] else {
-            MPLogger.MPLogError(format: "Unexpected commerce event data received from webview")
+            MPLogError("Unexpected commerce event data received from webview")
             return nil
         }
         
@@ -64,14 +64,14 @@ import Foundation
         let isValid = isProductAction || isPromotion || isImpression
         
         if !isValid {
-            MPLogger.MPLogError(format: "Invalid commerce event dictionary received from webview: %@", arguments: json)
+            MPLogError("Invalid commerce event dictionary received from webview: %@", json)
             return nil
         }
         
         let commerceEvent: MPCommerceEvent
         if isProductAction {
             guard let productActionType = productAction?["ProductActionType"] as? NSNumber else {
-                MPLogger.MPLogError(format: "Unexpected product action type received from webview")
+                MPLogError("Unexpected product action type received from webview")
                 return nil
             }
             let action = Self.commerceEventAction(productActionType)
@@ -136,12 +136,12 @@ import Foundation
     
     @objc public static func promotionContainer(_ json: [AnyHashable : Any]) -> MPPromotionContainer? {
         guard let promotionDictionary = (json["PromotionAction"] as? [String: Any]) else {
-            MPLogger.MPLogError(format: "Unexpected promotion container action data received from webview")
+            MPLogError("Unexpected promotion container action data received from webview")
             return nil
         }
         
         guard let promotionActionTypeNumber = (promotionDictionary["PromotionActionType"] as? NSNumber) else {
-            MPLogger.MPLogError(format: "Unexpected promotion container action type data received from webview")
+            MPLogError("Unexpected promotion container action type data received from webview")
             return nil
         }
         
@@ -152,7 +152,7 @@ import Foundation
                 promotionContainer.addPromotion(MPConvertJS_PRIVATE.promotion(jsonObject))
             }
         } else {
-            MPLogger.MPLogError(format: "Unexpected promotion container list data received from webview")
+            MPLogError("Unexpected promotion container list data received from webview")
             return nil
         }
 
@@ -252,7 +252,7 @@ import Foundation
         let request = MPIdentityApiRequest.withEmptyUser()
         
         guard let userIdentities = json?["UserIdentities"] as? [[AnyHashable : Any]] else {
-            MPLogger.MPLogError(format: "Unexpected user identity data received from webview")
+            MPLogError("Unexpected user identity data received from webview")
             return nil
         }
         

@@ -9,16 +9,10 @@
     NSString *sourceApp;
 }
 
-@property (nonatomic, strong, readonly) NSString *annotationKey;
-@property (nonatomic, strong, readonly) NSString *sourceAppKey;
-
 @end
 
 
 @implementation MPLaunchInfo
-
-@synthesize sourceAppKey = _sourceAppKey;
-@synthesize annotationKey = _annotationKey;
 
 - (instancetype)initWithURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
     self = [super init];
@@ -33,11 +27,11 @@
     NSMutableDictionary *options = [[NSMutableDictionary alloc] initWithCapacity:2];
     
     if (_sourceApplication) {
-        options[self.sourceAppKey] = _sourceApplication;
+        options[UIApplicationOpenURLOptionsSourceApplicationKey] = _sourceApplication;
     }
     
     if (_annotation) {
-        options[self.annotationKey] = _annotation;
+        options[UIApplicationOpenURLOptionsAnnotationKey] = _annotation;
     }
     
     if (options.count > 0) {
@@ -54,32 +48,11 @@
     }
     
     _options = options;
-    sourceApp = options[self.sourceAppKey];
-    self.annotation = options[self.annotationKey];
+    sourceApp = options[UIApplicationOpenURLOptionsSourceApplicationKey];
+    self.annotation = options[UIApplicationOpenURLOptionsAnnotationKey];
     self.url = url;
     
     return self;
-}
-
-#pragma mark Private accessors
-- (NSString *)annotationKey {
-    if (_annotationKey) {
-        return _annotationKey;
-    }
-    
-    _annotationKey = UIApplicationOpenURLOptionsAnnotationKey;
-    
-    return _annotationKey;
-}
-
-- (NSString *)sourceAppKey {
-    if (_sourceAppKey) {
-        return _sourceAppKey;
-    }
-
-    _sourceAppKey = UIApplicationOpenURLOptionsSourceApplicationKey;
-    
-    return _sourceAppKey;
 }
 
 #pragma mark Public accessors

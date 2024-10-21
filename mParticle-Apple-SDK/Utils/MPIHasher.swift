@@ -25,7 +25,7 @@ import Foundation
         
         let lowercaseStringToHash = stringToHash.lowercased()
         guard let dataToHash = lowercaseStringToHash.data(using: .utf8) else {
-            MPLogger.MPLogWarning(format: "Hash String Failed. Could not encode string as data")
+            MPLogWarning("Hash String Failed. Could not encode string as data")
             return ""
         }
        
@@ -39,7 +39,7 @@ import Foundation
 
     @objc public class func hashStringUTF16(_ stringToHash: String) -> String {
         guard let data = stringToHash.data(using: .utf16LittleEndian) else {
-            MPLogger.MPLogWarning(format: "Hash String UTF16 Failed. Could not encode string as data")
+            MPLogWarning("Hash String UTF16 Failed. Could not encode string as data")
             return ""
         }
         let hash = hashFNV1a(data)
