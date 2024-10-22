@@ -39,7 +39,7 @@ import Foundation
     @objc public var hardwareId: String?
     
     @objc public func copy(with zone: NSZone? = nil) -> Any {
-        let copy = MPCCPAConsent()
+        let copy = MPGDPRConsent()
         copy.consented = consented
         copy.document = document
         copy.timestamp = timestamp
