@@ -1,3 +1,11 @@
+## [8.27.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.2...v8.27.3) (2024-10-22)
+
+
+### Bug Fixes
+
+* Fix set opt out for kits ([#300](https://github.com/mParticle/mparticle-apple-sdk/issues/300)) ([74f71d8](https://github.com/mParticle/mparticle-apple-sdk/commit/74f71d8202debdc7de13394b0f24683b39618b77))
+* Return type of MPGDPRConsent copy method ([7966fd0](https://github.com/mParticle/mparticle-apple-sdk/commit/7966fd02f18b3338e1f07bb619bf72501a27b2db))
+
 ## [8.27.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.1...v8.27.2) (2024-10-10)
 
 
