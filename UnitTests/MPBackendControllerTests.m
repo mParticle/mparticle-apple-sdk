@@ -81,7 +81,6 @@
 - (NSNumber *)previousSessionSuccessfullyClosed;
 - (void)setPreviousSessionSuccessfullyClosed:(NSNumber *)previousSessionSuccessfullyClosed;
 - (void)processOpenSessionsEndingCurrent:(BOOL)endCurrentSession completionHandler:(dispatch_block_t)completionHandler;
-- (void)processPendingArchivedMessages;
 - (void)resetUserIdentitiesFirstTimeUseFlag;
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession;
 - (void)uploadMessagesFromSession:(MPSession *)session completionHandler:(void(^)(MPSession *uploadedSession))completionHandler;
