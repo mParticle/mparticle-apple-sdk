@@ -517,7 +517,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         }
         
         if ([kitRegister.wrapperInstance respondsToSelector:@selector(didFinishLaunchingWithConfiguration:)]) {
-            [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+            if ([NSThread isMainThread]) {
+                [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [kitRegister.wrapperInstance didFinishLaunchingWithConfiguration:configuration];
+                });
+            }
         }
     }
 }
