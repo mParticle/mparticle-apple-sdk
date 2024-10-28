@@ -1,10 +1,10 @@
 #import <XCTest/XCTest.h>
-#import "MPResponseEvents.h"
 #import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
+#import "MPNetworkCommunication.h"
 
 @interface MParticle ()
 
@@ -59,7 +59,7 @@
                                        kMPRemoteConfigUniqueIdentifierKey: newDas
                                        }};
     
-    [MPResponseEvents parseConfiguration:response];
+    [MPNetworkCommunication parseConfiguration:response];
     XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));

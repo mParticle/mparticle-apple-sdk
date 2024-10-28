@@ -17,7 +17,6 @@
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
-#import "MPResponseEvents.h"
 #import "MPConsumerInfo.h"
 #import "MPResponseConfig.h"
 #import "MPCommerceEvent.h"
