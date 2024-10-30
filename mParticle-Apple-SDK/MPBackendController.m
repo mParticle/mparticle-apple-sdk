@@ -1474,7 +1474,7 @@ static BOOL skipNextUpload = NO;
     }
     
     if (![MParticle sharedInstance].stateMachine.optOut) {
-        dispatch_async(dispatch_get_main_queue(), ^{
+        dispatch_async([MParticle messageQueue], ^{
             [[MParticle sharedInstance].kitContainer initializeKits];
         });
     }
