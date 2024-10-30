@@ -20,7 +20,6 @@
 #import "MPEnums.h"
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
-#import "MPResponseEvents.h"
 #import "MPAliasResponse.h"
 #import "MPResponseConfig.h"
 #import "MPURL.h"
@@ -598,7 +597,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             if (responseDictionary &&
                 serializationError == nil &&
                 [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader]) {
-                [MPResponseEvents parseConfiguration:responseDictionary];
+                [MPNetworkCommunication parseConfiguration:responseDictionary];
             }
             MPILogVerbose(@"Upload complete: %@\n", uploadString);
             
@@ -1040,6 +1039,23 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 + (NSObject<MPConnectorFactoryProtocol> *)connectorFactory {
     return factory;
+}
+
++ (void)parseConfiguration:(nonnull NSDictionary *)configuration {
+    if (MPIsNull(configuration) || MPIsNull(configuration[kMPMessageTypeKey])) {
+        return;
+    }
+    
+    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+
+    // Consumer Information
+    MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
+    [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
+    [persistence updateConsumerInfo:consumerInfo];
+    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+    if (persistenceInfo.cookies != nil) {
+        [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
+    }
 }
 
 @end
