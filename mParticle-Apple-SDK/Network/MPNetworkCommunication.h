@@ -47,4 +47,6 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion;
 - (void)modifyDeviceID:(NSString *_Nonnull)deviceIdType value:(NSString *_Nonnull)value oldValue:(NSString *_Nonnull)oldValue;
 
++ (void)parseConfiguration:(nonnull NSDictionary *)configuration;
+
 @end
