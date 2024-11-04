@@ -1,3 +1,10 @@
+## [8.27.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.3...v8.27.4) (2024-11-04)
+
+
+### Bug Fixes
+
+* Initialize Kits in Background Thread ([#308](https://github.com/mParticle/mparticle-apple-sdk/issues/308)) ([38d3ea7](https://github.com/mParticle/mparticle-apple-sdk/commit/38d3ea7408c7e6535a4f459ecade8881ef5c85e3))
+
 ## [8.27.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.2...v8.27.3) (2024-10-22)
 
 
