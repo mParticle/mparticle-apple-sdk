@@ -22,7 +22,6 @@
 #import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
 #import "MPResponseConfig.h"
-#import "MParticleSwift.h"
 #import "MPUpload.h"
 
 static dispatch_queue_t messageQueue = nil;
