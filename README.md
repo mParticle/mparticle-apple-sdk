@@ -117,7 +117,7 @@ Kit | CocoaPods | Carthage | Swift Package Manager |
 [Google Analytics 4 for Firebase](https://github.com/mparticle-integrations/mparticle-apple-integration-google-analytics-firebase-ga4)                                        | ✓  | ✓  | ✓  
 [Instabot](https://github.com/mparticle-integrations/mparticle-apple-integration-instabot)                                        | ✓  |    |    
 [Iterable](https://github.com/mparticle-integrations/mparticle-apple-integration-iterable)                                        | ✓  | ✓  | ✓  
-[Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)                                          | ✓  |    | ✓  
+[Kochava](https://github.com/mparticle-integrations/mparticle-apple-integration-kochava)                                          |    |    | ✓  
 [Leanplum](https://github.com/mparticle-integrations/mparticle-apple-integration-leanplum)                                        | ✓  | ✓  | ✓  
 [Localytics](https://github.com/mparticle-integrations/mparticle-apple-integration-localytics)                                    | ✓  | ✓  | ✓  
 [Optimizely](https://github.com/mparticle-integrations/mparticle-apple-integration-optimizely)                                    | ✓  | ✓  | ✓  
