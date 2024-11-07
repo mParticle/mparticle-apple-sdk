@@ -452,7 +452,7 @@ static BOOL runningInBackground = NO;
     _installationType = installationType;
     [self didChangeValueForKey:@"installationType"];
     
-    self.firstSeenInstallation = installationType != MPInstallationTypeKnownUpgrade ? @YES : @NO;
+    self.firstSeenInstallation = (installationType != MPInstallationTypeKnownUpgrade && installationType != MPInstallationTypeKnownSameVersion) ? @YES : @NO;
 }
 
 #if TARGET_OS_IOS == 1
