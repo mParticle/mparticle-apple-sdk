@@ -112,10 +112,13 @@ NSString *const kMPFROptOutState = @"s";
     if (kitFilter.appliedProjections.count > 0) {
         NSMutableArray *projections = [[NSMutableArray alloc] initWithCapacity:kitFilter.appliedProjections.count];
         NSMutableDictionary *projectionDictionary;
-        NSString *currentProjectionName = ((MPEvent *)kitFilter.originalEvent).name;
+        NSString *currentProjectionName;
+        if ([kitFilter.originalEvent isKindOfClass:[MPEvent class]]) {
+            currentProjectionName = ((MPEvent *)kitFilter.originalEvent).name;
+        }
         
         for (MPEventProjection *eventProjection in kitFilter.appliedProjections) {
-            if (eventProjection.projectedName == currentProjectionName) {
+            if ([eventProjection.projectedName isEqual:currentProjectionName]) {
                 projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
                 projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);
                 projectionDictionary[kMPMessageTypeKey] = NSStringFromMessageType(messageType);
