@@ -385,7 +385,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (NSNumber *)firstSeenInstallation {
-    return (_firstSeenInstallation == nil) ? @YES : @NO;
+    return (_firstSeenInstallation == nil) ? @NO : _firstSeenInstallation;
 }
 
 - (MPInstallationType)installationType {
