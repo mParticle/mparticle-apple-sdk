@@ -385,43 +385,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (NSNumber *)firstSeenInstallation {
-    if (_firstSeenInstallation != nil) {
-        return _firstSeenInstallation;
-    }
-    
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSNumber *firstSeenInstallation = userDefaults[kMPAppFirstSeenInstallationKey];
-    if (firstSeenInstallation != nil) {
-        _firstSeenInstallation = firstSeenInstallation;
-    } else {
-        [self willChangeValueForKey:@"firstSeenInstallation"];
-        _firstSeenInstallation = @YES;
-        [self didChangeValueForKey:@"firstSeenInstallation"];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
-        });
-    }
-    
-    return _firstSeenInstallation;
-}
-
-- (void)setFirstSeenInstallation:(NSNumber *)firstSeenInstallation {
-    if (_firstSeenInstallation != nil) {
-        return;
-    }
-    
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSNumber *fsi = userDefaults[kMPAppFirstSeenInstallationKey];
-    if (fsi == nil) {
-        [self willChangeValueForKey:@"firstSeenInstallation"];
-        _firstSeenInstallation = firstSeenInstallation;
-        [self didChangeValueForKey:@"firstSeenInstallation"];
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            userDefaults[kMPAppFirstSeenInstallationKey] = self->_firstSeenInstallation;
-        });
-    }
+    return _firstSeenInstallation ? @YES : @NO;
 }
 
 - (MPInstallationType)installationType {
@@ -440,6 +404,7 @@ static BOOL runningInBackground = NO;
         }
     } else {
         _installationType = MPInstallationTypeKnownInstall;
+        _firstSeenInstallation = @YES;
     }
     
     [self didChangeValueForKey:@"installationType"];
@@ -452,7 +417,7 @@ static BOOL runningInBackground = NO;
     _installationType = installationType;
     [self didChangeValueForKey:@"installationType"];
     
-    self.firstSeenInstallation = (installationType != MPInstallationTypeKnownUpgrade && installationType != MPInstallationTypeKnownSameVersion) ? @YES : @NO;
+    _firstSeenInstallation = @(installationType == MPInstallationTypeKnownInstall);
 }
 
 #if TARGET_OS_IOS == 1
