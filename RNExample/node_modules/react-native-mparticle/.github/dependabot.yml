@@ -1,0 +1,12 @@
+version: 2
+updates:
+  - package-ecosystem: gradle
+    directory: "/android"
+    schedule:
+      interval: daily
+    labels: ["dependabot"]
+    open-pull-requests-limit: 10
+    ignore:
+      - dependency-name: "com.google.firebase:firebase-messaging"
+    commit-message:
+      prefix: "chore"
