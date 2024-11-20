@@ -37,6 +37,7 @@ Carthage
 
 *.sublime-project
 *.sublime-workspace
+
 # NPM
 node_modules
 
@@ -81,9 +82,6 @@ node_modules
 
 # Stack Dumps generated when programs crash (Ex. bash.exe.stackdump on Win)
 *.stackdump
-
-# Root dir shouldn't have Xcode project
-/*.xcodeproj
 
 # ReactCommon subdir shouldn't have Xcode project
 /packages/react-native/ReactCommon/**/*.xcodeproj
