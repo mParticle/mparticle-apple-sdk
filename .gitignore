@@ -37,3 +37,5 @@ Carthage
 
 *.sublime-project
 *.sublime-workspace
+# NPM
+node_modules/
