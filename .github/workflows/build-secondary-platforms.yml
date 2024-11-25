@@ -3,45 +3,6 @@ name: Secondary Platforms iOS Build
 on: [pull_request]
 
 jobs:
-#  pod-lint:
-#    runs-on: macOS-13
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#      
-#      - name: Select Xcode
-#        run: sudo xcode-select -s /Applications/Xcode_15.2.app
-#        
-#      - name: Update xcodeproj gem
-#        run: sudo gem install xcodeproj
-#
-#      - name: Prevent social URL warnings if twitter is unreachable
-#        run: find . -path '*.podspec' -exec perl -pi -e 's/.+\.social_media_url.+//' {} \;
-#
-#      - name: Lint with CocoaPods
-#        run: pod lib lint
-#
-#      - name: Undo twitter change to podspec
-#        run: git checkout *.podspec
-
-#  carthage-build:
-#    runs-on: macOS-13
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#
-#      - name: Select Xcode
-#        run: sudo xcode-select -s /Applications/Xcode_15.2.app
-#
-#      - name: Build with Carthage
-#        run: ./Scripts/carthage.sh build --no-skip-current || true
-#
-#      - name: Carthage archive
-#        run: carthage archive mParticle_Apple_SDK && carthage archive mParticle_Apple_SDK_NoLocation
-#
-#      - name: Verify carthage products
-#        run: ls 2>&1 | grep .framework.zip
-
   build-react-native:
     runs-on: macOS-13
     defaults:
@@ -65,16 +26,3 @@ jobs:
 
       - name: Build iOS extension scheme
         run: xcodebuild -allowProvisioningUpdates -workspace RNExample.xcworkspace -scheme RNExample -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
-
-#  run-analyzer:
-#    runs-on: macOS-13
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#
-#      - name: Select Xcode
-#        run: sudo xcode-select -s /Applications/Xcode_15.2.app
-#
-#      - name: Run static analyzer
-#        run: |
-#          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -B3 "warning")'

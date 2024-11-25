@@ -42,21 +42,7 @@ Carthage
 node_modules
 
 # @react-native/codegen
-/packages/react-native/React/FBReactNativeSpec/
-/packages/react-native-codegen/lib
-/packages/react-native-codegen/tmp/
-/packages/react-native/ReactCommon/react/renderer/components/rncore/
-/packages/rn-tester/NativeModuleExample/ScreenshotManagerSpec*
 /**/RCTThirdPartyFabricComponentsProvider.*
-
-# @react-native/codegen-typescript-test
-/packages/react-native-codegen-typescript-test/lib
-
-# Additional SDKs
-/packages/react-native/sdks/download
-/packages/react-native/sdks/hermes
-/packages/react-native/sdks/hermesc
-/packages/react-native/sdks/hermes-engine/hermes-engine-from-local-source-dir.tar.gz
 
 # Visual Studio Code (config dir - if present, this merges user defined
 # workspace settings on top of react-native.code-workspace)
@@ -83,20 +69,10 @@ node_modules
 # Stack Dumps generated when programs crash (Ex. bash.exe.stackdump on Win)
 *.stackdump
 
-# ReactCommon subdir shouldn't have Xcode project
-/packages/react-native/ReactCommon/**/*.xcodeproj
-
-# Libs that shouldn't have Xcode project
-/packages/react-native/Libraries/FBLazyVector/**/*.xcodeproj
-/packages/react-native/Libraries/Required/**/*.xcodeproj
-/packages/react-native/React/CoreModules/**/*.xcodeproj
-/packages/react-native/React/FBReactNativeSpec/**/*.xcodeproj
-/packages/react-native-codegen/**/*.xcodeproj
-/packages/rn-tester/**/*.xcodeproj
+# Packages
+/packages
 
 # Ruby Gems (Bundler)
-/packages/react-native/vendor
-/packages/helloworld/vendor
 .ruby-version
 /**/.ruby-version
 vendor/
