@@ -1,0 +1,28 @@
+name: Secondary Platforms iOS Build
+
+on: [pull_request]
+
+jobs:
+  build-react-native:
+    runs-on: macOS-13
+    defaults:
+      run:
+        working-directory: ./RNExample/ios
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+        
+      - name: Add React Native cli
+        run: yarn add -D @react-native-community/cli
+
+      - name: Update CocoaPods repo
+        run: pod repo update
+
+      - name: Install CocoaPods dependencies
+        run: pod install
+
+      - name: Build iOS extension scheme
+        run: xcodebuild -allowProvisioningUpdates -workspace RNExample.xcworkspace -scheme RNExample -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest'
