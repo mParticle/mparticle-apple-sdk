@@ -219,4 +219,18 @@
 #endif
 }
 
+#if TARGET_OS_IOS == 1
+- (void)testRequestAttribution {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Request Attribution"];
+    void (^searchAdsCompletion)(void) = ^{
+        [expectation fulfill];
+    };
+    
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    
+    [stateMachine requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+#endif
+
 @end
