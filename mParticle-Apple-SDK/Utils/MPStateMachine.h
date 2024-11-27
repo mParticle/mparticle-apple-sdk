@@ -13,7 +13,6 @@
 #endif
 #endif
 @class MPCustomModule;
-@class MPSearchAdsAttribution;
 @class MPDataPlanOptions;
 
 @interface MPStateMachine : NSObject
@@ -52,9 +51,6 @@
 @property (nonatomic) NSNumber * _Nullable attAuthorizationStatus;
 @property (nonatomic) NSNumber * _Nullable attAuthorizationTimestamp;
 @property (nonatomic, strong, nonnull) NSNumber *aliasMaxWindow;
-#if TARGET_OS_IOS == 1
-@property (nonatomic, strong, nonnull) MPSearchAdsAttribution *searchAttribution;
-#endif
 @property (nonatomic, strong, nonnull) NSDictionary *searchAdsInfo;
 @property (nonatomic) BOOL automaticSessionTracking;
 @property (nonatomic) BOOL allowASR;
@@ -75,5 +71,6 @@
 - (void)configureDataBlocking:(nullable NSDictionary *)blockSettings;
 - (void)setMinUploadDate:(nullable NSDate *)date uploadType:(MPUploadType)uploadType;
 - (nonnull NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType;
+- (void)requestAttributionDetailsWithBlock:(void (^ _Nonnull)(void))completionHandler requestsCompleted:(int)requestsCompleted;
 
 @end
