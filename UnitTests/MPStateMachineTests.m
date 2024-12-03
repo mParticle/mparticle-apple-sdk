@@ -9,9 +9,10 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
+#import "MPLaunchInfo.h"
 
 #pragma mark - MPStateMachine category
-@interface MPStateMachine(Tests)
+@interface MPStateMachine_PRIVATE(Tests)
 
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification;
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification;
@@ -23,7 +24,7 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer * kitContainer;
 
 @end
@@ -36,7 +37,7 @@
 @implementation MPStateMachineTests
 
 - (void)testOptOut {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.optOut = YES;
     XCTAssertTrue(stateMachine.optOut, @"OptOut is not being set.");
     
@@ -45,7 +46,7 @@
 }
 
 - (void)testRamp {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     [stateMachine configureRampPercentage:@100];
     XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
     
@@ -57,7 +58,7 @@
 }
 
 - (void)testConfigureTriggers {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
     NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
@@ -82,7 +83,7 @@
 }
 
 - (void)testNullConfigureTriggers {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *hashEvent1 = [MPIHasher hashTriggerEventName:@"Button Tapped" eventType:@"Transaction"];
     NSString *hashEvent2 = [MPIHasher hashTriggerEventName:@"Post Liked" eventType:@"Social"];
@@ -128,29 +129,29 @@
 
 - (void)testStateTransitions {
     XCTestExpectation *expectation = [self expectationWithDescription:@"State transitions"];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:[NSURL URLWithString:@"http://mparticle.com"]
                                                          options:@{@"Launching":@"WooHoo"}];
     stateMachine.launchInfo = launchInfo;
     XCTAssertFalse(stateMachine.backgrounded, @"Should have been false.");
     XCTAssertNotNil(stateMachine.launchInfo, @"Should not have been nil.");
-    XCTAssertFalse([MPStateMachine runningInBackground], @"Should have been false.");
+    XCTAssertFalse([MPStateMachine_PRIVATE runningInBackground], @"Should have been false.");
     
     [stateMachine handleApplicationDidEnterBackground:nil];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [MPStateMachine setRunningInBackground:YES];
+        [MPStateMachine_PRIVATE setRunningInBackground:YES];
         XCTAssertTrue(stateMachine.backgrounded, @"Should have been true.");
         XCTAssertNil(stateMachine.launchInfo, @"Should have been nil.");
-        XCTAssertTrue([MPStateMachine runningInBackground], @"Should have been true.");
+        XCTAssertTrue([MPStateMachine_PRIVATE runningInBackground], @"Should have been true.");
         
         [stateMachine handleApplicationWillEnterForeground:nil];
     
         dispatch_async(dispatch_get_main_queue(), ^{
-            [MPStateMachine setRunningInBackground:NO];
+            [MPStateMachine_PRIVATE setRunningInBackground:NO];
             XCTAssertFalse(stateMachine.backgrounded, @"Should have been false.");
-            XCTAssertFalse([MPStateMachine runningInBackground], @"Should have been false.");
+            XCTAssertFalse([MPStateMachine_PRIVATE runningInBackground], @"Should have been false.");
             [expectation fulfill];
         });
     });
@@ -161,7 +162,7 @@
 }
 
 - (void)testRamping {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     [stateMachine configureRampPercentage:@0];
     XCTAssertTrue(stateMachine.dataRamped, @"Should have been true.");
     
@@ -172,7 +173,7 @@
 - (void)testEventAndMessageTriggers {
     NSDictionary *configuration = @{@"evts":@[@"events"],
                                     @"dts":@[@"messages"]};
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     [stateMachine configureTriggers:configuration];
     XCTAssertNotNil(stateMachine.triggerEventTypes, @"Should not have been nil.");
     XCTAssertNotNil(stateMachine.triggerMessageTypes, @"Should not have been nil.");
@@ -183,12 +184,12 @@
 }
 
 - (void)testEnvironment {
-    [MPStateMachine setEnvironment:MPEnvironmentAutoDetect];
-    MPEnvironment environment = [MPStateMachine environment];
+    [MPStateMachine_PRIVATE setEnvironment:MPEnvironmentAutoDetect];
+    MPEnvironment environment = [MPStateMachine_PRIVATE environment];
     XCTAssertEqual(environment, MPEnvironmentDevelopment, @"Should have been equal.");
     
-    [MPStateMachine setEnvironment:MPEnvironmentDevelopment];
-    environment = [MPStateMachine environment];
+    [MPStateMachine_PRIVATE setEnvironment:MPEnvironmentDevelopment];
+    environment = [MPStateMachine_PRIVATE environment];
     XCTAssertEqual(environment, MPEnvironmentDevelopment, @"Should have been equal.");
 }
 
@@ -226,7 +227,7 @@
         [expectation fulfill];
     };
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     [stateMachine requestAttributionDetailsWithBlock:searchAdsCompletion requestsCompleted:0];
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];

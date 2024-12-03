@@ -15,7 +15,7 @@ static NSDateFormatter *RFC1123DateFormatter;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, strong, readonly) MParticleWebView *webView;
 
@@ -196,7 +196,7 @@ static NSDateFormatter *RFC1123DateFormatter;
                     kits = [supportedKits componentsJoinedByString:@","];
                 }
                 
-                NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine environment]];
+                NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine_PRIVATE environment]];
                 [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
                 
                 MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

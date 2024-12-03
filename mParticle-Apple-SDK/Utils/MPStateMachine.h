@@ -1,7 +1,4 @@
-#import "MPIConstants.h"
 #import "MPEnums.h"
-#import "MPLaunchInfo.h"
-#import "MParticleReachability.h"
 
 @class MPSession;
 @class MPNotificationController;
@@ -14,8 +11,9 @@
 #endif
 @class MPCustomModule;
 @class MPDataPlanOptions;
+@class MPLaunchInfo;
 
-@interface MPStateMachine : NSObject
+@interface MPStateMachine_PRIVATE : NSObject
 
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
@@ -43,8 +41,6 @@
 @property (nonatomic, strong, readonly, nullable) NSArray *triggerMessageTypes;
 @property (nonatomic) MPILogLevel logLevel;
 @property (nonatomic) MPInstallationType installationType;
-@property (nonatomic, readonly) MParticleNetworkStatus networkStatus;
-@property (nonatomic) MPUploadStatus uploadStatus;
 @property (nonatomic, readonly) BOOL backgrounded;
 @property (nonatomic, readonly) BOOL dataRamped;
 @property (nonatomic) BOOL optOut;

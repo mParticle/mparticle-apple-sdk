@@ -14,6 +14,9 @@
 #import "MPForwardQueueParameters.h"
 #import "MPDataPlanFilter.h"
 #import "MParticleSwift.h"
+#import "MPLaunchInfo.h"
+#import "MParticleReachability.h"
+#import "MPIConstants.h"
 
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
@@ -33,7 +36,7 @@ static BOOL runningInBackground = NO;
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
@@ -45,7 +48,7 @@ static BOOL runningInBackground = NO;
 
 @end
 
-@interface MPStateMachine() {
+@interface MPStateMachine_PRIVATE() {
     BOOL optOutSet;
     dispatch_queue_t messageQueue;
 }
@@ -53,11 +56,12 @@ static BOOL runningInBackground = NO;
 @property (nonatomic) MParticleNetworkStatus networkStatus;
 @property (nonatomic, strong) NSString *storedSDKVersion;
 @property (nonatomic, strong) MParticleReachability *reachability;
+@property (nonatomic) MPUploadStatus uploadStatus;
 
 @end
 
 
-@implementation MPStateMachine
+@implementation MPStateMachine_PRIVATE
 
 @synthesize consumerInfo = _consumerInfo;
 @synthesize deviceTokenType = _deviceTokenType;
@@ -218,7 +222,7 @@ static BOOL runningInBackground = NO;
     if (isDebuggerRunning) {
         environment = MPEnvironmentDevelopment;
     } else {
-        NSString *provisioningProfileString = [MPStateMachine provisioningProfileString];
+        NSString *provisioningProfileString = [MPStateMachine_PRIVATE provisioningProfileString];
         environment = provisioningProfileString ? MPEnvironmentDevelopment : MPEnvironmentProduction;
     }
 #endif
@@ -274,7 +278,7 @@ static BOOL runningInBackground = NO;
             return runningEnvironment;
         }
         
-        runningEnvironment = [MPStateMachine getEnvironment];
+        runningEnvironment = [MPStateMachine_PRIVATE getEnvironment];
         
         return runningEnvironment;
     }
@@ -359,7 +363,7 @@ static BOOL runningInBackground = NO;
     [self willChangeValueForKey:@"deviceTokenType"];
 
     _deviceTokenType = @"";
-    NSString *provisioningProfileString = [MPStateMachine provisioningProfileString];
+    NSString *provisioningProfileString = [MPStateMachine_PRIVATE provisioningProfileString];
     
     if (provisioningProfileString) {
         NSRange range = [provisioningProfileString rangeOfString:@"<key>aps-environment</key><string>production</string>"];

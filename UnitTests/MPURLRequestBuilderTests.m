@@ -22,7 +22,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MParticleWebView *webView;
 
@@ -153,7 +153,7 @@
 - (void)testHMACSha256Encode {
     NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
     NSString *referenceEncodedMessage = @"ceefdfeab2fe404a7cbb75f6f6a01443286fab507eb85c213fce3d812e8b615c";
@@ -165,7 +165,7 @@
 - (void)testInvalidHMACSha256Encode {
     NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = nil;
     NSString *encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:stateMachine.apiKey];

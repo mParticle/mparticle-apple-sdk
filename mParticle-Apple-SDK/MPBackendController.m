@@ -29,6 +29,7 @@
 #import "MPDevice.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
+#import "MPLaunchInfo.h"
 
 const NSInteger kNilAttributeValue = 101;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
@@ -50,7 +51,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MParticleWebView *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
@@ -359,7 +360,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (void)processDidFinishLaunching:(NSNotification *)notification {
     NSString *astType = kMPASTInitKey;
     NSMutableDictionary *messageInfo = [[NSMutableDictionary alloc] initWithCapacity:3];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     BOOL isInstallOrUpgrade = NO;
     if (stateMachine.installationType == MPInstallationTypeKnownInstall) {
@@ -793,11 +794,11 @@ static BOOL skipNextUpload = NO;
 
 - (NSTimeInterval)uploadInterval {
     if (_uploadInterval == 0.0) {
-        _uploadInterval = [MPStateMachine environment] == MPEnvironmentDevelopment ? DEFAULT_DEBUG_UPLOAD_INTERVAL : DEFAULT_UPLOAD_INTERVAL;
+        _uploadInterval = [MPStateMachine_PRIVATE environment] == MPEnvironmentDevelopment ? DEFAULT_DEBUG_UPLOAD_INTERVAL : DEFAULT_UPLOAD_INTERVAL;
     }
     
     // If running in an extension our processor time is extremely limited
-    if ([MPStateMachine isAppExtension]) {
+    if ([MPStateMachine_PRIVATE isAppExtension]) {
         _uploadInterval = 1.0;
     }
     return _uploadInterval;
@@ -861,7 +862,7 @@ static BOOL skipNextUpload = NO;
             return;
         }
         
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
         
         NSNumber *mpId = [MPPersistenceController mpId];
@@ -1457,7 +1458,7 @@ static BOOL skipNextUpload = NO;
 - (void)startWithKey:(NSString *)apiKey secret:(NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *)consentState completionHandler:(dispatch_block_t)completionHandler {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:apiKey parameter2:secret parameter3:@(firstRun) parameter4:consentState];
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         if (proxyAppDelegate) {
             [self proxyOriginalAppDelegate];
         }
@@ -1474,11 +1475,11 @@ static BOOL skipNextUpload = NO;
         });
     }
 
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.apiKey = apiKey;
     stateMachine.secret = secret;
     stateMachine.installationType = installationType;
-    [MPStateMachine setRunningInBackground:NO];
+    [MPStateMachine_PRIVATE setRunningInBackground:NO];
     
     BOOL shouldBeginSession = !stateMachine.optOut && MParticle.sharedInstance.shouldBeginSession;
     NSDate *date = nil;
@@ -1550,7 +1551,7 @@ static BOOL skipNextUpload = NO;
 
 - (void)saveMessage:(MPMessage *)message updateSession:(BOOL)updateSession {
     NSTimeInterval lastEventTimestamp = message.timestamp ?: [[NSDate date] timeIntervalSince1970];
-    if (MPStateMachine.runningInBackground) {
+    if (MPStateMachine_PRIVATE.runningInBackground) {
         self.timeOfLastEventInBackground = lastEventTimestamp;
     }
     
@@ -1582,7 +1583,7 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     BOOL shouldUpload = [stateMachine.triggerMessageTypes containsObject:message.messageType];
     
     if (!shouldUpload && stateMachine.triggerEventTypes) {
@@ -1860,7 +1861,7 @@ static BOOL skipNextUpload = NO;
 - (MPExecStatus)endLocationTracking {
     [MPListenerController.sharedInstance onAPICalled:_cmd];
 
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if ([stateMachine.locationTrackingMode isEqualToString:kMPRemoteConfigForceTrue]) {
         return MPExecStatusEnabledRemotely;
     }
@@ -1970,7 +1971,7 @@ static BOOL skipNextUpload = NO;
 #pragma mark Background Task
 
 - (void)beginBackgroundTask {
-    if ([MPStateMachine isAppExtension]) {
+    if ([MPStateMachine_PRIVATE isAppExtension]) {
         return;
     }
     
@@ -1985,7 +1986,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)endBackgroundTask {
-    if ([MPStateMachine isAppExtension]) {
+    if ([MPStateMachine_PRIVATE isAppExtension]) {
         return;
     }
     
@@ -2074,7 +2075,7 @@ static BOOL skipNextUpload = NO;
     MPILogVerbose(@"Application Did Enter Background");
     
     NSTimeInterval currentTime = [[NSDate date] timeIntervalSince1970];
-    [MPStateMachine setRunningInBackground:YES];
+    [MPStateMachine_PRIVATE setRunningInBackground:YES];
     [self beginBackgroundTask];
             
     [MParticle executeOnMessage:^{
@@ -2110,7 +2111,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)beginBackgroundTimeCheckLoop {
-    if ([MPStateMachine isAppExtension]) {
+    if ([MPStateMachine_PRIVATE isAppExtension]) {
         return;
     }
     
@@ -2167,7 +2168,7 @@ static BOOL skipNextUpload = NO;
 }
 
 - (void)handleApplicationWillEnterForeground:(NSNotification *)notification {
-    [MPStateMachine setRunningInBackground:NO];
+    [MPStateMachine_PRIVATE setRunningInBackground:NO];
     
     [self cancelBackgroundTimeCheckLoop];
     

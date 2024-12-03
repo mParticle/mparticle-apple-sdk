@@ -19,7 +19,7 @@
 
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 
@@ -38,7 +38,7 @@
     }
 
     _configuration = [configuration copy];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (dataReceivedFromServer) {
         BOOL hasConsentFilters = NO;
@@ -213,7 +213,7 @@
 - (void)configurePushNotifications:(NSDictionary *)pushNotificationDictionary {
     NSString *pushNotificationMode = pushNotificationDictionary[kMPRemoteConfigPushNotificationModeKey];
     [MParticle sharedInstance].stateMachine.pushNotificationMode = pushNotificationMode;
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         UIApplication *app = [MPApplication sharedUIApplication];
         
         if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceTrue]) {

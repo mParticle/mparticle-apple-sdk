@@ -22,7 +22,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
@@ -46,7 +46,7 @@
     [super setUp];
     
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     stateMachine.apiKey = @"test_key";
     stateMachine.secret = @"test_secret";
     [MParticle sharedInstance].stateMachine = stateMachine;

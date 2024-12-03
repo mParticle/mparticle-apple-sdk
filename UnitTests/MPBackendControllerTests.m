@@ -19,6 +19,7 @@
 #import "MPBaseTestCase.h"
 #import "MPIUserDefaults.h"
 #import "MPDevice.h"
+#import "MPLaunchInfo.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -49,7 +50,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
@@ -233,7 +234,7 @@
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -296,7 +297,7 @@
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -332,7 +333,7 @@
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -704,7 +705,7 @@
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
             
-            MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+            MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
             [stateMachine configureRampPercentage:@100];
             
             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
@@ -726,7 +727,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -818,7 +819,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -865,7 +866,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -911,7 +912,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -1897,7 +1898,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(@7)] crashMaxPLReportLength];
@@ -1949,7 +1950,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[(id)mockStateMachine stub] andReturn:nil] crashMaxPLReportLength];

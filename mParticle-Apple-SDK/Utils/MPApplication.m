@@ -65,7 +65,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -172,7 +172,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (MPEnvironment)environment {
-    return [MPStateMachine environment];
+    return [MPStateMachine_PRIVATE environment];
 }
 
 - (NSNumber *)firstSeenInstallation {

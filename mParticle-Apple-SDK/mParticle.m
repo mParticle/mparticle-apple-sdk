@@ -59,7 +59,7 @@ static NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
@@ -348,7 +348,7 @@ static NSString *const kMPStateKey = @"state";
     _trackNotifications = YES;
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
-    _stateMachine = [[MPStateMachine alloc] init];
+    _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView alloc] init];
     
     return self;
@@ -425,7 +425,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (MPEnvironment)environment {
-    return [MPStateMachine environment];
+    return [MPStateMachine_PRIVATE environment];
 }
 
 - (MPILogLevel)logLevel {
@@ -593,7 +593,7 @@ static NSString *const kMPStateKey = @"state";
         MPILogWarning(@"SDK has been initialized in Production Mode.");
     }
     
-    [MPStateMachine setEnvironment:environment];
+    [MPStateMachine_PRIVATE setEnvironment:environment];
     [MParticle sharedInstance].stateMachine.automaticSessionTracking = options.automaticSessionTracking;
     if (options.attStatus != nil) {
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
@@ -774,7 +774,7 @@ static NSString *const kMPStateKey = @"state";
 #pragma mark Application notifications
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         return [MPNotificationController deviceToken];
     } else {
         return nil;
@@ -782,7 +782,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [MPNotificationController setDeviceToken:pushNotificationToken];
     }
 }
@@ -792,7 +792,7 @@ static NSString *const kMPStateKey = @"state";
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler didReceiveRemoteNotification:userInfo];
     }
 }
@@ -802,7 +802,7 @@ static NSString *const kMPStateKey = @"state";
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler didFailToRegisterForRemoteNotificationsWithError:error];
     }
 }
@@ -812,7 +812,7 @@ static NSString *const kMPStateKey = @"state";
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];
     }
 }
@@ -822,7 +822,7 @@ static NSString *const kMPStateKey = @"state";
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo];
     }
 }
@@ -832,7 +832,7 @@ static NSString *const kMPStateKey = @"state";
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [[MParticle sharedInstance].appNotificationHandler handleActionWithIdentifier:identifier forRemoteNotification:userInfo withResponseInfo:responseInfo];
     }
 }
@@ -1521,7 +1521,7 @@ static NSString *const kMPStateKey = @"state";
 - (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distanceFilter)];
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }

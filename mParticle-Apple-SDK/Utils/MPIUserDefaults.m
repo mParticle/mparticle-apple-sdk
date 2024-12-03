@@ -12,7 +12,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 
 @end
@@ -403,7 +403,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         [configString appendFormat:@"SDK Version: %@\n", MParticle.sharedInstance.version];
     }
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (stateMachine.apiKey != nil) {
         [configString appendFormat:@"API Key: %@\n", stateMachine.apiKey];
@@ -420,7 +420,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     [configString appendFormat:@"Supported Kits: \n%@\n", supportedKitsString];
     
-    NSNumber *environment = [NSNumber numberWithInt:(int)[MPStateMachine environment]];
+    NSNumber *environment = [NSNumber numberWithInt:(int)[MPStateMachine_PRIVATE environment]];
     [configString appendFormat:@"Environment: %@\n", environment];
     
     return [MPIHasher hashString:configString];

@@ -14,7 +14,7 @@
 @interface MParticle (Tests)
 
 @property (nonatomic, strong, nonnull) MPBackendController *backendController;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -146,7 +146,7 @@
 
 - (void)testDictionaryRepresentation {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
     NSNumber *eventDuration = @2;
@@ -180,7 +180,7 @@
 
 - (void)testDictionaryRepresentationWithDictionaryValues {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
     NSNumber *eventDuration = @2;
@@ -215,7 +215,7 @@
 
 - (void)testDictionaryRepresentationWithDictionaryValuesContainingDictionary {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
     NSNumber *eventDuration = @2;
@@ -250,7 +250,7 @@
 
 - (void)testDictionaryRepresentationWithNullValues {
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.currentSession = session;
     
     NSNumber *eventDuration = @2;

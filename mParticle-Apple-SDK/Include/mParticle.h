@@ -19,6 +19,7 @@
 #import "MPListenerController.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
+#import "MPStateMachine.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE

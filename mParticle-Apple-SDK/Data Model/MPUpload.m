@@ -5,7 +5,7 @@
 #import "MPStateMachine.h"
 
 @interface MParticle()
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @end
 
 @implementation MPUploadSettings

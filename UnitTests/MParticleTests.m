@@ -17,10 +17,11 @@
 #import "MPKitConfiguration.h"
 #import "MParticleSwift.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
+#import "MPIConstants.h"
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPBackendController *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
@@ -93,7 +94,7 @@
 
 - (void)testOptOut {
     MParticle *instance = [MParticle sharedInstance];
-    instance.stateMachine = [[MPStateMachine alloc] init];
+    instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     
     XCTAssertFalse(instance.optOut, "By Default Opt Out should be set to false");
     
@@ -106,7 +107,7 @@
 
 - (void)testOptOutEndsSession {
     MParticle *instance = [MParticle sharedInstance];
-    instance.stateMachine = [[MPStateMachine alloc] init];
+    instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     instance.optOut = YES;
     
     MParticleSession *session = instance.currentSession;
@@ -727,7 +728,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusNotDetermined);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusNotDetermined);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -737,7 +738,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusRestricted);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusRestricted);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -747,7 +748,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusDenied);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusDenied);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -757,7 +758,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusAuthorized);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusAuthorized);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -769,7 +770,7 @@
     options.attStatus = @(MPATTAuthorizationStatusRestricted);
     options.attStatusTimestampMillis = testTimestamp;
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusRestricted);
     XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
 }

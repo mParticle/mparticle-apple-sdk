@@ -17,7 +17,7 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readwrite) MPNetworkOptions *networkOptions;
 - (void)logKitBatch:(NSString *)batch;
@@ -129,7 +129,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 - (void)testModifyURLWithOptionsAndTrackingOverride {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
     
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
@@ -148,7 +148,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 - (void)testEventURLWithOptionsAndOverrideAndEventsOnlyAndTrackingHost {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
     
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
@@ -275,7 +275,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 
 - (void)testAliasURLWithOptionsAndOverrideAndEventsOnlyAndTrackingHost {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.attAuthorizationStatus = @(MPATTAuthorizationStatusAuthorized);
     
     MPNetworkOptions *options = [[MPNetworkOptions alloc] init];
@@ -915,7 +915,7 @@ Method originalMethod = nil; Method swizzleMethod = nil;
         @[@"us3-w1y2y8yj8q58d5bx9u2dvtxzl4cpa7cuf", @"nativesdks.us3.mparticle.com", @"identity.us3.mparticle.com", @"tracking-nativesdks.us3.mparticle.com", @"tracking-identity.us3.mparticle.com"]
     ];
     MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     NSString *oldEventHost = @"nativesdks.mparticle.com";
     NSString *oldIdentityHost = @"identity.mparticle.com";
     

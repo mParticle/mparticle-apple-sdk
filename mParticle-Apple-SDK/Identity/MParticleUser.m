@@ -11,6 +11,7 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
+#import "MPIConstants.h"
 
 @interface MParticleUser ()
 
@@ -23,7 +24,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPBackendController *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 
@@ -222,7 +223,7 @@
     dispatch_async([MParticle messageQueue], ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value];
         
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         if (stateMachine.optOut) {
             return;
         }
