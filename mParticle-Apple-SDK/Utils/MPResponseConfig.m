@@ -20,8 +20,7 @@
 @property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 

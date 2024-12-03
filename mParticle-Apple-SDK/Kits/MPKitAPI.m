@@ -4,11 +4,11 @@
 #import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "FilteredMParticleUser.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 
 @end
 

@@ -22,13 +22,13 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 
 @end
 
-@interface MPBackendController ()
+@interface MPBackendController_PRIVATE ()
 
 
 - (void)clearUserAttributes;
@@ -83,7 +83,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
     
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     
     [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
     dispatch_sync([MParticle messageQueue], ^{
@@ -154,7 +154,7 @@
 - (void)testUserAttributeFromCache {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
     
     NSDictionary *userAttributes = @{
@@ -199,7 +199,7 @@
 - (void)testUserAttributeManuallySet {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
     
     NSDictionary *userAttributes = @{

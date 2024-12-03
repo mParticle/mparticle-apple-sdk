@@ -18,6 +18,7 @@
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
 #import "MPUpload.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 

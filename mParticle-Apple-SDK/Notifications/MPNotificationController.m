@@ -15,7 +15,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 

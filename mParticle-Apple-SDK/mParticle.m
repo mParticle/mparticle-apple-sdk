@@ -1,6 +1,5 @@
 #import "mParticle.h"
 #import "MPAppNotificationHandler.h"
-#import "MPBackendController.h"
 #import "MPConsumerInfo.h"
 #import "MPDevice.h"
 #import "MPForwardQueueParameters.h"
@@ -9,7 +8,6 @@
 #import "MPILogger.h"
 #import "MPIntegrationAttributes.h"
 #import "MPKitActivity.h"
-#import "MPKitContainer.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"
 #import "MPNotificationController.h"
@@ -24,6 +22,7 @@
 #import "MPResponseConfig.h"
 #import "MParticleSwift.h"
 #import "MPUpload.h"
+#import "MPKitContainer.h"
 
 static dispatch_queue_t messageQueue = nil;
 static void *messageQueueKey = "mparticle message queue key";
@@ -62,14 +61,13 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
-@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong) MParticleWebView *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
@@ -267,7 +265,7 @@ static NSString *const kMPStateKey = @"state";
 
 @end
 
-@interface MPBackendController ()
+@interface MPBackendController_PRIVATE ()
 
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 
@@ -531,7 +529,7 @@ static NSString *const kMPStateKey = @"state";
     
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultAgentOverride:options.defaultAgent];
     
-    _backendController = [[MPBackendController alloc] initWithDelegate:self];
+    _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
@@ -637,13 +635,13 @@ static NSString *const kMPStateKey = @"state";
                                    MPILogError(@"Identify request failed with error: %@", error);
                                }
                                
-                               NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration;
+                               NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
                                
                                if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
                                    
                                    dispatch_async(dispatch_get_main_queue(), ^{
                                        [[MParticle sharedInstance].kitContainer configureKits:deferredKitConfiguration];
-                                       weakSelf.deferredKitConfiguration = nil;
+                                       weakSelf.deferredKitConfiguration_PRIVATE = nil;
                                    });
                                    
                                }
@@ -1530,7 +1528,7 @@ static NSString *const kMPStateKey = @"state";
     if (execStatus == MPExecStatusSuccess) {
         MPILogDebug(@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter);
     } else {
-        MPILogError(@"Could not begin location tracking: %@", [MPBackendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]);
     }
 }
 
@@ -1541,7 +1539,7 @@ static NSString *const kMPStateKey = @"state";
     if (execStatus == MPExecStatusSuccess) {
         MPILogDebug(@"Ended location tracking");
     } else {
-        MPILogError(@"Could not end location tracking: %@", [MPBackendController execStatusDescription:execStatus]);
+        MPILogError(@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]);
     }
 }
 #endif // MPARTICLE_LOCATION_DISABLE
@@ -1594,7 +1592,7 @@ static NSString *const kMPStateKey = @"state";
         if (execStatus == MPExecStatusSuccess) {
             MPILogDebug(@"Set session attribute - %@:%@", key, value);
         } else {
-            MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [MPBackendController execStatusDescription:execStatus]);
+            MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [MPBackendController_PRIVATE execStatusDescription:execStatus]);
         }
     });
 }
@@ -1632,7 +1630,7 @@ static NSString *const kMPStateKey = @"state";
         if (execStatus == MPExecStatusSuccess) {
             MPILogDebug(@"Forcing Upload");
         } else {
-            MPILogError(@"Could not upload data: %@", [MPBackendController execStatusDescription:execStatus]);
+            MPILogError(@"Could not upload data: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]);
         }
     });
 }

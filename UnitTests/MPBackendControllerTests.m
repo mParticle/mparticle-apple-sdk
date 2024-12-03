@@ -48,7 +48,7 @@
 @interface MParticle (Tests)
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
@@ -66,7 +66,7 @@
 @end
 
 #pragma mark - MPBackendController+Tests category
-@interface MPBackendController(Tests)
+@interface MPBackendController_PRIVATE(Tests)
 
 @property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
@@ -103,7 +103,7 @@
     dispatch_queue_t messageQueue;
 }
 
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPSession *session;
 @property (nonatomic, strong) MPNotificationController *notificationController;
 
@@ -123,7 +123,7 @@
     
     [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
     
-    [MParticle sharedInstance].backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     self.backendController = [MParticle sharedInstance].backendController;
     [self notificationController];
 }
@@ -374,14 +374,14 @@
 
 - (void)testCheckAttributeValueEmpty {
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo"
                                                  value:[NSNull null]
                                                  error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
     
     error = nil;
-    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
+    [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo"
                                   value:@""
                                   error:&error];
     XCTAssertTrue(success);
@@ -390,14 +390,14 @@
 
 - (void)testCheckAttributeStringAttribute {
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:@"bar" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:@"bar" error:&error];
     XCTAssert(success);
     XCTAssertNil(error);
 }
 
 - (void)testCheckAttributeNumberAttribute {
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:@123.0 error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:@123.0 error:&error];
     XCTAssert(success);
     XCTAssertNil(error);
 }
@@ -405,7 +405,7 @@
 - (void)testCheckAttributeArrayAttribute {
     NSError *error = nil;
     NSArray *arrayValue = @[ @"foo", @"bar"];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssert(success);
     XCTAssertNil(error);
 }
@@ -415,7 +415,7 @@
     id mockValue = [OCMockObject mockForClass:[NSString class]];
     OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
     NSArray *arrayValue = @[@"foo", mockValue];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
@@ -426,7 +426,7 @@
     id mockValue = [OCMockObject mockForClass:[NSString class]];
     OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
     NSArray *arrayValue = @[@"foo", @10.0];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidDataType, error.code);
@@ -437,7 +437,7 @@
     id mockAttributes = [OCMockObject mockForClass:[NSMutableDictionary class]];
     OCMStub([mockAttributes count]).andReturn(200);
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:mockAttributes key:@"foo" value:@"bar" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:mockAttributes key:@"foo" value:@"bar" error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
 }
@@ -447,7 +447,7 @@
     OCMStub([mockKey length]).andReturn(LIMIT_ATTR_KEY_LENGTH+1);
     
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kExceededAttributeKeyMaximumLength, error.code);
@@ -458,7 +458,7 @@
     OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH+1);
     OCMStub([mockValue stringByTrimmingCharactersInSet:OCMOCK_ANY]).andReturn(@"foo");
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
@@ -467,7 +467,7 @@
 - (void)testCheckAttributeValueNil {
     NSError *error = nil;
     NSString *nilValue = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kNilAttributeValue, error.code);
@@ -476,14 +476,14 @@
 - (void)testCheckAttributeKeyNullNil {
     NSError *error = nil;
     NSString *nilKey = (NSString*)[NSNull null];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidKey, error.code);
     
     error = nil;
     nilKey = nil;
-    success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
+    success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidKey, error.code);
@@ -2072,7 +2072,7 @@
     options.persistenceMaxAgeSeconds = @(maxAge); // 24 hours
     instance.options = options;
     
-    MPBackendController *backendController = [[MPBackendController alloc] init];
+    MPBackendController_PRIVATE *backendController = [[MPBackendController_PRIVATE alloc] init];
     MPPersistenceController *persistenceController = [[MPPersistenceController alloc] init];
     id mockPersistenceController = OCMPartialMock(persistenceController);
     

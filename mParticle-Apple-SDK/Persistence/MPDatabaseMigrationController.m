@@ -13,7 +13,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end

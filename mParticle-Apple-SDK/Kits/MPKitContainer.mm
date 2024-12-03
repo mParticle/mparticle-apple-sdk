@@ -46,7 +46,6 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;

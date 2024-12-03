@@ -4,7 +4,6 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPKitConfiguration.h"
-#import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
 #import "MPUpload.h"
@@ -13,7 +12,6 @@
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 
 @end
 

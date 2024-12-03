@@ -13,7 +13,7 @@
 #pragma mark - MParticle+Tests category
 @interface MParticle (Tests)
 
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 
 @end

@@ -9,7 +9,7 @@
 #import "MPBaseTestCase.h"
 
 @interface MParticle ()
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @end
 
 @interface MPUserIdentityChangeTests : MPBaseTestCase
@@ -20,7 +20,7 @@
 
 - (void)testUserIdentityRequest {
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
 
@@ -37,7 +37,7 @@
 
 - (void)testSelectedUserIdentityRequest {
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     
     NSNumber *selectedUserID = [NSNumber numberWithInteger:58591];
 

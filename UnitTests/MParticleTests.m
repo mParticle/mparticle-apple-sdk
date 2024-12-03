@@ -22,9 +22,8 @@
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 @property (nonatomic, strong) MParticleWebView *webView;
@@ -413,7 +412,7 @@
 
 #if TARGET_OS_IOS == 1
 - (void)testWebviewLogEvent {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo webview event 1" type:MPEventTypeNavigation];
     testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
@@ -442,7 +441,7 @@
 }
 
 - (void)testWebviewLogScreenEvent {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo Page View" type:MPEventTypeNavigation];
     testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
@@ -471,7 +470,7 @@
 }
 
 - (void)testWebviewLogCommerceAttributes {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MPProduct *testProduct = [[MPProduct alloc] initWithName:@"foo product 1" sku:@"12345" quantity:@1 price:@19.95];
     MPCommerceEvent *testEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:testProduct];
@@ -517,7 +516,7 @@
 }
 
 - (void)testWebviewLogCommerceInvalidArray {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     [[mockBackend reject] logCommerceEvent:[OCMArg any] completionHandler:[OCMArg any]];
     
@@ -550,7 +549,7 @@
 }
 
 - (void)testWebviewLogCommerceInvalidArrayValues {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     [[mockBackend reject] logCommerceEvent:[OCMArg any] completionHandler:[OCMArg any]];
     
@@ -582,7 +581,7 @@
 }
 
 - (void)testWebviewLogCommerceNull {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     [[[mockBackend expect] ignoringNonObjectArgs] logCommerceEvent:[OCMArg checkWithBlock:^BOOL(id value) {
         XCTAssert([value isKindOfClass:[MPCommerceEvent class]]);
@@ -621,7 +620,7 @@
     [mockBackend verifyWithDelay:5];
 }
 - (void)testTrackNotificationsDefault {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MParticle *instance = [[MParticle alloc] init];
     id mockInstance = OCMPartialMock(instance);
@@ -634,7 +633,7 @@
 }
 
 - (void)testTrackNotificationsOff {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MParticle *instance = [[MParticle alloc] init];
     id mockInstance = OCMPartialMock(instance);
@@ -648,7 +647,7 @@
 }
 
 - (void)testTrackNotificationsOn {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MParticle *instance = [[MParticle alloc] init];
     id mockInstance = OCMPartialMock(instance);
@@ -710,7 +709,7 @@
     [[[mockInstance stub] andReturnValue:OCMOCK_VALUE(NO)] trackNotifications];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
 
-    id mockBackendController = OCMClassMock([MPBackendController class]);
+    id mockBackendController = OCMClassMock([MPBackendController_PRIVATE class]);
     instance.backendController = mockBackendController;
     
     NSNotification *testNotification = [[NSNotification alloc] initWithName:@"tester" object:self userInfo:@{@"foo-notif-key-1":@"foo-notif-value-1"}];
@@ -1019,14 +1018,14 @@
 
 - (void)testUploadInterval {
     MParticle *instance = [MParticle sharedInstance];
-    instance.backendController = [[MPBackendController alloc] init];
+    instance.backendController = [[MPBackendController_PRIVATE alloc] init];
 
     XCTAssertEqual(instance.uploadInterval, DEFAULT_DEBUG_UPLOAD_INTERVAL);
 }
 
 - (void)testSetUploadInterval {
     MParticle *instance = [MParticle sharedInstance];
-    instance.backendController = [[MPBackendController alloc] init];
+    instance.backendController = [[MPBackendController_PRIVATE alloc] init];
     NSTimeInterval testInterval = 800.0;
     instance.uploadInterval = testInterval;
 
@@ -1040,7 +1039,7 @@
 #pragma mark Error, Exception, and Crash Handling Tests
 
 - (void)testLogCrash {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
@@ -1058,7 +1057,7 @@
 }
 
 - (void)testLogCrashNilMessage {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     NSString *message = nil;
     NSString *stackTrace = @"stack track from crash report";
@@ -1076,7 +1075,7 @@
 }
 
 - (void)testLogCrashNilStackTrace {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     NSString *message = @"crash report";
     NSString *stackTrace = nil;

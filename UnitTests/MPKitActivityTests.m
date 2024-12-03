@@ -8,6 +8,7 @@
 #import "MPStateMachine.h"
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 

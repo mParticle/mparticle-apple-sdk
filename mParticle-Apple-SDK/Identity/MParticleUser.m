@@ -3,9 +3,6 @@
 //
 
 #import "MParticleUser.h"
-#import "MPBackendController.h"
-#import "MPStateMachine.h"
-#import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
@@ -15,17 +12,16 @@
 
 @interface MParticleUser ()
 
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 
 @end
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 
 @end

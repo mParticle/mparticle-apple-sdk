@@ -7,11 +7,10 @@
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
-#import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"
-#import "MPBackendController.h"
+#import "mParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -23,10 +22,9 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPBackendController *backendController;
+@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 + (dispatch_queue_t)messageQueue;
 
 @end

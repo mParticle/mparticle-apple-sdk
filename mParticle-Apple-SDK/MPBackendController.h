@@ -56,7 +56,7 @@ extern const NSInteger kInvalidDataType;
 extern const NSTimeInterval kMPMaximumKitWaitTimeSeconds;
 extern const NSInteger kInvalidKey;
 
-@interface MPBackendController : NSObject
+@interface MPBackendController_PRIVATE : NSObject
 
 
 

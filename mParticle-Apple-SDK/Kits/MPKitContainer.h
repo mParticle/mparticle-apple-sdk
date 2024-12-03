@@ -1,7 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "MPExtensionProtocol.h"
 #import "MPKitProtocol.h"
-#import "mParticle.h"
 
 @class MPKitFilter;
 @class MPKitExecStatus;
@@ -9,6 +8,8 @@
 @class MPBaseEvent;
 @class MPForwardQueueParameters;
 @class MPKitConfiguration;
+@class MPAttributionResult;
+@class MPSideloadedKit;
 
 @interface MPKitContainer : NSObject
 

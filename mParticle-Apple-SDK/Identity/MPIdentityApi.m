@@ -28,7 +28,6 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
@@ -43,13 +42,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
 
-@interface MPBackendController ()
+@interface MPBackendController_PRIVATE ()
 
 - (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
 

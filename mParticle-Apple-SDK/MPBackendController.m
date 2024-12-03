@@ -49,7 +49,6 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
@@ -62,7 +61,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @end
 
-@interface MPBackendController() {
+@interface MPBackendController_PRIVATE() {
     MPAppDelegateProxy *appDelegateProxy;
     NSTimeInterval nextCleanUpTime;
     dispatch_semaphore_t backendSemaphore;
@@ -83,7 +82,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @end
 
 
-@implementation MPBackendController
+@implementation MPBackendController_PRIVATE
 @synthesize session = _session;
 @synthesize uploadInterval = _uploadInterval;
 
@@ -501,7 +500,7 @@ static id unproxiedAppDelegateReference = nil;
     NSString *localKey = [userAttributes caseInsensitiveKey:userAttributeChange.key];
     
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:userAttributeChange.userAttributes
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:userAttributeChange.userAttributes
                      key:localKey
                    value:userAttributeChange.value
                    error:&error];
@@ -1440,7 +1439,7 @@ static BOOL skipNextUpload = NO;
     
     NSString *localKey = [session.attributesDictionary caseInsensitiveKey:key];
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:session.attributesDictionary
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:session.attributesDictionary
                                     key:localKey
                                   value:value
                                   error:&error];

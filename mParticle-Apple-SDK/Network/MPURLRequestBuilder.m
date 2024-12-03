@@ -1,6 +1,5 @@
 #import "MPURLRequestBuilder.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
 #import "MPIUserDefaults.h"
@@ -10,13 +9,13 @@
 #import "MPApplication.h"
 #import "MParticleWebView.h"
 #import "MPURL.h"
+#import "mParticle.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, strong, readonly) MParticleWebView *webView;
 
 @end

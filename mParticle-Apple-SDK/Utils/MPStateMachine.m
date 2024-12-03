@@ -37,7 +37,6 @@ static BOOL runningInBackground = NO;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
 
