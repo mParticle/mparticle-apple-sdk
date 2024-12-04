@@ -9,7 +9,6 @@
 #import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUserAttributeChange.h"
-#import "MPUserIdentityChange.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
 #import "mParticle.h"
@@ -207,7 +206,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     return self;
 }
 
-- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session userIdentityChange:(MPUserIdentityChange *)userIdentityChange {
+- (instancetype)initWithMessageType:(MPMessageType)messageType session:(MPSession *)session userIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
     self = [self initWithMessageType:messageType session:session];
     if (self && userIdentityChange) {
         [self userIdentityChange:userIdentityChange];
@@ -234,13 +233,13 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     _messageDictionary[kMPUserAttributeNewlyAddedKey] = oldValue ? @NO : @YES;
 }
 
-- (void)userIdentityChange:(MPUserIdentityChange *)userIdentityChange {
-    NSDictionary *dictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+- (void)userIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
+    NSDictionary *dictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
     if (dictionary) {
         _messageDictionary[kMPUserIdentityNewValueKey] = dictionary;
     }
     
-    dictionary = [userIdentityChange.userIdentityOld dictionaryRepresentation];
+    dictionary = [userIdentityChange.oldUserIdentity dictionaryRepresentation];
     if (dictionary) {
         _messageDictionary[kMPUserIdentityOldValueKey] = dictionary;
     }

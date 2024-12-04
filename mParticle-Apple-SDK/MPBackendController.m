@@ -23,7 +23,6 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPKitContainer.h"
 #import "MPUserAttributeChange.h"
-#import "MPUserIdentityChange.h"
 #import "MPURLRequestBuilder.h"
 #import "MPListenerController.h"
 #import "MParticleWebView.h"
@@ -308,7 +307,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     [self saveMessage:message updateSession:YES];
 }
 
-- (void)logUserIdentityChange:(MPUserIdentityChange *)userIdentityChange {
+- (void)logUserIdentityChange:(MPUserIdentityChange_PRIVATE *)userIdentityChange {
     if (!userIdentityChange) {
         return;
     }
@@ -1746,25 +1745,25 @@ static BOOL skipNextUpload = NO;
     
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     
-    MPUserIdentityInstance *userIdentityNew = [[MPUserIdentityInstance alloc] initWithType:identityType
-                                                                                     value:identityString];
+    MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:identityType
+                                                                                                     value:identityString];
     
-    MPUserIdentityChange *userIdentityChange = [[MPUserIdentityChange alloc] initWithNewUserIdentity:userIdentityNew
-                                                                                      userIdentities:[self identitiesForUserId:[MPPersistenceController mpId]]];
+    MPUserIdentityChange_PRIVATE *userIdentityChange = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity
+                                                                                                      userIdentities:[self identitiesForUserId:[MPPersistenceController mpId]]];
     
     userIdentityChange.timestamp = timestamp;
     
-    NSNumber *identityTypeNumber = @(userIdentityChange.userIdentityNew.type);
+    NSNumber *identityTypeNumber = @(userIdentityChange.newUserIdentity.type);
     
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"SELF[%@] == %@", kMPUserIdentityTypeKey, identityTypeNumber];
     NSDictionary *currentIdentities = [[[self userIdentitiesForUserId:[MPPersistenceController mpId]] filteredArrayUsingPredicate:predicate] lastObject];
     
     BOOL oldIdentityIsValid = currentIdentities && !MPIsNull(currentIdentities[kMPUserIdentityIdKey]);
-    BOOL newIdentityIsValid = !MPIsNull(userIdentityChange.userIdentityNew.value);
+    BOOL newIdentityIsValid = !MPIsNull(userIdentityChange.newUserIdentity.value);
     
     if (oldIdentityIsValid
         && newIdentityIsValid
-        && [currentIdentities[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.userIdentityNew.value]) {
+        && [currentIdentities[kMPUserIdentityIdKey] isEqualToString:userIdentityChange.newUserIdentity.value]) {
         completionHandler(identityString, identityType, MPExecStatusFail);
         return;
     }
@@ -1786,13 +1785,13 @@ static BOOL skipNextUpload = NO;
     
     NSMutableArray *userIdentities = [self userIdentitiesForUserId:[MPPersistenceController mpId]];
     
-    if (userIdentityChange.userIdentityNew.value == nil || (NSNull *)userIdentityChange.userIdentityNew.value == [NSNull null] || [userIdentityChange.userIdentityNew.value isEqualToString:@""]) {
+    if (userIdentityChange.newUserIdentity.value == nil || (NSNull *)userIdentityChange.newUserIdentity.value == [NSNull null] || [userIdentityChange.newUserIdentity.value isEqualToString:@""]) {
         existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
         
         if (existingEntryIndex != NSNotFound) {
             identityDictionary = [userIdentities[existingEntryIndex] mutableCopy];
-            userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:identityDictionary];
-            userIdentityChange.userIdentityNew = nil;
+            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithUserIdentityDictionary:identityDictionary];
+            userIdentityChange.newUserIdentity = nil;
             
             [userIdentities removeObjectAtIndex:existingEntryIndex];
             persistUserIdentities = YES;
@@ -1801,21 +1800,21 @@ static BOOL skipNextUpload = NO;
         existingEntryIndex = [userIdentities indexOfObjectPassingTest:objectTester];
         
         if (existingEntryIndex == NSNotFound) {
-            userIdentityChange.userIdentityNew.dateFirstSet = [NSDate date];
-            userIdentityChange.userIdentityNew.isFirstTimeSet = YES;
+            userIdentityChange.newUserIdentity.dateFirstSet = [NSDate date];
+            userIdentityChange.newUserIdentity.isFirstTimeSet = YES;
             
-            identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+            identityDictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
             
             [userIdentities addObject:identityDictionary];
         } else {
             currentIdentities = userIdentities[existingEntryIndex];
-            userIdentityChange.userIdentityOld = [[MPUserIdentityInstance alloc] initWithUserIdentityDictionary:currentIdentities];
+            userIdentityChange.oldUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithUserIdentityDictionary:currentIdentities];
             
             NSNumber *timeIntervalMilliseconds = currentIdentities[kMPDateUserIdentityWasFirstSet];
-            userIdentityChange.userIdentityNew.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
-            userIdentityChange.userIdentityNew.isFirstTimeSet = NO;
+            userIdentityChange.newUserIdentity.dateFirstSet = timeIntervalMilliseconds != nil ? [NSDate dateWithTimeIntervalSince1970:([timeIntervalMilliseconds doubleValue] / 1000.0)] : [NSDate date];
+            userIdentityChange.newUserIdentity.isFirstTimeSet = NO;
             
-            identityDictionary = [userIdentityChange.userIdentityNew dictionaryRepresentation];
+            identityDictionary = [userIdentityChange.newUserIdentity dictionaryRepresentation];
             
             [userIdentities replaceObjectAtIndex:existingEntryIndex withObject:identityDictionary];
         }
@@ -1833,7 +1832,7 @@ static BOOL skipNextUpload = NO;
         }
     }
     
-    completionHandler(userIdentityChange.userIdentityNew.value, userIdentityChange.userIdentityNew.type, MPExecStatusSuccess);
+    completionHandler(userIdentityChange.newUserIdentity.value, userIdentityChange.newUserIdentity.type, MPExecStatusSuccess);
 }
 
 - (void)clearUserAttributes {

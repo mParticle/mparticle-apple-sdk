@@ -773,7 +773,7 @@
                             }];
     NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
-    [[self backendController] setUserIdentity:(id)[NSNull null] identityType:MPUserIdentityEmail
+    [[self backendController] setUserIdentity:nil identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
                                 
