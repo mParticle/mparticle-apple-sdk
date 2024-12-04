@@ -173,8 +173,10 @@
     // Date is created on get
     MPUserIdentityChange_PRIVATE *userIdentityChange2 = [[MPUserIdentityChange_PRIVATE alloc] initWithNewUserIdentity:newUserIdentity oldUserIdentity:oldUserIdentity timestamp:nil userIdentities:nil];
     NSTimeInterval timestamp = userIdentityChange2.timestamp.timeIntervalSince1970;
+    XCTAssertNotNil(userIdentityChange2.timestamp);
     [NSThread sleepForTimeInterval:0.5];
     XCTAssertEqual(timestamp, userIdentityChange2.timestamp.timeIntervalSince1970);
+    XCTAssertNotNil(userIdentityChange2.timestamp);
 }
 
 @end
