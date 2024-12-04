@@ -574,7 +574,7 @@ static BOOL runningInBackground = NO;
         if (authorizationState.integerValue != MPATTAuthorizationStatusAuthorized) {
             NSArray<MParticleUser *> *users = [MParticle sharedInstance].identity.getAllUsers;
             for (MParticleUser *user in users) {
-                [user setIdentity:NULL identityType:MPIdentityIOSAdvertiserId];
+                [user setIdentity:nil identityType:MPIdentityIOSAdvertiserId];
             }
         }
     }
