@@ -10,7 +10,7 @@
 @class MPSession;
 @class MPCommerceEvent;
 @class MPUserAttributeChange;
-@class MPUserIdentityChange;
+@class MPUserIdentityChange_PRIVATE;
 @class MPMessage;
 
 @interface MPMessageBuilder : NSObject
@@ -31,7 +31,7 @@
                                 messageInfo:(nullable NSDictionary<NSString *, id> *)messageInfo;
 - (nullable instancetype)initWithMessageType:(MPMessageType)messageType
                                      session:(nullable MPSession *)session
-                          userIdentityChange:(nonnull MPUserIdentityChange *)userIdentityChange;
+                          userIdentityChange:(nonnull MPUserIdentityChange_PRIVATE *)userIdentityChange;
 - (nullable instancetype)initWithMessageType:(MPMessageType)messageType
                                      session:(nonnull MPSession *)session
                          userAttributeChange:(nonnull MPUserAttributeChange *)userAttributeChange;
