@@ -213,7 +213,7 @@
     NSString *pushNotificationMode = pushNotificationDictionary[kMPRemoteConfigPushNotificationModeKey];
     [MParticle sharedInstance].stateMachine.pushNotificationMode = pushNotificationMode;
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        UIApplication *app = [MPApplication sharedUIApplication];
+        UIApplication *app = [MPApplication_PRIVATE sharedUIApplication];
         
         if ([pushNotificationMode isEqualToString:kMPRemoteConfigForceTrue]) {
             [app registerForRemoteNotifications];

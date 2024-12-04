@@ -14,6 +14,7 @@
 #import "MPStateMachine.h"
 #import "MPDevice.h"
 #import "MParticleSwift.h"
+#import "MPIConstants.h"
 
 @interface MParticle ()
 

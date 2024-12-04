@@ -16,7 +16,6 @@
 #import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import "MPIdentityApi.h"
-#import "MPApplication.h"
 #import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
 #import "MPResponseConfig.h"
@@ -1980,7 +1979,7 @@ static NSString *const kMPStateKey = @"state";
 - (void)logNotificationWithUserInfo:(nonnull NSDictionary *)userInfo behavior:(MPUserNotificationBehavior)behavior andActionIdentifier:(nullable NSString *)actionIdentifier {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:userInfo parameter2:@(behavior)];
     
-    UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
+    UIApplicationState state = [MPApplication_PRIVATE sharedUIApplication].applicationState;
     
     NSString *stateString = state == UIApplicationStateActive ? kMPPushNotificationStateForeground : kMPPushNotificationStateBackground;
     

@@ -174,7 +174,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
         if (![MPStateMachine_PRIVATE isAppExtension]) {
-            UIViewController *presentedViewController = [MPApplication sharedUIApplication].keyWindow.rootViewController.presentedViewController;
+            UIViewController *presentedViewController = [MPApplication_PRIVATE sharedUIApplication].keyWindow.rootViewController.presentedViewController;
             presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
         } else {
             presentedViewControllerDescription = @"extension_message";

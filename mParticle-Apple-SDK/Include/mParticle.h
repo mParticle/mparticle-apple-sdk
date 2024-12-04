@@ -22,6 +22,7 @@
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MPBackendController.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE

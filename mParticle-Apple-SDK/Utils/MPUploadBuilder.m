@@ -149,7 +149,7 @@
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPApplication *application = [[MPApplication alloc] init];
+        MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
         _uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
     }
     

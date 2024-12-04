@@ -402,7 +402,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
         [self saveMessage:message updateSession:YES];
     });
     
-    [MPApplication updateStoredVersionAndBuildNumbers];
+    [MPApplication_PRIVATE updateStoredVersionAndBuildNumbers];
 
     self.didFinishLaunchingNotification = nil;
     
@@ -440,7 +440,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     }
     
     // Add our proxy object to hook calls to the app delegate
-    UIApplication *application = [MPApplication sharedUIApplication];
+    UIApplication *application = [MPApplication_PRIVATE sharedUIApplication];
     appDelegateProxy = [[MPAppDelegateProxy alloc] initWithOriginalAppDelegate:application.delegate];
     application.delegate = appDelegateProxy;
     
@@ -460,7 +460,7 @@ static id unproxiedAppDelegateReference = nil;
         return;
     }
         
-    UIApplication *application = [MPApplication sharedUIApplication];
+    UIApplication *application = [MPApplication_PRIVATE sharedUIApplication];
     if (application.delegate != appDelegateProxy) {
         MPILogWarning(@"Tried to unproxy the app delegate, but our proxy is no longer in place, application.delegate: %@", application.delegate);
         return;
@@ -874,7 +874,7 @@ static BOOL skipNextUpload = NO;
         
         // Set the app and device info dicts if they weren't already created
         if (!_session.appInfo) {
-            _session.appInfo = [[[MPApplication alloc] init] dictionaryRepresentation];
+            _session.appInfo = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
         }
         if (!_session.deviceInfo) {
             _session.deviceInfo = [[[MPDevice alloc] init] dictionaryRepresentationWithMpid:mpId];
@@ -1193,7 +1193,7 @@ static BOOL skipNextUpload = NO;
         messageInfo[kMPAttributesKey] = eventInfo;
     }
     
-    NSDictionary *appImageInfo = [MPApplication appImageInfo];
+    NSDictionary *appImageInfo = [MPApplication_PRIVATE appImageInfo];
     if (appImageInfo) {
         [messageInfo addEntriesFromDictionary:appImageInfo];
     }
@@ -1976,7 +1976,7 @@ static BOOL skipNextUpload = NO;
     
     [MParticle executeOnMain:^{
         if (self.backendBackgroundTaskIdentifier == UIBackgroundTaskInvalid) {
-            self.backendBackgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+            self.backendBackgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
                 MPILogDebug(@"SDK has ended background activity together with the app.");
                 [self endBackgroundTask];
             }];
@@ -1991,7 +1991,7 @@ static BOOL skipNextUpload = NO;
     
     [MParticle executeOnMain:^{
         if (self.backendBackgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:self.backendBackgroundTaskIdentifier];
+            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:self.backendBackgroundTaskIdentifier];
             self.backendBackgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }];
@@ -2124,12 +2124,12 @@ static BOOL skipNextUpload = NO;
         UIApplicationState (^getApplicationState)(void) = ^UIApplicationState(void) {
             __block UIApplicationState appState;
             dispatch_sync(dispatch_get_main_queue(), ^{
-                appState = [MPApplication sharedUIApplication].applicationState;
+                appState = [MPApplication_PRIVATE sharedUIApplication].applicationState;
             });
             return appState;
         };
         
-        UIApplication *sharedApplication = [MPApplication sharedUIApplication];
+        UIApplication *sharedApplication = [MPApplication_PRIVATE sharedUIApplication];
         UIApplicationState applicationState = getApplicationState();
         
         // Loop to check the background state and time remaining to decide when to upload

@@ -158,7 +158,7 @@
     
     if ([MParticle sharedInstance].trackNotifications) {
         if ([self is9]) {
-            UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
+            UIApplicationState state = [MPApplication_PRIVATE sharedUIApplication].applicationState;
             if (state != UIApplicationStateActive || ![self hasContentAvail:userInfo]) {
                 [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:nil];
             }else {

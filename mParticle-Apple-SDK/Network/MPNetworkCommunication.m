@@ -146,7 +146,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    MPApplication *application = [[MPApplication alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
     
     NSString *dataPlanConfigString;
@@ -428,9 +428,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                 backgroundTaskIdentifier = UIBackgroundTaskInvalid;
             }
         }];
@@ -449,7 +449,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }
@@ -720,9 +720,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                 backgroundTaskIdentifier = UIBackgroundTaskInvalid;
             }
         }];
@@ -745,7 +745,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     if (![MPStateMachine_PRIVATE isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }
@@ -841,11 +841,11 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         
         if (![MPStateMachine_PRIVATE isAppExtension]) {
-            backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+            backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
                 if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                     self.identifying = NO;
                     
-                    [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                    [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                     backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                 }
             }];
@@ -863,7 +863,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         
         if (![MPStateMachine_PRIVATE isAppExtension]) {
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                 backgroundTaskIdentifier = UIBackgroundTaskInvalid;
             }
         }

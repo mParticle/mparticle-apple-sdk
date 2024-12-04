@@ -131,8 +131,8 @@ static BOOL runningInBackground = NO;
                                        name:MParticleReachabilityChangedNotification
                                      object:nil];
             
-            [MPApplication markInitialLaunchTime];
-            [MPApplication updateLaunchCountsAndDates];
+            [MPApplication_PRIVATE markInitialLaunchTime];
+            [MPApplication_PRIVATE updateLaunchCountsAndDates];
         });
     }
     
@@ -253,7 +253,7 @@ static BOOL runningInBackground = NO;
 
 #pragma mark Notification handlers
 - (void)handleApplicationDidEnterBackground:(NSNotification *)notification {
-    [MPApplication updateLastUseDate:_launchDate];
+    [MPApplication_PRIVATE updateLastUseDate:_launchDate];
     _backgrounded = YES;
     self.launchInfo = nil;
 }
@@ -263,7 +263,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)handleApplicationWillTerminate:(NSNotification *)notification {
-    [MPApplication updateLastUseDate:_launchDate];
+    [MPApplication_PRIVATE updateLastUseDate:_launchDate];
 }
 
 - (void)handleReachabilityChanged:(NSNotification *)notification {
@@ -393,7 +393,7 @@ static BOOL runningInBackground = NO;
     
     [self willChangeValueForKey:@"installationType"];
 
-    MPApplication *application = [[MPApplication alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     if (application.storedVersion || application.storedBuild) {
         if (![application.version isEqualToString:application.storedVersion] || ![application.build isEqualToString:application.storedBuild]) {
             _installationType = MPInstallationTypeKnownUpgrade;

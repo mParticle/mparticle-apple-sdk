@@ -8,6 +8,7 @@
 #import "MPStateMachine.h"
 #import <libkern/OSAtomic.h>
 #import "mParticle.h"
+#import "MPIConstants.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
 NSString *const kMPApplicationNameKey = @"an";
@@ -69,7 +70,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 @end
 
-@interface MPApplication() {
+@interface MPApplication_PRIVATE() {
     NSDictionary *appInfo;
     MPIUserDefaults *userDefaults;
 }
@@ -77,7 +78,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @end
 
 
-@implementation MPApplication
+@implementation MPApplication_PRIVATE
 
 @synthesize architecture = _architecture;
 @synthesize buildUUID = _buildUUID;
@@ -86,7 +87,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @synthesize pirated = _pirated;
 
 + (void)initialize {
-    if (self == [MPApplication class]) {
+    if (self == [MPApplication_PRIVATE class]) {
         _dyld_register_func_for_add_image(addImageListCallback);
     }
 }
@@ -298,7 +299,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 
 #pragma mark NSCopying
 - (instancetype)copyWithZone:(NSZone *)zone {
-    MPApplication *copyObject = [[[self class] alloc] init];
+    MPApplication_PRIVATE *copyObject = [[[self class] alloc] init];
     
     if (copyObject) {
         copyObject->_architecture = [_architecture copy];
@@ -339,12 +340,12 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 + (void)updateLastUseDate:(NSDate *)date {
-    MPApplication *application = [[MPApplication alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     application.lastUseDate = MPMilliseconds([date timeIntervalSince1970]);
 }
 
 + (void)updateLaunchCountsAndDates {
-    MPApplication *application = [[MPApplication alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     
     application.launchCount = @([application.launchCount integerValue] + 1);
     
@@ -357,7 +358,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 + (void)updateStoredVersionAndBuildNumbers {
-    MPApplication *application = [[MPApplication alloc] init];
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     application.storedVersion = application.version;
     application.storedBuild = application.build;
 }
@@ -468,8 +469,8 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         applicationInfo[kMPAppBuildNumberKey] = auxString;
     }
     
-    if ([MParticle sharedInstance].stateMachine.allowASR && [MPApplication appStoreReceipt]) {
-        applicationInfo[kMPAppStoreReceiptKey] = [MPApplication appStoreReceipt];
+    if ([MParticle sharedInstance].stateMachine.allowASR && [MPApplication_PRIVATE appStoreReceipt]) {
+        applicationInfo[kMPAppStoreReceiptKey] = [MPApplication_PRIVATE appStoreReceipt];
     }
     
     appInfo = (NSDictionary *)applicationInfo;
