@@ -18,7 +18,6 @@
 #import "MPIdentityApi.h"
 #import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
-#import "MPResponseConfig.h"
 #import "MParticleSwift.h"
 #import "MPUpload.h"
 #import "MPKitContainer.h"
@@ -596,8 +595,8 @@ static NSString *const kMPStateKey = @"state";
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
     }
     
-    if ([MPResponseConfig isOlderThanConfigMaxAgeSeconds]) {
-        [MPResponseConfig deleteConfig];
+    if ([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]) {
+        [MPIUserDefaults deleteConfig];
     }
     
     _kitContainer = [[MPKitContainer alloc] init];

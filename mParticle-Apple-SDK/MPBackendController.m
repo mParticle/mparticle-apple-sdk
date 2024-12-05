@@ -18,7 +18,6 @@
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
-#import "MPResponseConfig.h"
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPKitContainer.h"
@@ -1497,7 +1496,7 @@ static BOOL skipNextUpload = NO;
             [self prepareBatchesForUpload:lastUploadSettings];
             
             // Delete the cached config
-            [MPResponseConfig deleteConfig];
+            [MPIUserDefaults deleteConfig];
         }
         
         // Cache the upload settings in case we switch workspaces on startup
@@ -1505,7 +1504,7 @@ static BOOL skipNextUpload = NO;
         [[MPIUserDefaults standardUserDefaults] setLastUploadSettings:uploadSettings];
         
         // Restore cached config if exists
-        [MPResponseConfig restore];
+        [MPIUserDefaults restore];
 
         if (shouldBeginSession) {
             [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];

@@ -21,7 +21,6 @@
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
 #import "MPAliasResponse.h"
-#import "MPResponseConfig.h"
 #import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIdentityCaching.h"
@@ -62,6 +61,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
+
 - (void)logKitBatch:(NSString *)batch;
 
 @end
@@ -494,7 +495,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
         if (!MPIsNull(eTag)) {
-            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES];
+            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
             MPILogDebug(@"MPResponseConfig init: %@", responseConfig.description);
 
             MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];

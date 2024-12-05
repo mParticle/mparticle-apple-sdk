@@ -22,7 +22,6 @@
 #import "MPKitConfiguration.h"
 #import "MPIUserDefaults.h"
 #import "MPForwardQueueParameters.h"
-#import "MPResponseConfig.h"
 #import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
@@ -37,6 +36,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -187,12 +187,12 @@
                                             kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                             kMPRemoteConfigSessionTimeoutKey:@112};
     
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-    
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
     
-    XCTAssertEqualObjects(responseConfig.configuration, [MPResponseConfig restore].configuration);
+    XCTAssertEqualObjects(responseConfig.configuration, [MPIUserDefaults restore].configuration);
     
     NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
@@ -238,12 +238,12 @@
                                                 kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                                 kMPRemoteConfigSessionTimeoutKey:@112};
         
-        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
+        MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
         [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
         
-        XCTAssertEqualObjects(responseConfig.configuration, [MPResponseConfig restore].configuration);
+        XCTAssertEqualObjects(responseConfig.configuration, [MPIUserDefaults restore].configuration);
         
         dispatch_sync(dispatch_get_main_queue(), ^{ });
         XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
@@ -270,12 +270,12 @@
                           kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                           kMPRemoteConfigSessionTimeoutKey:@112};
         
-        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration];
-        
+        responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
+
         requestTimestamp = [[NSDate date] timeIntervalSince1970];
         [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
         
-        XCTAssertEqualObjects(responseConfig.configuration, [MPResponseConfig restore].configuration);
+        XCTAssertEqualObjects(responseConfig.configuration, [MPIUserDefaults restore].configuration);
         
         XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         
