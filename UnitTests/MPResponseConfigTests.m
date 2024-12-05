@@ -97,17 +97,6 @@
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
 }
 
-- (void)testResponseConfigEncoding {
-    NSDictionary *configuration = @{kMPRemoteConfigRampKey:@100,
-                                    kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
-                                    kMPRemoteConfigSessionTimeoutKey:@112};
-    
-    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
-
-    MPResponseConfig *persistedResponseConfig = [self attemptSecureEncodingwithClass:[MPResponseConfig class] Object:responseConfig];
-    XCTAssertEqualObjects(responseConfig.configuration, persistedResponseConfig.configuration, @"Response Config should have been a match.");
-}
-
 - (void)testShouldDeleteDueToMaxConfigAgeWhenNil {
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"test" secret:@"test"];
     options.configMaxAgeSeconds = nil;

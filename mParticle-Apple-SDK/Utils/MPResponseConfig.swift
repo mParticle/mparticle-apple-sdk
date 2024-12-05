@@ -7,25 +7,10 @@
 
 import Foundation
 
-@objc public class MPResponseConfig : NSObject, NSSecureCoding {
-    @objc public static var supportsSecureCoding = true
+@objc public class MPResponseConfig : NSObject {
     @objc public private(set) var configuration: [AnyHashable : Any]?
     private var stateMachine: MPStateMachine_PRIVATE
     private var backendController: MPBackendController_PRIVATE
-    
-    @objc public func encode(with coder: NSCoder) {
-        coder.encode(self.configuration, forKey: "configuration")
-        coder.encode(self.stateMachine, forKey: "stateMachine")
-        coder.encode(self.backendController, forKey: "backendController")
-    }
-    
-    @objc public required convenience init?(coder: NSCoder) {
-        if let configuration = coder.decodeObject(forKey: "configuration") as? [AnyHashable : Any], let stateMachine = coder.decodeObject(forKey: "stateMachine")  as? MPStateMachine_PRIVATE, let backendController = coder.decodeObject(forKey: "backendController") as? MPBackendController_PRIVATE {
-            self.init(configuration: configuration, dataReceivedFromServer: true, stateMachine: stateMachine, backendController: backendController)
-        } else {
-            return nil
-        }
-    }
     
     @objc public convenience init?(configuration: [AnyHashable : Any], stateMachine: MPStateMachine_PRIVATE, backendController: MPBackendController_PRIVATE) {
         self.init(configuration: configuration, dataReceivedFromServer: true, stateMachine: stateMachine, backendController: backendController)
