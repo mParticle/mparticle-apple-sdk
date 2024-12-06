@@ -19,6 +19,10 @@
 #import "MPListenerController.h"
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
+#import "MPStateMachine.h"
+#import "MPKitContainer.h"
+#import "MPBackendController.h"
+#import "MPApplication.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE
@@ -34,6 +38,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class MPSideloadedKit;
+@class MPKitContainer;
 
 /**
  An SDK session.
@@ -635,6 +640,16 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MParticleOptions
  */
 @property (nonatomic, readonly, nullable) NSNumber *persistenceMaxAgeSeconds;
+
+/**
+ The instance which manages all initialized kits. For internal use only
+ */
+@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer;
+
+/**
+ The Kit Configuration needed should the initialization of kits need to be deferred until identity or consent is resolve. For internal use only
+ */
+@property (nonatomic, strong, nullable) NSArray<NSDictionary *> *deferredKitConfiguration_PRIVATE;
 
 #pragma mark - Initialization
 

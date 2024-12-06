@@ -1,7 +1,6 @@
 #import "MPKitConfiguration.h"
 #import "MPIConstants.h"
 #import "MPEventProjection.h"
-#import "MPStateMachine.h"
 #import "MPILogger.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"

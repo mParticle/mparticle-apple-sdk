@@ -10,6 +10,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPConnectorProtocol.h"
 #import "MPConnectorFactoryProtocol.h"
+#import "MPIConstants.h"
 
 @interface MParticle (Tests)
 @property (nonatomic, strong) MPPersistenceController *persistenceController;

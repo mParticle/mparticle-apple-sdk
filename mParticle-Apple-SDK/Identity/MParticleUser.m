@@ -3,33 +3,31 @@
 //
 
 #import "MParticleUser.h"
-#import "MPBackendController.h"
-#import "MPStateMachine.h"
-#import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
+#import "MPIConstants.h"
+#import "MPKitContainer.h"
 
 @interface MParticleUser ()
 
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 
 @end
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
@@ -222,7 +220,7 @@
     dispatch_async([MParticle messageQueue], ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value];
         
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         if (stateMachine.optOut) {
             return;
         }

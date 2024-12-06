@@ -20,7 +20,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 
 @end
@@ -73,7 +73,7 @@
         ltv = @0;
     }
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     _uploadDictionary = [@{
         kMPOptOutKey:@(stateMachine.optOut),
@@ -133,7 +133,7 @@
 
 #pragma mark Public instance methods
 - (void)build:(void (^)(MPUpload *upload))completionHandler {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     _uploadDictionary[kMPMessageTypeKey] = kMPMessageTypeRequestHeader;
     _uploadDictionary[kMPmParticleSDKVersionKey] = kMParticleSDKVersion;
@@ -149,7 +149,7 @@
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPApplication *application = [[MPApplication alloc] init];
+        MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
         _uploadDictionary[kMPApplicationInformationKey] = [application dictionaryRepresentation];
     }
     

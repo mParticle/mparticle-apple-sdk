@@ -2,7 +2,6 @@
 #import "MParticleSwift.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
-#import "MPStateMachine.h"
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"
@@ -45,8 +44,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @interface MParticle ()
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
@@ -70,7 +68,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
-@interface MPKitContainer () {
+@interface MPKitContainer_PRIVATE () {
     dispatch_semaphore_t kitsSemaphore;
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
     NSInteger sideloadedKitCodeNextValue;
@@ -82,12 +80,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 @end
 
 
-@implementation MPKitContainer
+@implementation MPKitContainer_PRIVATE
 
 @synthesize kitsInitialized = _kitsInitialized;
 
 + (void)initialize {
-    if (self == [MPKitContainer class]) {
+    if (self == [MPKitContainer_PRIVATE class]) {
         kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     }
 }
@@ -145,7 +143,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification {
     dispatch_async(dispatch_get_main_queue(), ^{
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         stateMachine.launchOptions = [notification userInfo];
         SEL launchOptionsSelector = @selector(setLaunchOptions:);
         SEL startSelector = @selector(start);
@@ -1107,9 +1105,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    __weak MPKitContainer *weakSelf = self;
+    __weak MPKitContainer_PRIVATE *weakSelf = self;
     
-    __strong MPKitContainer *strongSelf = weakSelf;
+    __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
     if (strongSelf) {
         dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
     }
@@ -1607,9 +1605,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    __weak MPKitContainer *weakSelf = self;
+    __weak MPKitContainer_PRIVATE *weakSelf = self;
     
-    __strong MPKitContainer *strongSelf = weakSelf;
+    __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
     if (strongSelf) {
         dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
     }
@@ -1964,7 +1962,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (MPIsNull(kitConfigurations) || stateMachine.optOut) {
         [self flushSerializedKits];

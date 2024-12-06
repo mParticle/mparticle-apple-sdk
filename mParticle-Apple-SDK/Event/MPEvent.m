@@ -1,6 +1,5 @@
 #import "MPEvent.h"
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPILogger.h"
 #import "MPProduct.h"
@@ -9,7 +8,7 @@
 
 @interface MParticle()
 
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 

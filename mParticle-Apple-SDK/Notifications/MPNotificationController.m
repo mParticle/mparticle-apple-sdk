@@ -3,9 +3,7 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "mParticle.h"
-#import "MPBackendController.h"
-#import "MPApplication.h"
-#import "MPStateMachine.h"
+#import "MPNetworkCommunication.h"
 
 @interface MPNotificationController() {
 }
@@ -15,7 +13,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
