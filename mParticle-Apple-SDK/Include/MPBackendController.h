@@ -1,8 +1,6 @@
 #import "MPEnums.h"
-#import "MPNetworkCommunication.h"
 
 #if TARGET_OS_IOS == 1
-    #import "MPNotificationController.h"
     #ifndef MPARTICLE_LOCATION_DISABLE
         #import <CoreLocation/CoreLocation.h>
     #endif
@@ -21,6 +19,8 @@
 @class MParticleSession;
 @class MPUploadSettings;
 @class MPNetworkOptions;
+@class MPNetworkCommunication;
+
 
 @protocol MPBackendControllerDelegate;
 

@@ -2,7 +2,6 @@
 #import "MParticleSwift.h"
 #import "MPKitExecStatus.h"
 #import "MPEnums.h"
-#import "MPStateMachine.h"
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"
@@ -69,7 +68,7 @@ static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 
-@interface MPKitContainer () {
+@interface MPKitContainer_PRIVATE () {
     dispatch_semaphore_t kitsSemaphore;
     std::map<NSNumber *, std::shared_ptr<mParticle::Bracket>> brackets;
     NSInteger sideloadedKitCodeNextValue;
@@ -81,12 +80,12 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 @end
 
 
-@implementation MPKitContainer
+@implementation MPKitContainer_PRIVATE
 
 @synthesize kitsInitialized = _kitsInitialized;
 
 + (void)initialize {
-    if (self == [MPKitContainer class]) {
+    if (self == [MPKitContainer_PRIVATE class]) {
         kitsRegistry = [[NSMutableSet alloc] initWithCapacity:DEFAULT_ALLOCATION_FOR_KITS];
     }
 }
@@ -1106,9 +1105,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    __weak MPKitContainer *weakSelf = self;
+    __weak MPKitContainer_PRIVATE *weakSelf = self;
     
-    __strong MPKitContainer *strongSelf = weakSelf;
+    __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
     if (strongSelf) {
         dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
     }
@@ -1606,9 +1605,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    __weak MPKitContainer *weakSelf = self;
+    __weak MPKitContainer_PRIVATE *weakSelf = self;
     
-    __strong MPKitContainer *strongSelf = weakSelf;
+    __strong MPKitContainer_PRIVATE *strongSelf = weakSelf;
     if (strongSelf) {
         dispatch_semaphore_wait(strongSelf->kitsSemaphore, DISPATCH_TIME_FOREVER);
     }

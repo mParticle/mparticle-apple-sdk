@@ -644,7 +644,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  The instance which manages all initialized kits. For internal use only
  */
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer;
 
 /**
  The Kit Configuration needed should the initialization of kits need to be deferred until identity or consent is resolve. For internal use only

@@ -25,7 +25,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer * kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE * kitContainer;
 
 @end
 
@@ -196,11 +196,11 @@
 - (void)testSetLocation {
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-    id mockKitContainer = OCMClassMock([MPKitContainer class]);
+    id mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [MParticle sharedInstance].kitContainer = mockKitContainer;
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Set Location"];
-    MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
+    MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer;
     
     [MParticle sharedInstance].location = [[CLLocation alloc] init];
     

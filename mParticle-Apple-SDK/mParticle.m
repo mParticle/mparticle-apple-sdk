@@ -13,7 +13,6 @@
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPSession.h"
-#import "MPStateMachine.h"
 #import "MPIUserDefaults.h"
 #import "MPIdentityApi.h"
 #import "MParticleWebView.h"
@@ -42,7 +41,7 @@ static NSString *const kMPStateKey = @"state";
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 - (BOOL)kitsInitialized;
 @end
 
@@ -57,7 +56,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 @property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
@@ -599,7 +598,7 @@ static NSString *const kMPStateKey = @"state";
         [MPIUserDefaults deleteConfig];
     }
     
-    _kitContainer = [[MPKitContainer alloc] init];
+    _kitContainer = [[MPKitContainer_PRIVATE alloc] init];
     _kitContainer.sideloadedKits = options.sideloadedKits ?: [NSArray array];
     NSUInteger sideLoadedKitsCount = _kitContainer.sideloadedKits.count;
     [userDefaults setSideloadedKitsCount:sideLoadedKitsCount];
@@ -1370,7 +1369,7 @@ static NSString *const kMPStateKey = @"state";
     BOOL registrationSuccessful = NO;
     
     if ([extension conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
-        registrationSuccessful = [MPKitContainer registerKit:(id<MPExtensionKitProtocol>)extension];
+        registrationSuccessful = [MPKitContainer_PRIVATE registerKit:(id<MPExtensionKitProtocol>)extension];
     }
     
     return registrationSuccessful;

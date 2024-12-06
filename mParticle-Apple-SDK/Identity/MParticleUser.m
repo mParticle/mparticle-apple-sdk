@@ -9,6 +9,7 @@
 #import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
+#import "MPKitContainer.h"
 
 @interface MParticleUser ()
 
@@ -26,7 +27,7 @@
 
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 

@@ -11,12 +11,12 @@
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 
 @end
 
 @interface MPIUserDefaultsTests : MPBaseTestCase {
-    MPKitContainer *kitContainer;
+    MPKitContainer_PRIVATE *kitContainer;
 }
 
 @end
@@ -29,12 +29,12 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
     kitContainer = [MParticle sharedInstance].kitContainer;
 }
 
 - (void)tearDown {
-    for (MPKitRegister *kitRegister in [MPKitContainer registeredKits]) {
+    for (MPKitRegister *kitRegister in [MPKitContainer_PRIVATE registeredKits]) {
         kitRegister.wrapperInstance = nil;
     }
     kitContainer = nil;
@@ -471,7 +471,7 @@
     XCTAssertNotNil(firstParameters);
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-    [MPKitContainer registerKit:kitRegister];
+    [MPKitContainer_PRIVATE registerKit:kitRegister];
     
     XCTAssertEqualObjects(responseConfiguration, [[MPIUserDefaults standardUserDefaults] getConfiguration]);
     XCTAssertTrue([[MPIUserDefaults standardUserDefaults] isConfigurationParametersOutdated]);

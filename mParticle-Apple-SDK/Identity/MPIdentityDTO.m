@@ -7,7 +7,6 @@
 #import "MPDevice.h"
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
-#import "MPStateMachine.h"
 #import "MPConsumerInfo.h"
 #import "MPIUserDefaults.h"
 

@@ -3,9 +3,7 @@
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "mParticle.h"
-#import "MPBackendController.h"
-#import "MPApplication.h"
-#import "MPStateMachine.h"
+#import "MPNetworkCommunication.h"
 
 @interface MPNotificationController() {
 }

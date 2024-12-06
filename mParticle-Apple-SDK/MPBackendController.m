@@ -29,6 +29,10 @@
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 #import "MPLaunchInfo.h"
+#import "MPNetworkCommunication.h"
+#if TARGET_OS_IOS == 1
+    #import "MPNotificationController.h"
+#endif
 
 const NSInteger kNilAttributeValue = 101;
 const NSInteger kExceededAttributeValueMaximumLength = 104;
@@ -50,7 +54,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 @property (nonatomic, strong) MParticleWebView *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
@@ -1627,7 +1631,7 @@ static BOOL skipNextUpload = NO;
             return;
         }
         
-        MPKitContainer *kitContainer = [MParticle sharedInstance].kitContainer;
+        MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer;
         BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
         BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
         if (shouldDelayUpload) {

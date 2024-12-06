@@ -13,7 +13,7 @@
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
@@ -24,7 +24,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 
 @end
 
@@ -46,7 +46,7 @@
 @interface MPKitAPITests : MPBaseTestCase  <MPKitProtocol>
 
 @property (nonatomic) MPKitAPI *kitApi;
-@property (nonatomic) MPKitContainer *kitContainer;
+@property (nonatomic) MPKitContainer_PRIVATE *kitContainer;
 
 @end
 
@@ -55,15 +55,15 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
     _kitContainer = [MParticle sharedInstance].kitContainer;
     
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         NSDictionary *configuration = @{
                                         @"id":@42,

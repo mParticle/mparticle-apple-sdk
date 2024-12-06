@@ -35,7 +35,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
 @end
@@ -47,7 +47,7 @@
 @end
 
 #pragma mark - MPKitContainer category for unit tests
-@interface MPKitContainer(Tests)
+@interface MPKitContainer_PRIVATE(Tests)
 
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, unsafe_unretained) BOOL kitsInitialized;
@@ -76,7 +76,7 @@
 
 #pragma mark - MPKitContainerTests
 @interface MPKitContainerTests : MPBaseTestCase {
-    MPKitContainer *kitContainer;
+    MPKitContainer_PRIVATE *kitContainer;
 }
 
 @end
@@ -90,19 +90,19 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
     kitContainer = [MParticle sharedInstance].kitContainer;
 
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         NSDictionary *configuration = @{
                                         @"id":@42,
@@ -119,12 +119,12 @@
     id kitAppsFlyer = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     if (!kitAppsFlyer) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
     }
 }
 
 - (void)tearDown {
-    for (MPKitRegister *kitRegister in [MPKitContainer registeredKits]) {
+    for (MPKitRegister *kitRegister in [MPKitContainer_PRIVATE registeredKits]) {
         kitRegister.wrapperInstance = nil;
     }
     kitContainer = nil;
@@ -507,7 +507,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
 
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
             id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
@@ -802,7 +802,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
             id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
@@ -838,7 +838,7 @@
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
             id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
@@ -883,7 +883,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [[registeredKits objectsPassingTest:^BOOL(id<MPExtensionProtocol>  _Nonnull obj, BOOL * _Nonnull stop) {
         if ([obj conformsToProtocol:@protocol(MPExtensionKitProtocol)]) {
             id<MPExtensionKitProtocol> kitExtension = (id<MPExtensionKitProtocol>)obj;
@@ -950,7 +950,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -975,7 +975,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -1070,7 +1070,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -1113,7 +1113,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -1146,7 +1146,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [registeredKits anyObject];
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -1199,7 +1199,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [registeredKits anyObject];
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -1263,7 +1263,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [registeredKits anyObject];
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -1328,7 +1328,7 @@
     [kitContainer configureKits:nil];
     [kitContainer configureKits:configurations];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 42"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
@@ -2104,7 +2104,7 @@
 }
 
 - (void)testAllocation {    
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     XCTAssertNotNil(localKitContainer);
 }
 
@@ -2191,7 +2191,7 @@
 }
 
 - (void)testShouldDelayUploadMaxTime {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     [localKitContainer setKitsInitialized:NO];
     XCTAssertFalse([localKitContainer shouldDelayUpload:0]);
     XCTAssertTrue([localKitContainer shouldDelayUpload:10000]);
@@ -2291,24 +2291,24 @@
 }
 
 - (void)testInitializeKitsWhenNilSupportedKits {
-    MPKitContainer *kitContainer = [[MPKitContainer alloc] init];
-    MPKitContainer *mockKitContainer = OCMPartialMock(kitContainer);
+    MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);
     [[[(id)mockKitContainer stub] andReturn:nil] supportedKits];
     [mockKitContainer initializeKits];
     XCTAssertTrue(mockKitContainer.kitsInitialized);
 }
 
 - (void)testInitializeKitsWhenEmptySupportedKits {
-    MPKitContainer *kitContainer = [[MPKitContainer alloc] init];
-    MPKitContainer *mockKitContainer = OCMPartialMock(kitContainer);
+    MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);
     [[[(id)mockKitContainer stub] andReturn: @[] ] supportedKits];
     [mockKitContainer initializeKits];
     XCTAssertTrue(mockKitContainer.kitsInitialized);
 }
 
 - (void)testInitializeKitsWhenNonemptySupportedKits {
-    MPKitContainer *kitContainer = [[MPKitContainer alloc] init];
-    MPKitContainer *mockKitContainer = OCMPartialMock(kitContainer);
+    MPKitContainer_PRIVATE *kitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    MPKitContainer_PRIVATE *mockKitContainer = OCMPartialMock(kitContainer);
     [[[(id)mockKitContainer stub] andReturn: @[@123] ] supportedKits];
     [mockKitContainer initializeKits];
     XCTAssertFalse(mockKitContainer.kitsInitialized);
@@ -2318,7 +2318,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 - (void)testAttemptToLogEventToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.customAttributes = @{@"plan":@"premium"};
@@ -2341,7 +2341,7 @@
 #pragma clang diagnostic pop
 
 - (void)testAttemptToLogBaseEventToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeOther];
     event.customAttributes = @{@"plan":@"premium"};
@@ -2360,7 +2360,7 @@
 }
 
 - (void)testAttemptToLogBaseEventMediaTypeToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"test_string" type:MPEventTypeMedia];
     event.customAttributes = @{@"plan":@"premium"};
@@ -2379,7 +2379,7 @@
 }
 
 - (void)testAttemptToSetOptOutToKitTrue {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
@@ -2398,7 +2398,7 @@
 }
 
 - (void)testAttemptToSetOptOutToKitFalse {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
@@ -2418,7 +2418,7 @@
 }
 
 - (void)testAttemptToLegacyOpenURLToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     SEL selector = @selector(openURL:sourceApplication:annotation:);
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
@@ -2440,7 +2440,7 @@
 }
 
 - (void)testAttemptToOpenURLToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     SEL selector = @selector(openURL:options:);
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
@@ -2466,7 +2466,7 @@
 }
 
 - (void)testAttemptToContinueUserActivityToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     SEL selector = @selector(continueUserActivity:restorationHandler:);
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
@@ -2492,7 +2492,7 @@
 }
 
 - (void)testAttemptToSurveyToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
     NSURL *url = [NSURL URLWithString:@"mparticle://baseurl?query"];
@@ -2513,7 +2513,7 @@
 }
 
 - (void)testAttemptToShouldDelayEventToKit {
-    MPKitContainer *localKitContainer = [[MPKitContainer alloc] init];
+    MPKitContainer_PRIVATE *localKitContainer = [[MPKitContainer_PRIVATE alloc] init];
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     id kitWrapperMock = OCMProtocolMock(@protocol(MPKitProtocol));
@@ -2631,7 +2631,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
 
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -2656,7 +2656,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
@@ -2676,7 +2676,7 @@
     
     MPEvent *event = [[MPEvent alloc] initWithName:@"Dinosaur Run" type:MPEventTypeNavigation];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
@@ -2704,7 +2704,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
@@ -2727,7 +2727,7 @@
                    @"modality":@"sprinting"};
     event.category = @"Olympic Games";
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     
@@ -2745,7 +2745,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -2760,7 +2760,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -2832,7 +2832,7 @@
                                      @"growl":@"loud",
                                      @"teeth":@"sharp"};
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -2863,7 +2863,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
 
@@ -2886,7 +2886,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [registeredKits anyObject];
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -2929,7 +2929,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [registeredKits anyObject];
 
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -2981,7 +2981,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     id registeredKit = [registeredKits anyObject];
     
     MPProduct *product = [[MPProduct alloc] initWithName:@"DeLorean" sku:@"OutATime" quantity:@1 price:@4.32];
@@ -3034,7 +3034,7 @@
     kitContainer.sideloadedKits = @[sideloadedKit1];
     [kitContainer initializeKits];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == 1000000000"];
     id registeredKit = [[registeredKits filteredSetUsingPredicate:predicate] anyObject];
     

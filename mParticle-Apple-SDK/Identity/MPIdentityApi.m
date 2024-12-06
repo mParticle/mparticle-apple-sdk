@@ -16,7 +16,6 @@
 #import "MPKitContainer.h"
 #import "MPDevice.h"
 #import "MPUpload.h"
-#import "MPStateMachine.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -61,7 +60,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (void)setIsLoggedIn:(BOOL)isLoggedIn;
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 

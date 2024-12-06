@@ -1,6 +1,5 @@
 #import "MPEvent.h"
 #import "MPIConstants.h"
-#import "MPStateMachine.h"
 #import "MPSession.h"
 #import "MPILogger.h"
 #import "MPProduct.h"

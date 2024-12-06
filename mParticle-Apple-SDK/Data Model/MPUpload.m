@@ -2,7 +2,6 @@
 #import "MPSession.h"
 #import "MPIConstants.h"
 #import "mParticle.h"
-#import "MPStateMachine.h"
 
 @interface MParticle()
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;

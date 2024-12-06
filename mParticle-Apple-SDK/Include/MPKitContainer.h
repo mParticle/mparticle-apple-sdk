@@ -11,7 +11,7 @@
 @class MPAttributionResult;
 @class MPSideloadedKit;
 
-@interface MPKitContainer : NSObject
+@interface MPKitContainer_PRIVATE : NSObject
 
 @property (nonatomic, copy) void (^ _Nonnull attributionCompletionHandler)(MPAttributionResult *_Nullable attributionResult, NSError * _Nullable error);
 @property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;

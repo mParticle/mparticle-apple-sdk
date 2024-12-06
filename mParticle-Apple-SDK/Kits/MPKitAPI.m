@@ -19,7 +19,7 @@
 
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
@@ -35,7 +35,7 @@
 
 - (NSString *)kitName {
     __block NSString *component = nil;
-    NSSet<id<MPExtensionKitProtocol>> *kits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *kits = [MPKitContainer_PRIVATE registeredKits];
     NSNumber *kitCode = _kitCode;
     
     if (kits && kitCode) {

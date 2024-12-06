@@ -3,7 +3,6 @@
 #import "MPSession.h"
 #import <UIKit/UIKit.h>
 #import "MPConnector.h"
-#import "MPStateMachine.h"
 #import "MPUpload.h"
 #import "MPDevice.h"
 #import "MPApplication.h"
@@ -25,6 +24,7 @@
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
+#import "MPNetworkCommunication.h"
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path

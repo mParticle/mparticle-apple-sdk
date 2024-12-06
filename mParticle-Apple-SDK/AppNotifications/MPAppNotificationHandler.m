@@ -1,5 +1,4 @@
 #import "MPAppNotificationHandler.h"
-#import "MPStateMachine.h"
 #import "MPLaunchInfo.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
@@ -299,7 +298,7 @@
          ];
     });
     
-    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer_PRIVATE registeredKits];
     BOOL handlingActivity = NO;
     for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {

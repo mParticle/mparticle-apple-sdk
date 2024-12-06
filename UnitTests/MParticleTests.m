@@ -34,7 +34,7 @@
 - (void)setUserId:(NSNumber *)userId;
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 + (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
 @end
@@ -54,7 +54,7 @@
     lastNotification = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
 }
 
 - (void)tearDown {
@@ -1147,8 +1147,8 @@
     [[MParticle sharedInstance] startWithOptions:options1];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
-        XCTAssertEqualObjects(MPKitContainer.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+        XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
        
         // Switch workspace with a new sideloaded kit
         MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
@@ -1158,15 +1158,15 @@
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options2];
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
-            XCTAssertEqualObjects(MPKitContainer.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+            XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
             
             // Switch workspace with no sideloaded kits
             MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
             [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-                XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+                XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
                 
                 [expectation fulfill];
             });
@@ -1180,20 +1180,20 @@
 - (void)testSwitchWorkspaceKitsNoConfigurations {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"]];
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"]];
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
     
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
             [expectation fulfill];
         });
     });
@@ -1205,7 +1205,7 @@
 - (void)testSwitchWorkspaceKitsWithoutStop {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerNoStop = [[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"];
     [MParticle registerExtension:registerNoStop];
     
@@ -1216,12 +1216,12 @@
         registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
         [MParticle sharedInstance].kitContainer.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
         
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
                 
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
             [expectation fulfill];
         });
     });
@@ -1233,7 +1233,7 @@
 - (void)testSwitchWorkspaceKitsWithStop {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerWithStop = [[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"];
     [MParticle registerExtension:registerWithStop];
     
@@ -1244,12 +1244,12 @@
         registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
         [MParticle sharedInstance].kitContainer.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
         
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
                 
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
             [expectation fulfill];
         });
     });

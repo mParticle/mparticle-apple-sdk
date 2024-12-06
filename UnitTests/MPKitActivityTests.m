@@ -8,17 +8,17 @@
 #import "MPStateMachine.h"
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
-#import "mParticle.h"
+#import "MParticle.h"
 
 @interface MParticle ()
 
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 
 @end
 
 #pragma mark - MPKitContainer category for unit tests
-@interface MPKitContainer(Tests)
+@interface MPKitContainer_PRIVATE(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 + (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
@@ -44,10 +44,10 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
         
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-    [MPKitContainer registerKit:kitRegister];
+    [MPKitContainer_PRIVATE registerKit:kitRegister];
     NSDictionary *configuration = @{@"id": @42, @"as": @{@"appId":@"MyAppId"}};
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
     [[[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration] start];
@@ -57,7 +57,7 @@
     _kitActivity = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
     
     [super tearDown];
 }
