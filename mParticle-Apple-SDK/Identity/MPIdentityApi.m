@@ -16,7 +16,6 @@
 #import "MPKitContainer.h"
 #import "MPDevice.h"
 #import "MPUpload.h"
-#import "MPStateMachine.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -28,8 +27,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -43,13 +41,13 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 
 @end
 
-@interface MPBackendController ()
+@interface MPBackendController_PRIVATE ()
 
 - (NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
 
@@ -62,7 +60,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (void)setIsLoggedIn:(BOOL)isLoggedIn;
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 

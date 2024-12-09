@@ -18,12 +18,13 @@
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
 #import "MPUpload.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 @property (nonatomic, strong) MParticleWebView *webView;
 
 @end
@@ -41,7 +42,7 @@
 @end
 
 #pragma mark - MPKitContainer category for unit tests
-@interface MPKitContainer(Tests)
+@interface MPKitContainer_PRIVATE(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
@@ -49,7 +50,7 @@
 
 #pragma mark - MPURLRequestBuilderTests
 @interface MPURLRequestBuilderTests : MPBaseTestCase {
-    MPKitContainer *kitContainer;
+    MPKitContainer_PRIVATE *kitContainer;
 }
 
 @end
@@ -64,19 +65,19 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
 
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
     kitContainer = [MParticle sharedInstance].kitContainer;
 
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
 
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
 
         kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
 
         NSDictionary *configuration = @{
                                         @"id":@42,
@@ -153,7 +154,7 @@
 - (void)testHMACSha256Encode {
     NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
     NSString *referenceEncodedMessage = @"ceefdfeab2fe404a7cbb75f6f6a01443286fab507eb85c213fce3d812e8b615c";
@@ -165,7 +166,7 @@
 - (void)testInvalidHMACSha256Encode {
     NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = nil;
     NSString *encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:stateMachine.apiKey];
@@ -375,7 +376,7 @@
     id mockWebView = OCMPartialMock(webview);
     [[[mockWebView stub] andReturn:agent] userAgent];
     
-    id mockKitContainer = OCMClassMock([MPKitContainer class]);
+    id mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSNumber *mockKitId = @42;
     [[[mockKitContainer stub] andReturn:@[mockKitId]] configuredKitsRegistry];
     

@@ -23,7 +23,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 };
 
 @interface MPIdentityTests : MPBaseTestCase {
-    MPKitContainer *kitContainer;
+    MPKitContainer_PRIVATE *kitContainer;
 }
 
 @end
@@ -58,7 +58,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 
 @end
@@ -614,7 +614,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
@@ -646,7 +646,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
         
@@ -678,7 +678,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
@@ -706,7 +706,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
@@ -738,7 +738,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
@@ -770,7 +770,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
@@ -798,7 +798,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     [[[mockPersistenceController stub] andReturn:@"0"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockPersistenceController] persistenceController];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
@@ -855,7 +855,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 - (void)testModifyRequestCompleteWithKits {
     id mockInstance = OCMClassMock([MParticle class]);
-    id mockContainer = OCMClassMock([MPKitContainer class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     

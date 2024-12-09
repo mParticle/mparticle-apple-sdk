@@ -4,12 +4,7 @@
 #import "MPKitContainer.h"
 #import "MPKitProtocol.h"
 #import "MPKitRegister.h"
-
-@interface MParticle ()
-
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
-
-@end
+#import "mParticle.h"
 
 #pragma mark - MPKitActivityMapping
 @interface MPKitActivityMapping : NSObject

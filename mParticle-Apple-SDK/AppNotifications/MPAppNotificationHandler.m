@@ -1,5 +1,4 @@
 #import "MPAppNotificationHandler.h"
-#import "MPStateMachine.h"
 #import "MPLaunchInfo.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
@@ -7,11 +6,10 @@
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
-#import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"
-#import "MPBackendController.h"
+#import "mParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -23,10 +21,9 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPBackendController *backendController;
+@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 + (dispatch_queue_t)messageQueue;
 
 @end
@@ -57,7 +54,7 @@
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [MPNotificationController setDeviceToken:nil];
     }
     
@@ -91,7 +88,7 @@
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         [MPNotificationController setDeviceToken:deviceToken];
     }
 
@@ -160,7 +157,7 @@
     
     if ([MParticle sharedInstance].trackNotifications) {
         if ([self is9]) {
-            UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
+            UIApplicationState state = [MPApplication_PRIVATE sharedUIApplication].applicationState;
             if (state != UIApplicationStateActive || ![self hasContentAvail:userInfo]) {
                 [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:nil];
             }else {
@@ -189,7 +186,7 @@
 }
 
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -279,7 +276,7 @@
 #endif
 
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return NO;
     }
@@ -301,7 +298,7 @@
          ];
     });
     
-    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer_PRIVATE registeredKits];
     BOOL handlingActivity = NO;
     for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
@@ -314,7 +311,7 @@
 }
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -338,7 +335,7 @@
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }

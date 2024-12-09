@@ -5,7 +5,7 @@
 #import "MPApplication.h"
 #import <UIKit/UIKit.h>
 
-@interface MPApplication ()
+@interface MPApplication_PRIVATE ()
 + (void)setMockApplication:(id)mockApplication;
 @end
 
@@ -117,7 +117,7 @@
 - (void)testBackgroundCollection {
     id mockApplication = OCMClassMock([UIApplication class]);
     OCMStub([mockApplication applicationState]).andReturn(UIApplicationStateBackground);
-    [MPApplication setMockApplication:mockApplication];
+    [MPApplication_PRIVATE setMockApplication:mockApplication];
     MParticleWebView *mockWebView = OCMPartialMock(_webView);
 #if TARGET_OS_IOS == 1
     [[(id)mockWebView expect] evaluateAgent];

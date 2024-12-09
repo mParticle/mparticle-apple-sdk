@@ -18,16 +18,17 @@
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
+#import "MParticleReachability.h"
 
 NSString *const kMPStateInformationKey = @"cs";
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
-@interface MPStateMachine ()
+@interface MPStateMachine_PRIVATE ()
 
 @property (nonatomic, strong) MParticleReachability *reachability;
 
