@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+#import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPIConstants.h"
 #import "MPForwardQueueItem.h"
@@ -29,7 +30,6 @@
 #import "MPKitTestClassSideloaded.h"
 #import "MPApplication.h"
 #import "MParticleSwift.h"
-#import "mParticle.h"
 
 @interface MParticle ()
 
