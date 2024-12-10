@@ -4,11 +4,11 @@
 #import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "FilteredMParticleUser.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 
 @end
 
@@ -19,7 +19,7 @@
 
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong, readonly) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
@@ -35,7 +35,7 @@
 
 - (NSString *)kitName {
     __block NSString *component = nil;
-    NSSet<id<MPExtensionKitProtocol>> *kits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *kits = [MPKitContainer_PRIVATE registeredKits];
     NSNumber *kitCode = _kitCode;
     
     if (kits && kitCode) {
@@ -97,7 +97,7 @@
 }
 
 - (NSDictionary<NSString *, NSString *> *)integrationAttributes {
-    NSDictionary *dictionary = [[MParticle sharedInstance].kitContainer integrationAttributesForKit:_kitCode];
+    NSDictionary *dictionary = [[MParticle sharedInstance].kitContainer_PRIVATE integrationAttributesForKit:_kitCode];
     return dictionary;
 }
 
@@ -122,20 +122,20 @@
         
         userInfo[MPKitAPIErrorKey] = errorMessage;
         NSError *attributionError = [NSError errorWithDomain:MPKitAPIErrorDomain code:0 userInfo:userInfo];
-        [MParticle sharedInstance].kitContainer.attributionCompletionHandler(nil, attributionError);
+        [MParticle sharedInstance].kitContainer_PRIVATE.attributionCompletionHandler(nil, attributionError);
         return;
     }
     
     result.kitCode = _kitCode;
     result.kitName = [self kitName];
     
-    [MParticle sharedInstance].kitContainer.attributionCompletionHandler(result, nil);
+    [MParticle sharedInstance].kitContainer_PRIVATE.attributionCompletionHandler(result, nil);
 }
 
 #pragma mark Kit Identity methods
 
 - (FilteredMParticleUser *_Nonnull)getCurrentUserWithKit:(id<MPKitProtocol> _Nonnull)kit {
-    return [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:[MParticle sharedInstance].kitContainer.kitConfigurations[[[kit class] kitCode]]];
+    return [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:[MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[[[kit class] kitCode]]];
 }
 
 - (nullable NSNumber *)incrementUserAttribute:(NSString *_Nonnull)key byValue:(NSNumber *_Nonnull)value forUser:(FilteredMParticleUser *_Nonnull)filteredUser {

@@ -15,10 +15,11 @@
 #import "mParticle.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
-#import "MPResponseConfig.h"
+#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 #import "MPIUserDefaults.h"
 #import "MPDevice.h"
+#import "MPLaunchInfo.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
@@ -47,10 +48,10 @@
 @interface MParticle (Tests)
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
@@ -58,16 +59,16 @@
 @end
 
 #pragma mark - MPKitContainer category for unit tests
-@interface MPKitContainer(Tests)
+@interface MPKitContainer_PRIVATE(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
 @end
 
 #pragma mark - MPBackendController+Tests category
-@interface MPBackendController(Tests)
+@interface MPBackendController_PRIVATE(Tests)
 
-@property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
+@property (nonatomic, strong) MPNetworkCommunication_PRIVATE *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
 
@@ -75,7 +76,7 @@
 - (void)cleanUp;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
-- (void)logRemoteNotificationWithNotificationController:(MPNotificationController *const)notificationController;
+- (void)logRemoteNotificationWithNotificationController:(MPNotificationController_PRIVATE *const)notificationController;
 - (void)parseConfigResponse:(NSDictionary *)configurationDictionary;
 - (void)parseResponseHeader:(NSDictionary *)responseDictionary session:(MPSession *)session;
 - (NSNumber *)previousSessionSuccessfullyClosed;
@@ -102,9 +103,9 @@
     dispatch_queue_t messageQueue;
 }
 
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPSession *session;
-@property (nonatomic, strong) MPNotificationController *notificationController;
+@property (nonatomic, strong) MPNotificationController_PRIVATE *notificationController;
 
 @end
 
@@ -120,9 +121,9 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     
-    [MParticle sharedInstance].backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     self.backendController = [MParticle sharedInstance].backendController;
     [self notificationController];
 }
@@ -186,12 +187,12 @@
     return remoteNotificationDictionary;
 }
 
-- (MPNotificationController *)notificationController {
+- (MPNotificationController_PRIVATE *)notificationController {
     if (_notificationController) {
         return _notificationController;
     }
     
-    _notificationController = [[MPNotificationController alloc] init];
+    _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     
     return _notificationController;
 }
@@ -233,7 +234,7 @@
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -296,7 +297,7 @@
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -332,7 +333,7 @@
         self.session = self.backendController.session;
         NSMutableArray *sessions = [persistence fetchSessions];
         MPSession *session = [sessions lastObject];
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         XCTAssertEqualObjects(session, stateMachine.currentSession, @"Current session and last session in the database are not equal.");
         
         NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -373,14 +374,14 @@
 
 - (void)testCheckAttributeValueEmpty {
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo"
                                                  value:[NSNull null]
                                                  error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
     
     error = nil;
-    [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo"
+    [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo"
                                   value:@""
                                   error:&error];
     XCTAssertTrue(success);
@@ -389,14 +390,14 @@
 
 - (void)testCheckAttributeStringAttribute {
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:@"bar" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:@"bar" error:&error];
     XCTAssert(success);
     XCTAssertNil(error);
 }
 
 - (void)testCheckAttributeNumberAttribute {
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:@123.0 error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:@123.0 error:&error];
     XCTAssert(success);
     XCTAssertNil(error);
 }
@@ -404,7 +405,7 @@
 - (void)testCheckAttributeArrayAttribute {
     NSError *error = nil;
     NSArray *arrayValue = @[ @"foo", @"bar"];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssert(success);
     XCTAssertNil(error);
 }
@@ -414,7 +415,7 @@
     id mockValue = [OCMockObject mockForClass:[NSString class]];
     OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
     NSArray *arrayValue = @[@"foo", mockValue];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
@@ -425,7 +426,7 @@
     id mockValue = [OCMockObject mockForClass:[NSString class]];
     OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH);
     NSArray *arrayValue = @[@"foo", @10.0];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:arrayValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidDataType, error.code);
@@ -436,7 +437,7 @@
     id mockAttributes = [OCMockObject mockForClass:[NSMutableDictionary class]];
     OCMStub([mockAttributes count]).andReturn(200);
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:mockAttributes key:@"foo" value:@"bar" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:mockAttributes key:@"foo" value:@"bar" error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
 }
@@ -446,7 +447,7 @@
     OCMStub([mockKey length]).andReturn(LIMIT_ATTR_KEY_LENGTH+1);
     
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:mockKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kExceededAttributeKeyMaximumLength, error.code);
@@ -457,7 +458,7 @@
     OCMStub([mockValue length]).andReturn(LIMIT_ATTR_VALUE_LENGTH+1);
     OCMStub([mockValue stringByTrimmingCharactersInSet:OCMOCK_ANY]).andReturn(@"foo");
     NSError *error = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:mockValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kExceededAttributeValueMaximumLength, error.code);
@@ -466,7 +467,7 @@
 - (void)testCheckAttributeValueNil {
     NSError *error = nil;
     NSString *nilValue = nil;
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo" value:nilValue error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kNilAttributeValue, error.code);
@@ -475,14 +476,14 @@
 - (void)testCheckAttributeKeyNullNil {
     NSError *error = nil;
     NSString *nilKey = (NSString*)[NSNull null];
-    BOOL success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
+    BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidKey, error.code);
     
     error = nil;
     nilKey = nil;
-    success = [MPBackendController checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
+    success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:nilKey value:@"foo" error:&error];
     XCTAssertFalse(success);
     XCTAssertNotNil(error);
     XCTAssertEqual(kInvalidKey, error.code);
@@ -704,7 +705,7 @@
             NSArray *uploads = [persistence fetchUploads];
             XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
             
-            MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+            MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
             [stateMachine configureRampPercentage:@100];
             
             XCTAssertFalse(stateMachine.dataRamped, @"Data ramp is not respecting 100 percent upper limit.");
@@ -726,7 +727,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"fb487730798014455://applinks?al_applink_data=%7B%22user_agent%22%3A%22Bolts%20iOS%201.0.0%22%2C%22target_url%22%3A%22http%3A%5C%2F%5C%2Fexample.com%5C%2Fapplinks%22%2C%22extras%22%3A%7B%22myapp_token%22%3A%22t0kEn%22%7D%7D"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -818,7 +819,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -865,7 +866,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -911,7 +912,7 @@
         [self.backendController beginSession];
     });
     self.session = self.backendController.session;
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSURL *url = [NSURL URLWithString:@"particlebox://unit_test"];
     NSString *sourceApplication = @"com.mParticle.UnitTest";
@@ -1057,12 +1058,12 @@
 }
 
 - (void)testSetUserAttributeKits {
-    if (![MPKitContainer registeredKits]) {
+    if (![MPKitContainer_PRIVATE registeredKits]) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         NSDictionary *configuration1 = @{
                                          @"id":@42,
@@ -1897,7 +1898,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(@7)] crashMaxPLReportLength];
@@ -1949,7 +1950,7 @@
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = @"plcrash report test string";
-    MPStateMachine *stateMachine = [[MPStateMachine alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[(id)mockStateMachine stub] andReturn:nil] crashMaxPLReportLength];
@@ -2071,7 +2072,7 @@
     options.persistenceMaxAgeSeconds = @(maxAge); // 24 hours
     instance.options = options;
     
-    MPBackendController *backendController = [[MPBackendController alloc] init];
+    MPBackendController_PRIVATE *backendController = [[MPBackendController_PRIVATE alloc] init];
     MPPersistenceController *persistenceController = [[MPPersistenceController alloc] init];
     id mockPersistenceController = OCMPartialMock(persistenceController);
     

@@ -3,33 +3,31 @@
 //
 
 #import "MParticleUser.h"
-#import "MPBackendController.h"
-#import "MPStateMachine.h"
-#import "MPKitContainer.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
+#import "MPIConstants.h"
+#import "MPKitContainer.h"
 
 @interface MParticleUser ()
 
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 
 @end
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 
@@ -205,7 +203,7 @@
     MPILogDebug(@"Set user identity: %@", identityString);
     if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)identityType]) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setUserIdentity:identityType:)
+            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setUserIdentity:identityType:)
                                                        userIdentity:identityString
                                                        identityType:identityType
                                                          kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -222,7 +220,7 @@
     dispatch_async([MParticle messageQueue], ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:key parameter2:value];
         
-        MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+        MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
         if (stateMachine.optOut) {
             return;
         }
@@ -232,7 +230,7 @@
         MPILogDebug(@"User attribute %@ incremented by %@. New value: %@", key, value, newValue);
         if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
             dispatch_async(dispatch_get_main_queue(), ^{
-                [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(incrementUserAttribute:byValue:)
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(incrementUserAttribute:byValue:)
                                                        userAttributeKey:key
                                                                   value:value
                                                              kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -246,7 +244,7 @@
                     }
                 }];
                 
-                [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setUserAttribute:value:)
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setUserAttribute:value:)
                                                        userAttributeKey:key
                                                                   value:newValue
                                                              kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -298,7 +296,7 @@
                                        if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
                                            dispatch_async(dispatch_get_main_queue(), ^{
                                                // Forwarding calls to kits
-                                               [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setUserAttribute:value:)
+                                               [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setUserAttribute:value:)
                                                                                       userAttributeKey:key
                                                                                                  value:value
                                                                                             kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -349,7 +347,7 @@
                                                SEL setUserAttributeSelector = @selector(setUserAttribute:value:);
                                                SEL setUserAttributeListSelector = @selector(setUserAttribute:values:);
                                                
-                                               [[MParticle sharedInstance].kitContainer forwardSDKCall:setUserAttributeListSelector
+                                               [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:setUserAttributeListSelector
                                                                                       userAttributeKey:key
                                                                                                  value:values
                                                                                             kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -389,7 +387,7 @@
                 if (MParticle.sharedInstance.dataPlanFilter == nil || ![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:tag]) {
                     // Forwarding calls to kits
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setUserTag:)
+                        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setUserTag:)
                                                                userAttributeKey:tag
                                                                           value:nil
                                                                      kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -427,7 +425,7 @@
                                        if (MParticle.sharedInstance.dataPlanFilter == nil ||![MParticle.sharedInstance.dataPlanFilter isBlockedUserAttributeKey:key]) {
                                            // Forwarding calls to kits
                                            dispatch_async(dispatch_get_main_queue(), ^{
-                                                   [[MParticle sharedInstance].kitContainer forwardSDKCall:_cmd
+                                                   [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:_cmd
                                                                                           userAttributeKey:key
                                                                                                      value:nil
                                                                                                 kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
@@ -453,15 +451,15 @@
     
     [MPPersistenceController setConsentState:state forMpid:self.userId];
     
-    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer.originalConfig copy];
+    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
     if (kitConfig) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[MParticle sharedInstance].kitContainer configureKits:kitConfig];
+            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfig];
         });
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(setConsentState:) consentState:state kitHandler:^(id<MPKitProtocol>  _Nonnull kit, MPConsentState * _Nullable filteredConsentState, MPKitConfiguration * _Nonnull kitConfiguration) {
             MPKitExecStatus *status = [kit setConsentState:filteredConsentState];
             if (!status.success) {
                 MPILogError(@"Failed to set consent state for kit=%@", status.integrationId);

@@ -13,7 +13,7 @@
 #import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
@@ -22,13 +22,13 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
-@interface MPBackendController ()
+@interface MPBackendController_PRIVATE ()
 
 
 - (void)clearUserAttributes;
@@ -46,7 +46,7 @@
 @interface MPKitAPITests : MPBaseTestCase  <MPKitProtocol>
 
 @property (nonatomic) MPKitAPI *kitApi;
-@property (nonatomic) MPKitContainer *kitContainer;
+@property (nonatomic) MPKitContainer_PRIVATE *kitContainer;
 
 @end
 
@@ -55,15 +55,15 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
-    _kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    _kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         NSDictionary *configuration = @{
                                         @"id":@42,
@@ -83,7 +83,7 @@
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
     
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     
     [[MParticle sharedInstance] setIntegrationAttributes:@{@"Test key":@"Test value"} forKit:@42];
     dispatch_sync([MParticle messageQueue], ^{
@@ -154,7 +154,7 @@
 - (void)testUserAttributeFromCache {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
     
     NSDictionary *userAttributes = @{
@@ -199,7 +199,7 @@
 - (void)testUserAttributeManuallySet {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Integration attributes"];
     MParticle *mParticle = [MParticle sharedInstance];
-    mParticle.backendController = [[MPBackendController alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
+    mParticle.backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)mParticle];
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
     
     NSDictionary *userAttributes = @{

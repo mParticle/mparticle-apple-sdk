@@ -24,7 +24,7 @@ typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *
 typedef void (^MPIdentityApiManagerModifyCallback)(MPIdentityHTTPModifySuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
 typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
-@interface MPNetworkCommunication : NSObject
+@interface MPNetworkCommunication_PRIVATE : NSObject
 
 @property (nonatomic, strong, readonly, nullable) MPURL *configURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *identifyURL;

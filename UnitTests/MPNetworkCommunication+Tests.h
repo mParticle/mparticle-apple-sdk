@@ -5,7 +5,7 @@
 extern NSString * _Nonnull const kMPURLHostEventSubdomain;
 extern NSString * _Nonnull const kMPURLHostIdentitySubdomain;
 
-@interface MPNetworkCommunication(Tests)
+@interface MPNetworkCommunication_PRIVATE(Tests)
 
 - (nonnull NSString *)defaultHostWithSubdomain:(nonnull NSString *)subdomain apiKey:(nonnull NSString *)apiKey enableDirectRouting:(BOOL)enableDirectRouting;
 - (nonnull NSString *)defaultEventHost;

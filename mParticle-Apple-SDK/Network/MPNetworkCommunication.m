@@ -3,7 +3,6 @@
 #import "MPSession.h"
 #import <UIKit/UIKit.h>
 #import "MPConnector.h"
-#import "MPStateMachine.h"
 #import "MPUpload.h"
 #import "MPDevice.h"
 #import "MPApplication.h"
@@ -21,11 +20,11 @@
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
 #import "MPAliasResponse.h"
-#import "MPResponseConfig.h"
 #import "MPURL.h"
 #import "MPConnectorFactoryProtocol.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
+#import "MPNetworkCommunication.h"
 
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
@@ -61,7 +60,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
+
 - (void)logKitBatch:(NSString *)batch;
 
 @end
@@ -80,14 +81,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @end
 
-@interface MPNetworkCommunication()
+@interface MPNetworkCommunication_PRIVATE()
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
 
 @end
 
-@implementation MPNetworkCommunication
+@implementation MPNetworkCommunication_PRIVATE
 
 @synthesize configURL = _configURL;
 @synthesize identifyURL = _identifyURL;
@@ -123,7 +124,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (NSString *)defaultEventHost {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
         return [self defaultHostWithSubdomain:kMPURLHostEventTrackingSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
     } else {
@@ -132,7 +133,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (NSString *)defaultIdentityHost {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
         return [self defaultHostWithSubdomain:kMPURLHostIdentityTrackingSubdomain apiKey:stateMachine.apiKey enableDirectRouting:stateMachine.enableDirectRouting];
     } else {
@@ -145,8 +146,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         return _configURL;
     }
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    MPApplication *application = [[MPApplication alloc] init];
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPApplication_PRIVATE *application = [[MPApplication_PRIVATE alloc] init];
     NSString *configHost = [MParticle sharedInstance].networkOptions.configHost ?: kMPURLHostConfig;
     
     NSString *dataPlanConfigString;
@@ -240,7 +241,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (MPURL *)identityURL:(NSString *)pathComponent {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     NSString *identityHost;
     if ([MParticle sharedInstance].networkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
         identityHost = [MParticle sharedInstance].networkOptions.identityTrackingHost;
@@ -270,7 +271,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (MPURL *)modifyURL {
     NSString *pathComponent = @"modify";
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     NSString *identityHost;
     if ([MParticle sharedInstance].networkOptions.identityTrackingHost && stateMachine.attAuthorizationStatus.integerValue == MPATTAuthorizationStatusAuthorized) {
         identityHost = [MParticle sharedInstance].networkOptions.identityTrackingHost;
@@ -407,8 +408,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 #pragma mark Public methods
 - (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector {
-    if (MPNetworkCommunication.connectorFactory) {
-        return [MPNetworkCommunication.connectorFactory createConnector];
+    if (MPNetworkCommunication_PRIVATE.connectorFactory) {
+        return [MPNetworkCommunication_PRIVATE.connectorFactory createConnector];
     }
     return [[MPConnector alloc] init];
 }
@@ -427,10 +428,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
-    if (![MPStateMachine isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                 backgroundTaskIdentifier = UIBackgroundTaskInvalid;
             }
         }];
@@ -447,9 +448,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     NSString *ageString = httpResponse.allHeaderFields[kMPHTTPAgeHeaderKey];
     NSNumber *maxAge = [self maxAgeForCache:cacheControl];
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }
@@ -494,7 +495,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
         if (!MPIsNull(eTag)) {
-            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES];
+            MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
             MPILogDebug(@"MPResponseConfig init: %@", responseConfig.description);
 
             MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
@@ -597,7 +598,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             if (responseDictionary &&
                 serializationError == nil &&
                 [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader]) {
-                [MPNetworkCommunication parseConfiguration:responseDictionary];
+                [MPNetworkCommunication_PRIVATE parseConfiguration:responseDictionary];
             }
             MPILogVerbose(@"Upload complete: %@\n", uploadString);
             
@@ -719,10 +720,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 - (void)upload:(NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler {
     __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
     
-    if (![MPStateMachine isAppExtension]) {
-        backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                 backgroundTaskIdentifier = UIBackgroundTaskInvalid;
             }
         }];
@@ -743,9 +744,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
     }
     
-    if (![MPStateMachine isAppExtension]) {
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
         if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-            [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+            [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
             backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         }
     }
@@ -840,12 +841,12 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     if (!usedCachedResponse) {
         __block UIBackgroundTaskIdentifier backgroundTaskIdentifier = UIBackgroundTaskInvalid;
         
-        if (![MPStateMachine isAppExtension]) {
-            backgroundTaskIdentifier = [[MPApplication sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
+        if (![MPStateMachine_PRIVATE isAppExtension]) {
+            backgroundTaskIdentifier = [[MPApplication_PRIVATE sharedUIApplication] beginBackgroundTaskWithExpirationHandler:^{
                 if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
                     self.identifying = NO;
                     
-                    [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                    [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                     backgroundTaskIdentifier = UIBackgroundTaskInvalid;
                 }
             }];
@@ -861,9 +862,9 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         error = response.error;
         NSHTTPURLResponse *httpResponse = response.httpResponse;
         
-        if (![MPStateMachine isAppExtension]) {
+        if (![MPStateMachine_PRIVATE isAppExtension]) {
             if (backgroundTaskIdentifier != UIBackgroundTaskInvalid) {
-                [[MPApplication sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
+                [[MPApplication_PRIVATE sharedUIApplication] endBackgroundTask:backgroundTaskIdentifier];
                 backgroundTaskIdentifier = UIBackgroundTaskInvalid;
             }
         }

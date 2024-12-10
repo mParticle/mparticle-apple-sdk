@@ -4,7 +4,6 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPKitConfiguration.h"
-#import "MPStateMachine.h"
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
 #import "MPUpload.h"
@@ -12,8 +11,8 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -403,7 +402,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         [configString appendFormat:@"SDK Version: %@\n", MParticle.sharedInstance.version];
     }
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (stateMachine.apiKey != nil) {
         [configString appendFormat:@"API Key: %@\n", stateMachine.apiKey];
@@ -412,7 +411,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     NSMutableString *supportedKitsString = [NSMutableString string];
     NSSortDescriptor* sortOrder = [NSSortDescriptor sortDescriptorWithKey: @"self"
                                                                 ascending: YES];
-    NSArray<NSNumber *> *supportedKits = [[[MParticle sharedInstance].kitContainer supportedKits] sortedArrayUsingDescriptors: [NSArray arrayWithObject: sortOrder]];
+    NSArray<NSNumber *> *supportedKits = [[[MParticle sharedInstance].kitContainer_PRIVATE supportedKits] sortedArrayUsingDescriptors: [NSArray arrayWithObject: sortOrder]];
     if (supportedKits != nil) {
         for (NSNumber *kitID in supportedKits) {
             [supportedKitsString appendFormat:@"%@\n", kitID];
@@ -420,7 +419,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     }
     [configString appendFormat:@"Supported Kits: \n%@\n", supportedKitsString];
     
-    NSNumber *environment = [NSNumber numberWithInt:(int)[MPStateMachine environment]];
+    NSNumber *environment = [NSNumber numberWithInt:(int)[MPStateMachine_PRIVATE environment]];
     [configString appendFormat:@"Environment: %@\n", environment];
     
     return [MPIHasher hashString:configString];
@@ -494,6 +493,38 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
         [hexString appendFormat:@"%02x", buffer[i]];
     }
     return [hexString copy];
+}
+
++ (nullable MPResponseConfig *)restore {
+    NSDictionary *configuration = [[MPIUserDefaults standardUserDefaults] getConfiguration];
+    MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration dataReceivedFromServer:NO stateMachine:MParticle.sharedInstance.stateMachine backendController:MParticle.sharedInstance.backendController];
+    
+    return responseConfig;
+}
+
++ (void)deleteConfig {
+    [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+}
+
++ (BOOL)isOlderThanConfigMaxAgeSeconds {
+    BOOL shouldConfigurationBeDeleted = NO;
+    
+    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
+    NSNumber *maxAgeSeconds = [[MParticle sharedInstance] configMaxAgeSeconds];
+    
+    if (configProvisioned != nil && maxAgeSeconds != nil && [maxAgeSeconds doubleValue] > 0) {
+        NSTimeInterval intervalConfigProvisioned = [configProvisioned doubleValue];
+        NSTimeInterval intervalNow = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval delta = intervalNow - intervalConfigProvisioned;
+        shouldConfigurationBeDeleted = delta > [maxAgeSeconds doubleValue];
+    }
+    
+    if (shouldConfigurationBeDeleted) {
+        [[MPIUserDefaults standardUserDefaults] deleteConfiguration];
+    }
+    
+    return shouldConfigurationBeDeleted;
 }
 
 

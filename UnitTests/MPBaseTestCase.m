@@ -10,6 +10,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPConnectorProtocol.h"
 #import "MPConnectorFactoryProtocol.h"
+#import "MPIConstants.h"
 
 @interface MParticle (Tests)
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
@@ -42,13 +43,13 @@
     }
     
     [instance reset:^{
-        MPNetworkCommunication.connectorFactory = [[MPTestConnectorFactory alloc] init];
+        MPNetworkCommunication_PRIVATE.connectorFactory = [[MPTestConnectorFactory alloc] init];
         completion(nil);
     }];
 }
 
 - (void)tearDown {
-    MPNetworkCommunication.connectorFactory = nil;
+    MPNetworkCommunication_PRIVATE.connectorFactory = nil;
     [super tearDown];
 }
 

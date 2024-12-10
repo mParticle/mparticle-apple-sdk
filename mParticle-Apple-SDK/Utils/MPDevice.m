@@ -57,7 +57,7 @@ int main(int argc, char *argv[]);
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[]);
 
 @interface MParticle ()
 
-@property (nonatomic, strong, nonnull) MPBackendController *backendController;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -522,8 +522,8 @@ int main(int argc, char *argv[]);
     }
     
     NSData *pushNotificationToken;
-    if (![MPStateMachine isAppExtension]) {
-        pushNotificationToken = [MPNotificationController deviceToken];
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        pushNotificationToken = [MPNotificationController_PRIVATE deviceToken];
         if (pushNotificationToken) {
             NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:pushNotificationToken];
             if (tokenString) {

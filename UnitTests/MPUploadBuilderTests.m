@@ -15,7 +15,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong) MParticleOptions *options;

@@ -1,6 +1,5 @@
 #import "MPURLRequestBuilder.h"
 #import <CommonCrypto/CommonHMAC.h>
-#import "MPStateMachine.h"
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
 #import "MPIUserDefaults.h"
@@ -10,13 +9,13 @@
 #import "MPApplication.h"
 #import "MParticleWebView.h"
 #import "MPURL.h"
+#import "mParticle.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MParticleWebView *webView;
 
 @end
@@ -153,7 +152,7 @@ static NSDateFormatter *RFC1123DateFormatter;
     
     if (_SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
-        MPKitContainer *kitContainer = !isIdentityRequest ? [MParticle sharedInstance].kitContainer : nil;
+        MPKitContainer_PRIVATE *kitContainer = !isIdentityRequest ? [MParticle sharedInstance].kitContainer_PRIVATE : nil;
         NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
         NSString *contentType = nil;
         NSString *kits = nil;
@@ -179,7 +178,7 @@ static NSDateFormatter *RFC1123DateFormatter;
                 kits = nil;
             }
             
-            kits = [MParticle.sharedInstance.kitContainer.configuredKitsRegistry componentsJoinedByString:@","];
+            kits = [MParticle.sharedInstance.kitContainer_PRIVATE.configuredKitsRegistry componentsJoinedByString:@","];
             
             range = [_message rangeOfString:kMPMessageTypeNetworkPerformance];
             if (range.location != NSNotFound) {
@@ -196,7 +195,7 @@ static NSDateFormatter *RFC1123DateFormatter;
                     kits = [supportedKits componentsJoinedByString:@","];
                 }
                 
-                NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine environment]];
+                NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine_PRIVATE environment]];
                 [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
                 
                 MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
