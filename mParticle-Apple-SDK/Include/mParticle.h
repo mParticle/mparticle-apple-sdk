@@ -38,7 +38,6 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class MPSideloadedKit;
-@class MPKitContainer;
 
 /**
  An SDK session.
@@ -644,7 +643,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 /**
  The instance which manages all initialized kits. For internal use only
  */
-@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong, readonly) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 /**
  The Kit Configuration needed should the initialization of kits need to be deferred until identity or consent is resolve. For internal use only

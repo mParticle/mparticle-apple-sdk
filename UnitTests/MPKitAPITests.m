@@ -24,7 +24,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
@@ -55,8 +55,8 @@
 - (void)setUp {
     [super setUp];
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    _kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    _kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
     

@@ -244,10 +244,10 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
         });
     }
     
-    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer.originalConfig copy];
+    NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
     if (kitConfig) {
         dispatch_async(dispatch_get_main_queue(), ^{
-            [[MParticle sharedInstance].kitContainer configureKits:kitConfig];
+            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfig];
         });
     }
 }
@@ -256,7 +256,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     dispatch_async(dispatch_get_main_queue(), ^{
         switch (identityRequestType) {
             case MPIdentityRequestIdentify: {
-                [[MParticle sharedInstance].kitContainer forwardIdentitySDKCall:@selector(onIdentifyComplete: request:)
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardIdentitySDKCall:@selector(onIdentifyComplete: request:)
                                                                      kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
                                                                          FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
                                                                          FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
@@ -265,7 +265,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                 break;
             }
             case MPIdentityRequestLogin: {
-                [[MParticle sharedInstance].kitContainer forwardIdentitySDKCall:@selector(onLoginComplete: request:)
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardIdentitySDKCall:@selector(onLoginComplete: request:)
                                                                      kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
                                                                          FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
                                                                          FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
@@ -274,7 +274,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                 break;
             }
             case MPIdentityRequestLogout: {
-                [[MParticle sharedInstance].kitContainer forwardIdentitySDKCall:@selector(onLogoutComplete: request:)
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardIdentitySDKCall:@selector(onLogoutComplete: request:)
                                                                      kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
                                                                          FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
                                                                          FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];
@@ -283,7 +283,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
                 break;
             }
             case MPIdentityRequestModify: {
-                [[MParticle sharedInstance].kitContainer forwardIdentitySDKCall:@selector(onModifyComplete: request:)
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardIdentitySDKCall:@selector(onModifyComplete: request:)
                                                                      kitHandler:^(id<MPKitProtocol> kit, MPKitConfiguration *kitConfig) {
                                                                          FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:user kitConfiguration:kitConfig];
                                                                          FilteredMPIdentityApiRequest *filteredRequest = [[FilteredMPIdentityApiRequest alloc] initWithIdentityRequest:request kitConfiguration:kitConfig];

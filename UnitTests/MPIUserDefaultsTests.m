@@ -11,7 +11,7 @@
 
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
@@ -29,8 +29,8 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
 }
 
 - (void)tearDown {

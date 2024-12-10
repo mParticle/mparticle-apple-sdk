@@ -64,7 +64,7 @@
     [queueParameters addParameter:error];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:failedRegistrationSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:failedRegistrationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -98,7 +98,7 @@
     [queueParameters addParameter:deviceToken];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:deviceTokenSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:deviceTokenSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypePushRegistration
@@ -119,7 +119,7 @@
     [queueParameters addParameter:userInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:handleActionWithIdentifierSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -141,7 +141,7 @@
     [queueParameters addParameter:responseInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:handleActionWithIdentifierSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -176,7 +176,7 @@
     [queueParameters addParameter:userInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:receivedNotificationSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:receivedNotificationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypePushNotification
@@ -197,7 +197,7 @@
     [queueParameters addParameter:userActivity];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:didUpdateUserActivitySelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:didUpdateUserActivitySelector
                                                           event:nil
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
@@ -219,7 +219,7 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
         
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
@@ -254,7 +254,7 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SEL userNotificationCenterDidReceiveNotificationResponse = @selector(userNotificationCenter:didReceiveNotificationResponse:);
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
 
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterDidReceiveNotificationResponse]) {
@@ -290,7 +290,7 @@
     [queueParameters addParameter:restorationHandler];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:continueUserActivitySelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:continueUserActivitySelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -325,7 +325,7 @@
     [queueParameters addParameter:options];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLOptionsSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLOptionsSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -352,7 +352,7 @@
     [queueParameters addParameter:annotation];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLSourceAppAnnotationSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLSourceAppAnnotationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown

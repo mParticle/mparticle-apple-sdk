@@ -35,7 +35,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
 @end
@@ -90,8 +90,8 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
@@ -2211,11 +2211,11 @@
     
     filter.filterItems = [filterItems copy];
     
-    BOOL isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
     
     filter.shouldIncludeOnMatch = NO;
-    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
     filter.shouldIncludeOnMatch = YES;
@@ -2242,11 +2242,11 @@
     [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
-    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
     filter.shouldIncludeOnMatch = NO;
-    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
 }
 
@@ -2282,11 +2282,11 @@
     [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
-    BOOL isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertFalse(isDisabled);
     
     filter.shouldIncludeOnMatch = NO;
-    isDisabled = [[MParticle sharedInstance].kitContainer isDisabledByConsentKitFilter:filter];
+    isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
     XCTAssertTrue(isDisabled);
 }
 

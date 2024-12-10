@@ -24,7 +24,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) MParticleWebView *webView;
 
 @end
@@ -65,8 +65,8 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
 
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
@@ -382,7 +382,7 @@
     
     id mockMParticle = OCMPartialMock(sharedInstance);
     [[[mockMParticle stub] andReturn:mockWebView] webView];
-    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer];
+    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer_PRIVATE];
     
     NSDictionary *configuration1 = @{
                                      @"id":@42,
@@ -392,8 +392,8 @@
                                      };
     
     NSArray *kitConfigs = @[configuration1];
-    [[MParticle sharedInstance].kitContainer configureKits:nil];
-    [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:nil];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfigs];
     
     XCTAssertEqual([MPURLRequestBuilder requestTimeout], 10, @"Should have been equal.");
     

@@ -30,7 +30,7 @@ import Foundation
     
     @objc private func setUp(dataReceivedFromServer: Bool) {
         if let config = self.configuration {
-            if (dataReceivedFromServer) {
+            if dataReceivedFromServer {
                 var hasConsentFilters = false
                 
                 if let configKitDictionary = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[String : Any]] {
@@ -60,9 +60,9 @@ import Foundation
                 }
                 
                 let shouldDefer = hasConsentFilters && !hasInitialIdentity
-                if (!shouldDefer) {
+                if !shouldDefer {
                     DispatchQueue.main.async {
-                        MParticle.sharedInstance().kitContainer.configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable : Any]])
+                        MParticle.sharedInstance().kitContainer_PRIVATE.configureKits(config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable : Any]])
                     }
                 } else {
                     MParticle.sharedInstance().deferredKitConfiguration_PRIVATE = config[RemoteConfig.kMPRemoteConfigKitsKey] as? [[AnyHashable : Any]]
@@ -81,9 +81,7 @@ import Foundation
             // Exception handling
             if let auxString = config[RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey] as? String {
                 stateMachine.exceptionHandlingMode = auxString
-                
-                let exceptionHandlingNotification = Notification(name: Notification.Name(Notifications.kMPConfigureExceptionHandlingNotification))
-                NotificationCenter.default.post(exceptionHandlingNotification)
+                NotificationCenter.default.post(Notification(name: Notifications.kMPConfigureExceptionHandlingNotification))
             }
             
             // Crash size limiting
@@ -117,8 +115,8 @@ import Foundation
             
 #if !MPARTICLE_LOCATION_DISABLE
             if locationMode == RemoteConfig.kMPRemoteConfigForceTrue {
-                if let accurary = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber, let minimumDistance = locationDictionary[RemoteConfig.kMPRemoteConfigLocationMinimumDistanceKey] as? NSNumber {
-                    MParticle.sharedInstance().beginLocationTracking(accurary.doubleValue, minDistance: minimumDistance.doubleValue, authorizationRequest: MPLocationAuthorizationRequest.always)
+                if let accuracy = locationDictionary[RemoteConfig.kMPRemoteConfigLocationAccuracyKey] as? NSNumber, let minimumDistance = locationDictionary[RemoteConfig.kMPRemoteConfigLocationMinimumDistanceKey] as? NSNumber {
+                    MParticle.sharedInstance().beginLocationTracking(accuracy.doubleValue, minDistance: minimumDistance.doubleValue, authorizationRequest: MPLocationAuthorizationRequest.always)
                 }
             } else if locationMode == RemoteConfig.kMPRemoteConfigForceFalse {
                 MParticle.sharedInstance().endLocationTracking()
