@@ -13,6 +13,7 @@
 #import "MPApplication.h"
 #import "mParticle.h"
 #import "MParticleSwift.h"
+#import "MPLaunchInfo.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";
@@ -30,7 +31,7 @@ NSString *const kMPUserIdentityNewValueKey = @"ni";
 NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 @interface MParticle ()
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @end
@@ -172,8 +173,8 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     NSString *presentedViewControllerDescription = nil;
     NSNumber *mainThreadFlag;
     if ([NSThread isMainThread]) {
-        if (![MPStateMachine isAppExtension]) {
-            UIViewController *presentedViewController = [MPApplication sharedUIApplication].keyWindow.rootViewController.presentedViewController;
+        if (![MPStateMachine_PRIVATE isAppExtension]) {
+            UIViewController *presentedViewController = [MPApplication_PRIVATE sharedUIApplication].keyWindow.rootViewController.presentedViewController;
             presentedViewControllerDescription = presentedViewController ? [[presentedViewController class] description] : nil;
         } else {
             presentedViewControllerDescription = @"extension_message";
@@ -270,7 +271,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 
 // NOTE: Here "sessionFinalized" is really referring to if we are starting a new session on launch, see Facebook event forwarder backend code
 - (void)stateTransition:(BOOL)sessionFinalized previousSession:(MPSession *)previousSession {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     if (stateMachine.launchInfo.sourceApplication) {
         _messageDictionary[kMPLaunchSourceKey] = stateMachine.launchInfo.sourceApplication;
@@ -309,8 +310,8 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
 - (void)location:(CLLocation *)location {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
-    if ([MPStateMachine runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
+    if ([MPStateMachine_PRIVATE runningInBackground] && !stateMachine.locationManager.backgroundLocationTracking) {
         return;
     }
     

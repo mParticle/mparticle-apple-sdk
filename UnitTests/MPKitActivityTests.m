@@ -8,16 +8,17 @@
 #import "MPStateMachine.h"
 #import <XCTest/XCTest.h>
 #import "MPBaseTestCase.h"
+#import "MParticle.h"
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPStateMachine *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
 
 #pragma mark - MPKitContainer category for unit tests
-@interface MPKitContainer(Tests)
+@interface MPKitContainer_PRIVATE(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 + (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
@@ -43,20 +44,20 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
         
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-    [MPKitContainer registerKit:kitRegister];
+    [MPKitContainer_PRIVATE registerKit:kitRegister];
     NSDictionary *configuration = @{@"id": @42, @"as": @{@"appId":@"MyAppId"}};
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [[[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration] start];
+    [[[MParticle sharedInstance].kitContainer_PRIVATE startKit:@42 configuration:kitConfiguration] start];
 }
 
 - (void)tearDown {
     _kitActivity = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
     
     [super tearDown];
 }
@@ -90,11 +91,11 @@
                                     };
     
     NSArray *kitConfigs = @[configuration];
-    [[MParticle sharedInstance].kitContainer configureKits:nil];
-    [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:nil];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfigs];
     
     MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configuration];
-    [[MParticle sharedInstance].kitContainer startKit:@42 configuration:kitConfiguration];
+    [[MParticle sharedInstance].kitContainer_PRIVATE startKit:@42 configuration:kitConfiguration];
     
     BOOL isKitActive = [self.kitActivity isKitActive:@42];
     XCTAssertTrue(isKitActive);

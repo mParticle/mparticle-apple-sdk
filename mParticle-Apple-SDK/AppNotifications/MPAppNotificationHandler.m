@@ -1,5 +1,4 @@
 #import "MPAppNotificationHandler.h"
-#import "MPStateMachine.h"
 #import "MPLaunchInfo.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
@@ -7,11 +6,10 @@
 #import "MPKitContainer.h"
 #import "MPKitExecStatus.h"
 #import <UIKit/UIKit.h>
-#import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"
-#import "MPBackendController.h"
+#import "mParticle.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -23,10 +21,9 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPBackendController *backendController;
+@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 + (dispatch_queue_t)messageQueue;
 
 @end
@@ -57,8 +54,8 @@
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
-        [MPNotificationController setDeviceToken:nil];
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        [MPNotificationController_PRIVATE setDeviceToken:nil];
     }
     
     SEL failedRegistrationSelector = @selector(failedToRegisterForUserNotifications:);
@@ -67,7 +64,7 @@
     [queueParameters addParameter:error];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:failedRegistrationSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:failedRegistrationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -91,8 +88,8 @@
         return;
     }
     
-    if (![MPStateMachine isAppExtension]) {
-        [MPNotificationController setDeviceToken:deviceToken];
+    if (![MPStateMachine_PRIVATE isAppExtension]) {
+        [MPNotificationController_PRIVATE setDeviceToken:deviceToken];
     }
 
     SEL deviceTokenSelector = @selector(setDeviceToken:);
@@ -101,7 +98,7 @@
     [queueParameters addParameter:deviceToken];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:deviceTokenSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:deviceTokenSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypePushRegistration
@@ -122,7 +119,7 @@
     [queueParameters addParameter:userInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:handleActionWithIdentifierSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -144,7 +141,7 @@
     [queueParameters addParameter:responseInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:handleActionWithIdentifierSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:handleActionWithIdentifierSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -160,7 +157,7 @@
     
     if ([MParticle sharedInstance].trackNotifications) {
         if ([self is9]) {
-            UIApplicationState state = [MPApplication sharedUIApplication].applicationState;
+            UIApplicationState state = [MPApplication_PRIVATE sharedUIApplication].applicationState;
             if (state != UIApplicationStateActive || ![self hasContentAvail:userInfo]) {
                 [[MParticle sharedInstance] logNotificationOpenedWithUserInfo:userInfo andActionIdentifier:nil];
             }else {
@@ -179,7 +176,7 @@
     [queueParameters addParameter:userInfo];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:receivedNotificationSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:receivedNotificationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypePushNotification
@@ -189,7 +186,7 @@
 }
 
 - (void)didUpdateUserActivity:(nonnull NSUserActivity *)userActivity {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -200,7 +197,7 @@
     [queueParameters addParameter:userActivity];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:didUpdateUserActivitySelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:didUpdateUserActivitySelector
                                                           event:nil
                                              parameters:queueParameters
                                             messageType:MPMessageTypeUnknown
@@ -222,7 +219,7 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SEL userNotificationCenterWillPresentNotification = @selector(userNotificationCenter:willPresentNotification:);
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
         
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterWillPresentNotification]) {
@@ -257,7 +254,7 @@
     
     dispatch_async(dispatch_get_main_queue(), ^{
         SEL userNotificationCenterDidReceiveNotificationResponse = @selector(userNotificationCenter:didReceiveNotificationResponse:);
-        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer activeKitsRegistry];
+        NSArray<id<MPExtensionKitProtocol>> *activeKitsRegistry = [[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry];
 
         for (id<MPExtensionKitProtocol> kitRegister in activeKitsRegistry) {
             if ([kitRegister.wrapperInstance respondsToSelector:userNotificationCenterDidReceiveNotificationResponse]) {
@@ -279,7 +276,7 @@
 #endif
 
 - (BOOL)continueUserActivity:(nonnull NSUserActivity *)userActivity restorationHandler:(void(^ _Nonnull)(NSArray<id<UIUserActivityRestoring>> * __nullable restorableObjects))restorationHandler {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return NO;
     }
@@ -293,7 +290,7 @@
     [queueParameters addParameter:restorationHandler];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:continueUserActivitySelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:continueUserActivitySelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -301,7 +298,7 @@
          ];
     });
     
-    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionKitProtocol>> *registeredKitsRegistry = [MPKitContainer_PRIVATE registeredKits];
     BOOL handlingActivity = NO;
     for (id<MPExtensionKitProtocol> kitRegister in registeredKitsRegistry) {
         if ([kitRegister.wrapperInstance respondsToSelector:continueUserActivitySelector]) {
@@ -314,7 +311,7 @@
 }
 
 - (void)openURL:(NSURL *)url options:(NSDictionary<NSString *, id> *)options {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -328,7 +325,7 @@
     [queueParameters addParameter:options];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLOptionsSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLOptionsSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown
@@ -338,7 +335,7 @@
 }
 
 - (void)openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     if (stateMachine.optOut) {
         return;
     }
@@ -355,7 +352,7 @@
     [queueParameters addParameter:annotation];
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        [[MParticle sharedInstance].kitContainer forwardSDKCall:openURLSourceAppAnnotationSelector
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:openURLSourceAppAnnotationSelector
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeUnknown

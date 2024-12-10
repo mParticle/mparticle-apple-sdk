@@ -1,11 +1,10 @@
-#import "MPIConstants.h"
 #import "MPEnums.h"
 
 @class UIApplication;
 
 extern NSString * _Nonnull const kMPApplicationInformationKey;
 
-@interface MPApplication : NSObject <NSCopying>
+@interface MPApplication_PRIVATE : NSObject <NSCopying>
 
 @property (nonatomic, strong, nonnull) NSNumber *lastUseDate;
 @property (nonatomic, strong, nullable) NSNumber *launchCount;

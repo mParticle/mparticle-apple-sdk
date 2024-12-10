@@ -2,12 +2,11 @@
 #import "MPAppDelegateProxy.h"
 #import "MPNotificationController.h"
 #import "MPAppNotificationHandler.h"
-#import "MPStateMachine.h"
 #import "mParticle.h"
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPStateMachine *stateMachine;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPAppNotificationHandler *appNotificationHandler;
 
 @end
