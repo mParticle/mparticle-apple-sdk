@@ -11,7 +11,7 @@
 @class MPSession;
 @class MPMessage;
 @class MPNetworkPerformance;
-@class MPNotificationController;
+@class MPNotificationController_PRIVATE;
 @class MPBaseEvent;
 @class MPEvent;
 @class MPCommerceEvent;
@@ -19,7 +19,7 @@
 @class MParticleSession;
 @class MPUploadSettings;
 @class MPNetworkOptions;
-@class MPNetworkCommunication;
+@class MPNetworkCommunication_PRIVATE;
 
 
 @protocol MPBackendControllerDelegate;
@@ -61,12 +61,12 @@ extern const NSInteger kInvalidKey;
 
 
 #if TARGET_OS_IOS == 1
-@property (nonatomic, strong, nonnull) MPNotificationController *notificationController;
+@property (nonatomic, strong, nonnull) MPNotificationController_PRIVATE *notificationController;
 #endif
 
 @property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
 @property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
-@property (nonatomic, strong, nullable) MPNetworkCommunication *networkCommunication;
+@property (nonatomic, strong, nullable) MPNetworkCommunication_PRIVATE *networkCommunication;
 @property (strong, nullable) MPSession *session;
 @property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 @property (nonatomic) NSTimeInterval uploadInterval;

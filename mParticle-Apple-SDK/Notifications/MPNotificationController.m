@@ -5,7 +5,7 @@
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
 
-@interface MPNotificationController() {
+@interface MPNotificationController_PRIVATE() {
 }
 
 @end
@@ -21,7 +21,7 @@
 static NSData *deviceToken = nil;
 #endif
 
-@implementation MPNotificationController
+@implementation MPNotificationController_PRIVATE
 
 #if TARGET_OS_IOS == 1
 
@@ -47,7 +47,7 @@ static NSData *deviceToken = nil;
 }
 
 + (void)setDeviceToken:(NSData *)devToken {
-    if ([MPNotificationController deviceToken] && [[MPNotificationController deviceToken] isEqualToData:devToken]) {
+    if ([MPNotificationController_PRIVATE deviceToken] && [[MPNotificationController_PRIVATE deviceToken] isEqualToData:devToken]) {
         return;
     }
     

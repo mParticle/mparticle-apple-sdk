@@ -53,7 +53,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) MParticleWebView *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
@@ -95,9 +95,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
     self = [super init];
     if (self) {
-        _networkCommunication = [[MPNetworkCommunication alloc] init];
+        _networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
 #if TARGET_OS_IOS == 1
-        _notificationController = [[MPNotificationController alloc] init];
+        _notificationController = [[MPNotificationController_PRIVATE alloc] init];
 #endif
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
@@ -1472,7 +1472,7 @@ static BOOL skipNextUpload = NO;
     
     if (![MParticle sharedInstance].stateMachine.optOut) {
         dispatch_async([MParticle messageQueue], ^{
-            [[MParticle sharedInstance].kitContainer initializeKits];
+            [[MParticle sharedInstance].kitContainer_PRIVATE initializeKits];
         });
     }
 
@@ -1630,7 +1630,7 @@ static BOOL skipNextUpload = NO;
             return;
         }
         
-        MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer;
+        MPKitContainer_PRIVATE *kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
         BOOL shouldDelayUploadForKits = kitContainer && [kitContainer shouldDelayUpload:kMPMaximumKitWaitTimeSeconds];
         BOOL shouldDelayUpload = shouldDelayUploadForKits || [MParticle.sharedInstance.webView shouldDelayUpload:kMPMaximumAgentWaitTimeSeconds];
         if (shouldDelayUpload) {
@@ -1874,11 +1874,11 @@ static BOOL skipNextUpload = NO;
 }
 #endif
 
-- (MPNotificationController *)notificationController {
+- (MPNotificationController_PRIVATE *)notificationController {
     return _notificationController;
 }
 
-- (void)setNotificationController:(MPNotificationController *)notificationController {
+- (void)setNotificationController:(MPNotificationController_PRIVATE *)notificationController {
     _notificationController = notificationController;
 }
 
@@ -1934,7 +1934,7 @@ static BOOL skipNextUpload = NO;
                                               kMPPushMessageTypeKey:userNotification.type}
                                             mutableCopy];
         
-        NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController deviceToken]];
+        NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController_PRIVATE deviceToken]];
         if (tokenString) {
             messageInfo[kMPDeviceTokenKey] = tokenString;
         }

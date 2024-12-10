@@ -51,7 +51,7 @@
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
@@ -68,7 +68,7 @@
 #pragma mark - MPBackendController+Tests category
 @interface MPBackendController_PRIVATE(Tests)
 
-@property (nonatomic, strong) MPNetworkCommunication *networkCommunication;
+@property (nonatomic, strong) MPNetworkCommunication_PRIVATE *networkCommunication;
 @property (nonatomic, strong) NSMutableDictionary *userAttributes;
 @property (nonatomic, strong) NSMutableArray *userIdentities;
 
@@ -76,7 +76,7 @@
 - (void)cleanUp;
 - (void)handleApplicationDidFinishLaunching:(NSNotification *)notification;
 - (void)handleApplicationDidBecomeActive:(NSNotification *)notification;
-- (void)logRemoteNotificationWithNotificationController:(MPNotificationController *const)notificationController;
+- (void)logRemoteNotificationWithNotificationController:(MPNotificationController_PRIVATE *const)notificationController;
 - (void)parseConfigResponse:(NSDictionary *)configurationDictionary;
 - (void)parseResponseHeader:(NSDictionary *)responseDictionary session:(MPSession *)session;
 - (NSNumber *)previousSessionSuccessfullyClosed;
@@ -105,7 +105,7 @@
 
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MPSession *session;
-@property (nonatomic, strong) MPNotificationController *notificationController;
+@property (nonatomic, strong) MPNotificationController_PRIVATE *notificationController;
 
 @end
 
@@ -121,7 +121,7 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
     
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     
     [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
     self.backendController = [MParticle sharedInstance].backendController;
@@ -187,12 +187,12 @@
     return remoteNotificationDictionary;
 }
 
-- (MPNotificationController *)notificationController {
+- (MPNotificationController_PRIVATE *)notificationController {
     if (_notificationController) {
         return _notificationController;
     }
     
-    _notificationController = [[MPNotificationController alloc] init];
+    _notificationController = [[MPNotificationController_PRIVATE alloc] init];
     
     return _notificationController;
 }

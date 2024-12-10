@@ -60,7 +60,7 @@
                                        kMPRemoteConfigUniqueIdentifierKey: newDas
                                        }};
     
-    [MPNetworkCommunication parseConfiguration:response];
+    [MPNetworkCommunication_PRIVATE parseConfiguration:response];
     XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));

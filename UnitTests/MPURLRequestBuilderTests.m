@@ -24,7 +24,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) MParticleWebView *webView;
 
 @end
@@ -65,8 +65,8 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
 
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer_PRIVATE alloc] init];
-    kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
@@ -103,7 +103,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
@@ -130,7 +130,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
@@ -182,7 +182,7 @@
 }
 
 - (void)testURLRequestComposition {
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
     
@@ -250,7 +250,7 @@
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
 
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
 
@@ -382,7 +382,7 @@
     
     id mockMParticle = OCMPartialMock(sharedInstance);
     [[[mockMParticle stub] andReturn:mockWebView] webView];
-    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer];
+    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer_PRIVATE];
     
     NSDictionary *configuration1 = @{
                                      @"id":@42,
@@ -392,12 +392,12 @@
                                      };
     
     NSArray *kitConfigs = @[configuration1];
-    [[MParticle sharedInstance].kitContainer configureKits:nil];
-    [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:nil];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfigs];
     
     XCTAssertEqual([MPURLRequestBuilder requestTimeout], 10, @"Should have been equal.");
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
@@ -435,7 +435,7 @@
 }
 
 - (void)testSignatureRelativePath {
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
     MParticle *sharedInstance = [MParticle sharedInstance];
     id mockMParticle = OCMPartialMock(sharedInstance);

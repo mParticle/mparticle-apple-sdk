@@ -473,8 +473,6 @@
 		53FDD1BD2AE871AF003D5FA1 /* MPIHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */; };
 		53FDD1BE2AE871AF003D5FA1 /* MPIHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */; };
 		D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B0629CDFB1F00E7489F /* MPStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		D30CD0CD2D07497E00F5148A /* MPUserAttributeChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30CD0CC2D07497E00F5148A /* MPUserAttributeChange.swift */; };
-		D30CD0CE2D07497E00F5148A /* MPUserAttributeChange.swift in Sources */ = {isa = PBXBuildFile; fileRef = D30CD0CC2D07497E00F5148A /* MPUserAttributeChange.swift */; };
 		D356E0242CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -769,7 +767,6 @@
 		53B33E892A4606CD00CC8A19 /* MPSideloadedKit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPSideloadedKit.swift; sourceTree = "<group>"; };
 		53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitiveTests.swift"; sourceTree = "<group>"; };
 		53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIHasher.swift; sourceTree = "<group>"; };
-		D30CD0CC2D07497E00F5148A /* MPUserAttributeChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserAttributeChange.swift; sourceTree = "<group>"; };
 		D356E0232CFE08ED0020898D /* MPResponseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPResponseConfig.swift; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
 		D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitive.swift"; sourceTree = "<group>"; };
@@ -918,7 +915,6 @@
 				53A79AAE29CDFB1E00E7489F /* MPConnector.m */,
 				53A79AAF29CDFB1E00E7489F /* MPConnectorProtocol.h */,
 				53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */,
-				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79AB229CDFB1E00E7489F /* MPURLRequestBuilder.m */,
 				53A79AB329CDFB1E00E7489F /* MPURL.h */,
 				53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */,
@@ -1043,7 +1039,6 @@
 		53A79B3329CDFB1F00E7489F /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				53A79B3429CDFB1F00E7489F /* MPNotificationController.h */,
 				53A79B3529CDFB1F00E7489F /* MPNotificationController.m */,
 			);
 			path = Notifications;
@@ -1167,7 +1162,9 @@
 				53A79B0629CDFB1F00E7489F /* MPStateMachine.h */,
 				53A79C4429CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h */,
 				53A79B5B29CDFB1F00E7489F /* MPKitContainer.h */,
+				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79B2429CDFB1F00E7489F /* MPApplication.h */,
+				53A79B3429CDFB1F00E7489F /* MPNotificationController.h */,
 				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 			);
 			path = Include;

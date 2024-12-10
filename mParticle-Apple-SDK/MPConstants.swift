@@ -154,11 +154,11 @@ struct ConsentFiltering {
 }
 
 struct Notifications {
-    static let kMPCrashReportOccurredNotification = "MPCrashReportOccurredNotification"
-    static let kMPConfigureExceptionHandlingNotification = "MPConfigureExceptionHandlingNotification"
-    static let kMPUserNotificationDictionaryKey = "MPUserNotificationDictionaryKey"
-    static let kMPUserNotificationActionKey = "MPUserNotificationActionKey"
-    static let kMPRemoteNotificationDeviceTokenNotification = "MPRemoteNotificationDeviceTokenNotification"
-    static let kMPRemoteNotificationDeviceTokenKey = "MPRemoteNotificationDeviceTokenKey"
-    static let kMPRemoteNotificationOldDeviceTokenKey = "MPRemoteNotificationOldDeviceTokenKey"
+    static let kMPCrashReportOccurredNotification = Notification.Name("MPCrashReportOccurredNotification")
+    static let kMPConfigureExceptionHandlingNotification = Notification.Name("MPConfigureExceptionHandlingNotification")
+    static let kMPUserNotificationDictionaryKey = Notification.Name("MPUserNotificationDictionaryKey")
+    static let kMPUserNotificationActionKey = Notification.Name("MPUserNotificationActionKey")
+    static let kMPRemoteNotificationDeviceTokenNotification = Notification.Name("MPRemoteNotificationDeviceTokenNotification")
+    static let kMPRemoteNotificationDeviceTokenKey = Notification.Name("MPRemoteNotificationDeviceTokenKey")
+    static let kMPRemoteNotificationOldDeviceTokenKey = Notification.Name("MPRemoteNotificationOldDeviceTokenKey")
 }

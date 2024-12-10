@@ -411,7 +411,7 @@ static NSString *const NSUserDefaultsPrefix = @"mParticle::";
     NSMutableString *supportedKitsString = [NSMutableString string];
     NSSortDescriptor* sortOrder = [NSSortDescriptor sortDescriptorWithKey: @"self"
                                                                 ascending: YES];
-    NSArray<NSNumber *> *supportedKits = [[[MParticle sharedInstance].kitContainer supportedKits] sortedArrayUsingDescriptors: [NSArray arrayWithObject: sortOrder]];
+    NSArray<NSNumber *> *supportedKits = [[[MParticle sharedInstance].kitContainer_PRIVATE supportedKits] sortedArrayUsingDescriptors: [NSArray arrayWithObject: sortOrder]];
     if (supportedKits != nil) {
         for (NSNumber *kitID in supportedKits) {
             [supportedKitsString appendFormat:@"%@\n", kitID];

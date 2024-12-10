@@ -1214,7 +1214,7 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
-        [MParticle sharedInstance].kitContainer.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
+        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
         
         XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
                 
@@ -1242,7 +1242,7 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
-        [MParticle sharedInstance].kitContainer.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
+        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
         
         XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
                 

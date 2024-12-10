@@ -65,7 +65,7 @@
 #pragma mark Private methods
 - (void)kitInstanceAndConfiguration:(NSNumber *)integrationId handler:(void(^)(id instance, NSDictionary *configuration))handler {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol> kitRegister = [[[[MParticle sharedInstance].kitContainer activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+    id<MPExtensionKitProtocol> kitRegister = [[[[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     id<MPKitProtocol> wrapperInstance = kitRegister.wrapperInstance;
     
     id kitInstance = [wrapperInstance respondsToSelector:@selector(providerKitInstance)] ? [wrapperInstance providerKitInstance] : nil;
@@ -77,7 +77,7 @@
 #pragma mark Public methods
 - (BOOL)isKitActive:(nonnull NSNumber *)integrationId {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
-    id<MPExtensionKitProtocol> kitRegister = [[[[MParticle sharedInstance].kitContainer activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
+    id<MPExtensionKitProtocol> kitRegister = [[[[MParticle sharedInstance].kitContainer_PRIVATE activeKitsRegistry] filteredArrayUsingPredicate:predicate] firstObject];
     
     return kitRegister != nil;
 }

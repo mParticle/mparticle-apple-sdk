@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (NSArray<MParticleUser *> *)sortedUserArrayByLastSeen:(NSMutableArray<MParticleUser *> *)userArray;
 @end
     
-@interface MPNetworkCommunication ()
+@interface MPNetworkCommunication_PRIVATE ()
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion;
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 @end
@@ -58,7 +58,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
 
 @end
@@ -502,7 +502,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testNoEmptyModifyRequests {
-    MPNetworkCommunication *network = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *network = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     id partialMock = OCMPartialMock(network);
     
@@ -615,7 +615,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);
@@ -647,7 +647,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
         
     id mockUser = OCMClassMock([MParticleUser class]);
@@ -679,7 +679,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);
@@ -707,7 +707,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);
@@ -739,7 +739,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);
@@ -771,7 +771,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);
@@ -799,7 +799,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockPersistenceController] persistenceController];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
@@ -856,7 +856,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (void)testModifyRequestCompleteWithKits {
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[mockInstance stub] andReturn:mockContainer] kitContainer];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
     id mockUser = OCMClassMock([MParticleUser class]);

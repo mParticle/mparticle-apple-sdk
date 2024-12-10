@@ -81,14 +81,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @end
 
-@interface MPNetworkCommunication()
+@interface MPNetworkCommunication_PRIVATE()
 
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
 
 @end
 
-@implementation MPNetworkCommunication
+@implementation MPNetworkCommunication_PRIVATE
 
 @synthesize configURL = _configURL;
 @synthesize identifyURL = _identifyURL;
@@ -408,8 +408,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 #pragma mark Public methods
 - (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector {
-    if (MPNetworkCommunication.connectorFactory) {
-        return [MPNetworkCommunication.connectorFactory createConnector];
+    if (MPNetworkCommunication_PRIVATE.connectorFactory) {
+        return [MPNetworkCommunication_PRIVATE.connectorFactory createConnector];
     }
     return [[MPConnector alloc] init];
 }
@@ -598,7 +598,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             if (responseDictionary &&
                 serializationError == nil &&
                 [responseDictionary[kMPMessageTypeKey] isEqualToString:kMPMessageTypeResponseHeader]) {
-                [MPNetworkCommunication parseConfiguration:responseDictionary];
+                [MPNetworkCommunication_PRIVATE parseConfiguration:responseDictionary];
             }
             MPILogVerbose(@"Upload complete: %@\n", uploadString);
             

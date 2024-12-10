@@ -152,7 +152,7 @@ static NSDateFormatter *RFC1123DateFormatter;
     
     if (_SDKURLRequest || isIdentityRequest) {
         NSString *deviceLocale = [[NSLocale autoupdatingCurrentLocale] localeIdentifier];
-        MPKitContainer_PRIVATE *kitContainer = !isIdentityRequest ? [MParticle sharedInstance].kitContainer : nil;
+        MPKitContainer_PRIVATE *kitContainer = !isIdentityRequest ? [MParticle sharedInstance].kitContainer_PRIVATE : nil;
         NSArray<NSNumber *> *supportedKits = [kitContainer supportedKits];
         NSString *contentType = nil;
         NSString *kits = nil;
@@ -178,7 +178,7 @@ static NSDateFormatter *RFC1123DateFormatter;
                 kits = nil;
             }
             
-            kits = [MParticle.sharedInstance.kitContainer.configuredKitsRegistry componentsJoinedByString:@","];
+            kits = [MParticle.sharedInstance.kitContainer_PRIVATE.configuredKitsRegistry componentsJoinedByString:@","];
             
             range = [_message rangeOfString:kMPMessageTypeNetworkPerformance];
             if (range.location != NSNotFound) {
