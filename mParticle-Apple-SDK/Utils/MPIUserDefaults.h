@@ -2,6 +2,7 @@
 
 @class MPKitConfiguration;
 @class MPUploadSettings;
+@class MPResponseConfig;
 
 @interface MPIUserDefaults : NSObject
 
@@ -34,5 +35,8 @@
 - (nullable MPUploadSettings *)lastUploadSettings;
 
 + (NSString *_Nullable)stringFromDeviceToken:(NSData *_Nonnull)deviceToken;
++ (nullable MPResponseConfig *)restore;
++ (void)deleteConfig;
++ (BOOL)isOlderThanConfigMaxAgeSeconds;
 
 @end

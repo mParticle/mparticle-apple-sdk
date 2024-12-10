@@ -1,8 +1,6 @@
 #import "MPEnums.h"
-#import "MPNetworkCommunication.h"
 
 #if TARGET_OS_IOS == 1
-    #import "MPNotificationController.h"
     #ifndef MPARTICLE_LOCATION_DISABLE
         #import <CoreLocation/CoreLocation.h>
     #endif
@@ -13,7 +11,7 @@
 @class MPSession;
 @class MPMessage;
 @class MPNetworkPerformance;
-@class MPNotificationController;
+@class MPNotificationController_PRIVATE;
 @class MPBaseEvent;
 @class MPEvent;
 @class MPCommerceEvent;
@@ -21,6 +19,8 @@
 @class MParticleSession;
 @class MPUploadSettings;
 @class MPNetworkOptions;
+@class MPNetworkCommunication_PRIVATE;
+
 
 @protocol MPBackendControllerDelegate;
 
@@ -56,17 +56,17 @@ extern const NSInteger kInvalidDataType;
 extern const NSTimeInterval kMPMaximumKitWaitTimeSeconds;
 extern const NSInteger kInvalidKey;
 
-@interface MPBackendController : NSObject
+@interface MPBackendController_PRIVATE : NSObject
 
 
 
 #if TARGET_OS_IOS == 1
-@property (nonatomic, strong, nonnull) MPNotificationController *notificationController;
+@property (nonatomic, strong, nonnull) MPNotificationController_PRIVATE *notificationController;
 #endif
 
 @property (nonatomic, weak, nullable) id<MPBackendControllerDelegate> delegate;
 @property (nonatomic, strong, nullable) NSMutableSet<MPEvent *> *eventSet;
-@property (nonatomic, strong, nullable) MPNetworkCommunication *networkCommunication;
+@property (nonatomic, strong, nullable) MPNetworkCommunication_PRIVATE *networkCommunication;
 @property (strong, nullable) MPSession *session;
 @property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
 @property (nonatomic) NSTimeInterval uploadInterval;

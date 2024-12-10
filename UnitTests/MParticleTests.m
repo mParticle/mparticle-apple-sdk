@@ -17,13 +17,13 @@
 #import "MPKitConfiguration.h"
 #import "MParticleSwift.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
+#import "MPIConstants.h"
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
-@property (nonatomic, strong) MPBackendController *backendController;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) MParticleOptions *options;
-@property (nonatomic, strong, readonly) MPKitContainer *kitContainer;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 @property (nonatomic, strong) MParticleWebView *webView;
@@ -34,7 +34,7 @@
 - (void)setUserId:(NSNumber *)userId;
 @end
 
-@interface MPKitContainer ()
+@interface MPKitContainer_PRIVATE ()
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
 + (NSMutableSet <id<MPExtensionKitProtocol>> *)kitsRegistry;
 @end
@@ -54,7 +54,7 @@
     lastNotification = nil;
     
     // Ensure registeredKits is empty
-    [MPKitContainer.kitsRegistry removeAllObjects];
+    [MPKitContainer_PRIVATE.kitsRegistry removeAllObjects];
 }
 
 - (void)tearDown {
@@ -93,7 +93,7 @@
 
 - (void)testOptOut {
     MParticle *instance = [MParticle sharedInstance];
-    instance.stateMachine = [[MPStateMachine alloc] init];
+    instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     
     XCTAssertFalse(instance.optOut, "By Default Opt Out should be set to false");
     
@@ -106,7 +106,7 @@
 
 - (void)testOptOutEndsSession {
     MParticle *instance = [MParticle sharedInstance];
-    instance.stateMachine = [[MPStateMachine alloc] init];
+    instance.stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     instance.optOut = YES;
     
     MParticleSession *session = instance.currentSession;
@@ -412,7 +412,7 @@
 
 #if TARGET_OS_IOS == 1
 - (void)testWebviewLogEvent {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo webview event 1" type:MPEventTypeNavigation];
     testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
@@ -441,7 +441,7 @@
 }
 
 - (void)testWebviewLogScreenEvent {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MPEvent *testEvent = [[MPEvent alloc] initWithName:@"foo Page View" type:MPEventTypeNavigation];
     testEvent.customAttributes = @{@"foo webview event attribute 1":@"foo webview event attribute value 1"};
@@ -470,7 +470,7 @@
 }
 
 - (void)testWebviewLogCommerceAttributes {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MPProduct *testProduct = [[MPProduct alloc] initWithName:@"foo product 1" sku:@"12345" quantity:@1 price:@19.95];
     MPCommerceEvent *testEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionAddToCart product:testProduct];
@@ -516,7 +516,7 @@
 }
 
 - (void)testWebviewLogCommerceInvalidArray {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     [[mockBackend reject] logCommerceEvent:[OCMArg any] completionHandler:[OCMArg any]];
     
@@ -549,7 +549,7 @@
 }
 
 - (void)testWebviewLogCommerceInvalidArrayValues {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     [[mockBackend reject] logCommerceEvent:[OCMArg any] completionHandler:[OCMArg any]];
     
@@ -581,7 +581,7 @@
 }
 
 - (void)testWebviewLogCommerceNull {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     [[[mockBackend expect] ignoringNonObjectArgs] logCommerceEvent:[OCMArg checkWithBlock:^BOOL(id value) {
         XCTAssert([value isKindOfClass:[MPCommerceEvent class]]);
@@ -620,7 +620,7 @@
     [mockBackend verifyWithDelay:5];
 }
 - (void)testTrackNotificationsDefault {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MParticle *instance = [[MParticle alloc] init];
     id mockInstance = OCMPartialMock(instance);
@@ -633,7 +633,7 @@
 }
 
 - (void)testTrackNotificationsOff {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MParticle *instance = [[MParticle alloc] init];
     id mockInstance = OCMPartialMock(instance);
@@ -647,7 +647,7 @@
 }
 
 - (void)testTrackNotificationsOn {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     MParticle *instance = [[MParticle alloc] init];
     id mockInstance = OCMPartialMock(instance);
@@ -709,7 +709,7 @@
     [[[mockInstance stub] andReturnValue:OCMOCK_VALUE(NO)] trackNotifications];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
 
-    id mockBackendController = OCMClassMock([MPBackendController class]);
+    id mockBackendController = OCMClassMock([MPBackendController_PRIVATE class]);
     instance.backendController = mockBackendController;
     
     NSNotification *testNotification = [[NSNotification alloc] initWithName:@"tester" object:self userInfo:@{@"foo-notif-key-1":@"foo-notif-value-1"}];
@@ -727,7 +727,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusNotDetermined);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusNotDetermined);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -737,7 +737,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusRestricted);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusRestricted);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -747,7 +747,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusDenied);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusDenied);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -757,7 +757,7 @@
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     options.attStatus = @(MPATTAuthorizationStatusAuthorized);
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusAuthorized);
     XCTAssert(stateMachine.attAuthorizationTimestamp);
 }
@@ -769,7 +769,7 @@
     options.attStatus = @(MPATTAuthorizationStatusRestricted);
     options.attStatusTimestampMillis = testTimestamp;
     [instance startWithOptions:options];
-    MPStateMachine *stateMachine = instance.stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = instance.stateMachine;
     XCTAssertEqual(stateMachine.attAuthorizationStatus.integerValue, MPATTAuthorizationStatusRestricted);
     XCTAssertEqual(instance.stateMachine.attAuthorizationTimestamp.doubleValue, testTimestamp.doubleValue);
 }
@@ -1018,14 +1018,14 @@
 
 - (void)testUploadInterval {
     MParticle *instance = [MParticle sharedInstance];
-    instance.backendController = [[MPBackendController alloc] init];
+    instance.backendController = [[MPBackendController_PRIVATE alloc] init];
 
     XCTAssertEqual(instance.uploadInterval, DEFAULT_DEBUG_UPLOAD_INTERVAL);
 }
 
 - (void)testSetUploadInterval {
     MParticle *instance = [MParticle sharedInstance];
-    instance.backendController = [[MPBackendController alloc] init];
+    instance.backendController = [[MPBackendController_PRIVATE alloc] init];
     NSTimeInterval testInterval = 800.0;
     instance.uploadInterval = testInterval;
 
@@ -1039,7 +1039,7 @@
 #pragma mark Error, Exception, and Crash Handling Tests
 
 - (void)testLogCrash {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     NSString *message = @"crash report";
     NSString *stackTrace = @"stack track from crash report";
@@ -1057,7 +1057,7 @@
 }
 
 - (void)testLogCrashNilMessage {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     NSString *message = nil;
     NSString *stackTrace = @"stack track from crash report";
@@ -1075,7 +1075,7 @@
 }
 
 - (void)testLogCrashNilStackTrace {
-    id mockBackend = OCMClassMock([MPBackendController class]);
+    id mockBackend = OCMClassMock([MPBackendController_PRIVATE class]);
     
     NSString *message = @"crash report";
     NSString *stackTrace = nil;
@@ -1147,8 +1147,8 @@
     [[MParticle sharedInstance] startWithOptions:options1];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
-        XCTAssertEqualObjects(MPKitContainer.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+        XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded1);
        
         // Switch workspace with a new sideloaded kit
         MParticleOptions *options2 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
@@ -1158,15 +1158,15 @@
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options2];
         
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
-            XCTAssertEqualObjects(MPKitContainer.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
+            XCTAssertEqualObjects(MPKitContainer_PRIVATE.registeredKits.anyObject.wrapperInstance, kitTestSideloaded2);
             
             // Switch workspace with no sideloaded kits
             MParticleOptions *options3 = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
             [[MParticle sharedInstance] switchWorkspaceWithOptions:options3];
             
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-                XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+                XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
                 
                 [expectation fulfill];
             });
@@ -1180,20 +1180,20 @@
 - (void)testSwitchWorkspaceKitsNoConfigurations {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"]];
     [MParticle registerExtension:[[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"]];
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
     
     MParticleOptions *options = [MParticleOptions optionsWithKey:@"unit-test-key" secret:@"unit-test-secret"];
     [[MParticle sharedInstance] startWithOptions:options];
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 2);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 2);
             [expectation fulfill];
         });
     });
@@ -1205,7 +1205,7 @@
 - (void)testSwitchWorkspaceKitsWithoutStop {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerNoStop = [[MPKitRegister alloc] initWithName:@"TestKitNoStop" className:@"MPKitTestClassNoStartImmediately"];
     [MParticle registerExtension:registerNoStop];
     
@@ -1214,14 +1214,14 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         registerNoStop.wrapperInstance = [[MPKitTestClassNoStartImmediately alloc] init];
-        [MParticle sharedInstance].kitContainer.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
+        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@42] = [[MPKitConfiguration alloc] init];
         
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
                 
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
             [expectation fulfill];
         });
     });
@@ -1233,7 +1233,7 @@
 - (void)testSwitchWorkspaceKitsWithStop {
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     
-    XCTAssertEqual(MPKitContainer.registeredKits.count, 0);
+    XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 0);
     MPKitRegister *registerWithStop = [[MPKitRegister alloc] initWithName:@"TestKitWithStop" className:@"MPKitTestClassNoStartImmediatelyWithStop"];
     [MParticle registerExtension:registerWithStop];
     
@@ -1242,14 +1242,14 @@
     
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
         registerWithStop.wrapperInstance = [[MPKitTestClassNoStartImmediatelyWithStop alloc] init];
-        [MParticle sharedInstance].kitContainer.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
+        [MParticle sharedInstance].kitContainer_PRIVATE.kitConfigurations[@43] = [[MPKitConfiguration alloc] init];
         
-        XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
+        XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
                 
         [[MParticle sharedInstance] switchWorkspaceWithOptions:options];
        
         dispatch_after(dispatch_time(DISPATCH_TIME_NOW, WORKSPACE_SWITCHING_DELAY), dispatch_get_main_queue(), ^{
-            XCTAssertEqual(MPKitContainer.registeredKits.count, 1);
+            XCTAssertEqual(MPKitContainer_PRIVATE.registeredKits.count, 1);
             [expectation fulfill];
         });
     });

@@ -18,12 +18,13 @@
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
 #import "MPUpload.h"
+#import "mParticle.h"
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong) MPStateMachine *stateMachine;
-@property (nonatomic, strong) MPKitContainer *kitContainer;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) MParticleWebView *webView;
 
 @end
@@ -41,7 +42,7 @@
 @end
 
 #pragma mark - MPKitContainer category for unit tests
-@interface MPKitContainer(Tests)
+@interface MPKitContainer_PRIVATE(Tests)
 
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration;
 
@@ -49,7 +50,7 @@
 
 #pragma mark - MPURLRequestBuilderTests
 @interface MPURLRequestBuilderTests : MPBaseTestCase {
-    MPKitContainer *kitContainer;
+    MPKitContainer_PRIVATE *kitContainer;
 }
 
 @end
@@ -64,19 +65,19 @@
     [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
     [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
 
-    [MParticle sharedInstance].kitContainer = [[MPKitContainer alloc] init];
-    kitContainer = [MParticle sharedInstance].kitContainer;
+    [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
+    kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
 
-    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer registeredKits];
+    NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
         MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"KitTest" className:@"MPKitTestClassNoStartImmediately"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
 
         kitRegister = [[MPKitRegister alloc] initWithName:@"KitSecondTest" className:@"MPKitSecondTestClass"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
 
         kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
-        [MPKitContainer registerKit:kitRegister];
+        [MPKitContainer_PRIVATE registerKit:kitRegister];
 
         NSDictionary *configuration = @{
                                         @"id":@42,
@@ -102,7 +103,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
@@ -129,7 +130,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"User-Agent"];
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
@@ -153,7 +154,7 @@
 - (void)testHMACSha256Encode {
     NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = @"The Quick Brown Fox Jumps Over The Lazy Dog.";
     NSString *referenceEncodedMessage = @"ceefdfeab2fe404a7cbb75f6f6a01443286fab507eb85c213fce3d812e8b615c";
@@ -165,7 +166,7 @@
 - (void)testInvalidHMACSha256Encode {
     NSURL *baseURL = [NSURL URLWithString:@"http://mparticle.com"];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[[MPURL alloc] initWithURL:baseURL defaultURL:baseURL]];
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *message = nil;
     NSString *encodedMessage = [urlRequestBuilder hmacSha256Encode:message key:stateMachine.apiKey];
@@ -181,7 +182,7 @@
 }
 
 - (void)testURLRequestComposition {
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
     
@@ -249,7 +250,7 @@
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
     [[MPIUserDefaults standardUserDefaults] setConfiguration:responseConfiguration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
 
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPURLRequestBuilder *urlRequestBuilder = [MPURLRequestBuilder newBuilderWithURL:[networkCommunication configURL] message:nil httpMethod:@"GET"];
     NSMutableURLRequest *asyncURLRequest = [urlRequestBuilder build];
 
@@ -375,13 +376,13 @@
     id mockWebView = OCMPartialMock(webview);
     [[[mockWebView stub] andReturn:agent] userAgent];
     
-    id mockKitContainer = OCMClassMock([MPKitContainer class]);
+    id mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSNumber *mockKitId = @42;
     [[[mockKitContainer stub] andReturn:@[mockKitId]] configuredKitsRegistry];
     
     id mockMParticle = OCMPartialMock(sharedInstance);
     [[[mockMParticle stub] andReturn:mockWebView] webView];
-    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer];
+    [[[mockMParticle stub] andReturn:mockKitContainer] kitContainer_PRIVATE];
     
     NSDictionary *configuration1 = @{
                                      @"id":@42,
@@ -391,12 +392,12 @@
                                      };
     
     NSArray *kitConfigs = @[configuration1];
-    [[MParticle sharedInstance].kitContainer configureKits:nil];
-    [[MParticle sharedInstance].kitContainer configureKits:kitConfigs];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:nil];
+    [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:kitConfigs];
     
     XCTAssertEqual([MPURLRequestBuilder requestTimeout], 10, @"Should have been equal.");
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     MPMessage *message = [[MPMessage alloc] initWithSession:nil messageType:@"e" messageInfo:@{@"key":@"value"} uploadStatus:MPUploadStatusBatch UUID:[[NSUUID UUID] UUIDString] timestamp:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId] dataPlanId:@"test" dataPlanVersion:@(1)];
     MPUpload *upload = [[MPUpload alloc] initWithSessionId:nil uploadDictionary:@{} dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettings]];
@@ -434,7 +435,7 @@
 }
 
 - (void)testSignatureRelativePath {
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     MPNetworkOptions *networkOptions = [[MPNetworkOptions alloc] init];
     MParticle *sharedInstance = [MParticle sharedInstance];
     id mockMParticle = OCMPartialMock(sharedInstance);

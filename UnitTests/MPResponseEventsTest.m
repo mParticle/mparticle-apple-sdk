@@ -5,10 +5,11 @@
 #import "MPBaseTestCase.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
+#import "MPIConstants.h"
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -19,7 +20,7 @@
 @implementation MPResponseEventsTest
 
 - (void)testParseConfiguration {
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSNumber *originalMpId = @10;
     NSString *originalDas = @"aaaaaaaaa";
@@ -59,7 +60,7 @@
                                        kMPRemoteConfigUniqueIdentifierKey: newDas
                                        }};
     
-    [MPNetworkCommunication parseConfiguration:response];
+    [MPNetworkCommunication_PRIVATE parseConfiguration:response];
     XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
