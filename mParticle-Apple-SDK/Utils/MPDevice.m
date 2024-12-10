@@ -523,7 +523,7 @@ int main(int argc, char *argv[]);
     
     NSData *pushNotificationToken;
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        pushNotificationToken = [MPNotificationController deviceToken];
+        pushNotificationToken = [MPNotificationController_PRIVATE deviceToken];
         if (pushNotificationToken) {
             NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:pushNotificationToken];
             if (tokenString) {

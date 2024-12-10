@@ -43,7 +43,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 - (NSArray<MParticleUser *> *)sortedUserArrayByLastSeen:(NSMutableArray<MParticleUser *> *)userArray;
 @end
     
-@interface MPNetworkCommunication ()
+@interface MPNetworkCommunication_PRIVATE ()
 - (void)modifyWithIdentityChanges:(NSArray *)identityChanges blockOtherRequests:(BOOL)blockOtherRequests completion:(nullable MPIdentityApiManagerModifyCallback)completion;
 - (void)identityApiRequestWithURL:(NSURL*)url identityRequest:(MPIdentityHTTPBaseRequest *_Nonnull)identityRequest blockOtherRequests: (BOOL) blockOtherRequests completion:(nullable MPIdentityApiManagerCallback)completion;
 @end
@@ -502,7 +502,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testNoEmptyModifyRequests {
-    MPNetworkCommunication *network = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *network = [[MPNetworkCommunication_PRIVATE alloc] init];
     
     id partialMock = OCMPartialMock(network);
     

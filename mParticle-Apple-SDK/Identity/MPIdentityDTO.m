@@ -73,7 +73,7 @@
         
 #if TARGET_OS_IOS == 1
         if (![MPStateMachine_PRIVATE isAppExtension]) {
-            NSData *deviceTokenData = [MPNotificationController deviceToken];
+            NSData *deviceTokenData = [MPNotificationController_PRIVATE deviceToken];
             if (deviceTokenData) {
                 NSString *deviceTokenString = [MPIUserDefaults stringFromDeviceToken:deviceTokenData];
                 if (deviceTokenString && [deviceTokenString length] > 0) {

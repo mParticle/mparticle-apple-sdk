@@ -10,7 +10,6 @@
 #import "MPKitActivity.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"
-#import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPSession.h"
 #import "MPIUserDefaults.h"
@@ -770,7 +769,7 @@ static NSString *const kMPStateKey = @"state";
 #if TARGET_OS_IOS == 1
 - (NSData *)pushNotificationToken {
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        return [MPNotificationController deviceToken];
+        return [MPNotificationController_PRIVATE deviceToken];
     } else {
         return nil;
     }
@@ -778,7 +777,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)setPushNotificationToken:(NSData *)pushNotificationToken {
     if (![MPStateMachine_PRIVATE isAppExtension]) {
-        [MPNotificationController setDeviceToken:pushNotificationToken];
+        [MPNotificationController_PRIVATE setDeviceToken:pushNotificationToken];
     }
 }
 

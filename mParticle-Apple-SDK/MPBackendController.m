@@ -96,9 +96,9 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 - (instancetype)initWithDelegate:(id<MPBackendControllerDelegate>)delegate {
     self = [super init];
     if (self) {
-        _networkCommunication = [[MPNetworkCommunication alloc] init];
+        _networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
 #if TARGET_OS_IOS == 1
-        _notificationController = [[MPNotificationController alloc] init];
+        _notificationController = [[MPNotificationController_PRIVATE alloc] init];
 #endif
         _sessionTimeout = DEFAULT_SESSION_TIMEOUT;
         nextCleanUpTime = [[NSDate date] timeIntervalSince1970];
@@ -1875,11 +1875,11 @@ static BOOL skipNextUpload = NO;
 }
 #endif
 
-- (MPNotificationController *)notificationController {
+- (MPNotificationController_PRIVATE *)notificationController {
     return _notificationController;
 }
 
-- (void)setNotificationController:(MPNotificationController *)notificationController {
+- (void)setNotificationController:(MPNotificationController_PRIVATE *)notificationController {
     _notificationController = notificationController;
 }
 
@@ -1935,7 +1935,7 @@ static BOOL skipNextUpload = NO;
                                               kMPPushMessageTypeKey:userNotification.type}
                                             mutableCopy];
         
-        NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController deviceToken]];
+        NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:[MPNotificationController_PRIVATE deviceToken]];
         if (tokenString) {
             messageInfo[kMPDeviceTokenKey] = tokenString;
         }

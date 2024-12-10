@@ -1,7 +1,7 @@
 #import "MPEnums.h"
 
 @class MPSession;
-@class MPNotificationController;
+@class MPNotificationController_PRIVATE;
 @class MPConsumerInfo;
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE

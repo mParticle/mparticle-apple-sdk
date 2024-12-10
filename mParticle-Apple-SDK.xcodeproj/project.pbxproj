@@ -921,7 +921,6 @@
 				53A79AAE29CDFB1E00E7489F /* MPConnector.m */,
 				53A79AAF29CDFB1E00E7489F /* MPConnectorProtocol.h */,
 				53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */,
-				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79AB229CDFB1E00E7489F /* MPURLRequestBuilder.m */,
 				53A79AB329CDFB1E00E7489F /* MPURL.h */,
 				53A79AB429CDFB1E00E7489F /* MPNetworkPerformance.m */,
@@ -1047,7 +1046,6 @@
 		53A79B3329CDFB1F00E7489F /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
-				53A79B3429CDFB1F00E7489F /* MPNotificationController.h */,
 				53A79B3529CDFB1F00E7489F /* MPNotificationController.m */,
 			);
 			path = Notifications;
@@ -1171,7 +1169,9 @@
 				53A79B0629CDFB1F00E7489F /* MPStateMachine.h */,
 				53A79C4429CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h */,
 				53A79B5B29CDFB1F00E7489F /* MPKitContainer.h */,
+				53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */,
 				53A79B2429CDFB1F00E7489F /* MPApplication.h */,
+				53A79B3429CDFB1F00E7489F /* MPNotificationController.h */,
 				53A79AA329CDFB1E00E7489F /* MPBackendController.h */,
 			);
 			path = Include;
