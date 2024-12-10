@@ -21,7 +21,6 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPKitContainer.h"
-#import "MPUserAttributeChange.h"
 #import "MPURLRequestBuilder.h"
 #import "MPListenerController.h"
 #import "MParticleWebView.h"

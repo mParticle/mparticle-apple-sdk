@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "MPUserAttributeChange.h"
+#import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
 @interface MPUserAttributeChangeTests : MPBaseTestCase
@@ -34,7 +34,7 @@
     XCTAssertNil(userAttributeChange.timestamp);
     XCTAssertEqualObjects(userAttributeChange.userAttributes, userAttributes);
     XCTAssertNil(userAttributeChange.value);
-    XCTAssertEqualObjects(userAttributeChange.valueToLog, [NSNull null]);
+    XCTAssertNil(userAttributeChange.valueToLog);
     XCTAssertTrue(userAttributeChange.changed);
     XCTAssertTrue(userAttributeChange.deleted);
     XCTAssertTrue(userAttributeChange.isArray);
