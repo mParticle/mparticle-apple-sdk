@@ -1,5 +1,6 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
+#import "mParticle.h"
 #import "MPURLRequestBuilder.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
@@ -14,18 +15,18 @@
 #import "MPMessage.h"
 #import "MPBaseTestCase.h"
 #import "MPKitConfiguration.h"
-#import "MParticleWebView.h"
 #import "MPExtensionProtocol.h"
 #import "MPURL.h"
 #import "MPUpload.h"
-#import "mParticle.h"
+#import "MParticleSwift.h"
+
 
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong) MParticleWebView *webView;
+@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
 
 @end
 
@@ -370,7 +371,7 @@
 
 - (void)testEventRequest {
     MParticle *sharedInstance = [MParticle sharedInstance];
-    MParticleWebView *webview = sharedInstance.webView;
+    MParticleWebView_PRIVATE *webview = sharedInstance.webView;
     NSString *agent = @"Example resolved agent";
     
     id mockWebView = OCMPartialMock(webview);

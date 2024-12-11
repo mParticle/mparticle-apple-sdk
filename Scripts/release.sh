@@ -7,6 +7,7 @@ NOTES="$2"
 
 # Update constant in codebase
 sed -i '' 's/NSString \*const kMParticleSDKVersion = @".*/NSString *const kMParticleSDKVersion = @"'"$VERSION"'";/' mParticle-Apple-SDK/MPIConstants.m
+sed -i '' 's/let kMParticleSDKVersion = ".*/let kMParticleSDKVersion = "'"$VERSION"'"/' mParticle-Apple-SDK/MPConstants.swift
 
 # Update framework plist file
 /usr/libexec/PlistBuddy -c "Set CFBundleShortVersionString $VERSION" Framework/Info.plist
