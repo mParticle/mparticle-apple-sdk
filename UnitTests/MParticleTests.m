@@ -6,7 +6,6 @@
 #import "MPSession.h"
 #import "MPBackendController.h"
 #import "MPURLRequestBuilder.h"
-#import "MParticleWebView.h"
 #import "MPPersistenceController.h"
 #import "MPIUserDefaults.h"
 #import "MPURL.h"
@@ -26,7 +25,7 @@
 @property (nonatomic, strong) MParticleOptions *options;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
-@property (nonatomic, strong) MParticleWebView *webView;
+@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
 @end
 
 @interface MParticleUser ()
@@ -980,7 +979,7 @@
 }
 
 - (void)testUserAgentDefault {
-    id mockWebView = OCMClassMock([MParticleWebView class]);
+    id mockWebView = OCMClassMock([MParticleWebView_PRIVATE class]);
 #if TARGET_OS_IOS == 1
     [[[mockWebView stub] andReturn:@"Example resolved agent"] userAgent];
 #else
@@ -1003,7 +1002,7 @@
 
 - (void)testUserAgentCustom {
     NSString *customAgent = @"Foo 1.2.3 Like Bar";
-    id mockWebView = OCMClassMock([MParticleWebView class]);
+    id mockWebView = OCMClassMock([MParticleWebView_PRIVATE class]);
     [[[mockWebView stub] andReturn:customAgent] userAgent];
     id mockMParticle = OCMPartialMock([MParticle sharedInstance]);
     [[[mockMParticle stub] andReturn:mockWebView] webView];

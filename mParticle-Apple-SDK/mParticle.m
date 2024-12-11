@@ -14,11 +14,10 @@
 #import "MPSession.h"
 #import "MPIUserDefaults.h"
 #import "MPIdentityApi.h"
-#import "MParticleWebView.h"
 #import "MPDataPlanFilter.h"
-#import "MParticleSwift.h"
 #import "MPUpload.h"
 #import "MPKitContainer.h"
+#import "MParticleSwift.h"
 
 static dispatch_queue_t messageQueue = nil;
 static void *messageQueueKey = "mparticle message queue key";
@@ -64,7 +63,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
 @property (nonatomic, readwrite, nullable) MPNetworkOptions *networkOptions;
-@property (nonatomic, strong) MParticleWebView *webView;
+@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
@@ -343,7 +342,7 @@ static NSString *const kMPStateKey = @"state";
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
-    _webView = [[MParticleWebView alloc] init];
+    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue];
     
     return self;
 }
@@ -523,7 +522,7 @@ static NSString *const kMPStateKey = @"state";
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:options];
     
-    [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultAgentOverride:options.defaultAgent];
+    [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
     
     _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
     

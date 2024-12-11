@@ -23,7 +23,6 @@
 #import "MPKitContainer.h"
 #import "MPURLRequestBuilder.h"
 #import "MPListenerController.h"
-#import "MParticleWebView.h"
 #import "MPDevice.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
@@ -54,7 +53,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
 @property (nonatomic, strong) MPPersistenceController *persistenceController;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong) MParticleWebView *webView;
+@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 + (dispatch_queue_t)messageQueue;
