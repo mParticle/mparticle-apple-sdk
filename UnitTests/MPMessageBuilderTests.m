@@ -1,6 +1,7 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MPMessageBuilder.h"
+#import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPSession.h"
 #import "MPMessage.h"
@@ -13,9 +14,8 @@
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPUserAttributeChange.h"
+#import "MParticleSwift.h"
 #import "MPPersistenceController.h"
-#import "mParticle.h"
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MParticleReachability.h"
