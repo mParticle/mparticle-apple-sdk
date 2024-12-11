@@ -7,16 +7,16 @@
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
 #import "MPApplication.h"
-#import "MParticleWebView.h"
 #import "MPURL.h"
 #import "mParticle.h"
+#import "MParticleSwift.h"
 
 static NSDateFormatter *RFC1123DateFormatter;
 
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-@property (nonatomic, strong, readonly) MParticleWebView *webView;
+@property (nonatomic, strong, readonly) MParticleWebView_PRIVATE *webView;
 
 @end
     
@@ -81,7 +81,7 @@ static NSDateFormatter *RFC1123DateFormatter;
 - (NSString *)userAgent {
     BOOL isConfig = [[_url.defaultURL relativePath] rangeOfString:@"/config"].location != NSNotFound;
     if (isConfig) {
-        return MParticle.sharedInstance.webView.originalDefaultAgent;
+        return MParticle.sharedInstance.webView.originalDefaultUserAgent;
     }
     return MParticle.sharedInstance.webView.userAgent;
 }

@@ -1,41 +1,29 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
-#import "MParticleWebView.h"
 #import "mParticle.h"
 #import "MPApplication.h"
+#import "MParticleSwift.h"
 #import <UIKit/UIKit.h>
 
-@interface MPApplication_PRIVATE ()
-+ (void)setMockApplication:(id)mockApplication;
-@end
-
-@interface MParticleWebView ()
-
-- (void)evaluateAgent;
-- (BOOL)canAndShouldCollect;
-
+@interface MParticleWebView_PRIVATE ()
 @property (nonatomic) NSDate *initializedDate;
-@property (nonatomic) NSString *resolvedAgent;
+@property (nonatomic) NSString *resolvedUserAgent;
 @property (nonatomic, assign) BOOL isCollecting;
-@property (nonatomic, assign) int retryCount;
-
 #if TARGET_OS_IOS == 1
 @property (nonatomic) WKWebView *webView;
 #endif
-
 @end
 
 @interface MParticleWebViewTests : XCTestCase
-
-@property (nonatomic, strong) MParticleWebView *webView;
-
+@property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
 @end
 
 @implementation MParticleWebViewTests
 
 - (void)setUp {
     // Put setup code here. This method is called before the invocation of each test method in the class.
-    _webView = [[MParticleWebView alloc] init];
+    dispatch_queue_t messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
+    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue];
 }
 
 - (void)tearDown {
@@ -48,62 +36,51 @@
 }
 
 - (void)testUserAgentCustom {
-    [_webView startWithCustomUserAgent:@"Test User Agent" shouldCollect:NO defaultAgentOverride:nil];
+    [_webView startWithCustomUserAgent:@"Test User Agent" shouldCollect:NO defaultUserAgentOverride:nil];
     XCTAssertEqualObjects(_webView.userAgent, @"Test User Agent");
 }
 
 - (void)testUserAgentDisabled {
-    [_webView startWithCustomUserAgent:nil shouldCollect:NO defaultAgentOverride:nil];
+    [_webView startWithCustomUserAgent:nil shouldCollect:NO defaultUserAgentOverride:nil];
     NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
     XCTAssertEqualObjects(_webView.userAgent, defaultAgent);
 }
 
 - (void)testUserAgentDefaultOverride {
-    [_webView startWithCustomUserAgent:nil shouldCollect:NO defaultAgentOverride:@"Test User Agent"];
+    [_webView startWithCustomUserAgent:nil shouldCollect:NO defaultUserAgentOverride:@"Test User Agent"];
     NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
     XCTAssertNotEqualObjects(_webView.userAgent, defaultAgent);
     XCTAssertEqualObjects(_webView.userAgent, @"Test User Agent");
 }
 
-- (void)testUserAgentCapture {
-    MParticleWebView *mockWebView = OCMPartialMock(_webView);
-#if TARGET_OS_IOS == 1
-    [[(id)mockWebView expect] evaluateAgent];
-#else
-    [[(id)mockWebView reject] evaluateAgent];
-#endif
-    [mockWebView startWithCustomUserAgent:nil shouldCollect:YES defaultAgentOverride:nil];
-    [(id)mockWebView verify];
-}
-
 - (void)testShouldCollectResolved {
-    _webView.resolvedAgent = @"Test User Agent";
+    _webView.resolvedUserAgent = @"Test User Agent";
     XCTAssertFalse([_webView shouldDelayUpload:5]);
 }
 
 - (void)testShouldCollectPending {
-    _webView.resolvedAgent = nil;
+    _webView.resolvedUserAgent = nil;
     _webView.isCollecting = YES;
     _webView.initializedDate = [NSDate date];
     XCTAssertTrue([_webView shouldDelayUpload:5]);
 }
 
 - (void)testShouldCollectNoDate {
-    _webView.resolvedAgent = nil;
+    _webView.resolvedUserAgent = nil;
     _webView.isCollecting = YES;
     _webView.initializedDate = nil;
     XCTAssertFalse([_webView shouldDelayUpload:5]);
 }
 
 - (void)testShouldCollectTooLong {
-    _webView.resolvedAgent = nil;
+    _webView.resolvedUserAgent = nil;
     _webView.isCollecting = YES;
     _webView.initializedDate = [NSDate dateWithTimeIntervalSinceNow:-6];
     XCTAssertFalse([_webView shouldDelayUpload:5]);
 }
 
 - (void)testShouldCollectTimeLeft {
-    _webView.resolvedAgent = nil;
+    _webView.resolvedUserAgent = nil;
     _webView.isCollecting = YES;
     _webView.initializedDate = [NSDate dateWithTimeIntervalSinceNow:-4];
     XCTAssertTrue([_webView shouldDelayUpload:5]);
@@ -111,21 +88,7 @@
 
 - (void)testOriginalDefaultAgent {
     NSString *defaultAgent = [NSString stringWithFormat:@"mParticle Apple SDK/%@", MParticle.sharedInstance.version];
-    XCTAssertEqualObjects(_webView.originalDefaultAgent, defaultAgent);
-}
-
-- (void)testBackgroundCollection {
-    id mockApplication = OCMClassMock([UIApplication class]);
-    OCMStub([mockApplication applicationState]).andReturn(UIApplicationStateBackground);
-    [MPApplication_PRIVATE setMockApplication:mockApplication];
-    MParticleWebView *mockWebView = OCMPartialMock(_webView);
-#if TARGET_OS_IOS == 1
-    [[(id)mockWebView expect] evaluateAgent];
-#else
-    [[(id)mockWebView reject] evaluateAgent];
-#endif
-    [mockWebView startWithCustomUserAgent:nil shouldCollect:YES defaultAgentOverride:nil];
-    [(id)mockWebView verify];
+    XCTAssertEqualObjects(_webView.originalDefaultUserAgent, defaultAgent);
 }
 
 @end
