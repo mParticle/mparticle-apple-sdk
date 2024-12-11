@@ -8,7 +8,6 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPUserAttributeChange.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
 #import "mParticle.h"

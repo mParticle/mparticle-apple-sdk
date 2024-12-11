@@ -40,6 +40,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @class MPSideloadedKit;
+@class MPKitContainer;
 
 /**
  An SDK session.
