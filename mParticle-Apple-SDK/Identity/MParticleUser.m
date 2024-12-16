@@ -10,6 +10,7 @@
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
 #import "MPKitContainer.h"
+#import "MParticleSwift.h"
 
 @interface MParticleUser ()
 
