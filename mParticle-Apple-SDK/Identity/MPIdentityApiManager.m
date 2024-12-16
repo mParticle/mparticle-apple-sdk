@@ -8,7 +8,7 @@
 #import "MPNetworkCommunication.h"
 #import "MPBackendController.h"
 #import "mParticle.h"
-#import "MPListenerController.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 

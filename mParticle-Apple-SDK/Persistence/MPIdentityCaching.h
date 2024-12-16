@@ -6,8 +6,8 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "MPListenerProtocol.h"
 #import "MPIdentityDTO.h"
+#import "MParticleSwift.h"
 
 @interface MPIdentityCachedResponse : NSObject
 @property (nonnull, nonatomic, readonly) NSData *bodyData;
