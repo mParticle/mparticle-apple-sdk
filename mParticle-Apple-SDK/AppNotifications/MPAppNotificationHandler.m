@@ -1,5 +1,4 @@
 #import "MPAppNotificationHandler.h"
-#import "MPLaunchInfo.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
@@ -9,6 +8,7 @@
 #import "MPForwardQueueParameters.h"
 #import "MPKitAPI.h"
 #import "MPApplication.h"
+#import "MParticleSwift.h"
 #import "mParticle.h"
 
 #if TARGET_OS_IOS == 1
