@@ -12,7 +12,6 @@
 #import "MPApplication.h"
 #import "mParticle.h"
 #import "MParticleSwift.h"
-#import "MPLaunchInfo.h"
 
 NSString *const launchInfoStringFormat = @"%@%@%@=%@";
 NSString *const kMPHorizontalAccuracyKey = @"acc";

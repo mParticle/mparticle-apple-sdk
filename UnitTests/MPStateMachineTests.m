@@ -9,7 +9,7 @@
 #import "MPBaseTestCase.h"
 #import "MPStateMachine.h"
 #import "MPKitContainer.h"
-#import "MPLaunchInfo.h"
+#import "MParticleSwift.h"
 
 #pragma mark - MPStateMachine category
 @interface MPStateMachine_PRIVATE(Tests)

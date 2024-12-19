@@ -26,7 +26,6 @@
 #import "MPDevice.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
-#import "MPLaunchInfo.h"
 #import "MPNetworkCommunication.h"
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"

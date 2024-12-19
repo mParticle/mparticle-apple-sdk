@@ -19,7 +19,6 @@
 #import "MPBaseTestCase.h"
 #import "MPIUserDefaults.h"
 #import "MPDevice.h"
-#import "MPLaunchInfo.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>
