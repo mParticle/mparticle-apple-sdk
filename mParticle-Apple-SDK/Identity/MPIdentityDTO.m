@@ -8,11 +8,11 @@
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
-#import "MPIUserDefaults.h"
+#import "mParticleSwift.h"
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
 @end
@@ -54,9 +54,9 @@
     if (self) {
         _knownIdentities = [[MPIdentityHTTPIdentities alloc] initWithIdentities:apiRequest.identities];
         
-        NSNumber *mpid = [MPPersistenceController mpId];
+        NSNumber *mpid = [MPPersistenceController_PRIVATE mpId];
         if (mpid.longLongValue != 0) {
-            _previousMPID = [MPPersistenceController mpId].stringValue;
+            _previousMPID = [MPPersistenceController_PRIVATE mpId].stringValue;
         }
         
         MPDevice *device = [[MPDevice alloc] init];
@@ -75,7 +75,7 @@
         if (![MPStateMachine_PRIVATE isAppExtension]) {
             NSData *deviceTokenData = [MPNotificationController_PRIVATE deviceToken];
             if (deviceTokenData) {
-                NSString *deviceTokenString = [MPIUserDefaults stringFromDeviceToken:deviceTokenData];
+                NSString *deviceTokenString = [MPUserDefaults stringFromDeviceToken:deviceTokenData];
                 if (deviceTokenString && [deviceTokenString length] > 0) {
                     _knownIdentities.pushToken = deviceTokenString;
                 }

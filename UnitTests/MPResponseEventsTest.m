@@ -47,10 +47,10 @@
     NSString *newDas = @"abcd1234";
 
     stateMachine.consumerInfo.uniqueIdentifier = originalDas;
-    [MPPersistenceController setMpid:originalMpId];
+    [MPPersistenceController_PRIVATE setMpid:originalMpId];
     stateMachine.consumerInfo.cookies = originalCookies;
     
-    XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
+    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
     
@@ -61,7 +61,7 @@
                                        }};
     
     [MPNetworkCommunication_PRIVATE parseConfiguration:response];
-    XCTAssertEqualObjects([MPPersistenceController mpId], originalMpId);
+    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], originalMpId);
     XCTAssertEqualObjects(stateMachine.consumerInfo.uniqueIdentifier, originalDas);
     XCTAssertTrue(areEqual(stateMachine.consumerInfo.cookiesDictionaryRepresentation, originalCookies));
 }

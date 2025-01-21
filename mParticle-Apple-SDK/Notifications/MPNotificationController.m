@@ -1,9 +1,9 @@
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
-#import "MPIUserDefaults.h"
 #import "mParticle.h"
 #import "MPNetworkCommunication.h"
+#import "MParticleSwift.h"
 
 @interface MPNotificationController_PRIVATE() {
 }
@@ -13,6 +13,7 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
@@ -37,7 +38,7 @@ static NSData *deviceToken = nil;
 #pragma mark Public static methods
 + (NSData *)deviceToken {
 #ifndef MP_UNIT_TESTING
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     deviceToken = userDefaults[kMPDeviceTokenKey];
 #else
     deviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
@@ -62,12 +63,12 @@ static NSData *deviceToken = nil;
         NSString *oldTokenString = nil;
         if (newDeviceToken) {
             deviceTokenDictionary[kMPRemoteNotificationDeviceTokenKey] = newDeviceToken;
-            newTokenString = [MPIUserDefaults stringFromDeviceToken:newDeviceToken];
+            newTokenString = [MPUserDefaults stringFromDeviceToken:newDeviceToken];
         }
         
         if (oldDeviceToken) {
             deviceTokenDictionary[kMPRemoteNotificationOldDeviceTokenKey] = oldDeviceToken;
-            oldTokenString = [MPIUserDefaults stringFromDeviceToken:oldDeviceToken];
+            oldTokenString = [MPUserDefaults stringFromDeviceToken:oldDeviceToken];
         }
 
         [[NSNotificationCenter defaultCenter] postNotificationName:kMPRemoteNotificationDeviceTokenNotification
@@ -81,7 +82,7 @@ static NSData *deviceToken = nil;
         }
         
 #ifndef MP_UNIT_TESTING
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
         userDefaults[kMPDeviceTokenKey] = deviceToken;
         [userDefaults synchronize];
 #endif

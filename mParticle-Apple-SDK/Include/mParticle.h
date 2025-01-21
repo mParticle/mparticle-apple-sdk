@@ -25,6 +25,7 @@
 #import "MPApplication.h"
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
+#import "MPPersistenceController.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE
@@ -1235,6 +1236,11 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Internal use only. Used by our wrapper SDKs to identify themselves during initialization.
  */
 + (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
+
+/**
+ Internal use only. Used by our SDK to determine if configuration needs refreshed.
+ */
++ (BOOL)isOlderThanConfigMaxAgeSeconds;
 
 @end
 

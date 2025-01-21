@@ -1,7 +1,6 @@
 #import "MPDatabaseMigrationController.h"
 #import <sqlite3.h>
 #import "MPSession.h"
-#import "MPIUserDefaults.h"
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPPersistenceController.h"
@@ -9,10 +8,11 @@
 #import "MPILogger.h"
 #import "MPStateMachine.h"
 #import "MPUpload.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 
@@ -87,11 +87,12 @@
 
 - (void)migrateUserDefaultsWithVersion:(NSNumber *)oldVersion {
     NSInteger oldVersionValue = [oldVersion integerValue];
+    MPUserDefaults *defaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (oldVersionValue < 26) {
-        [[MPIUserDefaults standardUserDefaults] migrateUserKeysWithUserId:[MPPersistenceController mpId]];
+        [defaults migrateUserKeysWithUserId:[MPPersistenceController_PRIVATE mpId]];
     }
     if (oldVersionValue < 28) {
-        [[MPIUserDefaults standardUserDefaults] migrateFirstLastSeenUsers];
+        [defaults migrateFirstLastSeenUsers];
     }
 }
 
@@ -150,7 +151,7 @@
         NSTimeInterval length = 0;
         NSNumber *mpId;
         if (oldVersionValue < 26) {
-            mpId = [MPPersistenceController mpId];
+            mpId = [MPPersistenceController_PRIVATE mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 10));
         }
@@ -233,7 +234,7 @@
         }
         
         if (oldVersionValue < 26) {
-            mpId = [MPPersistenceController mpId];
+            mpId = [MPPersistenceController_PRIVATE mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }
@@ -298,7 +299,7 @@
     sqlite3_prepare_v2(oldDatabase, selectStatement, -1, &selectStatementHandle, NULL);
     sqlite3_prepare_v2(newDatabase, insertStatement, -1, &insertStatementHandle, NULL);
     
-    MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettings];
+    MPUploadSettings *uploadSettings = [MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions];
     while (sqlite3_step(selectStatementHandle) == SQLITE_ROW) {
         uuid = (const char *)sqlite3_column_text(selectStatementHandle, 0);
         sqlite3_bind_text(insertStatementHandle, 1, uuid, -1, SQLITE_TRANSIENT); // uuid
@@ -395,7 +396,7 @@
         sqlite3_bind_int(insertStatementHandle, 1, sqlite3_column_int(selectStatementHandle, 0)); // _id
         sqlite3_bind_blob(insertStatementHandle, 2, sqlite3_column_blob(selectStatementHandle, 1), sqlite3_column_bytes(selectStatementHandle, 1), SQLITE_TRANSIENT); // forwarding_data
         if (oldVersionValue < 26) {
-            mpId = [MPPersistenceController mpId];
+            mpId = [MPPersistenceController_PRIVATE mpId];
         }
         else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 2));
@@ -464,7 +465,7 @@
         sqlite3_bind_text(insertStatementHandle, 6, (const char *)sqlite3_column_text(selectStatementHandle, 5), -1, SQLITE_TRANSIENT); // name
         if (oldVersionValue < 26) {
             mpId = @(userId);
-            [MPPersistenceController setMpid:mpId];
+            [MPPersistenceController_PRIVATE setMpid:mpId];
         } else {
             mpId = @(sqlite3_column_int64(selectStatementHandle, 6));
         }

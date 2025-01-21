@@ -92,7 +92,7 @@
 
 - (void)setUp {
     [super setUp];
-    [MPPersistenceController setMpid:@1];
+    [MPPersistenceController_PRIVATE setMpid:@1];
 }
 
 - (void)testConfiguration {

@@ -6,10 +6,10 @@
 #import "MPILogger.h"
 #import "mParticle.h"
 #import "MPPersistenceController.h"
-#import "MPIUserDefaults.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
 #import "MPKitContainer.h"
+#import "mParticleSwift.h"
 
 @interface MParticleUser ()
 
@@ -21,7 +21,7 @@
 
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 
@@ -46,7 +46,7 @@
 }
 
 - (NSDate *)firstSeen {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *firstSeenMs = [userDefaults mpObjectForKey:kMPFirstSeenUser userId:self.userId];
     return [NSDate dateWithTimeIntervalSince1970:firstSeenMs.doubleValue/1000.0];
 }
@@ -55,13 +55,13 @@
     if ([MParticle.sharedInstance.identity.currentUser.userId isEqual:self.userId]) {
         return [NSDate date];
     }
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *lastSeenMs = [userDefaults mpObjectForKey:kMPLastSeenUser userId:self.userId];
     return [NSDate dateWithTimeIntervalSince1970:lastSeenMs.doubleValue/1000.0];
 }
 
 - (NSDictionary*) identities {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSArray *userIdentityArray = [userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:_userId];
     
     NSMutableDictionary *userIdentities = [NSMutableDictionary dictionary];
@@ -159,8 +159,8 @@
         return foundMatch;
     };
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController mpId]] mutableCopy];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    NSMutableArray *identities = [[userDefaults mpObjectForKey:kMPUserIdentityArrayKey userId:[MPPersistenceController_PRIVATE mpId]] mutableCopy];
     if (!identities) {
         identities = [[NSMutableArray alloc] init];
     }
@@ -449,7 +449,7 @@
 
 - (void)setConsentState:(MPConsentState *)state {
     
-    [MPPersistenceController setConsentState:state forMpid:self.userId];
+    [MPPersistenceController_PRIVATE setConsentState:state forMpid:self.userId];
     
     NSArray<NSDictionary *> *kitConfig = [[MParticle sharedInstance].kitContainer_PRIVATE.originalConfig copy];
     if (kitConfig) {
@@ -469,7 +469,7 @@
 }
 
 - (nullable MPConsentState *)consentState {
-    return [MPPersistenceController consentStateForMpid:self.userId];
+    return [MPPersistenceController_PRIVATE consentStateForMpid:self.userId];
 }
 
 

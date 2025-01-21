@@ -12,7 +12,6 @@
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
 #import "MPPersistenceController.h"
-#import "MPIUserDefaults.h"
 #import "MParticleSwift.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
@@ -59,7 +58,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
 
@@ -278,13 +277,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     } else {
         identityHost = [MParticle sharedInstance].networkOptions.identityHost ?: self.defaultIdentityHost;
     }
-    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController mpId],  pathComponent];
+    NSString *urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, self.defaultIdentityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId],  pathComponent];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     if ([MParticle sharedInstance].networkOptions.overridesIdentitySubdirectory) {
-        urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController mpId], pathComponent];
+        urlString = [NSString stringWithFormat:modifyURLFormatOverride, kMPURLScheme, identityHost, [MPPersistenceController_PRIVATE mpId], pathComponent];
     } else {
-        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController mpId], pathComponent];
+        urlString = [NSString stringWithFormat:modifyURLFormat, kMPURLScheme, identityHost, kMPIdentityVersion, [MPPersistenceController_PRIVATE mpId], pathComponent];
     }
 
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
@@ -415,8 +414,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(void(^)(BOOL success))completionHandler {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    BOOL shouldSendRequest = [userDefaults isConfigurationExpired] || [userDefaults isConfigurationParametersOutdated];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    BOOL shouldSendRequest = [userDefaults isConfigurationExpired];
     
     if (!shouldSendRequest) {
         completionHandler(YES);
@@ -459,8 +458,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPILogVerbose(@"Config Response Code: %ld, Execution Time: %.2fms", (long)responseCode, ([[NSDate date] timeIntervalSince1970] - start) * 1000.0);
         
     if (responseCode == HTTPStatusCodeNotModified) {
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-        [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];
+        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+        [userDefaults setConfiguration:[userDefaults getConfiguration] eTag:userDefaults[kMPHTTPETagHeaderKey] requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
         
         completionHandler(YES);
         [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:[NSDictionary dictionary] responseCode:responseCode];
@@ -498,8 +497,8 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
             MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configurationDictionary dataReceivedFromServer:YES stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
             MPILogDebug(@"MPResponseConfig init: %@", responseConfig.description);
 
-            MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-            [userDefaults setConfiguration:configurationDictionary eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString maxAge:maxAge];
+            MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+            [userDefaults setConfiguration:configurationDictionary eTag:eTag requestTimestamp:[[NSDate date] timeIntervalSince1970] currentAge:ageString.doubleValue maxAge:maxAge];
         }
         
         completionHandler(success);
@@ -950,7 +949,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!userDefaults[kMPATT] && identifyRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
@@ -960,7 +959,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)login:(MPIdentityApiRequest *_Nullable)loginRequest completion:(nullable MPIdentityApiManagerCallback)completion {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!userDefaults[kMPATT] && loginRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
@@ -971,7 +970,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 - (void)logout:(MPIdentityApiRequest *_Nullable)logoutRequest completion:(nullable
                                                                           MPIdentityApiManagerCallback)completion {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!userDefaults[kMPATT] && logoutRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
@@ -981,7 +980,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 }
 
 - (void)modify:(MPIdentityApiRequest *_Nonnull)modifyRequest completion:(nullable MPIdentityApiManagerModifyCallback)completion {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!userDefaults[kMPATT] && modifyRequest.identities[@(MPIdentityIOSAdvertiserId)]) {
         MPILogDebug(@"The IDFA was supplied but the App Tracking Transparency Status not set with [[MParticle sharedInstance] setATTStatus:withATTStatusTimestampMillis:]");
     }
@@ -1047,13 +1046,13 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         return;
     }
     
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
 
     // Consumer Information
     MPConsumerInfo *consumerInfo = [MParticle sharedInstance].stateMachine.consumerInfo;
     [consumerInfo updateWithConfiguration:configuration[kMPRemoteConfigConsumerInfoKey]];
     [persistence updateConsumerInfo:consumerInfo];
-    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+    MPConsumerInfo *persistenceInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
     if (persistenceInfo.cookies != nil) {
         [MParticle sharedInstance].stateMachine.consumerInfo.cookies = persistenceInfo.cookies;
     }

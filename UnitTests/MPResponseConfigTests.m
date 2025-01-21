@@ -3,7 +3,6 @@
 #import "MParticleSwift.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
-#import "MPIUserDefaults.h"
 #import "MPBaseTestCase.h"
 
 @interface MParticle ()
@@ -11,7 +10,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
-@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -21,6 +20,14 @@
 
 @implementation MPResponseConfigTests
 
+- (void)setUp {
+    [super setUp];
+    
+    [MParticle sharedInstance].stateMachine.apiKey = @"unit_test_app_key";
+    [MParticle sharedInstance].stateMachine.secret = @"unit_test_secret";
+    
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
+}
 - (void)testInstance {
     NSDictionary *configuration = @{kMPRemoteConfigKitsKey:[NSNull null],
                                     kMPRemoteConfigCustomModuleSettingsKey:[NSNull null],
@@ -81,13 +88,13 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
 
         configuration = @{kMPRemoteConfigRampKey:@100,
                           kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                           kMPRemoteConfigSessionTimeoutKey:@112};
         
-        MPResponseConfig *restoredResponseConfig = [MPIUserDefaults restore];
+        MPResponseConfig *restoredResponseConfig = [MPUserDefaults restore];
         XCTAssertNotNil(restoredResponseConfig);
         XCTAssertEqualObjects(restoredResponseConfig.configuration, configuration);
         
@@ -110,11 +117,11 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
-        XCTAssertFalse([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]);
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 10000.0) currentAge:@"0" maxAge:nil];
-        XCTAssertFalse([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]);
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 10000.0) currentAge:0 maxAge:nil];
+        XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
         [expectation fulfill];
     });
@@ -135,11 +142,11 @@
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
-        XCTAssertFalse([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]);
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        XCTAssertFalse([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 100.0) currentAge:@"0" maxAge:nil];
-        XCTAssertTrue([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]);
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:(requestTimestamp - 100.0) currentAge:0 maxAge:nil];
+        XCTAssertTrue([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
         
         [expectation fulfill];
     });
@@ -159,16 +166,16 @@
                                         kMPRemoteConfigExceptionHandlingModeKey:kMPRemoteConfigExceptionHandlingModeForce,
                                         kMPRemoteConfigSessionTimeoutKey:@112};
         
-        XCTAssertNil([[MPIUserDefaults standardUserDefaults] getConfiguration]);
+        XCTAssertNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970] - 100.0;
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
-        XCTAssertNotNil([[MPIUserDefaults standardUserDefaults] getConfiguration]);
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
+        XCTAssertNotNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
         
-        XCTAssertTrue([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]);
-        if ([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]) {
-            [MPIUserDefaults deleteConfig];
+        XCTAssertTrue([MPUserDefaults isOlderThanConfigMaxAgeSeconds]);
+        if ([MPUserDefaults isOlderThanConfigMaxAgeSeconds]) {
+            [MPUserDefaults deleteConfig];
         }
-        XCTAssertNil([[MPIUserDefaults standardUserDefaults] getConfiguration]);
+        XCTAssertNil([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration]);
         
         [expectation fulfill];
     });

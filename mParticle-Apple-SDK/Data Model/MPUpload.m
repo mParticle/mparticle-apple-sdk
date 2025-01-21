@@ -2,101 +2,10 @@
 #import "MPSession.h"
 #import "MPIConstants.h"
 #import "mParticle.h"
+#import "MParticleSwift.h"
 
 @interface MParticle()
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
-@end
-
-@implementation MPUploadSettings
-
-+ (MPUploadSettings *)currentUploadSettings {
-    MParticle *mParticle = [MParticle sharedInstance];
-    MPUploadSettings *uploadSettings = [[MPUploadSettings alloc] initWithApiKey:mParticle.stateMachine.apiKey
-                                                                         secret:mParticle.stateMachine.secret
-                                                                 networkOptions:mParticle.networkOptions];
-    return uploadSettings;
-}
-
-- (instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret eventsHost:(nullable NSString *)eventsHost eventsTrackingHost:(nullable NSString *)eventsTrackingHost overridesEventsSubdirectory:(BOOL)overridesEventsSubdirectory aliasHost:(nullable NSString *)aliasHost aliasTrackingHost:(nullable NSString *)aliasTrackingHost overridesAliasSubdirectory:(BOOL)overridesAliasSubdirectory eventsOnly:(BOOL)eventsOnly {
-    if (self = [super init]) {
-        _apiKey = apiKey;
-        _secret = secret;
-        _eventsHost = eventsHost;
-        _eventsTrackingHost = eventsTrackingHost;
-        _overridesEventsSubdirectory = overridesEventsSubdirectory;
-        _aliasHost = aliasHost;
-        _aliasTrackingHost = aliasTrackingHost;
-        _overridesAliasSubdirectory = overridesAliasSubdirectory;
-        _eventsOnly = eventsOnly;
-    }
-    return self;
-}
-
-- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(MPNetworkOptions *)networkOptions {
-    return [self initWithApiKey:apiKey
-                         secret:secret
-                     eventsHost:networkOptions.eventsHost
-             eventsTrackingHost:networkOptions.eventsTrackingHost
-    overridesEventsSubdirectory:networkOptions.overridesEventsSubdirectory
-                      aliasHost:networkOptions.aliasHost
-              aliasTrackingHost:networkOptions.aliasTrackingHost
-     overridesAliasSubdirectory:networkOptions.overridesAliasSubdirectory
-                     eventsOnly:networkOptions.eventsOnly];        
-}
-
-static NSString * const kApiKey = @"apiKey";
-static NSString * const kSecret = @"secret";
-static NSString * const kEventsHost = @"eventsHost";
-static NSString * const kEventsTrackingHost = @"eventsTrackingHost";
-static NSString * const kOverridesEventsSubdirectory = @"overridesEventsSubdirectory";
-static NSString * const kAliasHost = @"aliasHost";
-static NSString * const kAliasTrackingHost = @"aliasTrackingHost";
-static NSString * const kOverridesAliasSubdirectory = @"overridesAliasSubdirectory";
-static NSString * const kEventsOnly = @"eventsOnly";
-
-- (nullable instancetype)initWithCoder:(nonnull NSCoder *)coder {
-    if (self = [super init]) {
-        _apiKey = [coder decodeObjectForKey:kApiKey];
-        _secret = [coder decodeObjectForKey:kSecret];
-        _eventsHost = [coder decodeObjectForKey:kEventsHost];
-        _eventsTrackingHost = [coder decodeObjectForKey:kEventsTrackingHost];
-        _overridesEventsSubdirectory = [coder decodeBoolForKey:kOverridesEventsSubdirectory];
-        _aliasHost = [coder decodeObjectForKey:kAliasHost];
-        _aliasTrackingHost = [coder decodeObjectForKey:kAliasTrackingHost];
-        _overridesAliasSubdirectory = [coder decodeBoolForKey:kOverridesAliasSubdirectory];
-        _eventsOnly = [coder decodeBoolForKey:kEventsOnly];
-    }
-    return self;
-}
-
-- (void)encodeWithCoder:(nonnull NSCoder *)coder {
-    [coder encodeObject:_apiKey forKey:kApiKey];
-    [coder encodeObject:_secret forKey:kSecret];
-    [coder encodeObject:_eventsHost forKey:kEventsHost];
-    [coder encodeObject:_eventsTrackingHost forKey:kEventsTrackingHost];
-    [coder encodeBool:_overridesEventsSubdirectory forKey:kOverridesEventsSubdirectory];
-    [coder encodeObject:_aliasHost forKey:kAliasHost];
-    [coder encodeObject:_aliasTrackingHost forKey:kAliasTrackingHost];
-    [coder encodeBool:_overridesAliasSubdirectory forKey:kOverridesAliasSubdirectory];
-    [coder encodeBool:_eventsOnly forKey:kEventsOnly];
-}
-
-+ (BOOL)supportsSecureCoding {
-    return YES;
-}
-
-- (id)copyWithZone:(NSZone *)zone {
-    return [[MPUploadSettings alloc] initWithApiKey:_apiKey
-                                             secret:_secret
-                                         eventsHost:_eventsHost
-                                 eventsTrackingHost:_eventsTrackingHost
-                        overridesEventsSubdirectory:_overridesEventsSubdirectory
-                                          aliasHost:_aliasHost
-                                  aliasTrackingHost:_aliasTrackingHost
-                         overridesAliasSubdirectory:_overridesAliasSubdirectory
-                                         eventsOnly:_eventsOnly];
-}
-
 @end
 
 @implementation MPUpload

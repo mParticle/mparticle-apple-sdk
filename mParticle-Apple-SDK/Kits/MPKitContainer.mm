@@ -18,7 +18,6 @@
 #import "MPProduct.h"
 #import "MPProduct+Dictionary.h"
 #import "NSDictionary+MPCaseInsensitive.h"
-#import "MPIUserDefaults.h"
 #import "MPConsumerInfo.h"
 #import "MPForwardQueueItem.h"
 #import "MPTransactionAttributes.h"
@@ -43,8 +42,9 @@ NSString *const kitFileExtension = @"eks";
 static NSMutableSet <id<MPExtensionKitProtocol>> *kitsRegistry;
 
 @interface MParticle ()
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
@@ -288,7 +288,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     
     NSArray *directoryContents = [userDefaults getKitConfigurations];
     
@@ -411,7 +411,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSString *const MPKitBracketLowKey = @"lo";
     NSString *const MPKitBracketHighKey = @"hi";
     
-    long mpId = [[MPPersistenceController mpId] longValue];
+    long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
     short low = (short)[bracketConfiguration[MPKitBracketLowKey] integerValue];
     short high = (short)[bracketConfiguration[MPKitBracketHighKey] integerValue];
     localBracket = make_shared<mParticle::Bracket>(mpId, low, high);
@@ -610,7 +610,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    long mpId = [[MPPersistenceController mpId] longValue];
+    long mpId = [[MPPersistenceController_PRIVATE mpId] longValue];
     short low = (short)[configuration[@"lo"] integerValue];
     short high = (short)[configuration[@"hi"] integerValue];
     
@@ -1976,7 +1976,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     self.originalConfig = kitConfigurations;
     
     NSPredicate *predicate;
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSDictionary *userAttributes = userDefaults[kMPUserAttributeKey];
     NSArray *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     NSArray<NSNumber *> *supportedKits = [self supportedKits];
@@ -2522,7 +2522,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return nil;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSArray<NSDictionary<NSString *, id> *> *userIdentities = userDefaults[kMPUserIdentityArrayKey];
     __block NSMutableArray *forwardUserIdentities = [[NSMutableArray alloc] initWithCapacity:userIdentities.count];
     

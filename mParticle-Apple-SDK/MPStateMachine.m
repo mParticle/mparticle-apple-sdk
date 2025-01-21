@@ -1,5 +1,4 @@
 #import "MPStateMachine.h"
-#import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
@@ -35,8 +34,9 @@ static BOOL runningInBackground = NO;
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) MPDataPlanFilter *dataPlanFilter;
 
@@ -175,7 +175,7 @@ static BOOL runningInBackground = NO;
         return _storedSDKVersion;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     _storedSDKVersion = userDefaults[@"storedSDKVersion"];
     
     return _storedSDKVersion;
@@ -188,7 +188,7 @@ static BOOL runningInBackground = NO;
 
     _storedSDKVersion = storedSDKVersion;
 
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
 
     if (MPIsNull(_storedSDKVersion)) {
         [userDefaults removeMPObjectForKey:@"storedSDKVersion"];
@@ -336,8 +336,8 @@ static BOOL runningInBackground = NO;
         return _consumerInfo;
     }
     
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
-    _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController mpId]];
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    _consumerInfo = [persistence fetchConsumerInfoForUserId:[MPPersistenceController_PRIVATE mpId]];
     
     if (!_consumerInfo) {
         _consumerInfo = [[MPConsumerInfo alloc] init];
@@ -447,7 +447,7 @@ static BOOL runningInBackground = NO;
         return _locationTrackingMode;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSString *locationTrackingMode = userDefaults[kMPRemoteConfigLocationModeKey];
     
     [self willChangeValueForKey:@"locationTrackingMode"];
@@ -472,7 +472,7 @@ static BOOL runningInBackground = NO;
     _locationTrackingMode = locationTrackingMode;
     [self didChangeValueForKey:@"locationTrackingMode"];
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     userDefaults[kMPRemoteConfigLocationModeKey] = _locationTrackingMode;
 }
 
@@ -487,7 +487,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (NSDate *)minUploadDateForUploadType:(MPUploadType)uploadType {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSString *defaultsKey = [self minDefaultsKeyForUploadType:uploadType];
     NSDate *minUploadDate = userDefaults[defaultsKey];
     if (minUploadDate) {
@@ -502,7 +502,7 @@ static BOOL runningInBackground = NO;
 }
 
 - (void)setMinUploadDate:(NSDate *)minUploadDate uploadType:(MPUploadType)uploadType {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSString *defaultsKey = [self minDefaultsKeyForUploadType:uploadType];
     if ([minUploadDate compare:[NSDate date]] == NSOrderedDescending) {
         userDefaults[defaultsKey] = minUploadDate;
@@ -516,7 +516,7 @@ static BOOL runningInBackground = NO;
         return _optOut;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *optOutNumber = userDefaults[kMPOptOutStatus];
     if (optOutNumber != nil) {
         _optOut = [optOutNumber boolValue];
@@ -533,7 +533,7 @@ static BOOL runningInBackground = NO;
     _optOut = optOut;
     optOutSet = YES;
 
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     userDefaults[kMPOptOutStatus] = @(_optOut);
 }
 
@@ -542,7 +542,7 @@ static BOOL runningInBackground = NO;
         return _attAuthorizationStatus;
     }
 
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *authorizationState = userDefaults[kMPATT];
     
     if (authorizationState.integerValue >= 0 && authorizationState.integerValue <= 3) {
@@ -557,7 +557,7 @@ static BOOL runningInBackground = NO;
         return _attAuthorizationTimestamp;
     }
 
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *authorizationStateTimestamp = userDefaults[kMPATTTimestamp];
     
     _attAuthorizationTimestamp = authorizationStateTimestamp;
@@ -570,7 +570,7 @@ static BOOL runningInBackground = NO;
         _attAuthorizationStatus = authorizationState;
         _attAuthorizationTimestamp = MPCurrentEpochInMilliseconds;
         
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
         userDefaults[kMPATT] = _attAuthorizationStatus;
         userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
         
@@ -587,7 +587,7 @@ static BOOL runningInBackground = NO;
     if (timestamp.doubleValue != _attAuthorizationTimestamp.doubleValue) {
         _attAuthorizationTimestamp = timestamp;
         
-        MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+        MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
         userDefaults[kMPATTTimestamp] = _attAuthorizationTimestamp;
     }
 }
@@ -599,7 +599,7 @@ static BOOL runningInBackground = NO;
     
     [self willChangeValueForKey:@"pushNotificationMode"];
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSString *pushNotificationMode = userDefaults[kMPRemoteConfigPushNotificationModeKey];
     if (pushNotificationMode) {
         _pushNotificationMode = pushNotificationMode;
@@ -621,7 +621,7 @@ static BOOL runningInBackground = NO;
     _pushNotificationMode = pushNotificationMode;
     [self didChangeValueForKey:@"pushNotificationMode"];
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     userDefaults[kMPRemoteConfigPushNotificationModeKey] = _pushNotificationMode;
 }
 

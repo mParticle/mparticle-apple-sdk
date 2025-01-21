@@ -10,9 +10,7 @@
 #import "MPKitActivity.h"
 #import "MPKitFilter.h"
 #import "MPNetworkPerformance.h"
-#import "MPPersistenceController.h"
 #import "MPSession.h"
-#import "MPIUserDefaults.h"
 #import "MPIdentityApi.h"
 #import "MPDataPlanFilter.h"
 #import "MPUpload.h"
@@ -51,7 +49,7 @@ static NSString *const kMPStateKey = @"state";
     BOOL sdkInitialized;
 }
 
-@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
@@ -556,12 +554,12 @@ static NSString *const kMPStateKey = @"state";
     BOOL startKitsAsync = options.startKitsAsync;
     
     __weak MParticle *weakSelf = self;
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController mpId]] == nil;
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:_stateMachine backendController:_backendController identity:_identity];
+    BOOL firstRun = [userDefaults mpObjectForKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]] == nil;
     if (firstRun) {
         NSDate *firstSeen = [NSDate date];
         NSNumber *firstSeenMs = @([firstSeen timeIntervalSince1970] * 1000.0);
-        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController mpId]];
+        [userDefaults setMPObject:firstSeenMs forKey:kMPFirstSeenUser userId:[MPPersistenceController_PRIVATE mpId]];
     }
     
     _proxiedAppDelegate = proxyAppDelegate;
@@ -592,8 +590,8 @@ static NSString *const kMPStateKey = @"state";
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
     }
     
-    if ([MPIUserDefaults isOlderThanConfigMaxAgeSeconds]) {
-        [MPIUserDefaults deleteConfig];
+    if ([MParticle isOlderThanConfigMaxAgeSeconds]) {
+        [MPUserDefaults deleteConfig];
     }
     
     _kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
@@ -649,7 +647,7 @@ static NSString *const kMPStateKey = @"state";
                            }];
                            
                            if (firstRun) {
-                               [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController mpId]];
+                               [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
                                [userDefaults synchronize];
                            }
                            
@@ -723,7 +721,7 @@ static NSString *const kMPStateKey = @"state";
         [self.kitContainer_PRIVATE removeAllSideloadedKits];
         
         // Clean up persistence
-        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:_identity] resetDefaults];
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
@@ -756,7 +754,7 @@ static NSString *const kMPStateKey = @"state";
         
         // Batch any remaining messages into upload records
         [MParticle executeOnMessage:^{
-            [self.backendController prepareBatchesForUpload:[MPUploadSettings currentUploadSettings]];
+            [self.backendController prepareBatchesForUpload:[MPUploadSettings currentUploadSettingsWithStateMachine:self.stateMachine networkOptions:self.networkOptions]];
             finishReset();
         }];
     } else {
@@ -859,7 +857,7 @@ static NSString *const kMPStateKey = @"state";
     [MParticle executeOnMessage:^{
         [self.kitContainer_PRIVATE flushSerializedKits];
         [self.kitContainer_PRIVATE removeAllSideloadedKits];
-        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
         [self.persistenceController resetDatabase];
         [MParticle executeOnMain:^{
             [self.backendController unproxyOriginalAppDelegate];
@@ -873,7 +871,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)reset {
     [MParticle executeOnMessageSync:^{
-        [[MPIUserDefaults standardUserDefaults] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
         [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
         [MParticle setSharedInstance:nil];
@@ -1633,7 +1631,7 @@ static NSString *const kMPStateKey = @"state";
 #pragma mark Surveys
 - (NSString *)surveyURL:(MPSurveyProvider)surveyProvider {
     NSMutableDictionary *userAttributes = nil;
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSDictionary *savedUserAttributes = userDefaults[kMPUserAttributeKey];
     if (savedUserAttributes) {
         userAttributes = [[NSMutableDictionary alloc] initWithCapacity:savedUserAttributes.count];
@@ -1710,7 +1708,7 @@ static NSString *const kMPStateKey = @"state";
     }
     
     NSString *kWorkspaceTokenKey = @"wst";
-    NSString *serverProvidedValue = [[MPIUserDefaults standardUserDefaults] getConfiguration][kWorkspaceTokenKey];
+    NSString *serverProvidedValue = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getConfiguration][kWorkspaceTokenKey];
     if ([self isValidBridgeName:serverProvidedValue]) {
         return serverProvidedValue;
     }
@@ -2000,6 +1998,27 @@ static NSString *const kMPStateKey = @"state";
         _wrapperSdk = wrapperSdk;
         _wrapperSdkVersion = wrapperSdkVersion;
     });
+}
+
++ (BOOL)isOlderThanConfigMaxAgeSeconds {
+    BOOL shouldConfigurationBeDeleted = NO;
+
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    NSNumber *configProvisioned = userDefaults[kMPConfigProvisionedTimestampKey];
+    NSNumber *maxAgeSeconds = [[MParticle sharedInstance] configMaxAgeSeconds];
+
+    if (configProvisioned != nil && maxAgeSeconds != nil && [maxAgeSeconds doubleValue] > 0) {
+        NSTimeInterval intervalConfigProvisioned = [configProvisioned doubleValue];
+        NSTimeInterval intervalNow = [[NSDate date] timeIntervalSince1970];
+        NSTimeInterval delta = intervalNow - intervalConfigProvisioned;
+        shouldConfigurationBeDeleted = delta > [maxAgeSeconds doubleValue];
+    }
+
+    if (shouldConfigurationBeDeleted) {
+        [userDefaults deleteConfiguration];
+    }
+
+    return shouldConfigurationBeDeleted;
 }
 
 @end

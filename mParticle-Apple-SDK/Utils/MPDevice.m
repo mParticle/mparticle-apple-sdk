@@ -3,7 +3,6 @@
 #import <sys/sysctl.h>
 #import <mach/machine.h>
 #import "MPStateMachine.h"
-#import "MPIUserDefaults.h"
 #import <objc/runtime.h>
 #import <objc/message.h>
 #import <mach-o/ldsyms.h>
@@ -14,6 +13,7 @@
 #import "mParticle.h"
 #import "MPBackendController.h"
 #import "MPILogger.h"
+#import "MParticleSwift.h"
 
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
@@ -55,12 +55,6 @@ static NSDictionary *jailbrokenInfo = nil;
 
 int main(int argc, char *argv[]);
 
-@interface MParticle ()
-
-@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
-
-@end
-
 @interface MPDevice() {
     NSCalendar *calendar;
     NSDictionary *deviceInfo;
@@ -74,6 +68,7 @@ int main(int argc, char *argv[]);
 
 @interface MParticle ()
 
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
@@ -202,7 +197,7 @@ int main(int argc, char *argv[]);
         return _deviceIdentifier;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     _deviceIdentifier = userDefaults[kMPDeviceIdentifierKey];
     if (!_deviceIdentifier) {
         _deviceIdentifier = [[NSUUID UUID] UUIDString];
@@ -297,7 +292,7 @@ int main(int argc, char *argv[]);
     }
     
     _vendorId = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     
     if (_vendorId && ![_vendorId isEqualToString:kMPDeviceInvalidVendorId]) {
         userDefaults[kMPDeviceAppVendorIdKey] = _vendorId;
@@ -525,7 +520,7 @@ int main(int argc, char *argv[]);
     if (![MPStateMachine_PRIVATE isAppExtension]) {
         pushNotificationToken = [MPNotificationController_PRIVATE deviceToken];
         if (pushNotificationToken) {
-            NSString *tokenString = [MPIUserDefaults stringFromDeviceToken:pushNotificationToken];
+            NSString *tokenString = [MPUserDefaults stringFromDeviceToken:pushNotificationToken];
             if (tokenString) {
                 deviceDictionary[kMPDeviceTokenKey] = tokenString;
             }

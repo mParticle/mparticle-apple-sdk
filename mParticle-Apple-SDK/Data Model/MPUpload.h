@@ -4,26 +4,7 @@
 
 @class MPSession;
 @class MPNetworkOptions;
-
-// Upload credentials and options
-@interface MPUploadSettings : NSObject <NSCopying, NSSecureCoding>
-@property (nonatomic, strong, nonnull) NSString *apiKey;
-@property (nonatomic, strong, nonnull) NSString *secret;
-@property (nonatomic, strong, nullable) NSString *eventsHost;
-@property (nonatomic, strong, nullable) NSString *eventsTrackingHost;
-@property (nonatomic) BOOL overridesEventsSubdirectory;
-@property (nonatomic, strong, nullable) NSString *aliasHost;
-@property (nonatomic, strong, nullable) NSString *aliasTrackingHost;
-@property (nonatomic) BOOL overridesAliasSubdirectory;
-@property (nonatomic) BOOL eventsOnly;
-
-+ (nonnull MPUploadSettings *)currentUploadSettings;
-
-- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret eventsHost:(nullable NSString *)eventsHost eventsTrackingHost:(nullable NSString *)eventsTrackingHost overridesEventsSubdirectory:(BOOL)overridesEventsSubdirectory aliasHost:(nullable NSString *)aliasHost aliasTrackingHost:(nullable NSString *)aliasTrackingHost overridesAliasSubdirectory:(BOOL)overridesAliasSubdirectory eventsOnly:(BOOL)eventsOnly;
-
-- (nonnull instancetype)initWithApiKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions;
-
-@end
+@class MPUploadSettings;
 
 @interface MPUpload : MPDataModelAbstract <NSCopying, MPDataModelProtocol>
 
