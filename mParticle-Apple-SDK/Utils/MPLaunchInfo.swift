@@ -31,11 +31,11 @@ import Foundation
         self.annotation = convertAnnotationToString(rawAnnotation: annotation)
         
         self.options = [:]
-        if self.sourceApplication != nil {
-            self.options?[UIApplication.OpenURLOptionsKey.sourceApplication.rawValue] = self.sourceApplication
+        if let sourceApplication = self.sourceApplication {
+            self.options?[UIApplication.OpenURLOptionsKey.sourceApplication.rawValue] = sourceApplication
         }
-        if self.annotation != nil {
-            self.options?[UIApplication.OpenURLOptionsKey.annotation.rawValue] = self.annotation
+        if let annotation = self.annotation {
+            self.options?[UIApplication.OpenURLOptionsKey.annotation.rawValue] = annotation
         }
     }
 
@@ -64,7 +64,7 @@ import Foundation
         } else if let annotationDictionary = rawAnnotation as? [String : Any] {
             var finalDict: [String : String] = [:]
             for (key, value) in annotationDictionary {
-                if let valueString = self.convertAnnotationToString(rawAnnotation: value) {
+                if let valueString = convertAnnotationToString(rawAnnotation: value) {
                     finalDict[key] = valueString
                 }
             }
@@ -74,7 +74,7 @@ import Foundation
         } else if let annotationArray = rawAnnotation as? [Any] {
             var finalArray: [String] = []
             for value in annotationArray {
-                if let valueString = self.convertAnnotationToString(rawAnnotation: value) {
+                if let valueString = convertAnnotationToString(rawAnnotation: value) {
                     finalArray.append(valueString)
                 }
             }
