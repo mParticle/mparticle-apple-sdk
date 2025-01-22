@@ -721,7 +721,7 @@ static NSString *const kMPStateKey = @"state";
         [self.kitContainer_PRIVATE removeAllSideloadedKits];
         
         // Clean up persistence
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:_identity] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:self.identity] resetDefaults];
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
