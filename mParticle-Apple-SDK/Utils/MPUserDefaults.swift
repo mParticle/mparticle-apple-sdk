@@ -8,123 +8,23 @@
 import Foundation
 private var userDefaults: MPUserDefaults?
 private var sharedGroupID: String?
-private let NSUserDefaultsPrefix: String = "mParticle::"
-private let userSpecificKeys : [String] = ["lud",   /* kMPAppLastUseDateKey */
-                                           "lc",    /* kMPAppLaunchCountKey */
-                                           "lcu",   /* kMPAppLaunchCountSinceUpgradeKey */
-                                           "ua",    /* kMPUserAttributeKey */
-                                           "ui",    /* kMPUserIdentityArrayKey */
-                                           "ck",    /* kMPRemoteConfigCookiesKey */
-                                           "ltv",   /* kMPLifeTimeValueKey */
-                                           "is_ephemeral",  /* kMPIsEphemeralKey */
-                                           "last_date_used",    /* kMPLastIdentifiedDate  */
-                                           "consent_state", /* kMPConsentStateKey  */
-                                           "fsu",   /* kMPFirstSeenUser */
-                                           "lsu"    /* kMPLastSeenUser */
-                                            ]
-private let kApiKey: String = "apiKey"
-private let kSecret: String = "secret"
-private let kEventsHost: String = "eventsHost"
-private let kEventsTrackingHost: String = "eventsTrackingHost"
-private let kOverridesEventsSubdirectory: String = "overridesEventsSubdirectory"
-private let kAliasHost: String = "aliasHost"
-private let kAliasTrackingHost: String = "aliasTrackingHost"
-private let kOverridesAliasSubdirectory: String = "overridesAliasSubdirectory"
-private let kEventsOnly: String = "eventsOnly"
+private let NSUserDefaultsPrefix = "mParticle::"
+private let userSpecificKeys = ["lud",   /* kMPAppLastUseDateKey */
+                                "lc",    /* kMPAppLaunchCountKey */
+                                "lcu",   /* kMPAppLaunchCountSinceUpgradeKey */
+                                "ua",    /* kMPUserAttributeKey */
+                                "ui",    /* kMPUserIdentityArrayKey */
+                                "ck",    /* kMPRemoteConfigCookiesKey */
+                                "ltv",   /* kMPLifeTimeValueKey */
+                                "is_ephemeral",  /* kMPIsEphemeralKey */
+                                "last_date_used",    /* kMPLastIdentifiedDate  */
+                                "consent_state", /* kMPConsentStateKey  */
+                                "fsu",   /* kMPFirstSeenUser */
+                                "lsu"    /* kMPLastSeenUser */
+                                 ]
 private let kMPUserIdentitySharedGroupIdentifier = "sgi"
 private let kMResponseConfigurationKey = "responseConfiguration"
 private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated"
-
-
-
-@objc(MPUploadSettings) public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
-    public func copy(with zone: NSZone? = nil) -> Any {
-        return MPUploadSettings(apiKey: self.apiKey,
-                                secret: self.secret,
-                                eventsHost: self.eventsHost,
-                                eventsTrackingHost: self.eventsTrackingHost,
-                                overridesEventsSubdirectory: self.overridesEventsSubdirectory,
-                                aliasHost: self.aliasHost,
-                                aliasTrackingHost: self.aliasTrackingHost,
-                                overridesAliasSubdirectory: self.overridesAliasSubdirectory,
-                                eventsOnly: self.eventsOnly)
-    }
-    
-    public static var supportsSecureCoding: Bool = true
-    
-    public func encode(with coder: NSCoder) {
-        coder.encode(apiKey, forKey: kApiKey)
-        coder.encode(secret, forKey: kSecret)
-        coder.encode(eventsHost, forKey: kEventsHost)
-        coder.encode(eventsTrackingHost, forKey: kEventsTrackingHost)
-        coder.encode(overridesEventsSubdirectory, forKey: kOverridesEventsSubdirectory)
-        coder.encode(aliasHost, forKey: kAliasHost)
-        coder.encode(aliasTrackingHost, forKey: kAliasTrackingHost)
-        coder.encode(overridesAliasSubdirectory, forKey: kOverridesAliasSubdirectory)
-        coder.encode(eventsOnly, forKey: kEventsOnly)
-    }
-    
-    @objc public required init?(coder: NSCoder) {
-        self.apiKey = coder.decodeObject(forKey: kApiKey) as! String
-        self.secret = coder.decodeObject(forKey: kSecret) as! String
-        self.eventsHost = coder.decodeObject(forKey: kEventsHost) as? String
-        self.eventsTrackingHost = coder.decodeObject(forKey: kEventsTrackingHost) as? String
-        self.overridesEventsSubdirectory = coder.decodeBool(forKey: kOverridesEventsSubdirectory)
-        self.aliasHost = coder.decodeObject(forKey: kAliasHost) as? String
-        self.aliasTrackingHost = coder.decodeObject(forKey: kAliasTrackingHost) as? String
-        self.overridesAliasSubdirectory = coder.decodeBool(forKey: kOverridesAliasSubdirectory)
-        self.eventsOnly = coder.decodeBool(forKey: kEventsOnly)
-        
-    }
-    
-    @objc public var apiKey: String
-    @objc public var secret: String
-    @objc public var eventsHost: String?
-    @objc public var eventsTrackingHost: String?
-    @objc public var overridesEventsSubdirectory: Bool = false
-    @objc public var aliasHost: String?
-    @objc public var aliasTrackingHost: String?
-    @objc public var overridesAliasSubdirectory: Bool = false
-    @objc public var eventsOnly: Bool = false
-    
-    @objc public override init() {
-        self.apiKey = ""
-        self.secret = ""
-        super.init()
-    }
-    
-    @objc public class func currentUploadSettings(stateMachine: MPStateMachine_PRIVATE, networkOptions: MPNetworkOptions) -> MPUploadSettings {
-        return MPUploadSettings(apiKey: stateMachine.apiKey, secret: stateMachine.secret, networkOptions: networkOptions)
-    }
-    
-    @objc public init(apiKey: String, secret: String, eventsHost: String? = nil, eventsTrackingHost: String? = nil, overridesEventsSubdirectory: Bool = false, aliasHost: String? = nil, aliasTrackingHost: String? = nil, overridesAliasSubdirectory: Bool = false, eventsOnly: Bool = false) {
-        self.apiKey = apiKey
-        self.secret = secret
-        self.eventsHost = eventsHost
-        self.eventsTrackingHost = eventsTrackingHost
-        self.overridesEventsSubdirectory = overridesEventsSubdirectory
-        self.aliasHost = aliasHost
-        self.aliasTrackingHost = aliasTrackingHost
-        self.overridesAliasSubdirectory = overridesAliasSubdirectory
-        self.eventsOnly = eventsOnly
-        
-        super.init()
-    }
-
-    @objc public init(apiKey: String, secret: String, networkOptions: MPNetworkOptions) {
-        self.apiKey = apiKey
-        self.secret = secret
-        self.eventsHost = networkOptions.eventsHost
-        self.eventsTrackingHost = networkOptions.eventsTrackingHost
-        self.overridesEventsSubdirectory = networkOptions.overridesEventsSubdirectory
-        self.aliasHost = networkOptions.aliasHost
-        self.aliasTrackingHost = networkOptions.aliasTrackingHost
-        self.overridesAliasSubdirectory = networkOptions.overridesAliasSubdirectory
-        self.eventsOnly = networkOptions.eventsOnly
-        
-        super.init()
-    }
-}
 
 @objc public class MPUserDefaults : NSObject {
     private var stateMachine: MPStateMachine_PRIVATE?
@@ -291,7 +191,7 @@ private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated
         return self.getConfiguration()?[RemoteConfig.kMPRemoteConfigKitsKey] as? [Any]
     }
 
-    @objc public func setConfiguration(_ responseConfiguration: [AnyHashable : Any], eTag: String, requestTimestamp: TimeInterval, currentAge: Double, maxAge: NSNumber?) {
+    @objc public func setConfiguration(_ responseConfiguration: [AnyHashable : Any], eTag: String, requestTimestamp: TimeInterval, currentAge: TimeInterval, maxAge: NSNumber?) {
         let configurationData = NSKeyedArchiver.archivedData(withRootObject: responseConfiguration)
         let userID = self.identity?.currentUser?.userId ?? 0
         
@@ -306,7 +206,7 @@ private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated
         let eTag = self.mpObject(forKey: Miscellaneous.kMPHTTPETagHeaderKey, userId: userID) as? String
         
         let fileManager = FileManager.default
-        let cachesURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        guard let cachesURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return }
         let stateMachineURL = cachesURL.appendingPathComponent("StateMachine")
         let configurationURL = stateMachineURL.appendingPathComponent("RequestConfig.cfg")
         let configuration = self.mpObject(forKey: kMResponseConfigurationKey, userId: userID)
@@ -365,7 +265,7 @@ private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated
         
         var uniqueUserIDs: [NSNumber] = []
         for key in keyArray {
-            if let value = self.customUserDefaults().object(forKey: key) {
+            if let _ = self.customUserDefaults().object(forKey: key) {
                 let keyComponents = key.components(separatedBy: "::")
                 if keyComponents.count == 3 {
                     let UserID = NSNumber(value: Int64(keyComponents[1]) ?? 0)
@@ -398,24 +298,24 @@ private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated
     }
 
     @objc public func setSideloadedKitsCount(_ sideloadedKitsCount: UInt) {
-        UserDefaults.standard.set(sideloadedKitsCount, forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey)
+        setMPObject(sideloadedKitsCount, forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey, userId: 0)
     }
 
     @objc public func sideloadedKitsCount() -> UInt {
-        UserDefaults.standard.object(forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey) as? UInt ?? 0
+        mpObject(forKey: Miscellaneous.MPSideloadedKitsCountUserDefaultsKey, userId: 0) as? UInt ?? 0
     }
 
     @objc public func setLastUploadSettings(_ lastUploadSettings: MPUploadSettings?) {
         if let lastUploadSettings = lastUploadSettings {
             let data = NSKeyedArchiver.archivedData(withRootObject: lastUploadSettings)
-            UserDefaults.standard.set(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey)
+            setMPObject(data, forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
         } else {
-            UserDefaults.standard.removeObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey)
+            removeMPObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0)
         }
     }
 
     @objc public func lastUploadSettings() -> MPUploadSettings? {
-        let data = UserDefaults.standard.data(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey)
+        let data = mpObject(forKey: Miscellaneous.kMPLastUploadSettingsUserDefaultsKey, userId: 0) as? Data
         
         if let data = data {
             return NSKeyedUnarchiver.unarchiveObject(with: data) as? MPUploadSettings
@@ -444,8 +344,7 @@ private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated
     }
 
     @objc public class func stringFromDeviceToken(_ deviceToken: Data) -> String? {
-        let deviceToken = deviceToken as NSData
-        if deviceToken.length == 0 { return nil }
+        if deviceToken.count == 0 { return nil }
         
         return deviceToken.map { String(format: "%02x", $0) }.joined()
     }
@@ -490,9 +389,9 @@ private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated
     
     private func customUserDefaults() -> UserDefaults {
         if let sharedGroupID = sharedGroupID {
-            return UserDefaults(suiteName: sharedGroupID)!
+            return UserDefaults(suiteName: sharedGroupID) ?? .standard
         } else {
-            return UserDefaults.standard
+            return .standard
         }
     }
 }

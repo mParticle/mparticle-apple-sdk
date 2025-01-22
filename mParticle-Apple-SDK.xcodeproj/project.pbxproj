@@ -471,6 +471,8 @@
 		D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B0629CDFB1F00E7489F /* MPStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D34286092D3806E600FEC2C8 /* MPUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */; };
 		D342860A2D3806E600FEC2C8 /* MPUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */; };
+		D342860F2D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
+		D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
 		D356E0242CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -764,6 +766,7 @@
 		53E20DC62CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitiveTests.swift"; sourceTree = "<group>"; };
 		53FDD1BC2AE871AF003D5FA1 /* MPIHasher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPIHasher.swift; sourceTree = "<group>"; };
 		D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaults.swift; sourceTree = "<group>"; };
+		D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUploadSettings.swift; sourceTree = "<group>"; };
 		D356E0232CFE08ED0020898D /* MPResponseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPResponseConfig.swift; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
 		D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitive.swift"; sourceTree = "<group>"; };
@@ -994,6 +997,7 @@
 			children = (
 				534C11B22D08A73100466F71 /* MParticleWebView.swift */,
 				D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */,
+				D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */,
 				5399DDB72CA727E1006526E1 /* MPZip.swift */,
 				53A79B0229CDFB1F00E7489F /* MPMessageBuilder.m */,
 				D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */,
@@ -1760,6 +1764,7 @@
 				53A79C0829CDFB2100E7489F /* MPEvent.m in Sources */,
 				53A79B6729CDFB2000E7489F /* MPAliasResponse.m in Sources */,
 				534C11B72D08F53D00466F71 /* MPUserAttributeChange.swift in Sources */,
+				D342860F2D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */,
 				53A79C1229CDFB2100E7489F /* MPKitFilter.m in Sources */,
 				53A79B7829CDFB2000E7489F /* MPURLConnectionAssociate.m in Sources */,
 				53A79C0529CDFB2100E7489F /* MPTransactionAttributes.m in Sources */,
@@ -1930,6 +1935,7 @@
 				53A79DAA29CE23F700E7489F /* MPNotificationController.m in Sources */,
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
 				534C11B62D08F53D00466F71 /* MPUserAttributeChange.swift in Sources */,
+				D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */,
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
 				53A79DAE29CE23F700E7489F /* MPKitFilter.m in Sources */,
 				53A79DAF29CE23F700E7489F /* MPURLConnectionAssociate.m in Sources */,
