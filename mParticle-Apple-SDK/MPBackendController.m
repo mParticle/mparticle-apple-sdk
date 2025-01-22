@@ -25,7 +25,6 @@
 #import "MPDevice.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
-#import "MPLaunchInfo.h"
 #import "MPNetworkCommunication.h"
 #import "MParticleSwift.h"
 #import "mParticle.h"
