@@ -22,11 +22,12 @@
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPKitContainer.h"
 #import "MPURLRequestBuilder.h"
-#import "MPListenerController.h"
 #import "MPDevice.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 #import "MPNetworkCommunication.h"
+#import "MParticleSwift.h"
+#import "mParticle.h"
 #if TARGET_OS_IOS == 1
     #import "MPNotificationController.h"
 #endif
