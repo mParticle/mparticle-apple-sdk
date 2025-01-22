@@ -55,7 +55,7 @@ import Foundation
             } else {
                 parameters.append(NSNull())
             }
-            if let parameter2 = parameter3 {
+            if let parameter2 = parameter2 {
                 parameters.append(parameter2)
             } else {
                 parameters.append(NSNull())
@@ -75,13 +75,13 @@ import Foundation
         for delegate in sdkListeners {
             let stackTrace = Thread.callStackSymbols
             var parameters: [NSObject] = []
-            if parameter1 != nil {
-                parameters.append(parameter1!)
+            if let parameter1 = parameter1 {
+                parameters.append(parameter1)
             } else {
                 parameters.append(NSNull())
             }
-            if parameter2 != nil {
-                parameters.append(parameter2!)
+            if let parameter2 = parameter2 {
+                parameters.append(parameter2)
             } else {
                 parameters.append(NSNull())
             }
@@ -95,7 +95,7 @@ import Foundation
         for delegate in sdkListeners {
             let stackTrace = Thread.callStackSymbols
             var parameters: [NSObject] = []
-            if parameter1 != nil {
+            if let parameter1 = parameter1 {
                 parameters.append(parameter1!)
             } else {
                 parameters.append(NSNull())
