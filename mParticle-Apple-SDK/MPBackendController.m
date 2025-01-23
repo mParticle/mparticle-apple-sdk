@@ -1506,7 +1506,7 @@ static BOOL skipNextUpload = NO;
         [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setLastUploadSettings:uploadSettings];
         
         // Restore cached config if exists
-        [MPUserDefaults restore];
+        (void)[MPUserDefaults restore];
 
         if (shouldBeginSession) {
             [self beginSessionWithIsManual:!MParticle.sharedInstance.automaticSessionTracking date:date];
