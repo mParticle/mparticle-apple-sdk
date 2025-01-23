@@ -15,7 +15,7 @@
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
 #import <sqlite3.h>
-#import "MPListenerProtocol.h"
+#import "MParticleSwift.h"
 #import "MPKitFilter.h"
 #import "MPDevice.h"
 #import "MPApplication.h"

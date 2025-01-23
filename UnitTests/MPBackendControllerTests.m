@@ -18,7 +18,6 @@
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 #import "MPDevice.h"
-#import "MPLaunchInfo.h"
 
 #if TARGET_OS_IOS == 1
 #import <CoreLocation/CoreLocation.h>

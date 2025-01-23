@@ -1,5 +1,5 @@
 #import <XCTest/XCTest.h>
-#import "MPLaunchInfo.h"
+#import "MParticleSwift.h"
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
@@ -90,12 +90,6 @@
     id annotation = nil;
     
     MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
-    XCTAssertNil(launchInfo, @"Should have been nil.");
-    
-    url = (NSURL *)[NSNull null];
-    sourceApp = nil;
-    
-    launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
     XCTAssertNil(launchInfo, @"Should have been nil.");
 }
 

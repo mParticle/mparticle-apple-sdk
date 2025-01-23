@@ -13,7 +13,6 @@
 #import "MPForwardQueueParameters.h"
 #import "MPDataPlanFilter.h"
 #import "MParticleSwift.h"
-#import "MPLaunchInfo.h"
 #import "MParticleReachability.h"
 #import "MPIConstants.h"
 
