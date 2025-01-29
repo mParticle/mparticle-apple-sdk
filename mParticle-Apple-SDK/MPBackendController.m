@@ -14,7 +14,6 @@
 #import "MPMessageBuilder.h"
 #import "MPEvent.h"
 #import "MParticleUserNotification.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "MPUploadBuilder.h"
 #import "MPILogger.h"
 #import "MPConsumerInfo.h"
