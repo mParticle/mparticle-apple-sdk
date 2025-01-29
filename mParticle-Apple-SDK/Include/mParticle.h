@@ -12,7 +12,6 @@
 #import "MPPromotion.h"
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "MPIdentityApi.h"
 #import "MPKitAPI.h"
 #import "MPConsentState.h"

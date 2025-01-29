@@ -1,6 +1,5 @@
 #import "MPPromotion.h"
 #import "MPIConstants.h"
-#import "NSDictionary+MPCaseInsensitive.h"
 #import "MParticleSwift.h"
 
 // Internal keys
