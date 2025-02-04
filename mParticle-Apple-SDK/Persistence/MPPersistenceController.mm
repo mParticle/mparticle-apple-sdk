@@ -11,7 +11,6 @@
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
-#import "MPIUserDefaults.h"
 #import "mParticle.h"
 #import "MPIConstants.h"
 #import "MPConsentSerialization.h"
@@ -20,6 +19,8 @@
 #import "MPKitFilter.h"
 #import "MPDevice.h"
 #import "MPApplication.h"
+#import "MParticleSwift.h"
+#import "MParticleUserNotification.h"
 #import <string>
 #import <vector>
 
@@ -57,8 +58,9 @@ const int MaxBreadcrumbs = 50;
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -70,7 +72,7 @@ const int MaxBreadcrumbs = 50;
 - (nonnull instancetype)initWithId:(int64_t)forwardRecordId data:(nonnull NSData *)data mpid:(nonnull NSNumber *)mpid;
 @end
 
-@interface MPPersistenceController() {
+@interface MPPersistenceController_PRIVATE() {
     BOOL databaseOpen;
     sqlite3 *mParticleDB;
 }
@@ -79,12 +81,12 @@ const int MaxBreadcrumbs = 50;
 
 @end
 
-@implementation MPPersistenceController
+@implementation MPPersistenceController_PRIVATE
 
 @synthesize databasePath = _databasePath;
 
 + (void)initialize {
-    if (self == [MPPersistenceController class]) {
+    if (self == [MPPersistenceController_PRIVATE class]) {
         databaseVersions = @[@3, @4, @5, @6, @7, @8, @9, @10, @11, @12, @13, @14, @15, @16, @17, @18, @19, @20, @21, @22, @23, @24, @25, @26, @27, @28, @29, @30, @31];
     }
 }
@@ -120,7 +122,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (NSNumber *)mpId {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *mpId = userDefaults[@"mpid"];
     if (mpId == nil) {
         mpId = @0;
@@ -130,13 +132,13 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (void)setMpid:(NSNumber *)mpId {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     userDefaults[@"mpid"] = mpId;
     [userDefaults synchronize];
 }
 
 + (nullable MPConsentState *)consentStateForMpid:(nonnull NSNumber *)mpid {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSString *string = [userDefaults mpObjectForKey:kMPConsentStateKey userId:mpid];
     if (!string) {
         return nil;
@@ -151,7 +153,7 @@ const int MaxBreadcrumbs = 50;
 }
 
 + (void)setConsentState:(nullable MPConsentState *)state forMpid:(nonnull NSNumber *)mpid {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (!state) {
         [userDefaults removeMPObjectForKey:kMPConsentStateKey userId:mpid];
         [userDefaults synchronize];
@@ -305,7 +307,7 @@ const int MaxBreadcrumbs = 50;
     params.push_back("'" + string([cookie.name cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
     
     fields.push_back("mpid");
-    params.push_back("'" + string([[NSString stringWithFormat:@"%@", [MPPersistenceController mpId]] cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
+    params.push_back("'" + string([[NSString stringWithFormat:@"%@", [MPPersistenceController_PRIVATE mpId]] cStringUsingEncoding:NSUTF8StringEncoding]) + "'");
     
     string sqlStatement = "INSERT INTO cookies (consumer_info_id";
     for (auto field : fields) {
@@ -871,7 +873,7 @@ const int MaxBreadcrumbs = 50;
     const string sqlStatement = "SELECT _id, session_uuid, uuid, breadcrumb_data, timestamp FROM breadcrumbs WHERE mpid = ? ORDER BY _id";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             MPBreadcrumb *breadcrumb = [[MPBreadcrumb alloc] initWithSessionUUID:stringValue(preparedStatement, 1)
@@ -1092,9 +1094,9 @@ const int MaxBreadcrumbs = 50;
     ORDER BY session_number";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
-        sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
-        sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             MPSession *crashSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
@@ -1136,7 +1138,7 @@ const int MaxBreadcrumbs = 50;
     const string sqlStatement = "SELECT session_id, uuid, background_time, start_time, end_time, attributes_data, session_number, number_interruptions, event_count, suspend_time, length, mpid, session_user_ids FROM previous_session WHERE mpid = ?";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         if (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             previousSession = [[MPSession alloc] initWithSessionId:int64Value(preparedStatement, 0)
@@ -1246,7 +1248,7 @@ const int MaxBreadcrumbs = 50;
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
         sqlite3_bind_int64(preparedStatement, 1, session.sessionId);
         sqlite3_bind_int(preparedStatement, 2, MPUploadStatusUploaded);
-        sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 3, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         while (sqlite3_step(preparedStatement) == SQLITE_ROW) {
             MPMessage *message = [[MPMessage alloc] initWithSessionId:@(session.sessionId)
@@ -1419,7 +1421,7 @@ const int MaxBreadcrumbs = 50;
         sqlite3_bind_double(preparedStatement, 3, message.timestamp);
         sqlite3_bind_blob(preparedStatement, 4, [message.messageData bytes], (int)[message.messageData length], SQLITE_STATIC);
         sqlite3_bind_int64(preparedStatement, 5, 0); //session_number Deprecated
-        sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 6, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
             MPILogError(@"Error while storing breadcrumb: %s", sqlite3_errmsg(mParticleDB));
@@ -1438,8 +1440,8 @@ const int MaxBreadcrumbs = 50;
     sqlStatement = "DELETE FROM breadcrumbs WHERE mpid = ? AND _id NOT IN (SELECT _id FROM breadcrumbs WHERE mpid = ? ORDER BY _id DESC LIMIT ?)";
     
     if (sqlite3_prepare_v2(mParticleDB, sqlStatement.c_str(), (int)sqlStatement.size(), &preparedStatement, NULL) == SQLITE_OK) {
-        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController mpId] longLongValue]);
-        sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 1, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
+        sqlite3_bind_int64(preparedStatement, 2, [[MPPersistenceController_PRIVATE mpId] longLongValue]);
         sqlite3_bind_int(preparedStatement, 3, MaxBreadcrumbs);
         
         if (sqlite3_step(preparedStatement) != SQLITE_DONE) {
@@ -1588,7 +1590,7 @@ const int MaxBreadcrumbs = 50;
         return;
     }
     
-    NSInteger maxBytes = [MPPersistenceController maxBytesPerEvent:message.messageType];
+    NSInteger maxBytes = [MPPersistenceController_PRIVATE maxBytesPerEvent:message.messageType];
     if (message == nil || message.messageData.length > maxBytes) {
         MPILogError(@"Unable to save message that is nil or exceeds max message size!");
         return;

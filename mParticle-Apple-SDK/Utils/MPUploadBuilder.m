@@ -4,7 +4,6 @@
 #import "MPUpload.h"
 #import "MPStateMachine.h"
 #import "MPIConstants.h"
-#import "MPIUserDefaults.h"
 #import "MPPersistenceController.h"
 #import "MPCustomModule.h"
 #import "MPConsumerInfo.h"
@@ -16,11 +15,13 @@
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
 #import "MPILogger.h"
+#import "MParticleSwift.h"
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 
 @end
@@ -67,7 +68,7 @@
     }];
     
     NSNumber *ltv;
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     ltv = [userDefaults mpObjectForKey:kMPLifeTimeValueKey userId:mpid];
     if (ltv == nil) {
         ltv = @0;
@@ -188,7 +189,7 @@
         _uploadDictionary[kMPDeviceApplicationStampKey] = deviceApplicationStamp;
     }
     
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSArray<MPForwardRecord *> *forwardRecords = [persistence fetchForwardRecords];
     NSMutableArray<NSNumber *> *forwardRecordsIds = nil;
     
@@ -221,7 +222,7 @@
         _uploadDictionary[MPIntegrationAttributesKey] = integrationAttributesDictionary;
     }
     
-    MPConsentState *consentState = [MPPersistenceController consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
+    MPConsentState *consentState = [MPPersistenceController_PRIVATE consentStateForMpid:_uploadDictionary[kMPRemoteConfigMPIDKey]];
     if (consentState) {
         NSDictionary *consentStateDictionary = [MPConsentSerialization serverDictionaryFromConsentState:consentState];
         if (consentStateDictionary) {

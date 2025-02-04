@@ -1,9 +1,15 @@
 #import "MPCustomModulePreference.h"
-#import "MPIUserDefaults.h"
 #import "MPILogger.h"
 #import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+
+@end
 
 @interface MPCustomModulePreference()
 
@@ -168,11 +174,11 @@
 
 #pragma mark Public methods
 - (id)value {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     
     NSString *deprecatedKey = [NSString stringWithFormat:@"cms::%@", self.writeKey];
     NSString *customModuleKey = [NSString stringWithFormat:@"cms::%@::%@", self.moduleId, self.writeKey];
-    NSNumber *mpId = [MPPersistenceController mpId];
+    NSNumber *mpId = [MPPersistenceController_PRIVATE mpId];
     id valueWithDeprecatedKey = [userDefaults mpObjectForKey:deprecatedKey userId:mpId];
     if (valueWithDeprecatedKey) {
         _value = valueWithDeprecatedKey;

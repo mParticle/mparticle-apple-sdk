@@ -13,7 +13,7 @@
 #import "MPIConstants.h"
 
 @interface MParticle (Tests)
-@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
 @end
 
 @interface MPTestConnectorFactory : NSObject <MPConnectorFactoryProtocol>
@@ -39,7 +39,7 @@
     MParticle *instance = [MParticle sharedInstance];
     if (!instance.persistenceController) {
         // Ensure we have a persistence controller to reset the db etc
-        instance.persistenceController = [[MPPersistenceController alloc] init];
+        instance.persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
     }
     
     [instance reset:^{

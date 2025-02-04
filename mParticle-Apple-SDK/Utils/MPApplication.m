@@ -3,11 +3,11 @@
 #import <dlfcn.h>
 #import <mach-o/arch.h>
 #import <mach-o/dyld.h>
-#import "MPIUserDefaults.h"
 #import <UIKit/UIKit.h>
 #import "MPStateMachine.h"
 #import <libkern/OSAtomic.h>
 #import "mParticle.h"
+#import "mParticleSwift.h"
 #import "MPIConstants.h"
 
 NSString *const kMPApplicationInformationKey = @"ai";
@@ -67,12 +67,13 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
 @interface MPApplication_PRIVATE() {
     NSDictionary *appInfo;
-    MPIUserDefaults *userDefaults;
+    MPUserDefaults *userDefaults;
 }
 
 @end
@@ -98,7 +99,8 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
         return nil;
     }
     
-    userDefaults = [MPIUserDefaults standardUserDefaults];
+    userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+
     
     return self;
 }
@@ -277,7 +279,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 - (NSNumber *)sideloadedKitsCount {
-    NSNumber *sideloadedKitsCount = @([[MPIUserDefaults standardUserDefaults] sideloadedKitsCount]);
+    NSNumber *sideloadedKitsCount = @([[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] sideloadedKitsCount]);
     return sideloadedKitsCount;
 }
 
@@ -326,7 +328,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
 }
 
 + (void)markInitialLaunchTime {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSNumber *initialLaunchTime = userDefaults[kMPAppInitialLaunchTimeKey];
     
     if (initialLaunchTime == nil) {

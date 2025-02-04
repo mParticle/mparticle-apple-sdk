@@ -47,7 +47,7 @@ NSString *const kMPStateInformationKey = @"cs";
         return _session;
     }
     
-    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController mpId]];
+    _session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:[MPPersistenceController_PRIVATE mpId]];
     return _session;
 }
 
@@ -371,13 +371,13 @@ NSString *const kMPStateInformationKey = @"cs";
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
     
-    [MPPersistenceController setMpid:@1];
+    [MPPersistenceController_PRIVATE setMpid:@1];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:nil
                                                                          messageInfo:messageInfo];
     MPMessage *message = [messageBuilder build];
     
-    XCTAssertEqualObjects([MPPersistenceController mpId], message.userId);
+    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], message.userId);
 }
 
 - (void)testMessageUserIdSessionIdZero {
@@ -385,14 +385,14 @@ NSString *const kMPStateInformationKey = @"cs";
                                   @"key2":@"value2",
                                   @"key3":@"value3"};
     
-    [MPPersistenceController setMpid:@1];
+    [MPPersistenceController_PRIVATE setMpid:@1];
     MPSession *session = [[MPSession alloc] initWithStartTime:[[NSDate date] timeIntervalSince1970] userId:@0];
     MPMessageBuilder *messageBuilder = [[MPMessageBuilder alloc] initWithMessageType:MPMessageTypeEvent
                                                                              session:session
                                                                          messageInfo:messageInfo];
     MPMessage *message = [messageBuilder build];
     
-    XCTAssertEqualObjects([MPPersistenceController mpId], message.userId);
+    XCTAssertEqualObjects([MPPersistenceController_PRIVATE mpId], message.userId);
 }
 
 @end

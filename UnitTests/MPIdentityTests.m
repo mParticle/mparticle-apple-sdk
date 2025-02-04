@@ -13,7 +13,6 @@
 #import "MPKitContainer.h"
 #import "MPPersistenceController.h"
 #import "MPStateMachine.h"
-#import "MPIUserDefaults.h"
 
 typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
     MPIdentityRequestIdentify = 0,
@@ -59,7 +58,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 @interface MParticle ()
 
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 
 @end
 
@@ -610,7 +609,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testIdentifyIdentityRequestCompleteWithKits {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
@@ -642,7 +641,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testLoginIdentityRequestCompleteWithKits {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
@@ -674,7 +673,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testLogoutIdentityRequestCompleteWithKits {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
@@ -702,7 +701,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testIdentifyIdentityRequestCompleteWithKitsAndNoUserChange {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
@@ -734,7 +733,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testLoginIdentityRequestCompleteWithKitsAndNoUserChange {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
@@ -766,7 +765,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testLogoutIdentityRequestCompleteWithKitsAndNoUserChange {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"42"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);
@@ -794,7 +793,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (void)testMPIdZeroToMPId {
-    id mockPersistenceController = OCMClassMock([MPPersistenceController class]);
+    id mockPersistenceController = OCMClassMock([MPPersistenceController_PRIVATE class]);
     [[[mockPersistenceController stub] andReturn:@"0"] mpId];
     
     id mockInstance = OCMClassMock([MParticle class]);

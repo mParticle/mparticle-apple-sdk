@@ -292,7 +292,7 @@ NSString *const kMPUserIdentityOldValueKey = @"oi";
     _messageDictionary[kMPMessageTypeKey] = _messageType;
     _messageDictionary[kMPMessageIdKey] = _uuid ?: [[NSUUID UUID] UUIDString];
     
-    NSNumber *userId = _session.userId.integerValue ? _session.userId : [MPPersistenceController mpId];
+    NSNumber *userId = _session.userId.integerValue ? _session.userId : [MPPersistenceController_PRIVATE mpId];
 
     MPMessage *message = [[MPMessage alloc] initWithSession:_session
                                                 messageType:_messageType

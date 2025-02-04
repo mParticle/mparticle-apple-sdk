@@ -22,7 +22,7 @@
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 + (dispatch_queue_t)messageQueue;
 

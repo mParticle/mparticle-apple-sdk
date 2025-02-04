@@ -2,7 +2,6 @@
 #import <CommonCrypto/CommonHMAC.h>
 #import "MPIConstants.h"
 #import <UIKit/UIKit.h>
-#import "MPIUserDefaults.h"
 #import "MPKitContainer.h"
 #import "MPExtensionProtocol.h"
 #import "MPILogger.h"
@@ -16,6 +15,7 @@ static NSDateFormatter *RFC1123DateFormatter;
 @interface MParticle ()
 
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, readonly) MParticleWebView_PRIVATE *webView;
 
 @end
@@ -198,7 +198,7 @@ static NSDateFormatter *RFC1123DateFormatter;
                 NSString *environment = [NSString stringWithFormat:@"%d", (int)[MPStateMachine_PRIVATE environment]];
                 [urlRequest setValue:environment forHTTPHeaderField:@"x-mp-env"];
                 
-                MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+                MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
                 NSString *eTag = userDefaults[kMPHTTPETagHeaderKey];
                 NSDictionary *config = [userDefaults getConfiguration];
                 if (eTag && config) {

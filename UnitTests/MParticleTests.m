@@ -7,7 +7,6 @@
 #import "MPBackendController.h"
 #import "MPURLRequestBuilder.h"
 #import "MPPersistenceController.h"
-#import "MPIUserDefaults.h"
 #import "MPURL.h"
 #import "MPDevice.h"
 #import "MPKitContainer.h"
@@ -201,7 +200,7 @@
 
 #if TARGET_OS_IOS == 1
 - (void)testAutoTrackingContentAvail {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
     
@@ -341,7 +340,7 @@
     options.consentState = newConsentState;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *storedConsentState = [MPPersistenceController consentStateForMpid:[MPPersistenceController mpId]];
+        MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
         XCTAssert(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });
@@ -359,7 +358,7 @@
     MPConsentState *storedConsentState = [[MPConsentState alloc] init];
     [storedConsentState setCCPAConsentState:ccpaConsent];
     [storedConsentState setGDPRConsentState:[MParticle sharedInstance].identity.currentUser.consentState.gdprConsentState];
-    [MPPersistenceController setConsentState:storedConsentState forMpid:[MPPersistenceController mpId]];
+    [MPPersistenceController_PRIVATE setConsentState:storedConsentState forMpid:[MPPersistenceController_PRIVATE mpId]];
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
     MParticle *instance = [MParticle sharedInstance];
@@ -379,7 +378,7 @@
     options.consentState = newConsentState;
     [instance startWithOptions:options];
     dispatch_async([MParticle messageQueue], ^{
-        MPConsentState *storedConsentState = [MPPersistenceController consentStateForMpid:[MPPersistenceController mpId]];
+        MPConsentState *storedConsentState = [MPPersistenceController_PRIVATE consentStateForMpid:[MPPersistenceController_PRIVATE mpId]];
         XCTAssertFalse(storedConsentState.ccpaConsentState.consented);
         [expectation fulfill];
     });

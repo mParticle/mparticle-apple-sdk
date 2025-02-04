@@ -6,10 +6,17 @@
 //
 
 #import "MPIdentityCaching.h"
-#import "MPIUserDefaults.h"
 #import "MPILogger.h"
 #import "mParticle.h"
 #import <CommonCrypto/CommonCrypto.h>
+#import "MParticleSwift.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+
+@end
 
 // User defaults key
 static NSString *const kMPIdentityCachingCachedIdentityCallsKey = @"kMPIdentityCachingCachedIdentityCallsKey";
@@ -176,11 +183,11 @@ static NSString *const kMPIdentityCachingExpires = @"kMPIdentityCachingExpires";
 #pragma mark - Private
 
 + (nullable NSDictionary<NSString*, NSDictionary*> *)getCache {
-    return [[MPIUserDefaults standardUserDefaults] mpObjectForKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
+    return [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] mpObjectForKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
 }
 
 + (void)setCache:(nullable NSDictionary<NSString*, NSDictionary*> *)cache {
-    [[MPIUserDefaults standardUserDefaults] setMPObject:cache forKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
+    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setMPObject:cache forKey:kMPIdentityCachingCachedIdentityCallsKey userId:@0];
 }
 
 + (nullable NSString *)keyWithEndpoint:(MPEndpoint)endpoint identities:(nonnull NSDictionary *)identities {

@@ -21,7 +21,6 @@
 #import "MPTransactionAttributes.h"
 #import "MPEventProjection.h"
 #import "MPKitConfiguration.h"
-#import "MPIUserDefaults.h"
 #import "MPForwardQueueParameters.h"
 #import "MPConsentKitFilter.h"
 #import "MPPersistenceController.h"
@@ -36,7 +35,7 @@
 + (dispatch_queue_t)messageQueue;
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
-@property (nonatomic, strong, readonly) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -92,6 +91,8 @@
     
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
+    
+    [MParticle sharedInstance].backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:(id<MPBackendControllerDelegate>)[MParticle sharedInstance]];
 
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
@@ -133,7 +134,7 @@
 }
 
 - (void)setUserAttributesAndIdentities {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSDictionary *userAttributes = @{@"Dinosaur":@"T-Rex",
                                      @"Arm length":@"Short",
                                      @"Height":@20,
@@ -190,11 +191,11 @@
     MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
 
     NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-    [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
     
-    XCTAssertEqualObjects(responseConfig.configuration, [MPIUserDefaults restore].configuration);
+    XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
     
-    NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+    NSArray *directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
         if ([[kitConfiguration integrationId] isEqual:@(42)]){
@@ -241,14 +242,14 @@
         MPResponseConfig *responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
 
         NSTimeInterval requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
         
-        XCTAssertEqualObjects(responseConfig.configuration, [MPIUserDefaults restore].configuration);
+        XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
         
         dispatch_sync(dispatch_get_main_queue(), ^{ });
-        XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        XCTAssertEqualObjects(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         
-        NSArray *directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        NSArray *directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             if ([[kitConfiguration integrationId] isEqual:@(42)]){
@@ -273,13 +274,13 @@
         responseConfig = [[MPResponseConfig alloc] initWithConfiguration:configuration stateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController];
 
         requestTimestamp = [[NSDate date] timeIntervalSince1970];
-        [[MPIUserDefaults standardUserDefaults] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:@"0" maxAge:nil];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setConfiguration:configuration eTag:eTag requestTimestamp:requestTimestamp currentAge:0 maxAge:nil];
         
-        XCTAssertEqualObjects(responseConfig.configuration, [MPIUserDefaults restore].configuration);
+        XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
         
         XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
         
-        directoryContents = [[MPIUserDefaults standardUserDefaults] getKitConfigurations];
+        directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             if ([[kitConfiguration integrationId] isEqual:@(42)]){
@@ -296,7 +297,7 @@
 }
 
 - (void)testIsDisabledByBracketConfiguration {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     userDefaults[@"mpid"] = @2;
     
     NSDictionary *bracketConfig = @{@"hi":@(0),@"lo":@(0)};
@@ -2239,7 +2240,7 @@
     
     [state setGDPRConsentState:[gdprState copy]];
     
-    [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
+    [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
     isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
@@ -2279,7 +2280,7 @@
         
     [state setCCPAConsentState: [ccpaConsent copy]];
     
-    [MPPersistenceController setConsentState:state forMpid:[MPPersistenceController mpId]];
+    [MPPersistenceController_PRIVATE setConsentState:state forMpid:[MPPersistenceController_PRIVATE mpId]];
     MParticle.sharedInstance.identity.currentUser.consentState = state;
     
     BOOL isDisabled = [[MParticle sharedInstance].kitContainer_PRIVATE isDisabledByConsentKitFilter:filter];
@@ -2611,7 +2612,7 @@
 }
 
 - (void)testAppInfoContainsSideloadKitsFlag {
-    [[MPIUserDefaults standardUserDefaults] setSideloadedKitsCount:3];
+    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] setSideloadedKitsCount:3];
     
     NSDictionary *dict = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
     

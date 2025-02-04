@@ -10,7 +10,6 @@
 #import "MPPersistenceController.h"
 #import "MPKitContainer.h"
 #import "MPKitConfiguration.h"
-#import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 
 @interface MPKitContainer_PRIVATE ()
@@ -22,8 +21,9 @@
 @interface MParticle ()
 
 + (dispatch_queue_t)messageQueue;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPBackendController_PRIVATE *backendController;
-@property (nonatomic, strong) MPPersistenceController *persistenceController;
+@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 
 @end
@@ -58,7 +58,7 @@
     [MParticle sharedInstance].kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     _kitContainer = [MParticle sharedInstance].kitContainer_PRIVATE;
     
-    [MParticle sharedInstance].persistenceController = [[MPPersistenceController alloc] init];
+    [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
     
     NSSet<id<MPExtensionProtocol>> *registeredKits = [MPKitContainer_PRIVATE registeredKits];
     if (!registeredKits) {
@@ -119,7 +119,7 @@
                                     @"f":@NO
                                     }
                                 ];
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     [userDefaults setMPObject:userIdentities forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
     [userDefaults removeMPObjectForKey:@"ua"];
     
@@ -162,7 +162,7 @@
                                 @"better data":@"ABC",
                                 @"bad data":@"12345"
                                 };
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     [userDefaults setMPObject:userAttributes forKey:kMPUserAttributeKey userId:currentUser.userId];
     
     NSString *goodHashedKey = [MPIHasher hashString:@"good data"];
