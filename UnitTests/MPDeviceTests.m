@@ -1,8 +1,16 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MPDevice.h"
-#import "MPIUserDefaults.h"
+#import "mParticle.h"
 #import "MPIConstants.h"
+#import "MParticleSwift.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+
+@end
 
 @interface MPDeviceTests : XCTestCase
 
@@ -23,7 +31,7 @@
 
 - (void)testDictionaryDescription {
 #if TARGET_OS_IOS == 1
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSData *testDeviceToken = [@"<000000000000000000000000000000>" dataUsingEncoding:NSUTF8StringEncoding];
     userDefaults[kMPDeviceTokenKey] = testDeviceToken;
 

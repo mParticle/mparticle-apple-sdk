@@ -1,7 +1,6 @@
 #import "MPConsumerInfo.h"
 #import "MPIConstants.h"
 #import "MPILogger.h"
-#import "MPIUserDefaults.h"
 #import "MParticleSwift.h"
 #import "MPPersistenceController.h"
 #import "mParticle.h"
@@ -12,7 +11,9 @@ NSString *const kMPCKExpiration = @"e";
 
 @interface MParticle ()
 
-@property (nonatomic, strong, readonly) MPPersistenceController *persistenceController;
+@property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -196,10 +197,10 @@ NSString *const kMPCKExpiration = @"e";
         return;
     }
     
-    MPPersistenceController *persistence = [MParticle sharedInstance].persistenceController;
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     
     NSMutableArray<MPCookie *> *cookies = [[NSMutableArray alloc] init];
-    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPPersistenceController mpId]];
+    NSArray<MPCookie *> *fetchedCookies = [persistence fetchCookiesForUserId:[MPPersistenceController_PRIVATE mpId]];
     if (fetchedCookies) {
         [cookies addObjectsFromArray:fetchedCookies];
     }
@@ -238,8 +239,8 @@ NSString *const kMPCKExpiration = @"e";
 }
 
 - (NSDictionary *)localCookiesDictionary {
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
-    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPPersistenceController mpId]];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    NSDictionary *localCookies = [userDefaults mpObjectForKey:kMPRemoteConfigCookiesKey userId:[MPPersistenceController_PRIVATE mpId]];
     
     if (!localCookies) {
         return nil;
@@ -264,7 +265,7 @@ NSString *const kMPCKExpiration = @"e";
         return _uniqueIdentifier;
     }
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     if (userDefaults[kMPRemoteConfigUniqueIdentifierKey]) {
         _uniqueIdentifier = userDefaults[kMPRemoteConfigUniqueIdentifierKey];
         [userDefaults removeMPObjectForKey:kMPRemoteConfigUniqueIdentifierKey];
@@ -288,7 +289,7 @@ NSString *const kMPCKExpiration = @"e";
 - (NSString *)deviceApplicationStamp {
     __block NSString *value = nil;
     
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     value = userDefaults[kMPDeviceApplicationStampStorageKey];
     
     if (!value) {

@@ -2,15 +2,18 @@
 #import "MPIdentityApiRequest.h"
 #import "MParticleUser.h"
 #import "mParticle.h"
-#import "MPIUserDefaults.h"
 #import "MPIConstants.h"
 #import "MPBackendController.h"
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
 @interface MParticle ()
+
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+
 @end
+
 
 @interface MPUserIdentityChangeTests : MPBaseTestCase
 
@@ -24,7 +27,7 @@
     
     MParticleUser *currentUser = [[MParticle sharedInstance].identity currentUser];
 
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityCustomerId], @"i" : @"test"}, @{@"n" : [NSNumber numberWithLong:MPIdentityEmail], @"i" : @"test@example.com"}, @{@"n" : [NSNumber numberWithLong:MPIdentityIOSAdvertiserId], @"i" : @"exampleIDFA"}];
     
     [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
@@ -42,7 +45,7 @@
     NSNumber *selectedUserID = [NSNumber numberWithInteger:58591];
 
 
-    MPIUserDefaults *userDefaults = [MPIUserDefaults standardUserDefaults];
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     
     //Set up Identity to exist
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:selectedUserID];

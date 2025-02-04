@@ -165,3 +165,18 @@ struct Notifications {
     static let kMPRemoteNotificationDeviceTokenKey = Notification.Name("MPRemoteNotificationDeviceTokenKey")
     static let kMPRemoteNotificationOldDeviceTokenKey = Notification.Name("MPRemoteNotificationOldDeviceTokenKey")
 }
+
+struct Miscellaneous {
+    static let kMPFirstSeenUser = "fsu"
+    static let kMPLastSeenUser = "lsu"
+    static let kMPAppInitialLaunchTimeKey = "ict"
+    static let kMPHTTPETagHeaderKey = "ETag"
+    static let kMPConfigProvisionedTimestampKey = "ConfigProvisionedTimestamp"
+    static let kMPConfigMaxAgeHeaderKey = "ConfigMaxAgeHeader"
+    static let kMPConfigParameters = "ConfigParameters"
+    static let kMPLastIdentifiedDate = "last_date_used"
+    static let MPSideloadedKitsCountUserDefaultsKey = "MPSideloadedKitsCountUserDefaultsKey"
+    static let kMPLastUploadSettingsUserDefaultsKey = "lastUploadSettings"
+    static let CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60
+    static let CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60*60*24.0
+}

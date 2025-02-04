@@ -1,5 +1,4 @@
 #import <Foundation/Foundation.h>
-#import "MParticleUserNotification.h"
 
 @class MPMessage;
 @class MPSession;
@@ -15,7 +14,7 @@
     @class MParticleUserNotification;
 #endif
 
-@interface MPPersistenceController : NSObject
+@interface MPPersistenceController_PRIVATE : NSObject
 
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
 

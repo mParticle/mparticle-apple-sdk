@@ -7,7 +7,6 @@
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
-#import "MPIUserDefaults.h"
 #import "MPIdentityDTO.h"
 
 @interface MPIdentityApiRequest ()
