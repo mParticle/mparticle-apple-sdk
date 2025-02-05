@@ -9,7 +9,6 @@
 #import "MPIntegrationAttributes.h"
 #import "MPPersistenceController.h"
 #import "MPBaseTestCase.h"
-#import "MPDevice.h"
 #import "mParticle.h"
 #import "MParticleSwift.h"
 

@@ -4,7 +4,6 @@
 
 #import "MPIdentityDTO.h"
 #import "mParticle.h"
-#import "MPDevice.h"
 #import "MPNotificationController.h"
 #import "MPPersistenceController.h"
 #import "MPConsumerInfo.h"
@@ -14,6 +13,7 @@
 
 @property (nonatomic, strong, readonly) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 
 @end
 
@@ -59,8 +59,8 @@
             _previousMPID = [MPPersistenceController_PRIVATE mpId].stringValue;
         }
         
-        MPDevice *device = [[MPDevice alloc] init];
-        
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+
         NSString *vendorId = device.vendorId;
         if (vendorId) {
             _knownIdentities.vendorId = vendorId;

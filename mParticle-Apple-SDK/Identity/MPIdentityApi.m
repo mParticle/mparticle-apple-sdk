@@ -13,7 +13,6 @@
 #import "MPEnums.h"
 #import "MPILogger.h"
 #import "MPKitContainer.h"
-#import "MPDevice.h"
 #import "MPUpload.h"
 #import "MParticleSwift.h"
 
@@ -357,7 +356,7 @@ typedef NS_ENUM(NSUInteger, MPIdentityRequestType) {
 }
 
 - (NSString *)deviceApplicationStamp {
-    MPDevice *device = [[MPDevice alloc] init];
+    MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
 
     return device.deviceIdentifier;
 }

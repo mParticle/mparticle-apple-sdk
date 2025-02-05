@@ -11,7 +11,6 @@
 #import "MPPersistenceController.h"
 #import "MPURL.h"
 #import "MPStateMachine.h"
-#import "MPDevice.h"
 #import "MParticleSwift.h"
 #import "MPIConstants.h"
 

@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "MPApplication.h"
 #import "MPCustomModule.h"
-#import "MPDevice.h"
 #import <sys/sysctl.h>
 #import "MPNotificationController.h"
 #import "MPILogger.h"
@@ -676,7 +675,7 @@ static BOOL runningInBackground = NO;
     
     BOOL dataRamped = YES;
     if (rampPercentage.integerValue != 0) {
-        MPDevice *device = [[MPDevice alloc] init];
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
         NSData *rampData = [device.deviceIdentifier dataUsingEncoding:NSUTF8StringEncoding];
         
         uint64_t rampHash = [MPIHasher hashFNV1a:rampData];

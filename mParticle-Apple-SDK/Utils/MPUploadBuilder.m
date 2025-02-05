@@ -8,7 +8,6 @@
 #import "MPCustomModule.h"
 #import "MPConsumerInfo.h"
 #import "MPApplication.h"
-#import "MPDevice.h"
 #import "MPForwardRecord.h"
 #import "MPIntegrationAttributes.h"
 #import "MPConsentState.h"
@@ -160,7 +159,7 @@
     } else {
         // If the info wasn't saved in the session, use the old behavior and grab it now
         // NOTE: This should only ever happen the first time after upgrading to the new schema if there are old sessions left
-        MPDevice *device = [[MPDevice alloc] init];
+        MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
         NSNumber *mpid = _uploadDictionary[kMPRemoteConfigMPIDKey];
         _uploadDictionary[kMPDeviceInformationKey] = [device dictionaryRepresentationWithMpid:mpid];
     }

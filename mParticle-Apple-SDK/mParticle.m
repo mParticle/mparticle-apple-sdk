@@ -1,7 +1,6 @@
 #import "mParticle.h"
 #import "MPAppNotificationHandler.h"
 #import "MPConsumerInfo.h"
-#import "MPDevice.h"
 #import "MPForwardQueueParameters.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"

@@ -381,6 +381,38 @@ NSString *const kMPEventTypeStringProductAddToWishlist = @"ProductAddToWishlist"
 NSString *const kMPEventTypeStringProductRemoveFromWishlist = @"ProductRemoveFromWishlist";
 NSString *const kMPEventTypeStringProductImpression = @"ProductImpression";
 
+// Device
+NSString * const kMPDeviceInformationKey = @"di";
+NSString * const kMPDeviceBrandKey = @"b";
+NSString * const kMPDeviceProductKey = @"p";
+NSString * const kMPDeviceNameKey = @"dn";
+NSString * const kMPDeviceAdvertiserIdKey = @"aid";
+NSString * const kMPDeviceAppVendorIdKey = @"vid";
+NSString * const kMPDeviceBuildIdKey = @"bid";
+NSString * const kMPDeviceManufacturerKey = @"dma";
+NSString * const kMPDevicePlatformKey = @"dp";
+NSString * const kMPDeviceOSKey = @"dosv";
+NSString * const kMPDeviceModelKey = @"dmdl";
+NSString * const kMPScreenHeightKey = @"dsh";
+NSString * const kMPScreenWidthKey = @"dsw";
+NSString * const kMPDeviceLocaleCountryKey = @"dlc";
+NSString * const kMPDeviceLocaleLanguageKey = @"dll";
+NSString * const kMPNetworkCountryKey = @"nc";
+NSString * const kMPNetworkCarrierKey = @"nca";
+NSString * const kMPMobileNetworkCodeKey = @"mnc";
+NSString * const kMPMobileCountryCodeKey = @"mcc";
+NSString * const kMPTimezoneOffsetKey = @"tz";
+NSString * const kMPTimezoneDescriptionKey = @"tzn";
+NSString * const kMPDeviceJailbrokenKey = @"jb";
+NSString * const kMPDeviceArchitectureKey = @"arc";
+NSString * const kMPDeviceRadioKey = @"dr";
+NSString * const kMPDeviceFloatingPointFormat = @"%0.0f";
+NSString * const kMPDeviceSignerIdentityString = @"signeridentity";
+NSString * const kMPDeviceIsTabletKey = @"it";
+NSString * const kMPDeviceIdentifierKey = @"deviceIdentifier";
+NSString * const kMPDeviceLimitAdTrackingKey = @"lat";
+NSString * const kMPDeviceIsDaylightSavingTime = @"idst";
+NSString * const kMPDeviceInvalidVendorId = @"00000000-0000-0000-0000-000000000000";
 //
 // Primitive data type constants
 //
