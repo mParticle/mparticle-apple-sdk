@@ -1484,6 +1484,8 @@
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logEvent:)];
+    MPEvent *eventCopy = (MPEvent *)kitFilter.originalEventCopy;
+    
 
     XCTAssert([kitFilter.forwardEvent isKindOfClass:[MPEvent class]]);
     MPEvent *forwardEvent = (MPEvent *)kitFilter.forwardEvent;
@@ -1491,6 +1493,10 @@
     XCTAssertEqualObjects(forwardEvent.name, @"new_premium_subscriber");
     XCTAssertNotNil(forwardEvent.customAttributes);
     XCTAssertEqual(forwardEvent.customAttributes.count, 3);
+    XCTAssertNotNil(kitFilter.appliedProjections);
+    XCTAssertEqualObjects(eventCopy.name, @"subscription_success");
+    XCTAssertNotNil(eventCopy.customAttributes);
+    XCTAssertEqual(eventCopy.customAttributes.count, 3);
 }
 
 - (void)testForwardAppsFlyerCommerceEvent {
@@ -1652,6 +1658,7 @@
     
     MPKitRegister *kitRegister = [[MPKitRegister alloc] initWithName:@"AppsFlyer" className:@"MPKitAppsFlyerTest"];
     MPKitFilter *kitFilter = [kitContainer filter:kitRegister forCommerceEvent:commerceEvent];
+    MPEvent *commerceEventCopy = (MPEvent *)kitFilter.originalCommerceEventCopy;
     
     XCTAssert([kitFilter.forwardEvent isKindOfClass:[MPEvent class]]);
     MPEvent *event = (MPEvent *)kitFilter.forwardEvent;
@@ -1659,6 +1666,9 @@
     XCTAssertEqualObjects(event.customAttributes[@"af_content_id"], @"OutATime");
     XCTAssertEqualObjects(event.customAttributes[@"af_content_type"], @"Time Machine");
     XCTAssertEqualObjects(event.name, @"af_add_to_cart");
+    XCTAssertNotNil(kitFilter.appliedProjections);
+    XCTAssertEqual(commerceEventCopy.type, MPEventTypeAddToCart);
+    
 }
 
 - (void)testMatchArrayProjection {
@@ -1750,6 +1760,7 @@
     XCTAssertNotNil(forwardEvent);
     XCTAssertNotNil(forwardEvent.customAttributes);
     XCTAssertEqual(forwardEvent.customAttributes.count, 2);
+    MPEvent *eventCopy = (MPEvent *)kitFilter.originalEventCopy;
     
     [foundEventNames addObject:forwardEvent.name];
     
@@ -1757,6 +1768,9 @@
         XCTAssertTrue([foundEventNames containsObject:@"X_NEW_SUBSCRIPTION"]);
         XCTAssertTrue([foundEventNames containsObject:@"X_NEW_NOAH_SUBSCRIPTION"]);
     }
+    XCTAssertNotNil(kitFilter.appliedProjections);
+    XCTAssertEqual(kitFilter.appliedProjections.count, 2);
+    XCTAssertEqualObjects(eventCopy.name, @"SUBSCRIPTION_END");
 }
 
 - (void)testScreenViewProjectionToBaseEvent {
@@ -1849,10 +1863,13 @@
     [(id <MPKitProtocol>)[kitWrapperMock reject] logScreen:OCMOCK_ANY];
     
     MPKitFilter *kitFilter = [kitContainer filter:kitRegister forEvent:event selector:@selector(logScreen:)];
+    MPEvent *eventCopy = (MPEvent *)kitFilter.originalEventCopy;
     
     [kitWrapperMock verifyWithDelay:5.0];
 
     XCTAssert([kitFilter.forwardEvent isKindOfClass:[MPEvent class]]);
+    XCTAssertNotNil(kitFilter.appliedProjections);
+    XCTAssertEqualObjects(eventCopy.name, @"SUBSCRIPTION_END");
 }
 
 - (void)testNonMatchingMatchArrayProjection {

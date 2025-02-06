@@ -804,7 +804,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         
         if (!projectedEvents.empty()) {
             for (auto &projectedEvent : projectedEvents) {
-                kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray];
+                kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:NO appliedProjections:appliedProjectionsArray eventCopy:nil commerceEventCopy:commerceEvent];
                 [self attemptToLogEventToKit:kitRegister kitFilter:kitFilter selector:@selector(logEvent:) parameters:nil messageType:MPMessageTypeEvent userInfo:[[NSDictionary alloc] init]];
             }
         }
@@ -908,7 +908,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         NSArray<MPEventProjection *> *appliedProjectionsArray = !appliedProjections.empty() ? [NSArray arrayWithObjects:&appliedProjections[0] count:appliedProjections.size()] : nil;
         
         for (auto &projectedEvent : projectedEvents) {
-            kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray];
+            kitFilter = [[MPKitFilter alloc] initWithEvent:projectedEvent shouldFilter:shouldFilter appliedProjections:appliedProjectionsArray eventCopy:event commerceEventCopy:nil];
             SEL mutableSelector = selector;
             if (selector == @selector(logScreen:)) {
                 for (int i = 0; i < appliedProjectionsArray.count; i += 1) {
@@ -2215,13 +2215,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             if (execStatus.success && ![lastKit isEqualToNumber:currentKit]) {
                 lastKit = currentKit;
                 
-                MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
-                                                                                   execStatus:execStatus
-                                                                                    kitFilter:kitFilter
-                                                                                originalEvent:kitFilter.originalCommerceEvent];
-                dispatch_async([MParticle messageQueue], ^{
-                    [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
-                });
+                [self forwardCommerceEventRecord:kitFilter execStatus:execStatus commerceEvent:kitFilter.originalCommerceEvent];
                 MPILogDebug(@"Forwarded logCommerceEvent call to kit: %@", kitRegister.name);
             }
         });
@@ -2345,25 +2339,46 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         if (execStatus.success && ![lastKit isEqualToNumber:currentKit] && messageType != MPMessageTypeUnknown && messageType != MPMessageTypeMedia) {
             lastKit = currentKit;
             
-            MPForwardRecord *forwardRecord = nil;
-            
-            if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
-                forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
-                                                                  execStatus:execStatus
-                                                                   stateFlag:[userInfo[@"state"] boolValue]];
-            } else {
-                forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
-                                                                  execStatus:execStatus
-                                                                   kitFilter:kitFilter
-                                                               originalEvent:kitFilter.originalEvent];
-            }
-            
-            if (forwardRecord != nil) {
-                dispatch_async([MParticle messageQueue], ^{
-                    [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
-                });
+            if (!kitFilter.appliedProjections) {
+                [self forwardEventRecord:kitFilter messageType:messageType userInfo:userInfo execStatus:execStatus event:kitFilter.originalEvent];
+            } else if (kitFilter.originalCommerceEventCopy) {
+                [self forwardCommerceEventRecord:kitFilter execStatus:execStatus commerceEvent:kitFilter.originalCommerceEventCopy];
+            } else if (kitFilter.originalEventCopy) {
+                [self forwardEventRecord:kitFilter messageType:messageType userInfo:userInfo execStatus:execStatus event:kitFilter.originalEventCopy];
             }
         }
+    });
+}
+
+- (void)forwardEventRecord:(MPKitFilter *)kitFilter messageType:(MPMessageType)messageType userInfo:(NSDictionary *)userInfo execStatus:(MPKitExecStatus*) execStatus event:(MPBaseEvent *)event{
+    MPForwardRecord *forwardRecord = nil;
+    
+    if (messageType == MPMessageTypeOptOut || messageType == MPMessageTypePushRegistration) {
+        forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
+                                                          execStatus:execStatus
+                                                           stateFlag:[userInfo[@"state"] boolValue]];
+    } else {
+        
+        forwardRecord = [[MPForwardRecord alloc] initWithMessageType:messageType
+                                                          execStatus:execStatus
+                                                           kitFilter:kitFilter
+                                                       originalEvent:event];
+    }
+    
+    if (forwardRecord != nil) {
+        dispatch_async([MParticle messageQueue], ^{
+            [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
+        });
+    }
+}
+
+- (void)forwardCommerceEventRecord:(MPKitFilter *)kitFilter execStatus:(MPKitExecStatus*) execStatus commerceEvent:(MPCommerceEvent *)commerceEvent{
+    MPForwardRecord *forwardRecord = [[MPForwardRecord alloc] initWithMessageType:MPMessageTypeCommerceEvent
+                                                                       execStatus:execStatus
+                                                                        kitFilter:kitFilter
+                                                                    originalEvent:commerceEvent];
+    dispatch_async([MParticle messageQueue], ^{
+        [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
     });
 }
 

@@ -112,19 +112,25 @@ NSString *const kMPFROptOutState = @"s";
     if (kitFilter.appliedProjections.count > 0) {
         NSMutableArray *projections = [[NSMutableArray alloc] initWithCapacity:kitFilter.appliedProjections.count];
         NSMutableDictionary *projectionDictionary;
+        NSString *currentProjectionName;
+        if ([kitFilter.originalEvent isKindOfClass:[MPEvent class]]) {
+            currentProjectionName = ((MPEvent *)kitFilter.originalEvent).name;
+        }
         
         for (MPEventProjection *eventProjection in kitFilter.appliedProjections) {
-            projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
-            projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);
-            projectionDictionary[kMPMessageTypeKey] = NSStringFromMessageType(messageType);
-            
-            projectionDictionary[kMPEventTypeKey] = NSStringFromEventType(eventProjection.eventType);
-            
-            if (eventProjection.projectedName) {
-                projectionDictionary[kMPFRProjectionName] = eventProjection.projectedName;
+            if ([eventProjection.projectedName isEqual:currentProjectionName]) {
+                projectionDictionary = [[NSMutableDictionary alloc] initWithCapacity:4];
+                projectionDictionary[kMPFRProjectionId] = @(eventProjection.projectionId);
+                projectionDictionary[kMPMessageTypeKey] = NSStringFromMessageType(messageType);
+                
+                projectionDictionary[kMPEventTypeKey] = NSStringFromEventType(eventProjection.eventType);
+                
+                if (eventProjection.projectedName) {
+                    projectionDictionary[kMPFRProjectionName] = eventProjection.projectedName;
+                }
+                
+                [projections addObject:projectionDictionary];
             }
-            
-            [projections addObject:projectionDictionary];
         }
         
         _dataDictionary[kMPFRProjections] = projections;
