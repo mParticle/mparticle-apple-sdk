@@ -169,9 +169,7 @@ import CoreTelephony
     @objc open var platform: String {
         get {
             switch UIDevice.current.userInterfaceIdiom {
-            case .phone:
-                return "iOS"
-            case .pad:
+            case .phone, .pad:
                 return "iOS"
             case .tv:
                 return "tvOS"
@@ -274,15 +272,16 @@ import CoreTelephony
 #else
         let fileManager = FileManager.default
         var signerIdentityKey: String?
-        let bundleInfoDictionary = Bundle.main.infoDictionary!
-        var infoEnumerator = bundleInfoDictionary.keys.makeIterator()
+        let bundleInfoDictionary = Bundle.main.infoDictionary
         var key: String?
         
-        while (key != nil) {
-            key = infoEnumerator.next()
-            if let signerId = key?.copy() as? String, (signerId.lowercased() == Device.kMPDeviceSignerIdentityString) {
-                signerIdentityKey = signerId
-                break
+        if var infoEnumerator = bundleInfoDictionary?.keys.makeIterator() {
+            while (key != nil) {
+                key = infoEnumerator.next()
+                if let signerId = key?.copy() as? String, (signerId.lowercased() == Device.kMPDeviceSignerIdentityString) {
+                    signerIdentityKey = signerId
+                    break
+                }
             }
         }
         
@@ -322,10 +321,10 @@ import CoreTelephony
             
             if !jailbroken {
                 // Valid test only if running as root on a jailbroken device
-                let jailbrokenTestData = "Jailbroken filesystem test.".data(using: .utf8)!
+                let jailbrokenTestData = "Jailbroken filesystem test.".data(using: .utf8)
                 let filePath = "/private/mpjailbrokentest.txt"
                 do {
-                    try jailbrokenTestData.write(to: URL(fileURLWithPath: filePath), options: [])
+                    try jailbrokenTestData?.write(to: URL(fileURLWithPath: filePath), options: [])
                 } catch {
                     MPLog.warning("Device is not jailbroken, failed to write test file: \(error)")
                 }
