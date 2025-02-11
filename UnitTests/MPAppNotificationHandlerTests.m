@@ -82,14 +82,6 @@
     NSDictionary *options;
     options = @{UIApplicationOpenURLOptionsSourceApplicationKey:@"testApp"};
     [appNotificationHandler openURL:url options:options];
-    
-    url = nil;
-    options = @{};
-    [appNotificationHandler openURL:url options:options];
-    
-    url = nil;
-    options = nil;
-    [appNotificationHandler openURL:url options:options];
 }
 
 @end

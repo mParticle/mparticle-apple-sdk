@@ -1,5 +1,4 @@
 #import <XCTest/XCTest.h>
-#import "MPLaunchInfo.h"
 #import "MParticleSwift.h"
 #import "MPBaseTestCase.h"
 
@@ -82,21 +81,6 @@
     launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
     XCTAssertEqualObjects(launchInfo.sourceApplication, @"testApp", @"Should have been equal.");
     XCTAssertEqualObjects(launchInfo.url, url, @"Should have been equal.");
-}
-
-- (void)testInvalidValues {
-    NSURL *url = nil;
-    NSString *sourceApp = @"testApp";
-    id annotation = nil;
-    
-    MPLaunchInfo *launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
-    XCTAssertNil(launchInfo, @"Should have been nil.");
-    
-    url = (NSURL *)[NSNull null];
-    sourceApp = nil;
-    
-    launchInfo = [[MPLaunchInfo alloc] initWithURL:url sourceApplication:sourceApp annotation:annotation];
-    XCTAssertNil(launchInfo, @"Should have been nil.");
 }
 
 - (void)testCreation {
