@@ -2,7 +2,6 @@
 #import "MPIConstants.h"
 #import "MPPersistenceController.h"
 #import "MPApplication.h"
-#import "MPDevice.h"
 
 NSString *const sessionUUIDKey = @"sessionId";
 

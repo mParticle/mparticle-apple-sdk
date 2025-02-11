@@ -54,6 +54,26 @@ struct MessageKeys {
     static let kMPDataPlanVersionKey = "v"
 }
 
+struct PushNotifications {
+    static let kMPDeviceTokenKey = "to"
+    static let kMPPushStatusKey = "r"
+    static let kMPPushMessageTypeKey = "t"
+    static let kMPPushMessageReceived = "received"
+    static let kMPPushMessageAction = "action"
+    static let kMPPushMessageSent = "sent"
+    static let kMPPushMessageProviderKey = "n"
+    static let kMPPushMessageProviderValue = "apn"
+    static let kMPPushMessagePayloadKey = "pay"
+    static let kMPPushNotificationStateKey = "as"
+    static let kMPPushNotificationStateNotRunning = "not_running"
+    static let kMPPushNotificationStateBackground = "background"
+    static let kMPPushNotificationStateForeground = "foreground"
+    static let kMPPushNotificationActionIdentifierKey = "aid"
+    static let kMPPushNotificationBehaviorKey = "bhv"
+    static let kMPPushNotificationActionTitleKey = "an"
+    static let kMPPushNotificationCategoryIdentifierKey = "acid"
+}
+
 struct RemoteConfig {
     static let kMPRemoteConfigExceptionHandlingModeKey = "cue"
     static let kMPRemoteConfigExceptionHandlingModeAppDefined = "appdefined"
@@ -166,6 +186,40 @@ struct Notifications {
     static let kMPRemoteNotificationOldDeviceTokenKey = Notification.Name("MPRemoteNotificationOldDeviceTokenKey")
 }
 
+struct Device {
+    static let kMPDeviceInformationKey = "di"
+    static let kMPDeviceBrandKey = "b"
+    static let kMPDeviceProductKey = "p"
+    static let kMPDeviceNameKey = "dn"
+    static let kMPDeviceAdvertiserIdKey = "aid"
+    static let kMPDeviceAppVendorIdKey = "vid"
+    static let kMPDeviceBuildIdKey = "bid"
+    static let kMPDeviceManufacturerKey = "dma"
+    static let kMPDevicePlatformKey = "dp"
+    static let kMPDeviceOSKey = "dosv"
+    static let kMPDeviceModelKey = "dmdl"
+    static let kMPScreenHeightKey = "dsh"
+    static let kMPScreenWidthKey = "dsw"
+    static let kMPDeviceLocaleCountryKey = "dlc"
+    static let kMPDeviceLocaleLanguageKey = "dll"
+    static let kMPNetworkCountryKey = "nc"
+    static let kMPNetworkCarrierKey = "nca"
+    static let kMPMobileNetworkCodeKey = "mnc"
+    static let kMPMobileCountryCodeKey = "mcc"
+    static let kMPTimezoneOffsetKey = "tz"
+    static let kMPTimezoneDescriptionKey = "tzn"
+    static let kMPDeviceJailbrokenKey = "jb"
+    static let kMPDeviceArchitectureKey = "arc"
+    static let kMPDeviceRadioKey = "dr"
+    static let kMPDeviceFloatingPointFormat = "%0.0f"
+    static let kMPDeviceSignerIdentityString = "signeridentity"
+    static let kMPDeviceIsTabletKey = "it"
+    static let kMPDeviceIdentifierKey = "deviceIdentifier"
+    static let kMPDeviceLimitAdTrackingKey = "lat"
+    static let kMPDeviceIsDaylightSavingTime = "idst"
+    static let kMPDeviceInvalidVendorId = "00000000-0000-0000-0000-000000000000"
+}
+
 struct Miscellaneous {
     static let kMPFirstSeenUser = "fsu"
     static let kMPLastSeenUser = "lsu"
@@ -179,4 +233,76 @@ struct Miscellaneous {
     static let kMPLastUploadSettingsUserDefaultsKey = "lastUploadSettings"
     static let CONFIG_REQUESTS_DEFAULT_EXPIRATION_AGE = 5.0*60
     static let CONFIG_REQUESTS_MAX_EXPIRATION_AGE = 60*60*24.0
+    static let kMPDeviceTokenTypeKey = "tot"
+    static let kMPATT = "atts"
+    static let kMPATTTimestamp = "attt"
+    static let kMPDeviceCydiaJailbrokenKey = "cydia"
+
+}
+
+/// User Identities
+/// The identities in this enum are limited to end-user forms of identity. A new enum, MPIdentity, has been provided to cover all valid forms of identity supported by the mParticle Identity API (user identities and device identities)
+@objc public enum MPUserIdentitySwift: Int {
+    case other = 0
+    case customerId = 1
+    case facebook = 2
+    case twitter = 3
+    case google = 4
+    case microsoft = 5
+    case yahoo = 6
+    case email = 7
+    case alias = 8
+    case facebookCustomAudienceId = 9
+    case other2 = 10
+    case other3 = 11
+    case other4 = 12
+    case other5 = 13
+    case other6 = 14
+    case other7 = 15
+    case other8 = 16
+    case other9 = 17
+    case other10 = 18
+    case mobileNumber = 19
+    case phoneNumber2 = 20
+    case phoneNumber3 = 21
+}
+
+/// MP Identities
+@objc public enum MPIdentitySwift: Int {
+    case other = 0
+    case customerId = 1
+    case facebook = 2
+    case twitter = 3
+    case google = 4
+    case microsoft = 5
+    case yahoo = 6
+    case email = 7
+    case alias = 8
+    case facebookCustomAudienceId = 9
+    case other2 = 10
+    case other3 = 11
+    case other4 = 12
+    case other5 = 13
+    case other6 = 14
+    case other7 = 15
+    case other8 = 16
+    case other9 = 17
+    case other10 = 18
+    case mobileNumber = 19
+    case phoneNumber2 = 20
+    case phoneNumber3 = 21
+    case iosAdvertiserId = 22
+    case iosVendorId = 23
+    case pushToken = 24
+    case deviceApplicationStamp = 25
+}
+
+/**
+ @see https://developer.apple.com/documentation/apptrackingtransparency/attrackingmanager/authorizationstatus
+ */
+@objc public enum MPATTAuthorizationStatusSwift: Int {
+    case notDetermined = 0
+    case restricted
+    case denied
+    case authorized
 }

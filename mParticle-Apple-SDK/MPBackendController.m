@@ -22,7 +22,6 @@
 #import "MPKitContainer.h"
 #import "MPURLRequestBuilder.h"
 #import "MPListenerController.h"
-#import "MPDevice.h"
 #import "MPIdentityCaching.h"
 #import "MParticleSwift.h"
 #import "MPLaunchInfo.h"
@@ -878,7 +877,9 @@ static BOOL skipNextUpload = NO;
             _session.appInfo = [[[MPApplication_PRIVATE alloc] init] dictionaryRepresentation];
         }
         if (!_session.deviceInfo) {
-            _session.deviceInfo = [[[MPDevice alloc] init] dictionaryRepresentationWithMpid:mpId];
+            MPDevice *device = [[MPDevice alloc] initWithStateMachine:[MParticle sharedInstance].stateMachine userDefaults:[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] identity:[MParticle sharedInstance].identity];
+
+            _session.deviceInfo = [device dictionaryRepresentationWithMpid:mpId];
         }
         
         [persistence saveSession:_session];

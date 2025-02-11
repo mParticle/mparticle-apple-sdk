@@ -4,7 +4,6 @@
 #import <UIKit/UIKit.h>
 #import "MPConnector.h"
 #import "MPUpload.h"
-#import "MPDevice.h"
 #import "MPApplication.h"
 #import "MPIConstants.h"
 #import "MPURLRequestBuilder.h"

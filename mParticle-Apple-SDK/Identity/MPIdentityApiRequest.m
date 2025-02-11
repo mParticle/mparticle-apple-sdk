@@ -3,7 +3,6 @@
 //
 
 #import "MPIdentityApiRequest.h"
-#import "MPDevice.h"
 #import "MPNotificationController.h"
 #import "MPIConstants.h"
 #import "MPStateMachine.h"
