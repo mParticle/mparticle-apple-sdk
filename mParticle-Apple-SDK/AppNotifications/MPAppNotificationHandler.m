@@ -1,5 +1,5 @@
 #import "MPAppNotificationHandler.h"
-#import "MPLaunchInfo.h"
+#import "MParticleSwift.h"
 #import "MPForwardRecord.h"
 #import "MPPersistenceController.h"
 #import "MPILogger.h"
