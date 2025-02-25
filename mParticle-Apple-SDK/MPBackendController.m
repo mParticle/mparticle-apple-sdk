@@ -1038,10 +1038,14 @@ static BOOL skipNextUpload = NO;
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
         
     [self.networkCommunication requestAudiencesWithCompletionHandler:^(BOOL success, NSArray *currentAudiences, NSError *error) {
-        if (!error) {
+        if (success) {
             MPILogVerbose(@"Audiences Request Succesful: /nCurrent Audiences: %@", currentAudiences);
         } else {
-            MPILogError(@"Audience request failed with error: %@", error)
+            if (!error) {
+                MPILogError(@"Audience request failed with without error")
+            } else {
+                MPILogError(@"Audience request failed with error: %@", error)
+            }
         }
         
         completionHandler(currentAudiences, error);

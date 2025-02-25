@@ -28,6 +28,9 @@
 NSString *const urlFormat = @"%@://%@/%@/%@%@"; // Scheme, URL Host, API Version, API key, path
 NSString *const urlFormatOverride = @"%@://%@/%@%@"; // Scheme, URL Host, API key, path
 
+NSString *const audienceFormat = @"%@://%@/%@/%@"; // Scheme, URL Host, API Version, API key, path
+NSString *const audienceFormatOverride = @"%@://%@/%@"; // Scheme, URL Host, API key, path
+
 NSString *const identityURLFormat = @"%@://%@/%@/%@"; // Scheme, URL Host, API Version, path
 NSString *const identityURLFormatOverride = @"%@://%@/%@"; // Scheme, URL Host, path
 
@@ -84,15 +87,6 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @interface MPNetworkCommunication_PRIVATE()
 
-@property (nonatomic, strong, readonly) MPURL *audienceURL;
-@property (nonatomic, strong, readonly) MPURL *configURL;
-@property (nonatomic, strong, readonly) MPURL *eventURL;
-@property (nonatomic, strong, readonly) MPURL *identifyURL;
-@property (nonatomic, strong, readonly) MPURL *loginURL;
-@property (nonatomic, strong, readonly) MPURL *logoutURL;
-@property (nonatomic, strong, readonly) MPURL *modifyURL;
-@property (nonatomic, strong, readonly) MPURL *aliasURL;
-
 @property (nonatomic, strong) NSString *context;
 @property (nonatomic) BOOL identifying;
 
@@ -100,10 +94,14 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
 
 @implementation MPNetworkCommunication_PRIVATE
 
+@synthesize audienceURL = _audienceURL;
 @synthesize configURL = _configURL;
+@synthesize eventURL = _eventURL;
 @synthesize identifyURL = _identifyURL;
 @synthesize loginURL = _loginURL;
 @synthesize logoutURL = _logoutURL;
+@synthesize modifyURL = _modifyURL;
+@synthesize aliasURL = _aliasURL;
 @synthesize identifying = _identifying;
 
 - (instancetype)init {
@@ -224,19 +222,22 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     
     NSString *eventHost = [MParticle sharedInstance].networkOptions.eventsHost ?: self.defaultEventHost;
-    NSString *audienceURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
-    NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+    NSString *audienceURLFormat = [audienceFormat stringByAppendingString:@"?mpid=%@"];
+    NSString *urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, self.defaultEventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     NSURL *defaultURL = [NSURL URLWithString:urlString];
 
     if ([MParticle sharedInstance].networkOptions.overridesEventsSubdirectory) {
-        audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpID=%@"];
+        audienceURLFormat = [urlFormatOverride stringByAppendingString:@"?mpid=%@"];
         urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     } else {
-        audienceURLFormat = [urlFormat stringByAppendingString:@"?mpID=%@"];
-        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
+        audienceURLFormat = [urlFormat stringByAppendingString:@"?mpid=%@"];
+        urlString = [NSString stringWithFormat:audienceURLFormat, kMPURLScheme, eventHost, kMPAudienceVersion, stateMachine.apiKey, kMPAudienceURL, [MPPersistenceController_PRIVATE mpId]];
     }
     
     NSURL *modifiedURL = [NSURL URLWithString:urlString];
+    defaultURL.accessibilityHint = @"audience";
+    modifiedURL.accessibilityHint = @"audience";
+    
     MPURL *audienceURL;
     if (modifiedURL && defaultURL) {
         audienceURL = [[MPURL alloc] initWithURL:modifiedURL defaultURL:defaultURL];
@@ -575,7 +576,10 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     }
     
     if (!data) {
-        completionHandler(NO, nil, nil);
+        NSError *audienceError = [NSError errorWithDomain:@"mParticle Audiences"
+                                                     code:httpResponse.statusCode
+                                       userInfo:@{@"message":@"Audiences may not be enabled for this org."}];
+        completionHandler(NO, nil, audienceError);
         return;
     }
     

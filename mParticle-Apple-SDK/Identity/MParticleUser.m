@@ -448,9 +448,16 @@
 
 #pragma mark - User Segments
 - (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler {
-    dispatch_async([MParticle messageQueue], ^{
-        [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
-    });
+    if ([MParticle sharedInstance].stateMachine.enableAudienceAPI) {
+        dispatch_async([MParticle messageQueue], ^{
+            [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
+        });
+    } else {
+        NSError *audienceError = [NSError errorWithDomain:@"mParticle Audience"
+                                                     code:202
+                                                 userInfo:@{@"message":@"Audiences not enabled for this workspace."}];
+        completionHandler(nil, audienceError);
+    }
 }
 
 #pragma mark - Consent State
