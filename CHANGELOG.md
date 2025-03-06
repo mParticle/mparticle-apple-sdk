@@ -1,3 +1,11 @@
+## [8.27.5](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.4...v8.27.5) (2025-03-06)
+
+
+### Bug Fixes
+
+* Address firstInstall Edge Case ([#312](https://github.com/mParticle/mparticle-apple-sdk/issues/312)) ([04f6155](https://github.com/mParticle/mparticle-apple-sdk/commit/04f615571344bf10a85e98cd007daaaf53bd881b))
+* forward original event names to UI for kits with mapped events ([#301](https://github.com/mParticle/mparticle-apple-sdk/issues/301)) ([db286bc](https://github.com/mParticle/mparticle-apple-sdk/commit/db286bc1a1c0fe07aa957ff6fe53b044cb11798f))
+
 ## [8.27.4](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.3...v8.27.4) (2024-11-04)
 
 
