@@ -67,6 +67,17 @@ Method originalMethod = nil; Method swizzleMethod = nil;
     return @{@"CFBundleShortVersionString":@"1.2.3.4.5678 (bd12345ff)"};
 }
 
+- (void)testAudienceURL {
+    [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
+    
+    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    NSURL *audienceURL = [networkCommunication audienceURL].url;
+    
+    [self deswizzle];
+    
+    XCTAssert([audienceURL.absoluteString rangeOfString:@"/(null)/audience?mpid=0"].location != NSNotFound);
+}
+
 - (void)testConfigURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     

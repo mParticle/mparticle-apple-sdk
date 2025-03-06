@@ -5,8 +5,14 @@
 #import <XCTest/XCTest.h>
 #import "mParticle.h"
 #import "MPBaseTestCase.h"
-
 #import "MPBackendController.h"
+#import "MPStateMachine.h"
+
+@interface MParticle ()
+
+@property (nonatomic, strong) MPStateMachine *stateMachine;
+
+@end
 
 @interface MParticleUserTests : MPBaseTestCase
 
@@ -50,6 +56,29 @@
     XCTAssertTrue([user forwardLegacyUserIdentityToKitContainer:@"foo"
                                                    identityType:MPUserIdentityEmail
                                                      execStatus:MPExecStatusSuccess]);
+}
+
+- (void)testGetUserAudiencesWithCompletionHandlerEnabled {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.enableAudienceAPI = YES;
+    
+    [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {
+        XCTAssertNil(error);
+    }];
+}
+
+- (void)testGetUserAudiencesWithCompletionHandlerDisabled {
+    MParticleUser *user = [[MParticleUser alloc] init];
+    
+    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    stateMachine.enableAudienceAPI = NO;
+    
+    [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {
+        XCTAssert(error);
+        XCTAssertTrue(error.code == 202);
+    }];
 }
 
 

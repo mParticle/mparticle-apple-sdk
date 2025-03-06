@@ -1039,7 +1039,7 @@ static BOOL skipNextUpload = NO;
         
     [self.networkCommunication requestAudiencesWithCompletionHandler:^(BOOL success, NSArray *currentAudiences, NSError *error) {
         if (success) {
-            MPILogVerbose(@"Audiences Request Succesful: /nCurrent Audiences: %@", currentAudiences);
+            MPILogVerbose(@"Audiences Request Succesful: \nCurrent Audiences: %@", currentAudiences);
         } else {
             if (!error) {
                 MPILogError(@"Audience request failed without error")

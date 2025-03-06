@@ -12,7 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface MPAudience : NSObject
 
 /**
- The mParticle id associated with this user (MPID)
+ The unique audience ID of this audience
  */
 @property(readonly, strong, nonnull) NSNumber *audienceId;
 
