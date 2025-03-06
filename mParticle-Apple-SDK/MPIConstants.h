@@ -232,6 +232,8 @@ extern NSString * _Nonnull const kMPLastUploadSettingsUserDefaultsKey;
 // Remote configuration
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeKey;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeAppDefined;
+extern NSString * _Nonnull const kMPRemoteConfigFlagsKey;
+extern NSString * _Nonnull const kMPRemoteConfigAudienceAPIKey;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeForce;
 extern NSString * _Nonnull const kMPRemoteConfigExceptionHandlingModeIgnore;
 extern NSString * _Nonnull const kMPRemoteConfigCrashMaxPLReportLength;

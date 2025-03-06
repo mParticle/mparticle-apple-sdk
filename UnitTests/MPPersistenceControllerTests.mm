@@ -3,6 +3,7 @@
 #import "MPSession.h"
 #import "MPMessage.h"
 #import "MPUpload.h"
+#import "MPAudience.h"
 #import "MPIConstants.h"
 #import "MPMessageBuilder.h"
 #import "MPIntegrationAttributes.h"
@@ -548,6 +549,11 @@
     }];
     
     [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
+- (void)testAudiences {
+    MPAudience *audience = [[MPAudience alloc] initWithAudienceId:@2];
+    XCTAssertTrue(audience.audienceId.intValue == 2);
 }
 
 - (void)testFetchIntegrationAttributesForKit {

@@ -3,6 +3,7 @@
 @class MPURL;
 @class MPSession;
 @class MPUpload;
+@class MPAudience;
 @class MPIdentityApiRequest;
 @class MPIdentityHTTPSuccessResponse;
 @class MPIdentityHTTPBaseSuccessResponse;
@@ -18,6 +19,7 @@ typedef NS_ENUM(NSInteger, MPNetworkError) {
     MPNetworkErrorDelayedSegments
 };
 
+typedef void(^ _Nonnull MPAudienceResponseHandler)(BOOL success, NSArray<MPAudience *> * _Nullable currentAudience, NSError * _Nullable error);
 typedef void(^ _Nonnull MPUploadsCompletionHandler)(void);
 
 typedef void (^MPIdentityApiManagerCallback)(MPIdentityHTTPBaseSuccessResponse *_Nullable httpResponse, NSError *_Nullable error);
@@ -26,11 +28,15 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
 @interface MPNetworkCommunication_PRIVATE : NSObject
 
+@property (nonatomic, strong, readonly, nullable) MPURL *audienceURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *configURL;
+@property (nonatomic, strong, readonly, nullable) MPURL *eventURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *identifyURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *loginURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *logoutURL;
 @property (nonatomic, strong, readonly, nullable) MPURL *modifyURL;
+@property (nonatomic, strong, readonly, nullable) MPURL *aliasURL;
+
 - (nullable MPURL *)eventURLForUpload:(nonnull MPUpload *)mpUpload;
 - (nullable MPURL *)aliasURLForUpload:(nonnull MPUpload *)mpUpload;
 
@@ -39,6 +45,7 @@ typedef void(^ _Nonnull MPConfigCompletionHandler)(BOOL success);
 
 - (NSObject<MPConnectorProtocol> *_Nonnull)makeConnector;
 - (void)requestConfig:(nullable NSObject<MPConnectorProtocol> *)connector withCompletionHandler:(MPConfigCompletionHandler)completionHandler;
+- (void)requestAudiencesWithCompletionHandler:(MPAudienceResponseHandler)completionHandler;
 - (void)upload:(nonnull NSArray<MPUpload *> *)uploads completionHandler:(MPUploadsCompletionHandler)completionHandler;
 
 - (void)identify:(MPIdentityApiRequest *_Nonnull)identifyRequest completion:(nullable MPIdentityApiManagerCallback)completion;

@@ -57,11 +57,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Log Base Event", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"logBaseEvent", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval"];
     
     return _cellTitles;
 }
@@ -155,6 +155,18 @@
     
     // Logs a commerce event
     [[MParticle sharedInstance] logEvent:commerceEvent];
+}
+
+- (void)getAudience {
+    MParticle *mParticle = [MParticle sharedInstance];
+    
+    [mParticle.identity.currentUser getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {
+        if (error) {
+            NSLog(@"Failed to retrieve Audience: %@", error);
+        } else {
+            NSLog(@"Successfully retrieved Audience for user: %@ with audiences: %@", mParticle.identity.currentUser.userId, currentAudiences);
+        }
+    }];
 }
 
 - (void)logCustomMediaEvents {

@@ -5,6 +5,7 @@
 #import "MParticleUser.h"
 #import "MPILogger.h"
 #import "mParticle.h"
+#import "MPAudience.h"
 #import "MPPersistenceController.h"
 #import "MPDataPlanFilter.h"
 #import "MPIConstants.h"
@@ -443,6 +444,20 @@
                                    }
                            }];
     });
+}
+
+#pragma mark - User Segments
+- (void)getUserAudiencesWithCompletionHandler:(void (^)(NSArray<MPAudience *> *currentAudiences, NSError * _Nullable error))completionHandler {
+    if ([MParticle sharedInstance].stateMachine.enableAudienceAPI) {
+        dispatch_async([MParticle messageQueue], ^{
+            [self.backendController fetchAudiencesWithCompletionHandler:completionHandler];
+        });
+    } else {
+        NSError *audienceError = [NSError errorWithDomain:@"mParticle Audience"
+                                                     code:202
+                                                 userInfo:@{@"message":@"Your workspace is not enabled to retrieve user audiences."}];
+        completionHandler(nil, audienceError);
+    }
 }
 
 #pragma mark - Consent State

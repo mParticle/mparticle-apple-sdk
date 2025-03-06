@@ -77,6 +77,11 @@ import Foundation
             
             stateMachine.allowASR = config[RemoteConfig.kMPRemoteConfigAllowASR] as? Bool ?? false
             stateMachine.enableDirectRouting = config[RemoteConfig.kMPRemoteConfigDirectURLRouting] as? Bool ?? false
+            if let remoteConfigFlags = config[RemoteConfig.kMPRemoteConfigFlagsKey] as? [AnyHashable : Any] {
+                if let audienceAPIFlag = remoteConfigFlags[RemoteConfig.kMPRemoteConfigAudienceAPIKey] as? String {
+                    stateMachine.enableAudienceAPI = audienceAPIFlag == "True"
+                }
+            }
             
             // Exception handling
             if let auxString = config[RemoteConfig.kMPRemoteConfigExceptionHandlingModeKey] as? String {

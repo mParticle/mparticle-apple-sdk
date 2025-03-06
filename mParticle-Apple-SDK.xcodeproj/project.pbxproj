@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 54;
+	objectVersion = 53;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -467,6 +467,10 @@
 		D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */; };
 		D356E0242CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
 		D356E0252CFE08ED0020898D /* MPResponseConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D356E0232CFE08ED0020898D /* MPResponseConfig.swift */; };
+		D33C8B332B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D33C8B352B8510C20012EDFD /* MPAudience.m in Sources */ = {isa = PBXBuildFile; fileRef = D33C8B322B8510C20012EDFD /* MPAudience.m */; };
+		D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */ = {isa = PBXBuildFile; fileRef = D33C8B322B8510C20012EDFD /* MPAudience.m */; };
 		D3724C192AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h in Headers */ = {isa = PBXBuildFile; fileRef = D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D3961CD62CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */; };
 		D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */; };
@@ -760,6 +764,8 @@
 		D34286082D3806CF00FEC2C8 /* MPUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaults.swift; sourceTree = "<group>"; };
 		D342860E2D419CA700FEC2C8 /* MPUploadSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUploadSettings.swift; sourceTree = "<group>"; };
 		D356E0232CFE08ED0020898D /* MPResponseConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPResponseConfig.swift; sourceTree = "<group>"; };
+		D33C8B312B8510C20012EDFD /* MPAudience.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MPAudience.h; sourceTree = "<group>"; };
+		D33C8B322B8510C20012EDFD /* MPAudience.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MPAudience.m; sourceTree = "<group>"; };
 		D3724C182AE02AF60074CD67 /* mParticle_Apple_SDK_NoLocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = mParticle_Apple_SDK_NoLocation.h; sourceTree = "<group>"; };
 		D3961CD52CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSArray+MPCaseInsensitive.swift"; sourceTree = "<group>"; };
 		D3961CDD2CC0B7E4003B3194 /* NSString+MPPercentEscape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSString+MPPercentEscape.swift"; sourceTree = "<group>"; };
@@ -878,6 +884,7 @@
 				53A79A9929CDFB1E00E7489F /* MPAliasResponse.m */,
 				53A79A9A29CDFB1E00E7489F /* MParticleUser.m */,
 				53A79A9B29CDFB1E00E7489F /* FilteredMPIdentityApiRequest.m */,
+				D33C8B322B8510C20012EDFD /* MPAudience.m */,
 				53A79A9C29CDFB1E00E7489F /* MPAliasRequest.m */,
 				53A79A9D29CDFB1E00E7489F /* MPIdentityDTO.m */,
 				53A79A9E29CDFB1E00E7489F /* MPIdentityApiManager.h */,
@@ -1148,6 +1155,7 @@
 				53A79C4029CDFB4800E7489F /* MPConsentState.h */,
 				53A79C4129CDFB4800E7489F /* MPKitRegister.h */,
 				53A79C4229CDFB4800E7489F /* MPProduct+Dictionary.h */,
+				D33C8B312B8510C20012EDFD /* MPAudience.h */,
 				53A79C4329CDFB4800E7489F /* MPProduct.h */,
 				53A79B0629CDFB1F00E7489F /* MPStateMachine.h */,
 				53A79C4429CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h */,
@@ -1304,6 +1312,7 @@
 				53A79C5629CDFB4800E7489F /* MParticleUser.h in Headers */,
 				53A79C5529CDFB4800E7489F /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				53A79C5129CDFB4800E7489F /* MPCommerceEventInstruction.h in Headers */,
+				D33C8B332B8510C20012EDFD /* MPAudience.h in Headers */,
 				53A79C6629CDFB4800E7489F /* MPTransactionAttributes+Dictionary.h in Headers */,
 				53A79BE929CDFB2000E7489F /* MPApplication.h in Headers */,
 				D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */,
@@ -1394,6 +1403,7 @@
 				53A79D2129CE23F700E7489F /* NSDictionary+MPCaseInsensitive.h in Headers */,
 				53A79D2229CE23F700E7489F /* MPCommerceEventInstruction.h in Headers */,
 				53A79D2329CE23F700E7489F /* MPTransactionAttributes+Dictionary.h in Headers */,
+				D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */,
 				53A79D2729CE23F700E7489F /* MPApplication.h in Headers */,
 				53A79D2829CE23F700E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79D2929CE23F700E7489F /* MPDataModelProtocol.h in Headers */,
@@ -1765,6 +1775,7 @@
 				D3CEDAC32C9DAC25001B32DF /* MPDateFormatter.swift in Sources */,
 				53A79C2029CDFB2100E7489F /* MPListenerController.m in Sources */,
 				53A79C0E29CDFB2100E7489F /* MPKitContainer.mm in Sources */,
+				D33C8B352B8510C20012EDFD /* MPAudience.m in Sources */,
 				53A79BD729CDFB2000E7489F /* MPUploadBuilder.m in Sources */,
 				53A79C1129CDFB2100E7489F /* MPBaseProjection.m in Sources */,
 				53A79B7029CDFB2000E7489F /* MPIdentityApiManager.m in Sources */,
@@ -1936,6 +1947,7 @@
 				53A79DB729CE23F700E7489F /* MPEventProjection.mm in Sources */,
 				53A79DB829CE23F700E7489F /* MPListenerController.m in Sources */,
 				53A79DB929CE23F700E7489F /* MPKitContainer.mm in Sources */,
+				D33C8B362B8510C20012EDFD /* MPAudience.m in Sources */,
 				53A79DBA29CE23F700E7489F /* MPUploadBuilder.m in Sources */,
 				53A79DBC29CE23F700E7489F /* MPBaseProjection.m in Sources */,
 				53A79DBF29CE23F700E7489F /* MPIdentityApiManager.m in Sources */,

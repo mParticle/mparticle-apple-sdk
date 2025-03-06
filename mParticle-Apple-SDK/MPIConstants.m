@@ -185,6 +185,8 @@ NSString *const kMPLastUploadSettingsUserDefaultsKey = @"lastUploadSettings";
 // Remote configuration
 NSString *const kMPRemoteConfigExceptionHandlingModeKey = @"cue";
 NSString *const kMPRemoteConfigExceptionHandlingModeAppDefined = @"appdefined";
+NSString *const kMPRemoteConfigFlagsKey = @"flags";
+NSString *const kMPRemoteConfigAudienceAPIKey = @"AudienceAPI";
 NSString *const kMPRemoteConfigExceptionHandlingModeForce = @"forcecatch";
 NSString *const kMPRemoteConfigExceptionHandlingModeIgnore = @"forceignore";
 NSString *const kMPRemoteConfigCrashMaxPLReportLength = @"crml";
