@@ -18,7 +18,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (instancetype)initWithAudienceId:(NSNumber *)audienceId;
 
-
 @end
 
 extern NSString * _Nonnull const kMPAudienceMembershipKey;

@@ -455,7 +455,7 @@
     } else {
         NSError *audienceError = [NSError errorWithDomain:@"mParticle Audience"
                                                      code:202
-                                                 userInfo:@{@"message":@"Audiences not enabled for this workspace."}];
+                                                 userInfo:@{@"message":@"Your workspace is not enabled to retrieve user audiences."}];
         completionHandler(nil, audienceError);
     }
 }

@@ -555,6 +555,7 @@
     MPAudience *audience = [[MPAudience alloc] initWithAudienceId:@2];
     XCTAssertTrue(audience.audienceId.intValue == 2);
 }
+
 - (void)testFetchIntegrationAttributesForKit {
     NSNumber *integrationId = nil;
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;

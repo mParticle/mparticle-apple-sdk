@@ -1042,7 +1042,7 @@ static BOOL skipNextUpload = NO;
             MPILogVerbose(@"Audiences Request Succesful: /nCurrent Audiences: %@", currentAudiences);
         } else {
             if (!error) {
-                MPILogError(@"Audience request failed with without error")
+                MPILogError(@"Audience request failed without error")
             } else {
                 MPILogError(@"Audience request failed with error: %@", error)
             }
