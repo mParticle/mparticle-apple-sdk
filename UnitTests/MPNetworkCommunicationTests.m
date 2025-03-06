@@ -70,12 +70,12 @@ Method originalMethod = nil; Method swizzleMethod = nil;
 - (void)testAudienceURL {
     [self swizzleInstanceMethodForInstancesOfClass:[NSBundle class] selector:@selector(infoDictionary)];
     
-    MPNetworkCommunication *networkCommunication = [[MPNetworkCommunication alloc] init];
+    MPNetworkCommunication_PRIVATE *networkCommunication = [[MPNetworkCommunication_PRIVATE alloc] init];
     NSURL *audienceURL = [networkCommunication audienceURL].url;
     
     [self deswizzle];
     
-    XCTAssert([audienceURL.absoluteString rangeOfString:@"/(null)/audience?mpid=0"].location != NSNotFound);
+    XCTAssert([audienceURL.absoluteString rangeOfString:@"/unit_test_app_key/audience?mpid=0"].location != NSNotFound);
 }
 
 - (void)testConfigURL {

@@ -10,7 +10,7 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPStateMachine *stateMachine;
+@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 
 @end
 
@@ -61,7 +61,7 @@
 - (void)testGetUserAudiencesWithCompletionHandlerEnabled {
     MParticleUser *user = [[MParticleUser alloc] init];
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.enableAudienceAPI = YES;
     
     [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {
@@ -72,7 +72,7 @@
 - (void)testGetUserAudiencesWithCompletionHandlerDisabled {
     MParticleUser *user = [[MParticleUser alloc] init];
     
-    MPStateMachine *stateMachine = [MParticle sharedInstance].stateMachine;
+    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
     stateMachine.enableAudienceAPI = NO;
     
     [user getUserAudiencesWithCompletionHandler:^(NSArray<MPAudience *> * _Nonnull currentAudiences, NSError *_Nullable error) {

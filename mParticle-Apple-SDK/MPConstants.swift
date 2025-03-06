@@ -15,7 +15,7 @@ func MPMilliseconds(timestamp: Double) -> Double {
 // NOTE: I kept the same naming here for clarity, but we should rename these
 //       after we remove them from the MPIConstants.h file
 
-let kMParticleSDKVersion = "8.27.4"
+let kMParticleSDKVersion = "8.27.5"
 
 struct MessageKeys {
     static let kMPMessagesKey = "msgs"
@@ -118,6 +118,8 @@ struct RemoteConfig {
     static let kMPRemoteConfigAllowASR = "iasr"
     static let kMPRemoteConfigExcludeAnonymousUsersKey = "eau"
     static let kMPRemoteConfigDirectURLRouting = "dur"
+    static let kMPRemoteConfigFlagsKey = "flags"
+    static let kMPRemoteConfigAudienceAPIKey = "AudienceAPI"
     static let kMPRemoteConfigDataPlanningResults = "dpr"
     static let kMPRemoteConfigDataPlanning = "dtpn"
     static let kMPRemoteConfigDataPlanningBlock = "blok"
