@@ -55,6 +55,8 @@ options.attStatus = NSNumber.init(value: ATTrackingManager.trackingAuthorization
 MParticle.sharedInstance().start(with: options)
 ```
 
+- Don't provide the ATT status as described above for iOS 15. If you have used this method for iOS 14 and are migrating to iOS 15, either change to the following technique or see the last question in [iOS 15 FAQ](https://docs.mparticle.com/developers/sdk/ios/ios15/#do-apples-changes-to-att-status-during-app-launch-affect-mparticle-initialization).
+
 #### 2. After the user responds to the ATT prompt
 
 The code below shows the following:
