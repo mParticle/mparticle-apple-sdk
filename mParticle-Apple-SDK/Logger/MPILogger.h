@@ -1,7 +1,7 @@
 #ifndef mParticleSDK_MPILogger_h
 #define mParticleSDK_MPILogger_h
 
-#import "MPEnums.h"
+
 
 #define MPILogger(loggerLevel, format, ...) if ([MParticle sharedInstance].logLevel >= (loggerLevel) && [MParticle sharedInstance].logLevel != MPILogLevelNone) { \
                                 NSString *msg = [NSString stringWithFormat:@"mParticle -> " format, ##__VA_ARGS__]; \

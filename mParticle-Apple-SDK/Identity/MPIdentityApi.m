@@ -10,7 +10,7 @@
 #import "MPSession.h"
 #import "MPPersistenceController.h"
 #import "MPIdentityDTO.h"
-#import "MPEnums.h"
+
 #import "MPILogger.h"
 #import "MPKitContainer.h"
 #import "MPUpload.h"

@@ -1,7 +1,7 @@
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
 #import "MPKitExecStatus.h"
-#import "MPEnums.h"
+
 #import "MPKitConfiguration.h"
 #import <UIKit/UIKit.h>
 #import "MPForwardRecord.h"

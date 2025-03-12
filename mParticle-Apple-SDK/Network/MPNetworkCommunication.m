@@ -14,7 +14,7 @@
 #import "MParticleSwift.h"
 #import "MPIdentityApiRequest.h"
 #import "mParticle.h"
-#import "MPEnums.h"
+
 #import "MPIdentityDTO.h"
 #import "MPIConstants.h"
 #import "MPAliasResponse.h"

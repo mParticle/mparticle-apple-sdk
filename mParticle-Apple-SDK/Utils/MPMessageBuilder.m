@@ -3,7 +3,7 @@
 #import "MPMessage.h"
 #import "MPStateMachine.h"
 #import <UIKit/UIKit.h>
-#import "MPEnums.h"
+
 #import "MPCommerceEvent.h"
 #import "MPCommerceEvent+Dictionary.h"
 #import "MPILogger.h"
