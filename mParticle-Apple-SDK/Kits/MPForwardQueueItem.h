@@ -1,5 +1,5 @@
 #import <Foundation/Foundation.h>
-#import "MPEnums.h"
+
 #import "MPKitProtocol.h"
 
 @class MPBaseEvent;

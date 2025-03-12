@@ -4,7 +4,7 @@
 #import "MPILogger.h"
 #import "MPConsentSerialization.h"
 #import "mParticle.h"
-#import "MPEnums.h"
+
 #import "MParticleSwift.h"
 #import <vector>
 

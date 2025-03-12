@@ -7,7 +7,7 @@
 #import "MPTransactionAttributes.h"
 #import "MPTransactionAttributes+Dictionary.h"
 #import "MPIConstants.h"
-#import "MPEnums.h"
+
 #import "MPEvent.h"
 #import "MPCommerceEventInstruction.h"
 #import "NSDictionary+MPCaseInsensitive.h"

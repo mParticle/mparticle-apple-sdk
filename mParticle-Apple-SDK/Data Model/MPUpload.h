@@ -1,6 +1,6 @@
 #import "MPDataModelAbstract.h"
 #import "MPDataModelProtocol.h"
-#import "MPEnums.h"
+
 
 @class MPSession;
 @class MPNetworkOptions;

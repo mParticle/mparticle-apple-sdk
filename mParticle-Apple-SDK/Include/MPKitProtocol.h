@@ -2,7 +2,7 @@
 #define mParticle_Apple_SDK_MPKitProtocol_h
 
 #import <Foundation/Foundation.h>
-#import "MPEnums.h"
+
 #import "MPForwardRecord.h"
 #import <UIKit/UIKit.h>
 

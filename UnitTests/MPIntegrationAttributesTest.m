@@ -1,6 +1,6 @@
 #import <XCTest/XCTest.h>
 #import "MPIntegrationAttributes.h"
-#import "MPEnums.h"
+
 #import "MPBaseTestCase.h"
 
 @interface MPIntegrationAttributesTest : MPBaseTestCase
