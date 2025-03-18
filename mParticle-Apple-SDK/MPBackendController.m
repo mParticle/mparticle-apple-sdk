@@ -1768,6 +1768,10 @@ static BOOL skipNextUpload = NO;
     
     NSAssert(completionHandler != nil, @"completionHandler cannot be nil.");
     
+    if (MPIsNull(identityString)) {
+        identityString = nil;
+    }
+    
     MPUserIdentityInstance_PRIVATE *newUserIdentity = [[MPUserIdentityInstance_PRIVATE alloc] initWithType:identityType
                                                                                                      value:identityString];
     
