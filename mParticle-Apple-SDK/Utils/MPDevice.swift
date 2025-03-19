@@ -194,8 +194,10 @@ import CoreTelephony
 
     @objc public var timezoneOffset: String {
         get {
-            let timeZoneOffset = Calendar.current.timeZone.secondsFromGMT(for: Date()) / 3600
-            return String(format: "%.1f", timeZoneOffset)
+            let seconds = TimeZone.current.secondsFromGMT()
+            let hours = seconds/3600
+            
+            return String(format: "%+i", hours)
         }
     }
 
@@ -267,8 +269,8 @@ import CoreTelephony
     @objc public class func jailbrokenInfo() -> [AnyHashable : Any] {
         var jailbroken = false
         
-#if TARGET_IPHONE_SIMULATOR
-    // Simulator
+#if targetEnvironment(simulator)
+        // Simulator
 #else
         let fileManager = FileManager.default
         var signerIdentityKey: String?
@@ -340,25 +342,26 @@ import CoreTelephony
             }
         }
 #endif
-        return [Miscellaneous.kMPDeviceCydiaJailbrokenKey:jailbroken ? 1 : 0]
+        return [Miscellaneous.kMPDeviceCydiaJailbrokenKey:NSNumber(value: jailbroken)]
     }
-
+    
     @objc public func dictionaryRepresentation() -> [AnyHashable : Any] {
         var deviceDictionary: [AnyHashable : Any] = [Device.kMPDeviceBrandKey:self.model,
-                                                      Device.kMPDeviceNameKey:self.name,
-                                                      Device.kMPDeviceProductKey:self.model,
-                                                      Device.kMPDeviceOSKey:self.operatingSystem,
-                                                      Device.kMPDeviceModelKey:self.model,
-                                                      Device.kMPDeviceArchitectureKey:self.architecture,
-                                                      Device.kMPScreenWidthKey:String(format: Device.kMPDeviceFloatingPointFormat, self.screenSize.width),
-                                                      Device.kMPScreenHeightKey:String(format: Device.kMPDeviceFloatingPointFormat, self.screenSize.height),
-                                                      Device.kMPDevicePlatformKey:self.platform,
-                                                      Device.kMPDeviceManufacturerKey:self.manufacturer,
-                                                      Device.kMPTimezoneOffsetKey:self.timezoneOffset,
-                                                      Device.kMPTimezoneDescriptionKey:self.timezoneDescription,
-                                                      Device.kMPDeviceJailbrokenKey:MPDevice.jailbrokenInfo(),
-                                                      Device.kMPDeviceIsTabletKey:self.isTablet ? 1 : 0,
-                                                      Device.kMPDeviceIsDaylightSavingTime:self.isDaylightSavingTime ? 1 : 0]
+                                                     Device.kMPDeviceNameKey:self.name,
+                                                     Device.kMPDeviceProductKey:self.model,
+                                                     Device.kMPDeviceOSKey:self.operatingSystem,
+                                                     Device.kMPDeviceModelKey:self.model,
+                                                     Device.kMPDeviceArchitectureKey:self.architecture,
+                                                     Device.kMPScreenWidthKey:String(format: Device.kMPDeviceFloatingPointFormat, self.screenSize.width),
+                                                     Device.kMPScreenHeightKey:String(format: Device.kMPDeviceFloatingPointFormat, self.screenSize.height),
+                                                     Device.kMPDevicePlatformKey:self.platform,
+                                                     Device.kMPDeviceManufacturerKey:self.manufacturer,
+                                                     Device.kMPTimezoneOffsetKey:self.timezoneOffset,
+                                                     Device.kMPTimezoneDescriptionKey:self.timezoneDescription,
+                                                     Device.kMPDeviceJailbrokenKey:MPDevice.jailbrokenInfo(),
+                                                     Device.kMPDeviceIsTabletKey:NSNumber(value: self.isTablet),
+                                                     Device.kMPDeviceIsDaylightSavingTime:NSNumber(value: self.isDaylightSavingTime),
+                                                     Device.kMPDeviceLimitAdTrackingKey:NSNumber(value: false)]
         
         if let language = self.language {
             deviceDictionary[Device.kMPDeviceLocaleLanguageKey] = language
