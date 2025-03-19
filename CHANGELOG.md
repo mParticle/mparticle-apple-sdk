@@ -1,3 +1,15 @@
+# [8.28.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.5...v8.28.0) (2025-03-19)
+
+
+### Bug Fixes
+
+* Issue when setting Identity Attributes to nil ([#336](https://github.com/mParticle/mparticle-apple-sdk/issues/336)) ([9a48cdd](https://github.com/mParticle/mparticle-apple-sdk/commit/9a48cdd8af281236dd527691778b030fbabffaa4))
+
+
+### Features
+
+* implement audience logic ([#330](https://github.com/mParticle/mparticle-apple-sdk/issues/330)) ([3b9ad82](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9ad82702193a8db45b5fb2e2d19c5efb24cfdb))
+
 ## [8.27.5](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.4...v8.27.5) (2025-03-06)
 
 
