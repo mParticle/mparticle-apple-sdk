@@ -411,7 +411,7 @@ static void processBinaryImage(const char *name, const void *header, struct uuid
                          kMPAppDeploymentTargetKey:[NSString stringWithFormat:@"%i", __IPHONE_OS_VERSION_MIN_REQUIRED],
                          kMPAppBuildSDKKey:[NSString stringWithFormat:@"%i", __IPHONE_OS_VERSION_MAX_ALLOWED],
                          kMPAppEnvironmentKey:@(self.environment),
-                         kMPAppFirstSeenInstallationKey:self.firstSeenInstallation,
+                         kMPAppFirstSeenInstallationKey:@(self.firstSeenInstallation.boolValue),
                          kMPAppSideloadKitsCountKey:self.sideloadedKitsCount
                          }
                        mutableCopy];
