@@ -159,6 +159,32 @@ static NSString *const kMPStateKey = @"state";
 @implementation MPDataPlanOptions
 @end
 
+@implementation MPRokt
+
+- (void)executeWithViewName:(NSString * _Nullable)viewName attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:viewName];
+        [queueParameters addParameter:attributes];
+        [queueParameters addParameter:placements];
+        [queueParameters addParameter:onLoad];
+        [queueParameters addParameter:onUnLoad];
+        [queueParameters addParameter:onShouldShowLoadingIndicator];
+        [queueParameters addParameter:onShouldHideLoadingIndicator];
+        [queueParameters addParameter:onEmbeddedSizeChange];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:_cmd
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeEvent
+                                                       userInfo:nil
+         ];
+    });
+}
+
+@end
+
 @interface MParticleOptions ()
 
 @property (nonatomic, readwrite) BOOL isProxyAppDelegateSet;
@@ -267,6 +293,7 @@ static NSString *const kMPStateKey = @"state";
 @implementation MParticle
 
 @synthesize identity = _identity;
+@synthesize rokt = _rokt;
 @synthesize optOut = _optOut;
 @synthesize persistenceController = _persistenceController;
 @synthesize stateMachine = _stateMachine;
@@ -412,6 +439,15 @@ static NSString *const kMPStateKey = @"state";
     
     _identity = [[MPIdentityApi alloc] init];
     return _identity;
+}
+
+- (MPRokt *)rokt {
+    if (_rokt) {
+        return _rokt;
+    }
+    
+    _rokt = [[MPRokt alloc] init];
+    return _rokt;
 }
 
 - (MPEnvironment)environment {

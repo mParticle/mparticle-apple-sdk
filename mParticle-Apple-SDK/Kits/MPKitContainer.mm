@@ -2288,6 +2288,11 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                         return;
                     }
                     execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
+                } else if (selector == @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)) {
+                    if (!kitFilter.forwardEvent) {
+                        return;
+                    }
+                    execStatus = [kitRegister.wrapperInstance executeWithViewName:parameters[0] attributes:parameters[1] placements:parameters[2] onLoad:parameters[3] onUnLoad:parameters[4] onShouldShowLoadingIndicator:parameters[5] onShouldHideLoadingIndicator:parameters[6] onEmbeddedSizeChange:parameters[7]];
                 } else if (selector == @selector(logScreen:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
                         return;
