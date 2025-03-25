@@ -15,7 +15,7 @@ func MPMilliseconds(timestamp: Double) -> Double {
 // NOTE: I kept the same naming here for clarity, but we should rename these
 //       after we remove them from the MPIConstants.h file
 
-let kMParticleSDKVersion = "8.27.5"
+let kMParticleSDKVersion = "8.28.0"
 
 struct MessageKeys {
     static let kMPMessagesKey = "msgs"
