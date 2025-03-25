@@ -1,3 +1,10 @@
+## [8.28.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.0...v8.28.1) (2025-03-25)
+
+
+### Bug Fixes
+
+* Ensure UserDefaults has valid instance of Identity ([#340](https://github.com/mParticle/mparticle-apple-sdk/issues/340)) ([57be42c](https://github.com/mParticle/mparticle-apple-sdk/commit/57be42cb66fc35b5efa11121299d059658d651e8))
+
 # [8.28.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.27.5...v8.28.0) (2025-03-19)
 
 
