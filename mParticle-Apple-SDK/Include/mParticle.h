@@ -26,6 +26,7 @@
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
+#import "MPKitConfiguration.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE

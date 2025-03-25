@@ -11,6 +11,8 @@
 
 @property(readonly, strong, nonnull) NSNumber *userId;
 
+@property (nonatomic, strong, nullable) MPKitConfiguration *kitConfiguration;
+
 /**
  Returns whether this user is currently logged in
  */
