@@ -50,6 +50,7 @@ git add mParticle-Apple-SDK.podspec
 git add mParticle_Apple_SDK.json
 git add CHANGELOG.md
 git add mParticle-Apple-SDK/MPIConstants.m
+git add mParticle-Apple-SDK/MPConstants.swift
 git add Framework/Info.plist
 git commit -m "chore(release): $VERSION [skip ci]
 
