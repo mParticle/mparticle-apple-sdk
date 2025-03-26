@@ -161,7 +161,37 @@ static NSString *const kMPStateKey = @"state";
 
 @implementation MPRokt
 
-- (void)executeWithViewName:(NSString * _Nullable)viewName attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
+- (void)selectPlacements:(NSString * _Nullable)viewName roktEvent:(void (^ _Nullable)(NSString * _Nonnull))roktEvent {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:viewName];
+        [queueParameters addParameter:nil];
+        [queueParameters addParameter:nil];
+        [queueParameters addParameter:^{
+            roktEvent(@"onLoad");
+        }];
+        [queueParameters addParameter:^{
+            roktEvent(@"onUnLoad");
+        }];
+        [queueParameters addParameter:^{
+            roktEvent(@"onShouldShowLoadingIndicator");
+        }];
+        [queueParameters addParameter:^{
+            roktEvent(@"onShouldHideLoadingIndicator");
+        }];
+        [queueParameters addParameter:nil];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)
+                                                          event:nil
+                                                     parameters:queueParameters
+                                                    messageType:MPMessageTypeEvent
+                                                       userInfo:nil
+         ];
+    });
+}
+
+- (void)selectPlacements:(NSString * _Nullable)viewName attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -174,7 +204,7 @@ static NSString *const kMPStateKey = @"state";
         [queueParameters addParameter:onShouldHideLoadingIndicator];
         [queueParameters addParameter:onEmbeddedSizeChange];
         
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:_cmd
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)
                                                           event:nil
                                                      parameters:queueParameters
                                                     messageType:MPMessageTypeEvent
