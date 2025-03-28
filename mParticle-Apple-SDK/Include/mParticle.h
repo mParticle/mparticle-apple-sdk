@@ -26,6 +26,7 @@
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
+#import "MPKitConfiguration.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE
@@ -82,6 +83,14 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSDictionary *linkInfo;
 @property (nonatomic, readonly) NSNumber *kitCode;
 @property (nonatomic, readonly) NSString *kitName;
+
+@end
+
+@interface MPRokt : NSObject
+
+- (void)selectPlacements:(NSString * _Nullable)identifier attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes;
+
+- (void)selectPlacements:(NSString * _Nullable)identifier attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange;
 
 @end
 
@@ -484,6 +493,12 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MParticleUser
  */
 @property (nonatomic, strong, readonly) MPIdentityApi * identity;
+
+/**
+ This property is an instance of MPRokt. It allows you to access the Rokt SDK through mParticle
+ @see MPRokt
+ */
+@property (nonatomic, strong, readonly) MPRokt * rokt;
 
 /**
  If set to YES development logs will be output to the

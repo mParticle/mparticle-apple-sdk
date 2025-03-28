@@ -15,8 +15,6 @@
 
 @property (nonatomic, strong) MParticleUser *user;
 
-@property (nonatomic, strong) MPKitConfiguration *kitConfiguration;
-
 @end
 
 @implementation FilteredMParticleUser
