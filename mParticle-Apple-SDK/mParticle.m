@@ -161,41 +161,52 @@ static NSString *const kMPStateKey = @"state";
 
 @implementation MPRokt
 
-- (void)selectPlacements:(NSString * _Nullable)viewName roktEvent:(void (^ _Nullable)(NSString * _Nonnull))roktEvent {
+- (void)selectPlacements:(NSString * _Nullable)identifier
+              attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
+    NSDictionary<NSString *, NSString *> *mappedAttributes = [MPRokt mapUserAttributes:attributes mappingDictionary:@{}];
+    for (NSString *key in mappedAttributes) {
+        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+    }
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:viewName];
+        [queueParameters addParameter:identifier];
         [queueParameters addParameter:nil];
         [queueParameters addParameter:nil];
-        [queueParameters addParameter:^{
-            roktEvent(@"onLoad");
-        }];
-        [queueParameters addParameter:^{
-            roktEvent(@"onUnLoad");
-        }];
-        [queueParameters addParameter:^{
-            roktEvent(@"onShouldShowLoadingIndicator");
-        }];
-        [queueParameters addParameter:^{
-            roktEvent(@"onShouldHideLoadingIndicator");
-        }];
+        [queueParameters addParameter:nil];
+        [queueParameters addParameter:nil];
+        [queueParameters addParameter:nil];
+        [queueParameters addParameter:nil];
         [queueParameters addParameter:nil];
         
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)
-                                                          event:nil
-                                                     parameters:queueParameters
-                                                    messageType:MPMessageTypeEvent
-                                                       userInfo:nil
-         ];
+        SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
     });
 }
 
-- (void)selectPlacements:(NSString * _Nullable)viewName attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
+- (void)selectPlacements:(NSString * _Nullable)identifier
+              attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
+              placements:(NSDictionary<NSString *, id> * _Nullable)placements
+                  onLoad:(void (^ _Nullable)(void))onLoad
+                onUnLoad:(void (^ _Nullable)(void))onUnLoad
+onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
+onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
+    onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
+    NSDictionary<NSString *, NSString *> *mappedAttributes = [MPRokt mapUserAttributes:attributes mappingDictionary:@{}];
+    for (NSString *key in mappedAttributes) {
+        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+    }
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:viewName];
+        [queueParameters addParameter:identifier];
         [queueParameters addParameter:attributes];
         [queueParameters addParameter:placements];
         [queueParameters addParameter:onLoad];
@@ -204,13 +215,29 @@ static NSString *const kMPStateKey = @"state";
         [queueParameters addParameter:onShouldHideLoadingIndicator];
         [queueParameters addParameter:onEmbeddedSizeChange];
         
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)
-                                                          event:nil
-                                                     parameters:queueParameters
-                                                    messageType:MPMessageTypeEvent
-                                                       userInfo:nil
-         ];
+        SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
     });
+}
+
++ (NSDictionary<NSString *, NSString *> *) mapUserAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes mappingDictionary:(NSDictionary<NSString *, NSString *> *)mappingDictionary {
+    NSMutableDictionary *mappedUserAttributes = [NSMutableDictionary dictionary];
+    
+    for (NSString* key in attributes) {
+        NSString *mappedKey = [mappingDictionary objectForKey:key];
+        if (mappedKey) {
+            [mappedUserAttributes setObject:attributes[key] forKey:mappedKey];
+        } else {
+            [mappedUserAttributes setObject:attributes[key] forKey:key];
+        }
+    }
+    
+    return mappedUserAttributes;
 }
 
 @end

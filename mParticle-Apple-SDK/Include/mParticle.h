@@ -88,9 +88,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPRokt : NSObject
 
-- (void)selectPlacements:(NSString * _Nullable)viewName roktEvent:(void (^ _Nullable)(NSString * _Nonnull))roktEvent;
+- (void)selectPlacements:(NSString * _Nullable)identifier attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes;
 
-- (void)selectPlacements:(NSString * _Nullable)viewName attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange;
+- (void)selectPlacements:(NSString * _Nullable)identifier attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange;
 
 @end
 

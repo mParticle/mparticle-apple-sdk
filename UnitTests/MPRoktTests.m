@@ -9,8 +9,6 @@
 
 @interface MPRoktTests : XCTestCase
 @property (nonatomic, strong) MPRokt *rokt;
-@property (nonatomic, strong) MParticle *mockMParticle;
-@property (nonatomic, strong) MPKitContainer_PRIVATE *mockKitContainer;
 @end
 
 @implementation MPRoktTests
@@ -18,20 +16,61 @@
 - (void)setUp {
     [super setUp];
     self.rokt = [[MPRokt alloc] init];
-    self.mockMParticle = OCMClassMock([MParticle class]);
-    self.mockKitContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    
-    OCMStub([self.mockMParticle kitContainer_PRIVATE]).andReturn(self.mockKitContainer);
 }
 
 - (void)tearDown {
     self.rokt = nil;
-    self.mockMParticle = nil;
-    self.mockKitContainer = nil;
     [super tearDown];
 }
 
+- (void)testSelectPlacementsWithValidParameters {
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"key": @"value"};
+    
+    // Set up expectations for kit container
+    OCMExpect([mockContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:)
+                                              event:nil
+                                         parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertNil(params[1]);
+        XCTAssertNil(params[2]);
+        XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
+        XCTAssertNil(params[5]);
+        XCTAssertNil(params[6]);
+        XCTAssertNil(params[7]);
+        return true;
+    }]
+                                       messageType:MPMessageTypeEvent
+                                          userInfo:nil]);
+    
+    // Execute method
+    [self.rokt selectPlacements:viewName
+                     attributes:attributes];
+    
+    // Wait for async operation
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    
+    // Verify
+    OCMVerifyAll(mockContainer);
+}
+
 - (void)testExecuteWithValidParameters {
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
     // Set up test parameters
     NSString *viewName = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
@@ -43,7 +82,7 @@
     void (^onEmbeddedSizeChange)(NSString *, CGFloat) = ^(NSString *p, CGFloat s){};
     
     // Set up expectations for kit container
-    OCMExpect([self.mockKitContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)
+    OCMExpect([mockContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:)
                                               event:nil
                                          parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
@@ -77,18 +116,23 @@
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
     
     // Verify
-    OCMVerifyAll(self.mockKitContainer);
+    OCMVerifyAll(mockContainer);
 }
 
 - (void)testExecuteWithNilParameters {
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
     // Execute method with nil parameters
     [self.rokt selectPlacements:nil
-                       attributes:nil
-                      placements:nil
+                     attributes:nil
+                     placements:nil
                          onLoad:nil
                        onUnLoad:nil
-    onShouldShowLoadingIndicator:nil
-    onShouldHideLoadingIndicator:nil
+   onShouldShowLoadingIndicator:nil
+   onShouldHideLoadingIndicator:nil
            onEmbeddedSizeChange:nil];
     
     // Wait for async operation
@@ -99,7 +143,7 @@
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
     
     // Verify the call is still forwarded with nil parameters
-    OCMVerify([self.mockKitContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:)
+    OCMVerify([mockContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:)
                                             event:nil
                                        parameters:[OCMArg any]
                                       messageType:MPMessageTypeEvent

@@ -134,7 +134,14 @@
 - (nonnull NSArray<MPForwardRecord *> *)logBatch:(nonnull NSDictionary *)batch;
 
 #pragma mark First Party Kits
-- (nonnull MPKitExecStatus *)executeWithViewName:(NSString * _Nullable)viewName attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes placements:(NSDictionary<NSString *, id> * _Nullable)placements onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange;
+- (nonnull MPKitExecStatus *)executeWithViewName:(NSString * _Nullable)viewName
+                                      attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
+                                      placements:(NSDictionary<NSString *, id> * _Nullable)placements
+                                          onLoad:(void (^ _Nullable)(void))onLoad onUnLoad:(void (^ _Nullable)(void))onUnLoad
+                    onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
+                    onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
+                            onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange
+                                    filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 @end
 
 #endif
