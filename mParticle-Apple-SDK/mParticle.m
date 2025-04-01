@@ -163,16 +163,15 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)selectPlacements:(NSString * _Nullable)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    NSDictionary<NSString *, NSString *> *mappedAttributes = [MPRokt mapUserAttributes:attributes mappingDictionary:@{}];
-    for (NSString *key in mappedAttributes) {
-        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+    for (NSString *key in attributes) {
+        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:attributes[key]];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:identifier];
-        [queueParameters addParameter:nil];
+        [queueParameters addParameter:attributes];
         [queueParameters addParameter:nil];
         [queueParameters addParameter:nil];
         [queueParameters addParameter:nil];
@@ -198,9 +197,8 @@ static NSString *const kMPStateKey = @"state";
 onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
 onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
     onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
-    NSDictionary<NSString *, NSString *> *mappedAttributes = [MPRokt mapUserAttributes:attributes mappingDictionary:@{}];
-    for (NSString *key in mappedAttributes) {
-        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+    for (NSString *key in attributes) {
+        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:attributes[key]];
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -223,21 +221,6 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
                                                                userInfo:nil
         ];
     });
-}
-
-+ (NSDictionary<NSString *, NSString *> *) mapUserAttributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes mappingDictionary:(NSDictionary<NSString *, NSString *> *)mappingDictionary {
-    NSMutableDictionary *mappedUserAttributes = [NSMutableDictionary dictionary];
-    
-    for (NSString* key in attributes) {
-        NSString *mappedKey = [mappingDictionary objectForKey:key];
-        if (mappedKey) {
-            [mappedUserAttributes setObject:attributes[key] forKey:mappedKey];
-        } else {
-            [mappedUserAttributes setObject:attributes[key] forKey:key];
-        }
-    }
-    
-    return mappedUserAttributes;
 }
 
 @end

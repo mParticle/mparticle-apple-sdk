@@ -23,7 +23,7 @@
     [super tearDown];
 }
 
-- (void)testSelectPlacementsWithValidParameters {
+- (void)testSelectPlacementsSimpleWithValidParameters {
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
@@ -34,11 +34,12 @@
     NSDictionary *attributes = @{@"key": @"value"};
     
     // Set up expectations for kit container
-    OCMExpect([mockContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:)
-                                              event:nil
-                                         parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    OCMExpect([mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
-        XCTAssertNil(params[1]);
+        XCTAssertEqualObjects(params[1], attributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
         XCTAssertNil(params[4]);
@@ -65,7 +66,7 @@
     OCMVerifyAll(mockContainer);
 }
 
-- (void)testExecuteWithValidParameters {
+- (void)testSelectPlacementsExpandedWithValidParameters {
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
@@ -82,9 +83,10 @@
     void (^onEmbeddedSizeChange)(NSString *, CGFloat) = ^(NSString *p, CGFloat s){};
     
     // Set up expectations for kit container
-    OCMExpect([mockContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:)
-                                              event:nil
-                                         parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    OCMExpect([mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
         XCTAssertEqualObjects(params[1], attributes);
         XCTAssertEqualObjects(params[2], placements);
@@ -119,7 +121,7 @@
     OCMVerifyAll(mockContainer);
 }
 
-- (void)testExecuteWithNilParameters {
+- (void)testSelectPlacementsExpandedWithNilParameters {
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
@@ -143,11 +145,12 @@
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
     
     // Verify the call is still forwarded with nil parameters
-    OCMVerify([mockContainer forwardSDKCall:@selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:)
-                                            event:nil
-                                       parameters:[OCMArg any]
-                                      messageType:MPMessageTypeEvent
-                                         userInfo:nil]);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    OCMVerify([mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg any]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]);
 }
 
 @end 

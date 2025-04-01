@@ -2293,7 +2293,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                         return;
                     }
                     FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
-                    execStatus = [kitRegister.wrapperInstance executeWithViewName:parameters[0] attributes:parameters[1] placements:parameters[2] onLoad:parameters[3] onUnLoad:parameters[4] onShouldShowLoadingIndicator:parameters[5] onShouldHideLoadingIndicator:parameters[6] onEmbeddedSizeChange:parameters[7] filteredUser:filteredUser];
+                    execStatus = [kitRegister.wrapperInstance executeWithViewName:parameters[0]
+                                                                       attributes:parameters[1]
+                                                                       placements:parameters[2]
+                                                                           onLoad:parameters[3]
+                                                                         onUnLoad:parameters[4]
+                                                     onShouldShowLoadingIndicator:parameters[5]
+                                                     onShouldHideLoadingIndicator:parameters[6]
+                                                             onEmbeddedSizeChange:parameters[7]
+                                                                     filteredUser:filteredUser];
                 } else if (selector == @selector(logScreen:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
                         return;
