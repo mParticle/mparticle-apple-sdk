@@ -209,7 +209,7 @@ Next, you'll need to start the SDK:
 }
 ```
 
-Please see [Identity](http://docs.mparticle.com/developers/sdk/ios/identity/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
+Please see [Identity](https://docs.mparticle.com/developers/client-sdks/ios/idsync/) for more information on supplying an `MPIdentityApiRequest` object during SDK initialization.
 
 
 ## Example Project with Sample Code
