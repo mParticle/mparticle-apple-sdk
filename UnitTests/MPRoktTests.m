@@ -34,6 +34,7 @@
     NSDictionary *attributes = @{@"key": @"value"};
     
     // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
@@ -48,20 +49,18 @@
         XCTAssertNil(params[7]);
         return true;
     }]
-                                       messageType:MPMessageTypeEvent
-                                          userInfo:nil]);
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
     
     // Execute method
     [self.rokt selectPlacements:viewName
                      attributes:attributes];
     
     // Wait for async operation
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
-    
+
     // Verify
     OCMVerifyAll(mockContainer);
 }
@@ -83,6 +82,7 @@
     void (^onEmbeddedSizeChange)(NSString *, CGFloat) = ^(NSString *p, CGFloat s){};
     
     // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
@@ -98,7 +98,9 @@
         return true;
     }]
                                        messageType:MPMessageTypeEvent
-                                          userInfo:nil]);
+                                          userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
     
     // Execute method
     [self.rokt selectPlacements:viewName
@@ -111,10 +113,6 @@
            onEmbeddedSizeChange:onEmbeddedSizeChange];
     
     // Wait for async operation
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
     
     // Verify
@@ -139,18 +137,22 @@
     
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        [expectation fulfill];
-    });
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
     
     // Verify the call is still forwarded with nil parameters
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
-    OCMVerify([mockContainer forwardSDKCall:roktSelector
+    OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg any]
                                 messageType:MPMessageTypeEvent
-                                   userInfo:nil]);
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+    
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    
+    // Verify
+    OCMVerifyAll(mockContainer);
 }
 
 @end 

@@ -208,7 +208,7 @@
 		53A79C1A29CDFB2100E7489F /* MPKitAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5C29CDFB1F00E7489F /* MPKitAPI.m */; };
 		53A79C1B29CDFB2100E7489F /* MPForwardQueueItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B5D29CDFB1F00E7489F /* MPForwardQueueItem.m */; };
 		53A79C1C29CDFB2100E7489F /* MPKitActivity.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5E29CDFB1F00E7489F /* MPKitActivity.h */; };
-		53A79C1D29CDFB2100E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		53A79C1D29CDFB2100E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; };
 		53A79C1E29CDFB2100E7489F /* MPKitFilter.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B6029CDFB1F00E7489F /* MPKitFilter.h */; };
 		53A79C1F29CDFB2100E7489F /* MPBaseProjection.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B6129CDFB1F00E7489F /* MPBaseProjection.h */; };
 		53A79C2029CDFB2100E7489F /* MPListenerController.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79B6329CDFB1F00E7489F /* MPListenerController.m */; };
@@ -341,7 +341,7 @@
 		53A79D2A29CE23F700E7489F /* MPAppDelegateProxy.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B3929CDFB1F00E7489F /* MPAppDelegateProxy.h */; };
 		53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79ACF29CDFB1F00E7489F /* MPIConstants.h */; };
 		53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AA329CDFB1E00E7489F /* MPBackendController.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */; };
 		53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AAD29CDFB1E00E7489F /* MPConnectorResponseProtocol.h */; };
 		53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB029CDFB1E00E7489F /* MPConnectorFactoryProtocol.h */; };
 		53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79AB129CDFB1E00E7489F /* MPNetworkCommunication.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1091,6 +1091,7 @@
 		53A79B4A29CDFB1F00E7489F /* Kits */ = {
 			isa = PBXGroup;
 			children = (
+				53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */,
 				53A79B4B29CDFB1F00E7489F /* MPDataPlanFilter.m */,
 				53A79B4C29CDFB1F00E7489F /* MPKitRegister.m */,
 				53A79B4D29CDFB1F00E7489F /* MPKitExecStatus.m */,
@@ -1150,7 +1151,6 @@
 				53A79C3729CDFB4800E7489F /* MPAliasResponse.h */,
 				53A79C3929CDFB4800E7489F /* MPIdentityApiRequest.h */,
 				53A79C3A29CDFB4800E7489F /* MPAliasRequest.h */,
-				53A79B5F29CDFB1F00E7489F /* MPKitConfiguration.h */,
 				53A79C3C29CDFB4800E7489F /* FilteredMPIdentityApiRequest.h */,
 				53A79C3D29CDFB4800E7489F /* MPEnums.h */,
 				53A79C3E29CDFB4800E7489F /* MPKitExecStatus.h */,
@@ -1322,12 +1322,12 @@
 				D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */,
 				53A79BF329CDFB2000E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79B8C29CDFB2000E7489F /* MPDataModelProtocol.h in Headers */,
-				53A79C1D29CDFB2100E7489F /* MPKitConfiguration.h in Headers */,
 				53A79BFB29CDFB2100E7489F /* MPAppDelegateProxy.h in Headers */,
 				53A79B9929CDFB2000E7489F /* MPIConstants.h in Headers */,
 				53A79B7129CDFB2000E7489F /* MPBackendController.h in Headers */,
 				53A79B7929CDFB2000E7489F /* MPConnectorResponseProtocol.h in Headers */,
 				53A79B7C29CDFB2000E7489F /* MPConnectorFactoryProtocol.h in Headers */,
+				53A79C1D29CDFB2100E7489F /* MPKitConfiguration.h in Headers */,
 				53A79B7D29CDFB2000E7489F /* MPNetworkCommunication.h in Headers */,
 				53A79B7F29CDFB2000E7489F /* MPURL.h in Headers */,
 				53A79B8829CDFB2000E7489F /* MPDataModelAbstract.h in Headers */,
@@ -1412,13 +1412,13 @@
 				53A79D2829CE23F700E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79D2929CE23F700E7489F /* MPDataModelProtocol.h in Headers */,
 				53A79D2A29CE23F700E7489F /* MPAppDelegateProxy.h in Headers */,
-				53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */,
 				53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */,
 				53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */,
 				53A79D3029CE23F700E7489F /* MPConnectorResponseProtocol.h in Headers */,
 				53A79D3229CE23F700E7489F /* MPConnectorFactoryProtocol.h in Headers */,
 				53A79D3329CE23F700E7489F /* MPNetworkCommunication.h in Headers */,
 				53A79D3429CE23F700E7489F /* MPURL.h in Headers */,
+				53A79D2F29CE23F700E7489F /* MPKitConfiguration.h in Headers */,
 				53A79D3529CE23F700E7489F /* MPDataModelAbstract.h in Headers */,
 				53A79D3629CE23F700E7489F /* MPNetworkPerformance.h in Headers */,
 				53A79D3729CE23F700E7489F /* MPIntegrationAttributes.h in Headers */,
