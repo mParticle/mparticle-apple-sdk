@@ -1,3 +1,10 @@
+# [8.29.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.1...v8.29.0) (2025-04-02)
+
+
+### Features
+
+* Add Rokt First Party Kit Support ([#339](https://github.com/mParticle/mparticle-apple-sdk/issues/339)) ([9bb2e2d](https://github.com/mParticle/mparticle-apple-sdk/commit/9bb2e2de0d9280c25a076298c7c22c571a055e8f))
+
 ## [8.28.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.0...v8.28.1) (2025-03-25)
 
 
