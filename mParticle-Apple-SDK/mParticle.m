@@ -161,7 +161,7 @@ static NSString *const kMPStateKey = @"state";
 
 @implementation MPRokt
 
-- (void)selectPlacements:(NSString * _Nullable)identifier
+- (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
     for (NSString *key in attributes) {
         [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:attributes[key]];
@@ -189,7 +189,7 @@ static NSString *const kMPStateKey = @"state";
     });
 }
 
-- (void)selectPlacements:(NSString * _Nullable)identifier
+- (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
               placements:(NSDictionary<NSString *, id> * _Nullable)placements
                   onLoad:(void (^ _Nullable)(void))onLoad

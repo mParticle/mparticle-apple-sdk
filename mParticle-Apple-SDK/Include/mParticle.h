@@ -87,10 +87,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface MPRokt : NSObject
 
-- (void)selectPlacements:(NSString * _Nullable)identifier
+- (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes;
 
-- (void)selectPlacements:(NSString * _Nullable)identifier
+- (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
               placements:(NSDictionary<NSString *, id> * _Nullable)placements
                   onLoad:(void (^ _Nullable)(void))onLoad
