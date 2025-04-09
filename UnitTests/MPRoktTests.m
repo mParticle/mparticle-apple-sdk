@@ -208,4 +208,30 @@
     OCMVerifyAll(mockContainer);
 }
 
+- (void)testSelectPlacementsSimpleWithNilMapping {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributes];
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    OCMReject([mockContainer forwardSDKCall:roktSelector
+                                      event:[OCMArg any]
+                                 parameters:[OCMArg any]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:[OCMArg any]]);
+    
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    
+    // Execute method
+    [self.rokt selectPlacements:viewName
+                     attributes:attributes];
+
+    // Verify
+    OCMVerifyAll((id)mockContainer);
+}
+
 @end 

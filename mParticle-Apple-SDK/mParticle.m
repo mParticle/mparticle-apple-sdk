@@ -281,18 +281,20 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
         }
     }
     
-    // Convert it to an array of dictionaries
-    NSError *error = nil;
-    
-    @try {
-        attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
-    } @catch (NSException *exception) {
-    }
-    
-    if (attributeMap && !error) {
-        NSLog(@"%@", attributeMap);
-    } else {
-        NSLog(@"%@", error);
+    if (dataAttributeMap != nil) {
+        // Convert it to an array of dictionaries
+        NSError *error = nil;
+        
+        @try {
+            attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
+        } @catch (NSException *exception) {
+        }
+        
+        if (attributeMap && !error) {
+            NSLog(@"%@", attributeMap);
+        } else {
+            NSLog(@"%@", error);
+        }
     }
     
     return attributeMap;
