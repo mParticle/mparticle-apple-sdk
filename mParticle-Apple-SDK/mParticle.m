@@ -202,7 +202,7 @@ static NSString *const kMPStateKey = @"state";
             ];
         });
     } else {
-        MPILogVerbose(@"[Particle.Rokt selectPlacements:attributes:] not performed since Kit not configured");
+        MPILogVerbose(@"[MParticle.Rokt selectPlacements:attributes:] not performed due to kit not being configured");
     }
 }
 
@@ -253,7 +253,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
             ];
         });
     } else {
-        MPILogVerbose(@"[Particle.Rokt selectPlacements:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:] not performed since Kit not configured");
+        MPILogVerbose(@"[MParticle.Rokt selectPlacements: not performed since Kit not configured");
     }
 }
 
@@ -272,7 +272,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     // Get the placement attributes map
     NSString *strAttributeMap;
     NSData *dataAttributeMap;
-    if (roktKitConfig) {
+    if (roktKitConfig != nil) {
         // Rokt Kit is available though there may not be an attribute map
         attributeMap = @[];
         if (roktKitConfig[@"placementAttributes"] != [NSNull null]) {
