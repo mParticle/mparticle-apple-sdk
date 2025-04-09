@@ -165,6 +165,8 @@ static NSString *const kMPStateKey = @"state";
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
     
+    attributes = [self confirmSandboxAttribute:attributes];
+    
     // If attributeMap is nil the kit hasn't been initialized
     if (attributeMap) {
         NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
@@ -216,6 +218,8 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
     
+    attributes = [self confirmSandboxAttribute:attributes];
+
     // If attributeMap is nil the kit hasn't been initialized
     if (attributeMap) {
         NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
@@ -298,6 +302,28 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     }
     
     return attributeMap;
+}
+
+- (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
+    NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
+    NSString *sandboxKey = @"sandbox";
+    NSString *sandboxValue = @"true";
+    
+    // Determine the value of the sandbox attribute based off the current environment
+    if ([[MParticle sharedInstance] environment] == MPEnvironmentProduction) {
+        sandboxValue = @"false";
+    }
+    
+    if (finalAttributes != nil) {
+        // Only set sanbox if its not set by the client
+        if (![finalAttributes.allKeys containsObject:sandboxKey]) {
+            finalAttributes[sandboxKey] = sandboxValue;
+        }
+    } else {
+        finalAttributes = [[NSMutableDictionary alloc] initWithDictionary:@{sandboxKey: sandboxValue}];
+    }
+    
+    return  finalAttributes;
 }
 
 @end

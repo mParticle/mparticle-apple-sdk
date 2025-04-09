@@ -38,7 +38,7 @@
     
     // Set up test parameters
     NSString *viewName = @"testView";
-    NSDictionary *attributes = @{@"key": @"value"};
+    NSDictionary *attributes = @{@"key": @"value", @"sandbox": @"false"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
@@ -82,6 +82,7 @@
     // Set up test parameters
     NSString *viewName = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
+    NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
     NSDictionary *placements = @{@"placement": @"test"};
     void (^onLoad)(void) = ^{};
     void (^onUnLoad)(void) = ^{};
@@ -96,7 +97,7 @@
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
-        XCTAssertEqualObjects(params[1], attributes);
+        XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], placements);
         XCTAssertTrue(params[3] != nil);
         XCTAssertTrue(params[4] != nil);
@@ -134,8 +135,11 @@
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    
     // Execute method with nil parameters
-    [self.rokt selectPlacements:nil
+    [self.rokt selectPlacements:viewName
                      attributes:nil
                      placements:nil
                          onLoad:nil
@@ -147,11 +151,22 @@
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    // Verify the call is still forwarded with nil parameters
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    NSDictionary *finalAttributes = @{@"sandbox": @"true"};
+
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
-                                 parameters:[OCMArg any]
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertEqualObjects(params[1], finalAttributes);
+        XCTAssertNil(params[2]);
+        XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
+        XCTAssertNil(params[5]);
+        XCTAssertNil(params[6]);
+        XCTAssertNil(params[7]);
+        return true;
+    }]
                                 messageType:MPMessageTypeEvent
                                    userInfo:nil]).andDo(^(NSInvocation *invocation) {
         [expectation fulfill];
@@ -174,7 +189,7 @@
     // Set up test parameters
     NSString *viewName = @"testView";
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
-    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon"};
+    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"sandbox": @"true"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
