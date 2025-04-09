@@ -234,4 +234,30 @@
     OCMVerifyAll((id)mockContainer);
 }
 
+- (void)testGetRoktPlacementAttributes {
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    NSArray *kitConfig = @[@{
+        @"AllowJavaScriptResponse": @"True",
+        @"accountId": @12345,
+        @"onboardingExpProvider": @"None",
+        @"placementAttributes": @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
+        @"sandboxMode": @"True",
+        @"eau": @0,
+        @"hs": @{
+            @"pur": @{},
+            @"reg": @{}
+        },
+        @"id": @181
+    }];
+    [[[mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    NSArray<NSDictionary<NSString *, NSString *> *> *testResult = [self.rokt getRoktPlacementAttributes];
+    NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
+    
+    XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
+}
+
 @end 

@@ -264,7 +264,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
     NSDictionary *roktKitConfig;
     for (NSDictionary *kitConfig in kitConfigs) {
-        if ([kitConfig[@"id"] integerValue] == 181) {
+        if (kitConfig[@"id"] != nil && [kitConfig[@"id"] integerValue] == 181) {
             roktKitConfig = kitConfig;
         }
     }
