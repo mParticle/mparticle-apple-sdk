@@ -163,30 +163,47 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    for (NSString *key in attributes) {
-        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:attributes[key]];
-    }
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
-        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:identifier];
-        [queueParameters addParameter:attributes];
-        [queueParameters addParameter:nil];
-        [queueParameters addParameter:nil];
-        [queueParameters addParameter:nil];
-        [queueParameters addParameter:nil];
-        [queueParameters addParameter:nil];
-        [queueParameters addParameter:nil];
+    // If attributeMap is nil the kit hasn't been initialized
+    if (attributeMap) {
+        NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
+        for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
+            NSString *mapFrom = map[@"map"];
+            NSString *mapTo = map[@"value"];
+            if (mappedAttributes[mapFrom]) {
+                NSString * value = mappedAttributes[mapFrom];
+                [mappedAttributes removeObjectForKey:mapFrom];
+                mappedAttributes[mapTo] = value;
+            }
+        }
+        for (NSString *key in mappedAttributes) {
+            [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+        }
         
-        SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                  event:nil
-                                                             parameters:queueParameters
-                                                            messageType:MPMessageTypeEvent
-                                                               userInfo:nil
-        ];
-    });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Forwarding call to kits
+            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+            [queueParameters addParameter:identifier];
+            [queueParameters addParameter:mappedAttributes];
+            [queueParameters addParameter:nil];
+            [queueParameters addParameter:nil];
+            [queueParameters addParameter:nil];
+            [queueParameters addParameter:nil];
+            [queueParameters addParameter:nil];
+            [queueParameters addParameter:nil];
+            
+            SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                      event:nil
+                                                                 parameters:queueParameters
+                                                                messageType:MPMessageTypeEvent
+                                                                   userInfo:nil
+            ];
+        });
+    } else {
+        MPILogVerbose(@"[MParticle.Rokt selectPlacements:attributes:] not performed due to kit not being configured");
+    }
 }
 
 - (void)selectPlacements:(NSString *)identifier
@@ -197,30 +214,90 @@ static NSString *const kMPStateKey = @"state";
 onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
 onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
     onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
-    for (NSString *key in attributes) {
-        [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:attributes[key]];
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
+    
+    // If attributeMap is nil the kit hasn't been initialized
+    if (attributeMap) {
+        NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
+        for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
+            NSString *mapFrom = map[@"map"];
+            NSString *mapTo = map[@"value"];
+            if (mappedAttributes[mapFrom]) {
+                NSString * value = mappedAttributes[mapFrom];
+                [mappedAttributes removeObjectForKey:mapFrom];
+                mappedAttributes[mapTo] = value;
+            }
+        }
+        for (NSString *key in mappedAttributes) {
+            [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Forwarding call to kits
+            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+            [queueParameters addParameter:identifier];
+            [queueParameters addParameter:mappedAttributes];
+            [queueParameters addParameter:placements];
+            [queueParameters addParameter:onLoad];
+            [queueParameters addParameter:onUnLoad];
+            [queueParameters addParameter:onShouldShowLoadingIndicator];
+            [queueParameters addParameter:onShouldHideLoadingIndicator];
+            [queueParameters addParameter:onEmbeddedSizeChange];
+            
+            SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                      event:nil
+                                                                 parameters:queueParameters
+                                                                messageType:MPMessageTypeEvent
+                                                                   userInfo:nil
+            ];
+        });
+    } else {
+        MPILogVerbose(@"[MParticle.Rokt selectPlacements: not performed since Kit not configured");
+    }
+}
+
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributes {
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
+    
+    // Get the kit configuration
+    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
+    NSDictionary *roktKitConfig;
+    for (NSDictionary *kitConfig in kitConfigs) {
+        if (kitConfig[@"id"] != nil && [kitConfig[@"id"] integerValue] == 181) {
+            roktKitConfig = kitConfig;
+        }
     }
     
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
-        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:identifier];
-        [queueParameters addParameter:attributes];
-        [queueParameters addParameter:placements];
-        [queueParameters addParameter:onLoad];
-        [queueParameters addParameter:onUnLoad];
-        [queueParameters addParameter:onShouldShowLoadingIndicator];
-        [queueParameters addParameter:onShouldHideLoadingIndicator];
-        [queueParameters addParameter:onEmbeddedSizeChange];
+    // Get the placement attributes map
+    NSString *strAttributeMap;
+    NSData *dataAttributeMap;
+    if (roktKitConfig != nil) {
+        // Rokt Kit is available though there may not be an attribute map
+        attributeMap = @[];
+        if (roktKitConfig[@"placementAttributes"] != [NSNull null]) {
+            strAttributeMap = [roktKitConfig[@"placementAttributes"] stringByRemovingPercentEncoding];
+            dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
+        }
+    }
+    
+    if (dataAttributeMap != nil) {
+        // Convert it to an array of dictionaries
+        NSError *error = nil;
         
-        SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                  event:nil
-                                                             parameters:queueParameters
-                                                            messageType:MPMessageTypeEvent
-                                                               userInfo:nil
-        ];
-    });
+        @try {
+            attributeMap = [NSJSONSerialization JSONObjectWithData:dataAttributeMap options:kNilOptions error:&error];
+        } @catch (NSException *exception) {
+        }
+        
+        if (attributeMap && !error) {
+            NSLog(@"%@", attributeMap);
+        } else {
+            NSLog(@"%@", error);
+        }
+    }
+    
+    return attributeMap;
 }
 
 @end

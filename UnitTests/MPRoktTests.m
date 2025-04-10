@@ -4,11 +4,16 @@
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
 
+@interface MPRokt ()
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributes;
+@end
+
 @interface MPRokt (Testing)
 @end
 
 @interface MPRoktTests : XCTestCase
 @property (nonatomic, strong) MPRokt *rokt;
+@property (nonatomic, strong) id mockRokt;
 @end
 
 @implementation MPRoktTests
@@ -16,6 +21,7 @@
 - (void)setUp {
     [super setUp];
     self.rokt = [[MPRokt alloc] init];
+    self.mockRokt = OCMPartialMock(self.rokt);
 }
 
 - (void)tearDown {
@@ -24,6 +30,7 @@
 }
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
@@ -66,6 +73,7 @@
 }
 
 - (void)testSelectPlacementsExpandedWithValidParameters {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
@@ -120,6 +128,7 @@
 }
 
 - (void)testSelectPlacementsExpandedWithNilParameters {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
     id mockInstance = OCMClassMock([MParticle class]);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
@@ -153,6 +162,102 @@
     
     // Verify
     OCMVerifyAll(mockContainer);
+}
+
+- (void)testSelectPlacementsSimpleWithMapping {
+    [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributes];
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    NSDictionary *mappedAttributes = @{@"firstname": @"Brandon"};
+    
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    OCMExpect([mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertEqualObjects(params[1], mappedAttributes);
+        XCTAssertNil(params[2]);
+        XCTAssertNil(params[3]);
+        XCTAssertNil(params[4]);
+        XCTAssertNil(params[5]);
+        XCTAssertNil(params[6]);
+        XCTAssertNil(params[7]);
+        return true;
+    }]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+    
+    // Execute method
+    [self.rokt selectPlacements:viewName
+                     attributes:attributes];
+    
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+
+    // Verify
+    OCMVerifyAll(mockContainer);
+}
+
+- (void)testSelectPlacementsSimpleWithNilMapping {
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributes];
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    OCMReject([mockContainer forwardSDKCall:roktSelector
+                                      event:[OCMArg any]
+                                 parameters:[OCMArg any]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:[OCMArg any]]);
+    
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"f.name": @"Brandon"};
+    
+    // Execute method
+    [self.rokt selectPlacements:viewName
+                     attributes:attributes];
+
+    // Verify
+    OCMVerifyAll((id)mockContainer);
+}
+
+- (void)testGetRoktPlacementAttributes {
+    id mockInstance = OCMClassMock([MParticle class]);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    NSArray *kitConfig = @[@{
+        @"AllowJavaScriptResponse": @"True",
+        @"accountId": @12345,
+        @"onboardingExpProvider": @"None",
+        @"placementAttributes": @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
+        @"sandboxMode": @"True",
+        @"eau": @0,
+        @"hs": @{
+            @"pur": @{},
+            @"reg": @{}
+        },
+        @"id": @181
+    }];
+    [[[mockContainer stub] andReturn:kitConfig] originalConfig];
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    NSArray<NSDictionary<NSString *, NSString *> *> *testResult = [self.rokt getRoktPlacementAttributes];
+    NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
+    
+    XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
 }
 
 @end 
