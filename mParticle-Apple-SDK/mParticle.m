@@ -267,7 +267,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     NSString *sandboxKey = @"sandbox";
     
     // Determine the value of the sandbox attribute based off the current environment
-    NSString *sandboxValue = ([[MParticle sharedInstance] environment] == MPEnvironmentProduction) ? @"false" : @"true";
+    NSString *sandboxValue = ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) ? @"true" : @"false";
     
     if (finalAttributes != nil) {
         // Only set sandbox if it`s not set by the client
