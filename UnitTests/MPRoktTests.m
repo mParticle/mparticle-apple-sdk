@@ -31,7 +31,8 @@
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
-    id mockInstance = OCMClassMock([MParticle class]);
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
@@ -74,7 +75,8 @@
 
 - (void)testSelectPlacementsExpandedWithValidParameters {
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
-    id mockInstance = OCMClassMock([MParticle class]);
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
@@ -130,7 +132,8 @@
 
 - (void)testSelectPlacementsExpandedWithNilParameters {
     [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
-    id mockInstance = OCMClassMock([MParticle class]);
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
@@ -181,7 +184,8 @@
 
 - (void)testSelectPlacementsSimpleWithMapping {
     [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributes];
-    id mockInstance = OCMClassMock([MParticle class]);
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
@@ -225,7 +229,8 @@
 
 - (void)testSelectPlacementsSimpleWithNilMapping {
     [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributes];
-    id mockInstance = OCMClassMock([MParticle class]);
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
@@ -250,7 +255,8 @@
 }
 
 - (void)testGetRoktPlacementAttributes {
-    id mockInstance = OCMClassMock([MParticle class]);
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
     NSArray *kitConfig = @[@{
         @"AllowJavaScriptResponse": @"True",

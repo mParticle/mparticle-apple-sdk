@@ -176,8 +176,6 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
     
-    attributes = [self confirmSandboxAttribute:attributes];
-
     // If attributeMap is nil the kit hasn't been initialized
     if (attributeMap) {
         NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
@@ -198,7 +196,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
             // Forwarding call to kits
             MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
             [queueParameters addParameter:identifier];
-            [queueParameters addParameter:mappedAttributes];
+            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
             [queueParameters addParameter:placements];
             [queueParameters addParameter:onLoad];
             [queueParameters addParameter:onUnLoad];
