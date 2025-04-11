@@ -163,47 +163,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
-    
-    // If attributeMap is nil the kit hasn't been initialized
-    if (attributeMap) {
-        NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
-        for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-            NSString *mapFrom = map[@"map"];
-            NSString *mapTo = map[@"value"];
-            if (mappedAttributes[mapFrom]) {
-                NSString * value = mappedAttributes[mapFrom];
-                [mappedAttributes removeObjectForKey:mapFrom];
-                mappedAttributes[mapTo] = value;
-            }
-        }
-        for (NSString *key in mappedAttributes) {
-            [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // Forwarding call to kits
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:identifier];
-            [queueParameters addParameter:mappedAttributes];
-            [queueParameters addParameter:nil];
-            [queueParameters addParameter:nil];
-            [queueParameters addParameter:nil];
-            [queueParameters addParameter:nil];
-            [queueParameters addParameter:nil];
-            [queueParameters addParameter:nil];
-            
-            SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
-            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                      event:nil
-                                                                 parameters:queueParameters
-                                                                messageType:MPMessageTypeEvent
-                                                                   userInfo:nil
-            ];
-        });
-    } else {
-        MPILogVerbose(@"[MParticle.Rokt selectPlacements:attributes:] not performed due to kit not being configured");
-    }
+    [self selectPlacements:identifier attributes:attributes placements:nil onLoad:nil onUnLoad:nil onShouldShowLoadingIndicator:nil onShouldHideLoadingIndicator:nil onEmbeddedSizeChange:nil];
 }
 
 - (void)selectPlacements:(NSString *)identifier
@@ -236,7 +196,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
             // Forwarding call to kits
             MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
             [queueParameters addParameter:identifier];
-            [queueParameters addParameter:mappedAttributes];
+            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
             [queueParameters addParameter:placements];
             [queueParameters addParameter:onLoad];
             [queueParameters addParameter:onUnLoad];
@@ -298,6 +258,25 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     }
     
     return attributeMap;
+}
+
+- (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
+    NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
+    NSString *sandboxKey = @"sandbox";
+    
+    // Determine the value of the sandbox attribute based off the current environment
+    NSString *sandboxValue = ([[MParticle sharedInstance] environment] == MPEnvironmentDevelopment) ? @"true" : @"false";
+    
+    if (finalAttributes != nil) {
+        // Only set sandbox if it`s not set by the client
+        if (![finalAttributes.allKeys containsObject:sandboxKey]) {
+            finalAttributes[sandboxKey] = sandboxValue;
+        }
+    } else {
+        finalAttributes = [[NSMutableDictionary alloc] initWithDictionary:@{sandboxKey: sandboxValue}];
+    }
+    
+    return finalAttributes;
 }
 
 @end
