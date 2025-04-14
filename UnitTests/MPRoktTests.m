@@ -85,7 +85,8 @@
     NSString *viewName = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
-    NSDictionary *placements = @{@"placement": @"test"};
+    MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
+    NSDictionary *placements = @{@"placement": exampleView};
     void (^onLoad)(void) = ^{};
     void (^onUnLoad)(void) = ^{};
     void (^onShouldShowLoadingIndicator)(void) = ^{};

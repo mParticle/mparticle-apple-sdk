@@ -20,6 +20,7 @@
 @class MPConsentState;
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
+@class MPRoktEmbeddedView;
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     @class UNUserNotificationCenter;
@@ -136,7 +137,7 @@
 #pragma mark First Party Kits
 - (nonnull MPKitExecStatus *)executeWithViewName:(NSString * _Nullable)viewName
                                       attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                      placements:(NSDictionary<NSString *, id> * _Nullable)placements
+                                      placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                                           onLoad:(void (^ _Nullable)(void))onLoad
                                         onUnLoad:(void (^ _Nullable)(void))onUnLoad
                     onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
