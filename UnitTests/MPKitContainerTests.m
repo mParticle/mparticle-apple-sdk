@@ -703,6 +703,55 @@
 
 }
 
+- (void)testConfiguredKitsWhenDisabled {
+    NSArray *configurations = @[
+                                @{
+                                    @"id":@(42),
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    },
+                                @{
+                                    @"id":@314,
+                                    @"as":@{
+                                            @"secretKey":@"MySecretKey",
+                                            @"sendTransactionData":@"true"
+                                            },
+                                    @"eau":@false
+                                    }
+                                ];
+    
+    MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[1]];
+    NSNumber *kitId = configurations[1][@"id"];
+    [[kitContainer startKit:kitId configuration:kitConfiguration] start];
+    kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:configurations[0]];
+    kitId = configurations[0][@"id"];
+    [[kitContainer startKit:kitId configuration:kitConfiguration] start];
+    
+    [kitContainer configureKits:nil];
+    [kitContainer configureKits:configurations];
+    
+    NSArray<id<MPExtensionKitProtocol>> *activeKits = [kitContainer activeKitsRegistry];
+    XCTAssertEqual(activeKits.count, 2);
+    XCTAssertEqualObjects(activeKits[0].code, @42);
+    XCTAssertEqualObjects(activeKits[1].code, @314);
+    NSArray<NSNumber *> *configuredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(configuredKits.count, 2);
+    XCTAssertTrue([configuredKits containsObject:@42]);
+    XCTAssertTrue([configuredKits containsObject:@314]);
+  
+    NSArray<NSNumber *> *disabledKitsId = @[@(42)];
+    [kitContainer setDisabledKits:disabledKitsId];
+    NSArray<id<MPExtensionKitProtocol>> *updatedActiveKits = [kitContainer activeKitsRegistry];
+    XCTAssertEqual(updatedActiveKits.count, 1);
+    XCTAssertEqualObjects(updatedActiveKits[0].code, @314);
+    NSArray<NSNumber *> *updatedConfiguredKits = [kitContainer configuredKitsRegistry];
+    XCTAssertEqual(updatedConfiguredKits.count, 1);
+    XCTAssertTrue([updatedConfiguredKits containsObject:@314]);
+}
+
 - (void)testForwardLoggedInUserWithMultipleKits {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     currentUser.isLoggedIn = true;

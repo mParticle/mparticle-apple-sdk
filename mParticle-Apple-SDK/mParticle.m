@@ -671,6 +671,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     
     _kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     _kitContainer_PRIVATE.sideloadedKits = options.sideloadedKits ?: [NSArray array];
+    _kitContainer_PRIVATE.disabledKits = options.disabledKits;
     NSUInteger sideLoadedKitsCount = _kitContainer_PRIVATE.sideloadedKits.count;
     [userDefaults setSideloadedKitsCount:sideLoadedKitsCount];
 
