@@ -394,6 +394,13 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
 @property (nonatomic, strong, readwrite, nullable) MPDataPlanOptions *dataPlanOptions;
 
 /**
+ Disabled Kits.
+ 
+ Include the Kit Integration ID of any kit you'd like to disable
+ */
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
+
+/**
  Set the App Tracking Transparency Authorization Status upon starting the SDK.
  Only sets a new state if it has changed.
  */

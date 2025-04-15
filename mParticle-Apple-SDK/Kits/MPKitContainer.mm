@@ -294,10 +294,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
-        self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
-        [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
-        
-        self.kitsInitialized = YES;
+        BOOL shouldStartKit = !(_disabledKits != nil && [_disabledKits containsObject:kitConfiguration.integrationId]);
+                if (shouldStartKit) {
+                    self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
+                    [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
+
+                    self.kitsInitialized = YES;
+                }
     }
     if (self.sideloadedKits.count > 0) {
         self.kitsInitialized = YES;
@@ -497,7 +500,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter];
+    disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter] || [_disabledKits containsObject:kitRegister.code];
     if (disabled) {
         kitRegister.wrapperInstance = nil;
         return;
@@ -1952,8 +1955,9 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
         BOOL disabledByExcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
         BOOL disabledByRamping =  !(bracket == nullptr || (bracket != nullptr && bracket->shouldForward()));
-        
-        if (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers) {
+        BOOL disabledKit = [_disabledKits containsObject:kitRegister.code];
+
+        if (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers && !disabledKit) {
             [activeKitsRegistry addObject:kitRegister];
         }
     }
@@ -2011,7 +2015,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             
             if (kitInstance) {
                 
-                BOOL disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter];
+                BOOL disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter] || [_disabledKits containsObject:kitRegister.code];
                 if (disabled) {
                     kitRegister.wrapperInstance = nil;
                 } else {

@@ -18,6 +18,7 @@
 @property (nonatomic, strong, nonnull) NSArray<NSDictionary *> *originalConfig;
 
 @property (nonatomic, strong, nonnull) NSArray<MPSideloadedKit*> *sideloadedKits;
+@property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
