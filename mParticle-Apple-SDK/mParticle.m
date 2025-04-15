@@ -64,6 +64,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
+@property (nonatomic, readwrite) NSArray<NSNumber *> *disabledKits;
 
 @end
 
