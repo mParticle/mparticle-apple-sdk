@@ -309,8 +309,6 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceCleverTap = 135,
     /** Kit code for Google Analytics for Firebase */
     MPKitInstanceGoogleAnalyticsFirebase = 136,
-    /** Kit code for Google Tag Manager */
-    MPKitInstanceGoogleTagManager = 140,
     /** Kit code for Google Analytics 4 for Firebase */
     MPKitInstanceGoogleAnalyticsFirebaseGA4 = 160,
     /** Kit code for Pilgrim */
