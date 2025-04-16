@@ -295,13 +295,15 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     for (NSDictionary *kitConfigurationDictionary in directoryContents) {
         MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
         BOOL shouldStartKit = !(_disabledKits != nil && [_disabledKits containsObject:kitConfiguration.integrationId]);
-                if (shouldStartKit) {
-                    self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
-                    [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
-
-                    self.kitsInitialized = YES;
-                }
+        if (shouldStartKit) {
+            self.kitConfigurations[kitConfiguration.integrationId] = kitConfiguration;
+            [self startKit:kitConfiguration.integrationId configuration:kitConfiguration];
+        }
     }
+    if (self.kitConfigurations.count > 0) {
+        self.kitsInitialized = YES;
+    }
+    
     if (self.sideloadedKits.count > 0) {
         self.kitsInitialized = YES;
     }
@@ -477,6 +479,13 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     return shouldDisable;
 }
 
+- (BOOL)isKitDisabled:(NSNumber *)kitCode {
+    BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitCode].consentKitFilter];
+    BOOL disabledKit = [_disabledKits containsObject:kitCode];
+
+    return disabledByConsent || disabledKit;
+}
+
 - (id<MPKitProtocol>)startKit:(NSNumber *)integrationId configuration:(MPKitConfiguration *)kitConfiguration {
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"code == %@", integrationId];
     id<MPExtensionKitProtocol>kitRegister = [[kitsRegistry filteredSetUsingPredicate:predicate] anyObject];
@@ -500,7 +509,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
         return;
     }
     
-    disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter] || [_disabledKits containsObject:kitRegister.code];
+    disabled = [self isKitDisabled:kitRegister.code];
     if (disabled) {
         kitRegister.wrapperInstance = nil;
         return;
@@ -1948,21 +1957,25 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
     NSMutableArray <id<MPExtensionKitProtocol>> *activeKitsRegistry = [[NSMutableArray alloc] initWithCapacity:kitsRegistry.count];
     
     for (id<MPExtensionKitProtocol>kitRegister in kitsRegistry) {
-        BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
-        std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
-        MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-        
-        BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
-        BOOL disabledByExcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
-        BOOL disabledByRamping =  !(bracket == nullptr || (bracket != nullptr && bracket->shouldForward()));
-        BOOL disabledKit = [_disabledKits containsObject:kitRegister.code];
-
-        if (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers && !disabledKit) {
+        if ([self isActiveAndNotDisabled:kitRegister]) {
             [activeKitsRegistry addObject:kitRegister];
         }
     }
     
     return activeKitsRegistry.count > 0 ? activeKitsRegistry : nil;
+}
+
+- (BOOL)isActiveAndNotDisabled:(id<MPExtensionKitProtocol>)kitRegister {
+    BOOL active = kitRegister.wrapperInstance ? [kitRegister.wrapperInstance started] : NO;
+    std::shared_ptr<mParticle::Bracket> bracket = [self bracketForKit:kitRegister.code];
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    
+    BOOL disabledByConsent =  [self isDisabledByConsentKitFilter:self.kitConfigurations[kitRegister.code].consentKitFilter];
+    BOOL disabledByExcludingAnonymousUsers =  (self.kitConfigurations[kitRegister.code].excludeAnonymousUsers && !currentUser.isLoggedIn);
+    BOOL disabledByRamping =  !(bracket == nullptr || (bracket != nullptr && bracket->shouldForward()));
+    BOOL disabledKit = [_disabledKits containsObject:kitRegister.code];
+    
+    return (active && !disabledByRamping && !disabledByConsent && !disabledByExcludingAnonymousUsers && !disabledKit);
 }
 
 - (void)configureKits:(NSArray<NSDictionary *> *)kitConfigurations {
@@ -2015,7 +2028,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
             
             if (kitInstance) {
                 
-                BOOL disabled = [self isDisabledByConsentKitFilter:kitConfiguration.consentKitFilter] || [_disabledKits containsObject:kitRegister.code];
+                BOOL disabled = [self isKitDisabled:kitRegister.code];
                 if (disabled) {
                     kitRegister.wrapperInstance = nil;
                 } else {

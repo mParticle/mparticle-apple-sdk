@@ -397,6 +397,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  Disabled Kits.
  
  Include the Kit Integration ID of any kit you'd like to disable
+ @see MPKitInstance
  */
 @property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
 
