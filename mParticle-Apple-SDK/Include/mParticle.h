@@ -85,6 +85,10 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
+@interface MPRoktEmbeddedView : UIView
+
+@end
+
 @interface MPRokt : NSObject
 
 - (void)selectPlacements:(NSString *)identifier
@@ -92,7 +96,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-              placements:(NSDictionary<NSString *, id> * _Nullable)placements
+              placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                   onLoad:(void (^ _Nullable)(void))onLoad
                 onUnLoad:(void (^ _Nullable)(void))onUnLoad
 onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator

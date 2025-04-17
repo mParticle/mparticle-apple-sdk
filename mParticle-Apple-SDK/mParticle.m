@@ -159,6 +159,9 @@ static NSString *const kMPStateKey = @"state";
 @implementation MPDataPlanOptions
 @end
 
+@implementation MPRoktEmbeddedView
+@end
+
 @implementation MPRokt
 
 - (void)selectPlacements:(NSString *)identifier
@@ -168,7 +171,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-              placements:(NSDictionary<NSString *, id> * _Nullable)placements
+              placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                   onLoad:(void (^ _Nullable)(void))onLoad
                 onUnLoad:(void (^ _Nullable)(void))onUnLoad
 onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
