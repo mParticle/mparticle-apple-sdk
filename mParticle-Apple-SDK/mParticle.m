@@ -64,6 +64,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) NSString *dataPlanId;
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
+@property (nonatomic, readwrite) NSArray<NSNumber *> *disabledKits;
 
 @end
 
@@ -730,6 +731,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     
     _kitContainer_PRIVATE = [[MPKitContainer_PRIVATE alloc] init];
     _kitContainer_PRIVATE.sideloadedKits = options.sideloadedKits ?: [NSArray array];
+    _kitContainer_PRIVATE.disabledKits = options.disabledKits;
     NSUInteger sideLoadedKitsCount = _kitContainer_PRIVATE.sideloadedKits.count;
     [userDefaults setSideloadedKitsCount:sideLoadedKitsCount];
 

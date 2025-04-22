@@ -285,34 +285,38 @@ typedef NS_ENUM(NSUInteger, MPKitInstance) {
     MPKitInstanceResponsys = 102,
     /** Kit code for Apptimize */
     MPKitInstanceApptimize = 105,
+    /** Kit code for Bing */
+    MPKitInstanceBingAds = 107,
     /** Kit code for Reveal Mobile */
     MPKitInstanceRevealMobile = 112,
     /** Kit code for Radar */
     MPKitInstanceRadar = 117,
-    /** Kit code for Skyhook */
-    MPKitInstanceSkyhook = 121,
-    /** Kit code for Iterable */
-    MPKitInstanceIterable = 1003,
-    /** Kit code for Button */
-    MPKitInstanceButton = 1022,
     /** Kit code for Singular */
     MPKitInstanceSingular = 119,
-    /** Kit code for Adobe */
-    MPKitInstanceAdobe = 124,
+    /** Kit code for Skyhook */
+    MPKitInstanceSkyhook = 121,
     /** Kit code for Instabot */
     MPKitInstanceInstabot = 123,
+    /** Kit code for Adobe */
+    MPKitInstanceAdobe = 124,
     /** Kit code for Appsee */
     MPKitInstanceAppsee = 126,
     /** Kit code for Taplytics */
     MPKitInstanceTaplytics = 129,
+    /** Kit code for OneTrust */
+    MPKitInstanceOneTrust = 134,
     /** Kit code for CleverTap */
     MPKitInstanceCleverTap = 135,
-    /** Kit code for Pilgrim */
-    MPKitInstancePilgrim = 211,
     /** Kit code for Google Analytics for Firebase */
     MPKitInstanceGoogleAnalyticsFirebase = 136,
     /** Kit code for Google Analytics 4 for Firebase */
     MPKitInstanceGoogleAnalyticsFirebaseGA4 = 160,
+    /** Kit code for Pilgrim */
+    MPKitInstancePilgrim = 211,
+    /** Kit code for Iterable */
+    MPKitInstanceIterable = 1003,
+    /** Kit code for Button */
+    MPKitInstanceButton = 1022,
     /** Kit code for Blueshift */
     MPKitInstanceBlueshift = 1144
 };
