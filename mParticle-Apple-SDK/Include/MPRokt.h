@@ -29,7 +29,7 @@
 
 - (void)selectPlacements:(NSString *_Nonnull)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-              placements:(NSDictionary<NSString *, id> * _Nullable)placements
+              placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
 
 @end

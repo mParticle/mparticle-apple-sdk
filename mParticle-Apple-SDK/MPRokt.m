@@ -51,13 +51,9 @@
             [queueParameters addParameter:identifier];
             [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
             [queueParameters addParameter:placements];
-            [queueParameters addParameter:callbacks.onLoad];
-            [queueParameters addParameter:callbacks.onUnLoad];
-            [queueParameters addParameter:callbacks.onShouldShowLoadingIndicator];
-            [queueParameters addParameter:callbacks.onShouldHideLoadingIndicator];
-            [queueParameters addParameter:callbacks.onEmbeddedSizeChange];
+            [queueParameters addParameter:callbacks];
             
-            SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+            SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
             [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                       event:nil
                                                                  parameters:queueParameters

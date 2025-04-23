@@ -44,7 +44,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -52,10 +52,6 @@
         XCTAssertEqualObjects(params[1], attributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
-        XCTAssertNil(params[4]);
-        XCTAssertNil(params[5]);
-        XCTAssertNil(params[6]);
-        XCTAssertNil(params[7]);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -97,18 +93,14 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], placements);
-        XCTAssertEqualObjects(params[3], exampleCallbacks.onLoad);
-        XCTAssertEqualObjects(params[4], exampleCallbacks.onUnLoad);
-        XCTAssertEqualObjects(params[5], exampleCallbacks.onShouldShowLoadingIndicator);
-        XCTAssertEqualObjects(params[6], exampleCallbacks.onShouldHideLoadingIndicator);
-        XCTAssertEqualObjects(params[7], exampleCallbacks.onEmbeddedSizeChange);
+        XCTAssertEqualObjects(params[3], exampleCallbacks);
         return true;
     }]
                                        messageType:MPMessageTypeEvent
@@ -149,7 +141,7 @@
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([mockContainer forwardSDKCall:roktSelector
@@ -159,10 +151,6 @@
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
-        XCTAssertNil(params[4]);
-        XCTAssertNil(params[5]);
-        XCTAssertNil(params[6]);
-        XCTAssertNil(params[7]);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -192,7 +180,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -200,10 +188,6 @@
         XCTAssertEqualObjects(params[1], mappedAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
-        XCTAssertNil(params[4]);
-        XCTAssertNil(params[5]);
-        XCTAssertNil(params[6]);
-        XCTAssertNil(params[7]);
         return true;
     }]
                                 messageType:MPMessageTypeEvent
@@ -230,7 +214,7 @@
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:onLoad:onUnLoad:onShouldShowLoadingIndicator:onShouldHideLoadingIndicator:onEmbeddedSizeChange:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMReject([mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]
