@@ -88,11 +88,12 @@
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
     NSDictionary *placements = @{@"placement": exampleView};
-    void (^onLoad)(void) = ^{};
-    void (^onUnLoad)(void) = ^{};
-    void (^onShouldShowLoadingIndicator)(void) = ^{};
-    void (^onShouldHideLoadingIndicator)(void) = ^{};
-    void (^onEmbeddedSizeChange)(NSString *, CGFloat) = ^(NSString *p, CGFloat s){};
+    MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
+    exampleCallbacks.onLoad = ^{};
+    exampleCallbacks.onUnLoad = ^{};
+    exampleCallbacks.onShouldShowLoadingIndicator = ^{};
+    exampleCallbacks.onShouldHideLoadingIndicator = ^{};
+    exampleCallbacks.onEmbeddedSizeChange = ^(NSString *p, CGFloat s){};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
@@ -103,11 +104,11 @@
         XCTAssertEqualObjects(params[0], viewName);
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], placements);
-        XCTAssertTrue(params[3] != nil);
-        XCTAssertTrue(params[4] != nil);
-        XCTAssertTrue(params[5] != nil);
-        XCTAssertTrue(params[6] != nil);
-        XCTAssertTrue(params[7] != nil);
+        XCTAssertEqualObjects(params[3], exampleCallbacks.onLoad);
+        XCTAssertEqualObjects(params[4], exampleCallbacks.onUnLoad);
+        XCTAssertEqualObjects(params[5], exampleCallbacks.onShouldShowLoadingIndicator);
+        XCTAssertEqualObjects(params[6], exampleCallbacks.onShouldHideLoadingIndicator);
+        XCTAssertEqualObjects(params[7], exampleCallbacks.onEmbeddedSizeChange);
         return true;
     }]
                                        messageType:MPMessageTypeEvent
@@ -119,11 +120,7 @@
     [self.rokt selectPlacements:viewName
                      attributes:attributes
                      placements:placements
-                         onLoad:onLoad
-                       onUnLoad:onUnLoad
-   onShouldShowLoadingIndicator:onShouldShowLoadingIndicator
-   onShouldHideLoadingIndicator:onShouldHideLoadingIndicator
-           onEmbeddedSizeChange:onEmbeddedSizeChange];
+                      callbacks:exampleCallbacks];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:1.0 handler:nil];
@@ -147,11 +144,7 @@
     [self.rokt selectPlacements:viewName
                      attributes:nil
                      placements:nil
-                         onLoad:nil
-                       onUnLoad:nil
-   onShouldShowLoadingIndicator:nil
-   onShouldHideLoadingIndicator:nil
-           onEmbeddedSizeChange:nil];
+                      callbacks:nil];
     
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];

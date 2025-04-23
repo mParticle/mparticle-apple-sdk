@@ -26,6 +26,7 @@
 #import "MPNotificationController.h"
 #import "MPNetworkCommunication.h"
 #import "MPPersistenceController.h"
+#import "MPRokt.h"
 
 #if TARGET_OS_IOS == 1
     #ifndef MPARTICLE_LOCATION_DISABLE
@@ -82,26 +83,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic) NSDictionary *linkInfo;
 @property (nonatomic, readonly) NSNumber *kitCode;
 @property (nonatomic, readonly) NSString *kitName;
-
-@end
-
-@interface MPRoktEmbeddedView : UIView
-
-@end
-
-@interface MPRokt : NSObject
-
-- (void)selectPlacements:(NSString *)identifier
-              attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes;
-
-- (void)selectPlacements:(NSString *)identifier
-              attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-              placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
-                  onLoad:(void (^ _Nullable)(void))onLoad
-                onUnLoad:(void (^ _Nullable)(void))onUnLoad
-onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
-onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
-    onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange;
 
 @end
 
