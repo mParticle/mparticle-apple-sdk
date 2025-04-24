@@ -1,3 +1,13 @@
+# [8.30.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.29.0...v8.30.0) (2025-04-24)
+
+
+### Features
+
+* Add disabledKits option to MParticleOptions ([#347](https://github.com/mParticle/mparticle-apple-sdk/issues/347)) ([f708431](https://github.com/mParticle/mparticle-apple-sdk/commit/f7084317345fc9fdf08b8142bdfa4a5220b0ac8a))
+* Add MPRoktEmbeddedView Class ([#345](https://github.com/mParticle/mparticle-apple-sdk/issues/345)) ([f4fb946](https://github.com/mParticle/mparticle-apple-sdk/commit/f4fb946dec2cc2ac190a3f62493f807df2c05cbb))
+* Add user attribute mapping ([#343](https://github.com/mParticle/mparticle-apple-sdk/issues/343)) ([50ce934](https://github.com/mParticle/mparticle-apple-sdk/commit/50ce934e88f9b30dc0889ef7475a4cb34210acc0))
+* Automatically include sandbox in MPRokt Attributes ([#344](https://github.com/mParticle/mparticle-apple-sdk/issues/344)) ([bdf4280](https://github.com/mParticle/mparticle-apple-sdk/commit/bdf4280cf326f40ce89f9f9ec12840525317add7))
+
 # [8.29.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.28.1...v8.29.0) (2025-04-02)
 
 
