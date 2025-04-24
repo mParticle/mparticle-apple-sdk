@@ -1,3 +1,10 @@
+## [8.30.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.0...v8.30.1) (2025-04-24)
+
+
+### Bug Fixes
+
+* Update placementAttributes to placementAttributesMapping ([#349](https://github.com/mParticle/mparticle-apple-sdk/issues/349)) ([13ec6a2](https://github.com/mParticle/mparticle-apple-sdk/commit/13ec6a2a9758f41d865c6db22d7eba82e37f1584))
+
 # [8.30.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.29.0...v8.30.0) (2025-04-24)
 
 
