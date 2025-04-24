@@ -516,4 +516,7 @@ extern NSString * _Nonnull const kMPDeviceIdentifierKey;
 extern NSString * _Nonnull const kMPDeviceLimitAdTrackingKey;
 extern NSString * _Nonnull const kMPDeviceIsDaylightSavingTime;
 extern NSString * _Nonnull const kMPDeviceInvalidVendorId;
+
+// MPRokt Constants
+extern NSString * _Nonnull const kMPPlacementAttributesMapping;
 #endif
