@@ -178,7 +178,7 @@ static NSString *const kMPStateKey = @"state";
 onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
 onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
     onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
     
     // If attributeMap is nil the kit hasn't been initialized
     if (attributeMap) {
@@ -221,7 +221,7 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     }
 }
 
-- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributes {
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     
     // Get the kit configuration
@@ -239,8 +239,8 @@ onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndica
     if (roktKitConfig != nil) {
         // Rokt Kit is available though there may not be an attribute map
         attributeMap = @[];
-        if (roktKitConfig[@"placementAttributes"] != [NSNull null]) {
-            strAttributeMap = [roktKitConfig[@"placementAttributes"] stringByRemovingPercentEncoding];
+        if (roktKitConfig[kMPPlacementAttributesMapping] != [NSNull null]) {
+            strAttributeMap = [roktKitConfig[kMPPlacementAttributesMapping] stringByRemovingPercentEncoding];
             dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
         }
     }

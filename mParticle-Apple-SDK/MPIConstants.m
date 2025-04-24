@@ -415,6 +415,10 @@ NSString * const kMPDeviceIdentifierKey = @"deviceIdentifier";
 NSString * const kMPDeviceLimitAdTrackingKey = @"lat";
 NSString * const kMPDeviceIsDaylightSavingTime = @"idst";
 NSString * const kMPDeviceInvalidVendorId = @"00000000-0000-0000-0000-000000000000";
+
+// MPRokt Constants
+NSString * const kMPPlacementAttributesMapping = @"placementAttributesMapping";
+
 //
 // Primitive data type constants
 //

@@ -3,9 +3,10 @@
 #import "MParticle.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
+#import "MPIConstants.h"
 
 @interface MPRokt ()
-- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributes;
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
 @end
 
 @interface MPRokt (Testing)
@@ -30,7 +31,7 @@
 }
 
 - (void)testSelectPlacementsSimpleWithValidParameters {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -74,7 +75,7 @@
 }
 
 - (void)testSelectPlacementsExpandedWithValidParameters {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -132,7 +133,7 @@
 }
 
 - (void)testSelectPlacementsExpandedWithNilParameters {
-    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributes];
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -184,7 +185,7 @@
 }
 
 - (void)testSelectPlacementsSimpleWithMapping {
-    [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributes];
+    [[[self.mockRokt stub] andReturn:@[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname"}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode"}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname"}]] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -229,7 +230,7 @@
 }
 
 - (void)testSelectPlacementsSimpleWithNilMapping {
-    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributes];
+    [[[self.mockRokt stub] andReturn:nil] getRoktPlacementAttributesMapping];
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -255,7 +256,7 @@
     OCMVerifyAll((id)mockContainer);
 }
 
-- (void)testGetRoktPlacementAttributes {
+- (void)testGetRoktPlacementAttributesMapping {
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -263,7 +264,7 @@
         @"AllowJavaScriptResponse": @"True",
         @"accountId": @12345,
         @"onboardingExpProvider": @"None",
-        @"placementAttributes": @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
+        kMPPlacementAttributesMapping: @"[{\"jsmap\":null,\"map\":\"f.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"firstname\"},{\"jsmap\":null,\"map\":\"zip\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"billingzipcode\"},{\"jsmap\":null,\"map\":\"l.name\",\"maptype\":\"UserAttributeClass.Name\",\"value\":\"lastname\"}]",
         @"sandboxMode": @"True",
         @"eau": @0,
         @"hs": @{
@@ -276,7 +277,7 @@
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
-    NSArray<NSDictionary<NSString *, NSString *> *> *testResult = [self.rokt getRoktPlacementAttributes];
+    NSArray<NSDictionary<NSString *, NSString *> *> *testResult = [self.rokt getRoktPlacementAttributesMapping];
     NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
     
     XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
