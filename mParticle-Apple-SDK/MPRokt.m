@@ -9,6 +9,7 @@
 #import "mParticle.h"
 #import "MPForwardQueueParameters.h"
 #import "MPILogger.h"
+#import "MPIConstants.h"
 
 @implementation MPRoktEventCallback
 @end
@@ -27,7 +28,7 @@
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
               placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                callbacks:(MPRoktEventCallback *)callbacks {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributes];
+    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
     
     // If attributeMap is nil the kit hasn't been initialized
     if (attributeMap) {
@@ -66,7 +67,7 @@
     }
 }
 
-- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributes {
+- (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     
     // Get the kit configuration
@@ -84,8 +85,8 @@
     if (roktKitConfig != nil) {
         // Rokt Kit is available though there may not be an attribute map
         attributeMap = @[];
-        if (roktKitConfig[@"placementAttributes"] != [NSNull null]) {
-            strAttributeMap = [roktKitConfig[@"placementAttributes"] stringByRemovingPercentEncoding];
+        if (roktKitConfig[kMPPlacementAttributesMapping] != [NSNull null]) {
+            strAttributeMap = [roktKitConfig[kMPPlacementAttributesMapping] stringByRemovingPercentEncoding];
             dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
         }
     }
