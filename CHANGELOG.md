@@ -1,3 +1,10 @@
+## [8.30.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.1...v8.30.2) (2025-04-29)
+
+
+### Bug Fixes
+
+* Implement MPRoktEventCallback on Core ([#348](https://github.com/mParticle/mparticle-apple-sdk/issues/348)) ([d5fd11d](https://github.com/mParticle/mparticle-apple-sdk/commit/d5fd11d4de32082e20fc7a76436c444f66126b6f))
+
 ## [8.30.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.0...v8.30.1) (2025-04-24)
 
 
