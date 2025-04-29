@@ -21,6 +21,7 @@
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
 @class MPRoktEmbeddedView;
+@class MPRoktEventCallback;
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     @class UNUserNotificationCenter;
@@ -138,12 +139,9 @@
 - (nonnull MPKitExecStatus *)executeWithViewName:(NSString * _Nullable)viewName
                                       attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                                       placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
-                                          onLoad:(void (^ _Nullable)(void))onLoad
-                                        onUnLoad:(void (^ _Nullable)(void))onUnLoad
-                    onShouldShowLoadingIndicator:(void (^ _Nullable)(void))onShouldShowLoadingIndicator
-                    onShouldHideLoadingIndicator:(void (^ _Nullable)(void))onShouldHideLoadingIndicator
-                            onEmbeddedSizeChange:(void (^ _Nullable)(NSString * _Nonnull, CGFloat))onEmbeddedSizeChange
+                                       callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+
 @end
 
 #endif
