@@ -43,7 +43,9 @@
             }
         }
         for (NSString *key in mappedAttributes) {
-            [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+            if (![key isEqual:@"sandbox"]) {
+                [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+            }
         }
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -79,16 +81,20 @@
         }
     }
     
+    // Return nil if no Rokt Kit configuration found
+    if (!roktKitConfig) {
+        MPILogVerbose(@"Rokt kit configuration not found");
+        return nil;
+    }
+    
     // Get the placement attributes map
     NSString *strAttributeMap;
     NSData *dataAttributeMap;
-    if (roktKitConfig != nil) {
-        // Rokt Kit is available though there may not be an attribute map
-        attributeMap = @[];
-        if (roktKitConfig[kMPPlacementAttributesMapping] != [NSNull null]) {
-            strAttributeMap = [roktKitConfig[kMPPlacementAttributesMapping] stringByRemovingPercentEncoding];
-            dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
-        }
+    // Rokt Kit is available though there may not be an attribute map
+    attributeMap = @[];
+    if (roktKitConfig[kMPPlacementAttributesMapping] != [NSNull null]) {
+        strAttributeMap = [roktKitConfig[kMPPlacementAttributesMapping] stringByRemovingPercentEncoding];
+        dataAttributeMap = [strAttributeMap dataUsingEncoding:NSUTF8StringEncoding];
     }
     
     if (dataAttributeMap != nil) {
