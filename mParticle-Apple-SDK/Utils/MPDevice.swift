@@ -217,7 +217,8 @@ import CoreTelephony
                 if let vendor = userDefaults[Device.kMPDeviceAppVendorIdKey] as? String, vendor != Device.kMPDeviceInvalidVendorId {
                     _vendorId = vendor
                 } else {
-                    _vendorId = UUID().uuidString
+                    _vendorId = UIDevice.current.identifierForVendor?.uuidString
+                    userDefaults[Device.kMPDeviceAppVendorIdKey] = _vendorId
                 }
             }
             return _vendorId
