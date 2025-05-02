@@ -1,3 +1,10 @@
+## [8.30.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.2...v8.30.3) (2025-05-02)
+
+
+### Bug Fixes
+
+* Assign correct IDFV instead of random UUID ([#350](https://github.com/mParticle/mparticle-apple-sdk/issues/350)) ([c18b063](https://github.com/mParticle/mparticle-apple-sdk/commit/c18b0639b494ebcd73a154d97b6430be8dc6c6a8))
+
 ## [8.30.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.1...v8.30.2) (2025-04-29)
 
 
