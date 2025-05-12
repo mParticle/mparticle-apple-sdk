@@ -7,6 +7,7 @@
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
+- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user;
 @end
 
 @interface MPRokt (Testing)
@@ -40,10 +41,11 @@
     
     // Set up test parameters
     NSString *viewName = @"testView";
-    NSDictionary *attributes = @{@"key": @"value", @"sandbox": @"false"};
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    OCMExpect([self.mockRokt confirmEmail:@"test@gmail.com" user:OCMOCK_ANY]);
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
@@ -93,6 +95,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    OCMExpect([self.mockRokt confirmEmail:nil user:OCMOCK_ANY]);
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil

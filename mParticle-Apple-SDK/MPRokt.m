@@ -29,6 +29,11 @@
               placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                callbacks:(MPRoktEventCallback *)callbacks {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    NSString *email = attributes[@"email"];
+    
+    // If email is passed in as an attribute and its not set on the identity, set it
+    [self confirmEmail:email user:currentUser];
     
     // If attributeMap is nil the kit hasn't been initialized
     if (attributeMap) {
@@ -44,7 +49,7 @@
         }
         for (NSString *key in mappedAttributes) {
             if (![key isEqual:@"sandbox"]) {
-                [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+                [currentUser setUserAttribute:key value:mappedAttributes[key]];
             }
         }
         
@@ -133,6 +138,21 @@
     }
     
     return finalAttributes;
+}
+
+- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user {
+    if (!user.identities[@(MPIdentityEmail)] && email) {
+        MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
+        identityRequest.email = email;
+        
+        [[[MParticle sharedInstance] identity] modify:identityRequest completion:^(MPModifyApiResult *_Nullable apiResult, NSError *_Nullable error) {
+            if (error) {
+                NSLog(@"Failed to automatically update email from selectPlacement: %@", error);
+            } else {
+                NSLog(@"Updated email identity based off selectPlacement's attributes: %@", apiResult.identityChanges);
+            }
+        }];
+    }
 }
 
 @end
