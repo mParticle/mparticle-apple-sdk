@@ -7,7 +7,7 @@
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
-- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user;
+- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
 @end
 
 @interface MPRokt (Testing)
@@ -45,7 +45,6 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    OCMExpect([self.mockRokt confirmEmail:@"test@gmail.com" user:OCMOCK_ANY]);
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
@@ -95,7 +94,6 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    OCMExpect([self.mockRokt confirmEmail:nil user:OCMOCK_ANY]);
     SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
@@ -261,6 +259,35 @@
     NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
     
     XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
+}
+
+- (void)testSelectPlacementsIdentifyUser {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    OCMExpect([self.mockRokt confirmEmail:@"test@gmail.com" user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+    
+    // Execute method
+    [self.rokt selectPlacements:viewName
+                     attributes:attributes];
+    
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+
+    // Verify
+    OCMVerifyAll(mockContainer);
 }
 
 @end 
