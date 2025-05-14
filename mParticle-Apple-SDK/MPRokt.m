@@ -143,15 +143,19 @@
 
 - (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
     if (email && email != user.identities[@(MPIdentityEmail)]) {
+        // If there is an existing email but it doesn't match the email passed in, warn the customer
+        if (user.identities[@(MPIdentityEmail)]) {
+            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+        }
         MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
         identityRequest.email = email;
         
         [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
             if (error) {
-                NSLog(@"Failed to automatically update email from selectPlacement: %@", error);
+                NSLog(@"Failed to sync email from selectPlacement to user: %@", error);
                 completion(user);
             } else {
-                NSLog(@"Updated email identity based off selectPlacement's attributes: %@", apiResult.user.identities.description);
+                NSLog(@"Updated email identity based off selectPlacement's attributes: %@", apiResult.user.identities[@(MPIdentityEmail)]);
                 completion(apiResult.user);
             }
         }];

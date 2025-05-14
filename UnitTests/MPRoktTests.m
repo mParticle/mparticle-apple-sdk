@@ -1,6 +1,8 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MParticle.h"
+#import "MPIdentityApi.h"
+#import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
 #import "MPIConstants.h"
@@ -11,6 +13,10 @@
 @end
 
 @interface MPRokt (Testing)
+@end
+
+@interface MPIdentityApi ()
+@property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @end
 
 @interface MPRoktTests : XCTestCase
@@ -65,7 +71,7 @@
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
 
     // Verify
     OCMVerifyAll(mockContainer);
@@ -116,7 +122,7 @@
                       callbacks:exampleCallbacks];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
     
     // Verify
     OCMVerifyAll(mockContainer);
@@ -160,7 +166,7 @@
     });
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
     
     // Verify
     OCMVerifyAll(mockContainer);
@@ -201,7 +207,7 @@
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
 
     // Verify
     OCMVerifyAll(mockContainer);
@@ -280,14 +286,40 @@
     });
     
     // Execute method
-    [self.rokt selectPlacements:viewName
-                     attributes:attributes];
+    [self.rokt selectPlacements:viewName attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
 
     // Verify
     OCMVerifyAll(mockContainer);
+}
+
+- (void)testTriggeredIdentify {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    //Mock Identity as needed
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)mockInstance identity]).andReturn(identityMock);
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    [[[identityMock stub] andReturn:currentUser] currentUser];
+        
+    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:currentUser];
+    [request setIdentity:@"test@gmail.com" identityType:MPIdentityEmail];
+    
+    [[identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
+        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
+        return true;
+    }] completion:OCMOCK_ANY];
+    
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    
+    [self.rokt selectPlacements:viewName attributes:attributes];
+    
+    [identityMock verifyWithDelay:0.2];
 }
 
 @end 
