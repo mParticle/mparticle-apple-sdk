@@ -5,6 +5,7 @@
 #import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
+#import "MParticleSwift.h"
 #import "MPIConstants.h"
 
 @interface MPRokt ()
@@ -13,6 +14,11 @@
 @end
 
 @interface MPRokt (Testing)
+@end
+
+@interface MParticle ()
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @end
 
 @interface MPIdentityApi ()
@@ -295,7 +301,7 @@
     OCMVerifyAll(mockContainer);
 }
 
-- (void)testTriggeredIdentify {
+- (void)testTriggeredIdentifyWithNoIdentities {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
     //Mock Identity as needed
@@ -305,9 +311,37 @@
     OCMStub([(MParticle *)mockInstance identity]).andReturn(identityMock);
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     [[[identityMock stub] andReturn:currentUser] currentUser];
-        
-    MPIdentityApiRequest *request = [MPIdentityApiRequest requestWithUser:currentUser];
-    [request setIdentity:@"test@gmail.com" identityType:MPIdentityEmail];
+    
+    [[identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
+        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
+        return true;
+    }] completion:OCMOCK_ANY];
+    
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    
+    [self.rokt selectPlacements:viewName attributes:attributes];
+    
+    [identityMock verifyWithDelay:0.2];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], @"test@yahoo.com");
+    
+    //Mock Identity as needed
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)mockInstance identity]).andReturn(identityMock);
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    [[[identityMock stub] andReturn:currentUser] currentUser];
     
     [[identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
         XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
