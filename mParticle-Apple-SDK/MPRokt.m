@@ -28,45 +28,51 @@
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
               placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                callbacks:(MPRoktEventCallback *)callbacks {
-    NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+    NSString *email = attributes[@"email"];
     
-    // If attributeMap is nil the kit hasn't been initialized
-    if (attributeMap) {
-        NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
-        for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
-            NSString *mapFrom = map[@"map"];
-            NSString *mapTo = map[@"value"];
-            if (mappedAttributes[mapFrom]) {
-                NSString * value = mappedAttributes[mapFrom];
-                [mappedAttributes removeObjectForKey:mapFrom];
-                mappedAttributes[mapTo] = value;
+    // If email is passed in as an attribute and it's different than the existing identity, identify with it
+    [self confirmEmail:email user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
+        NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
+
+        // If attributeMap is nil the kit hasn't been initialized
+        if (attributeMap) {
+            NSMutableDictionary *mappedAttributes = attributes.mutableCopy;
+            for (NSDictionary<NSString *, NSString *> *map in attributeMap) {
+                NSString *mapFrom = map[@"map"];
+                NSString *mapTo = map[@"value"];
+                if (mappedAttributes[mapFrom]) {
+                    NSString * value = mappedAttributes[mapFrom];
+                    [mappedAttributes removeObjectForKey:mapFrom];
+                    mappedAttributes[mapTo] = value;
+                }
             }
-        }
-        for (NSString *key in mappedAttributes) {
-            if (![key isEqual:@"sandbox"]) {
-                [[MParticle sharedInstance].identity.currentUser setUserAttribute:key value:mappedAttributes[key]];
+            for (NSString *key in mappedAttributes) {
+                if (![key isEqual:@"sandbox"]) {
+                    [resolvedUser setUserAttribute:key value:mappedAttributes[key]];
+                }
             }
-        }
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // Forwarding call to kits
-            MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-            [queueParameters addParameter:identifier];
-            [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
-            [queueParameters addParameter:placements];
-            [queueParameters addParameter:callbacks];
             
-            SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
-            [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                      event:nil
-                                                                 parameters:queueParameters
-                                                                messageType:MPMessageTypeEvent
-                                                                   userInfo:nil
-            ];
-        });
-    } else {
-        MPILogVerbose(@"[MParticle.Rokt selectPlacements: not performed since Kit not configured");
-    }
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Forwarding call to kits
+                MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+                [queueParameters addParameter:identifier];
+                [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
+                [queueParameters addParameter:placements];
+                [queueParameters addParameter:callbacks];
+                
+                SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                          event:nil
+                                                                     parameters:queueParameters
+                                                                    messageType:MPMessageTypeEvent
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogVerbose(@"[MParticle.Rokt selectPlacements: not performed since Kit not configured");
+        }
+    }];
 }
 
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
@@ -133,6 +139,28 @@
     }
     
     return finalAttributes;
+}
+
+- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
+    if (email && email != user.identities[@(MPIdentityEmail)]) {
+        // If there is an existing email but it doesn't match the email passed in, warn the customer
+        if (user.identities[@(MPIdentityEmail)]) {
+            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+        }
+        MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
+        identityRequest.email = email;
+        
+        [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
+            if (error) {
+                NSLog(@"Failed to sync email from selectPlacement to user: %@", error);
+                completion(user);
+            } else {
+                NSLog(@"Updated email identity based off selectPlacement's attributes: %@", apiResult.user.identities[@(MPIdentityEmail)]);
+                completion(apiResult.user);
+            }
+        }];
+    }
+    completion(user);
 }
 
 @end

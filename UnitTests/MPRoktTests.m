@@ -1,15 +1,28 @@
 #import <XCTest/XCTest.h>
 #import <OCMock/OCMock.h>
 #import "MParticle.h"
+#import "MPIdentityApi.h"
+#import "MPIdentityApiManager.h"
 #import "MPKitContainer.h"
 #import "MPForwardQueueParameters.h"
+#import "MParticleSwift.h"
 #import "MPIConstants.h"
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
+- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
 @end
 
 @interface MPRokt (Testing)
+@end
+
+@interface MParticle ()
+@property (nonatomic, strong, readonly) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+@end
+
+@interface MPIdentityApi ()
+@property (nonatomic, strong) MPIdentityApiManager *apiManager;
 @end
 
 @interface MPRoktTests : XCTestCase
@@ -40,7 +53,7 @@
     
     // Set up test parameters
     NSString *viewName = @"testView";
-    NSDictionary *attributes = @{@"key": @"value", @"sandbox": @"false"};
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
@@ -64,7 +77,7 @@
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
 
     // Verify
     OCMVerifyAll(mockContainer);
@@ -115,7 +128,7 @@
                       callbacks:exampleCallbacks];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
     
     // Verify
     OCMVerifyAll(mockContainer);
@@ -159,7 +172,7 @@
     });
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
     
     // Verify
     OCMVerifyAll(mockContainer);
@@ -200,7 +213,7 @@
                      attributes:attributes];
     
     // Wait for async operation
-    [self waitForExpectationsWithTimeout:1.0 handler:nil];
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
 
     // Verify
     OCMVerifyAll(mockContainer);
@@ -258,6 +271,89 @@
     NSArray<NSDictionary<NSString *, NSString *> *> *expectedResult = @[@{@"map": @"f.name", @"maptype": @"UserAttributeClass.Name", @"value": @"firstname", @"jsmap": [NSNull null]}, @{@"map": @"zip", @"maptype": @"UserAttributeClass.Name", @"value": @"billingzipcode", @"jsmap": [NSNull null]}, @{@"map": @"l.name", @"maptype": @"UserAttributeClass.Name", @"value": @"lastname", @"jsmap": [NSNull null]}];
     
     XCTAssertEqualObjects(testResult, expectedResult, @"Mapping does not match .");
+}
+
+- (void)testSelectPlacementsIdentifyUser {
+    [[[self.mockRokt stub] andReturn:@[]] getRoktPlacementAttributesMapping];
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    
+    // Set up test parameters
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    OCMExpect([self.mockRokt confirmEmail:@"test@gmail.com" user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+    
+    // Execute method
+    [self.rokt selectPlacements:viewName attributes:attributes];
+    
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    // Verify
+    OCMVerifyAll(mockContainer);
+}
+
+- (void)testTriggeredIdentifyWithNoIdentities {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    //Mock Identity as needed
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)mockInstance identity]).andReturn(identityMock);
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    [[[identityMock stub] andReturn:currentUser] currentUser];
+    
+    [[identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
+        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
+        return true;
+    }] completion:OCMOCK_ANY];
+    
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    
+    [self.rokt selectPlacements:viewName attributes:attributes];
+    
+    [identityMock verifyWithDelay:0.2];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedEmailIdentity {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityEmail], @"i" : @"test@yahoo.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityEmail)], @"test@yahoo.com");
+    
+    //Mock Identity as needed
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)mockInstance identity]).andReturn(identityMock);
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+    [[[identityMock stub] andReturn:currentUser] currentUser];
+    
+    [[identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
+        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
+        return true;
+    }] completion:OCMOCK_ANY];
+    
+    NSString *viewName = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
+    
+    [self.rokt selectPlacements:viewName attributes:attributes];
+    
+    [identityMock verifyWithDelay:0.2];
 }
 
 @end 
