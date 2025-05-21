@@ -281,7 +281,12 @@
         return NO;
     }
     
-    stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+    if (userActivity.webpageURL != nil) {
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
+    } else {
+        NSURL *defaultURL = [[NSURL alloc] initWithString:@""];
+        stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:defaultURL options:nil];
+    }
     
     SEL continueUserActivitySelector = @selector(continueUserActivity:restorationHandler:);
     
