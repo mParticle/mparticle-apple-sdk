@@ -84,4 +84,19 @@
     [appNotificationHandler openURL:url options:options];
 }
 
+- (void)testContinueUserActivityNoCrash {
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
+    
+    NSUserActivity *userActivity = [[NSUserActivity alloc] initWithActivityType:@"test"];
+    userActivity.webpageURL = [[NSURL alloc] initWithString:@"http://mparticle.com"];
+    [appNotificationHandler continueUserActivity:userActivity restorationHandler:^(NSArray<id<UIUserActivityRestoring>> *restorationHandler){}];
+}
+
+- (void)testContinueUserActivityWithNilURLNoCrash {
+    MPAppNotificationHandler *appNotificationHandler = [MParticle sharedInstance].appNotificationHandler;
+    
+    NSUserActivity *userActivity = [[NSUserActivity alloc] initWithActivityType:@"test"];
+    [appNotificationHandler continueUserActivity:userActivity restorationHandler:^(NSArray<id<UIUserActivityRestoring>> *restorationHandler){}];
+}
+
 @end
