@@ -1,3 +1,15 @@
+# [8.31.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.3...v8.31.0) (2025-05-21)
+
+
+### Bug Fixes
+
+* MPAppNotificationHandler webpageURL issue ([#353](https://github.com/mParticle/mparticle-apple-sdk/issues/353)) ([bebb504](https://github.com/mParticle/mparticle-apple-sdk/commit/bebb50446b73e16b3910e81457e470cd7ec2fa3a))
+
+
+### Features
+
+* Identify if Provided Email in Rokt SelectPlacements ([#351](https://github.com/mParticle/mparticle-apple-sdk/issues/351)) ([a0422bc](https://github.com/mParticle/mparticle-apple-sdk/commit/a0422bc37a64feba040cbe93737efd5c1fd7ed28))
+
 ## [8.30.3](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.2...v8.30.3) (2025-05-02)
 
 
