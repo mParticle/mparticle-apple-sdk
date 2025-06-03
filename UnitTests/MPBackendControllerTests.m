@@ -2120,6 +2120,10 @@
     NSNotification *testNotification = [[NSNotification alloc] initWithName:@"testNotification" object:nil userInfo:testUserInfo.mutableCopy];
     
     [backendController processDidFinishLaunching:testNotification];
+    
+    XCTAssertNil(instance.stateMachine.launchInfo.sourceApplication);
+    XCTAssertNil(instance.stateMachine.launchInfo.annotation);
+    XCTAssertNil(instance.stateMachine.launchInfo.url);
 }
 
 - (void)testProcessDidFinishLaunchingWithWebpageURL  {
@@ -2142,6 +2146,10 @@
     NSNotification *testNotification = [[NSNotification alloc] initWithName:@"testNotification" object:nil userInfo:testUserInfo.mutableCopy];
     
     [backendController processDidFinishLaunching:testNotification];
+    
+    XCTAssertNil(instance.stateMachine.launchInfo.sourceApplication);
+    XCTAssertNil(instance.stateMachine.launchInfo.annotation);
+    XCTAssertEqual(instance.stateMachine.launchInfo.url, testURL);
 }
 
 @end
