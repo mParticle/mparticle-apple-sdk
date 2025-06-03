@@ -1,3 +1,10 @@
+## [8.31.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.0...v8.31.1) (2025-06-03)
+
+
+### Bug Fixes
+
+* Prevent Issue When NSUserActivity webpageURL is nil ([#356](https://github.com/mParticle/mparticle-apple-sdk/issues/356)) ([4305afa](https://github.com/mParticle/mparticle-apple-sdk/commit/4305afa622b3d9249de19fa1613052b53e0efa9d))
+
 # [8.31.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.30.3...v8.31.0) (2025-05-21)
 
 
