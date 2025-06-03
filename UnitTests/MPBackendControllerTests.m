@@ -92,6 +92,7 @@
 - (void)uploadBatchesWithCompletionHandler:(void(^)(BOOL success))completionHandler;
 - (NSMutableArray<NSDictionary<NSString *, id> *> *)userIdentitiesForUserId:(NSNumber *)userId;
 - (void)cleanUp:(NSTimeInterval)currentTime;
+- (void)processDidFinishLaunching:(NSNotification *)notification;
 
 @end
 
@@ -111,7 +112,7 @@
 - (void)setUp {
     [super setUp];
     messageQueue = [MParticle messageQueue];
-        
+    
     [MPPersistenceController_PRIVATE setMpid:@1];
     [MParticle sharedInstance].persistenceController = [[MPPersistenceController_PRIVATE alloc] init];
     
@@ -171,15 +172,15 @@
     [application registerForRemoteNotifications];
     
     NSDictionary *remoteNotificationDictionary = @{@"aps":@{
-                                                           @"alert":@{
-                                                                   @"body":@"Your pre-historic ride has arrived.",
-                                                                   @"show-view":@NO
-                                                                   },
-                                                           @"badge":@1,
-                                                           @"sound":@"t-rex_roar.aiff",
-                                                           @"category":@"DINOSAUR_TRANSPORTATION_CATEGORY"
-                                                           }
-                                                   };
+        @"alert":@{
+            @"body":@"Your pre-historic ride has arrived.",
+            @"show-view":@NO
+        },
+        @"badge":@1,
+        @"sound":@"t-rex_roar.aiff",
+        @"category":@"DINOSAUR_TRANSPORTATION_CATEGORY"
+    }
+    };
     
     return remoteNotificationDictionary;
 }
@@ -372,15 +373,15 @@
 - (void)testCheckAttributeValueEmpty {
     NSError *error = nil;
     BOOL success = [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo"
-                                                 value:[NSNull null]
-                                                 error:&error];
+                                                         value:[NSNull null]
+                                                         error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
     
     error = nil;
     [MPBackendController_PRIVATE checkAttribute:[NSDictionary dictionary] key:@"foo"
-                                  value:@""
-                                  error:&error];
+                                          value:@""
+                                          error:&error];
     XCTAssertTrue(success);
     XCTAssertNil(error);
 }
@@ -489,7 +490,7 @@
 - (void)testBatchCycle {
     [MParticle sharedInstance].dataPlanId = @"test";
     [MParticle sharedInstance].dataPlanVersion = @(1);
-
+    
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
@@ -517,7 +518,7 @@
         }
     }
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
-
+    
     
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
@@ -554,10 +555,10 @@
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@1];
     
     [[MParticle sharedInstance].identity.currentUser setIdentitySync:@"bar-id" identityType:MPIdentityIOSAdvertiserId];
-
+    
     [MParticle sharedInstance].dataPlanId = @"test";
     [MParticle sharedInstance].dataPlanVersion = @(1);
-
+    
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
     });
@@ -587,7 +588,7 @@
         }
     }
     XCTAssertTrue(eventFound, @"Message for logEvent is not being saved.");
-
+    
     [MPPersistenceController_PRIVATE setMpid:@8];
     [userDefaults setMPObject:[NSDate date] forKey:kMPLastIdentifiedDate userId:@8];
     MParticleUser *newUser = [[MParticleUser alloc] init];
@@ -595,8 +596,8 @@
     [MParticle sharedInstance].identity.currentUser = newUser;
     XCTAssertEqualObjects([MParticle sharedInstance].identity.currentUser, newUser);
     XCTAssertNil([MParticle sharedInstance].identity.currentUser.identities[@(MPIdentityIOSAdvertiserId)]);
-
-
+    
+    
     MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:mpid sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
     XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
     
@@ -620,7 +621,7 @@
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     
     [self.backendController logBaseEvent:commerceEvent
-                   completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
+                       completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
@@ -650,7 +651,7 @@
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     
     [self.backendController logBaseEvent:event
-                   completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
+                       completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
@@ -767,15 +768,15 @@
     [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                
-                            }];
+        
+    }];
     NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
     [[self backendController] setUserIdentity:nil identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                
-                            }];
+        
+    }];
     
     identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertNil([identities objectForKey:@(MPUserIdentityEmail)]);
@@ -785,15 +786,15 @@
     [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                
-                            }];
+        
+    }];
     NSDictionary *identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertEqualObjects(@"foo", [identities objectForKey:@(MPUserIdentityEmail)]);
     [[self backendController] setUserIdentity:(NSString *)[NSNull null] identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                
-                            }];
+        
+    }];
     
     identities = [MParticle sharedInstance].identity.currentUser.identities;
     XCTAssertNil([identities objectForKey:@(MPUserIdentityEmail)]);
@@ -804,13 +805,13 @@
     [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                
-                            }];
+        
+    }];
     [[self backendController] setUserIdentity:@"FOO" identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                status = execStatus;
-                            }];
+        status = execStatus;
+    }];
     XCTAssertEqual(MPExecStatusSuccess, status);
 }
 
@@ -819,13 +820,13 @@
     [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                
-                            }];
+        
+    }];
     [[self backendController] setUserIdentity:@"foo" identityType:MPUserIdentityEmail
                                     timestamp:[NSDate date]
                             completionHandler:^(NSString * _Nullable identityString, MPUserIdentity identityType, MPExecStatus execStatus) {
-                                status = execStatus;
-                            }];
+        status = execStatus;
+    }];
     XCTAssertEqual(MPExecStatusFail, status);
 }
 
@@ -1046,7 +1047,7 @@
 
 - (void)testSetUserTagFromBackendController {
     XCTestExpectation *expectation = [self expectationWithDescription:@"completion handler"];
-
+    
     [self.backendController setUserTag:@"foo tag 1" timestamp:[NSDate date] completionHandler:^(NSString * _Nonnull key, NSArray<NSString *> * _Nullable values, MPExecStatus execStatus) {
         XCTAssertEqual(execStatus, MPExecStatusSuccess);
         [expectation fulfill];
@@ -1061,7 +1062,7 @@
 - (void)testSetUserTagFromUser {
     [[MParticle sharedInstance].identity.currentUser setUserTag:@"foo tag 1"];
     XCTestExpectation *expectation = [self expectationWithDescription:@"async work"];
-
+    
     dispatch_async([MParticle messageQueue], ^{
         NSDictionary *attributes = [self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]];
         XCTAssertEqual(attributes.count, 1);
@@ -1081,18 +1082,18 @@
         [MPKitContainer_PRIVATE registerKit:kitRegister];
         
         NSDictionary *configuration1 = @{
-                                         @"id":@42,
-                                         @"as":@{
-                                                 @"appId":@"MyAppId"
-                                                 }
-                                         };
+            @"id":@42,
+            @"as":@{
+                @"appId":@"MyAppId"
+            }
+        };
         
         NSDictionary *configuration2 = @{
-                                         @"id":@314,
-                                         @"as":@{
-                                                 @"appId":@"unique id"
-                                                 }
-                                         };
+            @"id":@314,
+            @"as":@{
+                @"appId":@"unique id"
+            }
+        };
         
         NSString *eTag = @"1.618-2.718-3.141-42";
         NSArray *kitConfigs = @[configuration1, configuration2];
@@ -1557,7 +1558,7 @@
     NSMutableDictionary *dict = [[NSJSONSerialization JSONObjectWithData:message.messageData options:0 error:&error] mutableCopy];
     XCTAssertNil(error, "JSON deserialization failed, error: %@", error);
     XCTAssertNotNil(dict, "messageData dict must not be nil");
-
+    
     dict[@"MessageKey1"] = longString;
     error = nil;
     message.messageData = [NSJSONSerialization dataWithJSONObject:dict options:0 error:&error];
@@ -1712,9 +1713,9 @@
     NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
     NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -1753,9 +1754,9 @@
     NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
     NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -1794,9 +1795,9 @@
     NSData *data = [plCrashReport dataUsingEncoding:NSUTF8StringEncoding];
     NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -1835,9 +1836,9 @@
     NSString *stackTrace = @"stack track from crash report";
     NSString *plCrashReport = nil;
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
@@ -1879,9 +1880,9 @@
     }
     
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
     NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
@@ -1917,7 +1918,7 @@
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[mockStateMachine stub] andReturnValue:OCMOCK_VALUE(@7)] crashMaxPLReportLength];
- 
+    
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
@@ -1927,9 +1928,9 @@
     NSData *data = [NSData dataWithBytes:expectedResult.UTF8String length:expectedResult.length];
     NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -1969,7 +1970,7 @@
     id mockStateMachine = OCMPartialMock(stateMachine);
     
     [[[(id)mockStateMachine stub] andReturn:nil] crashMaxPLReportLength];
- 
+    
     MParticle *instance = [MParticle sharedInstance];
     id mockInstance = OCMPartialMock(instance);
     [[[mockInstance stub] andReturn:mockStateMachine] stateMachine];
@@ -1978,9 +1979,9 @@
     NSData *data = [NSData dataWithBytes:plCrashReport.UTF8String length:plCrashReport.length];
     NSString *plCrashReportBase64 = [data base64EncodedStringWithOptions:0];
     [self.backendController logCrash:message
-                         stackTrace:stackTrace
-                      plCrashReport:plCrashReport
-                  completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
+                          stackTrace:stackTrace
+                       plCrashReport:plCrashReport
+                   completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {}];
     
     MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
     NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
@@ -2100,6 +2101,55 @@
     [instance.backendController cleanUp:currentTime];
     
     [mockPersistenceController verifyWithDelay:1.0];
+}
+
+- (void)testProcessDidFinishLaunchingWhenNilWebpageURL {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [[MParticleOptions alloc] init];
+    instance.options = options;
+    
+    MPBackendController_PRIVATE *backendController = [[MPBackendController_PRIVATE alloc] init];
+    instance.backendController = backendController;
+    
+    NSMutableDictionary *testUserInfo = [[NSMutableDictionary alloc] init];
+    testUserInfo[@"example"] = @"test";
+    NSUserActivity *userActivity = [[NSUserActivity alloc] initWithActivityType:@"test"];
+    //leave webpageURL nil
+    testUserInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey] = @{@"UIApplicationLaunchOptionsUserActivityKey": userActivity};
+    
+    NSNotification *testNotification = [[NSNotification alloc] initWithName:@"testNotification" object:nil userInfo:testUserInfo.mutableCopy];
+    
+    [backendController processDidFinishLaunching:testNotification];
+    
+    XCTAssertNil(instance.stateMachine.launchInfo.sourceApplication);
+    XCTAssertNil(instance.stateMachine.launchInfo.annotation);
+    XCTAssertNil(instance.stateMachine.launchInfo.url);
+}
+
+- (void)testProcessDidFinishLaunchingWithWebpageURL  {
+    MParticle *instance = [MParticle sharedInstance];
+    MParticleOptions *options = [[MParticleOptions alloc] init];
+    instance.options = options;
+    
+    MPBackendController_PRIVATE *backendController = [[MPBackendController_PRIVATE alloc] init];
+    instance.backendController = backendController;
+    
+    NSMutableDictionary *testUserInfo = [[NSMutableDictionary alloc] init];
+    testUserInfo[@"example"] = @"test";
+    NSUserActivity *userActivity = [[NSUserActivity alloc] initWithActivityType:@"test"];
+    NSURL *testURL = [NSURL URLWithString:@"http://www.example.com"];
+    if (testURL) {
+        userActivity.webpageURL = testURL;
+    }
+    testUserInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey] = @{@"UIApplicationLaunchOptionsUserActivityKey": userActivity};
+
+    NSNotification *testNotification = [[NSNotification alloc] initWithName:@"testNotification" object:nil userInfo:testUserInfo.mutableCopy];
+    
+    [backendController processDidFinishLaunching:testNotification];
+    
+    XCTAssertNil(instance.stateMachine.launchInfo.sourceApplication);
+    XCTAssertNil(instance.stateMachine.launchInfo.annotation);
+    XCTAssertEqual(instance.stateMachine.launchInfo.url, testURL);
 }
 
 @end

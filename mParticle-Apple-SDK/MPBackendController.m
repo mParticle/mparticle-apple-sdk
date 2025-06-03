@@ -379,7 +379,7 @@ const NSTimeInterval kMPRemainingBackgroundTimeMinimumThreshold = 10.0;
     if ([[UIDevice currentDevice].systemVersion floatValue] >= 8.0) {
         NSUserActivity *userActivity = userInfo[UIApplicationLaunchOptionsUserActivityDictionaryKey][@"UIApplicationLaunchOptionsUserActivityKey"];
         
-        if (userActivity) {
+        if (userActivity.webpageURL) {
             stateMachine.launchInfo = [[MPLaunchInfo alloc] initWithURL:userActivity.webpageURL options:nil];
         }
     }
