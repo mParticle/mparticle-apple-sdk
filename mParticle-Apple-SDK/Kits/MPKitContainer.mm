@@ -2097,13 +2097,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     }
                 }
                 
-                NSArray *alreadySynchedUserIdentities = userDefaults[kMPSynchedUserIdentitiesKey];
-                if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)] && ![alreadySynchedUserIdentities containsObject:integrationId]) {
-                    NSMutableArray *synchedUserIdentities = [[NSMutableArray alloc] initWithCapacity:alreadySynchedUserIdentities.count + 1];
-                    [synchedUserIdentities addObjectsFromArray:alreadySynchedUserIdentities];
-                    [synchedUserIdentities addObject:integrationId];
-                    userDefaults[kMPSynchedUserIdentitiesKey] = synchedUserIdentities;
-                    
+                if (userIdentities && [kitInstance respondsToSelector:@selector(setUserIdentity:identityType:)]) {
                     for (NSDictionary *userIdentity in userIdentities) {
                         MPUserIdentity identityType = (MPUserIdentity)[userIdentity[kMPUserIdentityTypeKey] intValue];
                         if (![MParticle.sharedInstance.dataPlanFilter isBlockedUserIdentityType:(MPIdentity)identityType]) {
