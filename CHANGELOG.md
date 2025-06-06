@@ -1,3 +1,10 @@
+## [8.31.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.1...v8.31.2) (2025-06-06)
+
+
+### Bug Fixes
+
+* Remove alreadySynchedUserIdentities ([#354](https://github.com/mParticle/mparticle-apple-sdk/issues/354)) ([3c9f235](https://github.com/mParticle/mparticle-apple-sdk/commit/3c9f235a2435f9b634aaf3b099f70bc155f40762))
+
 ## [8.31.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.0...v8.31.1) (2025-06-03)
 
 
