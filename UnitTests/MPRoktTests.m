@@ -113,7 +113,11 @@
         XCTAssertEqualObjects(params[0], viewName);
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], placements);
-        XCTAssertEqualObjects(params[3], exampleCallbacks);
+        XCTAssertEqualObjects(params[3], exampleCallbacks.onLoad);
+        XCTAssertEqualObjects(params[4], exampleCallbacks.onUnLoad);
+        XCTAssertEqualObjects(params[5], exampleCallbacks.onShouldShowLoadingIndicator);
+        XCTAssertEqualObjects(params[6], exampleCallbacks.onShouldHideLoadingIndicator);
+        XCTAssertEqualObjects(params[7], exampleCallbacks.onEmbeddedSizeChange);
         return true;
     }]
                                        messageType:MPMessageTypeEvent

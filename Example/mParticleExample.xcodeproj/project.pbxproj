@@ -3,14 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 51;
+	objectVersion = 54;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		33C91FA762EC2B1BE1D4A3E6 /* Pods_mParticleExample.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C82CE5BF2DD50BCF8C74BD42 /* Pods_mParticleExample.framework */; };
 		76A5F011073E72F6F0C415DB /* Pods_mParticleExampleTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2EA4B28DA755816DD1F32FC /* Pods_mParticleExampleTests.framework */; };
 		D37FB8E9236208E200E47B6D /* Dummy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D37FB8E8236208E200E47B6D /* Dummy.swift */; };
-		D79F0EE9D786B306397F4781 /* Pods_mParticleExample_mParticleExample_Extension.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09FEBEE699D706AB237E3C28 /* Pods_mParticleExample_mParticleExample_Extension.framework */; };
 		DBD54A12224941630053BD20 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A11224941630053BD20 /* AppDelegate.m */; };
 		DBD54A15224941630053BD20 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A14224941630053BD20 /* ViewController.m */; };
 		DBD54A18224941630053BD20 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A16224941630053BD20 /* Main.storyboard */; };
@@ -19,11 +18,6 @@
 		DBD54A20224941640053BD20 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A1F224941640053BD20 /* main.m */; };
 		DBD54A2A224941640053BD20 /* mParticleExampleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A29224941640053BD20 /* mParticleExampleTests.m */; };
 		DBD54A35224941640053BD20 /* mParticleExampleUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A34224941640053BD20 /* mParticleExampleUITests.m */; };
-		DBD54A48224947400053BD20 /* Messages.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DBD54A47224947400053BD20 /* Messages.framework */; };
-		DBD54A4C224947400053BD20 /* MessagesViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = DBD54A4B224947400053BD20 /* MessagesViewController.m */; };
-		DBD54A4F224947400053BD20 /* MainInterface.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A4D224947400053BD20 /* MainInterface.storyboard */; };
-		DBD54A51224947410053BD20 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DBD54A50224947410053BD20 /* Assets.xcassets */; };
-		DBD54A55224947410053BD20 /* mParticleExample_Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DBD54A46224947400053BD20 /* mParticleExample_Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		FC392598753AF8F69DA40E9F /* Pods_mParticleExampleUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B5BF017C4AC068521E78744B /* Pods_mParticleExampleUITests.framework */; };
 /* End PBXBuildFile section */
 
@@ -42,13 +36,6 @@
 			remoteGlobalIDString = DBD54A0C224941630053BD20;
 			remoteInfo = mParticleExample;
 		};
-		DBD54A53224947410053BD20 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DBD54A05224941630053BD20 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DBD54A45224947400053BD20;
-			remoteInfo = mParticleExample_Extension;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,7 +45,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				DBD54A55224947410053BD20 /* mParticleExample_Extension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -66,13 +52,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		09FEBEE699D706AB237E3C28 /* Pods_mParticleExample_mParticleExample_Extension.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExample_mParticleExample_Extension.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		778529B8C3011C3CB9D1CF07 /* Pods-mParticleExampleTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExampleTests.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExampleTests/Pods-mParticleExampleTests.debug.xcconfig"; sourceTree = "<group>"; };
 		7CF1AE3E00E36168C5CB1C8C /* Pods-mParticleExampleUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExampleUITests.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExampleUITests/Pods-mParticleExampleUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		864486992E88AEAC37D21B81 /* Pods-mParticleExample-mParticleExample_Extension.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample-mParticleExample_Extension.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExample-mParticleExample_Extension/Pods-mParticleExample-mParticleExample_Extension.debug.xcconfig"; sourceTree = "<group>"; };
 		8FCF726BCB7D30C3C6A5860B /* Pods-mParticleExample.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample.debug.xcconfig"; path = "Target Support Files/Pods-mParticleExample/Pods-mParticleExample.debug.xcconfig"; sourceTree = "<group>"; };
 		9D9FC346B274F125D0E0A493 /* Pods-mParticleExampleTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExampleTests.release.xcconfig"; path = "Target Support Files/Pods-mParticleExampleTests/Pods-mParticleExampleTests.release.xcconfig"; sourceTree = "<group>"; };
-		B3E68FE6BDDF2AEC7BEE3135 /* Pods-mParticleExample-mParticleExample_Extension.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample-mParticleExample_Extension.release.xcconfig"; path = "Target Support Files/Pods-mParticleExample-mParticleExample_Extension/Pods-mParticleExample-mParticleExample_Extension.release.xcconfig"; sourceTree = "<group>"; };
 		B5BF017C4AC068521E78744B /* Pods_mParticleExampleUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExampleUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		C2833205260D1688006C7E06 /* PLCrashReportTextFormatter+StackTrace.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "PLCrashReportTextFormatter+StackTrace.h"; sourceTree = "<group>"; };
 		C2EA4B28DA755816DD1F32FC /* Pods_mParticleExampleTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_mParticleExampleTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -96,13 +79,7 @@
 		DBD54A30224941640053BD20 /* mParticleExampleUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = mParticleExampleUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBD54A34224941640053BD20 /* mParticleExampleUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = mParticleExampleUITests.m; sourceTree = "<group>"; };
 		DBD54A36224941640053BD20 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		DBD54A46224947400053BD20 /* mParticleExample_Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = mParticleExample_Extension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBD54A47224947400053BD20 /* Messages.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Messages.framework; path = System/Library/Frameworks/Messages.framework; sourceTree = SDKROOT; };
-		DBD54A4A224947400053BD20 /* MessagesViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MessagesViewController.h; sourceTree = "<group>"; };
-		DBD54A4B224947400053BD20 /* MessagesViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MessagesViewController.m; sourceTree = "<group>"; };
-		DBD54A4E224947400053BD20 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/MainInterface.storyboard; sourceTree = "<group>"; };
-		DBD54A50224947410053BD20 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		DBD54A52224947410053BD20 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		ECDDB16879433702282F0CB0 /* Pods-mParticleExample.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExample.release.xcconfig"; path = "Target Support Files/Pods-mParticleExample/Pods-mParticleExample.release.xcconfig"; sourceTree = "<group>"; };
 		EDB466048C3E0627D4018CDD /* Pods-mParticleExampleUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-mParticleExampleUITests.release.xcconfig"; path = "Target Support Files/Pods-mParticleExampleUITests/Pods-mParticleExampleUITests.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -132,15 +109,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DBD54A43224947400053BD20 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DBD54A48224947400053BD20 /* Messages.framework in Frameworks */,
-				D79F0EE9D786B306397F4781 /* Pods_mParticleExample_mParticleExample_Extension.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -149,7 +117,6 @@
 			children = (
 				DBD54A47224947400053BD20 /* Messages.framework */,
 				C82CE5BF2DD50BCF8C74BD42 /* Pods_mParticleExample.framework */,
-				09FEBEE699D706AB237E3C28 /* Pods_mParticleExample_mParticleExample_Extension.framework */,
 				C2EA4B28DA755816DD1F32FC /* Pods_mParticleExampleTests.framework */,
 				B5BF017C4AC068521E78744B /* Pods_mParticleExampleUITests.framework */,
 			);
@@ -161,8 +128,6 @@
 			children = (
 				8FCF726BCB7D30C3C6A5860B /* Pods-mParticleExample.debug.xcconfig */,
 				ECDDB16879433702282F0CB0 /* Pods-mParticleExample.release.xcconfig */,
-				864486992E88AEAC37D21B81 /* Pods-mParticleExample-mParticleExample_Extension.debug.xcconfig */,
-				B3E68FE6BDDF2AEC7BEE3135 /* Pods-mParticleExample-mParticleExample_Extension.release.xcconfig */,
 				778529B8C3011C3CB9D1CF07 /* Pods-mParticleExampleTests.debug.xcconfig */,
 				9D9FC346B274F125D0E0A493 /* Pods-mParticleExampleTests.release.xcconfig */,
 				7CF1AE3E00E36168C5CB1C8C /* Pods-mParticleExampleUITests.debug.xcconfig */,
@@ -177,7 +142,6 @@
 				DBD54A0F224941630053BD20 /* mParticleExample */,
 				DBD54A28224941640053BD20 /* mParticleExampleTests */,
 				DBD54A33224941640053BD20 /* mParticleExampleUITests */,
-				DBD54A49224947400053BD20 /* mParticleExample_Extension */,
 				DBD54A0E224941630053BD20 /* Products */,
 				12CC49CF8B44F70BD9659BA5 /* Frameworks */,
 				AC9A174BB642845F08D392AA /* Pods */,
@@ -190,7 +154,6 @@
 				DBD54A0D224941630053BD20 /* mParticleExample.app */,
 				DBD54A25224941640053BD20 /* mParticleExampleTests.xctest */,
 				DBD54A30224941640053BD20 /* mParticleExampleUITests.xctest */,
-				DBD54A46224947400053BD20 /* mParticleExample_Extension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -233,18 +196,6 @@
 			path = mParticleExampleUITests;
 			sourceTree = "<group>";
 		};
-		DBD54A49224947400053BD20 /* mParticleExample_Extension */ = {
-			isa = PBXGroup;
-			children = (
-				DBD54A4A224947400053BD20 /* MessagesViewController.h */,
-				DBD54A4B224947400053BD20 /* MessagesViewController.m */,
-				DBD54A4D224947400053BD20 /* MainInterface.storyboard */,
-				DBD54A50224947410053BD20 /* Assets.xcassets */,
-				DBD54A52224947410053BD20 /* Info.plist */,
-			);
-			path = mParticleExample_Extension;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -257,12 +208,11 @@
 				DBD54A0A224941630053BD20 /* Frameworks */,
 				DBD54A0B224941630053BD20 /* Resources */,
 				DBD54A59224947410053BD20 /* Embed Foundation Extensions */,
-				B55B735B8CC80E96AF0764AF /* [CP] Embed Pods Frameworks */,
+				98065AAF162EC5F7FF449103 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				DBD54A54224947410053BD20 /* PBXTargetDependency */,
 			);
 			name = mParticleExample;
 			productName = mParticleExample;
@@ -307,24 +257,6 @@
 			productReference = DBD54A30224941640053BD20 /* mParticleExampleUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		DBD54A45224947400053BD20 /* mParticleExample_Extension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DBD54A58224947410053BD20 /* Build configuration list for PBXNativeTarget "mParticleExample_Extension" */;
-			buildPhases = (
-				9A6044D5B742C172ABE31FA8 /* [CP] Check Pods Manifest.lock */,
-				DBD54A42224947400053BD20 /* Sources */,
-				DBD54A43224947400053BD20 /* Frameworks */,
-				DBD54A44224947400053BD20 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = mParticleExample_Extension;
-			productName = mParticleExample_Extension;
-			productReference = DBD54A46224947400053BD20 /* mParticleExample_Extension.appex */;
-			productType = "com.apple.product-type.app-extension.messages";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -346,9 +278,6 @@
 						CreatedOnToolsVersion = 10.1;
 						TestTargetID = DBD54A0C224941630053BD20;
 					};
-					DBD54A45224947400053BD20 = {
-						CreatedOnToolsVersion = 10.1;
-					};
 				};
 			};
 			buildConfigurationList = DBD54A08224941630053BD20 /* Build configuration list for PBXProject "mParticleExample" */;
@@ -367,7 +296,6 @@
 				DBD54A0C224941630053BD20 /* mParticleExample */,
 				DBD54A24224941640053BD20 /* mParticleExampleTests */,
 				DBD54A2F224941640053BD20 /* mParticleExampleUITests */,
-				DBD54A45224947400053BD20 /* mParticleExample_Extension */,
 			);
 		};
 /* End PBXProject section */
@@ -394,15 +322,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DBD54A44224947400053BD20 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DBD54A51224947410053BD20 /* Assets.xcassets in Resources */,
-				DBD54A4F224947400053BD20 /* MainInterface.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -475,29 +394,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		9A6044D5B742C172ABE31FA8 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-mParticleExample-mParticleExample_Extension-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		B55B735B8CC80E96AF0764AF /* [CP] Embed Pods Frameworks */ = {
+		98065AAF162EC5F7FF449103 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -544,14 +441,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DBD54A42224947400053BD20 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DBD54A4C224947400053BD20 /* MessagesViewController.m in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -564,11 +453,6 @@
 			isa = PBXTargetDependency;
 			target = DBD54A0C224941630053BD20 /* mParticleExample */;
 			targetProxy = DBD54A31224941640053BD20 /* PBXContainerItemProxy */;
-		};
-		DBD54A54224947410053BD20 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DBD54A45224947400053BD20 /* mParticleExample_Extension */;
-			targetProxy = DBD54A53224947410053BD20 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -587,14 +471,6 @@
 				DBD54A1C224941640053BD20 /* Base */,
 			);
 			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-		DBD54A4D224947400053BD20 /* MainInterface.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				DBD54A4E224947400053BD20 /* Base */,
-			);
-			name = MainInterface.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -652,7 +528,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -706,7 +582,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 12.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -726,6 +602,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UGDPBXH35F;
 				INFOPLIST_FILE = mParticleExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -751,6 +628,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = UGDPBXH35F;
 				INFOPLIST_FILE = mParticleExample/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -846,54 +724,6 @@
 			};
 			name = Release;
 		};
-		DBD54A56224947410053BD20 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 864486992E88AEAC37D21B81 /* Pods-mParticleExample-mParticleExample_Extension.debug.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "iMessage App Icon";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = DLD43Y3TRP;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"${PODS_ROOT}/Headers/Public/mParticle-Apple-SDK\"",
-				);
-				INFOPLIST_FILE = mParticleExample_Extension/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticleExample.push.mParticleExample-Extension";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		DBD54A57224947410053BD20 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = B3E68FE6BDDF2AEC7BEE3135 /* Pods-mParticleExample-mParticleExample_Extension.release.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = "iMessage App Icon";
-				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = DLD43Y3TRP;
-				HEADER_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"${PODS_ROOT}/Headers/Public/mParticle-Apple-SDK\"",
-				);
-				INFOPLIST_FILE = mParticleExample_Extension/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "com.mparticle.mParticleExample.push.mParticleExample-Extension";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -929,15 +759,6 @@
 			buildConfigurations = (
 				DBD54A40224941640053BD20 /* Debug */,
 				DBD54A41224941640053BD20 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		DBD54A58224947410053BD20 /* Build configuration list for PBXNativeTarget "mParticleExample_Extension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DBD54A56224947410053BD20 /* Debug */,
-				DBD54A57224947410053BD20 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

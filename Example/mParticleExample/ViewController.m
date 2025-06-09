@@ -3,6 +3,7 @@
 #import <mParticle_Apple_Media_SDK-Swift.h>
 #import <AdSupport/AdSupport.h>
 #import "AdSupport/ASIdentifierManager.h"
+#import <Rokt_Widget/Rokt_Widget-Swift.h>
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= 140000
     #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #endif
@@ -16,6 +17,7 @@
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UITextField *emailField;
 @property (nonatomic, strong) UITextField *customerIDField;
+@property (nonatomic, strong) RoktEmbeddedView *roktView;
 
 @end
 
@@ -24,29 +26,49 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
+    [self setupUI:0];
+    
+    self.view.backgroundColor = [UIColor lightGrayColor];
+}
+
+- (void)setupUI:(CGFloat)roktHeight {
+    for (UIView *subview in [self.view subviews]) {
+        [subview removeFromSuperview];
+    }
+    
+    CGRect emailFrame = self.view.frame;
+    emailFrame.origin.y = emailFrame.origin.y + 50;
+    emailFrame.origin.x = emailFrame.origin.x + 20;
+    emailFrame.size.height = 40;
+    _emailField = [[UITextField alloc] initWithFrame:emailFrame];
+    _emailField.placeholder = @"Email";
+    [self.view addSubview:_emailField];
+
+    CGRect customerIDFrame = self.view.frame;
+    customerIDFrame.origin.y = emailFrame.origin.y + emailFrame.size.height;
+    customerIDFrame.origin.x = customerIDFrame.origin.x + 20;
+    customerIDFrame.size.height = 40;
+    _customerIDField = [[UITextField alloc] initWithFrame:customerIDFrame];
+    _customerIDField.placeholder = @"Customer ID";
+    [self.view addSubview:_customerIDField];
+    
+    CGRect roktFrame = self.view.frame;
+    roktFrame.origin.y = customerIDFrame.origin.y + customerIDFrame.size.height;
+    roktFrame.size.height = roktHeight;
+    if (self.roktView) {
+        self.roktView.frame = roktFrame;
+    } else {
+        self.roktView = [[RoktEmbeddedView alloc] initWithFrame:roktFrame];
+    }
+    [self.view addSubview:_roktView];
+    
     CGRect screenFrame = self.view.frame;
-    screenFrame.origin.y = screenFrame.origin.y + 100;
-    screenFrame.size.height = screenFrame.size.height - 100;
+    screenFrame.origin.y = roktFrame.origin.y + roktFrame.size.height;
+    screenFrame.size.height = screenFrame.size.height - screenFrame.origin.y;
     _tableView = [[UITableView alloc] initWithFrame:screenFrame];
     _tableView.delegate = self;
     _tableView.dataSource = self;
     [self.view addSubview:_tableView];
-    
-    CGRect emailFrame = self.view.frame;
-    emailFrame.origin.y = emailFrame.origin.y + 20;
-    emailFrame.size.height = 40;
-    _emailField = [[UITextField alloc] initWithFrame:emailFrame];
-    _emailField.placeholder = @"Email";
-    _emailField.backgroundColor = [UIColor lightGrayColor];
-    [self.view addSubview:_emailField];
-
-    CGRect customerIDFrame = self.view.frame;
-    customerIDFrame.origin.y = customerIDFrame.origin.y + 60;
-    customerIDFrame.size.height = 40;
-    _customerIDField = [[UITextField alloc] initWithFrame:customerIDFrame];
-    _customerIDField.placeholder = @"Customer ID";
-    _customerIDField.backgroundColor = [UIColor lightGrayColor];
-    [self.view addSubview:_customerIDField];
 }
 
 #pragma mark Private accessors
@@ -57,11 +79,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer", @"Display Rokt Overlay Placement", @"Display Rokt Embedded Placement"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval", @"selectOverlayPlacement", @"selectEmbeddedPlacement"];
     
     return _cellTitles;
 }
@@ -155,6 +177,49 @@
     
     // Logs a commerce event
     [[MParticle sharedInstance] logEvent:commerceEvent];
+}
+
+- (void)selectOverlayPlacement {
+    // Rokt Placement
+    NSDictionary<NSString *, NSString *> *customAttributes = @{@"email": @"j.smit@example.com",
+                                                               @"firstname": @"Jenny",
+                                                               @"lastname": @"Smith",
+                                                               @"sandbox": @"true",
+                                                               @"mobile": @"(555)867-5309"
+    };
+
+    [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout" attributes:customAttributes];
+}
+
+- (void)selectEmbeddedPlacement {
+    // Rokt Placement
+    NSDictionary<NSString *, NSString *> *customAttributes = @{@"email": @"j.smit@example.com",
+                                                               @"firstname": @"Jenny",
+                                                               @"lastname": @"Smith",
+                                                               @"sandbox": @"true",
+                                                               @"mobile": @"(555)867-5309"
+    };
+    
+    MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
+    callbacks.onLoad = ^{
+        [self.tableView reloadData];
+    };
+    callbacks.onUnLoad = ^{
+        // Optional callback for when the Rokt placement unloads
+    };
+    callbacks.onShouldShowLoadingIndicator = ^{
+        // Optional callback to show a loading indicator
+    };
+    callbacks.onShouldHideLoadingIndicator = ^{
+        // Optional callback to hide a loading indicator
+    };
+    callbacks.onEmbeddedSizeChange = ^(NSString *placement, CGFloat size) {
+        [self setupUI:size];
+    };
+    
+    NSDictionary *placements = @{@"Location1": self.roktView};
+
+    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes placements:placements callbacks:callbacks];
 }
 
 - (void)getAudience {
