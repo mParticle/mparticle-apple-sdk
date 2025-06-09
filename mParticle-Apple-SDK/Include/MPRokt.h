@@ -35,6 +35,26 @@
 
 @end
 
+// An enum of the possible options for an MPRoktConfig colorMode
+typedef NS_ENUM(NSInteger, MPColorMode) {
+    MPColorModeLight = 0,
+    MPColorModeDark = 1,
+    MPColorModeSystem = 2
+};
+
+/**
+ * A class for customizing the UI displayed by Rokt
+ */
+@interface MPRoktConfig : NSObject
+/** The max duration for the cache */
+@property (nonatomic, copy, nullable) NSNumber *cacheDuration;
+/** The attributes you would like tied to the cache */
+@property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *cacheAttributes;
+/** The color mode you would lik Rokt to display in */
+@property (nonatomic) MPColorMode colorMode;
+
+@end
+
 /**
  * Main interface for interacting with Rokt functionality.
  * Handles placement selection and widget management.
@@ -62,6 +82,7 @@
 - (void)selectPlacements:(NSString *_Nonnull)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
               placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
+                  config:(MPRoktConfig * _Nullable)config
                callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
 
 @end
