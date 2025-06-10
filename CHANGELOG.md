@@ -1,3 +1,10 @@
+# [8.32.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.2...v8.32.0) (2025-06-10)
+
+
+### Features
+
+* Add MPRoktConfig Support ([#357](https://github.com/mParticle/mparticle-apple-sdk/issues/357)) ([abe04ea](https://github.com/mParticle/mparticle-apple-sdk/commit/abe04ea33dee15a080743f5e464300d76df6606f))
+
 ## [8.31.2](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.1...v8.31.2) (2025-06-06)
 
 
