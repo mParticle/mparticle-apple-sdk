@@ -17,7 +17,7 @@
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UITextField *emailField;
 @property (nonatomic, strong) UITextField *customerIDField;
-@property (nonatomic, strong) RoktEmbeddedView *roktView;
+@property (nonatomic, strong) MPRoktEmbeddedView *roktView;
 
 @end
 
@@ -58,7 +58,7 @@
     if (self.roktView) {
         self.roktView.frame = roktFrame;
     } else {
-        self.roktView = [[RoktEmbeddedView alloc] initWithFrame:roktFrame];
+        self.roktView = [[MPRoktEmbeddedView alloc] initWithFrame:roktFrame];
     }
     [self.view addSubview:_roktView];
     
@@ -220,7 +220,7 @@
     
     MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
     callbacks.onLoad = ^{
-        [self.tableView reloadData];
+        // Optional callback for when the Rokt placement loads
     };
     callbacks.onUnLoad = ^{
         // Optional callback for when the Rokt placement unloads
