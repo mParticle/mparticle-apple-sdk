@@ -50,7 +50,7 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
 @property (nonatomic, copy, nullable) NSNumber *cacheDuration;
 /** The attributes you would like tied to the cache */
 @property (nonatomic, copy, nullable) NSDictionary<NSString *, NSString *> *cacheAttributes;
-/** The color mode you would lik Rokt to display in */
+/** The color mode you would like Rokt to display in */
 @property (nonatomic) MPColorMode colorMode;
 
 @end
