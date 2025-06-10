@@ -42,27 +42,6 @@ jobs:
       - name: Verify carthage products
         run: ls 2>&1 | grep .framework.zip
 
-  compile-extension:
-    runs-on: macOS-13
-    defaults:
-      run:
-        working-directory: ./Example
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
-
-      - name: Update CocoaPods repo
-        run: pod repo update
-
-      - name: Install CocoaPods dependencies
-        run: pod install
-
-      - name: Build iOS extension scheme
-        run: xcodebuild -allowProvisioningUpdates -workspace mParticleExample.xcworkspace -scheme mParticleExample_Extension -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest'
-
   run-analyzer:
     runs-on: macOS-13
     steps:

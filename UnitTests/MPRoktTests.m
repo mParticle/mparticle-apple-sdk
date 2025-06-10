@@ -57,7 +57,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -104,24 +104,31 @@
     exampleCallbacks.onShouldHideLoadingIndicator = ^{};
     exampleCallbacks.onEmbeddedSizeChange = ^(NSString *p, CGFloat s){};
     
+    MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
+    roktConfig.colorMode = MPColorModeDark;
+    roktConfig.cacheDuration = @(60*10);
+    roktConfig.cacheAttributes = @{@"test": @"test"};
+    
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertEqualObjects(params[2], placements);
-        XCTAssertEqualObjects(params[3], exampleCallbacks.onLoad);
-        XCTAssertEqualObjects(params[4], exampleCallbacks.onUnLoad);
-        XCTAssertEqualObjects(params[5], exampleCallbacks.onShouldShowLoadingIndicator);
-        XCTAssertEqualObjects(params[6], exampleCallbacks.onShouldHideLoadingIndicator);
-        XCTAssertEqualObjects(params[7], exampleCallbacks.onEmbeddedSizeChange);
+        XCTAssertEqualObjects(params[3], roktConfig);
+        MPRoktEventCallback *resultCallbacks = params[4];
+        XCTAssertEqualObjects(resultCallbacks.onLoad, exampleCallbacks.onLoad);
+        XCTAssertEqualObjects(resultCallbacks.onUnLoad, exampleCallbacks.onUnLoad);
+        XCTAssertEqualObjects(resultCallbacks.onShouldShowLoadingIndicator, exampleCallbacks.onShouldShowLoadingIndicator);
+        XCTAssertEqualObjects(resultCallbacks.onShouldHideLoadingIndicator, exampleCallbacks.onShouldHideLoadingIndicator);
+        XCTAssertEqualObjects(resultCallbacks.onEmbeddedSizeChange, exampleCallbacks.onEmbeddedSizeChange);
         return true;
     }]
-                                       messageType:MPMessageTypeEvent
-                                          userInfo:nil]).andDo(^(NSInvocation *invocation) {
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
         [expectation fulfill];
     });
     
@@ -129,6 +136,7 @@
     [self.rokt selectPlacements:viewName
                      attributes:attributes
                      placements:placements
+                         config:roktConfig
                       callbacks:exampleCallbacks];
     
     // Wait for async operation
@@ -153,12 +161,13 @@
     [self.rokt selectPlacements:viewName
                      attributes:nil
                      placements:nil
+                         config:nil
                       callbacks:nil];
     
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([mockContainer forwardSDKCall:roktSelector
@@ -197,7 +206,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
     OCMExpect([mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -231,7 +240,7 @@
     [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
     [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
     
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
     OCMReject([mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]

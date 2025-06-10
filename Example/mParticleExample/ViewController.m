@@ -17,7 +17,7 @@
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) UITextField *emailField;
 @property (nonatomic, strong) UITextField *customerIDField;
-@property (nonatomic, strong) RoktEmbeddedView *roktView;
+@property (nonatomic, strong) MPRoktEmbeddedView *roktView;
 
 @end
 
@@ -58,7 +58,7 @@
     if (self.roktView) {
         self.roktView.frame = roktFrame;
     } else {
-        self.roktView = [[RoktEmbeddedView alloc] initWithFrame:roktFrame];
+        self.roktView = [[MPRoktEmbeddedView alloc] initWithFrame:roktFrame];
     }
     [self.view addSubview:_roktView];
     
@@ -79,11 +79,11 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer", @"Display Rokt Overlay Placement", @"Display Rokt Embedded Placement"];
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer", @"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay Placement", @"Display Rokt Embedded Placement"];
     
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval", @"selectOverlayPlacement", @"selectEmbeddedPlacement"];
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval", @"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement"];
     
     return _cellTitles;
 }
@@ -191,6 +191,24 @@
     [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout" attributes:customAttributes];
 }
 
+- (void)selectDarkOverlayPlacement {
+    // Rokt Placement
+    NSDictionary<NSString *, NSString *> *customAttributes = @{@"email": @"j.smit@example.com",
+                                                               @"firstname": @"Jenny",
+                                                               @"lastname": @"Smith",
+                                                               @"sandbox": @"true",
+                                                               @"mobile": @"(555)867-5309"
+    };
+
+    MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
+    roktConfig.colorMode = MPColorModeDark;
+    [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout"
+                                           attributes:customAttributes
+                                           placements:nil
+                                               config:roktConfig
+                                            callbacks:nil];
+}
+
 - (void)selectEmbeddedPlacement {
     // Rokt Placement
     NSDictionary<NSString *, NSString *> *customAttributes = @{@"email": @"j.smit@example.com",
@@ -202,7 +220,7 @@
     
     MPRoktEventCallback *callbacks = [[MPRoktEventCallback alloc] init];
     callbacks.onLoad = ^{
-        [self.tableView reloadData];
+        // Optional callback for when the Rokt placement loads
     };
     callbacks.onUnLoad = ^{
         // Optional callback for when the Rokt placement unloads
@@ -219,7 +237,7 @@
     
     NSDictionary *placements = @{@"Location1": self.roktView};
 
-    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes placements:placements callbacks:callbacks];
+    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes placements:placements config:nil callbacks:callbacks];
 }
 
 - (void)getAudience {

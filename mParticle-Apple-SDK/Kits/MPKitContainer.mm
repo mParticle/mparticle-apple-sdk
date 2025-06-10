@@ -2299,7 +2299,7 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                         return;
                     }
                     execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
-                } else if (selector == @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:)) {
+                } else if (selector == @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:)) {
                     if (kitFilter.shouldFilter) {
                         return;
                     }
@@ -2307,7 +2307,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     execStatus = [kitRegister.wrapperInstance executeWithViewName:parameters[0]
                                                                        attributes:parameters[1]
                                                                        placements:parameters[2]
-                                                                        callbacks:parameters[3]
+                                                                           config:parameters[3]
+                                                                        callbacks:parameters[4]
                                                                      filteredUser:filteredUser];
                 } else if (selector == @selector(logScreen:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {

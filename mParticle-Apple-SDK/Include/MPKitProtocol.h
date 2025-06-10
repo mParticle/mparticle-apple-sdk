@@ -21,6 +21,7 @@
 @class FilteredMParticleUser;
 @class FilteredMPIdentityApiRequest;
 @class MPRoktEmbeddedView;
+@class MPRoktConfig;
 @class MPRoktEventCallback;
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
@@ -139,6 +140,7 @@
 - (nonnull MPKitExecStatus *)executeWithViewName:(NSString * _Nullable)viewName
                                       attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
                                       placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
+                                          config:(MPRoktConfig * _Nullable)config
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 

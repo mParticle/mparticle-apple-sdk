@@ -17,17 +17,21 @@
 @implementation MPRoktEmbeddedView
 @end
 
+@implementation MPRoktConfig
+@end
+
 @implementation MPRokt
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    [self selectPlacements:identifier attributes:attributes placements:nil callbacks:nil];
+    [self selectPlacements:identifier attributes:attributes placements:nil config:nil callbacks:nil];
 }
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
               placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
-               callbacks:(MPRoktEventCallback *)callbacks {
+                  config:(MPRoktConfig * _Nullable)config
+               callbacks:(MPRoktEventCallback * _Nullable)callbacks {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
     NSString *email = attributes[@"email"];
     
@@ -59,9 +63,10 @@
                 [queueParameters addParameter:identifier];
                 [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
                 [queueParameters addParameter:placements];
+                [queueParameters addParameter:config];
                 [queueParameters addParameter:callbacks];
                 
-                SEL roktSelector = @selector(executeWithViewName:attributes:placements:callbacks:filteredUser:);
+                SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                           event:nil
                                                                      parameters:queueParameters
