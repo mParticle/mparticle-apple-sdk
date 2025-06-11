@@ -143,6 +143,7 @@
                                           config:(MPRoktConfig * _Nullable)config
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+- (nonnull MPKitExecStatus *)setWrapperSdk:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 
 @end
 

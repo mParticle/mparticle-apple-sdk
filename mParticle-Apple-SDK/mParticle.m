@@ -2008,6 +2008,7 @@ static NSString *const kMPStateKey = @"state";
     dispatch_once(&predicate, ^{
         _wrapperSdk = wrapperSdk;
         _wrapperSdkVersion = wrapperSdkVersion;
+        [[[MParticle sharedInstance] rokt] _setWrapperSdk_internal:wrapperSdk version:wrapperSdkVersion];
     });
 }
 

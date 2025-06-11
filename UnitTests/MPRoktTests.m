@@ -9,6 +9,7 @@
 #import "MPIConstants.h"
 
 @interface MPRokt ()
+- (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
 - (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
 @end
@@ -397,4 +398,35 @@
     [self.identityMock verifyWithDelay:0.2];
 }
 
-@end 
+- (void)testSetWrapperSdk {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    MPWrapperSdk wrapperSdk = MPWrapperSdkXamarin;
+    NSString *wrapperSdkVersion = @"1.0.0";
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(setWrapperSdk:version:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], @(wrapperSdk));
+        XCTAssertEqualObjects(params[1], wrapperSdkVersion);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeUnknown
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [self.rokt _setWrapperSdk_internal:wrapperSdk version:wrapperSdkVersion];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    OCMVerifyAll(self.mockContainer);
+}
+
+@end

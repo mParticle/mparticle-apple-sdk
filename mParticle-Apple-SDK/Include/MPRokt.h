@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "MPEnums.h"
 
 /**
  * Callback container for Rokt callbacks.
@@ -84,5 +85,10 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
               placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
                   config:(MPRoktConfig * _Nullable)config
                callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
+
+/**
+ Internal use only. Passthrough of wrapper SDK and version to Rokt Kit.
+ */
+- (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 
 @end
