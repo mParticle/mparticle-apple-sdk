@@ -80,6 +80,23 @@
     }];
 }
 
+- (void)reportConversion:(NSString * _Nonnull)placementId catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:placementId];
+        [queueParameters addParameter:catalogItemId];
+        [queueParameters addParameter:@(success)];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(reportConversion:catalogItemId:success:)
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     

@@ -143,6 +143,7 @@
                                           config:(MPRoktConfig * _Nullable)config
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
+- (nonnull MPKitExecStatus *)reportConversion:(nonnull NSString *)placementId catalogItemId:(nonnull NSString *)catalogItemId success:(NSNumber * _Nullable)success;
 
 @end
 
