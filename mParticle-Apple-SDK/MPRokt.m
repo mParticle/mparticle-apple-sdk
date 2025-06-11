@@ -164,8 +164,9 @@
                 completion(apiResult.user);
             }
         }];
+    } else {
+        completion(user);
     }
-    completion(user);
 }
 
 @end
