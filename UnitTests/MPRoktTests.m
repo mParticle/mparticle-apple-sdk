@@ -417,7 +417,7 @@
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], placementId);
         XCTAssertEqualObjects(params[1], catalogItemId);
-        XCTAssertEqualObjects(params[2], @(YES));
+        XCTAssertEqualObjects(params[2], @(success));
         return true;
     }]
                                 messageType:MPMessageTypeEvent
