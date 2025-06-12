@@ -146,7 +146,7 @@
 
 - (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)placementId
                                  catalogItemId:(nonnull NSString *)catalogItemId
-                                       success:(NSNumber * _Nullable)success;
+                                       success:(nonnull NSNumber *)success;
 
 @end
 

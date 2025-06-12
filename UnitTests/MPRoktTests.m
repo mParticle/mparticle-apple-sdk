@@ -407,6 +407,7 @@
     // Set up test parameters
     NSString *placementId = @"testonversion";
     NSString *catalogItemId = @"testcatalogItemId";
+    BOOL success = YES;
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
@@ -425,7 +426,7 @@
     });
     
     // Execute method
-    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:YES];
+    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:success];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];

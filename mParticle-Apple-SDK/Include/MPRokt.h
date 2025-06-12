@@ -89,8 +89,8 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * Used to report a successful conversion without displaying a placement
  *
  * @param placementId Unique identifier for the placement
- * @param catalogItemId Optional dictionary of attributes to customize the placement
- * @param success Optional dictionary mapping placement names to their embedded views
+ * @param catalogItemId Unique identifier for the catalog item ID
+ * @param success Indicates whether or not the purchase was successful
  */
 - (void)purchaseFinalized:(NSString *_Nonnull)placementId
             catalogItemId:(NSString *_Nonnull)catalogItemId
