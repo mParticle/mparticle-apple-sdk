@@ -80,7 +80,7 @@
     }];
 }
 
-- (void)reportConversion:(NSString * _Nonnull)placementId catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
+- (void)purchaseFinalized:(NSString * _Nonnull)placementId catalogItemId:(NSString * _Nonnull)catalogItemId success:(BOOL)success {
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -88,7 +88,7 @@
         [queueParameters addParameter:catalogItemId];
         [queueParameters addParameter:@(success)];
         
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(reportConversion:catalogItemId:success:)
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(purchaseFinalized:catalogItemId:success:)
                                                                   event:nil
                                                              parameters:queueParameters
                                                             messageType:MPMessageTypeEvent

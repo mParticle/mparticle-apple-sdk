@@ -92,8 +92,8 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * @param catalogItemId Optional dictionary of attributes to customize the placement
  * @param success Optional dictionary mapping placement names to their embedded views
  */
-- (void)reportConversion:(NSString *_Nonnull)placementId
-           catalogItemId:(NSString *_Nonnull)catalogItemId
-                 success:(BOOL)success;
+- (void)purchaseFinalized:(NSString *_Nonnull)placementId
+            catalogItemId:(NSString *_Nonnull)catalogItemId
+                  success:(BOOL)success;
 
 @end

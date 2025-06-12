@@ -397,7 +397,7 @@
     [self.identityMock verifyWithDelay:0.2];
 }
 
-- (void)testReportConversion {
+- (void)testPurchaseFinalized {
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
@@ -410,7 +410,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(reportConversion:catalogItemId:success:);
+    SEL roktSelector = @selector(purchaseFinalized:catalogItemId:success:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -425,7 +425,7 @@
     });
     
     // Execute method
-    [[MParticle sharedInstance].rokt reportConversion:placementId catalogItemId:catalogItemId success:YES];
+    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:YES];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
