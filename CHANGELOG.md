@@ -1,3 +1,10 @@
+# [8.33.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.32.0...v8.33.0) (2025-06-12)
+
+
+### Features
+
+* Multiple select placements calls made ([#361](https://github.com/mParticle/mparticle-apple-sdk/issues/361)) ([f8d3ff8](https://github.com/mParticle/mparticle-apple-sdk/commit/f8d3ff865d5606a4c6c198511cfa21c5a04a87b7))
+
 # [8.32.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.31.2...v8.32.0) (2025-06-10)
 
 
