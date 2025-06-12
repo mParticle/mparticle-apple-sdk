@@ -144,6 +144,10 @@
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;
 
+- (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)placementId
+                                 catalogItemId:(nonnull NSString *)catalogItemId
+                                       success:(nonnull NSNumber *)success;
+
 @end
 
 #endif

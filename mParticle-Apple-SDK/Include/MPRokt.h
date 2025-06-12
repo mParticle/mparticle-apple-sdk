@@ -85,4 +85,15 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
                   config:(MPRoktConfig * _Nullable)config
                callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
 
+/**
+ * Used to report a successful conversion without displaying a placement
+ *
+ * @param placementId Unique identifier for the placement
+ * @param catalogItemId Unique identifier for the catalog item ID
+ * @param success Indicates whether or not the purchase was successful
+ */
+- (void)purchaseFinalized:(NSString *_Nonnull)placementId
+            catalogItemId:(NSString *_Nonnull)catalogItemId
+                  success:(BOOL)success;
+
 @end
