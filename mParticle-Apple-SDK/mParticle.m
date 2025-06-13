@@ -2009,6 +2009,21 @@ static NSString *const kMPStateKey = @"state";
         _wrapperSdk = wrapperSdk;
         _wrapperSdkVersion = wrapperSdkVersion;
     });
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:@(wrapperSdk)];
+        [queueParameters addParameter:wrapperSdkVersion];
+        
+        SEL roktSelector = @selector(setWrapperSdk:version:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                             parameters:queueParameters
+                                                            messageType:MPMessageTypeUnknown
+                                                               userInfo:nil
+        ];
+    });
 }
 
 + (BOOL)isOlderThanConfigMaxAgeSeconds {

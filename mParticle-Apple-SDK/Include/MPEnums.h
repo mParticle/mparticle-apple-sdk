@@ -454,7 +454,8 @@ typedef NS_ENUM(NSUInteger, MPWrapperSdk) {
     MPWrapperSdkReactNative = 2,
     MPWrapperSdkCordova = 3,
     MPWrapperSdkXamarin = 4,
-    MPWrapperSdkFlutter = 5
+    MPWrapperSdkFlutter = 5,
+    MPWrapperSdkMaui = 6
 };
 
 /**
