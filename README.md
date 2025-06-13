@@ -21,7 +21,7 @@ This document will help you:
 * Initialize the mParticle SDK
 
 ## Get the SDK
-
+    
 The mParticle-Apple-SDK is available via [CocoaPods](https://cocoapods.org/?q=mparticle), [Carthage](https://github.com/Carthage/Carthage) or [Swift Package Manager](https://github.com/apple/swift-package-manager). Follow the instructions below based on your preference.
 
 #### CocoaPods
