@@ -15,6 +15,7 @@
 #import "MParticleSwift.h"
 #import <AppTrackingTransparency/AppTrackingTransparency.h>
 #import "MPIConstants.h"
+#import "MPForwardQueueParameters.h"
 
 @interface MParticle ()
 + (dispatch_queue_t)messageQueue;
@@ -23,6 +24,7 @@
 @property (nonatomic, strong) MParticleOptions *options;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
++ (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 @property (nonatomic, strong) MParticleWebView_PRIVATE *webView;
 @end
 
@@ -1252,6 +1254,42 @@
     });
     
     [self waitForExpectationsWithTimeout:WORKSPACE_SWITCHING_TIMEOUT handler:nil];
+}
+
+- (void)testSetWrapperSdk {
+    MParticle *instance = [MParticle sharedInstance];
+    id mockInstance = OCMPartialMock(instance);
+    id mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[mockInstance stub] andReturn:mockContainer] kitContainer_PRIVATE];
+    [[[mockInstance stub] andReturn:mockInstance] sharedInstance];
+
+    MPWrapperSdk wrapperSdk = MPWrapperSdkXamarin;
+    NSString *wrapperSdkVersion = @"1.0.0";
+
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(setWrapperSdk:version:);
+    OCMExpect([mockContainer forwardSDKCall:roktSelector
+                                           event:nil
+                                      parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], @(wrapperSdk));
+        XCTAssertEqualObjects(params[1], wrapperSdkVersion);
+        return YES;
+    }]
+                                     messageType:MPMessageTypeUnknown
+                                        userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+
+    [MParticle _setWrapperSdk_internal:wrapperSdk version:wrapperSdkVersion];
+
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    OCMVerifyAll(mockContainer);
+    
+    [mockInstance stopMocking];
+    [mockContainer stopMocking];
+    mockInstance = nil;
+    mockContainer = nil;
 }
 
 @end
