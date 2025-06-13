@@ -91,4 +91,15 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 - (void)_setWrapperSdk_internal:(MPWrapperSdk)wrapperSdk version:(nonnull NSString *)wrapperSdkVersion;
 
+/**
+ * Used to report a successful conversion without displaying a placement
+ *
+ * @param placementId Unique identifier for the placement
+ * @param catalogItemId Unique identifier for the catalog item ID
+ * @param success Indicates whether or not the purchase was successful
+ */
+- (void)purchaseFinalized:(NSString *_Nonnull)placementId
+            catalogItemId:(NSString *_Nonnull)catalogItemId
+                  success:(BOOL)success;
+
 @end

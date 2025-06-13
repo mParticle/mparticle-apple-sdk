@@ -429,4 +429,42 @@
     OCMVerifyAll(self.mockContainer);
 }
 
-@end
+- (void)testPurchaseFinalized {
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
+    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+
+    // Set up test parameters
+    NSString *placementId = @"testonversion";
+    NSString *catalogItemId = @"testcatalogItemId";
+    BOOL success = YES;
+    
+    // Set up expectations for kit container
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
+    SEL roktSelector = @selector(purchaseFinalized:catalogItemId:success:);
+    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
+                                      event:nil
+                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
+        XCTAssertEqualObjects(params[0], placementId);
+        XCTAssertEqualObjects(params[1], catalogItemId);
+        XCTAssertEqualObjects(params[2], @(success));
+        return true;
+    }]
+                                messageType:MPMessageTypeEvent
+                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
+        [expectation fulfill];
+    });
+    
+    // Execute method
+    [[MParticle sharedInstance].rokt purchaseFinalized:placementId catalogItemId:catalogItemId success:success];
+    
+    // Wait for async operation
+    [self waitForExpectationsWithTimeout:0.2 handler:nil];
+
+    // Verify
+    OCMVerifyAll(self.mockContainer);
+}
+
+@end 
