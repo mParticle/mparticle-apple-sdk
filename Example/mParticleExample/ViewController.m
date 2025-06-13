@@ -187,6 +187,40 @@
                                                                @"sandbox": @"true",
                                                                @"mobile": @"(555)867-5309"
     };
+    
+    [Rokt eventsWithViewName:@"RoktLayout" onEvent:^(RoktEvent * roktEvent) {
+        NSLog(@"ViewName RoktEvent triggered of type: %@", [roktEvent class]);
+
+        if ([roktEvent isKindOfClass:[InitComplete class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[ShowLoadingIndicator class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[HideLoadingIndicator class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementInteractive class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementReady class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[OfferEngagement class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[OpenUrl class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PositiveEngagement class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementClosed class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementCompleted class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementFailure class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[FirstPositiveEngagement class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[CartItemInstantPurchase class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[RoktEventHandler class]]) {
+            
+        }
+    }];
 
     [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout" attributes:customAttributes];
 }
@@ -199,6 +233,40 @@
                                                                @"sandbox": @"true",
                                                                @"mobile": @"(555)867-5309"
     };
+    
+    [Rokt globalEventsOnEvent:^(RoktEvent * roktEvent) {
+        NSLog(@"Global RoktEvent triggered of type: %@", [roktEvent class]);
+
+        if ([roktEvent isKindOfClass:[InitComplete class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[ShowLoadingIndicator class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[HideLoadingIndicator class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementInteractive class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementReady class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[OfferEngagement class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[OpenUrl class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PositiveEngagement class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementClosed class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementCompleted class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[PlacementFailure class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[FirstPositiveEngagement class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[CartItemInstantPurchase class]]) {
+            
+        } else if ([roktEvent isKindOfClass:[RoktEventHandler class]]) {
+            
+        }
+    }];
 
     MPRoktConfig *roktConfig = [[MPRoktConfig alloc] init];
     roktConfig.colorMode = MPColorModeDark;
