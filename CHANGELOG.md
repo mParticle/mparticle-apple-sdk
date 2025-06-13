@@ -1,3 +1,10 @@
+# [8.34.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.33.0...v8.34.0) (2025-06-13)
+
+
+### Features
+
+* Support setWrapperSDK for Kits ([#364](https://github.com/mParticle/mparticle-apple-sdk/issues/364)) ([dcaad47](https://github.com/mParticle/mparticle-apple-sdk/commit/dcaad47152bc284ed5fc4227b74e384ae9fc8482))
+
 # [8.33.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.32.0...v8.33.0) (2025-06-12)
 
 
