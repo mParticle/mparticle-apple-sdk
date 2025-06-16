@@ -2303,7 +2303,8 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                     if (kitFilter.shouldFilter) {
                         return;
                     }
-                    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:[[[MParticle sharedInstance] identity] currentUser] kitConfiguration:self.kitConfigurations[kitRegister.code]];
+                    MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
+                    FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
                     execStatus = [kitRegister.wrapperInstance executeWithViewName:parameters[0]
                                                                        attributes:parameters[1]
                                                                        placements:parameters[2]
