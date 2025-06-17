@@ -124,7 +124,7 @@
     NSDictionary *attributes = @{@"key": @"value"};
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
-    NSDictionary *placements = @{@"placement": exampleView};
+    NSDictionary *embeddedViews = @{@"placement": exampleView};
     MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
     exampleCallbacks.onLoad = ^{};
     exampleCallbacks.onUnLoad = ^{};
@@ -145,7 +145,7 @@
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
         XCTAssertEqualObjects(params[0], viewName);
         XCTAssertEqualObjects(params[1], finalAttributes);
-        XCTAssertEqualObjects(params[2], placements);
+        XCTAssertEqualObjects(params[2], embeddedViews);
         XCTAssertEqualObjects(params[3], roktConfig);
         MPRoktEventCallback *resultCallbacks = params[4];
         XCTAssertEqualObjects(resultCallbacks.onLoad, exampleCallbacks.onLoad);
@@ -163,7 +163,7 @@
     // Execute method
     [self.rokt selectPlacements:viewName
                      attributes:attributes
-                     placements:placements
+                  embeddedViews:embeddedViews
                          config:roktConfig
                       callbacks:exampleCallbacks];
     
@@ -188,7 +188,7 @@
     // Execute method with nil parameters
     [self.rokt selectPlacements:viewName
                      attributes:nil
-                     placements:nil
+                  embeddedViews:nil
                          config:nil
                       callbacks:nil];
     

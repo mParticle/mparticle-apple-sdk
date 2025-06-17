@@ -204,7 +204,7 @@
     roktConfig.colorMode = MPColorModeDark;
     [[MParticle sharedInstance].rokt selectPlacements:@"RoktLayout"
                                            attributes:customAttributes
-                                           placements:nil
+                                        embeddedViews:nil
                                                config:roktConfig
                                             callbacks:nil];
 }
@@ -235,9 +235,9 @@
         [self setupUI:size];
     };
     
-    NSDictionary *placements = @{@"Location1": self.roktView};
+    NSDictionary *embeddedViews = @{@"Location1": self.roktView};
 
-    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes placements:placements config:nil callbacks:callbacks];
+    [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes embeddedViews:embeddedViews config:nil callbacks:callbacks];
 }
 
 - (void)getAudience {

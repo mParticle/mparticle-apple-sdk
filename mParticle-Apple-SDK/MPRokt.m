@@ -24,12 +24,12 @@
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
-    [self selectPlacements:identifier attributes:attributes placements:nil config:nil callbacks:nil];
+    [self selectPlacements:identifier attributes:attributes embeddedViews:nil config:nil callbacks:nil];
 }
 
 - (void)selectPlacements:(NSString *)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-              placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
+           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
                   config:(MPRoktConfig * _Nullable)config
                callbacks:(MPRoktEventCallback * _Nullable)callbacks {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
@@ -62,7 +62,7 @@
                 MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
                 [queueParameters addParameter:identifier];
                 [queueParameters addParameter:[self confirmSandboxAttribute:mappedAttributes]];
-                [queueParameters addParameter:placements];
+                [queueParameters addParameter:embeddedViews];
                 [queueParameters addParameter:config];
                 [queueParameters addParameter:callbacks];
                 
