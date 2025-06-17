@@ -1,3 +1,10 @@
+## [8.34.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.0...v8.34.1) (2025-06-17)
+
+
+### Bug Fixes
+
+* Make selectPlacement Use The Message Queue ([#366](https://github.com/mParticle/mparticle-apple-sdk/issues/366)) ([ce1a284](https://github.com/mParticle/mparticle-apple-sdk/commit/ce1a284c7522e81c095308ec99a1bcd23602340e))
+
 # [8.34.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.33.0...v8.34.0) (2025-06-13)
 
 
