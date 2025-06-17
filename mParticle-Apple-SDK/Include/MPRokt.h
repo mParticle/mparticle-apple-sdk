@@ -76,12 +76,12 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  *
  * @param identifier Unique identifier for the placement
  * @param attributes Optional dictionary of attributes to customize the placement
- * @param placements Optional dictionary mapping placement names to their embedded views
+ * @param embeddedViews Optional dictionary mapping placement names to their embedded views
  * @param roktEventCallback Optional callback object to handle widget events
  */
 - (void)selectPlacements:(NSString *_Nonnull)identifier
               attributes:(NSDictionary<NSString *, NSString *> * _Nullable)attributes
-              placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
+           embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
                   config:(MPRoktConfig * _Nullable)config
                callbacks:(MPRoktEventCallback * _Nullable)roktEventCallback;
 
