@@ -11,6 +11,12 @@
 #import "MPILogger.h"
 #import "MPIConstants.h"
 
+@interface MParticle ()
+
++ (dispatch_queue_t)messageQueue;
+
+@end
+
 @implementation MPRoktEventCallback
 @end
 
@@ -57,7 +63,7 @@
                 }
             }
             
-            dispatch_async(dispatch_get_main_queue(), ^{
+            dispatch_async([MParticle messageQueue], ^{
                 // Forwarding call to kits
                 MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
                 [queueParameters addParameter:identifier];
