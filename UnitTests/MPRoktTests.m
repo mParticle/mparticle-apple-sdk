@@ -80,16 +80,16 @@
     }] identify:[OCMArg any] completion:[OCMArg any]];
 
     // Set up test parameters
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertEqualObjects(params[0], identifier);
         XCTAssertEqualObjects(params[1], attributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
@@ -101,7 +101,7 @@
     });
     
     // Execute method
-    [self.rokt selectPlacements:viewName
+    [self.rokt selectPlacements:identifier
                      attributes:attributes];
     
     // Wait for async operation
@@ -120,11 +120,11 @@
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
     // Set up test parameters
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"key": @"value"};
     NSDictionary *finalAttributes = @{@"key": @"value", @"sandbox": @"true"};
     MPRoktEmbeddedView *exampleView = [[MPRoktEmbeddedView alloc] initWithFrame:CGRectZero];
-    NSDictionary *placements = @{@"placement": exampleView};
+    NSDictionary *embeddedViews = @{@"placement": exampleView};
     MPRoktEventCallback *exampleCallbacks = [[MPRoktEventCallback alloc] init];
     exampleCallbacks.onLoad = ^{};
     exampleCallbacks.onUnLoad = ^{};
@@ -139,13 +139,13 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertEqualObjects(params[0], identifier);
         XCTAssertEqualObjects(params[1], finalAttributes);
-        XCTAssertEqualObjects(params[2], placements);
+        XCTAssertEqualObjects(params[2], embeddedViews);
         XCTAssertEqualObjects(params[3], roktConfig);
         MPRoktEventCallback *resultCallbacks = params[4];
         XCTAssertEqualObjects(resultCallbacks.onLoad, exampleCallbacks.onLoad);
@@ -161,9 +161,9 @@
     });
     
     // Execute method
-    [self.rokt selectPlacements:viewName
+    [self.rokt selectPlacements:identifier
                      attributes:attributes
-                     placements:placements
+                  embeddedViews:embeddedViews
                          config:roktConfig
                       callbacks:exampleCallbacks];
     
@@ -183,25 +183,25 @@
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
     // Set up test parameters
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     
     // Execute method with nil parameters
-    [self.rokt selectPlacements:viewName
+    [self.rokt selectPlacements:identifier
                      attributes:nil
-                     placements:nil
+                  embeddedViews:nil
                          config:nil
                       callbacks:nil];
     
     // Wait for async operation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
     
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
     NSDictionary *finalAttributes = @{@"sandbox": @"true"};
 
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertEqualObjects(params[0], identifier);
         XCTAssertEqualObjects(params[1], finalAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
@@ -228,17 +228,17 @@
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
     // Set up test parameters
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
     NSDictionary *mappedAttributes = @{@"firstname": @"Brandon", @"sandbox": @"true"};
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], viewName);
+        XCTAssertEqualObjects(params[0], identifier);
         XCTAssertEqualObjects(params[1], mappedAttributes);
         XCTAssertNil(params[2]);
         XCTAssertNil(params[3]);
@@ -250,7 +250,7 @@
     });
     
     // Execute method
-    [self.rokt selectPlacements:viewName
+    [self.rokt selectPlacements:identifier
                      attributes:attributes];
     
     // Wait for async operation
@@ -268,7 +268,7 @@
     [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
-    SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
+    SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
     OCMReject([self.mockContainer forwardSDKCall:roktSelector
                                       event:[OCMArg any]
                                  parameters:[OCMArg any]
@@ -276,11 +276,11 @@
                                    userInfo:[OCMArg any]]);
     
     // Set up test parameters
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"f.name": @"Brandon"};
     
     // Execute method
-    [self.rokt selectPlacements:viewName
+    [self.rokt selectPlacements:identifier
                      attributes:attributes];
 
     // Verify
@@ -323,7 +323,7 @@
     [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
     
     // Set up test parameters
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
     // Set up expectations for kit container
@@ -333,7 +333,7 @@
     });
     
     // Execute method
-    [self.rokt selectPlacements:viewName attributes:attributes];
+    [self.rokt selectPlacements:identifier attributes:attributes];
     
     // Wait for async operation
     [self waitForExpectationsWithTimeout:0.2 handler:nil];
@@ -358,10 +358,10 @@
         return true;
     }] completion:OCMOCK_ANY];
     
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
-    [self.rokt selectPlacements:viewName attributes:attributes];
+    [self.rokt selectPlacements:identifier attributes:attributes];
     
     [self.identityMock verifyWithDelay:0.2];
 }
@@ -389,10 +389,10 @@
         return true;
     }] completion:OCMOCK_ANY];
     
-    NSString *viewName = @"testView";
+    NSString *identifier = @"testView";
     NSDictionary *attributes = @{@"email": @"test@gmail.com", @"sandbox": @"false"};
     
-    [self.rokt selectPlacements:viewName attributes:attributes];
+    [self.rokt selectPlacements:identifier attributes:attributes];
     
     [self.identityMock verifyWithDelay:0.2];
 }

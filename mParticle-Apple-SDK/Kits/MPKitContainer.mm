@@ -2299,18 +2299,18 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
                         return;
                     }
                     execStatus = [kitRegister.wrapperInstance logEvent:((MPEvent *)kitFilter.forwardEvent)];
-                } else if (selector == @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:)) {
+                } else if (selector == @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:)) {
                     if (kitFilter.shouldFilter) {
                         return;
                     }
                     MParticleUser *currentUser = [[[MParticle sharedInstance] identity] currentUser];
                     FilteredMParticleUser *filteredUser = [[FilteredMParticleUser alloc] initWithMParticleUser:currentUser kitConfiguration:self.kitConfigurations[kitRegister.code]];
-                    execStatus = [kitRegister.wrapperInstance executeWithViewName:parameters[0]
-                                                                       attributes:parameters[1]
-                                                                       placements:parameters[2]
-                                                                           config:parameters[3]
-                                                                        callbacks:parameters[4]
-                                                                     filteredUser:filteredUser];
+                    execStatus = [kitRegister.wrapperInstance executeWithIdentifier:parameters[0]
+                                                                         attributes:parameters[1]
+                                                                      embeddedViews:parameters[2]
+                                                                             config:parameters[3]
+                                                                          callbacks:parameters[4]
+                                                                       filteredUser:filteredUser];
                 } else if (selector == @selector(logScreen:)) {
                     if (!kitFilter.forwardEvent || ![kitFilter.forwardEvent isKindOfClass:[MPEvent class]]) {
                         return;
