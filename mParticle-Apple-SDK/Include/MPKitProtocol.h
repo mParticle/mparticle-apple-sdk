@@ -137,9 +137,9 @@
 - (nonnull NSArray<MPForwardRecord *> *)logBatch:(nonnull NSDictionary *)batch;
 
 #pragma mark First Party Kits
-- (nonnull MPKitExecStatus *)executeWithViewName:(NSString * _Nullable)viewName
+- (nonnull MPKitExecStatus *)executeWithIdentifier:(NSString * _Nullable)identifier
                                       attributes:(NSDictionary<NSString *, NSString *> * _Nonnull)attributes
-                                      placements:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)placements
+                                      embeddedViews:(NSDictionary<NSString *, MPRoktEmbeddedView *> * _Nullable)embeddedViews
                                           config:(MPRoktConfig * _Nullable)config
                                        callbacks:(MPRoktEventCallback * _Nullable)callbacks
                                     filteredUser:(FilteredMParticleUser * _Nonnull)filteredUser;

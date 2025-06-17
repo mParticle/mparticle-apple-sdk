@@ -66,7 +66,7 @@
                 [queueParameters addParameter:config];
                 [queueParameters addParameter:callbacks];
                 
-                SEL roktSelector = @selector(executeWithViewName:attributes:placements:config:callbacks:filteredUser:);
+                SEL roktSelector = @selector(executeWithIdentifier:attributes:embeddedViews:config:callbacks:filteredUser:);
                 [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                           event:nil
                                                                      parameters:queueParameters
