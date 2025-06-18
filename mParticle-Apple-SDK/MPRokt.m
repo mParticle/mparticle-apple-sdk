@@ -103,6 +103,41 @@
     });
 }
 
+- (void)eventsWithIdentifier:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+    MPILogError(@"[MParticle.Rokt eventsWithIdentifier:onEvent: identifier: %@, onEvent: %@", identifier, onEvent);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:identifier];
+        [queueParameters addParameter:onEvent];
+
+        SEL roktSelector = @selector(eventsWithIdentifier:onEvent:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                                 parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
+- (void)globalEventsOnEvent:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent {
+    MPILogError(@"[MParticle.Rokt globalEventsOnEvent: onEvent: %@", onEvent);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:onEvent];
+
+        SEL roktSelector = @selector(globalEventsOnEvent:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                                 parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     
