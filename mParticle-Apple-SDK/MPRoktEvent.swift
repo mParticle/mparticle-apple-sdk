@@ -10,91 +10,109 @@
 import Foundation
 
 @objc public class MPRoktEvent: NSObject {
-    @objc public class InitComplete: MPRoktEvent {
+    @objc public class MPRoktInitComplete: MPRoktEvent {
         @objc public let success: Bool
 
-        init(success: Bool) {
+        @objc public init(success: Bool) {
             self.success = success
+            super.init()
         }
     }
 
-    @objc public class ShowLoadingIndicator: MPRoktEvent {}
+    @objc public class MPRoktShowLoadingIndicator: MPRoktEvent {
+        @objc public override init() {
+            super.init()
+        }
+    }
 
-    @objc public class HideLoadingIndicator: MPRoktEvent {}
+    @objc public class MPRoktHideLoadingIndicator: MPRoktEvent {
+        @objc public override init() {
+            super.init()
+        }
+    }
 
-    @objc public class PlacementInteractive: MPRoktEvent {
+    @objc public class MPRoktPlacementInteractive: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class PlacementReady: MPRoktEvent {
+    @objc public class MPRoktPlacementReady: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class OfferEngagement: MPRoktEvent {
+    @objc public class MPRoktOfferEngagement: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class OpenUrl: MPRoktEvent {
+    @objc public class MPRoktOpenUrl: MPRoktEvent {
         @objc public let placementId: String?
         @objc public let url: String
 
-        init(placementId: String?, url: String) {
+        @objc public init(placementId: String?, url: String) {
             self.url = url
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class PositiveEngagement: MPRoktEvent {
+    @objc public class MPRoktPositiveEngagement: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class PlacementClosed: MPRoktEvent {
+    @objc public class MPRoktPlacementClosed: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class PlacementCompleted: MPRoktEvent {
+    @objc public class MPRoktPlacementCompleted: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class PlacementFailure: MPRoktEvent {
+    @objc public class MPRoktPlacementFailure: MPRoktEvent {
         @objc public let placementId: String?
 
-        init(placementId: String?) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
+            super.init()
         }
     }
 
-    @objc public class FirstPositiveEngagement: MPRoktEvent {
+    @objc public class MPRoktFirstPositiveEngagement: MPRoktEvent {
         @objc public let placementId: String?
         private let onFulfillmentAttributesUpdate: ([String: String]) -> Void
 
-        init(placementId: String?, onFulfillmentAttributesUpdate: @escaping ([String: String]) -> Void) {
+        @objc public init(placementId: String?, onFulfillmentAttributesUpdate: @escaping ([String: String]) -> Void) {
             self.placementId = placementId
             self.onFulfillmentAttributesUpdate = onFulfillmentAttributesUpdate
+            super.init()
         }
 
         @objc public func setFulfillmentAttributes(attributes: [String: String]) {
@@ -102,7 +120,7 @@ import Foundation
         }
     }
 
-    @objc public class CartItemInstantPurchase: MPRoktEvent {
+    @objc public class MPRoktCartItemInstantPurchase: MPRoktEvent {
         @objc public let placementId: String
         @objc public let name: String?
         @objc public let cartItemId: String
@@ -118,17 +136,17 @@ import Foundation
         @objc public let totalPrice: NSDecimalNumber?
         @objc public let unitPrice: NSDecimalNumber?
 
-        init(placementId: String,
-             name: String,
+        @objc public init(placementId: String,
+             name: String?,
              cartItemId: String,
              catalogItemId: String,
              currency: String,
              description: String,
              linkedProductId: String?,
              providerData: String,
-             quantity: Decimal?,
-             totalPrice: Decimal?,
-             unitPrice: Decimal?) {
+             quantity: NSDecimalNumber?,
+             totalPrice: NSDecimalNumber?,
+             unitPrice: NSDecimalNumber?) {
             self.placementId = placementId
             self.name = name
             self.cartItemId = cartItemId
@@ -137,9 +155,10 @@ import Foundation
             self._description = description
             self.linkedProductId = linkedProductId
             self.providerData = providerData
-            self.quantity = quantity.map { NSDecimalNumber(decimal: $0) }
-            self.totalPrice = totalPrice.map { NSDecimalNumber(decimal: $0) }
-            self.unitPrice = unitPrice.map { NSDecimalNumber(decimal: $0) }
+            self.quantity = quantity
+            self.totalPrice = totalPrice
+            self.unitPrice = unitPrice
+            super.init()
         }
     }
 }
