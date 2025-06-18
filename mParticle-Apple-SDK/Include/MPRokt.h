@@ -107,13 +107,13 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  * @param identifier The identifier of the placement to subscribe to
  * @param onEvent The block to execute when the event is triggered
  */
-- (void)eventsWithIdentifier:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
+- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
 
 /**
  * Used to subscribe to Rokt global events
  *
  * @param onEvent The block to execute when the event is triggered
  */
-- (void)globalEventsOnEvent:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
+- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
 
 @end

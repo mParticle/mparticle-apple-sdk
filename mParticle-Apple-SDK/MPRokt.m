@@ -103,15 +103,14 @@
     });
 }
 
-- (void)eventsWithIdentifier:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
-    MPILogError(@"[MParticle.Rokt eventsWithIdentifier:onEvent: identifier: %@, onEvent: %@", identifier, onEvent);
+- (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:identifier];
         [queueParameters addParameter:onEvent];
 
-        SEL roktSelector = @selector(eventsWithIdentifier:onEvent:);
+        SEL roktSelector = @selector(events:onEvent:);
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                   event:nil
                                                                  parameters:queueParameters
@@ -121,14 +120,13 @@
     });
 }
 
-- (void)globalEventsOnEvent:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent {
-    MPILogError(@"[MParticle.Rokt globalEventsOnEvent: onEvent: %@", onEvent);
+- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent {
     dispatch_async(dispatch_get_main_queue(), ^{
         // Forwarding call to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
         [queueParameters addParameter:onEvent];
 
-        SEL roktSelector = @selector(globalEventsOnEvent:);
+        SEL roktSelector = @selector(globalEvents:);
         [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
                                                                   event:nil
                                                                  parameters:queueParameters

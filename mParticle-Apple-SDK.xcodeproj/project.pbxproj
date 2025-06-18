@@ -467,6 +467,7 @@
 		7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		7E15B2072D94617900C1FF3E /* MPRoktTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7E15B2052D94617900C1FF3E /* MPRoktTests.m */; };
 		B31360F92E012760000DFBC9 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
+		B3D778622E02F55F00D887A4 /* MPRoktEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = B31360F72E012760000DFBC9 /* MPRoktEvent.swift */; };
 		D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */ = {isa = PBXBuildFile; fileRef = 53A79B0629CDFB1F00E7489F /* MPStateMachine.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B332B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		D33C8B342B8510C20012EDFD /* MPAudience.h in Headers */ = {isa = PBXBuildFile; fileRef = D33C8B312B8510C20012EDFD /* MPAudience.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1957,7 +1958,7 @@
 				534C11B62D08F53D00466F71 /* MPUserAttributeChange.swift in Sources */,
 				D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */,
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
-				B31360F82E012760000DFBC9 /* MPRoktEvent.swift in Sources */,
+				B3D778622E02F55F00D887A4 /* MPRoktEvent.swift in Sources */,
 				53A79DAE29CE23F700E7489F /* MPKitFilter.m in Sources */,
 				53A79DAF29CE23F700E7489F /* MPURLConnectionAssociate.m in Sources */,
 				53A79DB129CE23F700E7489F /* MPTransactionAttributes.m in Sources */,
