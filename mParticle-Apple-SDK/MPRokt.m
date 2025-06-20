@@ -120,22 +120,6 @@
     });
 }
 
-- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        // Forwarding call to kits
-        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-        [queueParameters addParameter:onEvent];
-
-        SEL roktSelector = @selector(globalEvents:);
-        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
-                                                                  event:nil
-                                                                 parameters:queueParameters
-                                                            messageType:MPMessageTypeEvent
-                                                               userInfo:nil
-        ];
-    });
-}
-
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     

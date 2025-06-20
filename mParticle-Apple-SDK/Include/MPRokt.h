@@ -109,11 +109,4 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 - (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
 
-/**
- * Used to subscribe to Rokt global events
- *
- * @param onEvent The block to execute when the event is triggered
- */
-- (void)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
-
 @end

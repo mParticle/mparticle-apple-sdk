@@ -512,46 +512,6 @@
     OCMVerifyAll(self.mockContainer);
 }
 
-- (void)testGlobalEventsWithOnEvent {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    // Set up test parameters
-    __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
-
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
-        callbackInvoked = YES;
-        receivedEvent = event;
-    };
-
-    // Set up expectations for kit container
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(globalEvents:);
-    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
-                                      event:nil
-                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        XCTAssertEqualObjects(params[0], onEventCallback);
-        return true;
-    }]
-                                messageType:MPMessageTypeEvent
-                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
-        [expectation fulfill];
-    });
-
-    // Execute method
-    [self.rokt globalEvents:onEventCallback];
-
-    // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
-
-    // Verify
-    OCMVerifyAll(self.mockContainer);
-}
-
 - (void)testEventsWithIdentifierCallbackInvocation {
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
@@ -599,56 +559,6 @@
     XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
     XCTAssertNotNil(receivedEvent, @"Should have received an event");
     XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktPlacementReady class]], @"Should receive the correct event type");
-
-    // Verify
-    OCMVerifyAll(self.mockContainer);
-}
-
-- (void)testGlobalEventsWithCallbackInvocation {
-    MParticle *instance = [MParticle sharedInstance];
-    self.mockInstance = OCMPartialMock(instance);
-    self.mockContainer = OCMClassMock([MPKitContainer_PRIVATE class]);
-    [[[self.mockInstance stub] andReturn:self.mockContainer] kitContainer_PRIVATE];
-    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
-
-    // Set up test parameters
-    __block BOOL callbackInvoked = NO;
-    __block MPRoktEvent *receivedEvent = nil;
-
-    void (^onEventCallback)(MPRoktEvent *) = ^(MPRoktEvent *event) {
-        callbackInvoked = YES;
-        receivedEvent = event;
-    };
-
-    // Set up expectations for kit container to simulate callback invocation
-    XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(globalEvents:);
-    OCMExpect([self.mockContainer forwardSDKCall:roktSelector
-                                      event:nil
-                                 parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
-        // Simulate the kit calling the callback
-        void (^capturedCallback)(MPRoktEvent *) = params[0];
-        if (capturedCallback) {
-            MPRoktInitComplete *testEvent = [[MPRoktInitComplete alloc] initWithSuccess:YES];
-            capturedCallback(testEvent);
-        }
-        return true;
-    }]
-                                messageType:MPMessageTypeEvent
-                                   userInfo:nil]).andDo(^(NSInvocation *invocation) {
-        [expectation fulfill];
-    });
-
-    // Execute method
-    [self.rokt globalEvents:onEventCallback];
-
-    // Wait for async operation
-    [self waitForExpectationsWithTimeout:0.2 handler:nil];
-
-    // Verify callback was invoked
-    XCTAssertTrue(callbackInvoked, @"Callback should have been invoked");
-    XCTAssertNotNil(receivedEvent, @"Should have received an event");
-    XCTAssertTrue([receivedEvent isKindOfClass:[MPRoktInitComplete class]], @"Should receive the correct event type");
 
     // Verify
     OCMVerifyAll(self.mockContainer);

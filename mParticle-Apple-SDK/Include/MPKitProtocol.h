@@ -150,7 +150,6 @@
                                  catalogItemId:(nonnull NSString *)catalogItemId
                                        success:(nonnull NSNumber *)success;
 - (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
-- (nonnull MPKitExecStatus *)globalEvents:(void (^ _Nonnull)(MPRoktEvent * _Nonnull))onEvent;
 
 @end
 
