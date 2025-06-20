@@ -1,3 +1,10 @@
+# [8.35.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.1...v8.35.0) (2025-06-20)
+
+
+### Features
+
+* SQDSDKS-7421 - Add MPRoktEvent class ([#369](https://github.com/mParticle/mparticle-apple-sdk/issues/369)) ([4a23378](https://github.com/mParticle/mparticle-apple-sdk/commit/4a23378339f36cb9be06d1d8b8f5e176d9c5be4a))
+
 ## [8.34.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.0...v8.34.1) (2025-06-17)
 
 
