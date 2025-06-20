@@ -454,7 +454,7 @@
 
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(eventsWithIdentifier:onEvent:);
+    SEL roktSelector = @selector(events:onEvent:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -489,7 +489,7 @@
 
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(eventsWithIdentifier:onEvent:);
+    SEL roktSelector = @selector(events:onEvent:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -530,7 +530,7 @@
 
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(globalEventsOnEvent:);
+    SEL roktSelector = @selector(globalEvents:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -571,7 +571,7 @@
 
     // Set up expectations for kit container to simulate callback invocation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(eventsWithIdentifier:onEvent:);
+    SEL roktSelector = @selector(events:onEvent:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
@@ -622,7 +622,7 @@
 
     // Set up expectations for kit container to simulate callback invocation
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    SEL roktSelector = @selector(globalEventsOnEvent:);
+    SEL roktSelector = @selector(globalEvents:);
     OCMExpect([self.mockContainer forwardSDKCall:roktSelector
                                       event:nil
                                  parameters:[OCMArg checkWithBlock:^BOOL(MPForwardQueueParameters *params) {
