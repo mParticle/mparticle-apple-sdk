@@ -103,6 +103,23 @@
     });
 }
 
+- (void)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:identifier];
+        [queueParameters addParameter:onEvent];
+
+        SEL roktSelector = @selector(events:onEvent:);
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:roktSelector
+                                                                  event:nil
+                                                                 parameters:queueParameters
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     

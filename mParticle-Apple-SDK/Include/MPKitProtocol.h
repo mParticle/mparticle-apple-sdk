@@ -23,6 +23,7 @@
 @class MPRoktEmbeddedView;
 @class MPRoktConfig;
 @class MPRoktEventCallback;
+@class MPRoktEvent;
 
 #if TARGET_OS_IOS == 1 && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_10_0
     @class UNUserNotificationCenter;
@@ -148,6 +149,7 @@
 - (nonnull MPKitExecStatus *)purchaseFinalized:(nonnull NSString *)placementId
                                  catalogItemId:(nonnull NSString *)catalogItemId
                                        success:(nonnull NSNumber *)success;
+- (nonnull MPKitExecStatus *)events:(NSString * _Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
 
 @end
 

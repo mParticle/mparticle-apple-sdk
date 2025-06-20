@@ -56,6 +56,11 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
 @end
 
 /**
+ * A class for handling Rokt events
+ */
+@class MPRoktEvent;
+
+/**
  * Main interface for interacting with Rokt functionality.
  * Handles placement selection and widget management.
  */
@@ -95,5 +100,13 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
 - (void)purchaseFinalized:(NSString *_Nonnull)placementId
             catalogItemId:(NSString *_Nonnull)catalogItemId
                   success:(BOOL)success;
+
+/**
+ * Used to subscribe to Rokt events
+ *
+ * @param identifier The identifier of the placement to subscribe to
+ * @param onEvent The block to execute when the event is triggered
+ */
+- (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
 
 @end
