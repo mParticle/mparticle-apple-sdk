@@ -107,16 +107,10 @@ import Foundation
 
     @objc public class MPRoktFirstPositiveEngagement: MPRoktEvent {
         @objc public let placementId: String?
-        private let onFulfillmentAttributesUpdate: ([String: String]) -> Void
 
-        @objc public init(placementId: String?, onFulfillmentAttributesUpdate: @escaping ([String: String]) -> Void) {
+        @objc public init(placementId: String?) {
             self.placementId = placementId
-            self.onFulfillmentAttributesUpdate = onFulfillmentAttributesUpdate
             super.init()
-        }
-
-        @objc public func setFulfillmentAttributes(attributes: [String: String]) {
-            onFulfillmentAttributesUpdate(attributes)
         }
     }
 
