@@ -79,12 +79,12 @@
     
     _cellTitles = @[@"Log Simple Event", @"Log Event", @"Log Screen", @"Log Commerce Event", @"Log Timed Event",
                     @"Log Error", @"Log Exception", @"Set User Attribute", @"Increment User Attribute",
-                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer", @"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay Placement", @"Display Rokt Embedded Placement"];
-    
+                    @"Set Session Attribute", @"Increment Session Attribute", @"Register Remote", @"Get Audience", @"Log Media Events", @"Toggle CCPA Consent", @"Toggle GDPR Consent", @"Request & Set IDFA", @"Logout", @"Login", @"Set IDFA", @"Decrease Upload Timer", @"Increase Upload Timer", @"Display Rokt Overlay Placement", @"Display Rokt Dark Mode Overlay Placement", @"Display Rokt Embedded Placement", @"Display Rokt Overlay (auto close)"];
+
     selectorNames = @[@"logSimpleEvent", @"logEvent", @"logScreen", @"logCommerceEvent", @"logTimedEvent",
                       @"logError", @"logException", @"setUserAttribute", @"incrementUserAttribute",
-                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval", @"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement"];
-    
+                      @"setSessionAttribute", @"incrementSessionAttribute", @"registerRemote", @"getAudience", @"logCustomMediaEvents", @"toggleCCPAConsent", @"toggleGDPRConsent", @"requestIDFA", @"logout", @"login", @"modify", @"decreaseUploadInterval", @"increaseUploadInterval", @"selectOverlayPlacement", @"selectDarkOverlayPlacement", @"selectEmbeddedPlacement",  @"selectOverlayPlacementAutoClose"];
+
     return _cellTitles;
 }
 
@@ -238,6 +238,15 @@
     NSDictionary *embeddedViews = @{@"Location1": self.roktView};
 
     [[MParticle sharedInstance].rokt selectPlacements:@"testiOS" attributes:customAttributes embeddedViews:embeddedViews config:nil callbacks:callbacks];
+}
+
+- (void)selectOverlayPlacementAutoClose {
+    // Rokt Placement
+    [self selectOverlayPlacement];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(5.0 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [[MParticle sharedInstance].rokt close];
+    });
 }
 
 - (void)getAudience {
