@@ -640,6 +640,174 @@
     XCTAssertTrue(testCommerce, @"MPCommerceEvent messages are not being saved.");
 }
 
+- (void)testLoggingCommerceEventToUpload {
+    dispatch_sync([MParticle messageQueue], ^{
+        [self.backendController beginSession];
+    });
+    self.session = self.backendController.session;
+    MPCommerceEvent *commerceEvent = [[MPCommerceEvent alloc] initWithAction:MPCommerceEventActionClick];
+    commerceEvent.customAttributes = @{@"key":@"value"};
+    
+    MPPersistenceController_PRIVATE *persistence = [MParticle sharedInstance].persistenceController;
+    
+    [self.backendController logBaseEvent:commerceEvent
+                       completionHandler:^(MPBaseEvent *event, MPExecStatus execStatus) {}];
+
+    
+    [MParticle sharedInstance].dataPlanId = @"test";
+    [MParticle sharedInstance].dataPlanVersion = @(1);
+    
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Ramp upload test"];
+    dispatch_async(messageQueue, ^{
+        
+        NSDictionary *messagesDictionary = [persistence fetchMessagesForUploading];
+        NSMutableDictionary *sessionsDictionary = messagesDictionary[[MPPersistenceController_PRIVATE mpId]];
+        NSMutableDictionary *dataPlanIdDictionary =  [sessionsDictionary objectForKey:[NSNumber numberWithLong:self->_session.sessionId]];
+        NSMutableDictionary *dataPlanVersionDictionary =  [dataPlanIdDictionary objectForKey:@"0"];
+        NSArray *messages =  [dataPlanVersionDictionary objectForKey:[NSNumber numberWithInt:0]];
+        XCTAssertGreaterThan(messages.count, 0, @"Messages are not being persisted.");
+        
+        Boolean testCommerce = false;
+        for (MPMessage *message in messages) {
+            XCTAssertTrue(message.uploadStatus != MPUploadStatusUploaded, @"Messages are being prematurely being marked as uploaded.");
+            if ([message.messageType isEqualToString:kMPMessageTypeStringCommerceEvent]) {
+                testCommerce = true;
+            }
+        }
+        XCTAssertTrue(testCommerce, @"MPCommerceEvent messages are not being saved.");
+        
+        MPUploadBuilder *uploadBuilder = [[MPUploadBuilder alloc] initWithMpid:[MPPersistenceController_PRIVATE mpId] sessionId:[NSNumber numberWithLong:self->_session.sessionId] messages:messages sessionTimeout:100 uploadInterval:100 dataPlanId:@"test" dataPlanVersion:@(1) uploadSettings:[MPUploadSettings currentUploadSettingsWithStateMachine:[MParticle sharedInstance].stateMachine networkOptions:[MParticle sharedInstance].networkOptions]];
+        XCTAssertNotNil(uploadBuilder, @"Upload builder should not have been nil.");
+        
+        if (!uploadBuilder) {
+            return;
+        }
+        
+        [uploadBuilder withUserAttributes:[self.backendController userAttributesForUserId:[MPPersistenceController_PRIVATE mpId]] deletedUserAttributes:nil];
+        [uploadBuilder withUserIdentities:[self.backendController userIdentitiesForUserId:[MPPersistenceController_PRIVATE mpId]]];
+        [uploadBuilder build:^(MPUpload *upload) {
+            [persistence saveUpload:upload];
+            
+            NSArray *uploads = [persistence fetchUploads];
+            XCTAssertGreaterThan(uploads.count, 0, @"Failed to retrieve messages to be uploaded.");
+            
+            for (upload in uploads) {
+                XCTAssertNotNil(upload.uploadData, @"Upload Data should not have been nil.");
+                NSDictionary *uploadJSON = [NSJSONSerialization JSONObjectWithData:upload.uploadData options:0 error:nil];
+                NSLog(@"%@", uploadJSON);
+                
+                // Verify top-level structure
+                XCTAssert([uploadJSON[kMPApplicationKey] isKindOfClass:[NSString class]], @"Application key should be a NSString.");
+                XCTAssertEqualObjects(uploadJSON[kMPApplicationKey], @"unit_test_app_key", @"Application key should match expected value.");
+                
+                XCTAssert([uploadJSON[kMPApplicationInformationKey] isKindOfClass:[NSDictionary class]], @"Application Information should be a NSDictionary.");
+                XCTAssert([uploadJSON[kMPTimestampKey] isKindOfClass:[NSNumber class]], @"Creation timestamp should be a NSNumber.");
+                XCTAssert([uploadJSON[kMPContextKey] isKindOfClass:[NSDictionary class]], @"Context should be a NSDictionary.");
+                XCTAssert([uploadJSON[kMPDeviceApplicationStampKey] isKindOfClass:[NSString class]], @"Device application stamp should be a NSString.");
+                XCTAssert([uploadJSON[kMPDeviceInformationKey] isKindOfClass:[NSDictionary class]], @"Device information should be a NSDictionary.");
+                XCTAssert([uploadJSON[kMPMessageTypeKey] isKindOfClass:[NSString class]], @"Data type should be a NSString.");
+                XCTAssertEqualObjects(uploadJSON[kMPMessageTypeKey], @"h", @"Data type should be 'h' for upload.");
+                XCTAssert([uploadJSON[kMPMessageIdKey] isKindOfClass:[NSString class]], @"Upload ID should be a NSString.");
+                XCTAssert([uploadJSON[kMPLifeTimeValueKey] isKindOfClass:[NSNumber class]], @"Lifetime value should be a NSNumber.");
+                XCTAssert([uploadJSON[kMPRemoteConfigMPIDKey] isKindOfClass:[NSNumber class]], @"mParticle ID should be a NSNumber.");
+                XCTAssert([uploadJSON[kMPMessagesKey] isKindOfClass:[NSArray class]], @"Messages should be an NSArray.");
+                XCTAssert([uploadJSON[kMPOptOutKey] isKindOfClass:[NSNumber class]], @"Opt out should be a NSNumber.");
+                XCTAssert([uploadJSON[kMPmParticleSDKVersionKey] isKindOfClass:[NSString class]], @"SDK version should be a NSString.");
+                XCTAssert([uploadJSON[kMPSessionTimeoutKey] isKindOfClass:[NSNumber class]], @"Session timeout length should be a NSNumber.");
+                XCTAssert([uploadJSON[kMPUploadIntervalKey] isKindOfClass:[NSNumber class]], @"Upload interval should be a NSNumber.");
+                
+                // Verify application information structure
+                NSDictionary *applicationInfo = uploadJSON[kMPApplicationInformationKey];
+                XCTAssert([applicationInfo[kMPAppBuildNumberKey] integerValue] != 0, @"App build number should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppPackageNameKey] isKindOfClass:[NSString class]], @"App package name should be a NSString.");
+                XCTAssert([applicationInfo[kMPAppArchitectureKey] isKindOfClass:[NSString class]], @"Architecture should be a NSString.");
+                XCTAssert([applicationInfo[kMPApplicationVersionKey] isKindOfClass:[NSString class]], @"App version should be a NSString.");
+                XCTAssert([applicationInfo[kMPAppBuildUUIDKey] isKindOfClass:[NSString class]], @"Build UUID should be a NSString.");
+                XCTAssert([applicationInfo[kMPAppBuildSDKKey] integerValue] != 0, @"Build SDK should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppEnvironmentKey] isKindOfClass:[NSNumber class]], @"Environment should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppFirstSeenInstallationKey] isKindOfClass:[NSNumber class]], @"First install should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppInitialLaunchTimeKey] isKindOfClass:[NSNumber class]], @"Install creation timestamp should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppLastUseDateKey] isKindOfClass:[NSNumber class]], @"Last use date should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppPiratedKey] isKindOfClass:[NSNumber class]], @"Push integration result should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppSideloadKitsCountKey] isKindOfClass:[NSNumber class]], @"Sideloaded kits count should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppDeploymentTargetKey] integerValue] != 0, @"App DeploymentTarget should be a NSNumber.");
+                XCTAssert([applicationInfo[kMPAppUpgradeDateKey] isKindOfClass:[NSNumber class]], @"Upgrade date should be a NSNumber.");
+                
+                // Verify context structure
+                NSDictionary *context = uploadJSON[kMPContextKey];
+                XCTAssert([context[kMPDataPlanKey] isKindOfClass:[NSDictionary class]], @"Data plan should be a NSDictionary.");
+                NSDictionary *dataPlan = context[kMPDataPlanKey];
+                XCTAssertEqualObjects(dataPlan[kMPDataPlanIdKey], @"test", @"Data plan ID should match expected value.");
+                XCTAssertEqualObjects(dataPlan[kMPDataPlanVersionKey], @1, @"Data plan version should match expected value.");
+                
+                // Verify device information structure
+                NSDictionary *deviceInfo = uploadJSON[kMPDeviceInformationKey];
+                XCTAssert([deviceInfo[kMPDeviceArchitectureKey] isKindOfClass:[NSString class]], @"Device architecture should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceBrandKey] isKindOfClass:[NSString class]], @"Device build should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceBuildIdKey] isKindOfClass:[NSString class]], @"Device build ID should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceLocaleCountryKey] isKindOfClass:[NSString class]], @"Device locale country should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceLocaleLanguageKey] isKindOfClass:[NSString class]], @"Device locale language should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceManufacturerKey] isKindOfClass:[NSString class]], @"Device manufacturer should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceModelKey] isKindOfClass:[NSString class]], @"Device model should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceNameKey] isKindOfClass:[NSString class]], @"Device name should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceOSKey] isKindOfClass:[NSString class]], @"Device OS version should be a NSString.");
+                XCTAssert([deviceInfo[kMPDevicePlatformKey] isKindOfClass:[NSString class]], @"Device platform should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceRadioKey] isKindOfClass:[NSString class]], @"Device radio should be a NSString.");
+                XCTAssert([deviceInfo[kMPScreenHeightKey] integerValue] != 0, @"Device screen height should be a NSNumber.");
+                XCTAssert([deviceInfo[kMPScreenWidthKey] integerValue] != 0, @"Device screen width should be a NSNumber.");
+                XCTAssert([deviceInfo[kMPDeviceIsDaylightSavingTime] isKindOfClass:[NSNumber class]], @"Identity status should be a NSNumber.");
+                XCTAssert([deviceInfo[kMPDeviceIsTabletKey] isKindOfClass:[NSNumber class]], @"Install type should be a NSNumber.");
+                XCTAssert([deviceInfo[kMPDeviceJailbrokenKey] isKindOfClass:[NSDictionary class]], @"Jailbreak info should be a NSDictionary.");
+                XCTAssert([deviceInfo[kMPDeviceLimitAdTrackingKey] isKindOfClass:[NSNumber class]], @"Latitude should be a NSNumber.");
+                XCTAssert([deviceInfo[kMPDeviceProductKey] isKindOfClass:[NSString class]], @"Platform should be a NSString.");
+                XCTAssert([deviceInfo[kMPTimezoneOffsetKey] isKindOfClass:[NSString class]], @"Timezone should be a NSString.");
+                XCTAssert([deviceInfo[kMPTimezoneDescriptionKey] isKindOfClass:[NSString class]], @"Timezone name should be a NSString.");
+                XCTAssert([deviceInfo[kMPDeviceAppVendorIdKey] isKindOfClass:[NSString class]], @"Vendor ID should be a NSString.");
+                
+                // Verify jailbreak info structure
+                NSDictionary *jailbreakInfo = deviceInfo[kMPDeviceJailbrokenKey];
+                XCTAssert([jailbreakInfo[kMPDeviceCydiaJailbrokenKey] isKindOfClass:[NSNumber class]], @"Cydia info should be a NSNumber.");
+                
+                // Verify messages array structure
+                NSArray *messages = uploadJSON[kMPMessagesKey];
+                XCTAssertGreaterThan(messages.count, 0, @"Messages array should not be empty.");
+                
+                // Find the commerce event message
+                NSDictionary *commerceMessage = nil;
+                for (NSDictionary *message in messages) {
+                    if ([message[kMPMessageTypeKey] isEqualToString:kMPMessageTypeStringCommerceEvent]) {
+                        commerceMessage = message;
+                        break;
+                    }
+                }
+                
+                XCTAssertNotNil(commerceMessage, @"Commerce message should be present.");
+                if (commerceMessage) {
+                    XCTAssert([commerceMessage[kMPAttributesKey] isKindOfClass:[NSDictionary class]], @"Message attributes should be a NSDictionary.");
+                    XCTAssert([commerceMessage[kMPTimestampKey] isKindOfClass:[NSNumber class]], @"Message creation timestamp should be a NSNumber.");
+                    XCTAssertEqualObjects(commerceMessage[kMPMessageTypeKey], @"cm", @"Message data type should be 'cm' for commerce.");
+                    XCTAssert([commerceMessage[kMPMessageIdKey] isKindOfClass:[NSString class]], @"Message ID should be a NSString.");
+                    XCTAssert([commerceMessage[@"mt"] isKindOfClass:[NSNumber class]], @"Message type should be a NSNumber.");
+                    XCTAssert([commerceMessage[@"pd"] isKindOfClass:[NSDictionary class]], @"Product data should be a NSDictionary.");
+                    XCTAssert([commerceMessage[kMPSessionStartTimestamp] isKindOfClass:[NSNumber class]], @"Session creation timestamp should be a NSNumber.");
+                    XCTAssert([commerceMessage[kMPSessionIdKey] isKindOfClass:[NSString class]], @"Session ID should be a NSString.");
+                    
+                    // Verify attributes
+                    NSDictionary *attrs = commerceMessage[kMPAttributesKey];
+                    XCTAssertEqualObjects(attrs[@"key"], @"value", @"Custom attribute should match expected value.");
+                    
+                    // Verify product data
+                    NSDictionary *productData = commerceMessage[@"pd"];
+                    XCTAssertEqualObjects(productData[@"an"], @"click", @"Action name should match expected value.");
+                    XCTAssertEqualObjects(productData[@"tr"], @"0", @"Total amount should match expected value.");
+                }
+            }
+        }];
+        [expectation fulfill];
+    });
+    [self waitForExpectationsWithTimeout:DEFAULT_TIMEOUT handler:nil];
+}
+
 - (void)testLoggingBaseEvent {
     dispatch_sync([MParticle messageQueue], ^{
         [self.backendController beginSession];
