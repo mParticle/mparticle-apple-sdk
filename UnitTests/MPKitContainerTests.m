@@ -210,19 +210,22 @@
 }
 
 - (void)testRemoveKitConfiguration {
+    static NSString *const kTestAppId1 = @"cool app key";
+    static NSString *const kTestAppId2 = @"cool app key 2";
+    [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
     [self setUserAttributesAndIdentities];
     
     NSDictionary *configuration1 = @{
                                      @"id":@42,
                                      @"as":@{
-                                             @"appId":@"cool app key"
+                                             @"appId":kTestAppId1
                                              }
                                      };
     
     NSDictionary *configuration2 = @{
                                      @"id":@312,
                                      @"as":@{
-                                             @"appId":@"cool app key 2"
+                                             @"appId":kTestAppId2
                                              }
                                      };
     
@@ -247,18 +250,29 @@
         XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
         
         dispatch_sync(dispatch_get_main_queue(), ^{ });
-        XCTAssertEqualObjects(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        id appId = [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"];
+        if ([appId isKindOfClass:[NSData class]]) {
+            appId = [[NSString alloc] initWithData:appId encoding:NSUTF8StringEncoding];
+        }
+        XCTAssertEqualObjects(kTestAppId1, appId);
         
         NSArray *directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             if ([[kitConfiguration integrationId] isEqual:@(42)]){
-                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
+                id appId = kitConfiguration.configuration[@"appId"];
+                if ([appId isKindOfClass:[NSData class]]) {
+                    appId = [[NSString alloc] initWithData:appId encoding:NSUTF8StringEncoding];
+                }
+                XCTAssertEqualObjects(kTestAppId1, appId);
             }
             
             if ([[kitConfiguration integrationId] isEqual:@(312)]){
-                
-                XCTAssertEqualObjects(@"cool app key 2", kitConfiguration.configuration[@"appId"]);
+                id appId = kitConfiguration.configuration[@"appId"];
+                if ([appId isKindOfClass:[NSData class]]) {
+                    appId = [[NSString alloc] initWithData:appId encoding:NSUTF8StringEncoding];
+                }
+                XCTAssertEqualObjects(kTestAppId2, appId);
             }
         }
         
@@ -278,13 +292,21 @@
         
         XCTAssertEqualObjects(responseConfig.configuration, [MPUserDefaults restore].configuration);
         
-        XCTAssertEqual(@"cool app key", [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"]);
+        id appId2 = [self->kitContainer.kitConfigurations objectForKey:@(42)].configuration[@"appId"];
+        if ([appId2 isKindOfClass:[NSData class]]) {
+            appId2 = [[NSString alloc] initWithData:appId2 encoding:NSUTF8StringEncoding];
+        }
+        XCTAssertEqualObjects(kTestAppId1, appId2);
         
         directoryContents = [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] getKitConfigurations];
         for (NSDictionary *kitConfigurationDictionary in directoryContents) {
             MPKitConfiguration *kitConfiguration = [[MPKitConfiguration alloc] initWithDictionary:kitConfigurationDictionary];
             if ([[kitConfiguration integrationId] isEqual:@(42)]){
-                XCTAssertEqualObjects(@"cool app key", kitConfiguration.configuration[@"appId"]);
+                id appId = kitConfiguration.configuration[@"appId"];
+                if ([appId isKindOfClass:[NSData class]]) {
+                    appId = [[NSString alloc] initWithData:appId encoding:NSUTF8StringEncoding];
+                }
+                XCTAssertEqualObjects(kTestAppId1, appId);
             }
             
             XCTAssertFalse([[kitConfiguration integrationId] isEqual:@(312)]);
