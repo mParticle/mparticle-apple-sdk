@@ -752,7 +752,9 @@
                 XCTAssert([deviceInfo[kMPDeviceNameKey] isKindOfClass:[NSString class]], @"Device name should be a NSString.");
                 XCTAssert([deviceInfo[kMPDeviceOSKey] isKindOfClass:[NSString class]], @"Device OS version should be a NSString.");
                 XCTAssert([deviceInfo[kMPDevicePlatformKey] isKindOfClass:[NSString class]], @"Device platform should be a NSString.");
+#if TARGET_OS_IOS == 1 && !MPARTICLE_LOCATION_DISABLE
                 XCTAssert([deviceInfo[kMPDeviceRadioKey] isKindOfClass:[NSString class]], @"Device radio should be a NSString.");
+#endif
                 XCTAssert([deviceInfo[kMPScreenHeightKey] integerValue] != 0, @"Device screen height should be a NSNumber.");
                 XCTAssert([deviceInfo[kMPScreenWidthKey] integerValue] != 0, @"Device screen width should be a NSNumber.");
                 XCTAssert([deviceInfo[kMPDeviceIsDaylightSavingTime] isKindOfClass:[NSNumber class]], @"Identity status should be a NSNumber.");
