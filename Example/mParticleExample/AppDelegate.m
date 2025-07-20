@@ -13,8 +13,8 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     //initialize mParticle
-    MParticleOptions *options = [MParticleOptions optionsWithKey:@"REPLACE WITH APP KEY"
-                                                          secret:@"REPLACE WITH APP SECRET"];
+    MParticleOptions *options = [MParticleOptions optionsWithKey:@"REPLACE_WITH_APP_KEY"
+                                                          secret:@"REPLACE_WITH_APP_SECRET"];
     MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithEmptyUser];
     identityRequest.email = @"foo@example.com";
     identityRequest.customerId = @"123456";

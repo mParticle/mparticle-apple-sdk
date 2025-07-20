@@ -120,6 +120,18 @@
     });
 }
 
+- (void)close {
+    dispatch_async(dispatch_get_main_queue(), ^{
+        // Forwarding call to kits
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(close)
+                                                                  event:nil
+                                                             parameters:nil
+                                                            messageType:MPMessageTypeEvent
+                                                               userInfo:nil
+        ];
+    });
+}
+
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping {
     NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = nil;
     

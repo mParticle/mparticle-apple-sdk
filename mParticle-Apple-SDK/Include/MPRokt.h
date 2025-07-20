@@ -109,4 +109,9 @@ typedef NS_ENUM(NSInteger, MPColorMode) {
  */
 - (void)events:(NSString *_Nonnull)identifier onEvent:(void (^ _Nullable)(MPRoktEvent * _Nonnull))onEvent;
 
+/**
+ * Used to close Rokt overlay placements
+ */
+- (void)close;
+
 @end
