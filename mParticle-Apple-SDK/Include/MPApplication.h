@@ -3,6 +3,27 @@
 @class UIApplication;
 
 extern NSString * _Nonnull const kMPApplicationInformationKey;
+extern NSString * _Nonnull const kMPApplicationNameKey;
+extern NSString * _Nonnull const kMPApplicationVersionKey;
+extern NSString * _Nonnull const kMPAppPackageNameKey;
+extern NSString * _Nonnull const kMPAppInitialLaunchTimeKey;
+extern NSString * _Nonnull const kMPAppBuildNumberKey;
+extern NSString * _Nonnull const kMPAppBuildUUIDKey;
+extern NSString * _Nonnull const kMPAppArchitectureKey;
+extern NSString * _Nonnull const kMPAppPiratedKey;
+extern NSString * _Nonnull const kMPAppDeploymentTargetKey;
+extern NSString * _Nonnull const kMPAppBuildSDKKey;
+extern NSString * _Nonnull const kMPAppUpgradeDateKey;
+extern NSString * _Nonnull const kMPAppLaunchCountKey;
+extern NSString * _Nonnull const kMPAppLaunchCountSinceUpgradeKey;
+extern NSString * _Nonnull const kMPAppLastUseDateKey;
+extern NSString * _Nonnull const kMPAppStoredVersionKey;
+extern NSString * _Nonnull const kMPAppStoredBuildKey;
+extern NSString * _Nonnull const kMPAppEnvironmentKey;
+extern NSString * _Nonnull const kMPAppStoreReceiptKey;
+extern NSString * _Nonnull const kMPAppImageBaseAddressKey;
+extern NSString * _Nonnull const kMPAppImageSizeKey;
+extern NSString * _Nonnull const kMPAppSideloadKitsCountKey;
 
 @interface MPApplication_PRIVATE : NSObject <NSCopying>
 
