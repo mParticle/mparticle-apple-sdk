@@ -8,25 +8,27 @@ on:
     branches:
       - development
 
+env:
+  XCODE_VERSION: "16.4"
+
 jobs:
   native-unit-tests:
     strategy:
       matrix:
-        xcode: ["15.2"]
         platform: [iOS, tvOS]
         scheme: [mParticle-Apple-SDK, mParticle-Apple-SDK-NoLocation]
         include:
           - platform: iOS
-            device: iPhone 15
+            device: iPhone 16 Pro
           - platform: tvOS
-            device: Apple TV
-    runs-on: macos-13
+            device: Apple TV 4K (3rd generation)
+    runs-on: macOS-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
         
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'platform=${{ matrix.platform }} Simulator,name=${{ matrix.device }},OS=latest' test
