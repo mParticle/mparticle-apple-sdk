@@ -11,7 +11,7 @@ on:
 jobs:
   run-ios-tests:
     timeout-minutes: 30
-    runs-on: macOS-13
+    runs-on: macOS-15
     steps:
       - name: "Checkout Cross Platform Tests"
         uses: actions/checkout@v4
@@ -24,21 +24,21 @@ jobs:
         with:
           ref: ${{ github.head_ref }}
           path: .sdks/apple
-      - name: "Install JDK 11"
-        uses: actions/setup-java@v2
+      - name: "Install JDK 17"
+        uses: actions/setup-java@v4
         with:
           distribution: "zulu"
-          java-version: "11"
+          java-version: "17"
           cache: "gradle"
       - name: "Install Cocoapods"
         run: sudo gem install cocoapods; sudo gem install cocoapods-generate
       - name: Choose Xcode version
-        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_14.1.app/Contents/Developer; xcode-select -p
+        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer; xcode-select -p
       - name: Run Tests
         run: ./gradlew runIos
       - name: Archive Test Results
         if: always()
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ios-test-results
           path: Users/runner/Library/Developer/Xcode/DerivedData

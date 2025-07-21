@@ -12,15 +12,15 @@ jobs:
   native-unit-tests:
     strategy:
       matrix:
-        xcode: ["15.2"]
+        xcode: ["16.1"]
         platform: [iOS, tvOS]
         scheme: [mParticle-Apple-SDK, mParticle-Apple-SDK-NoLocation]
         include:
           - platform: iOS
-            device: iPhone 15
+            device: iPhone 16 Pro
           - platform: tvOS
-            device: Apple TV
-    runs-on: macos-13
+            device: Apple TV 4K (3rd generation)
+    runs-on: macOS-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4

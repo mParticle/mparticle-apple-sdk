@@ -16,7 +16,7 @@ jobs:
 
   create-release-branch:
     name: Create release branch
-    runs-on: macOS-13
+    runs-on: macOS-15
     needs: confirm-main-branch
     steps:
       - name: Checkout development branch
@@ -33,7 +33,7 @@ jobs:
 
   release:
     name: Perform release
-    runs-on: macOS-13
+    runs-on: macOS-15
     needs: create-release-branch
     env:
       GITHUB_ACCESS_TOKEN: ${{ secrets.MP_SEMANTIC_RELEASE_BOT }}
@@ -43,7 +43,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+        run: sudo xcode-select -s /Applications/Xcode_16.1.app
 
       - name: Validate environment
         env:
@@ -113,10 +113,10 @@ jobs:
         run: |
           npx \
           -p lodash \
-          -p semantic-release@17 \
-          -p @semantic-release/changelog@5 \
-          -p @semantic-release/git@9 \
-          -p @semantic-release/exec@5 \
+          -p semantic-release@24 \
+          -p @semantic-release/changelog@6 \
+          -p @semantic-release/git@10 \
+          -p @semantic-release/exec@6 \
           semantic-release --dry-run
 
       - name: Release
@@ -133,10 +133,10 @@ jobs:
         run: |
           npx \
           -p lodash \
-          -p semantic-release@17 \
-          -p @semantic-release/changelog@5 \
-          -p @semantic-release/git@9 \
-          -p @semantic-release/exec@5 \
+          -p semantic-release@24 \
+          -p @semantic-release/changelog@6 \
+          -p @semantic-release/git@10 \
+          -p @semantic-release/exec@6 \
           semantic-release
 
       - name: Push automated release commits to release branch
@@ -155,7 +155,7 @@ jobs:
   sync-repository:
     name: Finalize release
     needs: release
-    runs-on: macOS-13
+    runs-on: macOS-15
     steps:
       - name: Checkout main branch
         uses: actions/checkout@v4
