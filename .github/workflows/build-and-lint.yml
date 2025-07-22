@@ -75,7 +75,7 @@ jobs:
 
       - name: Run static analyzer
         run: |
-          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -B3 "warning")'
+          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -v "warning: Metadata extraction skipped" | grep -B3 "warning")'
 
   pr-notify:
     if: >
