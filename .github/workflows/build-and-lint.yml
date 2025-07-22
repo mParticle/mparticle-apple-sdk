@@ -50,8 +50,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -project "mParticle_Apple_SDK.xcodeproj" \
-            -scheme "mParticle_Apple_SDK" \
+            -project "mParticle-Apple-SDK.xcodeproj" \
+            -scheme "mParticle-Apple-SDK" \
             -destination "generic/platform=iOS" \
             clean build | xcpretty
 
@@ -59,8 +59,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild \
-            -project "mParticle_Apple_SDK.xcodeproj" \
-            -scheme "mParticle_Apple_SDK_NoLocation" \
+            -project "mParticle-Apple-SDK.xcodeproj" \
+            -scheme "mParticle-Apple-SDK-NoLocation" \
             -destination "generic/platform=iOS" \
             clean build | xcpretty
 
