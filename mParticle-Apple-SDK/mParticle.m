@@ -1923,11 +1923,11 @@ static NSString *const kMPStateKey = @"state";
             
         }];
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserTag]) {
-        if ((NSNull *)dictionary[@"key"] != [NSNull null]) {
+        if (dictionary[@"key"] && (NSNull *)dictionary[@"key"] != [NSNull null]) {
             [self.identity.currentUser setUserTag:dictionary[@"key"]];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserTag]) {
-        if ((NSNull *)dictionary[@"key"] != [NSNull null]) {
+        if (dictionary[@"key"] && (NSNull *)dictionary[@"key"] != [NSNull null]) {
             [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
@@ -1941,7 +1941,7 @@ static NSString *const kMPStateKey = @"state";
             [self.identity.currentUser setUserAttribute:dictionary[@"key"] value:dictionary[@"value"]];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathRemoveUserAttribute]) {
-        if ((NSNull *)dictionary[@"key"] != [NSNull null]) {
+        if (dictionary[@"key"] && (NSNull *)dictionary[@"key"] != [NSNull null]) {
             [self.identity.currentUser removeUserAttribute:dictionary[@"key"]];
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {

@@ -6,8 +6,7 @@
 @implementation MPKitRegister
 
 - (instancetype)init {
-    id invalidVar = nil;
-    self = [self initWithName:invalidVar className:invalidVar];
+    self = [self initWithName:@"" className:@""];
     if (self) {
         MPILogError(@"MPKitRegister cannot be initialized using the init method");
     }

@@ -53,7 +53,9 @@
         return nil;
     }
     
-    self = [self initWithIntegrationId:integrationId attributes:attributes];
+    // Ensure attributes is not nil before passing to init method
+    NSDictionary<NSString *, NSString *> *safeAttributes = attributes ?: @{};
+    self = [self initWithIntegrationId:integrationId attributes:safeAttributes];
     return self;
 }
 
