@@ -12,6 +12,9 @@ permissions:
   checks: write
   id-token: write
 
+env:
+  XCODE_VERSION: "16.4"
+
 jobs:
   pod-lint:
     runs-on: macOS-15
@@ -20,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
         
       - name: Update xcodeproj gem
         run: sudo gem install xcodeproj
@@ -34,23 +37,32 @@ jobs:
       - name: Undo twitter change to podspec
         run: git checkout *.podspec
 
-  carthage-build:
+  xcode-build:
     runs-on: macOS-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Build with Carthage
-        run: ./Scripts/carthage.sh build --no-skip-current || true
+      - name: Build SDK
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "mParticle_Apple_SDK.xcodeproj" \
+            -scheme "mParticle_Apple_SDK" \
+            -destination "generic/platform=iOS" \
+            clean build | xcpretty
 
-      - name: Carthage archive
-        run: carthage archive mParticle_Apple_SDK && carthage archive mParticle_Apple_SDK_NoLocation
-
-      - name: Verify carthage products
-        run: ls 2>&1 | grep .framework.zip
+      - name: Build SDK NoLocation
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "mParticle_Apple_SDK.xcodeproj" \
+            -scheme "mParticle_Apple_SDK_NoLocation" \
+            -destination "generic/platform=iOS" \
+            clean build | xcpretty
 
   run-analyzer:
     runs-on: macOS-15
@@ -59,7 +71,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
       - name: Run static analyzer
         run: |
@@ -71,7 +83,7 @@ jobs:
       github.event.pull_request.draft == false
     needs:
       - pod-lint
-      - carthage-build
+      - xcode-build
       - run-analyzer
     name: Notify GChat
     uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main

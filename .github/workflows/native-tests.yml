@@ -8,11 +8,13 @@ on:
     branches:
       - development
 
+env:
+  XCODE_VERSION: "16.4"
+
 jobs:
   native-unit-tests:
     strategy:
       matrix:
-        xcode: ["16.1"]
         platform: [iOS, tvOS]
         scheme: [mParticle-Apple-SDK, mParticle-Apple-SDK-NoLocation]
         include:
@@ -26,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_${{ matrix.xcode }}.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
         
       - name: Run iOS unit tests
         run: xcodebuild -project mParticle-Apple-SDK.xcodeproj -scheme ${{ matrix.scheme }} -destination 'platform=${{ matrix.platform }} Simulator,name=${{ matrix.device }},OS=latest' test

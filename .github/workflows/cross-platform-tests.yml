@@ -8,6 +8,9 @@ on:
     branches:
       - development
 
+env:
+  XCODE_VERSION: "16.4"
+
 jobs:
   run-ios-tests:
     timeout-minutes: 30
@@ -33,7 +36,7 @@ jobs:
       - name: "Install Cocoapods"
         run: sudo gem install cocoapods; sudo gem install cocoapods-generate
       - name: Choose Xcode version
-        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_16.1.app/Contents/Developer; xcode-select -p
+        run: xcode-select -p; sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer; xcode-select -p
       - name: Run Tests
         run: ./gradlew runIos
       - name: Archive Test Results

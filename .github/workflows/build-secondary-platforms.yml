@@ -2,6 +2,9 @@ name: Secondary Platforms iOS Build
 
 on: [pull_request]
 
+env:
+  XCODE_VERSION: "16.4"
+
 jobs:
   build-react-native:
     runs-on: macOS-15
@@ -13,7 +16,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.1.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
         
       - name: Add React Native cli
         run: yarn add -D @react-native-community/cli
