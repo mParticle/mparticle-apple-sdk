@@ -12,15 +12,18 @@ permissions:
   checks: write
   id-token: write
 
+env:
+  XCODE_VERSION: "16.4"
+
 jobs:
   pod-lint:
-    runs-on: macOS-13
+    runs-on: macOS-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
         
       - name: Update xcodeproj gem
         run: sudo gem install xcodeproj
@@ -34,36 +37,45 @@ jobs:
       - name: Undo twitter change to podspec
         run: git checkout *.podspec
 
-  carthage-build:
-    runs-on: macOS-13
+  xcode-build:
+    runs-on: macOS-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
-      - name: Build with Carthage
-        run: ./Scripts/carthage.sh build --no-skip-current || true
+      - name: Build SDK
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "mParticle-Apple-SDK.xcodeproj" \
+            -scheme "mParticle-Apple-SDK" \
+            -destination "generic/platform=iOS" \
+            clean build | xcpretty
 
-      - name: Carthage archive
-        run: carthage archive mParticle_Apple_SDK && carthage archive mParticle_Apple_SDK_NoLocation
-
-      - name: Verify carthage products
-        run: ls 2>&1 | grep .framework.zip
+      - name: Build SDK NoLocation
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project "mParticle-Apple-SDK.xcodeproj" \
+            -scheme "mParticle-Apple-SDK-NoLocation" \
+            -destination "generic/platform=iOS" \
+            clean build | xcpretty
 
   run-analyzer:
-    runs-on: macOS-13
+    runs-on: macOS-15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.2.app
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app
 
       - name: Run static analyzer
         run: |
-          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -B3 "warning")'
+          bash -c '! (set -o pipefail && xcodebuild -project "mParticle-Apple-SDK.xcodeproj" -scheme "mParticle-Apple-SDK" -sdk iphonesimulator -configuration Debug -destination "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest" clean analyze | grep -v "warning: The iOS Simulator deployment target" | grep -v "warning: Metadata extraction skipped" | grep -B3 "warning")'
 
   pr-notify:
     if: >
@@ -71,7 +83,7 @@ jobs:
       github.event.pull_request.draft == false
     needs:
       - pod-lint
-      - carthage-build
+      - xcode-build
       - run-analyzer
     name: Notify GChat
     uses: ROKT/rokt-workflows/.github/workflows/oss_pr_opened_notification.yml@main

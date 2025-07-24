@@ -526,7 +526,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
         }
     }
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:self.configURL.url.absoluteString body:configurationDictionary responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:MPEndpointConfig url:(self.configURL.url.absoluteString ?: @"") body:(configurationDictionary ?: @{}) responseCode:responseCode];
     if (success && configurationDictionary) {
         NSDictionary *headersDictionary = [httpResponse allHeaderFields];
         NSString *eTag = headersDictionary[kMPHTTPETagHeaderKey];
@@ -1040,7 +1040,7 @@ static NSObject<MPConnectorFactoryProtocol> *factory = nil;
     
     self.identifying = NO;
     
-    [MPListenerController.sharedInstance onNetworkRequestFinished:endpointType url:url.absoluteString body:responseDictionary responseCode:responseCode];
+    [MPListenerController.sharedInstance onNetworkRequestFinished:endpointType url:(url.absoluteString ?: @"") body:(responseDictionary ?: @{}) responseCode:responseCode];
     if (success) {
         if (responseString) {
             MPILogVerbose(@"Identity response:\n%@", responseString);
