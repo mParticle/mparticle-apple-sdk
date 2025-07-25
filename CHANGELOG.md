@@ -1,3 +1,16 @@
+# [8.36.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.35.0...v8.36.0) (2025-07-25)
+
+
+### Bug Fixes
+
+* Prevent Apple Caused xCode crash on Launch ([#372](https://github.com/mParticle/mparticle-apple-sdk/issues/372)) ([4c5b001](https://github.com/mParticle/mparticle-apple-sdk/commit/4c5b001cc6b8aed2831e1f7938d655a98a75a94e))
+* Update Bundle ID for No Location ([#381](https://github.com/mParticle/mparticle-apple-sdk/issues/381)) ([4474537](https://github.com/mParticle/mparticle-apple-sdk/commit/44745374c2e4601532115f500b73be741af4490a))
+
+
+### Features
+
+* Create Rokt.close method ([#373](https://github.com/mParticle/mparticle-apple-sdk/issues/373)) ([cdc45bb](https://github.com/mParticle/mparticle-apple-sdk/commit/cdc45bb8b7d031902b446d5e9f480e08df0309bd))
+
 # [8.35.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.34.1...v8.35.0) (2025-06-20)
 
 
