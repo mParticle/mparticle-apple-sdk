@@ -10,7 +10,7 @@
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
-- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
+- (void)confirmUser:(NSDictionary<NSString *, NSString *> *)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
 @end
 
 @interface MPRokt (Testing)
@@ -328,7 +328,7 @@
     
     // Set up expectations for kit container
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait for async operation"];
-    OCMExpect([self.mockRokt confirmEmail:@"test@gmail.com" user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
+    OCMExpect([self.mockRokt confirmUser:attributes user:OCMOCK_ANY completion:OCMOCK_ANY]).andDo(^(NSInvocation *invocation) {
         [expectation fulfill];
     });
     
