@@ -39,10 +39,9 @@
                   config:(MPRoktConfig * _Nullable)config
                callbacks:(MPRoktEventCallback * _Nullable)callbacks {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
-    NSString *email = attributes[@"email"];
     
     // If email is passed in as an attribute and it's different than the existing identity, identify with it
-    [self confirmEmail:email user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
+    [self confirmUser:attributes user:currentUser completion:^(MParticleUser *_Nullable resolvedUser) {
         NSArray<NSDictionary<NSString *, NSString *> *> *attributeMap = [self getRoktPlacementAttributesMapping];
 
         // If attributeMap is nil the kit hasn't been initialized
@@ -198,21 +197,28 @@
     return finalAttributes;
 }
 
-- (void)confirmEmail:(NSString * _Nullable)email user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
-    if (email && email != user.identities[@(MPIdentityEmail)]) {
-        // If there is an existing email but it doesn't match the email passed in, warn the customer
+- (void)confirmUser:(NSDictionary<NSString *, NSString *> * _Nullable)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
+    NSString *email = attributes[@"email"];
+    NSString *hashedEmail = attributes[@"other"];
+    
+    if ((email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]) || (hashedEmail && ![hashedEmail isEqualToString: user.identities[@(MPIdentityOther)]])) {
+        // If there is an existing email or hashed email but it doesn't match the what was passed in, warn the customer
         if (user.identities[@(MPIdentityEmail)]) {
             NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+        } else if (user.identities[@(MPIdentityOther)]) {
+            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityOther)], hashedEmail);
         }
+        
         MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
-        identityRequest.email = email;
+        [identityRequest setIdentity:email identityType:MPIdentityEmail];
+        [identityRequest setIdentity:hashedEmail identityType:MPIdentityOther];
         
         [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
             if (error) {
                 NSLog(@"Failed to sync email from selectPlacement to user: %@", error);
                 completion(user);
             } else {
-                NSLog(@"Updated email identity based off selectPlacement's attributes: %@", apiResult.user.identities[@(MPIdentityEmail)]);
+                NSLog(@"Updated user identity based off selectPlacement's attributes: %@", apiResult.user.identities);
                 completion(apiResult.user);
             }
         }];
