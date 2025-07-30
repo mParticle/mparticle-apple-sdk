@@ -199,13 +199,13 @@
 
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> * _Nullable)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
     NSString *email = attributes[@"email"];
-    NSString *hashedEmail = attributes[@"other"];
+    NSString *hashedEmail = attributes[@"emailsha256"];
     
     if ((email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]) || (hashedEmail && ![hashedEmail isEqualToString: user.identities[@(MPIdentityOther)]])) {
         // If there is an existing email or hashed email but it doesn't match the what was passed in, warn the customer
-        if (user.identities[@(MPIdentityEmail)]) {
+        if (email && user.identities[@(MPIdentityEmail)]) {
             NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
-        } else if (user.identities[@(MPIdentityOther)]) {
+        } else if (hashedEmail && user.identities[@(MPIdentityOther)]) {
             NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityOther)], hashedEmail);
         }
         
