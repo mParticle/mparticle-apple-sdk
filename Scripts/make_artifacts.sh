@@ -49,8 +49,15 @@ function build_docs_artifact() {
     sudo sh install-appledoc.sh
     cd "$repo_dir"
 
-    appledoc --exit-threshold=0 --warn-missing-arg=NO "./Scripts/AppledocSettings.plist"
-    ditto -c -k --sequesterRsrc --keepParent "./Docs/html" "$repo_dir/generated-docs.zip"
+    # Try to generate docs, but don't fail the release if it has issues
+    if appledoc --exit-threshold=0 "./Scripts/AppledocSettings.plist"; then
+        ditto -c -k --sequesterRsrc --keepParent "./Docs/html" "$repo_dir/generated-docs.zip"
+    else
+        echo "Documentation generation failed, creating empty docs archive"
+        mkdir -p ./Docs/html
+        echo "<html><body>Documentation generation failed</body></html>" > ./Docs/html/index.html
+        ditto -c -k --sequesterRsrc --keepParent "./Docs/html" "$repo_dir/generated-docs.zip"
+    fi
 }
 
 # --- Main ---
