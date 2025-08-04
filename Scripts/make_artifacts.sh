@@ -49,7 +49,7 @@ function build_docs_artifact() {
     sudo sh install-appledoc.sh
     cd "$repo_dir"
 
-    appledoc --exit-threshold=2 "./Scripts/AppledocSettings.plist"
+    appledoc --exit-threshold=0 "./Scripts/AppledocSettings.plist"
     ditto -c -k --sequesterRsrc --keepParent "./Docs/html" "$repo_dir/generated-docs.zip"
 }
 
