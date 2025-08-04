@@ -22,5 +22,7 @@
 	<string>com.mparticle</string>
 	<key>--project-company</key>
 	<string>mParticle</string>
+	<key>--exit-threshold</key>
+	<string>0</string>
 </dict>
 </plist>
