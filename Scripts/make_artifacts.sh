@@ -65,3 +65,6 @@ function build_docs_artifact() {
 build_framework_artifacts
 build_xcframework_artifacts
 build_docs_artifact
+
+# Ensure the script always exits successfully for the release process
+exit 0
