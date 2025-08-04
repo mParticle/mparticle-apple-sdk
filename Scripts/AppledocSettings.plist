@@ -24,5 +24,7 @@
 	<string>mParticle</string>
 	<key>--exit-threshold</key>
 	<string>0</string>
+	<key>--warn-missing-arg</key>
+	<false/>
 </dict>
 </plist>
