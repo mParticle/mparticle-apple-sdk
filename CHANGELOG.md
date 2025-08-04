@@ -1,3 +1,16 @@
+# [8.37.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.36.0...v8.37.0) (2025-08-04)
+
+
+### Bug Fixes
+
+* Make documentation generation non-blocking for releases ([1dc0c66](https://github.com/mParticle/mparticle-apple-sdk/commit/1dc0c666df8e55ca04f621bd2c09c76e84fd487d))
+
+
+### Features
+
+* Handle Hashed Email for Rokt ([#383](https://github.com/mParticle/mparticle-apple-sdk/issues/383)) ([3b9e072](https://github.com/mParticle/mparticle-apple-sdk/commit/3b9e0727fcfd9843928ec6a2e6396d9ead1af8e7))
+* Update Hashed Email for Rokt ([#384](https://github.com/mParticle/mparticle-apple-sdk/issues/384)) ([475e5d4](https://github.com/mParticle/mparticle-apple-sdk/commit/475e5d442471e2b287e98c6effb3d14fbc6e5ed0))
+
 # [8.36.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.35.0...v8.36.0) (2025-07-25)
 
 
