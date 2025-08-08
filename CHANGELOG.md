@@ -1,3 +1,10 @@
+## [8.37.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.0...v8.37.1) (2025-08-08)
+
+
+### Bug Fixes
+
+* Prevent Swift Name Spacing for Encodable Objects ([#385](https://github.com/mParticle/mparticle-apple-sdk/issues/385)) ([b83480e](https://github.com/mParticle/mparticle-apple-sdk/commit/b83480ea3721a9970fd3713c83701776df8a3386))
+
 # [8.37.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.36.0...v8.37.0) (2025-08-04)
 
 
