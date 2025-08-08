@@ -13,7 +13,8 @@ import MachO
 import CoreTelephony
 #endif
 
-@objc public class MPDevice : NSObject, NSCopying {
+@objc(MPDevice)
+public class MPDevice : NSObject, NSCopying {
     private var stateMachine: MPStateMachine_PRIVATE
     private var userDefaults: MPUserDefaults
     private var identity: MPIdentityApi

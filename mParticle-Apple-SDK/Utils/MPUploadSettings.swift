@@ -14,7 +14,8 @@ private let kAliasTrackingHost = "aliasTrackingHost"
 private let kOverridesAliasSubdirectory = "overridesAliasSubdirectory"
 private let kEventsOnly = "eventsOnly"
 
-@objc public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
+@objc(MPUploadSettings)
+public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
     @objc public var apiKey: String
     @objc public var secret: String
     @objc public var eventsHost: String?
