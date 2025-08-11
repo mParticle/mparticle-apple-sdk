@@ -7,3 +7,5 @@ updates:
     open-pull-requests-limit: 4
     labels:
       - dependabot
+    commit-message:
+      prefix: "chore"
