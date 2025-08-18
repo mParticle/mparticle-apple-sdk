@@ -68,25 +68,7 @@ static NSString *const kMPStateKey = @"state";
 
 @end
 
-@interface MPAttributionResult ()
 
-@property (nonatomic, readwrite) NSNumber *kitCode;
-@property (nonatomic, readwrite) NSString *kitName;
-
-@end
-
-@implementation MPAttributionResult
-
-- (NSString *)description {
-    NSMutableString *description = [[NSMutableString alloc] initWithString:@"MPAttributionResult {\n"];
-    [description appendFormat:@"  kitCode: %@\n", _kitCode];
-    [description appendFormat:@"  kitName: %@\n", _kitName];
-    [description appendFormat:@"  linkInfo: %@\n", _linkInfo];
-    [description appendString:@"}"];
-    return description;
-}
-
-@end
 
 @interface MParticleSession ()
 
