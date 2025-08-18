@@ -10,6 +10,7 @@
 #import "MPForwardQueueParameters.h"
 #import "MPILogger.h"
 #import "MPIConstants.h"
+#import "MPIdentityDTO.h"
 
 @interface MParticle ()
 
@@ -178,6 +179,23 @@
     return attributeMap;
 }
 
+- (NSNumber *)getRoktHashedEmailUserIdentityType {
+    // Get the kit configuration
+    NSArray<NSDictionary *> *kitConfigs = [MParticle sharedInstance].kitContainer_PRIVATE.originalConfig.copy;
+    NSDictionary *roktKitConfig;
+    for (NSDictionary *kitConfig in kitConfigs) {
+        if (kitConfig[@"id"] != nil && [kitConfig[@"id"] integerValue] == 181) {
+            roktKitConfig = kitConfig;
+        }
+    }
+    
+    // Get the string representing which identity to use and convert it to the key (NSNumber)
+    NSString *hashedIdentityTypeString = roktKitConfig[kMPHashedEmailUserIdentityType];
+    NSNumber *hashedIdentityTypeNumber = [MPIdentityHTTPIdentities identityTypeForString:hashedIdentityTypeString.lowercaseString];
+    
+    return hashedIdentityTypeNumber != nil ? hashedIdentityTypeNumber : @(MPIdentityOther);
+}
+
 - (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
     NSMutableDictionary<NSString *, NSString *> *finalAttributes = attributes.mutableCopy;
     NSString *sandboxKey = @"sandbox";
@@ -200,18 +218,19 @@
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> * _Nullable)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion {
     NSString *email = attributes[@"email"];
     NSString *hashedEmail = attributes[@"emailsha256"];
+    NSNumber *hashedEmailIdentity = [self getRoktHashedEmailUserIdentityType];
     
-    if ((email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]) || (hashedEmail && ![hashedEmail isEqualToString: user.identities[@(MPIdentityOther)]])) {
+    if ((email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]) || (hashedEmail && ![hashedEmail isEqualToString: user.identities[hashedEmailIdentity]])) {
         // If there is an existing email or hashed email but it doesn't match the what was passed in, warn the customer
         if (email && user.identities[@(MPIdentityEmail)]) {
             NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
-        } else if (hashedEmail && user.identities[@(MPIdentityOther)]) {
-            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityOther)], hashedEmail);
+        } else if (hashedEmail && user.identities[hashedEmailIdentity]) {
+            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
         }
         
         MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
         [identityRequest setIdentity:email identityType:MPIdentityEmail];
-        [identityRequest setIdentity:hashedEmail identityType:MPIdentityOther];
+        [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
         
         [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
             if (error) {
