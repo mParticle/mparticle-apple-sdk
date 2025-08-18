@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
+		35E3FCC12E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
+		35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivate.swift */; };
+		35E3FCC42E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivate.swift */; };
+		35E3FCC62E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */; };
+		35E3FCC72E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */ = {isa = PBXBuildFile; fileRef = 35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */; };
 		530D247F2CFF70B0000FE7E3 /* MPUserIdentityInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D247E2CFF70A5000FE7E3 /* MPUserIdentityInstance.swift */; };
 		530D24802CFF70B0000FE7E3 /* MPUserIdentityInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D247E2CFF70A5000FE7E3 /* MPUserIdentityInstance.swift */; };
 		530D24822CFF72D9000FE7E3 /* MPConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 530D24812CFF72D4000FE7E3 /* MPConstants.swift */; };
@@ -527,6 +533,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPAttributionResult+MParticlePrivate.m"; sourceTree = "<group>"; };
+		35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPAttributionResult+MParticlePrivate.swift"; sourceTree = "<group>"; };
+		35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MPAttributionResult+MParticlePrivate.h"; sourceTree = "<group>"; };
 		530D247E2CFF70A5000FE7E3 /* MPUserIdentityInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserIdentityInstance.swift; sourceTree = "<group>"; };
 		530D24812CFF72D4000FE7E3 /* MPConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPConstants.swift; sourceTree = "<group>"; };
 		530D24842CFF78E7000FE7E3 /* MPUserIdentityChange.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserIdentityChange.swift; sourceTree = "<group>"; };
@@ -860,6 +869,8 @@
 			children = (
 				53A79C2229CDFB4800E7489F /* Include */,
 				53A79B3629CDFB1F00E7489F /* mParticle.m */,
+				35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */,
+				35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */,
 				7E0387802DB913D2003B7D5E /* MPRokt.m */,
 				53A79AF429CDFB1F00E7489F /* MPBackendController.m */,
 				53A79AD029CDFB1F00E7489F /* MPEnums.m */,
@@ -1187,6 +1198,7 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivate.swift */,
 				53A79C8729CE019F00E7489F /* Libraries */,
 				53A79C9729CE019F00E7489F /* JSON */,
 				53A79CB429CE019F00E7489F /* Info.plist */,
@@ -1354,6 +1366,7 @@
 				53A79B8A29CDFB2000E7489F /* MPUpload.h in Headers */,
 				53A79B9829CDFB2000E7489F /* MPConsumerInfo.h in Headers */,
 				53A79C0629CDFB2100E7489F /* MPILogger.h in Headers */,
+				35E3FCC72E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */,
 				53A79B8529CDFB2000E7489F /* MPDatabaseMigrationController.h in Headers */,
 				53A79B8729CDFB2000E7489F /* MParticleUserNotification.h in Headers */,
 				53A79C1029CDFB2100E7489F /* MPForwardQueueItem.h in Headers */,
@@ -1445,6 +1458,7 @@
 				53A79D3F29CE23F700E7489F /* MPConsumerInfo.h in Headers */,
 				53A79D4029CE23F700E7489F /* MPILogger.h in Headers */,
 				53A79D4129CE23F700E7489F /* MPDatabaseMigrationController.h in Headers */,
+				35E3FCC62E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h in Headers */,
 				53A79D4329CE23F700E7489F /* MParticleUserNotification.h in Headers */,
 				53A79D4529CE23F700E7489F /* MPForwardQueueItem.h in Headers */,
 				53A79D4729CE23F700E7489F /* MPAttributeProjection.h in Headers */,
@@ -1667,6 +1681,7 @@
 				534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */,
 				534CD28129CE2CE1008452B3 /* MPConsentStateTests.m in Sources */,
 				534CD28229CE2CE1008452B3 /* HasherTests.m in Sources */,
+				35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivate.swift in Sources */,
 				534CD28329CE2CE1008452B3 /* MParticleWebViewTests.m in Sources */,
 				534CD28429CE2CE1008452B3 /* MPCustomModuleTests.m in Sources */,
 				534CD28529CE2CE1008452B3 /* MPNetworkOptionsTests.m in Sources */,
@@ -1780,6 +1795,7 @@
 				53A79C0829CDFB2100E7489F /* MPEvent.m in Sources */,
 				53A79B6729CDFB2000E7489F /* MPAliasResponse.m in Sources */,
 				7E0387842DB913D2003B7D5E /* MPRokt.m in Sources */,
+				35E3FCC12E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */,
 				534C11B72D08F53D00466F71 /* MPUserAttributeChange.swift in Sources */,
 				D342860F2D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */,
 				53A79C1229CDFB2100E7489F /* MPKitFilter.m in Sources */,
@@ -1842,6 +1858,7 @@
 				53A79CEE29CE019F00E7489F /* NSNumber+MPFormatterTests.m in Sources */,
 				53A79CD929CE019F00E7489F /* MPResponseEventsTest.m in Sources */,
 				53A79CC729CE019F00E7489F /* MPConsentStateTests.m in Sources */,
+				35E3FCC42E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivate.swift in Sources */,
 				53A79CF929CE019F00E7489F /* HasherTests.m in Sources */,
 				53A79CB929CE019F00E7489F /* MParticleWebViewTests.m in Sources */,
 				53A79CED29CE019F00E7489F /* MPCustomModuleTests.m in Sources */,
@@ -1955,6 +1972,7 @@
 				53A79DAA29CE23F700E7489F /* MPNotificationController.m in Sources */,
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
 				7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */,
+				35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */,
 				534C11B62D08F53D00466F71 /* MPUserAttributeChange.swift in Sources */,
 				D34286102D419CB800FEC2C8 /* MPUploadSettings.swift in Sources */,
 				53A79DAD29CE23F700E7489F /* MPAliasResponse.m in Sources */,
