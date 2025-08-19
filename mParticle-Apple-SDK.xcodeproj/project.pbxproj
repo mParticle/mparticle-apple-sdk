@@ -73,7 +73,6 @@
 		534CD27B29CE2CE1008452B3 /* MPZipTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CA829CE019F00E7489F /* MPZipTests.m */; };
 		534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8029CE019E00E7489F /* MPIntegrationAttributesTest.m */; };
 		534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6E29CE019E00E7489F /* MPDataModelTests.m */; };
-		534CD27E29CE2CE1008452B3 /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8329CE019E00E7489F /* MParticleOptionsTests.m */; };
 		534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAB29CE019F00E7489F /* NSNumber+MPFormatterTests.m */; };
 		534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8F29CE019F00E7489F /* MPResponseEventsTest.m */; };
 		534CD28129CE2CE1008452B3 /* MPConsentStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7929CE019E00E7489F /* MPConsentStateTests.m */; };
@@ -284,7 +283,6 @@
 		53A79CCC29CE019F00E7489F /* MPIntegrationAttributesTest.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8029CE019E00E7489F /* MPIntegrationAttributesTest.m */; };
 		53A79CCD29CE019F00E7489F /* MPUploadBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8129CE019E00E7489F /* MPUploadBuilderTests.m */; };
 		53A79CCE29CE019F00E7489F /* MPKitActivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8229CE019E00E7489F /* MPKitActivityTests.m */; };
-		53A79CCF29CE019F00E7489F /* MParticleOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8329CE019E00E7489F /* MParticleOptionsTests.m */; };
 		53A79CD029CE019F00E7489F /* MPConnectorTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8429CE019E00E7489F /* MPConnectorTests.m */; };
 		53A79CD129CE019F00E7489F /* MPSurrogateAppDelegateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8529CE019F00E7489F /* MPSurrogateAppDelegateTests.m */; };
 		53A79CD229CE019F00E7489F /* MPBackendControllerTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8629CE019F00E7489F /* MPBackendControllerTests.m */; };
@@ -743,7 +741,6 @@
 		53A79C8029CE019E00E7489F /* MPIntegrationAttributesTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPIntegrationAttributesTest.m; sourceTree = "<group>"; };
 		53A79C8129CE019E00E7489F /* MPUploadBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPUploadBuilderTests.m; sourceTree = "<group>"; };
 		53A79C8229CE019E00E7489F /* MPKitActivityTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitActivityTests.m; sourceTree = "<group>"; };
-		53A79C8329CE019E00E7489F /* MParticleOptionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MParticleOptionsTests.m; sourceTree = "<group>"; };
 		53A79C8429CE019E00E7489F /* MPConnectorTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConnectorTests.m; sourceTree = "<group>"; };
 		53A79C8529CE019F00E7489F /* MPSurrogateAppDelegateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPSurrogateAppDelegateTests.m; sourceTree = "<group>"; };
 		53A79C8629CE019F00E7489F /* MPBackendControllerTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPBackendControllerTests.m; sourceTree = "<group>"; };
@@ -1259,7 +1256,6 @@
 				53A79C8029CE019E00E7489F /* MPIntegrationAttributesTest.m */,
 				53A79C8129CE019E00E7489F /* MPUploadBuilderTests.m */,
 				53A79C8229CE019E00E7489F /* MPKitActivityTests.m */,
-				53A79C8329CE019E00E7489F /* MParticleOptionsTests.m */,
 				53A79C8429CE019E00E7489F /* MPConnectorTests.m */,
 				53A79C8529CE019F00E7489F /* MPSurrogateAppDelegateTests.m */,
 				53A79C8629CE019F00E7489F /* MPBackendControllerTests.m */,
@@ -1709,7 +1705,6 @@
 				53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
-				534CD27E29CE2CE1008452B3 /* MParticleOptionsTests.m in Sources */,
 				534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */,
 				534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */,
 				534CD28129CE2CE1008452B3 /* MPConsentStateTests.m in Sources */,
@@ -1892,7 +1887,6 @@
 				53A79CEC29CE019F00E7489F /* MPZipTests.m in Sources */,
 				53A79CCC29CE019F00E7489F /* MPIntegrationAttributesTest.m in Sources */,
 				53A79CBD29CE019F00E7489F /* MPDataModelTests.m in Sources */,
-				53A79CCF29CE019F00E7489F /* MParticleOptionsTests.m in Sources */,
 				53A79CEE29CE019F00E7489F /* NSNumber+MPFormatterTests.m in Sources */,
 				53A79CD929CE019F00E7489F /* MPResponseEventsTest.m in Sources */,
 				35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */,
