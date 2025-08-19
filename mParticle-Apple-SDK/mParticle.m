@@ -15,6 +15,7 @@
 #import "MPUpload.h"
 #import "MPKitContainer.h"
 #import "MParticleSwift.h"
+#import "MParticleSession+MParticlePrivate.h"
 
 static dispatch_queue_t messageQueue = nil;
 static void *messageQueueKey = "mparticle message queue key";
@@ -65,37 +66,6 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) NSArray<NSNumber *> *disabledKits;
-
-@end
-
-
-
-@interface MParticleSession ()
-
-- (instancetype)initWithUUID:(NSString *)uuid;
-@property (nonatomic, readwrite) NSNumber *sessionID;
-@property (nonatomic, readwrite) NSString *UUID;
-@property (nonatomic, readwrite) NSNumber *startTime;
-
-@end
-
-@implementation MParticleSession
-
-- (instancetype)initWithUUID:(NSString *)uuid {
-    self = [super init];
-    if (self) {
-        NSNumber *sessionID = [self sessionIDFromUUID:uuid];
-        self.sessionID = sessionID;
-        self.UUID = uuid;
-    }
-    return self;
-}
-
-- (NSNumber *)sessionIDFromUUID:(NSString *)uuid {
-    NSNumber *sessionID = nil;
-    sessionID = @([MPIHasher hashStringUTF16:uuid].integerValue);
-    return sessionID;
-}
 
 @end
 
