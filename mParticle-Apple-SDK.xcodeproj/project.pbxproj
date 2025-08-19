@@ -74,7 +74,6 @@
 		534CD28229CE2CE1008452B3 /* HasherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CB729CE019F00E7489F /* HasherTests.m */; };
 		534CD28329CE2CE1008452B3 /* MParticleWebViewTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6929CE019E00E7489F /* MParticleWebViewTests.m */; };
 		534CD28429CE2CE1008452B3 /* MPCustomModuleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAA29CE019F00E7489F /* MPCustomModuleTests.m */; };
-		534CD28529CE2CE1008452B3 /* MPNetworkOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7829CE019E00E7489F /* MPNetworkOptionsTests.m */; };
 		534CD28629CE2CE1008452B3 /* MPKitActivityTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C8229CE019E00E7489F /* MPKitActivityTests.m */; };
 		534CD28729CE2CE1008452B3 /* MPKitTestClassSideloaded.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C6B29CE019E00E7489F /* MPKitTestClassSideloaded.m */; };
 		534CD28829CE2CE1008452B3 /* MPDeviceTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79CAC29CE019F00E7489F /* MPDeviceTests.m */; };
@@ -272,7 +271,6 @@
 		53A79CC329CE019F00E7489F /* MPKitTestClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7529CE019E00E7489F /* MPKitTestClass.m */; };
 		53A79CC429CE019F00E7489F /* MPMessageBuilderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7629CE019E00E7489F /* MPMessageBuilderTests.m */; };
 		53A79CC529CE019F00E7489F /* MPKitSecondTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7729CE019E00E7489F /* MPKitSecondTestClassNoStartImmediately.m */; };
-		53A79CC629CE019F00E7489F /* MPNetworkOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7829CE019E00E7489F /* MPNetworkOptionsTests.m */; };
 		53A79CC729CE019F00E7489F /* MPConsentStateTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7929CE019E00E7489F /* MPConsentStateTests.m */; };
 		53A79CC929CE019F00E7489F /* MPEventTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7B29CE019E00E7489F /* MPEventTests.m */; };
 		53A79CCA29CE019F00E7489F /* MPKitTestClassNoStartImmediately.m in Sources */ = {isa = PBXBuildFile; fileRef = 53A79C7D29CE019E00E7489F /* MPKitTestClassNoStartImmediately.m */; };
@@ -727,7 +725,6 @@
 		53A79C7529CE019E00E7489F /* MPKitTestClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitTestClass.m; sourceTree = "<group>"; };
 		53A79C7629CE019E00E7489F /* MPMessageBuilderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPMessageBuilderTests.m; sourceTree = "<group>"; };
 		53A79C7729CE019E00E7489F /* MPKitSecondTestClassNoStartImmediately.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPKitSecondTestClassNoStartImmediately.m; sourceTree = "<group>"; };
-		53A79C7829CE019E00E7489F /* MPNetworkOptionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPNetworkOptionsTests.m; sourceTree = "<group>"; };
 		53A79C7929CE019E00E7489F /* MPConsentStateTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPConsentStateTests.m; sourceTree = "<group>"; };
 		53A79C7B29CE019E00E7489F /* MPEventTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MPEventTests.m; sourceTree = "<group>"; };
 		53A79C7C29CE019E00E7489F /* MPBaseTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MPBaseTestCase.h; sourceTree = "<group>"; };
@@ -1241,7 +1238,6 @@
 				53A79C7529CE019E00E7489F /* MPKitTestClass.m */,
 				53A79C7629CE019E00E7489F /* MPMessageBuilderTests.m */,
 				53A79C7729CE019E00E7489F /* MPKitSecondTestClassNoStartImmediately.m */,
-				53A79C7829CE019E00E7489F /* MPNetworkOptionsTests.m */,
 				53A79C7929CE019E00E7489F /* MPConsentStateTests.m */,
 				53A79C7B29CE019E00E7489F /* MPEventTests.m */,
 				53A79C7C29CE019E00E7489F /* MPBaseTestCase.h */,
@@ -1707,7 +1703,6 @@
 				35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift in Sources */,
 				534CD28329CE2CE1008452B3 /* MParticleWebViewTests.m in Sources */,
 				534CD28429CE2CE1008452B3 /* MPCustomModuleTests.m in Sources */,
-				534CD28529CE2CE1008452B3 /* MPNetworkOptionsTests.m in Sources */,
 				534CD28629CE2CE1008452B3 /* MPKitActivityTests.m in Sources */,
 				534CD28729CE2CE1008452B3 /* MPKitTestClassSideloaded.m in Sources */,
 				534CD28829CE2CE1008452B3 /* MPDeviceTests.m in Sources */,
@@ -1889,7 +1884,6 @@
 				53A79CF929CE019F00E7489F /* HasherTests.m in Sources */,
 				53A79CB929CE019F00E7489F /* MParticleWebViewTests.m in Sources */,
 				53A79CED29CE019F00E7489F /* MPCustomModuleTests.m in Sources */,
-				53A79CC629CE019F00E7489F /* MPNetworkOptionsTests.m in Sources */,
 				53A79CCE29CE019F00E7489F /* MPKitActivityTests.m in Sources */,
 				53A79CBA29CE019F00E7489F /* MPKitTestClassSideloaded.m in Sources */,
 				53A79CEF29CE019F00E7489F /* MPDeviceTests.m in Sources */,
