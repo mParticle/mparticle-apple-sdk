@@ -3,3 +3,4 @@
 //
 #import "MPAttributionResult+MParticlePrivate.h"
 #import "MParticleSession+MParticlePrivate.h"
+#import "MParticleOptions+MParticlePrivate.h"
