@@ -258,6 +258,14 @@ static NSString *const kMPStateKey = @"state";
     return [MParticle sharedInstance].stateMachine.optOut;
 }
 
+- (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Set Opt Out: %d", optOut);
+    } else {
+        MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
+    }
+}
+
 - (void)setOptOut:(BOOL)optOut {
     if (self.stateMachine.optOut == optOut) {
         return;
@@ -277,13 +285,10 @@ static NSString *const kMPStateKey = @"state";
                                                    userInfo:@{kMPStateKey:@(optOut)}
      ];
     
+    __weak typeof(self) weakSelf = self;
     [self.backendController setOptOut:optOut
                     completionHandler:^(BOOL optOut, MPExecStatus execStatus) {
-                        if (execStatus == MPExecStatusSuccess) {
-                            MPILogDebug(@"Set Opt Out: %d", optOut);
-                        } else {
-                            MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
-                        }
+                        [weakSelf setOptOutCompletion:execStatus optOut:optOut];
                     }];
 }
 
