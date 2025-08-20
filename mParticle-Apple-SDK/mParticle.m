@@ -344,6 +344,31 @@ static NSString *const kMPStateKey = @"state";
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:instance];
 }
 
+- (void)identifyNoDispatchCallback:(MPIdentityApiResult * _Nullable)apiResult
+                             error:(NSError * _Nullable)error
+                           options:(MParticleOptions * _Nonnull)options {
+    if (error) {
+        MPILogError(@"Identify request failed with error: %@", error);
+    }
+    
+    NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
+    
+    if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:deferredKitConfiguration];
+            self.deferredKitConfiguration_PRIVATE = nil;
+        });
+        
+    }
+    
+    if (options.onIdentifyComplete) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            options.onIdentifyComplete(apiResult, error);
+        });
+    }
+}
+
 - (void)startWithOptions:(MParticleOptions *)options {
     if (sdkInitialized) {
         return;
@@ -457,26 +482,9 @@ static NSString *const kMPStateKey = @"state";
                            }
                            
                            [strongSelf.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                               if (error) {
-                                   MPILogError(@"Identify request failed with error: %@", error);
-                               }
-                               
-                               NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
-                               
-                               if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
-                                   
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:deferredKitConfiguration];
-                                       weakSelf.deferredKitConfiguration_PRIVATE = nil;
-                                   });
-                                   
-                               }
-                               
-                               if (options.onIdentifyComplete) {
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       options.onIdentifyComplete(apiResult, error);
-                                   });
-                               }
+                               [self identifyNoDispatchCallback:apiResult
+                                                          error:error
+                                                        options:options];
                            }];
                            
                            if (firstRun) {
