@@ -7,7 +7,7 @@ import mParticle_Apple_SDK
 
 class MParticleTestsSwift: XCTestCase {
     var receivedMessage: String?
-    var sut: MParticle!
+    var mparticle: MParticle!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -16,9 +16,9 @@ class MParticleTestsSwift: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        sut = MParticle.sharedInstance()
-        sut.logLevel = .verbose
-        sut.customLogger = customLogger
+        mparticle = MParticle.sharedInstance()
+        mparticle.logLevel = .verbose
+        mparticle.customLogger = customLogger
     }
     
     override func tearDown() {
@@ -26,18 +26,18 @@ class MParticleTestsSwift: XCTestCase {
         receivedMessage = nil
     }
     
-    func testSetOptOutCompletion_success() {
-        sut.setOptOutCompletion(.success, optOut: true)
+    func testSetOptOutCompletionSuccess() {
+        mparticle.setOptOutCompletion(.success, optOut: true)
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out: 1")
     }
     
-    func testSetOptOutCompletion_falure() {
-        sut.setOptOutCompletion(.fail, optOut: true)
+    func testSetOptOutCompletionFailure() {
+        mparticle.setOptOutCompletion(.fail, optOut: true)
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out Failed: 1")
     }
     
-    func testIdentifyNoDispatchCallback_noError_defferedKitAvailable() {
-        sut.deferredKitConfiguration_PRIVATE = [[String: String]]();
+    func testIdentifyNoDispatchCallbackNoErrorDefferedKitAvailable() {
+        mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]();
         let expectedApiResult = MPIdentityApiResult()
         let options = MParticleOptions()
         let expectation = XCTestExpectation()
@@ -47,15 +47,15 @@ class MParticleTestsSwift: XCTestCase {
             
             expectation.fulfill()
         }
-        sut.identifyNoDispatchCallback(expectedApiResult, error: nil, options: options)
+        mparticle.identifyNoDispatchCallback(expectedApiResult, error: nil, options: options)
         
         wait(for: [expectation], timeout: 0.1)
         XCTAssertNil(receivedMessage)
-        XCTAssertNil(sut.deferredKitConfiguration_PRIVATE)
+        XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
     
-    func testIdentifyNoDispatchCallback_withError_defferedKitAvailable() {
-        sut.deferredKitConfiguration_PRIVATE = [[String: String]]();
+    func testIdentifyNoDispatchCallbackWithErrorDefferedKitAvailable() {
+        mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]();
         let expectedApiResult = MPIdentityApiResult()
         let expectedError = NSError(domain: "", code: 0)
         let options = MParticleOptions()
@@ -66,20 +66,20 @@ class MParticleTestsSwift: XCTestCase {
             
             expectation.fulfill()
         }
-        sut.identifyNoDispatchCallback(expectedApiResult, error: expectedError, options: options)
+        mparticle.identifyNoDispatchCallback(expectedApiResult, error: expectedError, options: options)
         
         wait(for: [expectation], timeout: 0.1)
         XCTAssertEqual(receivedMessage, "mParticle -> Identify request failed with error: Error Domain= Code=0 \"(null)\"")
-        XCTAssertNil(sut.deferredKitConfiguration_PRIVATE)
+        XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
     
-    func testConfigure_defaultConfigurationExist_optionParametersAreNotSet() {
+    func testConfigureDefaultConfigurationExistOptionParametersAreNotSet() {
         let options = MParticleOptions()
-        sut.configure(with: options)
-        XCTAssertEqual(sut.backendController.sessionTimeout, 0.0)
-        XCTAssertEqual(sut.backendController.uploadInterval, 0.0)
-        XCTAssertEqual(sut.customUserAgent, nil)
-        XCTAssertEqual(sut.collectUserAgent, true)
-        XCTAssertEqual(sut.trackNotifications, true)
+        mparticle.configure(with: options)
+        XCTAssertEqual(mparticle.backendController.sessionTimeout, 0.0)
+        XCTAssertEqual(mparticle.backendController.uploadInterval, 0.0)
+        XCTAssertEqual(mparticle.customUserAgent, nil)
+        XCTAssertEqual(mparticle.collectUserAgent, true)
+        XCTAssertEqual(mparticle.trackNotifications, true)
     }
 }
