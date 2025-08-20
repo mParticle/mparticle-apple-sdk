@@ -72,4 +72,14 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(receivedMessage, "mParticle -> Identify request failed with error: Error Domain= Code=0 \"(null)\"")
         XCTAssertNil(sut.deferredKitConfiguration_PRIVATE)
     }
+    
+    func testConfigure_defaultConfigurationExist_optionParametersAreNotSet() {
+        let options = MParticleOptions()
+        sut.configure(with: options)
+        XCTAssertEqual(sut.backendController.sessionTimeout, 0.0)
+        XCTAssertEqual(sut.backendController.uploadInterval, 0.0)
+        XCTAssertEqual(sut.customUserAgent, nil)
+        XCTAssertEqual(sut.collectUserAgent, true)
+        XCTAssertEqual(sut.trackNotifications, true)
+    }
 }
