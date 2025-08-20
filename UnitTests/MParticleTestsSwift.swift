@@ -21,6 +21,11 @@ class MParticleTestsSwift: XCTestCase {
         sut.customLogger = customLogger
     }
     
+    override func tearDown() {
+        super.tearDown()
+        receivedMessage = nil
+    }
+    
     func testSetOptOutCompletion_success() {
         sut.setOptOutCompletion(.success, optOut: true)
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out: 1")
@@ -29,5 +34,42 @@ class MParticleTestsSwift: XCTestCase {
     func testSetOptOutCompletion_falure() {
         sut.setOptOutCompletion(.fail, optOut: true)
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out Failed: 1")
+    }
+    
+    func testIdentifyNoDispatchCallback_noError_defferedKitAvailable() {
+        sut.deferredKitConfiguration_PRIVATE = [[String: String]]();
+        let expectedApiResult = MPIdentityApiResult()
+        let options = MParticleOptions()
+        let expectation = XCTestExpectation()
+        options.onIdentifyComplete = { apiResult, error in
+            XCTAssertTrue(expectedApiResult === apiResult)
+            XCTAssertNil(error)
+            
+            expectation.fulfill()
+        }
+        sut.identifyNoDispatchCallback(expectedApiResult, error: nil, options: options)
+        
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertNil(receivedMessage)
+        XCTAssertNil(sut.deferredKitConfiguration_PRIVATE)
+    }
+    
+    func testIdentifyNoDispatchCallback_withError_defferedKitAvailable() {
+        sut.deferredKitConfiguration_PRIVATE = [[String: String]]();
+        let expectedApiResult = MPIdentityApiResult()
+        let expectedError = NSError(domain: "", code: 0)
+        let options = MParticleOptions()
+        let expectation = XCTestExpectation()
+        options.onIdentifyComplete = { apiResult, error in
+            XCTAssertTrue(expectedApiResult === apiResult)
+            XCTAssertTrue(expectedError == expectedError)
+            
+            expectation.fulfill()
+        }
+        sut.identifyNoDispatchCallback(expectedApiResult, error: expectedError, options: options)
+        
+        wait(for: [expectation], timeout: 0.1)
+        XCTAssertEqual(receivedMessage, "mParticle -> Identify request failed with error: Error Domain= Code=0 \"(null)\"")
+        XCTAssertNil(sut.deferredKitConfiguration_PRIVATE)
     }
 }

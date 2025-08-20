@@ -354,12 +354,10 @@ static NSString *const kMPStateKey = @"state";
     NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
     
     if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
-        
         dispatch_async(dispatch_get_main_queue(), ^{
             [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:deferredKitConfiguration];
             self.deferredKitConfiguration_PRIVATE = nil;
         });
-        
     }
     
     if (options.onIdentifyComplete) {
@@ -482,9 +480,7 @@ static NSString *const kMPStateKey = @"state";
                            }
                            
                            [strongSelf.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                               [self identifyNoDispatchCallback:apiResult
-                                                          error:error
-                                                        options:options];
+                               [self identifyNoDispatchCallback:apiResult error:error options:options];
                            }];
                            
                            if (firstRun) {
