@@ -367,6 +367,39 @@ static NSString *const kMPStateKey = @"state";
     }
 }
 
+- (void)configureWithOptions:(MParticleOptions * _Nonnull)options {
+    if (self.configSettings) {
+        if (self.configSettings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
+            self.backendController.sessionTimeout = [self.configSettings[kMPConfigSessionTimeout] doubleValue];
+        }
+        
+        if (self.configSettings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
+            self.backendController.uploadInterval = [self.configSettings[kMPConfigUploadInterval] doubleValue];
+        }
+        
+        if (self.configSettings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
+            self->_customUserAgent = self.configSettings[kMPConfigCustomUserAgent];
+        }
+        
+        if (self.configSettings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
+            self->_collectUserAgent = [self.configSettings[kMPConfigCollectUserAgent] boolValue];
+        }
+        
+        if (self.configSettings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
+            self->_trackNotifications = [self.configSettings[kMPConfigTrackNotifications] boolValue];
+        }
+#if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
+        if ([self.configSettings[kMPConfigLocationTracking] boolValue]) {
+            CLLocationAccuracy accuracy = [self.configSettings[kMPConfigLocationAccuracy] doubleValue];
+            CLLocationDistance distanceFilter = [self.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
+            [self beginLocationTracking:accuracy minDistance:distanceFilter];
+        }
+#endif
+#endif
+    }
+}
+
 - (void)startWithOptions:(MParticleOptions *)options {
     if (sdkInitialized) {
         return;
@@ -490,36 +523,7 @@ static NSString *const kMPStateKey = @"state";
                            
                            strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
                            
-                           if (strongSelf.configSettings) {
-                               if (strongSelf.configSettings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
-                                   strongSelf.backendController.sessionTimeout = [strongSelf.configSettings[kMPConfigSessionTimeout] doubleValue];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
-                                   strongSelf.backendController.uploadInterval = [strongSelf.configSettings[kMPConfigUploadInterval] doubleValue];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
-                                   self->_customUserAgent = strongSelf.configSettings[kMPConfigCustomUserAgent];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
-                                   self->_collectUserAgent = [strongSelf.configSettings[kMPConfigCollectUserAgent] boolValue];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
-                                   self->_trackNotifications = [strongSelf.configSettings[kMPConfigTrackNotifications] boolValue];
-                               }
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-                               if ([strongSelf.configSettings[kMPConfigLocationTracking] boolValue]) {
-                                   CLLocationAccuracy accuracy = [strongSelf.configSettings[kMPConfigLocationAccuracy] doubleValue];
-                                   CLLocationDistance distanceFilter = [strongSelf.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
-                                   [strongSelf beginLocationTracking:accuracy minDistance:distanceFilter];
-                               }
-#endif
-#endif
-                           }
+                           [strongSelf configureWithOptions:options];
                            
                            strongSelf.initialized = YES;
                            strongSelf.configSettings = nil;
