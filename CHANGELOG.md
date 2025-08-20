@@ -1,3 +1,11 @@
+# [8.38.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.1...v8.38.0) (2025-08-20)
+
+
+### Features
+
+* Decouple MParticle.m for Swift Migration ([#393](https://github.com/mParticle/mparticle-apple-sdk/issues/393)) ([23f5434](https://github.com/mParticle/mparticle-apple-sdk/commit/23f543485132ee4c280d18060a9688629f458b59))
+* Map Selected Identity to Emailsha256 ([#391](https://github.com/mParticle/mparticle-apple-sdk/issues/391)) ([a14544b](https://github.com/mParticle/mparticle-apple-sdk/commit/a14544b0a711b0fb4df9d76a0cdc914b1a63c265))
+
 ## [8.37.1](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.0...v8.37.1) (2025-08-08)
 
 
