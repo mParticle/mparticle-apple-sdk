@@ -10,6 +10,7 @@
 
 @interface MPRokt ()
 - (NSArray<NSDictionary<NSString *, NSString *> *> *)getRoktPlacementAttributesMapping;
+- (NSNumber *)getRoktHashedEmailUserIdentityType;
 - (void)confirmUser:(NSDictionary<NSString *, NSString *> *)attributes user:(MParticleUser * _Nullable)user completion:(void (^)(MParticleUser *_Nullable))completion;
 @end
 
@@ -398,16 +399,56 @@
 }
 
 - (void)testTriggeredIdentifyWithMismatchedOtherIdentity {
+    [self hashedIdentityTest: MPIdentityOther];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther2Identity {
+    [self hashedIdentityTest: MPIdentityOther2];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther3Identity {
+    [self hashedIdentityTest: MPIdentityOther3];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther4Identity {
+    [self hashedIdentityTest: MPIdentityOther4];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther5Identity {
+    [self hashedIdentityTest: MPIdentityOther5];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther6Identity {
+    [self hashedIdentityTest: MPIdentityOther6];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther7Identity {
+    [self hashedIdentityTest: MPIdentityOther7];
+}
+- (void)testTriggeredIdentifyWithMismatchedOther8Identity {
+    [self hashedIdentityTest: MPIdentityOther8];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther9Identity {
+    [self hashedIdentityTest: MPIdentityOther9];
+}
+
+- (void)testTriggeredIdentifyWithMismatchedOther10Identity {
+    [self hashedIdentityTest: MPIdentityOther10];
+}
+
+- (void)hashedIdentityTest: (MPIdentity)mpIdentity {
     MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
 
     MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
     
-    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPUserIdentityOther], @"i" : @"test@yahoo.com"}];
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:mpIdentity], @"i" : @"test@yahoo.com"}];
     
     [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
-    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
+    XCTAssertEqualObjects(currentUser.identities[@(mpIdentity)], @"test@yahoo.com");
     
     //Mock Identity as needed
+    [[[self.mockRokt stub] andReturn:@(mpIdentity)] getRoktHashedEmailUserIdentityType];
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
     self.identityMock = OCMClassMock([MPIdentityApi class]);
@@ -416,7 +457,7 @@
     [[[self.identityMock stub] andReturn:currentUser] currentUser];
     
     [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
-        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityOther)], @"test@gmail.com");
+        XCTAssertEqualObjects([request.identities objectForKey:@(mpIdentity)], @"test@gmail.com");
         return true;
     }] completion:OCMOCK_ANY];
     
