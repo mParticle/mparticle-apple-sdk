@@ -391,6 +391,41 @@ static NSString *const kMPStateKey = @"state";
     }
 }
 
+- (void)startWithKeyCallback:(BOOL)firstRun
+                     options:(MParticleOptions * _Nonnull)options
+                userDefaults:(id<MPUserDefaultsProtocol>)userDefaults {
+
+    MPIdentityApiRequest *identifyRequest = nil;
+    if (options.identifyRequest) {
+        identifyRequest = options.identifyRequest;
+    } else {
+        MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+        identifyRequest = [MPIdentityApiRequest requestWithUser:user];
+    }
+    
+    [self.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+        [self identifyNoDispatchCallback:apiResult error:error options:options];
+    }];
+    
+    if (firstRun) {
+        [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
+        [userDefaults synchronize];
+    }
+    
+    self->_optOut = [MParticle sharedInstance].stateMachine.optOut;
+    
+    [self configureWithOptions:options];
+    
+    self.initialized = YES;
+    self.settingsProvider.configSettings = nil;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
+                                                            object:self
+                                                          userInfo:nil];
+    });
+}
+
 - (void)startWithOptions:(MParticleOptions *)options {
     if (sdkInitialized) {
         return;
@@ -488,42 +523,7 @@ static NSString *const kMPStateKey = @"state";
                           startKitsAsync:startKitsAsync
                             consentState:consentState
                        completionHandler:^{
-                           __strong MParticle *strongSelf = weakSelf;
-                           
-                           if (!strongSelf) {
-                               return;
-                           }
-                           
-                           MPIdentityApiRequest *identifyRequest = nil;
-                           if (options.identifyRequest) {
-                               identifyRequest = options.identifyRequest;
-                           }
-                           else {
-                               MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
-                               identifyRequest = [MPIdentityApiRequest requestWithUser:user];
-                           }
-                           
-                           [strongSelf.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                               [self identifyNoDispatchCallback:apiResult error:error options:options];
-                           }];
-                           
-                           if (firstRun) {
-                               [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
-                               [userDefaults synchronize];
-                           }
-                           
-                           strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
-                           
-                           [strongSelf configureWithOptions:options];
-                           
-                           strongSelf.initialized = YES;
-                           strongSelf.settingsProvider.configSettings = nil;
-                           
-                           dispatch_async(dispatch_get_main_queue(), ^{
-                               [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
-                                                                                   object:self
-                                                                                 userInfo:nil];
-                           });
+                           [weakSelf startWithKeyCallback:firstRun options:options userDefaults:userDefaults];
                        }];
 }
 

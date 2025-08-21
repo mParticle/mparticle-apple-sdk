@@ -108,4 +108,36 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(mparticle.collectUserAgent, false)
         XCTAssertEqual(mparticle.trackNotifications, false)
     }
+    
+    func testStartWithKeyCallbackFirstRun() {
+        let options = MParticleOptions()
+        let userDefaults = MPUserDefaultsMock()
+        XCTAssertFalse(mparticle.initialized)
+        
+        mparticle.start(withKeyCallback: true, options: options, userDefaults: userDefaults)
+        
+        XCTAssertTrue(mparticle.initialized)
+        XCTAssertNil(mparticle.settingsProvider.configSettings)
+        
+        XCTAssertNotNil(userDefaults.setMPObjectValueParam)
+        XCTAssertEqual(userDefaults.setMPObjectKeyParam, "firstrun")
+        XCTAssertEqual(userDefaults.setMPObjectUserIdParam, 0)
+        XCTAssertTrue(userDefaults.synchronizeCalled)
+    }
+    
+    func testStartWithKeyCallbackNotFirstRunWithIdentityRequest() {
+        let options = MParticleOptions()
+        let user = mparticle.identity.currentUser
+        options.identifyRequest = MPIdentityApiRequest(user: user!)
+
+        let userDefaults = MPUserDefaultsMock()
+        
+        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults)
+        
+        XCTAssertTrue(mparticle.initialized)
+        XCTAssertNil(mparticle.settingsProvider.configSettings)
+
+        XCTAssertFalse(userDefaults.setMPObjectCalled)
+        XCTAssertFalse(userDefaults.synchronizeCalled)
+    }
 }

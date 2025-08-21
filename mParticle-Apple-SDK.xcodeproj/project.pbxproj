@@ -27,6 +27,8 @@
 		359BB0002E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0032E57769E00A8A704 /* SettingsProviderMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0022E57769E00A8A704 /* SettingsProviderMock.m */; };
 		359BB0042E57769E00A8A704 /* SettingsProviderMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0022E57769E00A8A704 /* SettingsProviderMock.m */; };
+		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
+		359BB0072E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
 		35E3FCC12E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
 		35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */; };
@@ -567,6 +569,7 @@
 		359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderTests.swift; sourceTree = "<group>"; };
 		359BB0012E57769600A8A704 /* SettingsProviderMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProviderMock.h; sourceTree = "<group>"; };
 		359BB0022E57769E00A8A704 /* SettingsProviderMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProviderMock.m; sourceTree = "<group>"; };
+		359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaultsMock.swift; sourceTree = "<group>"; };
 		35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPAttributionResult+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPAttributionResult+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MPAttributionResult+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -1240,6 +1243,7 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
 				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */,
 				359BB0022E57769E00A8A704 /* SettingsProviderMock.m */,
@@ -1761,6 +1765,7 @@
 				534CD29429CE2CE1008452B3 /* MPKitContainerTests.m in Sources */,
 				534CD29529CE2CE1008452B3 /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				534CD29629CE2CE1008452B3 /* MPConsumerInfoTests.m in Sources */,
+				359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				534CD29729CE2CE1008452B3 /* MPURLRequestBuilderTests.m in Sources */,
 				534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */,
@@ -1946,6 +1951,7 @@
 				53A79CD529CE019F00E7489F /* MPKitContainerTests.m in Sources */,
 				53A79CBC29CE019F00E7489F /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				53A79CEA29CE019F00E7489F /* MPConsumerInfoTests.m in Sources */,
+				359BB0072E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7E15B2072D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				53A79CDD29CE019F00E7489F /* MPURLRequestBuilderTests.m in Sources */,
 				53A79CDE29CE019F00E7489F /* MPForwardQueueItemTests.m in Sources */,

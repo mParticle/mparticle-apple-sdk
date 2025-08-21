@@ -26,7 +26,13 @@ private let kMPUserIdentitySharedGroupIdentifier = "sgi"
 private let kMResponseConfigurationKey = "responseConfiguration"
 private let kMResponseConfigurationMigrationKey = "responseConfigurationMigrated"
 
-@objc public class MPUserDefaults : NSObject {
+@objc
+public protocol MPUserDefaultsProtocol {
+    func setMPObject(_ value: Any?, forKey key: String, userId: NSNumber)
+    func synchronize()
+}
+
+@objc public class MPUserDefaults : NSObject, MPUserDefaultsProtocol {
     private var stateMachine: MPStateMachine_PRIVATE?
     private var backendController: MPBackendController_PRIVATE?
     private var identity: MPIdentityApi?
