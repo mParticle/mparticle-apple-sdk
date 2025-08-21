@@ -258,6 +258,14 @@ static NSString *const kMPStateKey = @"state";
     return [MParticle sharedInstance].stateMachine.optOut;
 }
 
+- (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Set Opt Out: %d", optOut);
+    } else {
+        MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
+    }
+}
+
 - (void)setOptOut:(BOOL)optOut {
     if (self.stateMachine.optOut == optOut) {
         return;
@@ -277,13 +285,10 @@ static NSString *const kMPStateKey = @"state";
                                                    userInfo:@{kMPStateKey:@(optOut)}
      ];
     
+    __weak typeof(self) weakSelf = self;
     [self.backendController setOptOut:optOut
                     completionHandler:^(BOOL optOut, MPExecStatus execStatus) {
-                        if (execStatus == MPExecStatusSuccess) {
-                            MPILogDebug(@"Set Opt Out: %d", optOut);
-                        } else {
-                            MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
-                        }
+                        [weakSelf setOptOutCompletion:execStatus optOut:optOut];
                     }];
 }
 
@@ -337,6 +342,62 @@ static NSString *const kMPStateKey = @"state";
     _sharedInstance = instance;
     
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:instance];
+}
+
+- (void)identifyNoDispatchCallback:(MPIdentityApiResult * _Nullable)apiResult
+                             error:(NSError * _Nullable)error
+                           options:(MParticleOptions * _Nonnull)options {
+    if (error) {
+        MPILogError(@"Identify request failed with error: %@", error);
+    }
+    
+    NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
+    
+    if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:deferredKitConfiguration];
+            self.deferredKitConfiguration_PRIVATE = nil;
+        });
+    }
+    
+    if (options.onIdentifyComplete) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            options.onIdentifyComplete(apiResult, error);
+        });
+    }
+}
+
+- (void)configureWithOptions:(MParticleOptions * _Nonnull)options {
+    if (self.configSettings) {
+        if (self.configSettings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
+            self.backendController.sessionTimeout = [self.configSettings[kMPConfigSessionTimeout] doubleValue];
+        }
+        
+        if (self.configSettings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
+            self.backendController.uploadInterval = [self.configSettings[kMPConfigUploadInterval] doubleValue];
+        }
+        
+        if (self.configSettings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
+            self->_customUserAgent = self.configSettings[kMPConfigCustomUserAgent];
+        }
+        
+        if (self.configSettings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
+            self->_collectUserAgent = [self.configSettings[kMPConfigCollectUserAgent] boolValue];
+        }
+        
+        if (self.configSettings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
+            self->_trackNotifications = [self.configSettings[kMPConfigTrackNotifications] boolValue];
+        }
+#if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
+        if ([self.configSettings[kMPConfigLocationTracking] boolValue]) {
+            CLLocationAccuracy accuracy = [self.configSettings[kMPConfigLocationAccuracy] doubleValue];
+            CLLocationDistance distanceFilter = [self.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
+            [self beginLocationTracking:accuracy minDistance:distanceFilter];
+        }
+#endif
+#endif
+    }
 }
 
 - (void)startWithOptions:(MParticleOptions *)options {
@@ -452,26 +513,7 @@ static NSString *const kMPStateKey = @"state";
                            }
                            
                            [strongSelf.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                               if (error) {
-                                   MPILogError(@"Identify request failed with error: %@", error);
-                               }
-                               
-                               NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
-                               
-                               if (deferredKitConfiguration != nil && [deferredKitConfiguration isKindOfClass:[NSArray class]]) {
-                                   
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       [[MParticle sharedInstance].kitContainer_PRIVATE configureKits:deferredKitConfiguration];
-                                       weakSelf.deferredKitConfiguration_PRIVATE = nil;
-                                   });
-                                   
-                               }
-                               
-                               if (options.onIdentifyComplete) {
-                                   dispatch_async(dispatch_get_main_queue(), ^{
-                                       options.onIdentifyComplete(apiResult, error);
-                                   });
-                               }
+                               [self identifyNoDispatchCallback:apiResult error:error options:options];
                            }];
                            
                            if (firstRun) {
@@ -481,36 +523,7 @@ static NSString *const kMPStateKey = @"state";
                            
                            strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
                            
-                           if (strongSelf.configSettings) {
-                               if (strongSelf.configSettings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
-                                   strongSelf.backendController.sessionTimeout = [strongSelf.configSettings[kMPConfigSessionTimeout] doubleValue];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
-                                   strongSelf.backendController.uploadInterval = [strongSelf.configSettings[kMPConfigUploadInterval] doubleValue];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
-                                   self->_customUserAgent = strongSelf.configSettings[kMPConfigCustomUserAgent];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
-                                   self->_collectUserAgent = [strongSelf.configSettings[kMPConfigCollectUserAgent] boolValue];
-                               }
-                               
-                               if (strongSelf.configSettings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
-                                   self->_trackNotifications = [strongSelf.configSettings[kMPConfigTrackNotifications] boolValue];
-                               }
-#if TARGET_OS_IOS == 1
-#ifndef MPARTICLE_LOCATION_DISABLE
-                               if ([strongSelf.configSettings[kMPConfigLocationTracking] boolValue]) {
-                                   CLLocationAccuracy accuracy = [strongSelf.configSettings[kMPConfigLocationAccuracy] doubleValue];
-                                   CLLocationDistance distanceFilter = [strongSelf.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
-                                   [strongSelf beginLocationTracking:accuracy minDistance:distanceFilter];
-                               }
-#endif
-#endif
-                           }
+                           [strongSelf configureWithOptions:options];
                            
                            strongSelf.initialized = YES;
                            strongSelf.configSettings = nil;
