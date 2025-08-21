@@ -5,3 +5,4 @@
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "MParticle+PrivateMethods.h"
+#import "SettingsProvider.h"
