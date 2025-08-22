@@ -10,6 +10,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType;
 - (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey;
 - (MPEvent * _Nullable)transformEventForEvent:(MPEvent *)event;
+- (MPEvent * _Nullable)transformEventForScreenEvent:(MPEvent *)screenEvent;
 
 @end
 

@@ -35,4 +35,14 @@ class MPDataPlanFilterMock: NSObject, MPDataPlanFilterProtocol {
         transformEventEventParam = event
         return transformEventReturnValue
     }
+    
+    var transformEventForScreenEventCalled = false
+    var transformEventForScreenEventScreenEventParam: MPEvent?
+    var transformEventForScreenEventReturnValue: MPEvent?
+    
+    func transformEvent(forScreenEvent screenEvent: MPEvent) -> MPEvent? {
+        transformEventForScreenEventCalled = true
+        transformEventForScreenEventScreenEventParam = screenEvent
+        return transformEventForScreenEventReturnValue
+    }
 }

@@ -162,7 +162,7 @@ class MParticleTestsSwift: XCTestCase {
         let expectedEvent = MPEvent()
         
         mparticle.beginTimedEventCompletionHandler(expectedEvent, execStatus: .success)
-        XCTAssert(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
         XCTAssertEqual(receivedMessage, """
             mParticle -> Blocked timed event begin from kits: Event:{
@@ -180,17 +180,50 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(receivedMessage)
     }
     
-    func testLogEventCallbackrDataFilterSetDataFilterReturnNil() {
+    func testLogEventCallbackDataFilterSetDataFilterReturnNil() {
         let dataPlanFilter = MPDataPlanFilterMock()
         mparticle.dataPlanFilter = dataPlanFilter
         let expectedEvent = MPEvent()
         mparticle.logEventCallback(expectedEvent, execStatus: .success)
         
-        XCTAssert(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
 
         XCTAssertEqual(receivedMessage, """
             mParticle -> Blocked timed event end from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+
+    func testLogScreenCallbackDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        mparticle.logScreenCallback(MPEvent(), execStatus: .success)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Logged screen event: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testLogScreenCallbackDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.logScreenCallback(expectedEvent, execStatus: .success)
+        
+        XCTAssertTrue(dataPlanFilter.transformEventForScreenEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForScreenEventScreenEventParam === expectedEvent)
+
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked screen event from kits: Event:{
               Name: <<Event With No Name>>
               Type: Other
               Duration: 0
