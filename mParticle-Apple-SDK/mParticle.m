@@ -1054,6 +1054,19 @@ static NSString *const kMPStateKey = @"state";
     [self logError:message eventInfo:nil];
 }
 
+- (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged error with message: %@", message);
+        
+        // Forwarding calls to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:message];
+        [queueParameters addParameter:eventInfo];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
+    }
+}
+
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!message) {
         MPILogError(@"'message' is required for %@", NSStringFromSelector(_cmd));
@@ -1068,16 +1081,7 @@ static NSString *const kMPStateKey = @"state";
                           topmostContext:nil
                                eventInfo:eventInfo
                        completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged error with message: %@", message);
-                               
-                               // Forwarding calls to kits
-                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                               [queueParameters addParameter:message];
-                               [queueParameters addParameter:eventInfo];
-                               
-                               [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
-                           }
+                            [self logErrorCallback:eventInfo execStatus:execStatus message:message];
                        }];
     });
 }
