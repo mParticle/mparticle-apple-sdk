@@ -279,4 +279,21 @@ class MParticleTestsSwift: XCTestCase {
         
         XCTAssertNil(receivedMessage)
     }
+
+    func testLogExceptionCallbackSuccess() {
+        let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
+        mparticle.logExceptionCallback(exception, execStatus: .success, message: "exception", topmostContext: nil)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Logged exception name: exception, reason: Test, topmost context: (null)
+            """
+        )
+    }
+    
+    func testLogExceptionCallbackFail() {
+        let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
+        mparticle.logExceptionCallback(exception, execStatus: .fail, message: "exception", topmostContext: nil)
+        
+        XCTAssertNil(receivedMessage)
+    }
 }
