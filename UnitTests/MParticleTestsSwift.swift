@@ -264,4 +264,19 @@ class MParticleTestsSwift: XCTestCase {
             """
         )
     }
+
+    func testLogErrorCallbackSuccess() {
+        mparticle.logErrorCallback([:], execStatus: .success, message: "error")
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Logged error with message: error
+            """
+        )
+    }
+    
+    func testLogErrorCallbackFail() {
+        mparticle.logErrorCallback([:], execStatus: .fail, message: "error")
+        
+        XCTAssertNil(receivedMessage)
+    }
 }
