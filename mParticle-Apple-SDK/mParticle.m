@@ -1003,6 +1003,26 @@ static NSString *const kMPStateKey = @"state";
     [self leaveBreadcrumb:breadcrumbName eventInfo:nil];
 }
 
+- (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Left breadcrumb: %@", event);
+        MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+        if (kitEvent) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Forwarding calls to kits
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(leaveBreadcrumb:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeBreadcrumb
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
+        }
+    }
+}
+
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!breadcrumbName) {
         MPILogError(@"Breadcrumb name is required.");
@@ -1025,23 +1045,7 @@ static NSString *const kMPStateKey = @"state";
 
         [self.backendController leaveBreadcrumb:event
                               completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                                  if (execStatus == MPExecStatusSuccess) {
-                                      MPILogDebug(@"Left breadcrumb: %@", event);
-                                      MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                                      if (kitEvent) {
-                                          dispatch_async(dispatch_get_main_queue(), ^{
-                                              // Forwarding calls to kits
-                                              [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(leaveBreadcrumb:)
-                                                                                                event:kitEvent
-                                                                                           parameters:nil
-                                                                                          messageType:MPMessageTypeBreadcrumb
-                                                                                             userInfo:nil
-                                               ];
-                                          });
-                                      } else {
-                                          MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
-                                      }
-                                  }
+                                [self leaveBreadcrumbCallback:event execStatus:execStatus];
                               }];
     });
 }
