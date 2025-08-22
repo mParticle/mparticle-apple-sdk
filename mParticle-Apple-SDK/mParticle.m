@@ -1090,6 +1090,18 @@ static NSString *const kMPStateKey = @"state";
     [self logException:exception topmostContext:nil];
 }
 
+- (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
+        
+        // Forwarding calls to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:exception];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logException:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
+    }
+}
+
 - (void)logException:(NSException *)exception topmostContext:(id)topmostContext {
     dispatch_async(messageQueue, ^{
         [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:exception];
@@ -1099,15 +1111,7 @@ static NSString *const kMPStateKey = @"state";
                           topmostContext:topmostContext
                                eventInfo:nil
                        completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
-                               
-                               // Forwarding calls to kits
-                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                               [queueParameters addParameter:exception];
-                               
-                               [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logException:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
-                           }
+                            [self logExceptionCallback:exception execStatus:execStatus message:message topmostContext:topmostContext];
                        }];
     });
 }
