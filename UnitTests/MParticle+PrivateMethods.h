@@ -12,6 +12,7 @@
 - (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logEventCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;

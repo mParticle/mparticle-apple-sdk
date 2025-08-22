@@ -231,4 +231,37 @@ class MParticleTestsSwift: XCTestCase {
             """
         )
     }
+
+    func testLeaveBreadcrumbCallbackDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        mparticle.leaveBreadcrumbCallback(MPEvent(), execStatus: .success)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Left breadcrumb: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testLeaveBreadcrumbCallbackDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .success)
+        
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked breadcrumb event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
 }
