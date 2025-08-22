@@ -878,6 +878,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		356D4A572E58B01100CB69FE /* Mocks */ = {
+			isa = PBXGroup;
+			children = (
+				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
+				359BB0022E57769E00A8A704 /* SettingsProviderMock.m */,
+				359BB0012E57769600A8A704 /* SettingsProviderMock.h */,
+			);
+			path = Mocks;
+			sourceTree = "<group>";
+		};
 		53A79A6F29CCCD6400E7489F = {
 			isa = PBXGroup;
 			children = (
@@ -1243,11 +1253,9 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
-				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
+				356D4A572E58B01100CB69FE /* Mocks */,
 				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */,
-				359BB0022E57769E00A8A704 /* SettingsProviderMock.m */,
-				359BB0012E57769600A8A704 /* SettingsProviderMock.h */,
 				359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */,
 				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
 				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
