@@ -806,15 +806,15 @@ static NSString *const kMPStateKey = @"state";
                                }];
             MPBaseEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForBaseEvent:event] : event;
             if (kitEvent) {
-            // Forwarding calls to kits
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logBaseEvent:)
-                                                                  event:kitEvent
-                                                             parameters:nil
-                                                            messageType:kitEvent.messageType
-                                                               userInfo:nil
-                 ];
-            });
+                // Forwarding calls to kits
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logBaseEvent:)
+                                                                      event:kitEvent
+                                                                 parameters:nil
+                                                                messageType:kitEvent.messageType
+                                                                   userInfo:nil
+                     ];
+                });
             } else {
                 MPILogDebug(@"Blocked base event from kits: %@", event);
             }
@@ -911,6 +911,26 @@ static NSString *const kMPStateKey = @"state";
     [self logEvent:event];
 }
 
+- (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged screen event: %@", event);
+        MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForScreenEvent:event] : event;
+        if (kitEvent) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Forwarding calls to kits
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logScreen:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeScreenView
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogDebug(@"Blocked screen event from kits: %@", event);
+        }
+    }
+}
+
 - (void)logScreenEvent:(MPEvent *)event {
     if (event == nil) {
         MPILogError(@"Cannot log nil screen event!");
@@ -924,23 +944,7 @@ static NSString *const kMPStateKey = @"state";
 
         [self.backendController logScreen:event
                         completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                            if (execStatus == MPExecStatusSuccess) {
-                                MPILogDebug(@"Logged screen event: %@", event);
-                                MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForScreenEvent:event] : event;
-                                if (kitEvent) {
-                                    dispatch_async(dispatch_get_main_queue(), ^{
-                                        // Forwarding calls to kits
-                                        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logScreen:)
-                                                                                          event:kitEvent
-                                                                                     parameters:nil
-                                                                                    messageType:MPMessageTypeScreenView
-                                                                                       userInfo:nil
-                                         ];
-                                    });
-                                } else {
-                                    MPILogDebug(@"Blocked screen event from kits: %@", event);
-                                }
-                            }
+                            [self logScreenCallback:event execStatus:execStatus];
                         }];
     });
 }
