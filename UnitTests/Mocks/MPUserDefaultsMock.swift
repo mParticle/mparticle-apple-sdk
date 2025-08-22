@@ -25,3 +25,5 @@ class MPUserDefaultsMock: MPUserDefaultsProtocol {
         synchronizeCalled = true
     }
 }
+
+

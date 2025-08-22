@@ -17,6 +17,8 @@
 		35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */; };
 		35329FF52E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
 		35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
+		356D4A592E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
+		356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		359BAFE82E55ED8900A8A704 /* MParticleTestsSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */; };
 		359BAFE92E55ED8900A8A704 /* MParticleTestsSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */; };
 		359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 359BAFF82E56330200A8A704 /* SettingsProvider.h */; };
@@ -25,8 +27,6 @@
 		359BAFFD2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
 		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
 		359BB0002E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
-		359BB0032E57769E00A8A704 /* SettingsProviderMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0022E57769E00A8A704 /* SettingsProviderMock.m */; };
-		359BB0042E57769E00A8A704 /* SettingsProviderMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0022E57769E00A8A704 /* SettingsProviderMock.m */; };
 		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		359BB0072E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
@@ -562,13 +562,12 @@
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
+		356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderMock.swift; sourceTree = "<group>"; };
 		359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleTestsSwift.swift; sourceTree = "<group>"; };
 		359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticle+PrivateMethods.h"; sourceTree = "<group>"; };
 		359BAFF82E56330200A8A704 /* SettingsProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProvider.h; sourceTree = "<group>"; };
 		359BAFFB2E56335300A8A704 /* SettingsProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProvider.m; sourceTree = "<group>"; };
 		359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderTests.swift; sourceTree = "<group>"; };
-		359BB0012E57769600A8A704 /* SettingsProviderMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProviderMock.h; sourceTree = "<group>"; };
-		359BB0022E57769E00A8A704 /* SettingsProviderMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProviderMock.m; sourceTree = "<group>"; };
 		359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaultsMock.swift; sourceTree = "<group>"; };
 		35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPAttributionResult+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPAttributionResult+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
@@ -882,8 +881,7 @@
 			isa = PBXGroup;
 			children = (
 				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
-				359BB0022E57769E00A8A704 /* SettingsProviderMock.m */,
-				359BB0012E57769600A8A704 /* SettingsProviderMock.h */,
+				356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */,
 			);
 			path = Mocks;
 			sourceTree = "<group>";
@@ -1721,9 +1719,9 @@
 				534CD26829CE2CE1008452B3 /* MPConnectorTests.m in Sources */,
 				534CD26929CE2CE1008452B3 /* MPSurrogateAppDelegateTests.m in Sources */,
 				534CD26A29CE2CE1008452B3 /* MPGDPRConsentTests.m in Sources */,
+				356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */,
 				534CD26B29CE2CE1008452B3 /* MPBackendControllerTests.m in Sources */,
 				534CD26C29CE2CE1008452B3 /* MPKitConfigurationTests.mm in Sources */,
-				359BB0042E57769E00A8A704 /* SettingsProviderMock.m in Sources */,
 				534CD26E29CE2CE1008452B3 /* MPNetworkCommunicationTests.m in Sources */,
 				534CD26F29CE2CE1008452B3 /* MPAliasRequestTests.m in Sources */,
 				534CD27029CE2CE1008452B3 /* MPAliasResponseTests.m in Sources */,
@@ -1907,9 +1905,9 @@
 				53A79CD029CE019F00E7489F /* MPConnectorTests.m in Sources */,
 				53A79CD129CE019F00E7489F /* MPSurrogateAppDelegateTests.m in Sources */,
 				53A79CE729CE019F00E7489F /* MPGDPRConsentTests.m in Sources */,
+				356D4A592E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */,
 				53A79CD229CE019F00E7489F /* MPBackendControllerTests.m in Sources */,
 				53A79CF329CE019F00E7489F /* MPKitConfigurationTests.mm in Sources */,
-				359BB0032E57769E00A8A704 /* SettingsProviderMock.m in Sources */,
 				53A79CDC29CE019F00E7489F /* MPSwiftTests.swift in Sources */,
 				53A79CBE29CE019F00E7489F /* MPNetworkCommunicationTests.m in Sources */,
 				53A79CF429CE019F00E7489F /* MPAliasRequestTests.m in Sources */,
