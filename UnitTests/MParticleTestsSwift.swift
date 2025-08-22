@@ -145,6 +145,30 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(mparticle.dataPlanFilter)
         
         mparticle.beginTimedEventCompletionHandler(MPEvent(), execStatus: .success)
-        XCTAssertEqual(receivedMessage, "mParticle -> Began timed event: Event:{\n  Name: <<Event With No Name>>\n  Type: Other\n  Duration: 0\n}")
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Began timed event: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testBeginTimedEventCompletionHandlerDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        
+        mparticle.beginTimedEventCompletionHandler(expectedEvent, execStatus: .success)
+        XCTAssert(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked timed event begin from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other\n  Duration: 0
+            }
+            """
+        )
     }
 }

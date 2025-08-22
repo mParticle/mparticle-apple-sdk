@@ -7,7 +7,7 @@
 
 @interface MParticle ()
 
-@property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
+@property (nonatomic, strong) id<MPDataPlanFilterProtocol> dataPlanFilter;
 
 @end
 

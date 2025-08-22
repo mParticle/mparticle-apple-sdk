@@ -13,5 +13,6 @@
 
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
-@property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
+@property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @end
+    
