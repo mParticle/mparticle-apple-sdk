@@ -715,30 +715,33 @@ static NSString *const kMPStateKey = @"state";
     return self.backendController.eventSet;
 }
 
+- (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Began timed event: %@", event);
+        
+        MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+        if (kitEvent) {
+            // Forwarding calls to kits
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(beginTimedEvent:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeEvent
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogDebug(@"Blocked timed event begin from kits: %@", event);
+        }
+    }
+}
+
 - (void)beginTimedEvent:(MPEvent *)event {
     [MPListenerController.sharedInstance onAPICalled:_cmd parameter1:event];
     
     [self.backendController beginTimedEvent:event
                           completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                              
-                              if (execStatus == MPExecStatusSuccess) {
-                                  MPILogDebug(@"Began timed event: %@", event);
-                                  
-                                  MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                                  if (kitEvent) {
-                                      // Forwarding calls to kits
-                                      dispatch_async(dispatch_get_main_queue(), ^{
-                                          [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(beginTimedEvent:)
-                                                                                            event:kitEvent
-                                                                                       parameters:nil
-                                                                                      messageType:MPMessageTypeEvent
-                                                                                         userInfo:nil
-                                           ];
-                                      });
-                                  } else {
-                                      MPILogDebug(@"Blocked timed event begin from kits: %@", event);
-                                  }
-                              }
+                              [self beginTimedEventCompletionHandler:event execStatus:execStatus];
                           }];
 }
 
