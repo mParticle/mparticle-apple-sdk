@@ -19,6 +19,16 @@
 		35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
 		359BAFE82E55ED8900A8A704 /* MParticleTestsSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */; };
 		359BAFE92E55ED8900A8A704 /* MParticleTestsSwift.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */; };
+		359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 359BAFF82E56330200A8A704 /* SettingsProvider.h */; };
+		359BAFFA2E56330200A8A704 /* SettingsProvider.h in Headers */ = {isa = PBXBuildFile; fileRef = 359BAFF82E56330200A8A704 /* SettingsProvider.h */; };
+		359BAFFC2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
+		359BAFFD2E56335300A8A704 /* SettingsProvider.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFB2E56335300A8A704 /* SettingsProvider.m */; };
+		359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
+		359BB0002E575B0300A8A704 /* SettingsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */; };
+		359BB0032E57769E00A8A704 /* SettingsProviderMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0022E57769E00A8A704 /* SettingsProviderMock.m */; };
+		359BB0042E57769E00A8A704 /* SettingsProviderMock.m in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0022E57769E00A8A704 /* SettingsProviderMock.m */; };
+		359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
+		359BB0072E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */; };
 		35E3FCC02E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
 		35E3FCC12E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */; };
 		35E3FCC32E53B5C600DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */; };
@@ -554,6 +564,12 @@
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MParticleTestsSwift.swift; sourceTree = "<group>"; };
 		359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticle+PrivateMethods.h"; sourceTree = "<group>"; };
+		359BAFF82E56330200A8A704 /* SettingsProvider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProvider.h; sourceTree = "<group>"; };
+		359BAFFB2E56335300A8A704 /* SettingsProvider.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProvider.m; sourceTree = "<group>"; };
+		359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderTests.swift; sourceTree = "<group>"; };
+		359BB0012E57769600A8A704 /* SettingsProviderMock.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SettingsProviderMock.h; sourceTree = "<group>"; };
+		359BB0022E57769E00A8A704 /* SettingsProviderMock.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SettingsProviderMock.m; sourceTree = "<group>"; };
+		359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPUserDefaultsMock.swift; sourceTree = "<group>"; };
 		35E3FCBF2E53B55900DB5B18 /* MPAttributionResult+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPAttributionResult+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35E3FCC22E53B5C200DB5B18 /* MPAttributionResult+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPAttributionResult+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35E3FCC52E53B70100DB5B18 /* MPAttributionResult+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MPAttributionResult+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -891,6 +907,8 @@
 			children = (
 				53A79C2229CDFB4800E7489F /* Include */,
 				53A79B3629CDFB1F00E7489F /* mParticle.m */,
+				359BAFF82E56330200A8A704 /* SettingsProvider.h */,
+				359BAFFB2E56335300A8A704 /* SettingsProvider.m */,
 				35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */,
 				35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */,
 				35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */,
@@ -1225,7 +1243,11 @@
 		53A79C6729CE019E00E7489F /* UnitTests */ = {
 			isa = PBXGroup;
 			children = (
+				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
+				359BAFFE2E575AF500A8A704 /* SettingsProviderTests.swift */,
 				359BAFEA2E55EE0C00A8A704 /* MParticle+PrivateMethods.h */,
+				359BB0022E57769E00A8A704 /* SettingsProviderMock.m */,
+				359BB0012E57769600A8A704 /* SettingsProviderMock.h */,
 				359BAFE72E55ED7D00A8A704 /* MParticleTestsSwift.swift */,
 				35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */,
 				35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */,
@@ -1378,6 +1400,7 @@
 				53A79BF329CDFB2000E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79B8C29CDFB2000E7489F /* MPDataModelProtocol.h in Headers */,
 				53A79BFB29CDFB2100E7489F /* MPAppDelegateProxy.h in Headers */,
+				359BAFFA2E56330200A8A704 /* SettingsProvider.h in Headers */,
 				53A79B9929CDFB2000E7489F /* MPIConstants.h in Headers */,
 				53A79B7129CDFB2000E7489F /* MPBackendController.h in Headers */,
 				35E3FCCC2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
@@ -1472,6 +1495,7 @@
 				53A79D2929CE23F700E7489F /* MPDataModelProtocol.h in Headers */,
 				53A79D2A29CE23F700E7489F /* MPAppDelegateProxy.h in Headers */,
 				53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */,
+				359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */,
 				53A79D2E29CE23F700E7489F /* MPBackendController.h in Headers */,
 				7E0387812DB913D2003B7D5E /* MPRokt.h in Headers */,
 				35E3FCCD2E54975C00DB5B18 /* MParticleSession+MParticlePrivate.h in Headers */,
@@ -1685,11 +1709,13 @@
 				534CD26529CE2CE1008452B3 /* MPKitAPITests.m in Sources */,
 				534CD26629CE2CE1008452B3 /* MPUserIdentityChangeTests.m in Sources */,
 				534CD26729CE2CE1008452B3 /* MPConsentKitFilterTests.m in Sources */,
+				359BAFFF2E575B0300A8A704 /* SettingsProviderTests.swift in Sources */,
 				534CD26829CE2CE1008452B3 /* MPConnectorTests.m in Sources */,
 				534CD26929CE2CE1008452B3 /* MPSurrogateAppDelegateTests.m in Sources */,
 				534CD26A29CE2CE1008452B3 /* MPGDPRConsentTests.m in Sources */,
 				534CD26B29CE2CE1008452B3 /* MPBackendControllerTests.m in Sources */,
 				534CD26C29CE2CE1008452B3 /* MPKitConfigurationTests.mm in Sources */,
+				359BB0042E57769E00A8A704 /* SettingsProviderMock.m in Sources */,
 				534CD26E29CE2CE1008452B3 /* MPNetworkCommunicationTests.m in Sources */,
 				534CD26F29CE2CE1008452B3 /* MPAliasRequestTests.m in Sources */,
 				534CD27029CE2CE1008452B3 /* MPAliasResponseTests.m in Sources */,
@@ -1739,6 +1765,7 @@
 				534CD29429CE2CE1008452B3 /* MPKitContainerTests.m in Sources */,
 				534CD29529CE2CE1008452B3 /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				534CD29629CE2CE1008452B3 /* MPConsumerInfoTests.m in Sources */,
+				359BB0062E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7E15B2062D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				534CD29729CE2CE1008452B3 /* MPURLRequestBuilderTests.m in Sources */,
 				534CD29829CE2CE1008452B3 /* MPForwardQueueItemTests.m in Sources */,
@@ -1831,6 +1858,7 @@
 				53A79C1A29CDFB2100E7489F /* MPKitAPI.m in Sources */,
 				53A79BFF29CDFB2100E7489F /* MPAppNotificationHandler.m in Sources */,
 				53A79BF829CDFB2000E7489F /* MPNotificationController.m in Sources */,
+				359BAFFD2E56335300A8A704 /* SettingsProvider.m in Sources */,
 				53A79C0829CDFB2100E7489F /* MPEvent.m in Sources */,
 				53A79B6729CDFB2000E7489F /* MPAliasResponse.m in Sources */,
 				7E0387842DB913D2003B7D5E /* MPRokt.m in Sources */,
@@ -1867,11 +1895,13 @@
 				53A79CE629CE019F00E7489F /* MPKitAPITests.m in Sources */,
 				53A79CC229CE019F00E7489F /* MPUserIdentityChangeTests.m in Sources */,
 				53A79CC129CE019F00E7489F /* MPConsentKitFilterTests.m in Sources */,
+				359BB0002E575B0300A8A704 /* SettingsProviderTests.swift in Sources */,
 				53A79CD029CE019F00E7489F /* MPConnectorTests.m in Sources */,
 				53A79CD129CE019F00E7489F /* MPSurrogateAppDelegateTests.m in Sources */,
 				53A79CE729CE019F00E7489F /* MPGDPRConsentTests.m in Sources */,
 				53A79CD229CE019F00E7489F /* MPBackendControllerTests.m in Sources */,
 				53A79CF329CE019F00E7489F /* MPKitConfigurationTests.mm in Sources */,
+				359BB0032E57769E00A8A704 /* SettingsProviderMock.m in Sources */,
 				53A79CDC29CE019F00E7489F /* MPSwiftTests.swift in Sources */,
 				53A79CBE29CE019F00E7489F /* MPNetworkCommunicationTests.m in Sources */,
 				53A79CF429CE019F00E7489F /* MPAliasRequestTests.m in Sources */,
@@ -1921,6 +1951,7 @@
 				53A79CD529CE019F00E7489F /* MPKitContainerTests.m in Sources */,
 				53A79CBC29CE019F00E7489F /* MPBase_Attribute_Event_ProjectionTests.m in Sources */,
 				53A79CEA29CE019F00E7489F /* MPConsumerInfoTests.m in Sources */,
+				359BB0072E57A56800A8A704 /* MPUserDefaultsMock.swift in Sources */,
 				7E15B2072D94617900C1FF3E /* MPRoktTests.m in Sources */,
 				53A79CDD29CE019F00E7489F /* MPURLRequestBuilderTests.m in Sources */,
 				53A79CDE29CE019F00E7489F /* MPForwardQueueItemTests.m in Sources */,
@@ -2013,6 +2044,7 @@
 				53A79DA729CE23F700E7489F /* MPStateMachine.m in Sources */,
 				53A79DA829CE23F700E7489F /* MPKitAPI.m in Sources */,
 				53A79DA929CE23F700E7489F /* MPAppNotificationHandler.m in Sources */,
+				359BAFFC2E56335300A8A704 /* SettingsProvider.m in Sources */,
 				53A79DAA29CE23F700E7489F /* MPNotificationController.m in Sources */,
 				53A79DAB29CE23F700E7489F /* MPEvent.m in Sources */,
 				7E0387822DB913D2003B7D5E /* MPRokt.m in Sources */,

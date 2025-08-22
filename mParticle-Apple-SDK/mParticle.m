@@ -17,6 +17,7 @@
 #import "MParticleSwift.h"
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
+#import "SettingsProvider.h"
 
 static dispatch_queue_t messageQueue = nil;
 static void *messageQueueKey = "mparticle message queue key";
@@ -57,7 +58,6 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
-@property (nonatomic, strong, nullable) NSMutableDictionary *configSettings;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic) BOOL initialized;
 @property (nonatomic, strong, nonnull) NSMutableArray *kitsInitializedBlocks;
@@ -67,6 +67,8 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong, nullable) NSNumber *dataPlanVersion;
 @property (nonatomic, readwrite) MPDataPlanOptions *dataPlanOptions;
 @property (nonatomic, readwrite) NSArray<NSNumber *> *disabledKits;
+
+@property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 
 @end
 
@@ -91,6 +93,7 @@ static NSString *const kMPStateKey = @"state";
 @synthesize stateMachine = _stateMachine;
 @synthesize kitContainer_PRIVATE = _kitContainer_PRIVATE;
 @synthesize appNotificationHandler = _appNotificationHandler;
+@synthesize settingsProvider = _settingsProvider;
 
 + (void)initialize {
     if (self == [MParticle class]) {
@@ -150,6 +153,7 @@ static NSString *const kMPStateKey = @"state";
     dispatch_queue_set_specific(messageQueue, messageQueueKey, messageQueueToken, nil);
     sdkInitialized = NO;
     _initialized = NO;
+    _settingsProvider = [[SettingsProvider alloc] init];
     _kitActivity = [[MPKitActivity alloc] init];
     _kitsInitializedBlocks = [NSMutableArray array];
     _collectUserAgent = YES;
@@ -161,20 +165,6 @@ static NSString *const kMPStateKey = @"state";
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue];
     
     return self;
-}
-
-#pragma mark Private accessors
-- (NSMutableDictionary *)configSettings {
-    if (_configSettings) {
-        return _configSettings;
-    }
-    
-    NSString *path = [[NSBundle mainBundle] pathForResource:kMPConfigPlist ofType:@"plist"];
-    if (path) {
-        _configSettings = [[NSMutableDictionary alloc] initWithContentsOfFile:path];
-    }
-    
-    return _configSettings;
 }
 
 #pragma mark MPBackendControllerDelegate methods
@@ -368,36 +358,72 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)configureWithOptions:(MParticleOptions * _Nonnull)options {
-    if (self.configSettings) {
-        if (self.configSettings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
-            self.backendController.sessionTimeout = [self.configSettings[kMPConfigSessionTimeout] doubleValue];
+    NSMutableDictionary* settings = self.settingsProvider.configSettings;
+    if (settings) {
+        if (settings[kMPConfigSessionTimeout] && !options.isSessionTimeoutSet) {
+            self.backendController.sessionTimeout = [settings[kMPConfigSessionTimeout] doubleValue];
         }
         
-        if (self.configSettings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
-            self.backendController.uploadInterval = [self.configSettings[kMPConfigUploadInterval] doubleValue];
+        if (settings[kMPConfigUploadInterval] && !options.isUploadIntervalSet) {
+            self.backendController.uploadInterval = [settings[kMPConfigUploadInterval] doubleValue];
         }
         
-        if (self.configSettings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
-            self->_customUserAgent = self.configSettings[kMPConfigCustomUserAgent];
+        if (settings[kMPConfigCustomUserAgent] && !options.customUserAgent) {
+            self->_customUserAgent = settings[kMPConfigCustomUserAgent];
         }
         
-        if (self.configSettings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
-            self->_collectUserAgent = [self.configSettings[kMPConfigCollectUserAgent] boolValue];
+        if (settings[kMPConfigCollectUserAgent] && !options.isCollectUserAgentSet) {
+            self->_collectUserAgent = [settings[kMPConfigCollectUserAgent] boolValue];
         }
         
-        if (self.configSettings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
-            self->_trackNotifications = [self.configSettings[kMPConfigTrackNotifications] boolValue];
+        if (settings[kMPConfigTrackNotifications] && !options.isTrackNotificationsSet) {
+            self->_trackNotifications = [settings[kMPConfigTrackNotifications] boolValue];
         }
 #if TARGET_OS_IOS == 1
 #ifndef MPARTICLE_LOCATION_DISABLE
-        if ([self.configSettings[kMPConfigLocationTracking] boolValue]) {
-            CLLocationAccuracy accuracy = [self.configSettings[kMPConfigLocationAccuracy] doubleValue];
-            CLLocationDistance distanceFilter = [self.configSettings[kMPConfigLocationDistanceFilter] doubleValue];
+        if ([settings[kMPConfigLocationTracking] boolValue]) {
+            CLLocationAccuracy accuracy = [settings[kMPConfigLocationAccuracy] doubleValue];
+            CLLocationDistance distanceFilter = [settings[kMPConfigLocationDistanceFilter] doubleValue];
             [self beginLocationTracking:accuracy minDistance:distanceFilter];
         }
 #endif
 #endif
     }
+}
+
+- (void)startWithKeyCallback:(BOOL)firstRun
+                     options:(MParticleOptions * _Nonnull)options
+                userDefaults:(id<MPUserDefaultsProtocol>)userDefaults {
+
+    MPIdentityApiRequest *identifyRequest = nil;
+    if (options.identifyRequest) {
+        identifyRequest = options.identifyRequest;
+    } else {
+        MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
+        identifyRequest = [MPIdentityApiRequest requestWithUser:user];
+    }
+    
+    [self.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
+        [self identifyNoDispatchCallback:apiResult error:error options:options];
+    }];
+    
+    if (firstRun) {
+        [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
+        [userDefaults synchronize];
+    }
+    
+    self->_optOut = [MParticle sharedInstance].stateMachine.optOut;
+    
+    [self configureWithOptions:options];
+    
+    self.initialized = YES;
+    self.settingsProvider.configSettings = nil;
+    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
+                                                            object:self
+                                                          userInfo:nil];
+    });
 }
 
 - (void)startWithOptions:(MParticleOptions *)options {
@@ -497,42 +523,7 @@ static NSString *const kMPStateKey = @"state";
                           startKitsAsync:startKitsAsync
                             consentState:consentState
                        completionHandler:^{
-                           __strong MParticle *strongSelf = weakSelf;
-                           
-                           if (!strongSelf) {
-                               return;
-                           }
-                           
-                           MPIdentityApiRequest *identifyRequest = nil;
-                           if (options.identifyRequest) {
-                               identifyRequest = options.identifyRequest;
-                           }
-                           else {
-                               MParticleUser *user = [MParticle sharedInstance].identity.currentUser;
-                               identifyRequest = [MPIdentityApiRequest requestWithUser:user];
-                           }
-                           
-                           [strongSelf.identity identifyNoDispatch:identifyRequest completion:^(MPIdentityApiResult * _Nullable apiResult, NSError * _Nullable error) {
-                               [self identifyNoDispatchCallback:apiResult error:error options:options];
-                           }];
-                           
-                           if (firstRun) {
-                               [userDefaults setMPObject:@NO forKey:kMParticleFirstRun userId:[MPPersistenceController_PRIVATE mpId]];
-                               [userDefaults synchronize];
-                           }
-                           
-                           strongSelf->_optOut = [MParticle sharedInstance].stateMachine.optOut;
-                           
-                           [strongSelf configureWithOptions:options];
-                           
-                           strongSelf.initialized = YES;
-                           strongSelf.configSettings = nil;
-                           
-                           dispatch_async(dispatch_get_main_queue(), ^{
-                               [[NSNotificationCenter defaultCenter] postNotificationName:mParticleDidFinishInitializing
-                                                                                   object:self
-                                                                                 userInfo:nil];
-                           });
+                           [weakSelf startWithKeyCallback:firstRun options:options userDefaults:userDefaults];
                        }];
 }
 
