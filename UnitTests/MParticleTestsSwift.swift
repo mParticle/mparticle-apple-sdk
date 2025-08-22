@@ -140,4 +140,11 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertFalse(userDefaults.setMPObjectCalled)
         XCTAssertFalse(userDefaults.synchronizeCalled)
     }
+    
+    func testBeginTimedEventCompletionHandlerDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        
+        mparticle.beginTimedEventCompletionHandler(MPEvent(), execStatus: .success)
+        XCTAssertEqual(receivedMessage, "mParticle -> Began timed event: Event:{\n  Name: <<Event With No Name>>\n  Type: Other\n  Duration: 0\n}")
+    }
 }
