@@ -346,6 +346,18 @@ class MParticleTestsSwift: XCTestCase {
             """
         )
     }
+    
+    func testLogNetworkPerformanceCallbackSuccess() {
+        mparticle.logNetworkPerformanceCallback(.success)
+        
+        XCTAssertEqual(receivedMessage, "mParticle -> Logged network performance measurement")
+    }
+    
+    func testLogNetworkPerformanceCallbackFail() {
+        mparticle.logNetworkPerformanceCallback(.fail)
+        
+        XCTAssertNil(receivedMessage)
+    }
 }
 
 

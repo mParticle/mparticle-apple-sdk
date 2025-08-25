@@ -1405,6 +1405,12 @@ static NSString *const kMPStateKey = @"state";
 #endif // MPARTICLE_LOCATION_DISABLE
 #endif // TARGET_OS_IOS
 
+- (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged network performance measurement");
+    }
+}
+
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived {
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
@@ -1422,9 +1428,7 @@ static NSString *const kMPStateKey = @"state";
         [self.backendController logNetworkPerformanceMeasurement:networkPerformance
                                                completionHandler:^(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus) {
                                                    
-                                                   if (execStatus == MPExecStatusSuccess) {
-                                                       MPILogDebug(@"Logged network performance measurement");
-                                                   }
+            [self logNetworkPerformanceCallback:execStatus];
                                                }];
         
     });
