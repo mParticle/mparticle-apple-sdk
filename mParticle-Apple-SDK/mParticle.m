@@ -1116,6 +1116,12 @@ static NSString *const kMPStateKey = @"state";
     });
 }
 
+- (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged crash with message: %@", message);
+    }
+}
+
 - (void)logCrash:(nullable NSString *)message
       stackTrace:(nullable NSString *)stackTrace
    plCrashReport:(NSString *)plCrashReport
@@ -1132,9 +1138,7 @@ static NSString *const kMPStateKey = @"state";
                               stackTrace:stackTrace
                            plCrashReport:plCrashReport
                        completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {
-            if (execStatus == MPExecStatusSuccess) {
-                MPILogDebug(@"Logged crash with message: %@", message);
-            }
+            [self logCrashCallback:execStatus message:message];
         }];
     });
 }

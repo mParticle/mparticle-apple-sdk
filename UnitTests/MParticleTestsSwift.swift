@@ -296,4 +296,9 @@ class MParticleTestsSwift: XCTestCase {
         
         XCTAssertNil(receivedMessage)
     }
+    
+    func testLogCrashCallbackSuccess() {
+        mparticle.logCrashCallback(.success, message: "Message")
+        XCTAssertEqual(receivedMessage, "mParticle -> Logged crash with message: Message")
+    }
 }
