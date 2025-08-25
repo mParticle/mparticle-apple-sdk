@@ -3,7 +3,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPListenerController : NSObject
+@protocol MPListenerControllerProtocol
+
+- (void)onAPICalled:(SEL)apiName;
+- (void)onAPICalled:(SEL)apiName parameter1:(nullable NSObject *)parameter1;
+- (void)onAPICalled:(SEL)apiName parameter1:(nullable NSObject *)parameter1 parameter2:(nullable NSObject *)parameter2;
+- (void)onAPICalled:(SEL)apiName parameter1:(nullable NSObject *)parameter1 parameter2:(nullable NSObject *)parameter2 parameter3:(nullable NSObject *)parameter3;
+
+@end
+
+@interface MPListenerController : NSObject<MPListenerControllerProtocol>
 
 /**
  * Returns the shared instance object.
