@@ -5,7 +5,16 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface MPDataPlanFilter: NSObject
+@protocol MPDataPlanFilterProtocol <NSObject>
+
+- (BOOL)isBlockedUserIdentityType:(MPIdentity)userIdentityType;
+- (BOOL)isBlockedUserAttributeKey:(NSString *)userAttributeKey;
+- (MPEvent * _Nullable)transformEventForEvent:(MPEvent *)event;
+- (MPEvent * _Nullable)transformEventForScreenEvent:(MPEvent *)screenEvent;
+
+@end
+
+@interface MPDataPlanFilter: NSObject<MPDataPlanFilterProtocol>
 
 - (NSMutableDictionary<NSString *, NSArray<NSString *> *> *)getPointInfo;
 

@@ -1,3 +1,6 @@
+python3 -m venv venv
+source venv/bin/activate
+
 SCHEME="mParticle-Apple-SDK"
 DESTINATION="platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
 RESULT_BUNDLE_PATH="./build/TestResults.xcresult"
@@ -13,4 +16,8 @@ xcodebuild test \
   
 xcrun xccov view --report --json "$RESULT_BUNDLE_PATH" > ./build/coverage.json
 
-python3 check_coverage.py
+python check_coverage.py
+
+deactivate
+
+rm -rf venv
