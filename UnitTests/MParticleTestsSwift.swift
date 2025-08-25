@@ -301,4 +301,23 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.logCrashCallback(.success, message: "Message")
         XCTAssertEqual(receivedMessage, "mParticle -> Logged crash with message: Message")
     }
+
+    func testLogCommerceEventCallbackSuccess() {
+        let commerceEvent = MPCommerceEvent()
+        mparticle.logCommerceEventCallback(commerceEvent, execStatus: .success)
+        
+        XCTAssertNil(receivedMessage)
+    }
+    
+    func testLogCommerceEventCallbackFail() {
+        let commerceEvent = MPCommerceEvent()
+        mparticle.logCommerceEventCallback(commerceEvent, execStatus: .fail)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Failed to log commerce event: MPCommerceEvent {
+            }
+            
+            """
+        )
+    }
 }

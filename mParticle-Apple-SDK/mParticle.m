@@ -1144,6 +1144,13 @@ static NSString *const kMPStateKey = @"state";
 }
 
 #pragma mark eCommerce transactions
+- (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+    } else {
+        MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
+    }
+}
+
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
     if (commerceEvent == nil) {
         MPILogError(@"Cannot log nil commerce event!");
@@ -1157,11 +1164,8 @@ static NSString *const kMPStateKey = @"state";
 
         [self.backendController logCommerceEvent:commerceEvent
                                completionHandler:^(MPCommerceEvent *commerceEvent, MPExecStatus execStatus) {
-                                   if (execStatus == MPExecStatusSuccess) {
-                                   } else {
-                                       MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
-                                   }
-                               }];
+            [self logCommerceEventCallback:commerceEvent execStatus:execStatus];
+        }];
         
         MPCommerceEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForCommerceEvent:commerceEvent] : commerceEvent;
         if (kitEvent) {
