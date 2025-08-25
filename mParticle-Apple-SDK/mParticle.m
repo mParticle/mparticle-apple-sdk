@@ -1003,6 +1003,26 @@ static NSString *const kMPStateKey = @"state";
     [self leaveBreadcrumb:breadcrumbName eventInfo:nil];
 }
 
+- (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Left breadcrumb: %@", event);
+        MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+        if (kitEvent) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Forwarding calls to kits
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(leaveBreadcrumb:)
+                                                                          event:kitEvent
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeBreadcrumb
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
+        }
+    }
+}
+
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!breadcrumbName) {
         MPILogError(@"Breadcrumb name is required.");
@@ -1025,29 +1045,26 @@ static NSString *const kMPStateKey = @"state";
 
         [self.backendController leaveBreadcrumb:event
                               completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                                  if (execStatus == MPExecStatusSuccess) {
-                                      MPILogDebug(@"Left breadcrumb: %@", event);
-                                      MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                                      if (kitEvent) {
-                                          dispatch_async(dispatch_get_main_queue(), ^{
-                                              // Forwarding calls to kits
-                                              [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(leaveBreadcrumb:)
-                                                                                                event:kitEvent
-                                                                                           parameters:nil
-                                                                                          messageType:MPMessageTypeBreadcrumb
-                                                                                             userInfo:nil
-                                               ];
-                                          });
-                                      } else {
-                                          MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
-                                      }
-                                  }
+                                [self leaveBreadcrumbCallback:event execStatus:execStatus];
                               }];
     });
 }
 
 - (void)logError:(NSString *)message {
     [self logError:message eventInfo:nil];
+}
+
+- (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged error with message: %@", message);
+        
+        // Forwarding calls to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:message];
+        [queueParameters addParameter:eventInfo];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
+    }
 }
 
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
@@ -1064,22 +1081,25 @@ static NSString *const kMPStateKey = @"state";
                           topmostContext:nil
                                eventInfo:eventInfo
                        completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged error with message: %@", message);
-                               
-                               // Forwarding calls to kits
-                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                               [queueParameters addParameter:message];
-                               [queueParameters addParameter:eventInfo];
-                               
-                               [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logError:eventInfo:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
-                           }
+                            [self logErrorCallback:eventInfo execStatus:execStatus message:message];
                        }];
     });
 }
 
 - (void)logException:(NSException *)exception {
     [self logException:exception topmostContext:nil];
+}
+
+- (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
+        
+        // Forwarding calls to kits
+        MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
+        [queueParameters addParameter:exception];
+        
+        [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logException:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
+    }
 }
 
 - (void)logException:(NSException *)exception topmostContext:(id)topmostContext {
@@ -1091,17 +1111,15 @@ static NSString *const kMPStateKey = @"state";
                           topmostContext:topmostContext
                                eventInfo:nil
                        completionHandler:^(NSString *message, MPExecStatus execStatus) {
-                           if (execStatus == MPExecStatusSuccess) {
-                               MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
-                               
-                               // Forwarding calls to kits
-                               MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
-                               [queueParameters addParameter:exception];
-                               
-                               [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logException:) event:nil parameters:queueParameters messageType:MPMessageTypeUnknown userInfo:nil];
-                           }
+                            [self logExceptionCallback:exception execStatus:execStatus message:message topmostContext:topmostContext];
                        }];
     });
+}
+
+- (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged crash with message: %@", message);
+    }
 }
 
 - (void)logCrash:(nullable NSString *)message
@@ -1120,14 +1138,19 @@ static NSString *const kMPStateKey = @"state";
                               stackTrace:stackTrace
                            plCrashReport:plCrashReport
                        completionHandler:^(NSString * _Nullable message, MPExecStatus execStatus) {
-            if (execStatus == MPExecStatusSuccess) {
-                MPILogDebug(@"Logged crash with message: %@", message);
-            }
+            [self logCrashCallback:execStatus message:message];
         }];
     });
 }
 
 #pragma mark eCommerce transactions
+- (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+    } else {
+        MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
+    }
+}
+
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
     if (commerceEvent == nil) {
         MPILogError(@"Cannot log nil commerce event!");
@@ -1141,11 +1164,8 @@ static NSString *const kMPStateKey = @"state";
 
         [self.backendController logCommerceEvent:commerceEvent
                                completionHandler:^(MPCommerceEvent *commerceEvent, MPExecStatus execStatus) {
-                                   if (execStatus == MPExecStatusSuccess) {
-                                   } else {
-                                       MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
-                                   }
-                               }];
+            [self logCommerceEventCallback:commerceEvent execStatus:execStatus];
+        }];
         
         MPCommerceEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForCommerceEvent:commerceEvent] : commerceEvent;
         if (kitEvent) {
@@ -1159,6 +1179,25 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName {
     [self logLTVIncrease:increaseAmount eventName:eventName eventInfo:nil];
+}
+
+- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+        if (kitEvent) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Forwarding calls to kits
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logLTVIncrease:event:)
+                                                                          event:nil
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeUnknown
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
+        }
+    }
 }
 
 - (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
@@ -1181,23 +1220,8 @@ static NSString *const kMPStateKey = @"state";
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                       if (execStatus == MPExecStatusSuccess) {
-                           MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                           if (kitEvent) {
-                               dispatch_async(dispatch_get_main_queue(), ^{
-                                   // Forwarding calls to kits
-                                   [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logLTVIncrease:event:)
-                                                                                     event:nil
-                                                                                parameters:nil
-                                                                               messageType:MPMessageTypeUnknown
-                                                                                  userInfo:nil
-                                    ];
-                               });
-                           } else {
-                               MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
-                           }
-                       }
-                   }];
+        [self logLTVIncreaseCallback:event execStatus:execStatus];
+    }];
 }
 
 #pragma mark Extensions
@@ -1381,6 +1405,12 @@ static NSString *const kMPStateKey = @"state";
 #endif // MPARTICLE_LOCATION_DISABLE
 #endif // TARGET_OS_IOS
 
+- (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPILogDebug(@"Logged network performance measurement");
+    }
+}
+
 - (void)logNetworkPerformance:(NSString *)urlString httpMethod:(NSString *)httpMethod startTime:(NSTimeInterval)startTime duration:(NSTimeInterval)duration bytesSent:(NSUInteger)bytesSent bytesReceived:(NSUInteger)bytesReceived {
     NSURL *url = [NSURL URLWithString:urlString];
     NSURLRequest *urlRequest = [NSURLRequest requestWithURL:url];
@@ -1398,9 +1428,7 @@ static NSString *const kMPStateKey = @"state";
         [self.backendController logNetworkPerformanceMeasurement:networkPerformance
                                                completionHandler:^(MPNetworkPerformance *networkPerformance, MPExecStatus execStatus) {
                                                    
-                                                   if (execStatus == MPExecStatusSuccess) {
-                                                       MPILogDebug(@"Logged network performance measurement");
-                                                   }
+            [self logNetworkPerformanceCallback:execStatus];
                                                }];
         
     });
