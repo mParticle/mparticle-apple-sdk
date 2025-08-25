@@ -1181,6 +1181,25 @@ static NSString *const kMPStateKey = @"state";
     [self logLTVIncrease:increaseAmount eventName:eventName eventInfo:nil];
 }
 
+- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
+    if (execStatus == MPExecStatusSuccess) {
+        MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
+        if (kitEvent) {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Forwarding calls to kits
+                [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logLTVIncrease:event:)
+                                                                          event:nil
+                                                                     parameters:nil
+                                                                    messageType:MPMessageTypeUnknown
+                                                                       userInfo:nil
+                ];
+            });
+        } else {
+            MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
+        }
+    }
+}
+
 - (void)logLTVIncrease:(double)increaseAmount eventName:(NSString *)eventName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     NSMutableDictionary *eventDictionary = [@{@"$Amount":@(increaseAmount),
                                               kMPMethodName:@"LogLTVIncrease"}
@@ -1201,23 +1220,8 @@ static NSString *const kMPStateKey = @"state";
     
     [self.backendController logEvent:event
                    completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
-                       if (execStatus == MPExecStatusSuccess) {
-                           MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
-                           if (kitEvent) {
-                               dispatch_async(dispatch_get_main_queue(), ^{
-                                   // Forwarding calls to kits
-                                   [[MParticle sharedInstance].kitContainer_PRIVATE forwardSDKCall:@selector(logLTVIncrease:event:)
-                                                                                     event:nil
-                                                                                parameters:nil
-                                                                               messageType:MPMessageTypeUnknown
-                                                                                  userInfo:nil
-                                    ];
-                               });
-                           } else {
-                               MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
-                           }
-                       }
-                   }];
+        [self logLTVIncreaseCallback:event execStatus:execStatus];
+    }];
 }
 
 #pragma mark Extensions

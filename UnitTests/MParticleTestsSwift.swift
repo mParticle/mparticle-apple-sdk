@@ -320,4 +320,32 @@ class MParticleTestsSwift: XCTestCase {
             """
         )
     }
+    
+    func testLogLTVIncreaseCallbackDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        mparticle.logLTVIncreaseCallback(MPEvent(), execStatus: .success)
+        
+        XCTAssertNil(receivedMessage)
+    }
+
+    func testLogLTVIncreaseCallbackDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.logLTVIncreaseCallback(expectedEvent, execStatus: .success)
+    
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+    
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked LTV increase event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
 }
+
+
