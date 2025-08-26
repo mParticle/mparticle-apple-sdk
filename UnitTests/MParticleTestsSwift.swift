@@ -516,7 +516,7 @@ class MParticleTestsSwift: XCTestCase {
         _ = mparticle.backgroundLocationTracking
         XCTAssertEqual(listenerController.onAPICalledApiNames[1].description, "backgroundLocationTracking")
     }
-    
+#if !MPARTICLE_LOCATION_DISABLE
     func testLocationListenerControllerCalled() {
         _ = mparticle.location
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "location")
@@ -541,7 +541,7 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.endLocationTracking()
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endLocationTracking")
     }
-    
+#endif
     func testNetworkPermissionListenerControllerCalled() {
         mparticle.logNetworkPerformance("", httpMethod: "", startTime: 0.0, duration: 1.0, bytesSent: 100, bytesReceived: 200)
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
