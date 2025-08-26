@@ -12,6 +12,13 @@
 - (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logEventCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message;
+- (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext;
+- (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message;
+- (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus;
+- (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus;
 
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;

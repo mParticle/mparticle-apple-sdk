@@ -231,4 +231,133 @@ class MParticleTestsSwift: XCTestCase {
             """
         )
     }
+
+    func testLeaveBreadcrumbCallbackDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        mparticle.leaveBreadcrumbCallback(MPEvent(), execStatus: .success)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Left breadcrumb: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testLeaveBreadcrumbCallbackDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .success)
+        
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked breadcrumb event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+
+    func testLogErrorCallbackSuccess() {
+        mparticle.logErrorCallback([:], execStatus: .success, message: "error")
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Logged error with message: error
+            """
+        )
+    }
+    
+    func testLogErrorCallbackFail() {
+        mparticle.logErrorCallback([:], execStatus: .fail, message: "error")
+        
+        XCTAssertNil(receivedMessage)
+    }
+
+    func testLogExceptionCallbackSuccess() {
+        let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
+        mparticle.logExceptionCallback(exception, execStatus: .success, message: "exception", topmostContext: nil)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Logged exception name: exception, reason: Test, topmost context: (null)
+            """
+        )
+    }
+    
+    func testLogExceptionCallbackFail() {
+        let exception = NSException(name: NSExceptionName("Test"), reason: "Test", userInfo: nil)
+        mparticle.logExceptionCallback(exception, execStatus: .fail, message: "exception", topmostContext: nil)
+        
+        XCTAssertNil(receivedMessage)
+    }
+    
+    func testLogCrashCallbackSuccess() {
+        mparticle.logCrashCallback(.success, message: "Message")
+        XCTAssertEqual(receivedMessage, "mParticle -> Logged crash with message: Message")
+    }
+
+    func testLogCommerceEventCallbackSuccess() {
+        let commerceEvent = MPCommerceEvent()
+        mparticle.logCommerceEventCallback(commerceEvent, execStatus: .success)
+        
+        XCTAssertNil(receivedMessage)
+    }
+    
+    func testLogCommerceEventCallbackFail() {
+        let commerceEvent = MPCommerceEvent()
+        mparticle.logCommerceEventCallback(commerceEvent, execStatus: .fail)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Failed to log commerce event: MPCommerceEvent {
+            }
+            
+            """
+        )
+    }
+    
+    func testLogLTVIncreaseCallbackDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        mparticle.logLTVIncreaseCallback(MPEvent(), execStatus: .success)
+        
+        XCTAssertNil(receivedMessage)
+    }
+
+    func testLogLTVIncreaseCallbackDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.logLTVIncreaseCallback(expectedEvent, execStatus: .success)
+    
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+    
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked LTV increase event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testLogNetworkPerformanceCallbackSuccess() {
+        mparticle.logNetworkPerformanceCallback(.success)
+        
+        XCTAssertEqual(receivedMessage, "mParticle -> Logged network performance measurement")
+    }
+    
+    func testLogNetworkPerformanceCallbackFail() {
+        mparticle.logNetworkPerformanceCallback(.fail)
+        
+        XCTAssertNil(receivedMessage)
+    }
 }
+
+
