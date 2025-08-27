@@ -469,6 +469,70 @@
     [self.identityMock verifyWithDelay:0.2];
 }
 
+- (void)testDontTriggerIdentifyWithNoRoktHashedEmailUserIdentityType {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
+    
+    //Mock Identity as needed
+    [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [[[self.identityMock stub] andReturn:currentUser] currentUser];
+    
+    [[self.identityMock reject] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
+        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityOther)], @"test@yahoo.com");
+        return true;
+    }] completion:OCMOCK_ANY];
+    
+    NSString *identifier = @"testView";
+    NSDictionary *attributes = @{@"emailsha256": @"test@gmail.com", @"sandbox": @"false"};
+    
+    [self.rokt selectPlacements:identifier attributes:attributes];
+    
+    [self.identityMock verifyWithDelay:0.2];
+}
+
+- (void)testTriggeredIdentifyWithNoRoktHashedEmailUserIdentityType {
+    MParticleUser *currentUser = [MParticle sharedInstance].identity.currentUser;
+
+    MPUserDefaults *userDefaults = [MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity];
+    
+    NSArray *userIdentityArray = @[@{@"n" : [NSNumber numberWithLong:MPIdentityOther], @"i" : @"test@yahoo.com"}];
+    
+    [userDefaults setMPObject:userIdentityArray forKey:kMPUserIdentityArrayKey userId:currentUser.userId];
+    XCTAssertEqualObjects(currentUser.identities[@(MPIdentityOther)], @"test@yahoo.com");
+    
+    //Mock Identity as needed
+    [[[self.mockRokt stub] andReturn:nil] getRoktHashedEmailUserIdentityType];
+    MParticle *instance = [MParticle sharedInstance];
+    self.mockInstance = OCMPartialMock(instance);
+    self.identityMock = OCMClassMock([MPIdentityApi class]);
+    OCMStub([(MParticle *)self.mockInstance identity]).andReturn(self.identityMock);
+    [[[self.mockInstance stub] andReturn:self.mockInstance] sharedInstance];
+    [[[self.identityMock stub] andReturn:currentUser] currentUser];
+    
+    [[self.identityMock expect] identify:[OCMArg checkWithBlock:^BOOL(MPIdentityApiRequest *request) {
+        XCTAssertEqualObjects([request.identities objectForKey:@(MPIdentityEmail)], @"test@gmail.com");
+        return true;
+    }] completion:OCMOCK_ANY];
+    
+    NSString *identifier = @"testView";
+    NSDictionary *attributes = @{@"email": @"test@gmail.com", @"emailsha256": @"test@outlook.com", @"sandbox": @"false"};
+    
+    [self.rokt selectPlacements:identifier attributes:attributes];
+    
+    [self.identityMock verifyWithDelay:0.2];
+}
+
 - (void)testPurchaseFinalized {
     MParticle *instance = [MParticle sharedInstance];
     self.mockInstance = OCMPartialMock(instance);
