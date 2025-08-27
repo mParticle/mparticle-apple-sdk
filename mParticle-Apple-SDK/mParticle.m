@@ -53,7 +53,7 @@ static NSString *const kMPStateKey = @"state";
 
 @property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
-@property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
+@property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
@@ -240,7 +240,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (MPILogLevel)logLevel {
-    return [MParticle sharedInstance].stateMachine.logLevel;
+    return self.stateMachine.logLevel;
 }
 
 - (void)setLogLevel:(MPILogLevel)logLevel {
@@ -248,7 +248,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (BOOL)optOut {
-    return [MParticle sharedInstance].stateMachine.optOut;
+    return self.stateMachine.optOut;
 }
 
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
@@ -290,7 +290,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (NSString *)uniqueIdentifier {
-    return [MParticle sharedInstance].stateMachine.consumerInfo.uniqueIdentifier;
+    return self.stateMachine.consumerInfo.uniqueIdentifier;
 }
 
 - (void)setUploadInterval:(NSTimeInterval)uploadInterval {
@@ -502,7 +502,7 @@ static NSString *const kMPStateKey = @"state";
     }
     
     [MPStateMachine_PRIVATE setEnvironment:environment];
-    [MParticle sharedInstance].stateMachine.automaticSessionTracking = options.automaticSessionTracking;
+    self.stateMachine.automaticSessionTracking = options.automaticSessionTracking;
     if (options.attStatus != nil) {
         [self setATTStatus:(MPATTAuthorizationStatus)options.attStatus.integerValue withATTStatusTimestampMillis:options.attStatusTimestampMillis];
     }
@@ -536,7 +536,7 @@ static NSString *const kMPStateKey = @"state";
         return session;
     }
     
-    MPSession *sessionInternal = MParticle.sharedInstance.stateMachine.currentSession;
+    MPSession *sessionInternal = self.stateMachine.currentSession;
     
     if (sessionInternal) {
         session = [[MParticleSession alloc] initWithUUID:sessionInternal.uuid];
@@ -556,7 +556,7 @@ static NSString *const kMPStateKey = @"state";
         [self.kitContainer_PRIVATE removeAllSideloadedKits];
         
         // Clean up persistence
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:self.identity] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine backendController:[MParticle sharedInstance].backendController identity:self.identity] resetDefaults];
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
@@ -974,11 +974,11 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)setATTStatus:(MPATTAuthorizationStatus)status withATTStatusTimestampMillis:(NSNumber *)attStatusTimestampMillis {
-    NSNumber *currentStatus = [MParticle sharedInstance].stateMachine.attAuthorizationStatus;
+    NSNumber *currentStatus = self.stateMachine.attAuthorizationStatus;
     if (currentStatus == nil || currentStatus.integerValue != status) {
-        [MParticle sharedInstance].stateMachine.attAuthorizationStatus = @(status);
+        self.stateMachine.attAuthorizationStatus = @(status);
         if (attStatusTimestampMillis != nil) {
-            [MParticle sharedInstance].stateMachine.attAuthorizationTimestamp = attStatusTimestampMillis;
+            self.stateMachine.attAuthorizationTimestamp = attStatusTimestampMillis;
         }
     }
     
@@ -1330,7 +1330,7 @@ static NSString *const kMPStateKey = @"state";
     [self.listenerController onAPICalled:_cmd];
     
 #ifndef MPARTICLE_LOCATION_DISABLE
-    return [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking;
+    return self.stateMachine.locationManager.backgroundLocationTracking;
 #else
     return false;
 #endif
@@ -1350,12 +1350,12 @@ static NSString *const kMPStateKey = @"state";
 - (CLLocation *)location {
     [self.listenerController onAPICalled:_cmd];
     
-    return [MParticle sharedInstance].stateMachine.location;
+    return self.stateMachine.location;
 }
 
 - (void)setLocation:(CLLocation *)location {
-    if (![[MParticle sharedInstance].stateMachine.location isEqual:location]) {
-        [MParticle sharedInstance].stateMachine.location = location;
+    if (![self.stateMachine.location isEqual:location]) {
+        self.stateMachine.location = location;
         MPILogDebug(@"Set location %@", location);
         
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -1382,8 +1382,7 @@ static NSString *const kMPStateKey = @"state";
 - (void)beginLocationTracking:(CLLocationAccuracy)accuracy minDistance:(CLLocationDistance)distanceFilter authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest {
     [self.listenerController onAPICalled:_cmd parameter1:@(accuracy) parameter2:@(distanceFilter)];
     
-    MPStateMachine_PRIVATE *stateMachine = [MParticle sharedInstance].stateMachine;
-    if (stateMachine.optOut) {
+    if (self.stateMachine.optOut) {
         return;
     }
     
