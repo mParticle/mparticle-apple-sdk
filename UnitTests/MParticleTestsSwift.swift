@@ -8,6 +8,7 @@ import mParticle_Apple_SDK
 class MParticleTestsSwift: XCTestCase {
     var receivedMessage: String?
     var mparticle: MParticle!
+    var listenerController: MPListenerControllerMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -19,6 +20,9 @@ class MParticleTestsSwift: XCTestCase {
         mparticle = MParticle.sharedInstance()
         mparticle.logLevel = .verbose
         mparticle.customLogger = customLogger
+        listenerController = MPListenerControllerMock()
+        listenerController.onAPICalledExpectation = XCTestExpectation()
+        mparticle.listenerController = listenerController
     }
     
     override func tearDown() {
@@ -358,6 +362,255 @@ class MParticleTestsSwift: XCTestCase {
         
         XCTAssertNil(receivedMessage)
     }
-}
+    
+    func testSetSharedInstance() {
+        MParticle.setSharedInstance(mparticle)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setSharedInstance:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === mparticle)
+    }
+    
+    func testStartWithOptionsListenerControllerCalled() {
+        let options = MParticleOptions(key: "key", secret: "secret")
+        mparticle.start(with: options)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "startWithOptions:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === options)
+    }
+    
+    func testBeginTimedEventListenerControllerCalled() {
+        let expectedEvent = MPEvent()
+        mparticle.beginTimedEvent(expectedEvent)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+    }
+    
+    func testEndTimedEventListenerControllerCalled() {
+        let expectedEvent = MPEvent()
+        mparticle.endTimedEvent(expectedEvent)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endTimedEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+    }
+    
+    func testLogEventWithBaseEventListenerControllerCalled() {
+        let expectedEvent = MPBaseEvent()
+        mparticle.logEvent(expectedEvent)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+    }
+    
+    func testLogCustomEventListenerControllerCalled() {
+        let expectedEvent = MPEvent()
+        mparticle.logEvent(expectedEvent)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+    }
+    
+    func testLogScreenEventListenerControllerCalled() {
+        let expectedEvent = MPEvent()
+        mparticle.logScreenEvent(expectedEvent)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logScreenEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+    }
+    
+    func testLeaveBreadcrumbListenerControllerCalled() {
+        mparticle.leaveBreadcrumb("expectedEvent", eventInfo: [:])
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "leaveBreadcrumb:eventInfo:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "expectedEvent")
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String: String], [:])
+    }
+    
+    func testLogErrorListenerControllerCalled() {
+        mparticle.logError("message", eventInfo: [:])
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logError:eventInfo:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "message")
+    }
 
+    func testLogExceptionListenerControllerCalled() {
+        let expectedException = NSException(name: NSExceptionName("test"), reason: "test")
+        mparticle.logException(expectedException, topmostContext: nil)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logException:topmostContext:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedException)
+    }
+    
+    func testLogCrashListenerControllerCalled() {
+        mparticle.logCrash("message", stackTrace: "stackTrace", plCrashReport: "report")
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCrash:stackTrace:plCrashReport:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "message")
+    }
+    
+    func testLogCommerceEventListenerControllerCalled() {
+        let expectedEvent = MPCommerceEvent()
+        mparticle.logCommerceEvent(expectedEvent)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+    }
+    
+    
+    func testLogLTVIncreaseListenerControllerCalled() {
+        mparticle.logLTVIncrease(2.0, eventName: "name", eventInfo: [:])
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Double, 2.0)
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
+        XCTAssertEqual(listenerController.onAPICalledParameter3 as? [String: String], [:])
+    }
+    
+    func testSetIntegrationAttributesListenerControllerCalled() {
+        mparticle.setIntegrationAttributes(["test": "test"], forKit: NSNumber(value: 1))
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setIntegrationAttributes:forKit:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String: String], ["test": "test"])
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? Int, 1)
+    }
+
+    func testClearIntegrationAttributesListenerControllerCalled() {
+        mparticle.clearIntegrationAttributes(forKit: 1)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "clearIntegrationAttributesForKit:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Int, 1)
+    }
+
+    func testOnKitsInitializedListenerControllerCalled() {
+        mparticle.onKitsInitialized {}
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "onKitsInitialized:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+    }
+    
+    func testExecuteKitsInitializedBlocks() {
+        mparticle.executeKitsInitializedBlocks()
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "executeKitsInitializedBlocks")
+        XCTAssertNil(listenerController.onAPICalledParameter1)
+    }
+
+    func testIsKitActiveListenerControllerCalled() {
+        mparticle.isKitActive(1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "isKitActive:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Int, 1)
+    }
+
+    func testKitInstanceListenerControllerCalled() {
+        mparticle.kitInstance(1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "kitInstance:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Int, 1)
+    }
+
+    func testKitInstanceCompletionHandlerListenerControllerCalled() {
+        mparticle.kitInstance(1) { _ in }
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "kitInstance:completionHandler:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Int, 1)
+    }
+#if os(iOS)
+    func testBackgroundLocationTrackingListenerControllerCalled() {
+        mparticle.backgroundLocationTracking = true
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setBackgroundLocationTracking:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Bool, true)
+        
+        _ = mparticle.backgroundLocationTracking
+        XCTAssertEqual(listenerController.onAPICalledApiNames[1].description, "backgroundLocationTracking")
+    }
+    
+    func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerCalled() {
+        let expectedWebView = WKWebView()
+        mparticle.initializeWKWebView(expectedWebView, bridgeName: "name")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "initializeWKWebView:bridgeName:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
+    }
+    
+    func testLogNotificationOpenedWithUserInfoAndActionIdentifierListenerControllerCalled() {
+        mparticle.logNotificationOpened(userInfo: [:], andActionIdentifier: "identifier")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNotificationOpenedWithUserInfo:andActionIdentifier:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String:String], [:])
+    }
+    
+    func testUserContentControllerDidReceiveScriptMessageListenerControllerCalled() {
+        mparticle.userContentController(WKUserContentController(), didReceive: WKScriptMessage())
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "userContentController:didReceiveScriptMessage:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+        XCTAssertNotNil(listenerController.onAPICalledParameter2)
+    }
+    
+    func testHandleWebviewCommandListenerControllerCalled() {
+        mparticle.handleWebviewCommand("command", dictionary: [:])
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "handleWebviewCommand:dictionary:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "command")
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String:String], [:])
+    }
+    
+#if !MPARTICLE_LOCATION_DISABLE
+    func testLocationListenerControllerCalled() {
+        _ = mparticle.location
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "location")
+    }
+    
+    func testSetLocationListenerControllerCalled() {
+        let expectedLocation = CLLocation(latitude: 1, longitude: 2)
+        mparticle.location = expectedLocation
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setLocation:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? CLLocation, expectedLocation)
+    }
+
+    func testBeginLocationTrackingListenerControllerCalled() {
+        mparticle.beginLocationTracking(CLLocationAccuracy.nan, minDistance: CLLocationDistance.nan)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginLocationTracking:minDistance:authorizationRequest:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+        XCTAssertNotNil(listenerController.onAPICalledParameter2)
+    }
+
+    func testEndLocationTrackingListenerControllerCalled() {
+        mparticle.endLocationTracking()
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endLocationTracking")
+    }
+#endif
+#endif
+    func testNetworkPermissionListenerControllerCalled() {
+        mparticle.logNetworkPerformance("", httpMethod: "", startTime: 0.0, duration: 1.0, bytesSent: 100, bytesReceived: 200)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNetworkPerformance:httpMethod:startTime:duration:bytesSent:bytesReceived:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+    }
+
+    func testIncrementSessionAttributeListenerControllerCalled() {
+        mparticle.incrementSessionAttribute("key", byValue: 1)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "incrementSessionAttribute:byValue:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "key")
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? Int, 1)
+    }
+
+    func testSetSessionAttributeListenerControllerCalled() {
+        mparticle.setSessionAttribute("key", value: "value")
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setSessionAttribute:value:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "key")
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "value")
+    }
+
+    func testUploadListenerControllerCalled() {
+        mparticle.upload()
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 1.0)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "upload")
+    }
+
+    func testIsValidBridgeNameListenerControllerCalled() {
+        mparticle.isValidBridgeName("name")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "isValidBridgeName:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "name")
+    }
+
+    func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerReturnValue() {
+        mparticle.webviewBridgeValue(withCustomerBridgeName: "value")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "webviewBridgeValueWithCustomerBridgeName:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "value")
+    }
+}
 

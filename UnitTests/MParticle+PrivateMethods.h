@@ -1,6 +1,7 @@
 #import "SettingsProvider.h"
 #import "MParticleSwift.h"
 #import "MPDataPlanFilter.h"
+#import "MPListenerController.h"
 
 @interface MParticle (Tests)
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut;
@@ -19,9 +20,18 @@
 - (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus;
 - (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus;
++ (void)setSharedInstance:(MParticle *)instance;
+- (void)executeKitsInitializedBlocks;
+- (BOOL)isValidBridgeName:(NSString *)bridgeName;
+- (NSString *)webviewBridgeValueWithCustomerBridgeName:(NSString *)customerBridgeName;
+#if TARGET_OS_IOS == 1
+- (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
+#endif
+- (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
+@property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @end
     
