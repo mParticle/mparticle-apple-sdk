@@ -507,7 +507,7 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "kitInstance:completionHandler:")
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? Int, 1)
     }
-
+#if os(iOS)
     func testBackgroundLocationTrackingListenerControllerCalled() {
         mparticle.backgroundLocationTracking = true
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "setBackgroundLocationTracking:")
@@ -516,6 +516,35 @@ class MParticleTestsSwift: XCTestCase {
         _ = mparticle.backgroundLocationTracking
         XCTAssertEqual(listenerController.onAPICalledApiNames[1].description, "backgroundLocationTracking")
     }
+    
+    func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerCalled() {
+        let expectedWebView = WKWebView()
+        mparticle.initializeWKWebView(expectedWebView, bridgeName: "name")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "initializeWKWebView:bridgeName:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
+    }
+    
+    func testLogNotificationOpenedWithUserInfoAndActionIdentifierListenerControllerCalled() {
+        mparticle.logNotificationOpened(userInfo: [:], andActionIdentifier: "identifier")
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNotificationOpenedWithUserInfo:andActionIdentifier:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String:String], [:])
+    }
+    
+    func testUserContentControllerDidReceiveScriptMessageListenerControllerCalled() {
+        mparticle.userContentController(WKUserContentController(), didReceive: WKScriptMessage())
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "userContentController:didReceiveScriptMessage:")
+        XCTAssertNotNil(listenerController.onAPICalledParameter1)
+        XCTAssertNotNil(listenerController.onAPICalledParameter2)
+    }
+    
+    func testHandleWebviewCommandListenerControllerCalled() {
+        mparticle.handleWebviewCommand("command", dictionary: [:])
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "handleWebviewCommand:dictionary:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "command")
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String:String], [:])
+    }
+    
 #if !MPARTICLE_LOCATION_DISABLE
     func testLocationListenerControllerCalled() {
         _ = mparticle.location
@@ -541,6 +570,7 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.endLocationTracking()
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "endLocationTracking")
     }
+#endif
 #endif
     func testNetworkPermissionListenerControllerCalled() {
         mparticle.logNetworkPerformance("", httpMethod: "", startTime: 0.0, duration: 1.0, bytesSent: 100, bytesReceived: 200)
@@ -577,38 +607,10 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "name")
     }
 
-    func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerCalled() {
-        let expectedWebView = WKWebView()
-        mparticle.initializeWKWebView(expectedWebView, bridgeName: "name")
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "initializeWKWebView:bridgeName:")
-        XCTAssertNotNil(listenerController.onAPICalledParameter1)
-        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
-    }
-
     func testWebviewBridgeValueWithCustomerBridgeNameListenerControllerReturnValue() {
         mparticle.webviewBridgeValue(withCustomerBridgeName: "value")
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "webviewBridgeValueWithCustomerBridgeName:")
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "value")
-    }
-
-    func testUserContentControllerDidReceiveScriptMessageListenerControllerCalled() {
-        mparticle.userContentController(WKUserContentController(), didReceive: WKScriptMessage())
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "userContentController:didReceiveScriptMessage:")
-        XCTAssertNotNil(listenerController.onAPICalledParameter1)
-        XCTAssertNotNil(listenerController.onAPICalledParameter2)
-    }
-
-    func testHandleWebviewCommandListenerControllerCalled() {
-        mparticle.handleWebviewCommand("command", dictionary: [:])
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "handleWebviewCommand:dictionary:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "command")
-        XCTAssertEqual(listenerController.onAPICalledParameter2 as? [String:String], [:])
-    }
-
-    func testLogNotificationOpenedWithUserInfoAndActionIdentifierListenerControllerCalled() {
-        mparticle.logNotificationOpened(userInfo: [:], andActionIdentifier: "identifier")
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logNotificationOpenedWithUserInfo:andActionIdentifier:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? [String:String], [:])
     }
 }
 

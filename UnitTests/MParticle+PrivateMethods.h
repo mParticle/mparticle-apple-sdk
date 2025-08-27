@@ -24,7 +24,9 @@
 - (void)executeKitsInitializedBlocks;
 - (BOOL)isValidBridgeName:(NSString *)bridgeName;
 - (NSString *)webviewBridgeValueWithCustomerBridgeName:(NSString *)customerBridgeName;
+#if TARGET_OS_IOS == 1
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
+#endif
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 
 @property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
