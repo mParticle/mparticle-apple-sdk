@@ -56,7 +56,7 @@ static NSString *const kMPStateKey = @"state";
 @property (nonatomic, strong) MPStateMachine_PRIVATE *stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
 @property (nonatomic, strong) MPAppNotificationHandler *appNotificationHandler;
-@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong, nonnull) MParticleOptions *options;
 @property (nonatomic, strong, nullable) MPKitActivity *kitActivity;
 @property (nonatomic) BOOL initialized;
