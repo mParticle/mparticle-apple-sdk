@@ -6,3 +6,7 @@
 #import "MParticleOptions+MParticlePrivate.h"
 #import "MParticle+PrivateMethods.h"
 #import "SettingsProvider.h"
+#import "MPSession.h"
+#import "MPNetworkPerformance.h"
+#import "MPEnums.h"
+#import "MParticleUserNotification.h"

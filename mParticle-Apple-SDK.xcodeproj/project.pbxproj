@@ -17,6 +17,8 @@
 		35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */; };
 		35329FF52E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
 		35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
+		3567528F2E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
+		356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
 		356D4A592E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		356D4A5C2E58B25900CB69FE /* MPDataPlanFilterMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */; };
@@ -566,6 +568,7 @@
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
+		3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPBackendControllerMock.swift; sourceTree = "<group>"; };
 		356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderMock.swift; sourceTree = "<group>"; };
 		356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDataPlanFilterMock.swift; sourceTree = "<group>"; };
 		356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPListenerControllerMock.swift; sourceTree = "<group>"; };
@@ -886,6 +889,7 @@
 		356D4A572E58B01100CB69FE /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */,
 				356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */,
 				356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */,
 				359BB0052E57A56300A8A704 /* MPUserDefaultsMock.swift */,
@@ -1593,6 +1597,7 @@
 				53A79A7529CCCD6400E7489F /* Sources */,
 				53A79A7629CCCD6400E7489F /* Frameworks */,
 				53A79A7729CCCD6400E7489F /* Resources */,
+				356752912E5F80CC00DEEE23 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -1713,6 +1718,26 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		356752912E5F80CC00DEEE23 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Type a scrip#!/usr/bin/env bash\nset -euo pipefail\n\n# Сканируем проектные .swift и .m файлы\nfind \"$SRCROOT\" -type f \\( -name \"*.swift\" -o -name \"*.m\" \\) -print0 | while IFS= read -r -d '' f; do\n  awk -v file=\"$f\" '\n    function reset(){ detected=0; started=0; depth=0; cnt=0; second=0 }\n    BEGIN{ reset() }\n    {\n      line=$0\n\n      # Старт метода: Swift func ...  или ObjC  -/+ (...) ...\n      if (!detected) {\n        if (match(line, /^[ \\t]*func[ \\t]/) || match(line, /^[ \\t]*[-+][ \\t]*\\([^)]*\\)/)) {\n          detected=1; started=0; depth=0; cnt=0; second=0\n        }\n      }\n\n      if (detected) {\n        # Считаем вхождения обоих паттернов\n        occ = gsub(/MParticle\\.sharedInstance|\\[MParticle[ \\t]+sharedInstance\\]/, \"&\")\n        if (occ>0){ cnt+=occ; if (cnt==2) second=NR }\n\n        # Простейший трекер скобок для тела метода (учтёт вложенные блоки)\n        openN  = gsub(/\\{/, \"{\")\n        closeN = gsub(/\\}/, \"}\")\n        if (openN>0) started=1\n        depth += openN - closeN\n\n        # Конец тела метода: вернулись на исходный уровень\n        if (started && depth==0) {\n          if (cnt>1) {\n            printf \"%s:%d: warning: Repeated use of MParticle sharedInstance in one method; assign to a local variable once.\\n\", file, (second?second:NR)\n          }\n          reset()\n        }\n      }\n    }\n  ' \"$f\"\ndone\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		534CD26329CE2CE1008452B3 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -1738,6 +1763,7 @@
 				534CD27229CE2CE1008452B3 /* MPConsentSerializationTests.m in Sources */,
 				534CD27329CE2CE1008452B3 /* MPKitTestClassNoStartImmediately.m in Sources */,
 				534CD27429CE2CE1008452B3 /* BracketTests.mm in Sources */,
+				356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */,
 				534CD27529CE2CE1008452B3 /* MPIdentityTests.m in Sources */,
 				35E3FCD32E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
 				D3CEDAC62C9DB0E1001B32DF /* MPDateFormatter.swift in Sources */,
@@ -1926,6 +1952,7 @@
 				53A79CC529CE019F00E7489F /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				53A79CE429CE019F00E7489F /* MPConsentSerializationTests.m in Sources */,
 				53A79CCA29CE019F00E7489F /* MPKitTestClassNoStartImmediately.m in Sources */,
+				3567528F2E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */,
 				53A79CF029CE019F00E7489F /* BracketTests.mm in Sources */,
 				35E3FCD22E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
 				D3CEDAC52C9DB0E0001B32DF /* MPDateFormatter.swift in Sources */,
