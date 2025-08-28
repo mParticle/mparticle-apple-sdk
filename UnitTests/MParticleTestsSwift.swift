@@ -376,11 +376,18 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(listenerController.onAPICalledParameter1 === options)
     }
     
-    func testBeginTimedEventListenerControllerCalled() {
+    func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
         let expectedEvent = MPEvent()
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
         mparticle.beginTimedEvent(expectedEvent)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+        XCTAssertTrue(backendController.beginTimedEventCalled)
+        XCTAssertTrue(backendController.beginTimedEventEventParam === expectedEvent)
+        XCTAssertNotNil(backendController.beginTimedEventCompletionHandler)
+        backendController.beginTimedEventCompletionHandler?(expectedEvent, .success)
+        XCTAssertNotNil(receivedMessage)
     }
     
     func testEndTimedEventListenerControllerCalled() {
