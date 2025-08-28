@@ -29,9 +29,10 @@
 #endif
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 
-@property (nonatomic, strong, nonnull) MPBackendController_PRIVATE *backendController;
+@property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
+@property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @end
     

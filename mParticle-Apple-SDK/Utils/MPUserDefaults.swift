@@ -37,14 +37,14 @@ public protocol MPUserDefaultsProtocol {
     private var backendController: MPBackendController_PRIVATE?
     private var identity: MPIdentityApi?
     
-    required public init(stateMachine: MPStateMachine_PRIVATE, backendController: MPBackendController_PRIVATE, identity: MPIdentityApi) {
-        self.stateMachine = stateMachine
-        self.backendController = backendController
+    required public init(stateMachine: MPStateMachineProtocol, backendController: MPBackendControllerProtocol, identity: MPIdentityApi) {
+        self.stateMachine = stateMachine as? MPStateMachine_PRIVATE
+        self.backendController = backendController as? MPBackendController_PRIVATE
         self.identity = identity
         super.init()
     }
 
-    @objc public class func standardUserDefaults(stateMachine: MPStateMachine_PRIVATE, backendController: MPBackendController_PRIVATE, identity: MPIdentityApi) -> MPUserDefaults {
+    @objc public class func standardUserDefaults(stateMachine: MPStateMachineProtocol, backendController: MPBackendControllerProtocol, identity: MPIdentityApi) -> MPUserDefaults {
         if userDefaults == nil {
             userDefaults = self.init(stateMachine: stateMachine, backendController: backendController, identity: identity)
         }

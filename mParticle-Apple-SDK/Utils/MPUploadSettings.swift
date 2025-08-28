@@ -71,7 +71,7 @@ public class MPUploadSettings: NSObject, NSCopying, NSSecureCoding {
         
     }
     
-    @objc public class func currentUploadSettings(stateMachine: MPStateMachine_PRIVATE, networkOptions: MPNetworkOptions) -> MPUploadSettings {
+    @objc public class func currentUploadSettings(stateMachine: MPStateMachineProtocol, networkOptions: MPNetworkOptions) -> MPUploadSettings {
         return MPUploadSettings(apiKey: stateMachine.apiKey, secret: stateMachine.secret, networkOptions: networkOptions)
     }
     

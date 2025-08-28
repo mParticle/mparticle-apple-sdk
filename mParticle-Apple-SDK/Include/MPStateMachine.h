@@ -13,7 +13,26 @@
 @class MPDataPlanOptions;
 @class MPLaunchInfo;
 
-@interface MPStateMachine_PRIVATE : NSObject
+@protocol MPStateMachineProtocol
+@property (nonatomic) BOOL optOut;
+@property (nonatomic) MPILogLevel logLevel;
+@property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;
+@property (nonatomic) BOOL automaticSessionTracking;
+@property (nonatomic, weak, nullable) MPSession *currentSession;
+@property (nonatomic) NSNumber * _Nullable attAuthorizationStatus;
+@property (nonatomic) NSNumber * _Nullable attAuthorizationTimestamp;
+@property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
+@property (nonatomic, strong, nonnull) NSString *secret __attribute__((const));
+
+#if TARGET_OS_IOS == 1
+#ifndef MPARTICLE_LOCATION_DISABLE
+@property (nonatomic, strong, nullable) CLLocation *location;
+@property (nonatomic, strong, nullable) MPLocationManager_PRIVATE *locationManager;
+#endif
+#endif
+@end
+
+@interface MPStateMachine_PRIVATE : NSObject<MPStateMachineProtocol>
 
 @property (nonatomic, strong, nonnull) NSString *apiKey __attribute__((const));
 @property (nonatomic, strong, nonnull) MPConsumerInfo *consumerInfo;

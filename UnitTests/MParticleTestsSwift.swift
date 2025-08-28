@@ -41,6 +41,20 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out Failed: 1")
     }
     
+    func testSetOptOutOptOutValueIsDifferentItShouldBeChangedAndDeliveredToBackendController() {
+        let backendController = MPBackendControllerMock()
+        let state = MPStateMachineMock()
+        mparticle.backendController = backendController
+        mparticle.stateMachine = state
+        XCTAssertFalse(state.optOut)
+        mparticle.optOut = true
+        XCTAssertTrue(state.optOut)
+        XCTAssertTrue(backendController.setOptOutCalled)
+        XCTAssertEqual(backendController.setOptOutOptOutStatusParam, true)
+        XCTAssertNotNil(backendController.setOptOutCompletionHandler)
+        backendController.setOptOutCompletionHandler?(true, .success)
+    }
+    
     func testIdentifyNoDispatchCallbackNoErrorDefferedKitAvailable() {
         mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]();
         let expectedApiResult = MPIdentityApiResult()
@@ -376,11 +390,18 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(listenerController.onAPICalledParameter1 === options)
     }
     
-    func testBeginTimedEventListenerControllerCalled() {
+    func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
         let expectedEvent = MPEvent()
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
         mparticle.beginTimedEvent(expectedEvent)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
+        XCTAssertTrue(backendController.beginTimedEventCalled)
+        XCTAssertTrue(backendController.beginTimedEventEventParam === expectedEvent)
+        XCTAssertNotNil(backendController.beginTimedEventCompletionHandler)
+        backendController.beginTimedEventCompletionHandler?(expectedEvent, .success)
+        XCTAssertNotNil(receivedMessage)
     }
     
     func testEndTimedEventListenerControllerCalled() {
