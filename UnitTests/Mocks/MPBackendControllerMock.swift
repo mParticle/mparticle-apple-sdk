@@ -293,7 +293,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         endLocationTrackingCalled = true
         return endLocationTrackingReturnValue
     }
-    
+#endif
     // MARK: - Notifications
     var logUserNotificationCalled = false
     var logUserNotificationParam: MParticleUserNotification?
@@ -302,6 +302,5 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         logUserNotificationCalled = true
         logUserNotificationParam = userNotification
     }
-#endif
 #endif
 }

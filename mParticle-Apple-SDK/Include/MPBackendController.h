@@ -85,8 +85,8 @@ extern const NSInteger kInvalidKey;
 #ifndef MPARTICLE_LOCATION_DISABLE
 - (MPExecStatus)beginLocationTrackingWithAccuracy:(CLLocationAccuracy)accuracy distanceFilter:(CLLocationDistance)distance authorizationRequest:(MPLocationAuthorizationRequest)authorizationRequest;
 - (MPExecStatus)endLocationTracking;
-- (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
+- (void)logUserNotification:(nonnull MParticleUserNotification *)userNotification;
 #endif
 
 @property (nonatomic, readwrite) NSTimeInterval sessionTimeout;
