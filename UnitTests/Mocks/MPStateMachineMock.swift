@@ -3,6 +3,7 @@ import XCTest
 import mParticle_Apple_SDK_NoLocation
 #else
 import mParticle_Apple_SDK
+import CoreLocation
 #endif
 
 class MPStateMachineMock: MPStateMachineProtocol {
