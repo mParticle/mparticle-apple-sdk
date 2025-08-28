@@ -276,7 +276,7 @@ static NSString *const kMPStateKey = @"state";
                                                  parameters:optOutParameters
                                                 messageType:MPMessageTypeOptOut
                                                    userInfo:@{kMPStateKey:@(optOut)}
-     ];
+    ];
     
     __weak typeof(self) weakSelf = self;
     [self.backendController setOptOut:optOut

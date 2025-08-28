@@ -33,5 +33,6 @@
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
+@property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @end
     

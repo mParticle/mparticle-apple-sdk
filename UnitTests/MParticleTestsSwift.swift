@@ -41,6 +41,20 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(receivedMessage, "mParticle -> Set Opt Out Failed: 1")
     }
     
+    func testSetOptOutOptOutValueIsDifferentItShouldBeChangedAndDeliveredToBackendController() {
+        let backendController = MPBackendControllerMock()
+        let state = MPStateMachineMock()
+        mparticle.backendController = backendController
+        mparticle.stateMachine = state
+        XCTAssertFalse(state.optOut)
+        mparticle.optOut = true
+        XCTAssertTrue(state.optOut)
+        XCTAssertTrue(backendController.setOptOutCalled)
+        XCTAssertEqual(backendController.setOptOutOptOutStatusParam, true)
+        XCTAssertNotNil(backendController.setOptOutCompletionHandler)
+        backendController.setOptOutCompletionHandler?(true, .success)
+    }
+    
     func testIdentifyNoDispatchCallbackNoErrorDefferedKitAvailable() {
         mparticle.deferredKitConfiguration_PRIVATE = [[String: String]]();
         let expectedApiResult = MPIdentityApiResult()
