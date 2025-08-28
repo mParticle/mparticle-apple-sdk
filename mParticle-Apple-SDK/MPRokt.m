@@ -224,13 +224,7 @@
     BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqualToString: user.identities[hashedEmailIdentity]]);
 
     if (shouldIdentifyFromEmail || shouldIdentifyFromHash) {
-        // If there is an existing email or hashed email but it doesn't match the what was passed in, warn the customer
-        if (shouldIdentifyFromEmail) {
-            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
-        } else if (shouldIdentifyFromHash) {
-            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
-        }
-        
+        // Identify the user with the new identity information
         MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
         [identityRequest setIdentity:email identityType:MPIdentityEmail];
         if (hashedEmailIdentity != nil) {
@@ -246,6 +240,13 @@
                 completion(apiResult.user);
             }
         }];
+        
+        // Warn the customer if we had to identify and therefore delay their Rokt placement.
+        if (shouldIdentifyFromEmail) {
+            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+        } else if (shouldIdentifyFromHash) {
+            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
+        }
     } else {
         completion(user);
     }
