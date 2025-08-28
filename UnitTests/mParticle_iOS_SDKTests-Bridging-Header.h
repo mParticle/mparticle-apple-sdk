@@ -10,3 +10,4 @@
 #import "MPNetworkPerformance.h"
 #import "MPEnums.h"
 #import "MParticleUserNotification.h"
+#import "MPConsumerInfo.h"

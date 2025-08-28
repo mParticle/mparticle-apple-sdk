@@ -19,6 +19,8 @@
 		35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
 		3567528F2E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
 		356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
+		356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356752922E60928500DEEE23 /* MPStateMachineMock.swift */; };
+		356752942E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356752922E60928500DEEE23 /* MPStateMachineMock.swift */; };
 		356D4A592E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		356D4A5A2E58B09D00CB69FE /* SettingsProviderMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */; };
 		356D4A5C2E58B25900CB69FE /* MPDataPlanFilterMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */; };
@@ -569,6 +571,7 @@
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPBackendControllerMock.swift; sourceTree = "<group>"; };
+		356752922E60928500DEEE23 /* MPStateMachineMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPStateMachineMock.swift; sourceTree = "<group>"; };
 		356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderMock.swift; sourceTree = "<group>"; };
 		356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPDataPlanFilterMock.swift; sourceTree = "<group>"; };
 		356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPListenerControllerMock.swift; sourceTree = "<group>"; };
@@ -889,6 +892,7 @@
 		356D4A572E58B01100CB69FE /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				356752922E60928500DEEE23 /* MPStateMachineMock.swift */,
 				3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */,
 				356D4A5B2E58B25500CB69FE /* MPDataPlanFilterMock.swift */,
 				356D4A5E2E5CAB0000CB69FE /* MPListenerControllerMock.swift */,
@@ -1777,6 +1781,7 @@
 				534CD27B29CE2CE1008452B3 /* MPZipTests.m in Sources */,
 				53E20DC82CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
 				534CD27C29CE2CE1008452B3 /* MPIntegrationAttributesTest.m in Sources */,
+				356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				534CD27D29CE2CE1008452B3 /* MPDataModelTests.m in Sources */,
 				534CD27F29CE2CE1008452B3 /* NSNumber+MPFormatterTests.m in Sources */,
 				534CD28029CE2CE1008452B3 /* MPResponseEventsTest.m in Sources */,
@@ -1966,6 +1971,7 @@
 				53A79CDA29CE019F00E7489F /* MPDataPlanFilterTests.m in Sources */,
 				53E20DC72CBFFCD200146A97 /* NSArray+MPCaseInsensitiveTests.swift in Sources */,
 				53A79CEC29CE019F00E7489F /* MPZipTests.m in Sources */,
+				356752942E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */,
 				53A79CCC29CE019F00E7489F /* MPIntegrationAttributesTest.m in Sources */,
 				53A79CBD29CE019F00E7489F /* MPDataModelTests.m in Sources */,
 				53A79CEE29CE019F00E7489F /* NSNumber+MPFormatterTests.m in Sources */,
