@@ -269,7 +269,8 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         waitForKitsAndUploadCompletionHandler = completionHandler
         return waitForKitsAndUploadReturnValue
     }
-
+#if os(iOS)
+#if !MPARTICLE_LOCATION_DISABLE
     // MARK: - Location
     var beginLocationTrackingCalled = false
     var beginLocationTrackingAccuracyParam: CLLocationAccuracy?
@@ -292,7 +293,7 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         endLocationTrackingCalled = true
         return endLocationTrackingReturnValue
     }
-
+    
     // MARK: - Notifications
     var logUserNotificationCalled = false
     var logUserNotificationParam: MParticleUserNotification?
@@ -301,4 +302,6 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
         logUserNotificationCalled = true
         logUserNotificationParam = userNotification
     }
+#endif
+#endif
 }
