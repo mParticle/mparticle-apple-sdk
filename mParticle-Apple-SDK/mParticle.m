@@ -172,6 +172,11 @@ static NSString *const kMPStateKey = @"state";
     return self;
 }
 
+- (void)setKitContainer_PRIVATE:(MPKitContainer_PRIVATE*) kitContainer_PRIVATE {
+    _kitContainer_PRIVATE = kitContainer_PRIVATE;
+    _kitContainer = kitContainer_PRIVATE;
+}
+
 #pragma mark MPBackendControllerDelegate methods
 - (void)sessionDidBegin:(MPSession *)session {
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -893,7 +898,7 @@ static NSString *const kMPStateKey = @"state";
             }
         };
         
-        BOOL kitsInitialized = self.kitContainer_PRIVATE.kitsInitialized;
+        BOOL kitsInitialized = self.kitContainer.kitsInitialized;
         if (kitsInitialized) {
             block();
         } else {
@@ -1294,7 +1299,7 @@ static NSString *const kMPStateKey = @"state";
 - (void)onKitsInitialized:(void(^)(void))block {
     [self.listenerController onAPICalled:_cmd parameter1:block];
     
-    BOOL kitsInitialized = [MParticle sharedInstance].kitContainer_PRIVATE.kitsInitialized;
+    BOOL kitsInitialized = self.kitContainer.kitsInitialized;
     if (kitsInitialized) {
         block();
     } else {
