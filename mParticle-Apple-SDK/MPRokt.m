@@ -243,9 +243,9 @@
         
         // Warn the customer if we had to identify and therefore delay their Rokt placement.
         if (shouldIdentifyFromEmail) {
-            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
         } else if (shouldIdentifyFromHash) {
-            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
+            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
         }
     } else {
         completion(user);
