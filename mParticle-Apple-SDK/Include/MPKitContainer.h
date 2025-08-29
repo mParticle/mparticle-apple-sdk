@@ -13,6 +13,8 @@
 
 @protocol MPKitContainerProtocol
 @property (nonatomic, strong, nonnull) NSMutableDictionary<NSNumber *, MPAttributionResult *> *attributionInfo;
+@property (nonatomic) BOOL kitsInitialized;
+
 - (void)forwardCommerceEventCall:(nonnull MPCommerceEvent *)commerceEvent;
 - (void)forwardSDKCall:(nonnull SEL)selector event:(nullable MPBaseEvent *)event parameters:(nullable MPForwardQueueParameters *)parameters messageType:(MPMessageType)messageType userInfo:(nullable NSDictionary *)userInfo;
 - (void)forwardSDKCall:(nonnull SEL)selector batch:(nonnull NSDictionary *)batch kitHandler:(void (^_Nonnull)(id<MPKitProtocol> _Nonnull kit, NSDictionary * _Nonnull batch, MPKitConfiguration * _Nonnull kitConfiguration))kitHandler;
@@ -33,6 +35,7 @@
 
 @property (nonatomic, strong, nonnull) NSArray<MPSideloadedKit*> *sideloadedKits;
 @property (nonatomic, strong, readwrite, nullable) NSArray<NSNumber *> *disabledKits;
+@property (nonatomic) BOOL kitsInitialized;
 
 + (BOOL)registerKit:(nonnull id<MPExtensionKitProtocol>)kitRegister;
 + (nullable NSSet<id<MPExtensionKitProtocol>> *)registeredKits;
