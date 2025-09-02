@@ -667,5 +667,30 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
         XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
+    
+    func testResetForSwitchingWorkspaces() {
+        let expectation = XCTestExpectation()
+        
+        let kitContainer = MPKitContainerMock()
+        
+        let persistenceController = MPPersistenceControllerMock()
+        
+        let backendController = MPBackendControllerMock()
+        
+        mparticle.kitContainer = kitContainer
+        mparticle.persistenceController = persistenceController
+        mparticle.backendController = backendController
+        
+        mparticle.reset {
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 1.0)
+        
+        XCTAssertTrue(kitContainer.flushSerializedKitsCalled)
+        XCTAssertTrue(kitContainer.removeAllSideloadedKitsCalled)
+        XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
+        XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
+    }
 }
 

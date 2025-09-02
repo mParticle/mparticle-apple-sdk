@@ -701,11 +701,14 @@ static NSString *const kMPStateKey = @"state";
     [MParticle executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine
+                                            backendController:self.backendController
+                                                     identity:self.identity] resetDefaults];
         [self.persistenceController resetDatabase];
         [MParticle executeOnMain:^{
             [self.backendController unproxyOriginalAppDelegate];
-            [MParticle setSharedInstance:nil];
+            predicate = 0;
+            _sharedInstance = nil;
             if (completion) {
                 completion();
             }

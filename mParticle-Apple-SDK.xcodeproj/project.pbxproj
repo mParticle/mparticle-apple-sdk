@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		3513081F2E6729DA002A3AD6 /* MPKitContainerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */; };
 		351308202E6729DA002A3AD6 /* MPKitContainerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */; };
+		351308242E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */; };
+		351308252E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
@@ -568,6 +570,7 @@
 
 /* Begin PBXFileReference section */
 		3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPKitContainerMock.swift; sourceTree = "<group>"; };
+		351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPPersistenceControllerMock.swift; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -895,6 +898,7 @@
 		356D4A572E58B01100CB69FE /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */,
 				3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */,
 				356752922E60928500DEEE23 /* MPStateMachineMock.swift */,
 				3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */,
@@ -1771,6 +1775,7 @@
 				534CD27229CE2CE1008452B3 /* MPConsentSerializationTests.m in Sources */,
 				534CD27329CE2CE1008452B3 /* MPKitTestClassNoStartImmediately.m in Sources */,
 				534CD27429CE2CE1008452B3 /* BracketTests.mm in Sources */,
+				351308242E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */,
 				356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */,
 				534CD27529CE2CE1008452B3 /* MPIdentityTests.m in Sources */,
 				35E3FCD32E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,
@@ -1962,6 +1967,7 @@
 				53A79CC529CE019F00E7489F /* MPKitSecondTestClassNoStartImmediately.m in Sources */,
 				53A79CE429CE019F00E7489F /* MPConsentSerializationTests.m in Sources */,
 				53A79CCA29CE019F00E7489F /* MPKitTestClassNoStartImmediately.m in Sources */,
+				351308252E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */,
 				3567528F2E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */,
 				53A79CF029CE019F00E7489F /* BracketTests.mm in Sources */,
 				35E3FCD22E549AF500DB5B18 /* MParticleSession+MParticlePrivateTests.swift in Sources */,

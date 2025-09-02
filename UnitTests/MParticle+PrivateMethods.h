@@ -37,5 +37,6 @@
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
+@property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @end
     
