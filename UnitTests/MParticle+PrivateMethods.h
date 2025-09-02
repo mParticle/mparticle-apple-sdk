@@ -28,11 +28,14 @@
 - (void)userContentController:(nonnull WKUserContentController *)userContentController didReceiveScriptMessage:(nonnull WKScriptMessage *)message;
 #endif
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
+- (void)sessionDidBegin:(MPSession *)session;
+- (void)sessionDidEnd:(nonnull MPSession *)session;
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
+@property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
 @end
     

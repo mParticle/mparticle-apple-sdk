@@ -75,7 +75,6 @@ static const NSInteger sideloadedKitCodeStartValue = 1000000000;
 }
 @property (nonatomic, strong) NSMutableArray<MPForwardQueueItem *> *forwardQueue;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, MPKitConfiguration *> *kitConfigurations;
-@property (nonatomic) BOOL kitsInitialized;
 @property (nonatomic, strong) NSDate *initializedTime;
 @end
 

@@ -11,3 +11,7 @@
 #import "MPEnums.h"
 #import "MParticleUserNotification.h"
 #import "MPConsumerInfo.h"
+#import "MPForwardQueueParameters.h"
+#import "MPBaseEvent.h"
+#import "MPKitProtocol.h"
+#import "MPKitConfiguration.h"

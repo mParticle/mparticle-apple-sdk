@@ -151,7 +151,7 @@ class MParticleTestsSwift: XCTestCase {
 
         let userDefaults = MPUserDefaultsMock()
         
-        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults)
+        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as! MPUserDefaultsProtocol)
         
         XCTAssertTrue(mparticle.initialized)
         XCTAssertNil(mparticle.settingsProvider.configSettings)
@@ -632,6 +632,40 @@ class MParticleTestsSwift: XCTestCase {
         mparticle.webviewBridgeValue(withCustomerBridgeName: "value")
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "webviewBridgeValueWithCustomerBridgeName:")
         XCTAssertEqual(listenerController.onAPICalledParameter1 as? String, "value")
+    }
+    
+    func testSessionDidBegin() {
+        let kitContainer = MPKitContainerMock()
+        kitContainer.forwardSDKCallExpectation = XCTestExpectation()
+        mparticle.kitContainer = kitContainer
+        mparticle.sessionDidBegin(MPSession())
+        
+        
+        wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
+        
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "beginSession")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .sessionStart)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
+    }
+    
+    func testSessionDidEnd() {
+        let kitContainer = MPKitContainerMock()
+        kitContainer.forwardSDKCallExpectation = XCTestExpectation()
+        mparticle.kitContainer = kitContainer
+        mparticle.sessionDidEnd(MPSession())
+        
+        
+        wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
+        
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "endSession")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .sessionEnd)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
     }
 }
 
