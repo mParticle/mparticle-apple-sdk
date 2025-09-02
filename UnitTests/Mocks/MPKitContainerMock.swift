@@ -1,3 +1,4 @@
+import XCTest
 #if MPARTICLE_LOCATION_DISABLE
 import mParticle_Apple_SDK_NoLocation
 #else
@@ -20,6 +21,7 @@ class MPKitContainerMock: MPKitContainerProtocol {
     var forwardSDKCallCalled = false
     var forwardSDKCallSelectorParam: Selector?
     var forwardSDKCallKitHandlerParam: ((any MPKitProtocol, [AnyHashable : Any], MPKitConfiguration) -> Void)?
+    var forwardSDKCallExpectation: XCTestExpectation?
     
     var forwardSDKCallEventParam: MPBaseEvent?
     var forwardSDKCallParametersParam: MPForwardQueueParameters?
@@ -37,6 +39,7 @@ class MPKitContainerMock: MPKitContainerProtocol {
         forwardSDKCallParametersParam = parameters
         forwardSDKCallMessageTypeParam = messageType
         forwardSDKCallUserInfoParam = userInfo
+        forwardSDKCallExpectation?.fulfill()
     }
     
     var forwardSDKCallBathParam: [AnyHashable : Any]?
@@ -48,6 +51,7 @@ class MPKitContainerMock: MPKitContainerProtocol {
         forwardSDKCallSelectorParam = selector
         forwardSDKCallBathParam = batch
         forwardSDKCallKitHandlerParam = kitHandler
+        forwardSDKCallExpectation?.fulfill()
     }
     
     var forwardSDKCallUserAttributes: [AnyHashable : Any]?
@@ -59,6 +63,7 @@ class MPKitContainerMock: MPKitContainerProtocol {
         forwardSDKCallSelectorParam = selector
         forwardSDKCallUserAttributes = userAttributes
         forwardSDKCallKitHandlerParam = kitHandler
+        forwardSDKCallExpectation?.fulfill()
     }
     
     var configureKitsCalled = false

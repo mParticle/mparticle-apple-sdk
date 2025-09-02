@@ -14,5 +14,4 @@
 #import "MPForwardQueueParameters.h"
 #import "MPBaseEvent.h"
 #import "MPKitProtocol.h"
-#import "MPMessageType.h"
 #import "MPKitConfiguration.h"
