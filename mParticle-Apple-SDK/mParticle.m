@@ -51,7 +51,7 @@ static NSString *const kMPStateKey = @"state";
     BOOL sdkInitialized;
 }
 
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
