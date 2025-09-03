@@ -7,7 +7,8 @@
 
 import Foundation
 
-public struct MPLog {
+@objcMembers
+public class MPLog: NSObject {
     
     private static func MPLogger(loggerLevel: MPILogLevel, format: String, arguments: any CVarArg...) {
         if (MParticle.sharedInstance().logLevel.rawValue >= loggerLevel.rawValue && loggerLevel != .none) {
@@ -34,5 +35,25 @@ public struct MPLog {
     
     public static func verbose(_ format: String, _ arguments: any CVarArg...) {
         MPLogger(loggerLevel: .verbose, format: format, arguments: arguments)
+    }
+    
+    @objc
+    public static func error(_ format: String, errorValue: NSError) {
+        error(format, errorValue)
+    }
+    
+    @objc
+    public static func warning(message: String) {
+        warning(message)
+    }
+    
+    @objc
+    public static func debug(_ format: String, boolValue: Bool) {
+        debug(format, boolValue)
+    }
+    
+    @objc
+    public static func debug(_ format: String, intValue: Int) {
+        debug(format, intValue)
     }
 }

@@ -260,9 +260,9 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Set Opt Out: %d", optOut);
+        [MPLog debug:@"Set Opt Out: %d" boolValue:optOut];
     } else {
-        MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
+        [MPLog debug:@"Set Opt Out Failed: %d" intValue:execStatus];
     }
 }
 
@@ -348,7 +348,7 @@ static NSString *const kMPStateKey = @"state";
                              error:(NSError * _Nullable)error
                            options:(MParticleOptions * _Nonnull)options {
     if (error) {
-        MPILogError(@"Identify request failed with error: %@", error);
+        [MPLog error:@"Identify request failed with error: %@" errorValue:error];
     }
     
     NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
@@ -503,9 +503,9 @@ static NSString *const kMPStateKey = @"state";
     [userDefaults setSharedGroupIdentifier:self.options.sharedGroupID];
 
     if (environment == MPEnvironmentDevelopment) {
-        MPILogWarning(@"SDK has been initialized in Development mode.");
+        [MPLog warningWithMessage:@"SDK has been initialized in Development mode."];
     } else if (environment == MPEnvironmentProduction) {
-        MPILogWarning(@"SDK has been initialized in Production Mode.");
+        [MPLog warningWithMessage:@"SDK has been initialized in Production Mode."];
     }
     
     [MPStateMachine_PRIVATE setEnvironment:environment];
