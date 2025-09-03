@@ -38,8 +38,8 @@ public class MPLog: NSObject {
     }
     
     @objc
-    public static func error(_ format: String, errorValue: NSError) {
-        error(format, errorValue)
+    public static func error(message: String) {
+        error(message)
     }
     
     @objc
@@ -48,12 +48,7 @@ public class MPLog: NSObject {
     }
     
     @objc
-    public static func debug(_ format: String, boolValue: Bool) {
-        debug(format, boolValue)
-    }
-    
-    @objc
-    public static func debug(_ format: String, intValue: Int) {
-        debug(format, intValue)
+    public static func debug(message: String) {
+        debug(message)
     }
 }

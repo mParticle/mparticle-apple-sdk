@@ -260,9 +260,11 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
     if (execStatus == MPExecStatusSuccess) {
-        [MPLog debug:@"Set Opt Out: %d" boolValue:optOut];
+        NSString* message = [NSString stringWithFormat:@"Set Opt Out: %d", optOut];
+        [MPLog debugWithMessage:message];
     } else {
-        [MPLog debug:@"Set Opt Out Failed: %d" intValue:execStatus];
+        NSString* message = [NSString stringWithFormat:@"Set Opt Out Failed: %lu", (unsigned long)execStatus];
+        [MPLog debugWithMessage:message];
     }
 }
 
@@ -348,7 +350,8 @@ static NSString *const kMPStateKey = @"state";
                              error:(NSError * _Nullable)error
                            options:(MParticleOptions * _Nonnull)options {
     if (error) {
-        [MPLog error:@"Identify request failed with error: %@" errorValue:error];
+        NSString* message = [NSString stringWithFormat: @"Identify request failed with error: %@", error];
+        [MPLog errorWithMessage:message];
     }
     
     NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
