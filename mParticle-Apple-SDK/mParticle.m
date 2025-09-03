@@ -51,7 +51,7 @@ static NSString *const kMPStateKey = @"state";
     BOOL sdkInitialized;
 }
 
-@property (nonatomic, strong) MPPersistenceController_PRIVATE *persistenceController;
+@property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @property (nonatomic, strong) MPDataPlanFilter *dataPlanFilter;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
 @property (nonatomic, strong) MPKitContainer_PRIVATE *kitContainer_PRIVATE;
@@ -701,11 +701,14 @@ static NSString *const kMPStateKey = @"state";
     [MParticle executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
-        [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
+        [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine
+                                            backendController:self.backendController
+                                                     identity:self.identity] resetDefaults];
         [self.persistenceController resetDatabase];
         [MParticle executeOnMain:^{
             [self.backendController unproxyOriginalAppDelegate];
-            [MParticle setSharedInstance:nil];
+            predicate = 0;
+            _sharedInstance = nil;
             if (completion) {
                 completion();
             }

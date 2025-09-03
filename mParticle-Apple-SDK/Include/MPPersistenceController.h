@@ -14,7 +14,16 @@
     @class MParticleUserNotification;
 #endif
 
-@interface MPPersistenceController_PRIVATE : NSObject
+@protocol MPPersistenceControllerProtocol
+- (void)resetDatabaseForWorkspaceSwitching;
+- (void)resetDatabase;
+- (void)saveForwardRecord:(MPForwardRecord *_Nonnull)forwardRecord;
+- (void)saveIntegrationAttributes:(nonnull MPIntegrationAttributes *)integrationAttributes;
+- (void)deleteIntegrationAttributesForIntegrationId:(nonnull NSNumber *)integrationId;
+- (nullable NSDictionary*)fetchIntegrationAttributesForId:(NSNumber *_Nonnull)integrationId;
+@end
+
+@interface MPPersistenceController_PRIVATE : NSObject<MPPersistenceControllerProtocol>
 
 @property (nonatomic, readonly, getter = isDatabaseOpen) BOOL databaseOpen;
 
