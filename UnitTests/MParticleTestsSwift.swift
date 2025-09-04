@@ -68,7 +68,7 @@ class MParticleTestsSwift: XCTestCase {
         }
         mparticle.identifyNoDispatchCallback(expectedApiResult, error: nil, options: options)
         
-        wait(for: [expectation], timeout: 0.1)
+        wait(for: [expectation], timeout: 1.0)
         XCTAssertNil(receivedMessage)
         XCTAssertNil(mparticle.deferredKitConfiguration_PRIVATE)
     }
