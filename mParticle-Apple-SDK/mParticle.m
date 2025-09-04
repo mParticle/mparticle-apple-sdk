@@ -4,7 +4,6 @@
 #import "MPForwardQueueParameters.h"
 #import "MPForwardRecord.h"
 #import "MPIConstants.h"
-#import "MPILogger.h"
 #import "MPIntegrationAttributes.h"
 #import "MPKitActivity.h"
 #import "MPKitFilter.h"
@@ -260,9 +259,11 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Set Opt Out: %d", optOut);
+        NSString* message = [NSString stringWithFormat:@"Set Opt Out: %d", optOut];
+        [MPLog debugWithMessage:message];
     } else {
-        MPILogDebug(@"Set Opt Out Failed: %lu", (unsigned long)execStatus);
+        NSString* message = [NSString stringWithFormat:@"Set Opt Out Failed: %lu", (unsigned long)execStatus];
+        [MPLog debugWithMessage:message];
     }
 }
 
@@ -348,7 +349,8 @@ static NSString *const kMPStateKey = @"state";
                              error:(NSError * _Nullable)error
                            options:(MParticleOptions * _Nonnull)options {
     if (error) {
-        MPILogError(@"Identify request failed with error: %@", error);
+        NSString* message = [NSString stringWithFormat: @"Identify request failed with error: %@", error];
+        [MPLog errorWithMessage:message];
     }
     
     NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
@@ -503,9 +505,9 @@ static NSString *const kMPStateKey = @"state";
     [userDefaults setSharedGroupIdentifier:self.options.sharedGroupID];
 
     if (environment == MPEnvironmentDevelopment) {
-        MPILogWarning(@"SDK has been initialized in Development mode.");
+        [MPLog warningWithMessage:@"SDK has been initialized in Development mode."];
     } else if (environment == MPEnvironmentProduction) {
-        MPILogWarning(@"SDK has been initialized in Production Mode.");
+        [MPLog warningWithMessage:@"SDK has been initialized in Production Mode."];
     }
     
     [MPStateMachine_PRIVATE setEnvironment:environment];
@@ -732,7 +734,8 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Began timed event: %@", event);
+        NSString *message = [NSString stringWithFormat:@"Began timed event: %@", event];
+        [MPLog debugWithMessage:message];
         
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
@@ -746,7 +749,8 @@ static NSString *const kMPStateKey = @"state";
                 ];
             });
         } else {
-            MPILogDebug(@"Blocked timed event begin from kits: %@", event);
+            NSString *message = [NSString stringWithFormat:@"Blocked timed event begin from kits: %@", event];
+            [MPLog debugWithMessage:message];
         }
     }
 }
@@ -781,7 +785,8 @@ static NSString *const kMPStateKey = @"state";
                 ];
             });
         } else {
-            MPILogDebug(@"Blocked timed event end from kits: %@", event);
+            NSString *message = [NSString stringWithFormat:@"Blocked timed event end from kits: %@", event];
+            [MPLog debugWithMessage:message];
         }
     }
 }
@@ -804,7 +809,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logEvent:(MPBaseEvent *)event {
     if (event == nil) {
-        MPILogError(@"Cannot log nil event!");
+        [MPLog errorWithMessage: @"Cannot log nil event!"];
     } else if ([event isKindOfClass:[MPEvent class]]) {
         [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
@@ -831,7 +836,8 @@ static NSString *const kMPStateKey = @"state";
                     ];
                 });
             } else {
-                MPILogDebug(@"Blocked base event from kits: %@", event);
+                NSString *message = [NSString stringWithFormat:@"Blocked base event from kits: %@", event];
+                [MPLog debugWithMessage:message];
             }
         });
     }
@@ -839,7 +845,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logCustomEvent:(MPEvent *)event {
     if (event == nil) {
-        MPILogError(@"Cannot log nil event!");
+        [MPLog errorWithMessage:@"Cannot log nil event!"];
         return;
     }
     
@@ -863,7 +869,8 @@ static NSString *const kMPStateKey = @"state";
                 ];
             });
         } else {
-            MPILogDebug(@"Blocked custom event from kits: %@", event);
+            NSString *message = [NSString stringWithFormat:@"Blocked custom event from kits: %@", event];
+            [MPLog debugWithMessage:message];
         }
         
     });
@@ -871,7 +878,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logKitBatch:(NSString *)batch {
     if (batch == nil) {
-        MPILogError(@"Cannot log nil batch!");
+        [MPLog errorWithMessage:@"Cannot log nil batch!"];
         return;
     }
     
@@ -928,7 +935,9 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Logged screen event: %@", event);
+        NSString *message = [NSString stringWithFormat:@"Logged screen event: %@", event];
+        [MPLog debugWithMessage:message];
+
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForScreenEvent:event] : event;
         if (kitEvent) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -941,14 +950,15 @@ static NSString *const kMPStateKey = @"state";
                 ];
             });
         } else {
-            MPILogDebug(@"Blocked screen event from kits: %@", event);
+            NSString *message = [NSString stringWithFormat:@"Blocked screen event from kits: %@", event];
+            [MPLog debugWithMessage:message];
         }
     }
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
     if (event == nil) {
-        MPILogError(@"Cannot log nil screen event!");
+        [MPLog errorWithMessage:@"Cannot log nil screen event!"];
         return;
     }
     if (!event.timestamp) {
@@ -970,7 +980,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo shouldUploadEvent:(BOOL)shouldUploadEvent {
     if (!screenName) {
-        MPILogError(@"Screen name is required.");
+        [MPLog errorWithMessage:@"Screen name is required."];
         return;
     }
     
@@ -1020,7 +1030,9 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Left breadcrumb: %@", event);
+        NSString *message = [NSString stringWithFormat:@"Left breadcrumb: %@", event];
+        [MPLog debugWithMessage:message];
+
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -1033,14 +1045,15 @@ static NSString *const kMPStateKey = @"state";
                 ];
             });
         } else {
-            MPILogDebug(@"Blocked breadcrumb event from kits: %@", event);
+            NSString *message = [NSString stringWithFormat:@"Blocked breadcrumb event from kits: %@", event];
+            [MPLog debugWithMessage:message];
         }
     }
 }
 
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!breadcrumbName) {
-        MPILogError(@"Breadcrumb name is required.");
+        [MPLog errorWithMessage:@"Breadcrumb name is required."];
         return;
     }
     
@@ -1071,7 +1084,8 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Logged error with message: %@", message);
+        NSString *debugMessage = [NSString stringWithFormat:@"Logged error with message: %@", message];
+        [MPLog debugWithMessage:debugMessage];
         
         // Forwarding calls to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -1089,7 +1103,8 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!message) {
-        MPILogError(@"'message' is required for %@", NSStringFromSelector(_cmd));
+        NSString *message = [NSString stringWithFormat:@"'message' is required for %@", NSStringFromSelector(_cmd)];
+        [MPLog errorWithMessage:message];
         return;
     }
     
@@ -1112,7 +1127,8 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext);
+        NSString *debugMessage = [NSString stringWithFormat:@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext];
+        [MPLog debugWithMessage:debugMessage];
         
         // Forwarding calls to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -1143,7 +1159,8 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Logged crash with message: %@", message);
+        NSString *debugMessage = [NSString stringWithFormat:@"Logged crash with message: %@", message];
+        [MPLog debugWithMessage:debugMessage];
     }
 }
 
@@ -1152,7 +1169,8 @@ static NSString *const kMPStateKey = @"state";
    plCrashReport:(NSString *)plCrashReport
 {
     if (!plCrashReport) {
-        MPILogError(@"'plCrashReport' is required for %@", NSStringFromSelector(_cmd));
+        NSString *message = [NSString stringWithFormat:@"'plCrashReport' is required for %@", NSStringFromSelector(_cmd)];
+        [MPLog errorWithMessage:message];
         return;
     }
     
@@ -1172,13 +1190,14 @@ static NSString *const kMPStateKey = @"state";
 - (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
     } else {
-        MPILogDebug(@"Failed to log commerce event: %@", commerceEvent);
+        NSString *message = [NSString stringWithFormat:@"Failed to log commerce event: %@", commerceEvent];
+        [MPLog debugWithMessage:message];
     }
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
     if (commerceEvent == nil) {
-        MPILogError(@"Cannot log nil commerce event!");
+        [MPLog errorWithMessage:@"Cannot log nil commerce event!"];
         return;
     }
     if (!commerceEvent.timestamp) {
@@ -1197,7 +1216,8 @@ static NSString *const kMPStateKey = @"state";
             // Forwarding calls to kits
             [self.kitContainer forwardCommerceEventCall:kitEvent];
         } else {
-            MPILogDebug(@"Blocked commerce event from kits: %@", commerceEvent);
+            NSString *message = [NSString stringWithFormat:@"Blocked commerce event from kits: %@", commerceEvent];
+            [MPLog debugWithMessage:message];
         }
     });
 }
@@ -1220,7 +1240,8 @@ static NSString *const kMPStateKey = @"state";
                 ];
             });
         } else {
-            MPILogDebug(@"Blocked LTV increase event from kits: %@", event);
+            NSString* message = [NSString stringWithFormat:@"Blocked LTV increase event from kits: %@", event];
+            [MPLog debugWithMessage:message];
         }
     }
 }
@@ -1364,7 +1385,7 @@ static NSString *const kMPStateKey = @"state";
 #ifndef MPARTICLE_LOCATION_DISABLE
     [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
 #else
-    MPILogDebug(@"Automatic background tracking has been disabled to support users excluding location services from their applications.");
+    [MPLog debugWithMessage:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
 #endif
 }
 
@@ -1378,7 +1399,8 @@ static NSString *const kMPStateKey = @"state";
 - (void)setLocation:(CLLocation *)location {
     if (![self.stateMachine.location isEqual:location]) {
         self.stateMachine.location = location;
-        MPILogDebug(@"Set location %@", location);
+        NSString *message = [NSString stringWithFormat:@"Set location %@", location];
+        [MPLog debugWithMessage:message];
         
         dispatch_async(dispatch_get_main_queue(), ^{
             [self.listenerController onAPICalled:_cmd parameter1:location];
@@ -1410,9 +1432,11 @@ static NSString *const kMPStateKey = @"state";
     
     MPExecStatus execStatus = [_backendController beginLocationTrackingWithAccuracy:accuracy distanceFilter:distanceFilter authorizationRequest:authorizationRequest];
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter);
+        NSString *message = [NSString stringWithFormat:@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter];
+        [MPLog debugWithMessage:message];
     } else {
-        MPILogError(@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]);
+        NSString *message = [NSString stringWithFormat:@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
+        [MPLog errorWithMessage:message];
     }
 }
 
@@ -1421,9 +1445,10 @@ static NSString *const kMPStateKey = @"state";
     
     MPExecStatus execStatus = [_backendController endLocationTracking];
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Ended location tracking");
+        [MPLog debugWithMessage:@"Ended location tracking"];
     } else {
-        MPILogError(@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]);
+        NSString *message = [NSString stringWithFormat:@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
+        [MPLog errorWithMessage:message];
     }
 }
 #endif // MPARTICLE_LOCATION_DISABLE
@@ -1431,7 +1456,7 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
-        MPILogDebug(@"Logged network performance measurement");
+        [MPLog debugWithMessage:@"Logged network performance measurement"];
     }
 }
 
@@ -1464,9 +1489,8 @@ static NSString *const kMPStateKey = @"state";
         [self.listenerController onAPICalled:_cmd parameter1:key parameter2:value];
         
         NSNumber *newValue = [self.backendController incrementSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key byValue:value];
-        
-        MPILogDebug(@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue);
-        
+        NSString *message = [NSString stringWithFormat:@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue];
+        [MPLog debugWithMessage:message];
     });
     
     return @0;
@@ -1478,9 +1502,11 @@ static NSString *const kMPStateKey = @"state";
 
         MPExecStatus execStatus = [self.backendController setSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key value:value];
         if (execStatus == MPExecStatusSuccess) {
-            MPILogDebug(@"Set session attribute - %@:%@", key, value);
+            NSString *message = [NSString stringWithFormat:@"Set session attribute - %@:%@", key, value];
+            [MPLog debugWithMessage:message];
         } else {
-            MPILogError(@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [MPBackendController_PRIVATE execStatusDescription:execStatus]);
+            NSString *message = [NSString stringWithFormat:@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [MPBackendController_PRIVATE execStatusDescription:execStatus]];
+            [MPLog errorWithMessage:message];
         }
     });
 }
@@ -1516,9 +1542,10 @@ static NSString *const kMPStateKey = @"state";
         MPExecStatus execStatus = [strongSelf.backendController waitForKitsAndUploadWithCompletionHandler:nil];
         
         if (execStatus == MPExecStatusSuccess) {
-            MPILogDebug(@"Forcing Upload");
+            [MPLog debugWithMessage:@"Forcing Upload"];
         } else {
-            MPILogError(@"Could not upload data: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]);
+            NSString *message = [NSString stringWithFormat:@"Could not upload data: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
+            [MPLog errorWithMessage:message];
         }
     });
 }
@@ -1623,7 +1650,7 @@ static NSString *const kMPStateKey = @"state";
 
     NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
     if (bridgeValue == nil) {
-        MPILogError(@"Unable to initialize webview due to missing or invalid bridgeName");
+        [MPLog errorWithMessage:@"Unable to initialize webview due to missing or invalid bridgeName"];
         return;
     }
     NSString *bridgeVersion = [self bridgeVersion];
@@ -1643,41 +1670,43 @@ static NSString *const kMPStateKey = @"state";
     
     NSString *body = message.body;
     if (body == nil || ![body isKindOfClass:[NSString class]]) {
-        MPILogError(@"Unexpected non-string body received from webview bridge");
+        [MPLog errorWithMessage:@"Unexpected non-string body received from webview bridge"];
         return;
     }
     
     @try {
         NSData *bodyData = [body dataUsingEncoding:NSUTF8StringEncoding];
         if (bodyData == nil) {
-            MPILogError(@"Unable to create data from webview bridge body string");
+            [MPLog errorWithMessage:@"Unable to create data from webview bridge body string"];
             return;
         }
         
         NSError *error = nil;
         NSDictionary *bodyDictionary = [NSJSONSerialization JSONObjectWithData:bodyData options:kNilOptions error:&error];
         if (error != nil || bodyDictionary == nil || ![bodyDictionary isKindOfClass:[NSDictionary class]]) {
-            MPILogError(@"Unable to create dictionary from webview data. error=%@", error);
+            NSString *message = [NSString stringWithFormat:@"Unable to create dictionary from webview data. error=%@", error];
+            [MPLog errorWithMessage:message];
             return;
         }
         
         NSString *kPathKey = @"path";
         NSString *path = bodyDictionary[kPathKey];
         if (path == nil || ![path isKindOfClass:[NSString class]]) {
-            MPILogError(@"Unable to retrieve path from webview dictionary");
+            [MPLog errorWithMessage:@"Unable to retrieve path from webview dictionary"];
             return;
         }
         
         NSString *kValueKey = @"value";
         NSDictionary *value = bodyDictionary[kValueKey];
         if (value == nil || ![value isKindOfClass:[NSDictionary class]]) {
-            MPILogError(@"Unable to retrieve value from webview dictionary");
+            [MPLog errorWithMessage:@"Unable to retrieve value from webview dictionary"];
             return;
         }
         
         [self handleWebviewCommand:path dictionary:value];
     } @catch (NSException *e) {
-        MPILogError(@"Exception processing WKWebView event: %@", e.reason);
+        NSString *message = [NSString stringWithFormat:@"Exception processing WKWebView event: %@", e.reason];
+        [MPLog errorWithMessage:message];
     }
 }
 
@@ -1685,14 +1714,14 @@ static NSString *const kMPStateKey = @"state";
     [self.listenerController onAPICalled:_cmd parameter1:command parameter2:dictionary];
     
     if (!command || ![command isKindOfClass:[NSString class]] || (dictionary && ![dictionary isKindOfClass:[NSDictionary class]])) {
-        MPILogError(@"Unexpected data received from embedded webview");
+        [MPLog errorWithMessage:@"Unexpected data received from embedded webview"];
         return;
     }
     
     if ([command hasPrefix:kMParticleWebViewPathLogEvent]) {
         NSNumber *eventDataType = dictionary[@"EventDataType"];
         if (eventDataType == nil || ![eventDataType isKindOfClass:[NSNumber class]]) {
-            MPILogError(@"Unexpected event data type received from embedded webview");
+            [MPLog errorWithMessage:@"Unexpected event data type received from embedded webview"];
             return;
         }
         MPJavascriptMessageType messageType = (MPJavascriptMessageType)[eventDataType integerValue];
@@ -1764,7 +1793,8 @@ static NSString *const kMPStateKey = @"state";
         MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
-            MPILogError(@"Unable to create identify request from webview JS dictionary: %@", dictionary);
+            NSString *message = [NSString stringWithFormat:@"Unable to create identify request from webview JS dictionary: %@", dictionary];
+            [MPLog errorWithMessage:message];
             return;
         }
         
@@ -1777,7 +1807,8 @@ static NSString *const kMPStateKey = @"state";
         MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
-            MPILogError(@"Unable to create login request from webview JS dictionary: %@", dictionary);
+            NSString *message = [NSString stringWithFormat:@"Unable to create login request from webview JS dictionary: %@", dictionary];
+            [MPLog errorWithMessage:message];
             return;
         }
         
@@ -1788,7 +1819,8 @@ static NSString *const kMPStateKey = @"state";
         MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
-            MPILogError(@"Unable to create logout request from webview JS dictionary: %@", dictionary);
+            NSString *message = [NSString stringWithFormat:@"Unable to create logout request from webview JS dictionary: %@", dictionary];
+            [MPLog errorWithMessage:message];
             return;
         }
         
@@ -1799,7 +1831,8 @@ static NSString *const kMPStateKey = @"state";
         MPIdentityApiRequest *request = [MPConvertJS_PRIVATE identityApiRequest:dictionary];
         
         if (!request) {
-            MPILogError(@"Unable to create modify request from webview JS dictionary: %@", dictionary);
+            NSString *message = [NSString stringWithFormat:@"Unable to create modify request from webview JS dictionary: %@", dictionary];
+            [MPLog errorWithMessage:message];
             return;
         }
         
@@ -1816,7 +1849,7 @@ static NSString *const kMPStateKey = @"state";
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
         if (!dictionary[@"key"] || (NSNull *)dictionary[@"key"] == [NSNull null]) {
-            MPILogError(@"Unexpected user attribute data received from webview");
+            [MPLog errorWithMessage:@"Unexpected user attribute data received from webview"];
             return;
         }
         if (!dictionary[@"value"]) {
@@ -1830,7 +1863,7 @@ static NSString *const kMPStateKey = @"state";
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
         if (!dictionary[@"key"]) {
-            MPILogError(@"Unexpected session attribute data received from webview");
+            [MPLog errorWithMessage:@"Unexpected session attribute data received from webview"];
             return;
         }
         if ((NSNull *)dictionary[@"key"] != [NSNull null] && (NSNull *)dictionary[@"value"] != [NSNull null]) {
