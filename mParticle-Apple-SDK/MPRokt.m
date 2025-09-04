@@ -193,7 +193,7 @@
     NSString *hashedIdentityTypeString = roktKitConfig[kMPHashedEmailUserIdentityType];
     NSNumber *hashedIdentityTypeNumber = [MPIdentityHTTPIdentities identityTypeForString:hashedIdentityTypeString.lowercaseString];
     
-    return hashedIdentityTypeNumber != nil ? hashedIdentityTypeNumber : @(MPIdentityOther);
+    return hashedIdentityTypeNumber;
 }
 
 - (NSDictionary<NSString *, NSString *> *)confirmSandboxAttribute:(NSDictionary<NSString *, NSString *> * _Nullable)attributes {
@@ -220,17 +220,16 @@
     NSString *hashedEmail = attributes[@"emailsha256"];
     NSNumber *hashedEmailIdentity = [self getRoktHashedEmailUserIdentityType];
     
-    if ((email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]) || (hashedEmail && ![hashedEmail isEqualToString: user.identities[hashedEmailIdentity]])) {
-        // If there is an existing email or hashed email but it doesn't match the what was passed in, warn the customer
-        if (email && user.identities[@(MPIdentityEmail)]) {
-            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
-        } else if (hashedEmail && user.identities[hashedEmailIdentity]) {
-            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before contuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
-        }
-        
+    BOOL shouldIdentifyFromEmail = (email && ![email isEqualToString:user.identities[@(MPIdentityEmail)]]);
+    BOOL shouldIdentifyFromHash = (hashedEmail && hashedEmailIdentity && ![hashedEmail isEqualToString: user.identities[hashedEmailIdentity]]);
+
+    if (shouldIdentifyFromEmail || shouldIdentifyFromHash) {
+        // Identify the user with the new identity information
         MPIdentityApiRequest *identityRequest = [MPIdentityApiRequest requestWithUser:user];
         [identityRequest setIdentity:email identityType:MPIdentityEmail];
-        [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
+        if (hashedEmailIdentity != nil) {
+            [identityRequest setIdentity:hashedEmail identityType:hashedEmailIdentity.unsignedIntegerValue];
+        }
         
         [[[MParticle sharedInstance] identity] identify:identityRequest completion:^(MPIdentityApiResult *_Nullable apiResult, NSError *_Nullable error) {
             if (error) {
@@ -241,6 +240,13 @@
                 completion(apiResult.user);
             }
         }];
+        
+        // Warn the customer if we had to identify and therefore delay their Rokt placement.
+        if (shouldIdentifyFromEmail) {
+            NSLog(@"The existing email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[@(MPIdentityEmail)], email);
+        } else if (shouldIdentifyFromHash) {
+            NSLog(@"The existing hashed email on the user (%@) does not match the email passed in to `selectPlacements:` (%@). Please remember to sync the email identity to mParticle as soon as you receive it. We will now identify the user before continuing to `selectPlacements:`", user.identities[hashedEmailIdentity], hashedEmail);
+        }
     } else {
         completion(user);
     }
