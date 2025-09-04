@@ -34,6 +34,65 @@ static NSString *const kMParticleFirstRun = @"firstrun";
 static NSString *const kMPMethodName = @"$MethodName";
 static NSString *const kMPStateKey = @"state";
 
+@protocol ExecutorProtocol
+- (void)executeOnMessage:(void(^)(void))block;
+- (void)executeOnMessageSync:(void(^)(void))block;
+- (void)executeOnMain:(void(^)(void))block;
+- (void)executeOnMainSync:(void(^)(void))block;
+@end
+
+@interface Executor : NSObject<ExecutorProtocol>
+- (void)executeOnMessage:(void(^)(void))block;
+- (void)executeOnMessageSync:(void(^)(void))block;
+- (void)executeOnMain:(void(^)(void))block;
+- (void)executeOnMainSync:(void(^)(void))block;
+@end
+
+@implementation Executor
+- (dispatch_queue_t)messageQueue {
+    return messageQueue;
+}
+
+- (BOOL)isMessageQueue {
+    void *token = dispatch_get_specific(messageQueueKey);
+    BOOL isMessage = token == messageQueueToken;
+    return isMessage;
+}
+
+- (void)executeOnMessage:(void(^)(void))block {
+    if (self.isMessageQueue) {
+        block();
+    } else {
+        dispatch_async(self.messageQueue, block);
+    }
+}
+
+- (void)executeOnMessageSync:(void(^)(void))block {
+    if (self.isMessageQueue) {
+        block();
+    } else {
+        dispatch_sync(self.messageQueue, block);
+    }
+}
+
+- (void)executeOnMain:(void(^)(void))block {
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_async(dispatch_get_main_queue(), block);
+    }
+}
+
+- (void)executeOnMainSync:(void(^)(void))block {
+    if ([NSThread isMainThread]) {
+        block();
+    } else {
+        dispatch_sync(dispatch_get_main_queue(), block);
+    }
+}
+
+@end
+
 @interface MPIdentityApi ()
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
 @end
@@ -146,6 +205,9 @@ static NSString *const kMPStateKey = @"state";
     }
 }
 
+
+id<ExecutorProtocol> executor;
+
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -167,6 +229,7 @@ static NSString *const kMPStateKey = @"state";
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue];
     _listenerController = MPListenerController.sharedInstance;
+    executor = [[Executor alloc] init];
     
     return self;
 }
@@ -558,7 +621,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)resetForSwitchingWorkspaces:(void (^)(void))completion {
-    [MParticle executeOnMessage:^{
+    [executor executeOnMessage:^{
         // Remove any kits that can't be reconfigured
         [self.kitContainer removeKitsFromRegistryInvalidForWorkspaceSwitch];
         
@@ -571,7 +634,7 @@ static NSString *const kMPStateKey = @"state";
         [self.persistenceController resetDatabaseForWorkspaceSwitching];
         
         // Clean up mParticle instance
-        [MParticle executeOnMain:^{
+        [executor executeOnMain:^{
             [self.backendController unproxyOriginalAppDelegate];
             [MParticle setSharedInstance:nil];
             if (completion) {
@@ -599,7 +662,7 @@ static NSString *const kMPStateKey = @"state";
         }
         
         // Batch any remaining messages into upload records
-        [MParticle executeOnMessage:^{
+        [executor executeOnMessage:^{
             [self.backendController prepareBatchesForUpload:[MPUploadSettings currentUploadSettingsWithStateMachine:self.stateMachine networkOptions:self.networkOptions]];
             finishReset();
         }];
@@ -700,14 +763,14 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)reset:(void (^)(void))completion {
-    [MParticle executeOnMessage:^{
+    [executor executeOnMessage:^{
         [self.kitContainer flushSerializedKits];
         [self.kitContainer removeAllSideloadedKits];
         [[MPUserDefaults standardUserDefaultsWithStateMachine:self.stateMachine
                                             backendController:self.backendController
                                                      identity:self.identity] resetDefaults];
         [self.persistenceController resetDatabase];
-        [MParticle executeOnMain:^{
+        [executor executeOnMain:^{
             [self.backendController unproxyOriginalAppDelegate];
             predicate = 0;
             _sharedInstance = nil;
@@ -719,7 +782,7 @@ static NSString *const kMPStateKey = @"state";
 }
 
 - (void)reset {
-    [MParticle executeOnMessageSync:^{
+    [executor executeOnMessageSync:^{
         [[MPUserDefaults standardUserDefaultsWithStateMachine:[MParticle sharedInstance].stateMachine backendController:[MParticle sharedInstance].backendController identity:[MParticle sharedInstance].identity] resetDefaults];
         [[MParticle sharedInstance].persistenceController resetDatabase];
         [[MParticle sharedInstance].backendController unproxyOriginalAppDelegate];
@@ -793,14 +856,14 @@ static NSString *const kMPStateKey = @"state";
 
 - (void)endTimedEvent:(MPEvent *)event {
     [event endTiming];
-    dispatch_async([MParticle messageQueue], ^{
+    [executor executeOnMessage: ^{
         [self.listenerController onAPICalled:_cmd parameter1:event];
         
         [self.backendController logEvent:event
                        completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                             [self logEventCallback:event execStatus:execStatus];
                        }];
-    });
+    }];
 }
 
 - (MPEvent *)eventWithName:(NSString *)eventName {
@@ -897,9 +960,9 @@ static NSString *const kMPStateKey = @"state";
                             NSArray<MPForwardRecord *> *forwardRecords = [kit logBatch:kitBatch];
                             if ([forwardRecords isKindOfClass:[NSArray class]]) {
                                 for (MPForwardRecord *forwardRecord in forwardRecords) {
-                                    dispatch_async([MParticle messageQueue], ^{
+                                    [executor executeOnMessage: ^{
                                         [[MParticle sharedInstance].persistenceController saveForwardRecord:forwardRecord];
-                                    });
+                                    }];
                                 }
                             }
                         }];
@@ -1068,14 +1131,14 @@ static NSString *const kMPStateKey = @"state";
         event.timestamp = [NSDate date];
     }
     
-    dispatch_async([MParticle messageQueue], ^{
+    [executor executeOnMessage: ^{
         [self.listenerController onAPICalled:_cmd parameter1:breadcrumbName parameter2:eventInfo];
 
         [self.backendController leaveBreadcrumb:event
                               completionHandler:^(MPEvent *event, MPExecStatus execStatus) {
                                 [self leaveBreadcrumbCallback:event execStatus:execStatus];
                               }];
-    });
+    }];
 }
 
 - (void)logError:(NSString *)message {
