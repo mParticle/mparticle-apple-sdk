@@ -1385,7 +1385,7 @@ static NSString *const kMPStateKey = @"state";
 #ifndef MPARTICLE_LOCATION_DISABLE
     [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
 #else
-    MPILogDebug(@"Automatic background tracking has been disabled to support users excluding location services from their applications.");
+    [MPLog debugWithMessage:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
 #endif
 }
 
