@@ -17,10 +17,8 @@
 #import "MParticleSession+MParticlePrivate.h"
 #import "MParticleOptions+MParticlePrivate.h"
 #import "SettingsProvider.h"
+#import "Executor.h"
 
-static dispatch_queue_t messageQueue = nil;
-static void *messageQueueKey = "mparticle message queue key";
-static void *messageQueueToken = "mparticle message queue token";
 static NSArray *eventTypeStrings = nil;
 static MParticle *_sharedInstance = nil;
 static dispatch_once_t predicate;
@@ -33,65 +31,6 @@ static NSString *const kMPEventNameLTVIncrease = @"Increase LTV";
 static NSString *const kMParticleFirstRun = @"firstrun";
 static NSString *const kMPMethodName = @"$MethodName";
 static NSString *const kMPStateKey = @"state";
-
-@protocol ExecutorProtocol
-- (void)executeOnMessage:(void(^)(void))block;
-- (void)executeOnMessageSync:(void(^)(void))block;
-- (void)executeOnMain:(void(^)(void))block;
-- (void)executeOnMainSync:(void(^)(void))block;
-@end
-
-@interface Executor : NSObject<ExecutorProtocol>
-- (void)executeOnMessage:(void(^)(void))block;
-- (void)executeOnMessageSync:(void(^)(void))block;
-- (void)executeOnMain:(void(^)(void))block;
-- (void)executeOnMainSync:(void(^)(void))block;
-@end
-
-@implementation Executor
-- (dispatch_queue_t)messageQueue {
-    return messageQueue;
-}
-
-- (BOOL)isMessageQueue {
-    void *token = dispatch_get_specific(messageQueueKey);
-    BOOL isMessage = token == messageQueueToken;
-    return isMessage;
-}
-
-- (void)executeOnMessage:(void(^)(void))block {
-    if (self.isMessageQueue) {
-        block();
-    } else {
-        dispatch_async(self.messageQueue, block);
-    }
-}
-
-- (void)executeOnMessageSync:(void(^)(void))block {
-    if (self.isMessageQueue) {
-        block();
-    } else {
-        dispatch_sync(self.messageQueue, block);
-    }
-}
-
-- (void)executeOnMain:(void(^)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
-    }
-}
-
-- (void)executeOnMainSync:(void(^)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
-}
-
-@end
 
 @interface MPIdentityApi ()
 - (void)identifyNoDispatch:(MPIdentityApiRequest *)identifyRequest completion:(nullable MPIdentityApiResultCallback)completion;
@@ -156,6 +95,7 @@ static NSString *const kMPStateKey = @"state";
 @synthesize appNotificationHandler = _appNotificationHandler;
 @synthesize settingsProvider = _settingsProvider;
 @synthesize listenerController = _listenerController;
+static id<ExecutorProtocol> executor;
 
 + (void)initialize {
     if (self == [MParticle class]) {
@@ -164,49 +104,28 @@ static NSString *const kMPStateKey = @"state";
 }
 
 + (dispatch_queue_t)messageQueue {
-    return messageQueue;
+    return executor.messageQueue;
 }
 
 + (BOOL)isMessageQueue {
-    void *token = dispatch_get_specific(messageQueueKey);
-    BOOL isMessage = token == messageQueueToken;
-    return isMessage;
+    return executor.isMessageQueue;
 }
 
 + (void)executeOnMessage:(void(^)(void))block {
-    if ([MParticle isMessageQueue]) {
-        block();
-    } else {
-        dispatch_async([MParticle messageQueue], block);
-    }
+    [executor executeOnMessage: block];
 }
 
 + (void)executeOnMessageSync:(void(^)(void))block {
-    if ([MParticle isMessageQueue]) {
-        block();
-    } else {
-        dispatch_sync([MParticle messageQueue], block);
-    }
+    [executor executeOnMessageSync: block];
 }
 
 + (void)executeOnMain:(void(^)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_async(dispatch_get_main_queue(), block);
-    }
+    [executor executeOnMain: block];
 }
 
 + (void)executeOnMainSync:(void(^)(void))block {
-    if ([NSThread isMainThread]) {
-        block();
-    } else {
-        dispatch_sync(dispatch_get_main_queue(), block);
-    }
+    [executor executeOnMainSync: block];
 }
-
-
-id<ExecutorProtocol> executor;
 
 - (instancetype)init {
     self = [super init];
@@ -214,8 +133,7 @@ id<ExecutorProtocol> executor;
         return nil;
     }
 
-    messageQueue = dispatch_queue_create("com.mparticle.messageQueue", DISPATCH_QUEUE_SERIAL);
-    dispatch_queue_set_specific(messageQueue, messageQueueKey, messageQueueToken, nil);
+    executor = [[Executor alloc] init];
     sdkInitialized = NO;
     _initialized = NO;
     _settingsProvider = [[SettingsProvider alloc] init];
@@ -227,9 +145,8 @@ id<ExecutorProtocol> executor;
     _automaticSessionTracking = YES;
     _appNotificationHandler = [[MPAppNotificationHandler alloc] init];
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
-    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:messageQueue];
+    _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
-    executor = [[Executor alloc] init];
     
     return self;
 }

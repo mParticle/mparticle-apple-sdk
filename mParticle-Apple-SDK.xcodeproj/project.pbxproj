@@ -11,6 +11,10 @@
 		351308202E6729DA002A3AD6 /* MPKitContainerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */; };
 		351308242E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */; };
 		351308252E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */; };
+		351308412E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; };
+		351308422E6B28F5002A3AD6 /* Executor.m in Sources */ = {isa = PBXBuildFile; fileRef = 351308402E6B28F5002A3AD6 /* Executor.m */; };
+		351308432E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; };
+		351308442E6B28F5002A3AD6 /* Executor.m in Sources */ = {isa = PBXBuildFile; fileRef = 351308402E6B28F5002A3AD6 /* Executor.m */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEC2E54C483009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */; };
@@ -571,6 +575,8 @@
 /* Begin PBXFileReference section */
 		3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPKitContainerMock.swift; sourceTree = "<group>"; };
 		351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPPersistenceControllerMock.swift; sourceTree = "<group>"; };
+		3513083F2E6B28F5002A3AD6 /* Executor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Executor.h; sourceTree = "<group>"; };
+		351308402E6B28F5002A3AD6 /* Executor.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Executor.m; sourceTree = "<group>"; };
 		35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MPNetworkOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FEB2E54C480009AC4FD /* MPNetworkOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MPNetworkOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
@@ -937,6 +943,8 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
+				3513083F2E6B28F5002A3AD6 /* Executor.h */,
+				351308402E6B28F5002A3AD6 /* Executor.m */,
 				53A79C2229CDFB4800E7489F /* Include */,
 				53A79B3629CDFB1F00E7489F /* mParticle.m */,
 				359BAFF82E56330200A8A704 /* SettingsProvider.h */,
@@ -1428,6 +1436,7 @@
 				53A79BE929CDFB2000E7489F /* MPApplication.h in Headers */,
 				D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */,
 				53A79BF329CDFB2000E7489F /* MPCustomModulePreference.h in Headers */,
+				351308412E6B28F5002A3AD6 /* Executor.h in Headers */,
 				53A79B8C29CDFB2000E7489F /* MPDataModelProtocol.h in Headers */,
 				53A79BFB29CDFB2100E7489F /* MPAppDelegateProxy.h in Headers */,
 				359BAFFA2E56330200A8A704 /* SettingsProvider.h in Headers */,
@@ -1523,6 +1532,7 @@
 				53A79D2729CE23F700E7489F /* MPApplication.h in Headers */,
 				53A79D2829CE23F700E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79D2929CE23F700E7489F /* MPDataModelProtocol.h in Headers */,
+				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				53A79D2A29CE23F700E7489F /* MPAppDelegateProxy.h in Headers */,
 				53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */,
 				359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */,
@@ -1854,6 +1864,7 @@
 				530D24802CFF70B0000FE7E3 /* MPUserIdentityInstance.swift in Sources */,
 				5399DDB82CA727E5006526E1 /* MPZip.swift in Sources */,
 				53A79B8329CDFB2000E7489F /* MPPersistenceController.mm in Sources */,
+				351308422E6B28F5002A3AD6 /* Executor.m in Sources */,
 				53A79BEB29CDFB2000E7489F /* NSNumber+MPFormatter.swift in Sources */,
 				53A79B6D29CDFB2000E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79C0729CDFB2100E7489F /* MPBaseEvent.m in Sources */,
@@ -2046,6 +2057,7 @@
 				530D247F2CFF70B0000FE7E3 /* MPUserIdentityInstance.swift in Sources */,
 				5399DDB92CA727E5006526E1 /* MPZip.swift in Sources */,
 				53A79D7129CE23F700E7489F /* MPPersistenceController.mm in Sources */,
+				351308442E6B28F5002A3AD6 /* Executor.m in Sources */,
 				53A79D7329CE23F700E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79D7429CE23F700E7489F /* MPBaseEvent.m in Sources */,
 				53A79D7529CE23F700E7489F /* MPAttributeProjection.m in Sources */,
