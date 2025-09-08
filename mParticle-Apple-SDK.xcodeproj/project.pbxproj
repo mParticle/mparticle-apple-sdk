@@ -25,6 +25,8 @@
 		35329FF32E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */; };
 		35329FF52E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
 		35329FF62E54CB8C009AC4FD /* MParticleOptions+MParticlePrivateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */; };
+		354B67302E6F64CB00F1880D /* mParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354B672F2E6F64BD00F1880D /* mParticle.swift */; };
+		354B67312E6F64CB00F1880D /* mParticle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 354B672F2E6F64BD00F1880D /* mParticle.swift */; };
 		3567528F2E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
 		356752902E5F7FF900DEEE23 /* MPBackendControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */; };
 		356752932E60928B00DEEE23 /* MPStateMachineMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356752922E60928500DEEE23 /* MPStateMachineMock.swift */; };
@@ -582,6 +584,7 @@
 		35329FEE2E54CA49009AC4FD /* MParticleOptions+MParticlePrivate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MParticleOptions+MParticlePrivate.h"; sourceTree = "<group>"; };
 		35329FF12E54CA78009AC4FD /* MParticleOptions+MParticlePrivate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "MParticleOptions+MParticlePrivate.m"; sourceTree = "<group>"; };
 		35329FF42E54CB84009AC4FD /* MParticleOptions+MParticlePrivateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MParticleOptions+MParticlePrivateTests.swift"; sourceTree = "<group>"; };
+		354B672F2E6F64BD00F1880D /* mParticle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = mParticle.swift; sourceTree = "<group>"; };
 		3567528E2E5F7FF100DEEE23 /* MPBackendControllerMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPBackendControllerMock.swift; sourceTree = "<group>"; };
 		356752922E60928500DEEE23 /* MPStateMachineMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MPStateMachineMock.swift; sourceTree = "<group>"; };
 		356D4A582E58B09D00CB69FE /* SettingsProviderMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsProviderMock.swift; sourceTree = "<group>"; };
@@ -943,6 +946,7 @@
 		53A79A7B29CCCD6400E7489F /* mParticle-Apple-SDK */ = {
 			isa = PBXGroup;
 			children = (
+				354B672F2E6F64BD00F1880D /* mParticle.swift */,
 				3513083F2E6B28F5002A3AD6 /* Executor.h */,
 				351308402E6B28F5002A3AD6 /* Executor.m */,
 				53A79C2229CDFB4800E7489F /* Include */,
@@ -1867,6 +1871,7 @@
 				351308422E6B28F5002A3AD6 /* Executor.m in Sources */,
 				53A79BEB29CDFB2000E7489F /* NSNumber+MPFormatter.swift in Sources */,
 				53A79B6D29CDFB2000E7489F /* FilteredMParticleUser.m in Sources */,
+				354B67302E6F64CB00F1880D /* mParticle.swift in Sources */,
 				53A79C0729CDFB2100E7489F /* MPBaseEvent.m in Sources */,
 				D3961CD62CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */,
 				53A79C1829CDFB2100E7489F /* MPAttributeProjection.m in Sources */,
@@ -2060,6 +2065,7 @@
 				351308442E6B28F5002A3AD6 /* Executor.m in Sources */,
 				53A79D7329CE23F700E7489F /* FilteredMParticleUser.m in Sources */,
 				53A79D7429CE23F700E7489F /* MPBaseEvent.m in Sources */,
+				354B67312E6F64CB00F1880D /* mParticle.swift in Sources */,
 				53A79D7529CE23F700E7489F /* MPAttributeProjection.m in Sources */,
 				D3961CD72CB468DC003B3194 /* NSArray+MPCaseInsensitive.swift in Sources */,
 				53A79D7629CE23F700E7489F /* MPConsumerInfo.m in Sources */,

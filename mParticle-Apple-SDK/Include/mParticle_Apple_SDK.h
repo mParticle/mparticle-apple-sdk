@@ -14,4 +14,6 @@
     #import "mParticle.h"
 #endif
 
+#import "Executor.h"
+
 #endif /* mParticle_Apple_SDK_h */
