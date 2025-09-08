@@ -15,5 +15,6 @@
 #endif
 
 #import "Executor.h"
+#import "MPKitContainer.h"
 
 #endif /* mParticle_Apple_SDK_NoLocation_h */

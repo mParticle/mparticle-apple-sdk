@@ -2,10 +2,12 @@
 
 @objcMembers
 class MParticleSwift: NSObject {
-    let executor: ExecutorProtocol
+    private let executor: ExecutorProtocol
+    private let kitContainer: MPKitContainerProtocol
     
-    init(executor: ExecutorProtocol) {
+    init(executor: ExecutorProtocol, kitContainer: MPKitContainerProtocol) {
         self.executor = executor
+        self.kitContainer = kitContainer
     }
     
 }

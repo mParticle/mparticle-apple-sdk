@@ -148,7 +148,7 @@ MParticleSwift* innerMparticle;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
-    innerMparticle = [[MParticleSwift alloc] initWithExecutor:executor];
+    innerMparticle = [[MParticleSwift alloc] initWithExecutor:executor kitContainer:_kitContainer];
     
     return self;
 }
