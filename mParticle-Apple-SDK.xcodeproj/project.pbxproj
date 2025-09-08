@@ -11,9 +11,9 @@
 		351308202E6729DA002A3AD6 /* MPKitContainerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3513081E2E6729D0002A3AD6 /* MPKitContainerMock.swift */; };
 		351308242E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */; };
 		351308252E676F18002A3AD6 /* MPPersistenceControllerMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 351308232E676F12002A3AD6 /* MPPersistenceControllerMock.swift */; };
-		351308412E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; };
+		351308412E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		351308422E6B28F5002A3AD6 /* Executor.m in Sources */ = {isa = PBXBuildFile; fileRef = 351308402E6B28F5002A3AD6 /* Executor.m */; };
-		351308432E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; };
+		351308432E6B28F5002A3AD6 /* Executor.h in Headers */ = {isa = PBXBuildFile; fileRef = 3513083F2E6B28F5002A3AD6 /* Executor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		351308442E6B28F5002A3AD6 /* Executor.m in Sources */ = {isa = PBXBuildFile; fileRef = 351308402E6B28F5002A3AD6 /* Executor.m */; };
 		35329FE92E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
 		35329FEA2E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m in Sources */ = {isa = PBXBuildFile; fileRef = 35329FE82E54C38C009AC4FD /* MPNetworkOptions+MParticlePrivate.m */; };
@@ -1406,6 +1406,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				351308412E6B28F5002A3AD6 /* Executor.h in Headers */,
 				53A79C4929CDFB4800E7489F /* mParticle.h in Headers */,
 				53A79C5E29CDFB4800E7489F /* FilteredMPIdentityApiRequest.h in Headers */,
 				53A79C4629CDFB4800E7489F /* MPBaseEvent.h in Headers */,
@@ -1440,7 +1441,6 @@
 				53A79BE929CDFB2000E7489F /* MPApplication.h in Headers */,
 				D30CD0CB2CFF5FB100F5148A /* MPStateMachine.h in Headers */,
 				53A79BF329CDFB2000E7489F /* MPCustomModulePreference.h in Headers */,
-				351308412E6B28F5002A3AD6 /* Executor.h in Headers */,
 				53A79B8C29CDFB2000E7489F /* MPDataModelProtocol.h in Headers */,
 				53A79BFB29CDFB2100E7489F /* MPAppDelegateProxy.h in Headers */,
 				359BAFFA2E56330200A8A704 /* SettingsProvider.h in Headers */,
@@ -1502,6 +1502,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				53A79D0229CE23F700E7489F /* mParticle.h in Headers */,
 				53A79D0329CE23F700E7489F /* FilteredMPIdentityApiRequest.h in Headers */,
 				53A79D0429CE23F700E7489F /* MPBaseEvent.h in Headers */,
@@ -1536,7 +1537,6 @@
 				53A79D2729CE23F700E7489F /* MPApplication.h in Headers */,
 				53A79D2829CE23F700E7489F /* MPCustomModulePreference.h in Headers */,
 				53A79D2929CE23F700E7489F /* MPDataModelProtocol.h in Headers */,
-				351308432E6B28F5002A3AD6 /* Executor.h in Headers */,
 				53A79D2A29CE23F700E7489F /* MPAppDelegateProxy.h in Headers */,
 				53A79D2C29CE23F700E7489F /* MPIConstants.h in Headers */,
 				359BAFF92E56330200A8A704 /* SettingsProvider.h in Headers */,

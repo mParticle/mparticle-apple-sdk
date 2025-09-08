@@ -96,6 +96,7 @@ static NSString *const kMPStateKey = @"state";
 @synthesize settingsProvider = _settingsProvider;
 @synthesize listenerController = _listenerController;
 static id<ExecutorProtocol> executor;
+MParticleSwift* innerMparticle;
 
 + (void)initialize {
     if (self == [MParticle class]) {
@@ -147,6 +148,7 @@ static id<ExecutorProtocol> executor;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
+    innerMparticle = [[MParticleSwift alloc] initWithExecutor:executor];
     
     return self;
 }
