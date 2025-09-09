@@ -61,7 +61,7 @@ extern const NSInteger kInvalidKey;
 - (nonnull NSMutableDictionary<NSString *, id> *)userAttributesForUserId:(nonnull NSNumber *)userId;
 - (void)startWithKey:(nonnull NSString *)apiKey secret:(nonnull NSString *)secret networkOptions:(nullable MPNetworkOptions *)networkOptions firstRun:(BOOL)firstRun installationType:(MPInstallationType)installationType proxyAppDelegate:(BOOL)proxyAppDelegate startKitsAsync:(BOOL)startKitsAsync consentState:(MPConsentState *_Nullable)consentState completionHandler:(dispatch_block_t _Nonnull)completionHandler;
 - (void)prepareBatchesForUpload:(nonnull MPUploadSettings *)uploadSettings;
-- (nonnull MParticleSession *)tempSession;
+- (MParticleSession* _Nullable)tempSession;
 - (void)unproxyOriginalAppDelegate;
 - (void)endSession;
 - (void)beginTimedEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
