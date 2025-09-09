@@ -153,6 +153,10 @@ MParticleSwift* innerMparticle;
     return self;
 }
 
+- (void)setExecutor: (id<ExecutorProtocol>)newExecutor {
+    executor = newExecutor;
+}
+
 - (void)setKitContainer_PRIVATE:(MPKitContainer_PRIVATE*) kitContainer_PRIVATE {
     _kitContainer_PRIVATE = kitContainer_PRIVATE;
     _kitContainer = kitContainer_PRIVATE;
