@@ -31,13 +31,16 @@
 - (void)sessionDidBegin:(MPSession *)session;
 - (void)sessionDidEnd:(nonnull MPSession *)session;
 - (void)setExecutor: (id<ExecutorProtocol>)newExecutor;
+- (void)setBackendController: (id<MPBackendControllerProtocol>)backendController;
+- (void)setKitContainer:(id<MPKitContainerProtocol>) kitContainer;
+- (void)forwardLogInstall;
+- (void)forwardLogUpdate;
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
 @property (nonatomic, strong, nullable) id<MPDataPlanFilterProtocol> dataPlanFilter;
 @property (nonatomic, strong, nonnull) id<MPListenerControllerProtocol> listenerController;
 @property (nonatomic, strong) id<MPStateMachineProtocol> stateMachine;
-@property (nonatomic, strong) id<MPKitContainerProtocol> kitContainer;
 @property (nonatomic, strong) id<MPPersistenceControllerProtocol> persistenceController;
 @end
     

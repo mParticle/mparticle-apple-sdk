@@ -725,4 +725,57 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(backendController.beginSessionIsManualParam, true)
         XCTAssertNotNil(backendController.beginSessionDateParam)
     }
+    
+    func testEndSessionNoSession() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = nil
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        mparticle.backendController = backendController
+        mparticle.endSession()
+        XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
+        XCTAssertFalse(backendController.endSessionWithIsManualCalled)
+    }
+    
+    func testEndSessionWithSession() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = MPSession()
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        mparticle.backendController = backendController
+        mparticle.endSession()
+        XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
+        XCTAssertTrue(backendController.endSessionWithIsManualCalled)
+        XCTAssertEqual(backendController.endSessionIsManualParam, true)
+    }
+    
+    func testForwardLogInstall() {
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        mparticle.forwardLogInstall()
+        XCTAssertEqual(executor.executeOnMainAsync, true)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "forwardLogInstall")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
+    }
+    
+    func testForwardLogUpdate() {
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        mparticle.forwardLogUpdate()
+        XCTAssertEqual(executor.executeOnMainAsync, true)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "forwardLogUpdate")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
+    }
 }

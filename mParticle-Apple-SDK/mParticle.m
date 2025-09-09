@@ -434,6 +434,7 @@ MParticleSwift* innerMparticle;
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
     
     _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
+    innerMparticle.backendController = _backendController;
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
