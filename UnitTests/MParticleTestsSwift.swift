@@ -692,5 +692,37 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
         XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
     }
+    
+    func testBeginSessionTempSessionAvailableSessionTempSessionShouldNotBeCreated() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = nil
+        backendController.tempSessionReturnValue = MParticleSession()
+        mparticle.backendController = backendController
+        mparticle.beginSession()
+        XCTAssertFalse(backendController.createTempSessionCalled)
+    }
+    
+    func testBeginSessionSessionAvailableSessionTempSessionShouldNotBeCreated() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = MPSession()
+        backendController.tempSessionReturnValue = nil
+        mparticle.backendController = backendController
+        mparticle.beginSession()
+        XCTAssertFalse(backendController.createTempSessionCalled)
+    }
+    
+    func testBeginSessionSessionUnavailable() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = nil
+        backendController.tempSessionReturnValue = nil
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        mparticle.backendController = backendController
+        mparticle.beginSession()
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(backendController.createTempSessionCalled)
+        XCTAssertTrue(backendController.beginSessionCalled)
+        XCTAssertEqual(backendController.beginSessionIsManualParam, true)
+        XCTAssertNotNil(backendController.beginSessionDateParam)
+    }
 }
-

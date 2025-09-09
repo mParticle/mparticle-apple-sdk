@@ -30,6 +30,7 @@
 - (void)handleWebviewCommand:(NSString *)command dictionary:(NSDictionary *)dictionary;
 - (void)sessionDidBegin:(MPSession *)session;
 - (void)sessionDidEnd:(nonnull MPSession *)session;
+- (void)setExecutor: (id<ExecutorProtocol>)newExecutor;
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
