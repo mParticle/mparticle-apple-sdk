@@ -637,7 +637,7 @@ class MParticleTestsSwift: XCTestCase {
     func testSessionDidBegin() {
         let kitContainer = MPKitContainerMock()
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
-        mparticle.kitContainer = kitContainer
+        mparticle.setKitContainer(kitContainer)
         mparticle.sessionDidBegin(MPSession())
         
         
@@ -654,7 +654,7 @@ class MParticleTestsSwift: XCTestCase {
     func testSessionDidEnd() {
         let kitContainer = MPKitContainerMock()
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
-        mparticle.kitContainer = kitContainer
+        mparticle.setKitContainer(kitContainer)
         mparticle.sessionDidEnd(MPSession())
         
         
@@ -677,7 +677,7 @@ class MParticleTestsSwift: XCTestCase {
         
         let backendController = MPBackendControllerMock()
         
-        mparticle.kitContainer = kitContainer
+        mparticle.setKitContainer(kitContainer)
         mparticle.persistenceController = persistenceController
         mparticle.backendController = backendController
         

@@ -96,7 +96,6 @@ static NSString *const kMPStateKey = @"state";
 @synthesize settingsProvider = _settingsProvider;
 @synthesize listenerController = _listenerController;
 static id<ExecutorProtocol> executor;
-MParticleSwift* innerMparticle;
 
 + (void)initialize {
     if (self == [MParticle class]) {
@@ -148,7 +147,6 @@ MParticleSwift* innerMparticle;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
-    innerMparticle = [[MParticleSwift alloc] initWithExecutor:executor kitContainer:_kitContainer];
     
     return self;
 }
@@ -434,7 +432,6 @@ MParticleSwift* innerMparticle;
     [self.webView startWithCustomUserAgent:options.customUserAgent shouldCollect:options.collectUserAgent defaultUserAgentOverride:options.defaultAgent];
     
     _backendController = [[MPBackendController_PRIVATE alloc] initWithDelegate:self];
-    innerMparticle.backendController = _backendController;
     
     if (options.networkOptions) {
         self.networkOptions = options.networkOptions;
