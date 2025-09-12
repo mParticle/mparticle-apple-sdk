@@ -69,9 +69,9 @@ class MPBackendControllerMock: NSObject, MPBackendControllerProtocol {
 
     // MARK: - Temp session
     var tempSessionCalled = false
-    var tempSessionReturnValue: MParticleSession = MParticleSession()
+    var tempSessionReturnValue: MParticleSession?
 
-    func tempSession() -> MParticleSession {
+    func tempSession() -> MParticleSession? {
         tempSessionCalled = true
         return tempSessionReturnValue
     }

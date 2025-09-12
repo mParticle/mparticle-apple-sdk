@@ -637,7 +637,7 @@ class MParticleTestsSwift: XCTestCase {
     func testSessionDidBegin() {
         let kitContainer = MPKitContainerMock()
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
-        mparticle.kitContainer = kitContainer
+        mparticle.setKitContainer(kitContainer)
         mparticle.sessionDidBegin(MPSession())
         
         
@@ -654,7 +654,7 @@ class MParticleTestsSwift: XCTestCase {
     func testSessionDidEnd() {
         let kitContainer = MPKitContainerMock()
         kitContainer.forwardSDKCallExpectation = XCTestExpectation()
-        mparticle.kitContainer = kitContainer
+        mparticle.setKitContainer(kitContainer)
         mparticle.sessionDidEnd(MPSession())
         
         
@@ -677,7 +677,7 @@ class MParticleTestsSwift: XCTestCase {
         
         let backendController = MPBackendControllerMock()
         
-        mparticle.kitContainer = kitContainer
+        mparticle.setKitContainer(kitContainer)
         mparticle.persistenceController = persistenceController
         mparticle.backendController = backendController
         
@@ -692,5 +692,90 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(persistenceController.resetDatabaseCalled, true)
         XCTAssertTrue(backendController.unproxyOriginalAppDelegateCalled)
     }
+    
+    func testBeginSessionTempSessionAvailableSessionTempSessionShouldNotBeCreated() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = nil
+        backendController.tempSessionReturnValue = MParticleSession()
+        mparticle.backendController = backendController
+        mparticle.beginSession()
+        XCTAssertFalse(backendController.createTempSessionCalled)
+    }
+    
+    func testBeginSessionSessionAvailableSessionTempSessionShouldNotBeCreated() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = MPSession()
+        backendController.tempSessionReturnValue = nil
+        mparticle.backendController = backendController
+        mparticle.beginSession()
+        XCTAssertFalse(backendController.createTempSessionCalled)
+    }
+    
+    func testBeginSessionSessionUnavailable() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = nil
+        backendController.tempSessionReturnValue = nil
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        mparticle.backendController = backendController
+        mparticle.beginSession()
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(backendController.createTempSessionCalled)
+        XCTAssertTrue(backendController.beginSessionCalled)
+        XCTAssertEqual(backendController.beginSessionIsManualParam, true)
+        XCTAssertNotNil(backendController.beginSessionDateParam)
+    }
+    
+    func testEndSessionNoSession() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = nil
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        mparticle.backendController = backendController
+        mparticle.endSession()
+        XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
+        XCTAssertFalse(backendController.endSessionWithIsManualCalled)
+    }
+    
+    func testEndSessionWithSession() {
+        let backendController = MPBackendControllerMock()
+        backendController.session = MPSession()
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        mparticle.backendController = backendController
+        mparticle.endSession()
+        XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
+        XCTAssertTrue(backendController.endSessionWithIsManualCalled)
+        XCTAssertEqual(backendController.endSessionIsManualParam, true)
+    }
+    
+    func testForwardLogInstall() {
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        mparticle.forwardLogInstall()
+        XCTAssertEqual(executor.executeOnMainAsync, true)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "forwardLogInstall")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
+    }
+    
+    func testForwardLogUpdate() {
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        mparticle.forwardLogUpdate()
+        XCTAssertEqual(executor.executeOnMainAsync, true)
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "forwardLogUpdate")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
+        XCTAssertNil(kitContainer.forwardSDKCallEventParam)
+        XCTAssertNil(kitContainer.forwardSDKCallParametersParam)
+        XCTAssertNil(kitContainer.forwardSDKCallUserInfoParam)
+    }
 }
-
