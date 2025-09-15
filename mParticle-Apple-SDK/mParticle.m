@@ -408,7 +408,7 @@ static id<ExecutorProtocol> executor;
         [userDefaults synchronize];
     }
     
-    self->_optOut = [MParticle sharedInstance].stateMachine.optOut;
+    self->_optOut = self.stateMachine.optOut;
     
     [self configureWithOptions:options];
     

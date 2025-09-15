@@ -35,6 +35,9 @@
 - (void)setKitContainer:(id<MPKitContainerProtocol>) kitContainer;
 - (void)forwardLogInstall;
 - (void)forwardLogUpdate;
+- (void)setUploadInterval:(NSTimeInterval)uploadInterval;
+- (NSTimeInterval)uploadInterval;
+- (NSDictionary<NSString *, id> *)userAttributesForUserId:(NSNumber *)userId;
 
 @property (nonatomic, strong, nonnull) id<MPBackendControllerProtocol> backendController;
 @property (nonatomic, strong) id<SettingsProviderProtocol> settingsProvider;
