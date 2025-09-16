@@ -37,18 +37,41 @@ public class MPLog: NSObject {
         MPLogger(loggerLevel: .verbose, format: format, arguments: arguments)
     }
     
-    @objc
-    public static func error(message: String) {
-        error(message)
+    public var logLevel: MPILogLevel
+    public var customLogger: ((String) -> Void)?
+    
+    init(logLevel: MPILogLevel) {
+        self.logLevel = logLevel
+    }
+    
+    private func log(loggerLevel: MPILogLevel, format: String, arguments: any CVarArg...) {
+        if (logLevel.rawValue >= loggerLevel.rawValue && loggerLevel != .none) {
+            let msg = String.localizedStringWithFormat("mParticle -> \(format)", arguments)
+            if let customLogger = customLogger {
+                customLogger(msg)
+            } else {
+                NSLog(msg)
+            }
+        }
     }
     
     @objc
-    public static func warning(message: String) {
-        warning(message)
+    public func error(_ message: String) {
+        log(loggerLevel: .error, format: message)
     }
     
     @objc
-    public static func debug(message: String) {
-        debug(message)
+    public func warning(_ message: String) {
+        log(loggerLevel: .warning, format: message)
+    }
+    
+    @objc
+    public func debug(_ message: String) {
+        log(loggerLevel: .debug, format: message)
+    }
+    
+    @objc
+    public func verbose(_ message: String) {
+        log(loggerLevel: .verbose, format: message)
     }
 }

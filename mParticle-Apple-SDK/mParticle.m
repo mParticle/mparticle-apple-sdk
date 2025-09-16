@@ -96,6 +96,7 @@ static NSString *const kMPStateKey = @"state";
 @synthesize settingsProvider = _settingsProvider;
 @synthesize listenerController = _listenerController;
 static id<ExecutorProtocol> executor;
+MPLog* logger;
 
 + (void)initialize {
     if (self == [MParticle class]) {
@@ -147,6 +148,7 @@ static id<ExecutorProtocol> executor;
     _stateMachine = [[MPStateMachine_PRIVATE alloc] init];
     _webView = [[MParticleWebView_PRIVATE alloc] initWithMessageQueue:executor.messageQueue];
     _listenerController = MPListenerController.sharedInstance;
+    logger = [[MPLog alloc] initWithLogLevel:_stateMachine.logLevel];
     
     return self;
 }
@@ -233,7 +235,13 @@ static id<ExecutorProtocol> executor;
     return self.stateMachine.logLevel;
 }
 
+- (void)setCustomLogger:(void (^)(NSString * _Nonnull))customLogger {
+    _customLogger = customLogger;
+    logger.customLogger = customLogger;
+}
+
 - (void)setLogLevel:(MPILogLevel)logLevel {
+    logger.logLevel = logLevel;
     self.stateMachine.logLevel = logLevel;
 }
 
@@ -244,10 +252,10 @@ static id<ExecutorProtocol> executor;
 - (void)setOptOutCompletion:(MPExecStatus)execStatus optOut:(BOOL)optOut {
     if (execStatus == MPExecStatusSuccess) {
         NSString* message = [NSString stringWithFormat:@"Set Opt Out: %d", optOut];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
     } else {
         NSString* message = [NSString stringWithFormat:@"Set Opt Out Failed: %lu", (unsigned long)execStatus];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
     }
 }
 
@@ -334,7 +342,7 @@ static id<ExecutorProtocol> executor;
                            options:(MParticleOptions * _Nonnull)options {
     if (error) {
         NSString* message = [NSString stringWithFormat: @"Identify request failed with error: %@", error];
-        [MPLog errorWithMessage:message];
+        [logger error:message];
     }
     
     NSArray<NSDictionary *> *deferredKitConfiguration = self.deferredKitConfiguration_PRIVATE;
@@ -488,9 +496,9 @@ static id<ExecutorProtocol> executor;
     [userDefaults setSharedGroupIdentifier:self.options.sharedGroupID];
 
     if (environment == MPEnvironmentDevelopment) {
-        [MPLog warningWithMessage:@"SDK has been initialized in Development mode."];
+        [logger warning:@"SDK has been initialized in Development mode."];
     } else if (environment == MPEnvironmentProduction) {
-        [MPLog warningWithMessage:@"SDK has been initialized in Production Mode."];
+        [logger warning:@"SDK has been initialized in Production Mode."];
     }
     
     [MPStateMachine_PRIVATE setEnvironment:environment];
@@ -718,7 +726,7 @@ static id<ExecutorProtocol> executor;
 - (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
         NSString *message = [NSString stringWithFormat:@"Began timed event: %@", event];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
         
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
@@ -733,7 +741,7 @@ static id<ExecutorProtocol> executor;
             }];
         } else {
             NSString *message = [NSString stringWithFormat:@"Blocked timed event begin from kits: %@", event];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
     }
 }
@@ -769,7 +777,7 @@ static id<ExecutorProtocol> executor;
             }];
         } else {
             NSString *message = [NSString stringWithFormat:@"Blocked timed event end from kits: %@", event];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
     }
 }
@@ -792,7 +800,7 @@ static id<ExecutorProtocol> executor;
 
 - (void)logEvent:(MPBaseEvent *)event {
     if (event == nil) {
-        [MPLog errorWithMessage: @"Cannot log nil event!"];
+        [logger error:@"Cannot log nil event!"];
     } else if ([event isKindOfClass:[MPEvent class]]) {
         [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
@@ -820,7 +828,7 @@ static id<ExecutorProtocol> executor;
                 }];
             } else {
                 NSString *message = [NSString stringWithFormat:@"Blocked base event from kits: %@", event];
-                [MPLog debugWithMessage:message];
+                [logger debug:message];
             }
         }];
     }
@@ -828,7 +836,7 @@ static id<ExecutorProtocol> executor;
 
 - (void)logCustomEvent:(MPEvent *)event {
     if (event == nil) {
-        [MPLog errorWithMessage:@"Cannot log nil event!"];
+        [logger error:@"Cannot log nil event!"];
         return;
     }
     
@@ -853,7 +861,7 @@ static id<ExecutorProtocol> executor;
             }];
         } else {
             NSString *message = [NSString stringWithFormat:@"Blocked custom event from kits: %@", event];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
         
     }];
@@ -861,7 +869,7 @@ static id<ExecutorProtocol> executor;
 
 - (void)logKitBatch:(NSString *)batch {
     if (batch == nil) {
-        [MPLog errorWithMessage:@"Cannot log nil batch!"];
+        [logger error:@"Cannot log nil batch!"];
         return;
     }
     
@@ -919,7 +927,7 @@ static id<ExecutorProtocol> executor;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
         NSString *message = [NSString stringWithFormat:@"Logged screen event: %@", event];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
 
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForScreenEvent:event] : event;
         if (kitEvent) {
@@ -934,14 +942,14 @@ static id<ExecutorProtocol> executor;
             }];
         } else {
             NSString *message = [NSString stringWithFormat:@"Blocked screen event from kits: %@", event];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
     }
 }
 
 - (void)logScreenEvent:(MPEvent *)event {
     if (event == nil) {
-        [MPLog errorWithMessage:@"Cannot log nil screen event!"];
+        [logger error:@"Cannot log nil screen event!"];
         return;
     }
     if (!event.timestamp) {
@@ -964,7 +972,7 @@ static id<ExecutorProtocol> executor;
 
 - (void)logScreen:(NSString *)screenName eventInfo:(NSDictionary<NSString *, id> *)eventInfo shouldUploadEvent:(BOOL)shouldUploadEvent {
     if (!screenName) {
-        [MPLog errorWithMessage:@"Screen name is required."];
+        [logger error:@"Screen name is required."];
         return;
     }
     
@@ -1015,7 +1023,7 @@ static id<ExecutorProtocol> executor;
 - (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
         NSString *message = [NSString stringWithFormat:@"Left breadcrumb: %@", event];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
 
         MPEvent *kitEvent = self.dataPlanFilter != nil ? [self.dataPlanFilter transformEventForEvent:event] : event;
         if (kitEvent) {
@@ -1030,14 +1038,14 @@ static id<ExecutorProtocol> executor;
             }];
         } else {
             NSString *message = [NSString stringWithFormat:@"Blocked breadcrumb event from kits: %@", event];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
     }
 }
 
 - (void)leaveBreadcrumb:(NSString *)breadcrumbName eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!breadcrumbName) {
-        [MPLog errorWithMessage:@"Breadcrumb name is required."];
+        [logger error:@"Breadcrumb name is required."];
         return;
     }
     
@@ -1069,7 +1077,7 @@ static id<ExecutorProtocol> executor;
 - (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message {
     if (execStatus == MPExecStatusSuccess) {
         NSString *debugMessage = [NSString stringWithFormat:@"Logged error with message: %@", message];
-        [MPLog debugWithMessage:debugMessage];
+        [logger debug:debugMessage];
         
         // Forwarding calls to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -1088,7 +1096,7 @@ static id<ExecutorProtocol> executor;
 - (void)logError:(NSString *)message eventInfo:(NSDictionary<NSString *, id> *)eventInfo {
     if (!message) {
         NSString *message = [NSString stringWithFormat:@"'message' is required for %@", NSStringFromSelector(_cmd)];
-        [MPLog errorWithMessage:message];
+        [logger error:message];
         return;
     }
     
@@ -1112,7 +1120,7 @@ static id<ExecutorProtocol> executor;
 - (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext {
     if (execStatus == MPExecStatusSuccess) {
         NSString *debugMessage = [NSString stringWithFormat:@"Logged exception name: %@, reason: %@, topmost context: %@", message, exception.reason, topmostContext];
-        [MPLog debugWithMessage:debugMessage];
+        [logger debug:debugMessage];
         
         // Forwarding calls to kits
         MPForwardQueueParameters *queueParameters = [[MPForwardQueueParameters alloc] init];
@@ -1144,7 +1152,7 @@ static id<ExecutorProtocol> executor;
 - (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message {
     if (execStatus == MPExecStatusSuccess) {
         NSString *debugMessage = [NSString stringWithFormat:@"Logged crash with message: %@", message];
-        [MPLog debugWithMessage:debugMessage];
+        [logger debug:debugMessage];
     }
 }
 
@@ -1154,7 +1162,7 @@ static id<ExecutorProtocol> executor;
 {
     if (!plCrashReport) {
         NSString *message = [NSString stringWithFormat:@"'plCrashReport' is required for %@", NSStringFromSelector(_cmd)];
-        [MPLog errorWithMessage:message];
+        [logger error:message];
         return;
     }
     
@@ -1175,13 +1183,13 @@ static id<ExecutorProtocol> executor;
     if (execStatus == MPExecStatusSuccess) {
     } else {
         NSString *message = [NSString stringWithFormat:@"Failed to log commerce event: %@", commerceEvent];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
     }
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
     if (commerceEvent == nil) {
-        [MPLog errorWithMessage:@"Cannot log nil commerce event!"];
+        [logger error:@"Cannot log nil commerce event!"];
         return;
     }
     if (!commerceEvent.timestamp) {
@@ -1202,7 +1210,7 @@ static id<ExecutorProtocol> executor;
             [self.kitContainer forwardCommerceEventCall:kitEvent];
         } else {
             NSString *message = [NSString stringWithFormat:@"Blocked commerce event from kits: %@", commerceEvent];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
     }];
 }
@@ -1226,7 +1234,7 @@ static id<ExecutorProtocol> executor;
             }];
         } else {
             NSString* message = [NSString stringWithFormat:@"Blocked LTV increase event from kits: %@", event];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         }
     }
 }
@@ -1370,7 +1378,7 @@ static id<ExecutorProtocol> executor;
 #ifndef MPARTICLE_LOCATION_DISABLE
     [MParticle sharedInstance].stateMachine.locationManager.backgroundLocationTracking = backgroundLocationTracking;
 #else
-    [MPLog debugWithMessage:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
+    [logger debug:@"Automatic background tracking has been disabled to support users excluding location services from their applications."];
 #endif
 }
 
@@ -1385,7 +1393,7 @@ static id<ExecutorProtocol> executor;
     if (![self.stateMachine.location isEqual:location]) {
         self.stateMachine.location = location;
         NSString *message = [NSString stringWithFormat:@"Set location %@", location];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
         
         [executor executeOnMain: ^{
             [self.listenerController onAPICalled:_cmd parameter1:location];
@@ -1418,10 +1426,10 @@ static id<ExecutorProtocol> executor;
     MPExecStatus execStatus = [_backendController beginLocationTrackingWithAccuracy:accuracy distanceFilter:distanceFilter authorizationRequest:authorizationRequest];
     if (execStatus == MPExecStatusSuccess) {
         NSString *message = [NSString stringWithFormat:@"Began location tracking with accuracy: %0.0f and distance filter %0.0f", accuracy, distanceFilter];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
     } else {
         NSString *message = [NSString stringWithFormat:@"Could not begin location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [MPLog errorWithMessage:message];
+        [logger error:message];
     }
 }
 
@@ -1430,10 +1438,10 @@ static id<ExecutorProtocol> executor;
     
     MPExecStatus execStatus = [_backendController endLocationTracking];
     if (execStatus == MPExecStatusSuccess) {
-        [MPLog debugWithMessage:@"Ended location tracking"];
+        [logger debug:@"Ended location tracking"];
     } else {
         NSString *message = [NSString stringWithFormat:@"Could not end location tracking: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-        [MPLog errorWithMessage:message];
+        [logger error:message];
     }
 }
 #endif // MPARTICLE_LOCATION_DISABLE
@@ -1441,7 +1449,7 @@ static id<ExecutorProtocol> executor;
 
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus {
     if (execStatus == MPExecStatusSuccess) {
-        [MPLog debugWithMessage:@"Logged network performance measurement"];
+        [logger debug:@"Logged network performance measurement"];
     }
 }
 
@@ -1473,7 +1481,7 @@ static id<ExecutorProtocol> executor;
         
         NSNumber *newValue = [self.backendController incrementSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key byValue:value];
         NSString *message = [NSString stringWithFormat:@"Session attribute %@ incremented by %@. New value: %@", key, value, newValue];
-        [MPLog debugWithMessage:message];
+        [logger debug:message];
     }];
     
     return @0;
@@ -1486,10 +1494,10 @@ static id<ExecutorProtocol> executor;
         MPExecStatus execStatus = [self.backendController setSessionAttribute:[MParticle sharedInstance].stateMachine.currentSession key:key value:value];
         if (execStatus == MPExecStatusSuccess) {
             NSString *message = [NSString stringWithFormat:@"Set session attribute - %@:%@", key, value];
-            [MPLog debugWithMessage:message];
+            [logger debug:message];
         } else {
             NSString *message = [NSString stringWithFormat:@"Could not set session attribute - %@:%@\n Reason: %@", key, value, [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
         }
     }];
 }
@@ -1525,10 +1533,10 @@ static id<ExecutorProtocol> executor;
         MPExecStatus execStatus = [strongSelf.backendController waitForKitsAndUploadWithCompletionHandler:nil];
         
         if (execStatus == MPExecStatusSuccess) {
-            [MPLog debugWithMessage:@"Forcing Upload"];
+            [logger debug:@"Forcing Upload"];
         } else {
             NSString *message = [NSString stringWithFormat:@"Could not upload data: %@", [MPBackendController_PRIVATE execStatusDescription:execStatus]];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
         }
     }];
 }
@@ -1633,7 +1641,7 @@ static id<ExecutorProtocol> executor;
 
     NSString *bridgeValue = [self webviewBridgeValueWithCustomerBridgeName:bridgeName];
     if (bridgeValue == nil) {
-        [MPLog errorWithMessage:@"Unable to initialize webview due to missing or invalid bridgeName"];
+        [logger error:@"Unable to initialize webview due to missing or invalid bridgeName"];
         return;
     }
     NSString *bridgeVersion = [self bridgeVersion];
@@ -1653,14 +1661,14 @@ static id<ExecutorProtocol> executor;
     
     NSString *body = message.body;
     if (body == nil || ![body isKindOfClass:[NSString class]]) {
-        [MPLog errorWithMessage:@"Unexpected non-string body received from webview bridge"];
+        [logger error:@"Unexpected non-string body received from webview bridge"];
         return;
     }
     
     @try {
         NSData *bodyData = [body dataUsingEncoding:NSUTF8StringEncoding];
         if (bodyData == nil) {
-            [MPLog errorWithMessage:@"Unable to create data from webview bridge body string"];
+            [logger error:@"Unable to create data from webview bridge body string"];
             return;
         }
         
@@ -1668,28 +1676,28 @@ static id<ExecutorProtocol> executor;
         NSDictionary *bodyDictionary = [NSJSONSerialization JSONObjectWithData:bodyData options:kNilOptions error:&error];
         if (error != nil || bodyDictionary == nil || ![bodyDictionary isKindOfClass:[NSDictionary class]]) {
             NSString *message = [NSString stringWithFormat:@"Unable to create dictionary from webview data. error=%@", error];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
             return;
         }
         
         NSString *kPathKey = @"path";
         NSString *path = bodyDictionary[kPathKey];
         if (path == nil || ![path isKindOfClass:[NSString class]]) {
-            [MPLog errorWithMessage:@"Unable to retrieve path from webview dictionary"];
+            [logger error:@"Unable to retrieve path from webview dictionary"];
             return;
         }
         
         NSString *kValueKey = @"value";
         NSDictionary *value = bodyDictionary[kValueKey];
         if (value == nil || ![value isKindOfClass:[NSDictionary class]]) {
-            [MPLog errorWithMessage:@"Unable to retrieve value from webview dictionary"];
+            [logger error:@"Unable to retrieve value from webview dictionary"];
             return;
         }
         
         [self handleWebviewCommand:path dictionary:value];
     } @catch (NSException *e) {
         NSString *message = [NSString stringWithFormat:@"Exception processing WKWebView event: %@", e.reason];
-        [MPLog errorWithMessage:message];
+        [logger error:message];
     }
 }
 
@@ -1697,14 +1705,14 @@ static id<ExecutorProtocol> executor;
     [self.listenerController onAPICalled:_cmd parameter1:command parameter2:dictionary];
     
     if (!command || ![command isKindOfClass:[NSString class]] || (dictionary && ![dictionary isKindOfClass:[NSDictionary class]])) {
-        [MPLog errorWithMessage:@"Unexpected data received from embedded webview"];
+        [logger error:@"Unexpected data received from embedded webview"];
         return;
     }
     
     if ([command hasPrefix:kMParticleWebViewPathLogEvent]) {
         NSNumber *eventDataType = dictionary[@"EventDataType"];
         if (eventDataType == nil || ![eventDataType isKindOfClass:[NSNumber class]]) {
-            [MPLog errorWithMessage:@"Unexpected event data type received from embedded webview"];
+            [logger error:@"Unexpected event data type received from embedded webview"];
             return;
         }
         MPJavascriptMessageType messageType = (MPJavascriptMessageType)[eventDataType integerValue];
@@ -1777,7 +1785,7 @@ static id<ExecutorProtocol> executor;
         
         if (!request) {
             NSString *message = [NSString stringWithFormat:@"Unable to create identify request from webview JS dictionary: %@", dictionary];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
             return;
         }
         
@@ -1791,7 +1799,7 @@ static id<ExecutorProtocol> executor;
         
         if (!request) {
             NSString *message = [NSString stringWithFormat:@"Unable to create login request from webview JS dictionary: %@", dictionary];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
             return;
         }
         
@@ -1803,7 +1811,7 @@ static id<ExecutorProtocol> executor;
         
         if (!request) {
             NSString *message = [NSString stringWithFormat:@"Unable to create logout request from webview JS dictionary: %@", dictionary];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
             return;
         }
         
@@ -1815,7 +1823,7 @@ static id<ExecutorProtocol> executor;
         
         if (!request) {
             NSString *message = [NSString stringWithFormat:@"Unable to create modify request from webview JS dictionary: %@", dictionary];
-            [MPLog errorWithMessage:message];
+            [logger error:message];
             return;
         }
         
@@ -1832,7 +1840,7 @@ static id<ExecutorProtocol> executor;
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetUserAttribute]) {
         if (!dictionary[@"key"] || (NSNull *)dictionary[@"key"] == [NSNull null]) {
-            [MPLog errorWithMessage:@"Unexpected user attribute data received from webview"];
+            [logger error:@"Unexpected user attribute data received from webview"];
             return;
         }
         if (!dictionary[@"value"]) {
@@ -1846,7 +1854,7 @@ static id<ExecutorProtocol> executor;
         }
     } else if ([command hasPrefix:kMParticleWebViewPathSetSessionAttribute]) {
         if (!dictionary[@"key"]) {
-            [MPLog errorWithMessage:@"Unexpected session attribute data received from webview"];
+            [logger error:@"Unexpected session attribute data received from webview"];
             return;
         }
         if ((NSNull *)dictionary[@"key"] != [NSNull null] && (NSNull *)dictionary[@"value"] != [NSNull null]) {
