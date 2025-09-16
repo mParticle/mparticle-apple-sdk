@@ -40,7 +40,7 @@ public class MPLog: NSObject {
     public var logLevel: MPILogLevel
     public var customLogger: ((String) -> Void)?
     
-    init(logLevel: MPILogLevel) {
+    public init(logLevel: MPILogLevel) {
         self.logLevel = logLevel
     }
     
