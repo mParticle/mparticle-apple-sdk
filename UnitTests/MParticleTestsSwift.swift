@@ -17,7 +17,7 @@ class MParticleTestsSwift: XCTestCase {
     override func setUp() {
         super.setUp()
         
-        mparticle = MParticle.sharedInstance()
+        mparticle = MParticle()
         mparticle.logLevel = .verbose
         mparticle.customLogger = customLogger
         listenerController = MPListenerControllerMock()
