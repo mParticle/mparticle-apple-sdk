@@ -895,10 +895,11 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCustomEventWithFilterReturningNil_blocksEvent() {
         let event = MPEvent(name: "blocked", type: .other)!
         
-        // TODO: add expected execution for other methods within logCustomEvent
-        
         let executor = ExecutorMock()
         mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
@@ -906,6 +907,12 @@ class MParticleTestsSwift: XCTestCase {
         
         mparticle.logCustomEvent(event)
         
+        XCTAssertNil(event.endTime)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
