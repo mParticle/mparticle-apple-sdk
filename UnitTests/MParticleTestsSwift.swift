@@ -885,4 +885,53 @@ class MParticleTestsSwift: XCTestCase {
 #endif
 #endif
     }
+    
+    
+    func testLogCustomEventWithNilEvent_logsError() {
+        mparticle.logCustomEvent(nil)
+        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil event!")
+    }
+    
+    func testLogCustomEventWithFilterReturningNil_blocksEvent() {
+        let event = MPEvent(name: "blocked", type: .other)!
+        
+        // TODO: add expected execution for other methods within logCustomEvent
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventReturnValue = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logCustomEvent(event)
+        
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+        XCTAssertEqual(receivedMessage, "mParticle -> Blocked custom event from kits: \(event)")
+    }
+
+//
+//    func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
+//        let event = MPEvent(name: "original", type: .other)
+//        let transformedEvent = MPEvent(name: "transformed", type: .other)
+//        
+//        let filter = MPDataPlanFilterMock()
+//        filter.stubbedEvent = transformedEvent
+//        mparticle.dataPlanFilter = filter
+//        
+//        let kitContainer = MPKitContainerMock()
+//        kitContainer.forwardSDKCallExpectation = XCTestExpectation()
+//        mparticle.setKitContainer(kitContainer)
+//        
+//        mparticle.logCustomEvent(event)
+//        wait(for: [kitContainer.forwardSDKCallExpectation!], timeout: 1.0)
+//        
+//        XCTAssertTrue(filter.transformEventCalled)
+//        XCTAssertEqual(kitContainer.forwardSDKCallEventParam?.name, "transformed")
+//    }
+
+    
+    
 }

@@ -12,6 +12,7 @@
 - (void)startWithKeyCallback:(BOOL)firstRun options:(MParticleOptions * _Nonnull)options userDefaults:(id<MPUserDefaultsProtocol>)userDefaults;
 - (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logEventCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)logCustomEvent:(MPEvent *)event;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logErrorCallback:(NSDictionary<NSString *,id> * _Nullable)eventInfo execStatus:(MPExecStatus)execStatus message:(NSString *)message;
