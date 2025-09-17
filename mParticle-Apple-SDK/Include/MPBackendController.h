@@ -128,7 +128,6 @@ extern const NSInteger kInvalidKey;
 - (void)logError:(nullable NSString *)message exception:(nullable NSException *)exception topmostContext:(nullable id)topmostContext eventInfo:(nullable NSDictionary *)eventInfo completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus))completionHandler;
 - (void)logCrash:(nullable NSString *)message stackTrace:(nullable NSString *)stackTrace plCrashReport:(nonnull NSString *)plCrashReport completionHandler:(void (^ _Nonnull)(NSString * _Nullable message, MPExecStatus execStatus)) completionHandler;
 - (void)logBaseEvent:(nonnull MPBaseEvent *)event completionHandler:(void (^ _Nonnull)(MPBaseEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
-- (void)logEvent:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
 - (void)logCommerceEvent:(nonnull MPCommerceEvent *)commerceEvent completionHandler:(void (^ _Nonnull)(MPCommerceEvent * _Nonnull commerceEvent, MPExecStatus execStatus))completionHandler;
 - (void)logNetworkPerformanceMeasurement:(nonnull MPNetworkPerformance *)networkPerformance completionHandler:(void (^ _Nullable)(MPNetworkPerformance * _Nonnull networkPerformance, MPExecStatus execStatus))completionHandler;
 - (void)logScreen:(nonnull MPEvent *)event completionHandler:(void (^ _Nonnull)(MPEvent * _Nonnull event, MPExecStatus execStatus))completionHandler;
