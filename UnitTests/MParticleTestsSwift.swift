@@ -885,4 +885,95 @@ class MParticleTestsSwift: XCTestCase {
 #endif
 #endif
     }
+    
+    
+    func testLogCustomEventWithNilEvent_logsError() {
+        mparticle.logCustomEvent(nil)
+        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil event!")
+    }
+    
+    func testLogCustomEventWithFilterReturningNil_blocksEvent() {
+        let event = MPEvent(name: "blocked", type: .other)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventReturnValue = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logCustomEvent(event)
+        
+        // Verify event timing ended
+        XCTAssertNil(event.endTime)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        
+        // Verify filter transform event
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+        
+        // Logger should record the blocked event message
+        XCTAssertEqual(receivedMessage, "mParticle -> Blocked custom event from kits: \(event)")
+    }
+
+    func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
+        let event = MPEvent(name: "original", type: .other)!
+        let transformedEvent = MPEvent(name: "transformed", type: .other)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventReturnValue = transformedEvent
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        
+        mparticle.logCustomEvent(event)
+        
+        // Verify event timing ended
+        XCTAssertNil(event.endTime)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logEventCalled)
+        XCTAssertTrue(backendController.logEventEventParam === event)
+        XCTAssertNotNil(backendController.logEventCompletionHandler)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(executor.executeOnMainAsync)
+        
+        // Verify filter transformed event
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
+        
+        // Verify kit container forwarded transformed event
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logEvent:")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .event)
+        XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
+    }
+
 }
