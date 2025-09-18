@@ -19,6 +19,7 @@
 - (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext;
 - (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message;
 - (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus;
+- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
 - (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus;
 + (void)setSharedInstance:(MParticle *)instance;
