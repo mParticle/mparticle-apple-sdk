@@ -886,6 +886,7 @@ class MParticleTestsSwift: XCTestCase {
 #endif
     }
     
+    // MARK: - logCustomEvent
     
     func testLogCustomEventWithNilEvent_logsError() {
         mparticle.logCustomEvent(nil)
@@ -976,10 +977,117 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
     }
     
+    // MARK: - logCommerceEvent
+    
     func testLogCommerceEventWithNilCommerceEvent_logsError() {
         mparticle.logCommerceEvent(nil)
         XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil commerce event!")
     }
     
+    func testLogCommerceEvent_assignsTimestampWhenNil() {
+        let commerceEvent = MPCommerceEvent(action: .purchase)!
+        commerceEvent.setTimestamp(nil)
+
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        mparticle.logCommerceEvent(commerceEvent)
+        
+        XCTAssertNotNil(commerceEvent.timestamp)
+        XCTAssertTrue(backendController.logCommerceEventCalled)
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+    }
+
+    
+    func testLogCommerceEventWithFilterReturningNil_blocksEvent() {
+        let commerceEvent = MPCommerceEvent(eventType: .other)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventForCommerceEventParam = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logCommerceEvent(commerceEvent)
+        
+        // Verify event timestamp added
+        XCTAssertNotNil(commerceEvent.timestamp)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logCommerceEventCalled)
+        XCTAssertTrue(backendController.logCommerceEventParam === commerceEvent)
+        let completion = backendController.logCommerceEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(commerceEvent, .success)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        
+        // Verify filter transform event
+        XCTAssertTrue(dataPlanFilter.transformEventForCommerceEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForCommerceEventParam === commerceEvent)
+        
+        // Logger should record the blocked event message
+        XCTAssertEqual(receivedMessage, "mParticle -> Blocked commerce event from kits: \(commerceEvent)")
+    }
+
+
+    func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
+        let commerceEvent = MPCommerceEvent(eventType: .other)!
+        let transformedCommerceEvent = MPCommerceEvent(eventType: .viewDetail)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventForCommerceEventReturnValue = transformedCommerceEvent
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        
+        mparticle.logCommerceEvent(commerceEvent)
+        
+        // Verify event timestamp added
+        XCTAssertNotNil(commerceEvent.timestamp)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === commerceEvent)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logCommerceEventCalled)
+        XCTAssertTrue(backendController.logCommerceEventParam === commerceEvent)
+        let completion = backendController.logCommerceEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(commerceEvent, .success)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        
+        // Verify filter transformed event
+        XCTAssertTrue(dataPlanFilter.transformEventForCommerceEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForCommerceEventParam === commerceEvent)
+        
+        // Verify kit container forwarded transformed event
+        XCTAssertTrue(kitContainer.forwardCommerceEventCallCalled)
+        XCTAssertTrue(kitContainer.forwardCommerceEventCallCommerceEventParam === transformedCommerceEvent)
+    }
 
 }
