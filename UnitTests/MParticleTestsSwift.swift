@@ -975,5 +975,11 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .event)
         XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
     }
+    
+    func testLogCommerceEventWithNilCommerceEvent_logsError() {
+        mparticle.logCommerceEvent(nil)
+        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil commerce event!")
+    }
+    
 
 }
