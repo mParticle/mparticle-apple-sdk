@@ -5,6 +5,7 @@ import mParticle_Apple_SDK_NoLocation
 import mParticle_Apple_SDK
 #endif
 
+@objcMembers
 class MPDataPlanFilterMock: NSObject, MPDataPlanFilterProtocol {
     var isBlockedUserIdentityTypeCalled = false
     var isBlockedUserIdentityTypeUserIdentityTypeParam: MPIdentity?
@@ -44,5 +45,15 @@ class MPDataPlanFilterMock: NSObject, MPDataPlanFilterProtocol {
         transformEventForScreenEventCalled = true
         transformEventForScreenEventScreenEventParam = screenEvent
         return transformEventForScreenEventReturnValue
+    }
+    
+    var transformEventForCommerceEventCalled = false
+    var transformEventForCommerceEventParam: MPCommerceEvent?
+    var transformEventForCommerceEventReturnValue: MPCommerceEvent?
+    
+    func transformEvent(forCommerceEvent commerceEvent: MPCommerceEvent) -> MPCommerceEvent? {
+        transformEventForCommerceEventCalled = true
+        transformEventForCommerceEventParam = commerceEvent
+        return transformEventForCommerceEventReturnValue
     }
 }
