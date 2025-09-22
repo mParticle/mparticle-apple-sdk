@@ -56,4 +56,14 @@ class MPDataPlanFilterMock: NSObject, MPDataPlanFilterProtocol {
         transformEventForCommerceEventParam = commerceEvent
         return transformEventForCommerceEventReturnValue
     }
+    
+    var transformEventForBaseEventCalled = false
+    var transformEventForBaseEventParam: MPBaseEvent?
+    var transformEventForBaseEventReturnValue: MPBaseEvent?
+    
+    func transformEvent(forBaseEvent baseEvent: MPBaseEvent) -> MPBaseEvent? {
+        transformEventForBaseEventCalled = true
+        transformEventForBaseEventParam = baseEvent
+        return transformEventForBaseEventReturnValue
+    }
 }

@@ -845,7 +845,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @see MPEvent
  @see MPCommerceEvent
  */
-- (void)logEvent:(MPBaseEvent *)event;
+- (void)logEvent:(nullable MPBaseEvent *)event;
 
 /**
  Logs an event. This is a convenience method for logging simple events; internally it creates an instance of MPEvent
