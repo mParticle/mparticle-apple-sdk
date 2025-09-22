@@ -1,3 +1,26 @@
+# [8.39.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.38.0...v8.39.0) (2025-09-18)
+
+
+### Bug Fixes
+
+* Update Hashed Email Logic With Unassigned ([#401](https://github.com/mParticle/mparticle-apple-sdk/issues/401)) ([c50b101](https://github.com/mParticle/mparticle-apple-sdk/commit/c50b101de6d7d4f66ea7708fb435607399b61c71))
+
+
+### Features
+
+* SDKE-119 Create protocols for testability ([#402](https://github.com/mParticle/mparticle-apple-sdk/issues/402)) ([12b636e](https://github.com/mParticle/mparticle-apple-sdk/commit/12b636ee1e777c2de323f2f1ed071af64b1f9a20))
+* SDKE-119 Create protocols for testability. Part 2 ([#403](https://github.com/mParticle/mparticle-apple-sdk/issues/403)) ([6401e0c](https://github.com/mParticle/mparticle-apple-sdk/commit/6401e0ce5d90a645b2b5b21d03bb8952d9634477))
+* SDKE-119 Create protocols for testability. Part 3 ([#404](https://github.com/mParticle/mparticle-apple-sdk/issues/404)) ([9032458](https://github.com/mParticle/mparticle-apple-sdk/commit/90324581718d148c757fc8166b23f28bd8be08a3))
+* SDKE-61 Extract and test callback logic. Part 1 ([#395](https://github.com/mParticle/mparticle-apple-sdk/issues/395)) ([c3a7da9](https://github.com/mParticle/mparticle-apple-sdk/commit/c3a7da9aa5020051e18026572f893b50022d3809))
+* SDKE-61 Extract and test callback logic. Part 2 ([#396](https://github.com/mParticle/mparticle-apple-sdk/issues/396)) ([2fb2490](https://github.com/mParticle/mparticle-apple-sdk/commit/2fb2490d0c2b0021d3277ab56b60f46d5b134771))
+* SDKE-61 Extract and test callback logic. Part 3 ([#397](https://github.com/mParticle/mparticle-apple-sdk/issues/397)) ([b6cd236](https://github.com/mParticle/mparticle-apple-sdk/commit/b6cd236a729f96d94b20e60e661c00846131e434))
+* SDKE-61 Extract and test callback logic. Part 4 ([#398](https://github.com/mParticle/mparticle-apple-sdk/issues/398)) ([3cf3c88](https://github.com/mParticle/mparticle-apple-sdk/commit/3cf3c881fed67467854117f2b742e3dac241ad4c))
+* SDKE-62 Refactor MPListenerController for Testability ([#400](https://github.com/mParticle/mparticle-apple-sdk/issues/400)) ([cc843a5](https://github.com/mParticle/mparticle-apple-sdk/commit/cc843a5e87c92a9d5660ec585a0d196df8c70295))
+* SDKE-63-replace-logging-macros-with-swift-helpers ([#405](https://github.com/mParticle/mparticle-apple-sdk/issues/405)) ([0ca4964](https://github.com/mParticle/mparticle-apple-sdk/commit/0ca49647884abef0268666d926d35bc4866e8831))
+* SDKE-64 Improve mParticle.m test coverage in swift ([#406](https://github.com/mParticle/mparticle-apple-sdk/issues/406)) ([d4ef623](https://github.com/mParticle/mparticle-apple-sdk/commit/d4ef62322d4749f716ad0ebf38014b59e87244f3))
+* SDKE-64 Improve mParticle.m test coverage in swift 2 ([#407](https://github.com/mParticle/mparticle-apple-sdk/issues/407)) ([b8d67ec](https://github.com/mParticle/mparticle-apple-sdk/commit/b8d67ec49dd2394a8991df04f76a590ff98d4f24))
+* SDKE-64 Improve mParticle.m test coverage in swift 3 ([#410](https://github.com/mParticle/mparticle-apple-sdk/issues/410)) ([72a111c](https://github.com/mParticle/mparticle-apple-sdk/commit/72a111c0f6d00f6d10cf5724f2164a6a5db07111))
+
 # [8.38.0](https://github.com/mParticle/mparticle-apple-sdk/compare/v8.37.1...v8.38.0) (2025-08-20)
 
 
