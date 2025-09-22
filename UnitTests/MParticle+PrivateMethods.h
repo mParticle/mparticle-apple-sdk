@@ -12,6 +12,7 @@
 - (void)startWithKeyCallback:(BOOL)firstRun options:(MParticleOptions * _Nonnull)options userDefaults:(id<MPUserDefaultsProtocol>)userDefaults;
 - (void)beginTimedEventCompletionHandler:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logEventCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
+- (void)logEvent:(MPBaseEvent *)event;
 - (void)logCustomEvent:(MPEvent *)event;
 - (void)logScreenCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)leaveBreadcrumbCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
@@ -19,6 +20,7 @@
 - (void)logExceptionCallback:(NSException * _Nonnull)exception execStatus:(MPExecStatus)execStatus message:(NSString *)message topmostContext:(id _Nullable)topmostContext;
 - (void)logCrashCallback:(MPExecStatus)execStatus message:(NSString * _Nullable)message;
 - (void)logCommerceEventCallback:(MPCommerceEvent *)commerceEvent execStatus:(MPExecStatus)execStatus;
+- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent;
 - (void)logLTVIncreaseCallback:(MPEvent *)event execStatus:(MPExecStatus)execStatus;
 - (void)logNetworkPerformanceCallback:(MPExecStatus)execStatus;
 + (void)setSharedInstance:(MParticle *)instance;

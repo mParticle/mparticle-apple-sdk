@@ -799,9 +799,7 @@ MPLog* logger;
 }
 
 - (void)logEvent:(MPBaseEvent *)event {
-    if (event == nil) {
-        [logger error:@"Cannot log nil event!"];
-    } else if ([event isKindOfClass:[MPEvent class]]) {
+    if ([event isKindOfClass:[MPEvent class]]) {
         [self logCustomEvent:(MPEvent *)event];
     } else if ([event isKindOfClass:[MPCommerceEvent class]]) {
 #pragma clang diagnostic push
@@ -1188,10 +1186,6 @@ MPLog* logger;
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (commerceEvent == nil) {
-        [logger error:@"Cannot log nil commerce event!"];
-        return;
-    }
     if (!commerceEvent.timestamp) {
         commerceEvent.timestamp = [NSDate date];
     }
