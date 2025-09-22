@@ -1186,10 +1186,6 @@ MPLog* logger;
 }
 
 - (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent {
-    if (commerceEvent == nil) {
-        [logger error:@"Cannot log nil commerce event!"];
-        return;
-    }
     if (!commerceEvent.timestamp) {
         commerceEvent.timestamp = [NSDate date];
     }

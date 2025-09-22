@@ -1077,11 +1077,6 @@ class MParticleTestsSwift: XCTestCase {
     
     // MARK: - logCommerceEvent
     
-    func testLogCommerceEventWithNilCommerceEvent_logsError() {
-        mparticle.logCommerceEvent(nil)
-        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil commerce event!")
-    }
-    
     func testLogCommerceEvent_assignsTimestampWhenNil() {
         let commerceEvent = MPCommerceEvent(action: .purchase)!
         commerceEvent.setTimestamp(nil)

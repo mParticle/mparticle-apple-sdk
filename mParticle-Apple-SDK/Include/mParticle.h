@@ -966,7 +966,7 @@ Defaults to false. Prevents the eventsHost above from overwriting the alias endp
  @param commerceEvent An instance of MPCommerceEvent
  @see MPCommerceEvent
  */
-- (void)logCommerceEvent:(nullable MPCommerceEvent *)commerceEvent DEPRECATED_MSG_ATTRIBUTE("Replace calls to `logCommerceEvent:` with `logEvent:`");
+- (void)logCommerceEvent:(MPCommerceEvent *)commerceEvent DEPRECATED_MSG_ATTRIBUTE("Replace calls to `logCommerceEvent:` with `logEvent:`");
 
 /**
  Increases the LTV (LifeTime Value) amount of a user.
