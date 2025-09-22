@@ -887,12 +887,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     // MARK: - logEvent
-    
-    func testLogEventCalledLoggerErrorWhenEventIsNil() {
-        mparticle.logEvent(nil)
-        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil event!")
-    }
-    
     func testLogEventCalledLogCustomEvent() {
         let event = MPEvent(name: "test", type: .other)!
         mparticle.logEvent(event)
