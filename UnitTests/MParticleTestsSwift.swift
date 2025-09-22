@@ -886,6 +886,110 @@ class MParticleTestsSwift: XCTestCase {
 #endif
     }
     
+    // MARK: - logEvent
+    
+    func testLogEventCalledLoggerErrorWhenEventIsNil() {
+        mparticle.logEvent(nil)
+        XCTAssertEqual(receivedMessage, "mParticle -> Cannot log nil event!")
+    }
+    
+    func testLogEventCalledLogCustomEvent() {
+        let event = MPEvent(name: "test", type: .other)!
+        mparticle.logEvent(event)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCustomEvent:")
+    }
+    
+    func testLogEventCalledLogCommerceEvent() {
+        let commerceEvent = MPCommerceEvent(action: .purchase)!
+        mparticle.logEvent(commerceEvent)
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
+    }
+    
+    func testLogEventWithFilterReturningNil_blocksEvent() {
+        let event = MPBaseEvent(eventType: .other)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventForBaseEventReturnValue = nil
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        mparticle.logEvent(event)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logBaseEventCalled)
+        XCTAssertTrue(backendController.logBaseEventEventParam === event)
+        let completion = backendController.logBaseEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(event, .success)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        
+        // Verify filter transform event
+        XCTAssertTrue(dataPlanFilter.transformEventForBaseEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForBaseEventParam === event)
+        
+        // Logger should record the blocked event message
+        XCTAssertEqual(receivedMessage, "mParticle -> Blocked base event from kits: \(event)")
+    }
+    
+    func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
+        let event = MPBaseEvent(eventType: .other)!
+        let transformedEvent = MPBaseEvent(eventType: .addToCart)!
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
+        
+        let dataPlanFilter = MPDataPlanFilterMock()
+        dataPlanFilter.transformEventForBaseEventReturnValue = transformedEvent
+        mparticle.dataPlanFilter = dataPlanFilter
+        
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        
+        mparticle.logEvent(event)
+        
+        // Verify listener was called
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logEvent:")
+        XCTAssertTrue(listenerController.onAPICalledParameter1 === event)
+        
+        // Verify backend was called
+        XCTAssertTrue(backendController.logBaseEventCalled)
+        XCTAssertTrue(backendController.logBaseEventEventParam === event)
+        let completion = backendController.logBaseEventCompletionHandler!
+        XCTAssertNotNil(completion)
+        completion(event, .success)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMessageQueueAsync)
+        XCTAssertTrue(executor.executeOnMainAsync)
+        
+        // Verify filter transformed event
+        XCTAssertTrue(dataPlanFilter.transformEventForBaseEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventForBaseEventParam === event)
+        
+        // Verify kit container forwarded transformed event
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "logBaseEvent:")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .unknown)
+        XCTAssertTrue(kitContainer.forwardSDKCallEventParam === transformedEvent)
+    }
+    
+    
     // MARK: - logCustomEvent
     
     func testLogCustomEventWithNilEvent_logsError() {
