@@ -339,32 +339,6 @@ class MParticleTestsSwift: XCTestCase {
         )
     }
     
-    func testLogLTVIncreaseCallbackDataFilterNotSet() {
-        XCTAssertNil(mparticle.dataPlanFilter)
-        mparticle.logLTVIncreaseCallback(MPEvent(), execStatus: .success)
-        
-        XCTAssertNil(receivedMessage)
-    }
-
-    func testLogLTVIncreaseCallbackDataFilterSetDataFilterReturnNil() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
-        let expectedEvent = MPEvent()
-        mparticle.logLTVIncreaseCallback(expectedEvent, execStatus: .success)
-    
-        XCTAssertTrue(dataPlanFilter.transformEventCalled)
-        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
-    
-        XCTAssertEqual(receivedMessage, """
-            mParticle -> Blocked LTV increase event from kits: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
-    }
-    
     func testLogNetworkPerformanceCallbackSuccess() {
         mparticle.logNetworkPerformanceCallback(.success)
         
@@ -472,16 +446,6 @@ class MParticleTestsSwift: XCTestCase {
         wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logCommerceEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
-    }
-    
-    
-    func testLogLTVIncreaseListenerControllerCalled() {
-        mparticle.logLTVIncrease(2.0, eventName: "name", eventInfo: [:])
-        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
-        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
-        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Double, 2.0)
-        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
-        XCTAssertEqual(listenerController.onAPICalledParameter3 as? [String: String], [:])
     }
     
     func testSetIntegrationAttributesListenerControllerCalled() {
@@ -1181,6 +1145,43 @@ class MParticleTestsSwift: XCTestCase {
         // Verify kit container forwarded transformed event
         XCTAssertTrue(kitContainer.forwardCommerceEventCallCalled)
         XCTAssertTrue(kitContainer.forwardCommerceEventCallCommerceEventParam === transformedCommerceEvent)
+    }
+    
+    // MARK: - logLTVIncrease
+    
+    func testLogLTVIncreaseCallbackDataFilterNotSet() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        mparticle.logLTVIncreaseCallback(MPEvent(), execStatus: .success)
+        
+        XCTAssertNil(receivedMessage)
+    }
+
+    func testLogLTVIncreaseCallbackDataFilterSetDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.logLTVIncreaseCallback(expectedEvent, execStatus: .success)
+    
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+    
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked LTV increase event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testLogLTVIncreaseListenerControllerCalled() {
+        mparticle.logLTVIncrease(2.0, eventName: "name", eventInfo: [:])
+        wait(for: [listenerController.onAPICalledExpectation!], timeout: 0.1)
+        XCTAssertEqual(listenerController.onAPICalledApiName?.description, "logLTVIncrease:eventName:eventInfo:")
+        XCTAssertEqual(listenerController.onAPICalledParameter1 as? Double, 2.0)
+        XCTAssertEqual(listenerController.onAPICalledParameter2 as? String, "name")
+        XCTAssertEqual(listenerController.onAPICalledParameter3 as? [String: String], [:])
     }
 
 }
