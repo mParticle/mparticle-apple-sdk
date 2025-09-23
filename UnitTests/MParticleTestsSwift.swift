@@ -1253,9 +1253,11 @@ class MParticleTestsSwift: XCTestCase {
 
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
         
+        // Verify filter transformed event
         XCTAssertTrue(dataPlanFilter.transformEventCalled)
         XCTAssertTrue(dataPlanFilter.transformEventEventParam === event)
         
+        // Verify executor usage
         XCTAssertTrue(executor.executeOnMainAsync)
         
         // Verify kit container forwarded transformed event
