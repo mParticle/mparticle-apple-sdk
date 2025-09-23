@@ -42,14 +42,14 @@ class MPKitContainerMock: MPKitContainerProtocol {
         forwardSDKCallExpectation?.fulfill()
     }
     
-    var forwardSDKCallBathParam: [AnyHashable : Any]?
+    var forwardSDKCallBatchParam: [AnyHashable : Any]?
     
     func forwardSDKCall(_ selector: Selector,
                         batch: [AnyHashable : Any],
                         kitHandler: @escaping (any MPKitProtocol, [AnyHashable : Any], MPKitConfiguration) -> Void) {
         forwardSDKCallCalled = true
         forwardSDKCallSelectorParam = selector
-        forwardSDKCallBathParam = batch
+        forwardSDKCallBatchParam = batch
         forwardSDKCallKitHandlerParam = kitHandler
         forwardSDKCallExpectation?.fulfill()
     }
