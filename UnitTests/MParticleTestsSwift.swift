@@ -12,6 +12,7 @@ class MParticleTestsSwift: XCTestCase {
     var kitContainer: MPKitContainerMock!
     var executor: ExecutorMock!
     var backendController: MPBackendControllerMock!
+    var state: MPStateMachineMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -35,6 +36,9 @@ class MParticleTestsSwift: XCTestCase {
         
         backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
+        
+        state = MPStateMachineMock()
+        mparticle.stateMachine = state
     }
     
     override func tearDown() {
@@ -54,8 +58,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testSetOptOutOptOutValueIsDifferentItShouldBeChangedAndDeliveredToBackendController() {
-        let state = MPStateMachineMock()
-        mparticle.stateMachine = state
         XCTAssertFalse(state.optOut)
         mparticle.optOut = true
         XCTAssertTrue(state.optOut)
@@ -161,7 +163,7 @@ class MParticleTestsSwift: XCTestCase {
 
         let userDefaults = MPUserDefaultsMock()
         
-        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as! MPUserDefaultsProtocol)
+        mparticle.start(withKeyCallback: false, options: options, userDefaults: userDefaults as MPUserDefaultsProtocol)
         
         XCTAssertTrue(mparticle.initialized)
         XCTAssertNil(mparticle.settingsProvider.configSettings)
