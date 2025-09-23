@@ -250,39 +250,6 @@ class MParticleTestsSwift: XCTestCase {
         )
     }
 
-    func testLeaveBreadcrumbCallbackDataFilterNotSet() {
-        XCTAssertNil(mparticle.dataPlanFilter)
-        mparticle.leaveBreadcrumbCallback(MPEvent(), execStatus: .success)
-        
-        XCTAssertEqual(receivedMessage, """
-            mParticle -> Left breadcrumb: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
-    }
-    
-    func testLeaveBreadcrumbCallbackDataFilterSetDataFilterReturnNil() {
-        let dataPlanFilter = MPDataPlanFilterMock()
-        mparticle.dataPlanFilter = dataPlanFilter
-        let expectedEvent = MPEvent()
-        mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .success)
-        
-        XCTAssertTrue(dataPlanFilter.transformEventCalled)
-        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
-
-        XCTAssertEqual(receivedMessage, """
-            mParticle -> Blocked breadcrumb event from kits: Event:{
-              Name: <<Event With No Name>>
-              Type: Other
-              Duration: 0
-            }
-            """
-        )
-    }
-
     func testLogErrorCallbackSuccess() {
         mparticle.logErrorCallback([:], execStatus: .success, message: "error")
         
@@ -1267,4 +1234,56 @@ class MParticleTestsSwift: XCTestCase {
         XCTAssertNil(kitContainer.forwardSDKCallEventParam)
     }
     
+    // MARK: Error, Exception, and Crash Handling
+    
+    func testLeaveBreadcrumbCallback_withDataFilterNotSet_forwardsTransformedEvent() {
+        XCTAssertNil(mparticle.dataPlanFilter)
+        
+        let kitContainer = MPKitContainerMock()
+        mparticle.setKitContainer(kitContainer)
+        
+        let executor = ExecutorMock()
+        mparticle.setExecutor(executor)
+        
+        let expectedEvent = MPEvent()
+        mparticle.leaveBreadcrumbCallback(MPEvent(), execStatus: .success)
+        
+        // Verify executor usage
+        XCTAssertTrue(executor.executeOnMainAsync)
+        
+        // Verify kit container forwarded transformed event
+        XCTAssertTrue(kitContainer.forwardSDKCallCalled)
+        XCTAssertEqual(kitContainer.forwardSDKCallSelectorParam?.description, "leaveBreadcrumb:")
+        XCTAssertEqual(kitContainer.forwardSDKCallMessageTypeParam, .breadcrumb)
+        XCTAssertNotNil(kitContainer.forwardSDKCallEventParam)
+        
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Left breadcrumb: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+    
+    func testLeaveBreadcrumbCallback_withDataFilterSet_andDataFilterReturnNil() {
+        let dataPlanFilter = MPDataPlanFilterMock()
+        mparticle.dataPlanFilter = dataPlanFilter
+        let expectedEvent = MPEvent()
+        mparticle.leaveBreadcrumbCallback(expectedEvent, execStatus: .success)
+        
+        XCTAssertTrue(dataPlanFilter.transformEventCalled)
+        XCTAssertTrue(dataPlanFilter.transformEventEventParam === expectedEvent)
+
+        XCTAssertEqual(receivedMessage, """
+            mParticle -> Blocked breadcrumb event from kits: Event:{
+              Name: <<Event With No Name>>
+              Type: Other
+              Duration: 0
+            }
+            """
+        )
+    }
+
 }
