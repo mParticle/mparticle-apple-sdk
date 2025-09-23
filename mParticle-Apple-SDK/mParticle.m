@@ -1242,10 +1242,6 @@ MPLog* logger;
         [eventDictionary addEntriesFromDictionary:eventInfo];
     }
     
-    if (!eventName) {
-        eventName = @"Increase LTV";
-    }
-    
     MPEvent *event = [[MPEvent alloc] initWithName:eventName type:MPEventTypeTransaction];
     event.customAttributes = eventDictionary;
     
