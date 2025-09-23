@@ -11,6 +11,7 @@ class MParticleTestsSwift: XCTestCase {
     var listenerController: MPListenerControllerMock!
     var kitContainer: MPKitContainerMock!
     var executor: ExecutorMock!
+    var backendController: MPBackendControllerMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -31,6 +32,9 @@ class MParticleTestsSwift: XCTestCase {
         
         executor = ExecutorMock()
         mparticle.setExecutor(executor)
+        
+        backendController = MPBackendControllerMock()
+        mparticle.backendController = backendController
     }
     
     override func tearDown() {
@@ -50,9 +54,7 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testSetOptOutOptOutValueIsDifferentItShouldBeChangedAndDeliveredToBackendController() {
-        let backendController = MPBackendControllerMock()
         let state = MPStateMachineMock()
-        mparticle.backendController = backendController
         mparticle.stateMachine = state
         XCTAssertFalse(state.optOut)
         mparticle.optOut = true
@@ -341,8 +343,6 @@ class MParticleTestsSwift: XCTestCase {
     
     func testBeginTimedEventDependenciesReceiveCorrectParametersAndHandlerExecutedWithoutErrors() {
         let expectedEvent = MPEvent()
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         mparticle.beginTimedEvent(expectedEvent)
         XCTAssertEqual(listenerController.onAPICalledApiName?.description, "beginTimedEvent:")
         XCTAssertTrue(listenerController.onAPICalledParameter1 === expectedEvent)
@@ -605,11 +605,7 @@ class MParticleTestsSwift: XCTestCase {
         let expectation = XCTestExpectation()
         
         let persistenceController = MPPersistenceControllerMock()
-        
-        let backendController = MPBackendControllerMock()
-    
         mparticle.persistenceController = persistenceController
-        mparticle.backendController = backendController
         
         mparticle.reset {
             expectation.fulfill()
@@ -624,28 +620,22 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testBeginSessionTempSessionAvailableSessionTempSessionShouldNotBeCreated() {
-        let backendController = MPBackendControllerMock()
         backendController.session = nil
         backendController.tempSessionReturnValue = MParticleSession()
-        mparticle.backendController = backendController
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
     }
     
     func testBeginSessionSessionAvailableSessionTempSessionShouldNotBeCreated() {
-        let backendController = MPBackendControllerMock()
         backendController.session = MPSession()
         backendController.tempSessionReturnValue = nil
-        mparticle.backendController = backendController
         mparticle.beginSession()
         XCTAssertFalse(backendController.createTempSessionCalled)
     }
     
     func testBeginSessionSessionUnavailable() {
-        let backendController = MPBackendControllerMock()
         backendController.session = nil
         backendController.tempSessionReturnValue = nil
-        mparticle.backendController = backendController
         mparticle.beginSession()
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
         XCTAssertTrue(backendController.createTempSessionCalled)
@@ -655,18 +645,14 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testEndSessionNoSession() {
-        let backendController = MPBackendControllerMock()
         backendController.session = nil
-        mparticle.backendController = backendController
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
         XCTAssertFalse(backendController.endSessionWithIsManualCalled)
     }
     
     func testEndSessionWithSession() {
-        let backendController = MPBackendControllerMock()
         backendController.session = MPSession()
-        mparticle.backendController = backendController
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
         XCTAssertTrue(backendController.endSessionWithIsManualCalled)
@@ -706,8 +692,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testSessionTimeoutReturnsValueFromBackendController() {
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         mparticle.backendController.sessionTimeout = 100
         XCTAssertEqual(mparticle.sessionTimeout, 100)
     }
@@ -720,30 +704,21 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testSetUploadIntervalChangeValueInBackendControllerWhenIntervalGreaterThenOne() {
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         mparticle.setUploadInterval(3)
         XCTAssertEqual(backendController.uploadInterval, 3)
     }
     
     func testSetUploadIntervalNotChangeValueInBackendControllerWhenIntervalLessThenOne() {
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         mparticle.setUploadInterval(0.1)
         XCTAssertEqual(backendController.uploadInterval, 0.0)
     }
     
     func testUploadIntervalGetFromBackendController() {
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         backendController.uploadInterval = 100
         XCTAssertEqual(mparticle.uploadInterval, 100)
     }
     
     func testUserAttributesForUserIdRequestDataFromBackendController() {
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
-        
         backendController.userAttributesReturnValue = ["key": "value"]
         let dictionary = mparticle.userAttributes(forUserId: 1)
         XCTAssertEqual(dictionary?["key"] as? String, "value")
@@ -752,10 +727,8 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testConfigureWithOptionsNoSettings() {
-        let backendController = MPBackendControllerMock()
         let settingsProvider = SettingsProviderMock()
         mparticle.settingsProvider = settingsProvider
-        mparticle.backendController = backendController
         mparticle.configure(with: .init())
         XCTAssertEqual(backendController.sessionTimeout, 0.0)
         XCTAssertEqual(backendController.uploadInterval, 0.0)
@@ -770,7 +743,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testConfigureWithOptionsWithSettingsAndOptionNotSet() {
-        let backendController = MPBackendControllerMock()
         let settingsProvider = SettingsProviderMock()
         mparticle.settingsProvider = settingsProvider
         settingsProvider.configSettings = [
@@ -781,7 +753,6 @@ class MParticleTestsSwift: XCTestCase {
             "track_notifications": false,
             "enable_location_tracking": true
         ]
-        mparticle.backendController = backendController
         let options = MParticleOptions()
         options.isSessionTimeoutSet = false
         options.isUploadIntervalSet = false
@@ -820,9 +791,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogEventWithFilterReturningNil_blocksEvent() {
         let event = MPBaseEvent(eventType: .other)!
         
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
-        
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = nil
         mparticle.dataPlanFilter = dataPlanFilter
@@ -854,9 +822,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPBaseEvent(eventType: .other)!
         let transformedEvent = MPBaseEvent(eventType: .addToCart)!
-        
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForBaseEventReturnValue = transformedEvent
@@ -900,9 +865,6 @@ class MParticleTestsSwift: XCTestCase {
     
     func testLogCustomEventWithFilterReturningNil_blocksEvent() {
         let event = MPEvent(name: "blocked", type: .other)!
-                
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = nil
@@ -936,9 +898,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPEvent(name: "original", type: .other)!
         let transformedEvent = MPEvent(name: "transformed", type: .other)!
-        
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = transformedEvent
@@ -979,9 +938,6 @@ class MParticleTestsSwift: XCTestCase {
         let commerceEvent = MPCommerceEvent(action: .purchase)!
         commerceEvent.setTimestamp(nil)
         
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
-        
         mparticle.logCommerceEvent(commerceEvent)
         
         XCTAssertNotNil(commerceEvent.timestamp)
@@ -993,9 +949,6 @@ class MParticleTestsSwift: XCTestCase {
     
     func testLogCommerceEventWithFilterReturningNil_blocksEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
-                
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForCommerceEventParam = nil
@@ -1032,9 +985,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
         let transformedCommerceEvent = MPCommerceEvent(eventType: .viewDetail)!
-        
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
         
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventForCommerceEventReturnValue = transformedCommerceEvent
@@ -1075,9 +1025,6 @@ class MParticleTestsSwift: XCTestCase {
         let name = "name"
         let info: [String: Any] = ["source": "in_app", "currency": "USD"]
 
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
-
         mparticle.logLTVIncrease(amount, eventName: name, eventInfo: info)
         
         // Assert event was passed through
@@ -1109,9 +1056,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogLTVIncrease_withoutEventInfo_defaultsToNilInfo() {
         let amount = 12.5
         let name = "name"
-
-        let backendController = MPBackendControllerMock()
-        mparticle.backendController = backendController
 
         mparticle.logLTVIncrease(amount, eventName: name)
 
