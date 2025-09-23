@@ -10,6 +10,7 @@ class MParticleTestsSwift: XCTestCase {
     var mparticle: MParticle!
     var listenerController: MPListenerControllerMock!
     var kitContainer: MPKitContainerMock!
+    var executor: ExecutorMock!
     
     func customLogger(_ message: String) {
         receivedMessage = message
@@ -27,6 +28,9 @@ class MParticleTestsSwift: XCTestCase {
         
         kitContainer = MPKitContainerMock()
         mparticle.setKitContainer(kitContainer)
+        
+        executor = ExecutorMock()
+        mparticle.setExecutor(executor)
     }
     
     override func tearDown() {
@@ -641,8 +645,6 @@ class MParticleTestsSwift: XCTestCase {
         let backendController = MPBackendControllerMock()
         backendController.session = nil
         backendController.tempSessionReturnValue = nil
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         mparticle.backendController = backendController
         mparticle.beginSession()
         XCTAssertTrue(executor.executeOnMessageQueueAsync)
@@ -655,8 +657,6 @@ class MParticleTestsSwift: XCTestCase {
     func testEndSessionNoSession() {
         let backendController = MPBackendControllerMock()
         backendController.session = nil
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         mparticle.backendController = backendController
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
@@ -666,8 +666,6 @@ class MParticleTestsSwift: XCTestCase {
     func testEndSessionWithSession() {
         let backendController = MPBackendControllerMock()
         backendController.session = MPSession()
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         mparticle.backendController = backendController
         mparticle.endSession()
         XCTAssertEqual(executor.executeOnMessageQueueAsync, true)
@@ -676,8 +674,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testForwardLogInstall() {
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         mparticle.forwardLogInstall()
         XCTAssertEqual(executor.executeOnMainAsync, true)
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
@@ -689,8 +685,6 @@ class MParticleTestsSwift: XCTestCase {
     }
     
     func testForwardLogUpdate() {
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         mparticle.forwardLogUpdate()
         XCTAssertEqual(executor.executeOnMainAsync, true)
         XCTAssertTrue(kitContainer.forwardSDKCallCalled)
@@ -826,9 +820,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogEventWithFilterReturningNil_blocksEvent() {
         let event = MPBaseEvent(eventType: .other)!
         
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
-        
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
         
@@ -863,9 +854,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogBaseEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPBaseEvent(eventType: .other)!
         let transformedEvent = MPBaseEvent(eventType: .addToCart)!
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
@@ -912,10 +900,7 @@ class MParticleTestsSwift: XCTestCase {
     
     func testLogCustomEventWithFilterReturningNil_blocksEvent() {
         let event = MPEvent(name: "blocked", type: .other)!
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
-        
+                
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
         
@@ -951,9 +936,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCustomEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let event = MPEvent(name: "original", type: .other)!
         let transformedEvent = MPEvent(name: "transformed", type: .other)!
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
@@ -996,10 +978,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCommerceEvent_assignsTimestampWhenNil() {
         let commerceEvent = MPCommerceEvent(action: .purchase)!
         commerceEvent.setTimestamp(nil)
-
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
@@ -1015,10 +993,7 @@ class MParticleTestsSwift: XCTestCase {
     
     func testLogCommerceEventWithFilterReturningNil_blocksEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
-        
+                
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
         
@@ -1057,9 +1032,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLogCommerceEventWithFilterReturningEvent_forwardsTransformedEvent() {
         let commerceEvent = MPCommerceEvent(eventType: .other)!
         let transformedCommerceEvent = MPCommerceEvent(eventType: .viewDetail)!
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
         
         let backendController = MPBackendControllerMock()
         mparticle.backendController = backendController
@@ -1190,9 +1162,6 @@ class MParticleTestsSwift: XCTestCase {
         let dataPlanFilter = MPDataPlanFilterMock()
         dataPlanFilter.transformEventReturnValue = transformedEvent
         mparticle.dataPlanFilter = dataPlanFilter
-        
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
 
         mparticle.logLTVIncreaseCallback(event, execStatus: .success)
         
@@ -1215,10 +1184,6 @@ class MParticleTestsSwift: XCTestCase {
     func testLeaveBreadcrumbCallback_withDataFilterNotSet_forwardsTransformedEvent() {
         XCTAssertNil(mparticle.dataPlanFilter)
         
-        let executor = ExecutorMock()
-        mparticle.setExecutor(executor)
-        
-        let expectedEvent = MPEvent()
         mparticle.leaveBreadcrumbCallback(MPEvent(), execStatus: .success)
         
         // Verify executor usage
