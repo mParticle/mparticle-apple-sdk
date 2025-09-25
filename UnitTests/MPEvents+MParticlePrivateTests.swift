@@ -268,6 +268,16 @@ class MPEventsMParticlePrivateTests: XCTestCase {
     
     // MARK: - Public category methods
     
+    func testBeginTiming_whenEndTimeIsNotNil() {
+        sut.endTime = Date(timeIntervalSince1970: 0)
+        sut.beginTiming()
+        
+        // make sure duration is nil
+        XCTAssertNotNil(sut.startTime)
+        XCTAssertNil(sut.duration)
+        XCTAssertNil(sut.endTime)
+    }
+    
     
     
 }
