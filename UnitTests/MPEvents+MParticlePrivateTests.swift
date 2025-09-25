@@ -10,6 +10,10 @@ class MPEventsMParticlePrivateTests: XCTestCase {
     var receivedMessage: String?
     var mparticle: MParticle!
     
+    var event1: MPEvent!
+    var event1Copy: MPEvent!
+    var event2: MPEvent!
+    
     func customLogger(_ message: String) {
         receivedMessage = message
     }
@@ -20,6 +24,23 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         mparticle.logLevel = .verbose
         mparticle.customLogger = customLogger
         sut = MPEvent()
+        
+        // Default setup for event1 and event2
+        event1 = MPEvent(name: "Event1", type: .other)
+        event1Copy = MPEvent(name: "Event1", type: .other)
+        event2 = MPEvent(name: "Event2", type: .other)
+        
+        event1.duration = 100
+        event1.category = "Category"
+        event1.customAttributes = ["key": "value"]
+        
+        event1Copy.duration = 100
+        event1Copy.category = "Category"
+        event1Copy.customAttributes = ["key": "value"]
+        
+        event2.duration = 100
+        event2.category = "Category2"
+        event2.customAttributes = ["key": "value"]
     }
     
     // MARK: - MPEvent Initialization
@@ -86,4 +107,65 @@ class MPEventsMParticlePrivateTests: XCTestCase {
         XCTAssertTrue(sut.customFlags!.count == 1)
         XCTAssertTrue(description.contains("key"))
     }
+    
+    // MARK: - NSObject
+    
+    func testIsEqual_withSameValues_returnsTrue() {
+        XCTAssertTrue(event1.isEqual(event1Copy))
+    }
+    
+    func testIsEqual_withDifferentName_returnsFalse() {
+        XCTAssertFalse(event1.isEqual(event2))
+    }
+    
+    func testIsEqual_withDifferentDuration_returnsFalse() {
+        event1Copy.duration = 200
+        
+        XCTAssertFalse(event1.isEqual(event1Copy))
+    }
+    
+    func testIsEqual_withCategoryMismatch_returnsFalse() {
+        event1.category = "Category1"
+        event1Copy.category = "Category2"
+        
+        XCTAssertFalse(event1.isEqual(event1Copy))
+    }
+    
+    func testIsEqual_withNilCategoryOnOneSide_returnsFalse() {
+        event1.category = nil
+        event1Copy.category = "Category"
+        
+        XCTAssertFalse(event1.isEqual(event1Copy))
+    }
+    
+    func testHash_isConsistentForSameValues() {
+        XCTAssertEqual(event1.hash, event1Copy.hash)
+    }
+    
+    func testHash_changesWhenNameChanges() {
+        XCTAssertNotEqual(event1.hash, event2.hash)
+    }
+    
+    // MARK: - Copying
+    
+//    func testCopy_createsDeepCopy() {
+//        let event1 = MPEvent(name: "Original", type: .other)!
+//        event1.duration = 123
+//        event1.startTime = Date(timeIntervalSince1970: 1000)
+//        event1.endTime = Date(timeIntervalSince1970: 2000)
+//        event1.category = "Category"
+//        
+//        let event2 = event1.copy() as! MPEvent
+//        
+//        // Values are copied
+//        XCTAssertEqual(event1.name, event2.name)
+//        XCTAssertEqual(event1.duration, event2.duration)
+//        XCTAssertEqual(event1.startTime, event2.startTime)
+//        XCTAssertEqual(event1.endTime, event2.endTime)
+//        XCTAssertEqual(event1.category, event2.category)
+//        
+//        // Objects are not the same instance
+//        XCTAssertFalse(event1 === event2)
+//    }
+    
 }
